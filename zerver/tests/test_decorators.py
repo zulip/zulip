@@ -3,7 +3,7 @@ import os
 import re
 import uuid
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 from unittest import mock, skipUnless
 
 import orjson
@@ -1429,7 +1429,7 @@ class RestAPITest(ZulipTestCase):
 class TestUserAgentParsing(ZulipTestCase):
     def test_user_agent_parsing(self) -> None:
         """Test for our user agent parsing logic, using a large data set."""
-        user_agents_parsed: Dict[str, int] = defaultdict(int)
+        user_agents_parsed: dict[str, int] = defaultdict(int)
         user_agents_path = os.path.join(
             settings.DEPLOY_ROOT, "zerver/tests/fixtures/user_agents_unique"
         )
@@ -1584,7 +1584,7 @@ class TestRequestNotes(ZulipTestCase):
 
 class ClientTestCase(ZulipTestCase):
     def test_process_client(self) -> None:
-        def request_user_agent(user_agent: str) -> Tuple[Client, str]:
+        def request_user_agent(user_agent: str) -> tuple[Client, str]:
             request = HttpRequest()
             request.META["HTTP_USER_AGENT"] = user_agent
             LogRequests(lambda request: HttpResponse()).process_request(request)

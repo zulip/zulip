@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from typing import Any, Dict, List, Mapping, Optional, TypeAlias, Union
+from typing import Any, Mapping, Optional, TypeAlias, Union
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -197,7 +197,7 @@ def reactivate_user_backend(
 
 class ProfileDataElement(BaseModel):
     id: int
-    value: Optional[Union[str, List[int]]]
+    value: Optional[Union[str, list[int]]]
 
 
 @typed_endpoint
@@ -208,7 +208,7 @@ def update_user_backend(
     user_id: PathOnly[int],
     full_name: Optional[str] = None,
     role: Optional[Json[RoleParamType]] = None,
-    profile_data: Optional[Json[List[ProfileDataElement]]] = None,
+    profile_data: Optional[Json[list[ProfileDataElement]]] = None,
 ) -> HttpResponse:
     target = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
@@ -236,7 +236,7 @@ def update_user_backend(
         check_change_full_name(target, full_name, user_profile)
 
     if profile_data is not None:
-        clean_profile_data: List[ProfileDataElementUpdateDict] = []
+        clean_profile_data: list[ProfileDataElementUpdateDict] = []
         for entry in profile_data:
             assert isinstance(entry.id, int)
             assert not isinstance(entry.value, int)
@@ -340,7 +340,7 @@ def patch_bot_backend(
     full_name: Optional[str] = None,
     role: Optional[Json[RoleParamType]] = None,
     bot_owner_id: Optional[Json[int]] = None,
-    config_data: Optional[Json[Dict[str, str]]] = None,
+    config_data: Optional[Json[dict[str, str]]] = None,
     service_payload_url: Optional[Json[Annotated[str, AfterValidator(check_url)]]] = None,
     service_interface: Json[int] = 1,
     default_sending_stream: Optional[str] = None,
@@ -596,7 +596,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     )
     bot_profiles = bot_profiles.order_by("date_joined")
 
-    def bot_info(bot_profile: UserProfile) -> Dict[str, Any]:
+    def bot_info(bot_profile: UserProfile) -> dict[str, Any]:
         default_sending_stream = get_stream_name(bot_profile.default_sending_stream)
         default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
 
@@ -623,7 +623,7 @@ def get_user_data(
     include_custom_profile_fields: bool,
     client_gravatar: bool,
     target_user: Optional[UserProfile] = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     The client_gravatar field here is set to True by default assuming that clients
     can compute their own gravatars, which saves bandwidth. This is more important of
@@ -642,7 +642,7 @@ def get_user_data(
     )
 
     if target_user is not None:
-        data: Dict[str, Any] = {"user": members[target_user.id]}
+        data: dict[str, Any] = {"user": members[target_user.id]}
     else:
         data = {"members": [members[k] for k in members]}
 

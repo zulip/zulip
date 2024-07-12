@@ -4,7 +4,7 @@ import random
 import re
 import string
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 from unittest import mock, skipUnless
 
 import orjson
@@ -1382,7 +1382,7 @@ class RealmTest(ZulipTestCase):
                 "last_realmauditlog_id": 0,
             }
 
-            def mock_send_to_push_bouncer_response(method: str, *args: Any) -> Dict[str, Any]:
+            def mock_send_to_push_bouncer_response(method: str, *args: Any) -> dict[str, Any]:
                 if method == "GET":
                     return get_response
                 return dummy_send_realms_only_response
@@ -1544,8 +1544,8 @@ class RealmAPITest(ZulipTestCase):
         assertion error.
         """
 
-        bool_tests: List[bool] = [False, True]
-        test_values: Dict[str, Any] = dict(
+        bool_tests: list[bool] = [False, True]
+        test_values: dict[str, Any] = dict(
             default_language=["de", "en"],
             default_code_block_language=["javascript", ""],
             description=["Realm description", "New description"],
@@ -1930,8 +1930,8 @@ class RealmAPITest(ZulipTestCase):
         self.assert_json_success(result)
 
     def do_test_realm_default_setting_update_api(self, name: str) -> None:
-        bool_tests: List[bool] = [False, True]
-        test_values: Dict[str, Any] = dict(
+        bool_tests: list[bool] = [False, True]
+        test_values: dict[str, Any] = dict(
             web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
             web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
@@ -2083,8 +2083,8 @@ class RealmAPITest(ZulipTestCase):
         )
 
     def do_test_changing_settings_by_owners_only(self, setting_name: str) -> None:
-        bool_tests: List[bool] = [False, True]
-        test_values: Dict[str, Any] = dict(
+        bool_tests: list[bool] = [False, True]
+        test_values: dict[str, Any] = dict(
             invite_to_realm_policy=[
                 InviteToRealmPolicyEnum.MEMBERS_ONLY,
                 InviteToRealmPolicyEnum.ADMINS_ONLY,

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Dict, Optional, Tuple, Union
+from typing import Optional, Union
 
 import orjson
 
@@ -43,7 +43,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         new_stream: str,
         topic_name: str,
         language: Optional[str] = None,
-    ) -> Tuple[UserProfile, Stream, Stream, int, int]:
+    ) -> tuple[UserProfile, Stream, Stream, int, int]:
         user_profile = self.example_user(user_email)
         if language is not None:
             user_profile.default_language = language
@@ -139,7 +139,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             new_topic_name: Optional[str] = None, new_stream: Optional[Stream] = None
         ) -> None:
             self.login("hamlet")
-            params_dict: Dict[str, Union[str, int]] = {
+            params_dict: dict[str, Union[str, int]] = {
                 "propagate_mode": "change_all",
                 "send_notification_to_new_thread": "false",
             }

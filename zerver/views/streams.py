@@ -1,6 +1,6 @@
 import time
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
+from typing import Any, Callable, Mapping, Optional, Sequence, Union
 
 import orjson
 from django.conf import settings
@@ -142,7 +142,7 @@ def create_default_stream_group(
     user_profile: UserProfile,
     group_name: str = REQ(),
     description: str = REQ(),
-    stream_names: List[str] = REQ(json_validator=check_list(check_string)),
+    stream_names: list[str] = REQ(json_validator=check_list(check_string)),
 ) -> HttpResponse:
     streams = []
     for stream_name in stream_names:
@@ -179,7 +179,7 @@ def update_default_stream_group_streams(
     user_profile: UserProfile,
     group_id: int,
     op: str = REQ(),
-    stream_names: List[str] = REQ(json_validator=check_list(check_string)),
+    stream_names: list[str] = REQ(json_validator=check_list(check_string)),
 ) -> HttpResponse:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
@@ -441,7 +441,7 @@ def update_subscriptions_backend(
     return json_success(request, data)
 
 
-def compose_views(thunks: List[Callable[[], HttpResponse]]) -> Dict[str, Any]:
+def compose_views(thunks: list[Callable[[], HttpResponse]]) -> dict[str, Any]:
     """
     This takes a series of thunks and calls them in sequence, and it
     smushes all the json results into a single response when
@@ -450,7 +450,7 @@ def compose_views(thunks: List[Callable[[], HttpResponse]]) -> Dict[str, Any]:
     one of the composed methods.
     """
 
-    json_dict: Dict[str, Any] = {}
+    json_dict: dict[str, Any] = {}
     with transaction.atomic():
         for thunk in thunks:
             response = thunk()
@@ -458,7 +458,7 @@ def compose_views(thunks: List[Callable[[], HttpResponse]]) -> Dict[str, Any]:
     return json_dict
 
 
-check_principals: Validator[Union[List[str], List[int]]] = check_union(
+check_principals: Validator[Union[list[str], list[int]]] = check_union(
     [check_list(check_string), check_list(check_int)],
 )
 
@@ -468,13 +468,13 @@ def remove_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     streams_raw: Sequence[str] = REQ("subscriptions", json_validator=remove_subscriptions_schema),
-    principals: Optional[Union[List[str], List[int]]] = REQ(
+    principals: Optional[Union[list[str], list[int]]] = REQ(
         json_validator=check_principals, default=None
     ),
 ) -> HttpResponse:
     realm = user_profile.realm
 
-    streams_as_dict: List[StreamDict] = [
+    streams_as_dict: list[StreamDict] = [
         {"name": stream_name.strip()} for stream_name in streams_raw
     ]
 
@@ -495,7 +495,7 @@ def remove_subscriptions_backend(
         unsubscribing_others=unsubscribing_others,
     )
 
-    result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
+    result: dict[str, list[str]] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(
         realm, people_to_unsub, streams, acting_user=user_profile
     )
@@ -509,7 +509,7 @@ def remove_subscriptions_backend(
 
 
 def you_were_just_subscribed_message(
-    acting_user: UserProfile, recipient_user: UserProfile, stream_names: Set[str]
+    acting_user: UserProfile, recipient_user: UserProfile, stream_names: set[str]
 ) -> str:
     subscriptions = sorted(stream_names)
     if len(subscriptions) == 1:
@@ -663,9 +663,9 @@ def add_subscriptions_backend(
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
-    email_to_user_profile: Dict[str, UserProfile] = {}
+    email_to_user_profile: dict[str, UserProfile] = {}
 
-    result: Dict[str, Any] = dict(
+    result: dict[str, Any] = dict(
         subscribed=defaultdict(list), already_subscribed=defaultdict(list)
     )
     for sub_info in subscribed:
@@ -699,10 +699,10 @@ def add_subscriptions_backend(
 
 def send_messages_for_new_subscribers(
     user_profile: UserProfile,
-    subscribers: Set[UserProfile],
-    new_subscriptions: Dict[str, List[str]],
-    email_to_user_profile: Dict[str, UserProfile],
-    created_streams: List[Stream],
+    subscribers: set[UserProfile],
+    new_subscriptions: dict[str, list[str]],
+    email_to_user_profile: dict[str, UserProfile],
+    created_streams: list[Stream],
     announce: bool,
 ) -> None:
     """
@@ -970,7 +970,7 @@ def update_subscriptions_property(
 def update_subscription_properties_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    subscription_data: List[Dict[str, Any]] = REQ(
+    subscription_data: list[dict[str, Any]] = REQ(
         json_validator=check_list(
             check_dict(
                 [

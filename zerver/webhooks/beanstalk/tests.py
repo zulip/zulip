@@ -1,4 +1,3 @@
-from typing import Dict
 from unittest.mock import MagicMock, patch
 
 from typing_extensions import override
@@ -188,5 +187,5 @@ class BeanstalkHookTests(WebhookTestCase):
         )
 
     @override
-    def get_payload(self, fixture_name: str) -> Dict[str, str]:
+    def get_payload(self, fixture_name: str) -> dict[str, str]:
         return {"payload": self.webhook_fixture_data("beanstalk", fixture_name)}

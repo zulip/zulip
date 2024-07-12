@@ -1,11 +1,11 @@
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Optional
 
 from django.conf import settings
 
 if TYPE_CHECKING:
     from zerver.tornado.event_queue import ClientDescriptor
 
-descriptors_by_handler_id: Dict[int, "ClientDescriptor"] = {}
+descriptors_by_handler_id: dict[int, "ClientDescriptor"] = {}
 
 
 def get_descriptor_by_handler_id(handler_id: int) -> Optional["ClientDescriptor"]:

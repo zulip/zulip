@@ -8,7 +8,7 @@ from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Callable, Mapping, Optional, Union
 
 import backoff
 import css_inline
@@ -83,8 +83,8 @@ class FromAddress:
 
 def build_email(
     template_prefix: str,
-    to_user_ids: Optional[List[int]] = None,
-    to_emails: Optional[List[str]] = None,
+    to_user_ids: Optional[list[int]] = None,
+    to_emails: Optional[list[str]] = None,
     from_name: Optional[str] = None,
     from_address: Optional[str] = None,
     reply_to_email: Optional[str] = None,
@@ -140,7 +140,7 @@ def build_email(
         inliner = get_inliner_instance()
         return inliner.inline(template)
 
-    def render_templates() -> Tuple[str, str, str]:
+    def render_templates() -> tuple[str, str, str]:
         email_subject = (
             loader.render_to_string(
                 template_prefix + ".subject.txt", context=context, using="Jinja2_plaintext"
@@ -244,8 +244,8 @@ class NoEmailArgumentError(CommandError):
 # migration to change or remove any emails in ScheduledEmail.
 def send_email(
     template_prefix: str,
-    to_user_ids: Optional[List[int]] = None,
-    to_emails: Optional[List[str]] = None,
+    to_user_ids: Optional[list[int]] = None,
+    to_emails: Optional[list[str]] = None,
     from_name: Optional[str] = None,
     from_address: Optional[str] = None,
     reply_to_email: Optional[str] = None,
@@ -282,7 +282,7 @@ def send_email(
     if request is not None:
         cause = f" (triggered from {request.META['REMOTE_ADDR']})"
 
-    logging_recipient: Union[str, List[str]] = mail.to
+    logging_recipient: Union[str, list[str]] = mail.to
     if realm is not None:
         logging_recipient = f"{mail.to} in {realm.string_id}"
 
@@ -347,8 +347,8 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
 def send_future_email(
     template_prefix: str,
     realm: Realm,
-    to_user_ids: Optional[List[int]] = None,
-    to_emails: Optional[List[str]] = None,
+    to_user_ids: Optional[list[int]] = None,
+    to_emails: Optional[list[str]] = None,
     from_name: Optional[str] = None,
     from_address: Optional[str] = None,
     language: Optional[str] = None,
@@ -470,7 +470,7 @@ def clear_scheduled_emails(user_id: int, email_type: Optional[int] = None) -> No
             item.delete()
 
 
-def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
+def handle_send_email_format_changes(job: dict[str, Any]) -> None:
     # Reformat any jobs that used the old to_email
     # and to_user_ids argument formats.
     if "to_email" in job:
@@ -561,7 +561,7 @@ def custom_email_sender(
         f.write(get_header(subject, parsed_email_template.get("subject"), "subject"))
 
     def send_one_email(
-        context: Dict[str, Any], to_user_id: Optional[int] = None, to_email: Optional[str] = None
+        context: dict[str, Any], to_user_id: Optional[int] = None, to_email: Optional[str] = None
     ) -> None:
         assert to_user_id is not None or to_email is not None
         with suppress(EmailNotDeliveredError):
@@ -583,8 +583,8 @@ def send_custom_email(
     users: QuerySet[UserProfile],
     *,
     dry_run: bool,
-    options: Dict[str, str],
-    add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
+    options: dict[str, str],
+    add_context: Optional[Callable[[dict[str, object], UserProfile], None]] = None,
     distinct_email: bool = False,
 ) -> QuerySet[UserProfile]:
     """
@@ -609,7 +609,7 @@ def send_custom_email(
     else:
         users = users.order_by("id")
     for user_profile in users:
-        context: Dict[str, object] = {
+        context: dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,
             "realm_url": user_profile.realm.url,
@@ -631,8 +631,8 @@ def send_custom_server_email(
     remote_servers: QuerySet["RemoteZulipServer"],
     *,
     dry_run: bool,
-    options: Dict[str, str],
-    add_context: Optional[Callable[[Dict[str, object], "RemoteZulipServer"], None]] = None,
+    options: dict[str, str],
+    add_context: Optional[Callable[[dict[str, object], "RemoteZulipServer"], None]] = None,
 ) -> None:
     assert settings.CORPORATE_ENABLED
     from corporate.lib.stripe import BILLING_SUPPORT_EMAIL

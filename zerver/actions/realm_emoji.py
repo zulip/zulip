@@ -1,4 +1,4 @@
-from typing import IO, Dict, Optional
+from typing import IO, Optional
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -17,7 +17,7 @@ from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
-def notify_realm_emoji(realm: Realm, realm_emoji: Dict[str, EmojiInfo]) -> None:
+def notify_realm_emoji(realm: Realm, realm_emoji: dict[str, EmojiInfo]) -> None:
     event = dict(type="realm_emoji", op="update", realm_emoji=realm_emoji)
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 

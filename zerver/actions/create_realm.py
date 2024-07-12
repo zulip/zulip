@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from django.conf import settings
 from django.db import transaction
@@ -136,7 +136,7 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
 
 @transaction.atomic(savepoint=False)
 def set_default_for_realm_permission_group_settings(
-    realm: Realm, group_settings_defaults_for_org_types: Optional[Dict[str, Dict[int, str]]] = None
+    realm: Realm, group_settings_defaults_for_org_types: Optional[dict[str, dict[int, str]]] = None
 ) -> None:
     system_groups_dict = get_role_based_system_groups_dict(realm)
 
@@ -206,7 +206,7 @@ def do_create_realm(
         logging.info("Server not yet initialized. Creating the internal realm first.")
         create_internal_realm()
 
-    kwargs: Dict[str, Any] = {}
+    kwargs: dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
     if description is not None:

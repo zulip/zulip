@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -22,7 +22,7 @@ from zerver.models import (
 )
 
 
-def user_attachments(user_profile: UserProfile) -> List[Dict[str, Any]]:
+def user_attachments(user_profile: UserProfile) -> list[dict[str, Any]]:
     attachments = Attachment.objects.filter(owner=user_profile).prefetch_related("messages")
     return [a.to_dict() for a in attachments]
 
@@ -161,7 +161,7 @@ def validate_attachment_request(
 
 def get_old_unclaimed_attachments(
     weeks_ago: int,
-) -> Tuple[QuerySet[Attachment], QuerySet[ArchivedAttachment]]:
+) -> tuple[QuerySet[Attachment], QuerySet[ArchivedAttachment]]:
     """
     The logic in this function is fairly tricky. The essence is that
     a file should be cleaned up if and only if it not referenced by any

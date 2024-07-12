@@ -1,4 +1,4 @@
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Mapping, Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -38,7 +38,7 @@ DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
 }
 
 
-def common_context(user: UserProfile) -> Dict[str, Any]:
+def common_context(user: UserProfile) -> dict[str, Any]:
     """Common context used for things like outgoing emails that don't
     have a request.
     """
@@ -90,7 +90,7 @@ def is_isolated_page(request: HttpRequest) -> bool:
     return request.GET.get("nav") == "no"
 
 
-def zulip_default_corporate_context(request: HttpRequest) -> Dict[str, Any]:
+def zulip_default_corporate_context(request: HttpRequest) -> dict[str, Any]:
     from corporate.lib.decorator import is_self_hosting_management_subdomain
 
     # Check if view function is in corporate app.
@@ -107,7 +107,7 @@ def zulip_default_corporate_context(request: HttpRequest) -> Dict[str, Any]:
     }
 
 
-def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
+def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
     passed in.  Designed to provide the long list of variables at the
     bottom of this function in a wide range of situations: logged-in
@@ -167,7 +167,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     )
 
     # Sync this with default_params_schema in base_page_params.ts.
-    default_page_params: Dict[str, Any] = {
+    default_page_params: dict[str, Any] = {
         **DEFAULT_PAGE_PARAMS,
         "request_language": get_language(),
     }
@@ -233,7 +233,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     return context
 
 
-def login_context(request: HttpRequest) -> Dict[str, Any]:
+def login_context(request: HttpRequest) -> dict[str, Any]:
     realm = get_realm_from_request(request)
 
     if realm is None:
@@ -247,7 +247,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         # public streams configured, in addition to having it enabled.
         realm_web_public_access_enabled = realm.allow_web_public_streams_access()
 
-    context: Dict[str, Any] = {
+    context: dict[str, Any] = {
         "realm_invite_required": realm_invite_required,
         "realm_description": realm_description,
         "require_email_format_usernames": require_email_format_usernames(realm),
@@ -276,7 +276,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     return context
 
 
-def latest_info_context() -> Dict[str, str]:
+def latest_info_context() -> dict[str, str]:
     context = {
         "latest_release_version": LATEST_RELEASE_VERSION,
         "latest_major_version": LATEST_MAJOR_VERSION,
@@ -285,7 +285,7 @@ def latest_info_context() -> Dict[str, str]:
     return context
 
 
-def get_realm_create_form_context() -> Dict[str, Any]:
+def get_realm_create_form_context() -> dict[str, Any]:
     context = {
         "language_list": get_language_list(),
         "MAX_REALM_NAME_LENGTH": str(Realm.MAX_REALM_NAME_LENGTH),

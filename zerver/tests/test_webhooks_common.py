@@ -1,5 +1,4 @@
 from types import SimpleNamespace
-from typing import Dict
 from unittest.mock import MagicMock, patch
 
 from django.http import HttpRequest
@@ -104,7 +103,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
     @patch("zerver.lib.webhooks.common.importlib.import_module")
     def test_get_fixture_http_headers_for_success(self, import_module_mock: MagicMock) -> None:
-        def fixture_to_headers(fixture_name: str) -> Dict[str, str]:
+        def fixture_to_headers(fixture_name: str) -> dict[str, str]:
             # A sample function which would normally perform some
             # extra operations before returning a dictionary
             # corresponding to the fixture name passed. For this test,

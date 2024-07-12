@@ -11,14 +11,10 @@ from typing import (
     Any,
     Callable,
     Collection,
-    Dict,
     Iterator,
-    List,
     Mapping,
     Optional,
     Sequence,
-    Set,
-    Tuple,
     Union,
     cast,
 )
@@ -206,7 +202,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.API_KEYS: Dict[str, str] = {}
+        self.API_KEYS: dict[str, str] = {}
 
         test_name = self.id()
         bounce_key_prefix_for_testing(test_name)
@@ -291,7 +287,7 @@ Output:
         token=r"[a-z0-9_]{24}"
     )
 
-    def set_http_headers(self, extra: Dict[str, str], skip_user_agent: bool = False) -> None:
+    def set_http_headers(self, extra: dict[str, str], skip_user_agent: bool = False) -> None:
         if "subdomain" in extra:
             assert isinstance(extra["subdomain"], str)
             extra["HTTP_HOST"] = Realm.host_for_subdomain(extra["subdomain"])
@@ -688,7 +684,7 @@ Output:
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, assert_json_error_msg)
 
-    def _get_page_params(self, result: "TestHttpResponse") -> Dict[str, Any]:
+    def _get_page_params(self, result: "TestHttpResponse") -> dict[str, Any]:
         """Helper for parsing page_params after fetching the web app's home view."""
         doc = lxml.html.document_fromstring(result.content)
         div = cast(lxml.html.HtmlMixin, doc).get_element_by_id("page-params")
@@ -698,7 +694,7 @@ Output:
         page_params = orjson.loads(page_params_json)
         return page_params
 
-    def _get_sentry_params(self, response: "TestHttpResponse") -> Optional[Dict[str, Any]]:
+    def _get_sentry_params(self, response: "TestHttpResponse") -> Optional[dict[str, Any]]:
         doc = lxml.html.document_fromstring(response.content)
         try:
             script = cast(lxml.html.HtmlMixin, doc).get_element_by_id("sentry-params")
@@ -1061,7 +1057,7 @@ Output:
             **extra,
         )
 
-    def get_streams(self, user_profile: UserProfile) -> List[str]:
+    def get_streams(self, user_profile: UserProfile) -> list[str]:
         """
         Helper function to get the active stream names for a user
         """
@@ -1097,7 +1093,7 @@ Output:
     def send_group_direct_message(
         self,
         from_user: UserProfile,
-        to_users: List[UserProfile],
+        to_users: list[UserProfile],
         content: str = "test content",
         *,
         read_by_sender: bool = True,
@@ -1169,7 +1165,7 @@ Output:
         num_after: int = 100,
         use_first_unread_anchor: bool = False,
         include_anchor: bool = True,
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    ) -> dict[str, list[dict[str, Any]]]:
         post_params = {
             "anchor": anchor,
             "num_before": num_before,
@@ -1187,18 +1183,18 @@ Output:
         num_before: int = 100,
         num_after: int = 100,
         use_first_unread_anchor: bool = False,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data["messages"]
 
-    def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> List[UserProfile]:
+    def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> list[UserProfile]:
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient, active=True)
 
         return [subscription.user_profile for subscription in subscriptions]
 
-    def not_long_term_idle_subscriber_ids(self, stream_name: str, realm: Realm) -> Set[int]:
+    def not_long_term_idle_subscriber_ids(self, stream_name: str, realm: Realm) -> set[int]:
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
 
@@ -1213,8 +1209,8 @@ Output:
         self,
         result: Union["TestHttpResponse", HttpResponse],
         *,
-        ignored_parameters: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        ignored_parameters: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
         """
         Successful POSTs return a 200 and JSON of the form {"result": "success",
         "msg": ""}.
@@ -1311,7 +1307,7 @@ Output:
         self.assertIn(substring, response.content.decode())
 
     def assert_in_success_response(
-        self, substrings: List[str], response: Union["TestHttpResponse", HttpResponse]
+        self, substrings: list[str], response: Union["TestHttpResponse", HttpResponse]
     ) -> None:
         self.assertEqual(response.status_code, 200)
         decoded = response.content.decode()
@@ -1319,7 +1315,7 @@ Output:
             self.assertIn(substring, decoded)
 
     def assert_not_in_success_response(
-        self, substrings: List[str], response: Union["TestHttpResponse", HttpResponse]
+        self, substrings: list[str], response: Union["TestHttpResponse", HttpResponse]
     ) -> None:
         self.assertEqual(response.status_code, 200)
         decoded = response.content.decode()
@@ -1438,14 +1434,14 @@ Output:
     def common_subscribe_to_streams(
         self,
         user: UserProfile,
-        subscriptions_raw: List[str] | List[Dict[str, str]],
+        subscriptions_raw: list[str] | list[dict[str, str]],
         extra_post_data: Mapping[str, Any] = {},
         invite_only: bool = False,
         is_web_public: bool = False,
         allow_fail: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
-        subscriptions: List[Dict[str, str]] = []
+        subscriptions: list[dict[str, str]] = []
         for entry in subscriptions_raw:
             if isinstance(entry, str):
                 subscriptions.append({"name": entry})
@@ -1479,7 +1475,7 @@ Output:
 
         return "".join(sorted(f"        * {stream['name']}\n" for stream in subscribed_streams))
 
-    def check_user_subscribed_only_to_streams(self, user_name: str, streams: List[Stream]) -> None:
+    def check_user_subscribed_only_to_streams(self, user_name: str, streams: list[Stream]) -> None:
         streams = sorted(streams, key=lambda x: x.name)
         subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
 
@@ -1512,7 +1508,7 @@ Output:
         self,
         user_profile: UserProfile,
         url: str,
-        payload: Union[str, Dict[str, Any]],
+        payload: Union[str, dict[str, Any]],
         **extra: str,
     ) -> Message:
         """
@@ -1610,11 +1606,11 @@ Output:
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
-    def get_set(self, data: List[Dict[str, Any]], field: str) -> Set[str]:
+    def get_set(self, data: list[dict[str, Any]], field: str) -> set[str]:
         values = {r[field] for r in data}
         return values
 
-    def find_by_id(self, data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:
+    def find_by_id(self, data: list[dict[str, Any]], db_id: int) -> dict[str, Any]:
         [r] = (r for r in data if r["id"] == db_id)
         return r
 
@@ -1803,7 +1799,7 @@ Output:
 
     def subscribe_realm_to_manual_license_management_plan(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
-    ) -> Tuple[CustomerPlan, LicenseLedger]:
+    ) -> tuple[CustomerPlan, LicenseLedger]:
         customer, _ = Customer.objects.get_or_create(realm=realm)
         plan = CustomerPlan.objects.create(
             customer=customer,
@@ -1825,7 +1821,7 @@ Output:
 
     def subscribe_realm_to_monthly_plan_on_manual_license_management(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int
-    ) -> Tuple[CustomerPlan, LicenseLedger]:
+    ) -> tuple[CustomerPlan, LicenseLedger]:
         return self.subscribe_realm_to_manual_license_management_plan(
             realm, licenses, licenses_at_next_renewal, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
@@ -1874,7 +1870,7 @@ Output:
 
     def get_maybe_enqueue_notifications_parameters(
         self, *, message_id: int, user_id: int, acting_user_id: int, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Returns a dictionary with the passed parameters, after filling up the
         missing data with default values, for testing what was passed to the
@@ -1999,8 +1995,8 @@ Output:
 
     def create_or_update_anonymous_group_for_setting(
         self,
-        direct_members: List[UserProfile],
-        direct_subgroups: List[NamedUserGroup],
+        direct_members: list[UserProfile],
+        direct_subgroups: list[NamedUserGroup],
         existing_setting_group: Optional[UserGroup] = None,
     ) -> UserGroup:
         realm = get_realm("zulip")
@@ -2019,8 +2015,8 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     @contextmanager
     def capture_send_event_calls(
         self, expected_num_events: int
-    ) -> Iterator[List[Mapping[str, Any]]]:
-        lst: List[Mapping[str, Any]] = []
+    ) -> Iterator[list[Mapping[str, Any]]]:
+        lst: list[Mapping[str, Any]] = []
 
         # process_notification takes a single parameter called 'notice'.
         # lst.append takes a single argument called 'object'.
@@ -2082,7 +2078,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     def send_group_direct_message(
         self,
         from_user: UserProfile,
-        to_users: List[UserProfile],
+        to_users: list[UserProfile],
         content: str = "test content",
         *,
         read_by_sender: bool = True,
@@ -2168,7 +2164,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         return message_id
 
 
-def get_row_ids_in_all_tables() -> Iterator[Tuple[str, Set[int]]]:
+def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
     ignored_tables = {"django_session"}
 
@@ -2475,7 +2471,7 @@ one or more new messages.
 
         return url[:-1] if has_arguments else url
 
-    def get_payload(self, fixture_name: str) -> Union[str, Dict[str, str]]:
+    def get_payload(self, fixture_name: str) -> Union[str, dict[str, str]]:
         """
         Generally webhooks that override this should return dicts."""
         return self.get_body(fixture_name)
@@ -2510,8 +2506,8 @@ class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
         assert (
             self.migrate_from and self.migrate_to
         ), f"TestCase '{type(self).__name__}' must define migrate_from and migrate_to properties"
-        migrate_from: List[Tuple[str, str]] = [(self.app, self.migrate_from)]
-        migrate_to: List[Tuple[str, str]] = [(self.app, self.migrate_to)]
+        migrate_from: list[tuple[str, str]] = [(self.app, self.migrate_from)]
+        migrate_to: list[tuple[str, str]] = [(self.app, self.migrate_to)]
         executor = MigrationExecutor(connection)
         old_apps = executor.loader.project_state(migrate_from).apps
 
@@ -2531,7 +2527,7 @@ class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
         pass  # nocoverage
 
 
-def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: str) -> List[Message]:
+def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: str) -> list[Message]:
     query = UserMessage.objects.filter(
         user_profile=user_profile,
         message__recipient=stream.recipient,
@@ -2558,7 +2554,7 @@ class BouncerTestCase(ZulipTestCase):
         RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
         super().tearDown()
 
-    def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
+    def request_callback(self, request: PreparedRequest) -> tuple[int, ResponseHeaders, bytes]:
         kwargs = {}
         if isinstance(request.body, bytes):
             # send_json_to_push_bouncer sends the body as bytes containing json.
@@ -2566,7 +2562,7 @@ class BouncerTestCase(ZulipTestCase):
             kwargs = dict(content_type="application/json")
         else:
             assert isinstance(request.body, str) or request.body is None
-            params: Dict[str, List[str]] = parse_qs(request.body)
+            params: dict[str, list[str]] = parse_qs(request.body)
             # In Python 3, the values of the dict from `parse_qs` are
             # in a list, because there might be multiple values.
             # But since we are sending values with no same keys, hence
@@ -2588,7 +2584,7 @@ class BouncerTestCase(ZulipTestCase):
         responses.add_callback(responses.POST, COMPILED_URL, callback=self.request_callback)
         responses.add_callback(responses.GET, COMPILED_URL, callback=self.request_callback)
 
-    def get_generic_payload(self, method: str = "register") -> Dict[str, Any]:
+    def get_generic_payload(self, method: str = "register") -> dict[str, Any]:
         user_id = 10
         token = "111222"
         token_kind = PushDeviceToken.FCM

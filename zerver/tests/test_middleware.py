@@ -1,5 +1,4 @@
 import time
-from typing import List
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
@@ -65,8 +64,8 @@ class OpenGraphTest(ZulipTestCase):
         self,
         path: str,
         title: str,
-        in_description: List[str],
-        not_in_description: List[str],
+        in_description: list[str],
+        not_in_description: list[str],
         status_code: int = 200,
     ) -> None:
         response = self.client_get(path)

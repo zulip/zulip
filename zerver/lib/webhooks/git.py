@@ -1,6 +1,6 @@
 import string
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 TOPIC_WITH_BRANCH_TEMPLATE = "{repo} / {branch}"
 TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = "{repo} / {type} #{id} {title}"
@@ -77,7 +77,7 @@ TAG_WITHOUT_URL_TEMPLATE = "{tag_name}"
 RELEASE_MESSAGE_TEMPLATE = "{user_name} {action} release [{release_name}]({url}) for tag {tagname}."
 
 
-def get_assignee_string(assignees: List[Dict[str, Any]]) -> str:
+def get_assignee_string(assignees: list[dict[str, Any]]) -> str:
     assignees_string = ""
     if len(assignees) == 1:
         assignees_string = "{username}".format(**assignees[0])
@@ -92,7 +92,7 @@ def get_push_commits_event_message(
     user_name: str,
     compare_url: Optional[str],
     branch_name: str,
-    commits_data: List[Dict[str, Any]],
+    commits_data: list[dict[str, Any]],
     is_truncated: bool = False,
     deleted: bool = False,
     force_push: Optional[bool] = False,
@@ -130,7 +130,7 @@ def get_push_commits_event_message(
         commit_or_commits=COMMIT_OR_COMMITS.format("s" if len(commits_data) > 1 else ""),
     )
 
-    committers_items: List[Tuple[str, int]] = get_all_committers(commits_data)
+    committers_items: list[tuple[str, int]] = get_all_committers(commits_data)
     if len(committers_items) == 1 and user_name == committers_items[0][0]:
         return PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS.format(
             user_name=user_name,
@@ -197,7 +197,7 @@ def get_pull_request_event_message(
     base_branch: Optional[str] = None,
     message: Optional[str] = None,
     assignee: Optional[str] = None,
-    assignees: Optional[List[Dict[str, Any]]] = None,
+    assignees: Optional[list[dict[str, Any]]] = None,
     reviewer: Optional[str] = None,
     type: str = "PR",
     title: Optional[str] = None,
@@ -263,7 +263,7 @@ def get_issue_event_message(
     number: Optional[int] = None,
     message: Optional[str] = None,
     assignee: Optional[str] = None,
-    assignees: Optional[List[Dict[str, Any]]] = None,
+    assignees: Optional[list[dict[str, Any]]] = None,
     title: Optional[str] = None,
 ) -> str:
     return get_pull_request_event_message(
@@ -368,7 +368,7 @@ def get_commits_comment_action_message(
     return content
 
 
-def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: bool = False) -> str:
+def get_commits_content(commits_data: list[dict[str, Any]], is_truncated: bool = False) -> str:
     commits_content = ""
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(
@@ -406,18 +406,18 @@ def get_short_sha(sha: str) -> str:
     return sha[:11]
 
 
-def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, int]]:
-    committers: Dict[str, int] = defaultdict(int)
+def get_all_committers(commits_data: list[dict[str, Any]]) -> list[tuple[str, int]]:
+    committers: dict[str, int] = defaultdict(int)
 
     for commit in commits_data:
         committers[commit["name"]] += 1
 
     # Sort by commit count, breaking ties alphabetically.
-    committers_items: List[Tuple[str, int]] = sorted(
+    committers_items: list[tuple[str, int]] = sorted(
         committers.items(),
         key=lambda item: (-item[1], item[0]),
     )
-    committers_values: List[int] = [c_i[1] for c_i in committers_items]
+    committers_values: list[int] = [c_i[1] for c_i in committers_items]
 
     if len(committers) > PUSH_COMMITTERS_LIMIT_INFO:
         others_number_of_commits = sum(committers_values[PUSH_COMMITTERS_LIMIT_INFO:])

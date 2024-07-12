@@ -5,7 +5,7 @@ import sys
 from argparse import ArgumentParser, BooleanOptionalAction, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
 from functools import reduce, wraps
-from typing import Any, Dict, Optional, Protocol
+from typing import Any, Optional, Protocol
 
 from django.conf import settings
 from django.core import validators
@@ -140,7 +140,7 @@ server via `ps -ef` or reading bash history. Prefer
 
         parser.add_argument("-a", "--all-users", action="store_true", help=all_users_help)
 
-    def get_realm(self, options: Dict[str, Any]) -> Optional[Realm]:
+    def get_realm(self, options: dict[str, Any]) -> Optional[Realm]:
         val = options["realm_id"]
         if val is None:
             return None
@@ -159,7 +159,7 @@ server via `ps -ef` or reading bash history. Prefer
 
     def get_users(
         self,
-        options: Dict[str, Any],
+        options: dict[str, Any],
         realm: Optional[Realm],
         is_bot: Optional[bool] = None,
         include_deactivated: bool = False,
@@ -237,7 +237,7 @@ server via `ps -ef` or reading bash history. Prefer
         """Returns a Zulip Client object to be used for things done in management commands"""
         return get_client("ZulipServer")
 
-    def get_create_user_params(self, options: Dict[str, Any]) -> CreateUserParameters:  # nocoverage
+    def get_create_user_params(self, options: dict[str, Any]) -> CreateUserParameters:  # nocoverage
         """
         Parses parameters for user creation defined in add_create_user_args.
         """

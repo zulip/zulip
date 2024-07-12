@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -32,7 +32,7 @@ from zerver.models.realms import Realm
 from zerver.models.users import UserProfile
 
 
-def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> List[int]:
+def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> list[int]:
     user_ids = check_list(check_int)("User IDs", val)
     user_profiles = UserProfile.objects.filter(realm_id=realm_id, id__in=user_ids)
 
@@ -93,21 +93,21 @@ class CustomProfileField(models.Model):
     # These are the fields whose validators require more than var_name
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
-    SELECT_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
+    SELECT_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
         (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
-    USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
+    USER_FIELD_TYPE_DATA: list[UserFieldElement] = [
         (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),
     ]
 
-    SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
+    SELECT_FIELD_VALIDATORS: dict[int, ExtendedValidator] = {
         item[0]: item[2] for item in SELECT_FIELD_TYPE_DATA
     }
-    USER_FIELD_VALIDATORS: Dict[int, RealmUserValidator] = {
+    USER_FIELD_VALIDATORS: dict[int, RealmUserValidator] = {
         item[0]: item[2] for item in USER_FIELD_TYPE_DATA
     }
 
-    FIELD_TYPE_DATA: List[FieldElement] = [
+    FIELD_TYPE_DATA: list[FieldElement] = [
         # Type, display name, validator, converter, keyword
         (SHORT_TEXT, gettext_lazy("Text (short)"), check_short_string, str, "SHORT_TEXT"),
         (LONG_TEXT, gettext_lazy("Text (long)"), check_long_string, str, "LONG_TEXT"),
@@ -127,13 +127,13 @@ class CustomProfileField(models.Model):
         [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA], key=lambda x: x[1]
     )
 
-    FIELD_VALIDATORS: Dict[int, Validator[ProfileDataElementValue]] = {
+    FIELD_VALIDATORS: dict[int, Validator[ProfileDataElementValue]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
     }
-    FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {
+    FIELD_CONVERTERS: dict[int, Callable[[Any], Any]] = {
         item[0]: item[3] for item in ALL_FIELD_TYPES
     }
-    FIELD_TYPE_CHOICES: List[Tuple[int, StrPromise]] = [
+    FIELD_TYPE_CHOICES: list[tuple[int, StrPromise]] = [
         (item[0], item[1]) for item in ALL_FIELD_TYPES
     ]
 

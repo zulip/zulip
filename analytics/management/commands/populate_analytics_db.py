@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List, Mapping, Type, Union
+from typing import Any, Mapping, Union
 
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now as timezone_now
@@ -53,7 +53,7 @@ class Command(ZulipBaseCommand):
         spikiness: float,
         holiday_rate: float = 0,
         partial_sum: bool = False,
-    ) -> List[int]:
+    ) -> list[int]:
         self.random_seed += 1
         return generate_time_series_data(
             days=self.DAYS_OF_DATA,
@@ -147,18 +147,18 @@ class Command(ZulipBaseCommand):
         with open(IMAGE_FILE_PATH, "rb") as fp:
             upload_message_attachment_from_request(UploadedFile(fp), shylock)
 
-        FixtureData: TypeAlias = Mapping[Union[str, int, None], List[int]]
+        FixtureData: TypeAlias = Mapping[Union[str, int, None], list[int]]
 
         def insert_fixture_data(
             stat: CountStat,
             fixture_data: FixtureData,
-            table: Type[BaseCount],
+            table: type[BaseCount],
         ) -> None:
             end_times = time_range(
                 last_end_time, last_end_time, stat.frequency, len(next(iter(fixture_data.values())))
             )
             if table == InstallationCount:
-                id_args: Dict[str, Any] = {}
+                id_args: dict[str, Any] = {}
             if table == RealmCount:
                 id_args = {"realm": realm}
             if table == UserCount:
@@ -330,7 +330,7 @@ class Command(ZulipBaseCommand):
             "true": self.generate_fixture_data(stat, 20, 2, 3, 0.2, 3),
         }
         insert_fixture_data(stat, realm_data, RealmCount)
-        stream_data: Mapping[Union[int, str, None], List[int]] = {
+        stream_data: Mapping[Union[int, str, None], list[int]] = {
             "false": self.generate_fixture_data(stat, 10, 7, 5, 0.6, 4),
             "true": self.generate_fixture_data(stat, 5, 3, 2, 0.4, 2),
         }

@@ -4,7 +4,7 @@ import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Optional
 
 import bmemcached
 import orjson
@@ -106,7 +106,7 @@ realm_tables = [
 #
 # Code reviewers: give these tables extra scrutiny, as we need to
 # make sure to reload related tables AFTER we re-map the ids.
-ID_MAP: Dict[str, Dict[int, int]] = {
+ID_MAP: dict[str, dict[int, int]] = {
     "alertword": {},
     "client": {},
     "user_profile": {},
@@ -150,15 +150,15 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "scheduledmessage": {},
 }
 
-id_map_to_list: Dict[str, Dict[int, List[int]]] = {
+id_map_to_list: dict[str, dict[int, list[int]]] = {
     "huddle_to_user_list": {},
 }
 
-path_maps: Dict[str, Dict[str, str]] = {
+path_maps: dict[str, dict[str, str]] = {
     "attachment_path": {},
 }
 
-message_id_to_attachments: Dict[str, Dict[int, List[str]]] = {
+message_id_to_attachments: dict[str, dict[int, list[str]]] = {
     "zerver_message": collections.defaultdict(list),
     "zerver_scheduledmessage": collections.defaultdict(list),
 }
@@ -331,8 +331,8 @@ def fix_customprofilefield(data: TableData) -> None:
 
 def fix_message_rendered_content(
     realm: Realm,
-    sender_map: Dict[int, Record],
-    messages: List[Record],
+    sender_map: dict[int, Record],
+    messages: list[Record],
     content_key: str = "content",
     rendered_content_key: str = "rendered_content",
 ) -> None:
@@ -425,7 +425,7 @@ def fix_message_rendered_content(
 
 
 def fix_message_edit_history(
-    realm: Realm, sender_map: Dict[int, Record], messages: List[Record]
+    realm: Realm, sender_map: dict[int, Record], messages: list[Record]
 ) -> None:
     user_id_map = ID_MAP["user_profile"]
     for message in messages:
@@ -448,7 +448,7 @@ def fix_message_edit_history(
         message["edit_history"] = orjson.dumps(edit_history).decode()
 
 
-def current_table_ids(data: TableData, table: TableName) -> List[int]:
+def current_table_ids(data: TableData, table: TableName) -> list[int]:
     """
     Returns the ids present in the current table
     """
@@ -469,7 +469,7 @@ def idseq(model_class: Any) -> str:
     return f"{model_class._meta.db_table}_id_seq"
 
 
-def allocate_ids(model_class: Any, count: int) -> List[int]:
+def allocate_ids(model_class: Any, count: int) -> list[int]:
     """
     Increases the sequence number for a given table by the amount of objects being
     imported into that table. Hence, this gives a reserved range of IDs to import the
@@ -528,7 +528,7 @@ def re_map_foreign_keys(
 
 
 def re_map_foreign_keys_internal(
-    data_table: List[Record],
+    data_table: list[Record],
     table: TableName,
     field_name: Field,
     related_table: TableName,
@@ -634,9 +634,9 @@ def re_map_foreign_keys_many_to_many_internal(
     table: TableName,
     field_name: Field,
     related_table: TableName,
-    old_id_list: List[int],
+    old_id_list: list[int],
     verbose: bool = False,
-) -> List[int]:
+) -> list[int]:
     """
     This is an internal function for tables with ManyToMany fields,
     which takes the old ID list of the ManyToMany relation and returns the
@@ -712,7 +712,7 @@ def bulk_import_user_message_data(data: TableData, dump_file_id: int) -> None:
     # no tables use user_message.id as a foreign key,
     # so we can safely avoid all re-mapping complexity.
 
-    def process_batch(items: List[Dict[str, Any]]) -> None:
+    def process_batch(items: list[dict[str, Any]]) -> None:
         ums = [
             UserMessageLite(
                 user_profile_id=item["user_profile_id"],
@@ -781,7 +781,7 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
 
 
 def fix_subscriptions_is_user_active_column(
-    data: TableData, user_profiles: List[UserProfile], crossrealm_user_ids: Set[int]
+    data: TableData, user_profiles: list[UserProfile], crossrealm_user_ids: set[int]
 ) -> None:
     table = get_db_table(Subscription)
     user_id_to_active_status = {user.id: user.is_active for user in user_profiles}
@@ -792,7 +792,7 @@ def fix_subscriptions_is_user_active_column(
             sub["is_user_active"] = user_id_to_active_status[sub["user_profile_id"]]
 
 
-def process_avatars(record: Dict[str, Any]) -> None:
+def process_avatars(record: dict[str, Any]) -> None:
     if not record["s3_path"].endswith(".original"):
         return None
     user_profile = get_user_profile_by_id(record["user_profile_id"])
@@ -842,7 +842,7 @@ def import_uploads(
 
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename, "rb") as records_file:
-        records: List[Dict[str, Any]] = orjson.loads(records_file.read())
+        records: list[dict[str, Any]] = orjson.loads(records_file.read())
     timestamp = datetime_to_timestamp(timezone_now())
 
     re_map_foreign_keys_internal(
@@ -1126,7 +1126,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         # We expect Zulip server exports to contain these system groups,
         # this logic here is needed to handle the imports from other services.
-        role_system_groups_dict: Optional[Dict[int, NamedUserGroup]] = None
+        role_system_groups_dict: Optional[dict[int, NamedUserGroup]] = None
         if "zerver_usergroup" not in data:
             role_system_groups_dict = create_system_user_groups_for_realm(realm)
 
@@ -1621,7 +1621,7 @@ def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
     # we're actually read the files a second time to get actual data.
 
 
-def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> List[int]:
+def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> list[int]:
     """
     This function reads in our entire collection of message
     ids, which can be millions of integers for some installations.
@@ -1634,9 +1634,9 @@ def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> List[int]:
     """
 
     if sort_by_date:
-        tups: List[Tuple[int, int]] = []
+        tups: list[tuple[int, int]] = []
     else:
-        message_ids: List[int] = []
+        message_ids: list[int] = []
 
     dump_file_id = 1
     while True:
@@ -1679,7 +1679,7 @@ def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> List[int]:
     return message_ids
 
 
-def import_message_data(realm: Realm, sender_map: Dict[int, Record], import_dir: Path) -> None:
+def import_message_data(realm: Realm, sender_map: dict[int, Record], import_dir: Path) -> None:
     dump_file_id = 1
     while True:
         message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
@@ -1763,7 +1763,7 @@ def import_attachments(data: TableData) -> None:
 
     def format_m2m_data(
         child_singular: str, child_plural: str, m2m_table_name: str, child_id: str
-    ) -> Tuple[str, List[Record], str]:
+    ) -> tuple[str, list[Record], str]:
         m2m_rows = [
             {
                 parent_singular: parent_row["id"],
@@ -1828,7 +1828,7 @@ def import_attachments(data: TableData) -> None:
             logging.info("Successfully imported M2M table %s", m2m_table_name)
 
 
-def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: Set[int]) -> None:
+def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: set[int]) -> None:
     analytics_filename = os.path.join(import_dir, "analytics.json")
     if not os.path.exists(analytics_filename):
         return
@@ -1861,8 +1861,8 @@ def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: S
 
 def add_users_to_system_user_groups(
     realm: Realm,
-    user_profiles: List[UserProfile],
-    role_system_groups_dict: Dict[int, NamedUserGroup],
+    user_profiles: list[UserProfile],
+    role_system_groups_dict: dict[int, NamedUserGroup],
 ) -> None:
     full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS,

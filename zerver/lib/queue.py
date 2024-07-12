@@ -5,7 +5,7 @@ import threading
 import time
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from typing import Any, Callable, Dict, Generic, List, Mapping, Optional, Set, Type, TypeVar, Union
+from typing import Any, Callable, Generic, Mapping, Optional, TypeVar, Union
 
 import orjson
 import pika
@@ -39,10 +39,10 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         prefetch: int = 0,
     ) -> None:
         self.log = logging.getLogger("zulip.queue")
-        self.queues: Set[str] = set()
+        self.queues: set[str] = set()
         self.channel: Optional[ChannelT] = None
         self.prefetch = prefetch
-        self.consumers: Dict[str, Set[Consumer[ChannelT]]] = defaultdict(set)
+        self.consumers: dict[str, set[Consumer[ChannelT]]] = defaultdict(set)
         self.rabbitmq_heartbeat = rabbitmq_heartbeat
         self.is_consuming = False
         self._connect()
@@ -80,7 +80,7 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         if self.rabbitmq_heartbeat == 0:
             tcp_options = dict(TCP_KEEPIDLE=60 * 5)
 
-        ssl_options: Union[Type[pika.ConnectionParameters._DEFAULT], pika.SSLOptions] = (
+        ssl_options: Union[type[pika.ConnectionParameters._DEFAULT], pika.SSLOptions] = (
             pika.ConnectionParameters._DEFAULT
         )
         if settings.RABBITMQ_USE_TLS:
@@ -186,7 +186,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
     def start_json_consumer(
         self,
         queue_name: str,
-        callback: Callable[[List[Dict[str, Any]]], None],
+        callback: Callable[[list[dict[str, Any]]], None],
         batch_size: int = 1,
         timeout: Optional[int] = None,
     ) -> None:
@@ -194,7 +194,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
             timeout = None
 
         def do_consume(channel: BlockingChannel) -> None:
-            events: List[Dict[str, Any]] = []
+            events: list[dict[str, Any]] = []
             last_process = time.time()
             max_processed: Optional[int] = None
             self.is_consuming = True
@@ -273,7 +273,7 @@ class TornadoQueueClient(QueueClient[Channel]):
             # the server, rather than an unbounded number.
             prefetch=100,
         )
-        self._on_open_cbs: List[Callable[[Channel], None]] = []
+        self._on_open_cbs: list[Callable[[Channel], None]] = []
         self._connection_failure_count = 0
 
     @override
@@ -386,7 +386,7 @@ class TornadoQueueClient(QueueClient[Channel]):
     def start_json_consumer(
         self,
         queue_name: str,
-        callback: Callable[[List[Dict[str, Any]]], None],
+        callback: Callable[[list[dict[str, Any]]], None],
         batch_size: int = 1,
         timeout: Optional[int] = None,
     ) -> None:
@@ -435,7 +435,7 @@ def set_queue_client(queue_client: Union[SimpleQueueClient, TornadoQueueClient])
 
 def queue_json_publish(
     queue_name: str,
-    event: Dict[str, Any],
+    event: dict[str, Any],
     processor: Optional[Callable[[Any], None]] = None,
 ) -> None:
     if settings.USING_RABBITMQ:
@@ -450,12 +450,12 @@ def queue_json_publish(
         get_worker(queue_name, disable_timeout=True).consume_single_event(event)
 
 
-def queue_event_on_commit(queue_name: str, event: Dict[str, Any]) -> None:
+def queue_event_on_commit(queue_name: str, event: dict[str, Any]) -> None:
     transaction.on_commit(lambda: queue_json_publish(queue_name, event))
 
 
 def retry_event(
-    queue_name: str, event: Dict[str, Any], failure_processor: Callable[[Dict[str, Any]], None]
+    queue_name: str, event: dict[str, Any], failure_processor: Callable[[dict[str, Any]], None]
 ) -> None:
     if "failed_tries" not in event:
         event["failed_tries"] = 0

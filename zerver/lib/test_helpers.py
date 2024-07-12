@@ -11,13 +11,10 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
     Iterable,
     Iterator,
-    List,
     Mapping,
     Optional,
-    Tuple,
     TypeVar,
     Union,
     cast,
@@ -91,17 +88,17 @@ def stub_event_queue_user_events(
 
 
 @contextmanager
-def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
-    cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
+def cache_tries_captured() -> Iterator[list[tuple[str, Union[str, list[str]], Optional[str]]]]:
+    cache_queries: list[tuple[str, Union[str, list[str]], Optional[str]]] = []
 
     orig_get = cache.cache_get
     orig_get_many = cache.cache_get_many
 
-    def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[dict[str, Any]]:
         cache_queries.append(("get", key, cache_name))
         return orig_get(key, cache_name)
 
-    def my_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Dict[str, Any]:
+    def my_cache_get_many(keys: list[str], cache_name: Optional[str] = None) -> dict[str, Any]:
         cache_queries.append(("getmany", keys, cache_name))
         return orig_get_many(keys, cache_name)
 
@@ -110,16 +107,16 @@ def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Op
 
 
 @contextmanager
-def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
-    cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
+def simulated_empty_cache() -> Iterator[list[tuple[str, Union[str, list[str]], Optional[str]]]]:
+    cache_queries: list[tuple[str, Union[str, list[str]], Optional[str]]] = []
 
-    def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[dict[str, Any]]:
         cache_queries.append(("get", key, cache_name))
         return None
 
     def my_cache_get_many(
-        keys: List[str], cache_name: Optional[str] = None
-    ) -> Dict[str, Any]:  # nocoverage -- simulated code doesn't use this
+        keys: list[str], cache_name: Optional[str] = None
+    ) -> dict[str, Any]:  # nocoverage -- simulated code doesn't use this
         cache_queries.append(("getmany", keys, cache_name))
         return {}
 
@@ -136,13 +133,13 @@ class CapturedQuery:
 @contextmanager
 def queries_captured(
     include_savepoints: bool = False, keep_cache_warm: bool = False
-) -> Iterator[List[CapturedQuery]]:
+) -> Iterator[list[CapturedQuery]]:
     """
     Allow a user to capture just the queries executed during
     the with statement.
     """
 
-    queries: List[CapturedQuery] = []
+    queries: list[CapturedQuery] = []
 
     def cursor_execute(self: TimeTrackingCursor, sql: Query, vars: Optional[Params] = None) -> None:
         start = time.time()
@@ -298,7 +295,7 @@ def get_subscription(stream_name: str, user_profile: UserProfile) -> Subscriptio
     )
 
 
-def get_user_messages(user_profile: UserProfile) -> List[Message]:
+def get_user_messages(user_profile: UserProfile) -> list[Message]:
     query = (
         UserMessage.objects.select_related("message")
         .filter(user_profile=user_profile)
@@ -334,7 +331,7 @@ class HostRequestMock(HttpRequest):
         remote_server: Optional[RemoteZulipServer] = None,
         host: str = settings.EXTERNAL_HOST,
         client_name: Optional[str] = None,
-        meta_data: Optional[Dict[str, Any]] = None,
+        meta_data: Optional[dict[str, Any]] = None,
         tornado_handler: Optional[AsyncDjangoHandler] = None,
         path: str = "",
     ) -> None:
@@ -377,12 +374,12 @@ class HostRequestMock(HttpRequest):
 
 
 INSTRUMENTING = os.environ.get("TEST_INSTRUMENT_URL_COVERAGE", "") == "TRUE"
-INSTRUMENTED_CALLS: List[Dict[str, Any]] = []
+INSTRUMENTED_CALLS: list[dict[str, Any]] = []
 
 UrlFuncT = TypeVar("UrlFuncT", bound=Callable[..., HttpResponseBase])  # TODO: make more specific
 
 
-def append_instrumentation_data(data: Dict[str, Any]) -> None:
+def append_instrumentation_data(data: dict[str, Any]) -> None:
     INSTRUMENTED_CALLS.append(data)
 
 
@@ -438,7 +435,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         from zproject.urls import urlpatterns, v1_api_and_json_patterns
 
         # Find our untested urls.
-        pattern_cnt: Dict[str, int] = collections.defaultdict(int)
+        pattern_cnt: dict[str, int] = collections.defaultdict(int)
 
         def re_strip(r: str) -> str:
             assert r.startswith(r"^")
@@ -448,7 +445,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                 assert r.endswith(r"\Z")
                 return r[1:-2]
 
-        def find_patterns(patterns: List[Any], prefixes: List[str]) -> None:
+        def find_patterns(patterns: list[Any], prefixes: list[str]) -> None:
             for pattern in patterns:
                 find_pattern(pattern, prefixes)
 
@@ -463,7 +460,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                 url = url[len("http://testserver:9080/") :]
             return url
 
-        def find_pattern(pattern: Any, prefixes: List[str]) -> None:
+        def find_pattern(pattern: Any, prefixes: list[str]) -> None:
             if isinstance(pattern, type(URLResolver)):
                 return  # nocoverage -- shouldn't actually happen
 
@@ -575,7 +572,7 @@ def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     return new_method
 
 
-def create_s3_buckets(*bucket_names: str) -> List[Bucket]:
+def create_s3_buckets(*bucket_names: str) -> list[Bucket]:
     session = boto3.session.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
     s3 = session.resource("s3")
     buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]
@@ -705,7 +702,7 @@ def create_dummy_file(filename: str) -> str:
     return filepath
 
 
-def zulip_reaction_info() -> Dict[str, str]:
+def zulip_reaction_info() -> dict[str, str]:
     return dict(
         emoji_name="zulip",
         emoji_code="zulip",
@@ -725,7 +722,7 @@ def mock_queue_publish(
     # crash in production.
     def verify_serialize(
         queue_name: str,
-        event: Dict[str, object],
+        event: dict[str, object],
         processor: Optional[Callable[[object], None]] = None,
     ) -> None:
         marshalled_event = orjson.loads(orjson.dumps(event))

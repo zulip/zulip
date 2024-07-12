@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Iterator, Optional
 
 from zerver.models import Realm, UserProfile
 
@@ -49,18 +49,18 @@ class ZulipUploadBackend:
     def delete_message_attachment(self, path_id: str) -> bool:
         raise NotImplementedError
 
-    def delete_message_attachments(self, path_ids: List[str]) -> None:
+    def delete_message_attachments(self, path_ids: list[str]) -> None:
         for path_id in path_ids:
             self.delete_message_attachment(path_id)
 
-    def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
+    def all_message_attachments(self) -> Iterator[tuple[str, datetime]]:
         raise NotImplementedError
 
     # Avatar image uploads
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         raise NotImplementedError
 
-    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
         raise NotImplementedError
 
     def get_avatar_path(self, hash_key: str, medium: bool = False) -> str:

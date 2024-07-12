@@ -1,4 +1,4 @@
-from typing import Any, Dict, Mapping, Union
+from typing import Any, Mapping, Union
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -75,7 +75,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def _get_queued_data_for_message_update(
         self, message_id: int, content: str, expect_short_circuit: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         This function updates a message with a post to
         /json/messages/(message_id).
@@ -149,7 +149,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         expect_short_circuit: bool = False,
         connected_to_zulip: bool = False,
         present_on_web: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         message_id = self._login_and_send_original_stream_message(
             content=original_content,
             enable_online_push_notifications=enable_online_push_notifications,

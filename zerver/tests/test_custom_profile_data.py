@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
+from typing import Any, Iterable, Optional, Union, cast
 from unittest import mock
 
 import orjson
@@ -37,7 +37,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_create(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        data: Dict[str, Any] = {"name": "Phone", "field_type": "text id"}
+        data: dict[str, Any] = {"name": "Phone", "field_type": "text id"}
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "field_type is not valid JSON")
 
@@ -100,7 +100,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
     def test_create_select_field(self) -> None:
         self.login("iago")
-        data: Dict[str, Union[str, int]] = {}
+        data: dict[str, Union[str, int]] = {}
         data["name"] = "Favorite programming language"
         data["field_type"] = CustomProfileField.SELECT
 
@@ -241,7 +241,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_create_external_account_field(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        data: Dict[str, Union[str, int, Dict[str, str]]] = {}
+        data: dict[str, Union[str, int, dict[str, str]]] = {}
         data["name"] = "Twitter username"
         data["field_type"] = CustomProfileField.EXTERNAL_ACCOUNT
 
@@ -410,7 +410,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_error(result, f"Field id {invalid_field_id} not found.")
 
         field = CustomProfileField.objects.get(name="Mentor", realm=realm)
-        data: List[ProfileDataElementUpdateDict] = [
+        data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": [self.example_user("aaron").id]},
         ]
         do_update_user_custom_profile_data_if_changed(iago, data)
@@ -440,7 +440,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         user_profile = self.example_user("iago")
         realm = user_profile.realm
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
-        data: List[ProfileDataElementUpdateDict] = [
+        data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": "123456"},
         ]
         do_update_user_custom_profile_data_if_changed(user_profile, data)
@@ -724,7 +724,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update_profile_data_successfully(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        fields: List[Tuple[str, Union[str, List[int]]]] = [
+        fields: list[tuple[str, Union[str, list[int]]]] = [
             ("Phone number", "*short* text data"),
             ("Biography", "~~short~~ **long** text data"),
             ("Favorite food", "long short text data"),
@@ -736,9 +736,9 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             ("Pronouns", "he/him"),
         ]
 
-        data: List[ProfileDataElementUpdateDict] = []
-        expected_value: Dict[int, ProfileDataElementValue] = {}
-        expected_rendered_value: Dict[int, Optional[str]] = {}
+        data: list[ProfileDataElementUpdateDict] = []
+        expected_value: dict[int, ProfileDataElementValue] = {}
+        expected_rendered_value: dict[int, Optional[str]] = {}
         for i, field_value in enumerate(fields):
             name, value = field_value
             field = CustomProfileField.objects.get(name=name, realm=realm)
@@ -849,7 +849,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         # Set field value:
         field = CustomProfileField.objects.get(name="Mentor", realm=realm)
-        data: List[ProfileDataElementUpdateDict] = [
+        data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": [self.example_user("aaron").id]},
         ]
         do_update_user_custom_profile_data_if_changed(iago, data)

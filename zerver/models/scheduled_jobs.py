@@ -1,7 +1,7 @@
 # https://github.com/typeddjango/django-stubs/issues/1698
 # mypy: disable-error-code="explicit-override"
 
-from typing import List, TypedDict, Union
+from typing import TypedDict, Union
 
 from django.conf import settings
 from django.db import models
@@ -133,7 +133,7 @@ class APIScheduledStreamMessageDict(TypedDict):
 
 class APIScheduledDirectMessageDict(TypedDict):
     scheduled_message_id: int
-    to: List[int]
+    to: list[int]
     type: str
     content: str
     rendered_content: str

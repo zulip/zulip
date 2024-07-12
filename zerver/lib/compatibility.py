@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -42,7 +42,7 @@ def is_outdated_server(user_profile: Optional[UserProfile]) -> bool:
     return False
 
 
-def pop_numerals(ver: str) -> Tuple[List[int], str]:
+def pop_numerals(ver: str) -> tuple[list[int], str]:
     match = re.search(r"^( \d+ (?: \. \d+ )* ) (.*)", ver, re.VERBOSE)
     if match is None:
         return [], ver
@@ -101,7 +101,7 @@ def find_mobile_os(user_agent: str) -> Optional[str]:
     return None
 
 
-def is_outdated_desktop_app(user_agent_str: str) -> Tuple[bool, bool, bool]:
+def is_outdated_desktop_app(user_agent_str: str) -> tuple[bool, bool, bool]:
     # Returns (insecure, banned, auto_update_broken)
     user_agent = parse_user_agent(user_agent_str)
     if user_agent["name"] == "ZulipDesktop":
@@ -129,7 +129,7 @@ def is_outdated_desktop_app(user_agent_str: str) -> Tuple[bool, bool, bool]:
     return (False, False, False)
 
 
-def is_unsupported_browser(user_agent: str) -> Tuple[bool, Optional[str]]:
+def is_unsupported_browser(user_agent: str) -> tuple[bool, Optional[str]]:
     browser_name = get_device_browser(user_agent)
     if browser_name == "Internet Explorer":
         return (True, browser_name)

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, TypedDict
+from typing import TYPE_CHECKING, Optional, TypedDict
 
 from django_stubs_ext import ValuesQuerySet
 
@@ -37,7 +37,7 @@ def get_display_recipient_cache_key(
 @cache_with_key(get_display_recipient_cache_key, timeout=3600 * 24 * 7)
 def get_display_recipient_remote_cache(
     recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
-) -> List[UserDisplayRecipient]:
+) -> list[UserDisplayRecipient]:
     """
     This returns an appropriate object describing the recipient of a
     direct message (whether individual or group).
@@ -68,7 +68,7 @@ def user_dict_id_fetcher(user_dict: UserDisplayRecipient) -> int:
     return user_dict["id"]
 
 
-def bulk_fetch_single_user_display_recipients(uids: List[int]) -> Dict[int, UserDisplayRecipient]:
+def bulk_fetch_single_user_display_recipients(uids: list[int]) -> dict[int, UserDisplayRecipient]:
     from zerver.models import UserProfile
 
     return bulk_cached_fetch(
@@ -85,8 +85,8 @@ def bulk_fetch_single_user_display_recipients(uids: List[int]) -> Dict[int, User
 
 
 def bulk_fetch_stream_names(
-    recipient_tuples: Set[Tuple[int, int, int]],
-) -> Dict[int, str]:
+    recipient_tuples: set[tuple[int, int, int]],
+) -> dict[int, str]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
     Returns dict mapping recipient_id to corresponding display_recipient
@@ -101,7 +101,7 @@ def bulk_fetch_stream_names(
     recipient_ids = [tup[0] for tup in recipient_tuples]
 
     def get_tiny_stream_rows(
-        recipient_ids: List[int],
+        recipient_ids: list[int],
     ) -> ValuesQuerySet[Stream, TinyStreamResult]:
         stream_ids = [recipient_id_to_stream_id[recipient_id] for recipient_id in recipient_ids]
         return Stream.objects.filter(id__in=stream_ids).values("recipient_id", "name")
@@ -113,7 +113,7 @@ def bulk_fetch_stream_names(
         return row["name"]
 
     # ItemT = TinyStreamResult, CacheItemT = str (name), ObjKT = int (recipient_id)
-    stream_display_recipients: Dict[int, str] = generic_bulk_cached_fetch(
+    stream_display_recipients: dict[int, str] = generic_bulk_cached_fetch(
         cache_key_function=display_recipient_cache_key,
         query_function=get_tiny_stream_rows,
         object_ids=recipient_ids,
@@ -127,8 +127,8 @@ def bulk_fetch_stream_names(
 
 
 def bulk_fetch_user_display_recipients(
-    recipient_tuples: Set[Tuple[int, int, int]],
-) -> Dict[int, List[UserDisplayRecipient]]:
+    recipient_tuples: set[tuple[int, int, int]],
+) -> dict[int, list[UserDisplayRecipient]]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
     Returns dict mapping recipient_id to corresponding display_recipient
@@ -156,7 +156,7 @@ def bulk_fetch_user_display_recipients(
     )
 
     # Find all user ids whose UserProfiles we will need to fetch:
-    user_ids_to_fetch: Set[int] = set()
+    user_ids_to_fetch: set[int] = set()
 
     for ignore_recipient_id, ignore_recipient_type, user_id in personal_tuples:
         user_ids_to_fetch.add(user_id)
@@ -183,8 +183,8 @@ def bulk_fetch_user_display_recipients(
 
 
 def bulk_fetch_display_recipients(
-    recipient_tuples: Set[Tuple[int, int, int]],
-) -> Dict[int, DisplayRecipientT]:
+    recipient_tuples: set[tuple[int, int, int]],
+) -> dict[int, DisplayRecipientT]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
     Returns dict mapping recipient_id to corresponding display_recipient
@@ -209,7 +209,7 @@ def bulk_fetch_display_recipients(
 @return_same_value_during_entire_request
 def get_display_recipient_by_id(
     recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
-) -> List[UserDisplayRecipient]:
+) -> list[UserDisplayRecipient]:
     """
     returns: an object describing the recipient (using a cache).
     If the type is a stream, the type_id must be an int; a string is returned.
@@ -221,7 +221,7 @@ def get_display_recipient_by_id(
     return get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id)
 
 
-def get_display_recipient(recipient: "Recipient") -> List[UserDisplayRecipient]:
+def get_display_recipient(recipient: "Recipient") -> list[UserDisplayRecipient]:
     return get_display_recipient_by_id(
         recipient.id,
         recipient.type,
@@ -231,7 +231,7 @@ def get_display_recipient(recipient: "Recipient") -> List[UserDisplayRecipient]:
 
 def get_recipient_ids(
     recipient: Optional["Recipient"], user_profile_id: int
-) -> Tuple[List[int], str]:
+) -> tuple[list[int], str]:
     from zerver.models import Recipient
 
     if recipient is None:

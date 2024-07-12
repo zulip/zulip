@@ -4,7 +4,7 @@ __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import secrets
 from base64 import b32encode
 from datetime import timedelta
-from typing import List, Mapping, Optional, Union, cast
+from typing import Mapping, Optional, Union, cast
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -80,7 +80,7 @@ ConfirmationObjT: TypeAlias = Union[NoZilencerConfirmationObjT, ZilencerConfirma
 
 
 def get_object_from_key(
-    confirmation_key: str, confirmation_types: List[int], *, mark_object_used: bool
+    confirmation_key: str, confirmation_types: list[int], *, mark_object_used: bool
 ) -> ConfirmationObjT:
     """Access a confirmation object from one of the provided confirmation
     types with the provided key.

@@ -1,7 +1,7 @@
 import calendar
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -50,8 +50,8 @@ def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[floa
     return calendar.timegm(user_activity.last_visit.utctimetuple())
 
 
-def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
-    bot_types: List[Dict[str, object]] = []
+def get_bot_types(user_profile: Optional[UserProfile]) -> list[dict[str, object]]:
+    bot_types: list[dict[str, object]] = []
     if user_profile is None:
         return bot_types
 
@@ -138,11 +138,11 @@ def build_page_params_for_home_page_load(
     user_profile: Optional[UserProfile],
     realm: Realm,
     insecure_desktop_app: bool,
-    narrow: List[NarrowTerm],
+    narrow: list[NarrowTerm],
     narrow_stream: Optional[Stream],
     narrow_topic_name: Optional[str],
     needs_tutorial: bool,
-) -> Tuple[int, Dict[str, object]]:
+) -> tuple[int, dict[str, object]]:
     """
     This function computes page_params for when we load the home page.
 
@@ -200,7 +200,7 @@ def build_page_params_for_home_page_load(
     # These end up in a JavaScript Object named 'page_params'.
     #
     # Sync this with home_params_schema in base_page_params.ts.
-    page_params: Dict[str, object] = dict(
+    page_params: dict[str, object] = dict(
         page_type="home",
         ## Server settings.
         test_suite=settings.TEST_SUITE,

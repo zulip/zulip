@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
@@ -22,7 +22,7 @@ def notify_invites_changed(
 
 def get_valid_invite_confirmations_generated_by_user(
     user_profile: UserProfile,
-) -> List[Confirmation]:
+) -> list[Confirmation]:
     prereg_user_ids = filter_to_valid_prereg_users(
         PreregistrationUser.objects.filter(referred_by=user_profile)
     ).values_list("id", flat=True)

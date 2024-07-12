@@ -2,7 +2,7 @@ import base64
 import binascii
 import os
 from datetime import timedelta
-from typing import List, Optional, Union
+from typing import Optional, Union
 from urllib.parse import quote, urlsplit
 
 from django.conf import settings
@@ -171,7 +171,7 @@ def serve_file_url_backend(
     return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
 
 
-def preferred_accept(request: HttpRequest, served_types: List[str]) -> Optional[str]:
+def preferred_accept(request: HttpRequest, served_types: list[str]) -> Optional[str]:
     # Returns the first of the served_types which the browser will
     # accept, based on the browser's stated quality preferences.
     # Returns None if none of the served_types are accepted by the

@@ -1,5 +1,4 @@
 import hashlib
-from typing import Dict
 
 from django.conf import settings
 from django.db import models
@@ -50,7 +49,7 @@ class Client(models.Model):
         )
 
 
-get_client_cache: Dict[str, Client] = {}
+get_client_cache: dict[str, Client] = {}
 
 
 def clear_client_cache() -> None:  # nocoverage

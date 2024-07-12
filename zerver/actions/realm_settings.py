@@ -1,6 +1,6 @@
 import logging
 from email.headerregistry import Address
-from typing import Any, Dict, Literal, Optional, Tuple, Union
+from typing import Any, Literal, Optional, Union
 
 import zoneinfo
 from django.conf import settings
@@ -220,7 +220,7 @@ def do_change_realm_permission_group_setting(
 
 def parse_and_set_setting_value_if_required(
     realm: Realm, setting_name: str, value: Union[int, str], *, acting_user: Optional[UserProfile]
-) -> Tuple[Optional[int], bool]:
+) -> tuple[Optional[int], bool]:
     parsed_value = parse_message_time_limit_setting(
         value,
         Realm.MESSAGE_TIME_LIMIT_SETTING_SPECIAL_VALUES_MAP,
@@ -245,8 +245,8 @@ def parse_and_set_setting_value_if_required(
 
 
 def get_realm_authentication_methods_for_page_params_api(
-    realm: Realm, authentication_methods: Dict[str, bool]
-) -> Dict[str, Any]:
+    realm: Realm, authentication_methods: dict[str, bool]
+) -> dict[str, Any]:
     # To avoid additional queries, this expects passing in the authentication_methods
     # dictionary directly, which is useful when the caller already has to fetch it
     # for other purposes - and that's the circumstance in which this function is
@@ -254,7 +254,7 @@ def get_realm_authentication_methods_for_page_params_api(
 
     from zproject.backends import AUTH_BACKEND_NAME_MAP
 
-    result_dict: Dict[str, Dict[str, Union[str, bool]]] = {
+    result_dict: dict[str, dict[str, Union[str, bool]]] = {
         backend_name: {"enabled": enabled, "available": True}
         for backend_name, enabled in authentication_methods.items()
     }
@@ -296,7 +296,7 @@ def get_realm_authentication_methods_for_page_params_api(
 
 
 def validate_authentication_methods_dict_from_api(
-    realm: Realm, authentication_methods: Dict[str, bool]
+    realm: Realm, authentication_methods: dict[str, bool]
 ) -> None:
     current_authentication_methods = realm.authentication_methods_dict()
     for name in authentication_methods:
@@ -312,7 +312,7 @@ def validate_authentication_methods_dict_from_api(
 
 
 def validate_plan_for_authentication_methods(
-    realm: Realm, authentication_methods: Dict[str, bool]
+    realm: Realm, authentication_methods: dict[str, bool]
 ) -> None:
     from zproject.backends import AUTH_BACKEND_NAME_MAP
 
@@ -335,7 +335,7 @@ def validate_plan_for_authentication_methods(
 
 
 def do_set_realm_authentication_methods(
-    realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
+    realm: Realm, authentication_methods: dict[str, bool], *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.authentication_methods_dict()
     with transaction.atomic():
@@ -813,7 +813,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
 
 
 def do_send_realm_deactivation_email(realm: Realm, acting_user: Optional[UserProfile]) -> None:
-    shared_context: Dict[str, Any] = {
+    shared_context: dict[str, Any] = {
         "realm_name": realm.name,
     }
     deactivation_time = timezone_now()

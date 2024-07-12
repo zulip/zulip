@@ -1,4 +1,4 @@
-from typing import Dict, Optional, TypedDict
+from typing import Optional, TypedDict
 
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
@@ -49,7 +49,7 @@ def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
     return dct
 
 
-def get_all_users_status_dict(realm: Realm, user_profile: UserProfile) -> Dict[str, UserInfoDict]:
+def get_all_users_status_dict(realm: Realm, user_profile: UserProfile) -> dict[str, UserInfoDict]:
     query = UserStatus.objects.filter(
         user_profile__realm_id=realm.id,
         user_profile__is_active=True,
@@ -74,7 +74,7 @@ def get_all_users_status_dict(realm: Realm, user_profile: UserProfile) -> Dict[s
         "reaction_type",
     )
 
-    user_dict: Dict[str, UserInfoDict] = {}
+    user_dict: dict[str, UserInfoDict] = {}
     for row in rows:
         user_id = row["user_profile_id"]
         user_dict[str(user_id)] = format_user_status(row)

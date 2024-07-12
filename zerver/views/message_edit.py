@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List, Literal, Optional, Union
+from typing import Literal, Optional, Union
 
 import orjson
 from django.contrib.auth.models import AnonymousUser
@@ -29,8 +29,8 @@ from zerver.models import Message, UserProfile
 
 
 def fill_edit_history_entries(
-    raw_edit_history: List[EditHistoryEvent], message: Message
-) -> List[FormattedEditHistoryEvent]:
+    raw_edit_history: list[EditHistoryEvent], message: Message
+) -> list[FormattedEditHistoryEvent]:
     """
     This fills out the message edit history entries from the database
     to have the current topic + content as of that time, plus data on
@@ -47,7 +47,7 @@ def fill_edit_history_entries(
         assert message.last_edit_time is not None
         assert datetime_to_timestamp(message.last_edit_time) == raw_edit_history[0]["timestamp"]
 
-    formatted_edit_history: List[FormattedEditHistoryEvent] = []
+    formatted_edit_history: list[FormattedEditHistoryEvent] = []
     for edit_history_event in raw_edit_history:
         formatted_entry: FormattedEditHistoryEvent = {
             "content": prev_content,

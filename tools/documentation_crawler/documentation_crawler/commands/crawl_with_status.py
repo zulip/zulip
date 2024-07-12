@@ -1,12 +1,12 @@
 import optparse
-from typing import List, Union
+from typing import Union
 
 from scrapy.commands import crawl
 from scrapy.crawler import Crawler
 
 
 class Command(crawl.Command):
-    def run(self, args: List[str], opts: optparse.Values) -> None:
+    def run(self, args: list[str], opts: optparse.Values) -> None:
         crawlers = []
         real_create_crawler = self.crawler_process.create_crawler
 

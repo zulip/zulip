@@ -1,4 +1,4 @@
-from typing import Mapping, Optional, Tuple
+from typing import Mapping, Optional
 
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
@@ -75,7 +75,7 @@ def prettify_date(date_string: str) -> str:
     return date_string.replace("T", " ").replace(".000", "").replace("Z", " UTC")
 
 
-def process_card_action(payload: WildValue, action_type: str) -> Optional[Tuple[str, str]]:
+def process_card_action(payload: WildValue, action_type: str) -> Optional[tuple[str, str]]:
     proper_action = get_proper_action(payload, action_type)
     if proper_action is not None:
         return get_topic(payload), get_body(payload, proper_action)

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 from unittest import mock
 
 from zerver.actions.submessage import do_add_submessage
@@ -18,7 +18,7 @@ class TestBasics(ZulipTestCase):
             stream_name=stream_name,
         )
 
-        def get_raw_rows() -> List[Dict[str, Any]]:
+        def get_raw_rows() -> list[dict[str, Any]]:
             query = SubMessage.get_raw_db_rows([message_id])
             rows = list(query)
             return rows

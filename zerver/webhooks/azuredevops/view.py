@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -158,7 +158,7 @@ def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]
     raise UnsupportedWebhookEventTypeError(event_name)
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], str]] = {
+EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {
     "git.push": get_code_push_commits_body,
     "git.pullrequest.created": get_code_pull_request_opened_body,
     "git.pullrequest.merged": get_code_pull_request_merged_body,

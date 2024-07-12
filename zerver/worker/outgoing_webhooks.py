@@ -1,6 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from typing_extensions import override
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 @assign_queue("outgoing_webhooks")
 class OutgoingWebhookWorker(QueueProcessingWorker):
     @override
-    def consume(self, event: Dict[str, Any]) -> None:
+    def consume(self, event: dict[str, Any]) -> None:
         message = event["message"]
         event["command"] = message["content"]
 

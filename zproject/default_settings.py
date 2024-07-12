@@ -1,6 +1,6 @@
 import os
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union
 
 from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 
@@ -28,7 +28,7 @@ STATIC_URL: Optional[str] = None
 # install of the Zulip server.
 
 # Extra HTTP "Host" values to allow (standard ones added in computed_settings.py)
-ALLOWED_HOSTS: List[str] = []
+ALLOWED_HOSTS: list[str] = []
 
 # Basic email settings
 NOREPLY_EMAIL_ADDRESS = Address(username="noreply", domain=EXTERNAL_HOST_WITHOUT_PORT).addr_spec
@@ -54,13 +54,13 @@ AUTH_LDAP_REVERSE_EMAIL_SEARCH: Optional["LDAPSearch"] = None
 AUTH_LDAP_USERNAME_ATTR: Optional[str] = None
 # AUTH_LDAP_USER_ATTR_MAP is uncommented in prod_settings_template.py,
 # so the value here mainly serves to help document the default.
-AUTH_LDAP_USER_ATTR_MAP: Dict[str, str] = {
+AUTH_LDAP_USER_ATTR_MAP: dict[str, str] = {
     "full_name": "cn",
 }
 # Automatically deactivate users not found by the AUTH_LDAP_USER_SEARCH query.
 LDAP_DEACTIVATE_NON_MATCHING_USERS: Optional[bool] = None
 # AUTH_LDAP_CONNECTION_OPTIONS: we set ldap.OPT_REFERRALS in settings.py if unset.
-AUTH_LDAP_CONNECTION_OPTIONS: Dict[int, object] = {}
+AUTH_LDAP_CONNECTION_OPTIONS: dict[int, object] = {}
 # Disable django-auth-ldap caching, to prevent problems with OU changes.
 AUTH_LDAP_CACHE_TIMEOUT = 0
 # Disable syncing user on each login; Using sync_ldap_user_data cron is recommended.
@@ -70,8 +70,8 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 # Detailed docs in zproject/dev_settings.py.
 FAKE_LDAP_MODE: Optional[str] = None
 FAKE_LDAP_NUM_USERS = 8
-AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL: Optional[Dict[str, Any]] = None
-LDAP_SYNCHRONIZED_GROUPS_BY_REALM: Dict[str, List[str]] = {}
+AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL: Optional[dict[str, Any]] = None
+LDAP_SYNCHRONIZED_GROUPS_BY_REALM: dict[str, list[str]] = {}
 AUTH_LDAP_GROUP_TYPE: LDAPGroupType = GroupOfUniqueNamesType()
 
 # Social auth; we support providing values for some of these
@@ -87,11 +87,11 @@ SOCIAL_AUTH_GOOGLE_KEY = get_secret("social_auth_google_key", development_only=T
 SOCIAL_AUTH_SAML_SP_ENTITY_ID: Optional[str] = None
 SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
 SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
-SOCIAL_AUTH_SAML_ORG_INFO: Optional[Dict[str, Dict[str, str]]] = None
-SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: Optional[Dict[str, str]] = None
-SOCIAL_AUTH_SAML_SUPPORT_CONTACT: Optional[Dict[str, str]] = None
-SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {}
-SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {}
+SOCIAL_AUTH_SAML_ORG_INFO: Optional[dict[str, dict[str, str]]] = None
+SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: Optional[dict[str, str]] = None
+SOCIAL_AUTH_SAML_SUPPORT_CONTACT: Optional[dict[str, str]] = None
+SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, SAMLIdPConfigDict] = {}
+SOCIAL_AUTH_SAML_SECURITY_CONFIG: dict[str, Any] = {}
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
 SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
@@ -108,10 +108,10 @@ SOCIAL_AUTH_APPLE_SCOPE = ["name", "email"]
 SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 
 # Generic OpenID Connect:
-SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, OIDCIdPConfigDict] = {}
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {}
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
 
-SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: Dict[str, Dict[str, Dict[str, str]]] = {}
+SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
 
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
@@ -136,7 +136,7 @@ LOGGING_SHOW_PID = False
 
 # Sentry.io error defaults to off
 SENTRY_DSN: Optional[str] = get_config("sentry", "project_dsn", None)
-SENTRY_TRACE_WORKER_RATE: Union[float, Dict[str, float]] = 0.0
+SENTRY_TRACE_WORKER_RATE: Union[float, dict[str, float]] = 0.0
 SENTRY_TRACE_RATE: float = 0.0
 SENTRY_PROFILE_RATE: float = 0.1
 SENTRY_FRONTEND_DSN: Optional[str] = get_config("sentry", "frontend_project_dsn", None)
@@ -202,7 +202,7 @@ REMOTE_POSTGRES_PORT = ""
 REMOTE_POSTGRES_SSLMODE = ""
 THUMBNAIL_IMAGES = False
 
-TORNADO_PORTS: List[int] = []
+TORNADO_PORTS: list[int] = []
 USING_TORNADO = True
 
 # ToS/Privacy templates
@@ -307,7 +307,7 @@ DEFAULT_RATE_LIMITING_RULES = {
 # Rate limiting defaults can be individually overridden by adding
 # entries in this object, which is merged with
 # DEFAULT_RATE_LIMITING_RULES.
-RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {}
+RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {}
 
 # Two factor authentication is not yet implementation-complete
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
@@ -384,13 +384,13 @@ DEMO_ORG_DEADLINE_DAYS = 30
 # their usual subdomains.  Keys are realm string_ids (aka subdomains),
 # and values are alternate hosts.
 # The values will also be added to ALLOWED_HOSTS.
-REALM_HOSTS: Dict[str, str] = {}
+REALM_HOSTS: dict[str, str] = {}
 
 # Map used to rewrite the URIs for certain realms during mobile
 # authentication.  This, combined with adding the relevant hosts to
 # ALLOWED_HOSTS, can be used for environments where security policies
 # mean that a different hostname must be used for mobile access.
-REALM_MOBILE_REMAP_URIS: Dict[str, str] = {}
+REALM_MOBILE_REMAP_URIS: dict[str, str] = {}
 
 # Whether the server is using the PGroonga full-text search
 # backend.  Plan is to turn this on for everyone after further
@@ -485,7 +485,7 @@ FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE: Optional[str] = None
 TERMS_OF_SERVICE_MESSAGE: Optional[str] = None
 
 # Configuration for JWT auth (sign in and API key fetch)
-JWT_AUTH_KEYS: Dict[str, JwtAuthKey] = {}
+JWT_AUTH_KEYS: dict[str, JwtAuthKey] = {}
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
@@ -494,7 +494,7 @@ SERVER_EMAIL = ZULIP_ADMINISTRATOR
 ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
 
 # From address for welcome emails.
-WELCOME_EMAIL_SENDER: Optional[Dict[str, str]] = None
+WELCOME_EMAIL_SENDER: Optional[dict[str, str]] = None
 
 # Whether to send periodic digests of activity.
 SEND_DIGEST_EMAILS = True

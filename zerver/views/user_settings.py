@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
@@ -331,7 +331,7 @@ def json_change_settings(
         )
 
     if new_password is not None:
-        return_data: Dict[str, Any] = {}
+        return_data: dict[str, Any] = {}
         if email_belongs_to_ldap(user_profile.realm, user_profile.delivery_email):
             raise JsonableError(_("Your Zulip password is managed in LDAP"))
 
@@ -372,7 +372,7 @@ def json_change_settings(
         # by Django,
         request.session.save()
 
-    result: Dict[str, Any] = {}
+    result: dict[str, Any] = {}
 
     if email is not None:
         new_email = email.strip()

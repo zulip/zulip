@@ -1,7 +1,7 @@
 import fnmatch
 import importlib
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 from urllib.parse import unquote
 
 from django.http import HttpRequest
@@ -89,8 +89,8 @@ def check_send_webhook_message(
     *,
     stream: Optional[str] = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
-    only_events: Optional[Json[List[str]]] = None,
-    exclude_events: Optional[Json[List[str]]] = None,
+    only_events: Optional[Json[list[str]]] = None,
+    exclude_events: Optional[Json[list[str]]] = None,
     unquote_url_parameters: bool = False,
 ) -> None:
     if complete_event_type is not None and (
@@ -146,7 +146,7 @@ def check_send_webhook_message(
             pass
 
 
-def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str, str]:
+def standardize_headers(input_headers: Union[None, dict[str, Any]]) -> dict[str, str]:
     """This method can be used to standardize a dictionary of headers with
     the standard format that Django expects. For reference, refer to:
     https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpRequest.headers
@@ -194,7 +194,7 @@ def validate_extract_webhook_http_header(
     return extracted_header
 
 
-def get_fixture_http_headers(integration_name: str, fixture_name: str) -> Dict["str", "str"]:
+def get_fixture_http_headers(integration_name: str, fixture_name: str) -> dict["str", "str"]:
     """For integrations that require custom HTTP headers for some (or all)
     of their test fixtures, this method will call a specially named
     function from the target integration module to determine what set
@@ -211,13 +211,13 @@ def get_fixture_http_headers(integration_name: str, fixture_name: str) -> Dict["
     return fixture_to_headers(fixture_name)
 
 
-def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict[str, str]]:
+def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], dict[str, str]]:
     """If an integration requires an event type kind of HTTP header which can
     be easily (statically) determined, then name the fixtures in the format
     of "header_value__other_details" or even "header_value" and the use this
     method in the headers.py file for the integration."""
 
-    def fixture_to_headers(filename: str) -> Dict[str, str]:
+    def fixture_to_headers(filename: str) -> dict[str, str]:
         if "__" in filename:
             event_type = filename.split("__")[0]
         else:

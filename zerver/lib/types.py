@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Optional, TypeVar, Union
 
 from django_stubs_ext import StrPromise
 from typing_extensions import NotRequired, TypeAlias, TypedDict
@@ -10,10 +10,10 @@ from typing_extensions import NotRequired, TypeAlias, TypedDict
 ResultT = TypeVar("ResultT")
 Validator: TypeAlias = Callable[[str, object], ResultT]
 ExtendedValidator: TypeAlias = Callable[[str, str, object], str]
-RealmUserValidator: TypeAlias = Callable[[int, object, bool], List[int]]
+RealmUserValidator: TypeAlias = Callable[[int, object, bool], list[int]]
 
 
-ProfileDataElementValue: TypeAlias = Union[str, List[int]]
+ProfileDataElementValue: TypeAlias = Union[str, list[int]]
 
 
 class ProfileDataElementBase(TypedDict, total=False):
@@ -37,17 +37,17 @@ class ProfileDataElementUpdateDict(TypedDict):
     value: ProfileDataElementValue
 
 
-ProfileData: TypeAlias = List[ProfileDataElement]
+ProfileData: TypeAlias = list[ProfileDataElement]
 
-FieldElement: TypeAlias = Tuple[
+FieldElement: TypeAlias = tuple[
     int, StrPromise, Validator[ProfileDataElementValue], Callable[[Any], Any], str
 ]
-ExtendedFieldElement: TypeAlias = Tuple[
+ExtendedFieldElement: TypeAlias = tuple[
     int, StrPromise, ExtendedValidator, Callable[[Any], Any], str
 ]
-UserFieldElement: TypeAlias = Tuple[int, StrPromise, RealmUserValidator, Callable[[Any], Any], str]
+UserFieldElement: TypeAlias = tuple[int, StrPromise, RealmUserValidator, Callable[[Any], Any], str]
 
-ProfileFieldData: TypeAlias = Dict[str, Union[Dict[str, str], str]]
+ProfileFieldData: TypeAlias = dict[str, Union[dict[str, str], str]]
 
 
 class UserDisplayRecipient(TypedDict):
@@ -57,7 +57,7 @@ class UserDisplayRecipient(TypedDict):
     is_mirror_dummy: bool
 
 
-DisplayRecipientT: TypeAlias = Union[str, List[UserDisplayRecipient]]
+DisplayRecipientT: TypeAlias = Union[str, list[UserDisplayRecipient]]
 
 
 class LinkifierDict(TypedDict):
@@ -200,7 +200,7 @@ class SubscriptionStreamDict(TypedDict):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: Optional[int]
-    subscribers: NotRequired[List[int]]
+    subscribers: NotRequired[list[int]]
     wildcard_mentions_notify: Optional[bool]
 
 
@@ -220,7 +220,7 @@ class NeverSubscribedStreamDict(TypedDict):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: Optional[int]
-    subscribers: NotRequired[List[int]]
+    subscribers: NotRequired[list[int]]
 
 
 class DefaultStreamDict(TypedDict):
@@ -266,14 +266,14 @@ class APISubscriptionDict(APIStreamDict):
     wildcard_mentions_notify: Optional[bool]
     # Computed fields not specified in `Subscription.API_FIELDS`
     in_home_view: bool
-    subscribers: List[int]
+    subscribers: list[int]
 
 
 @dataclass
 class SubscriptionInfo:
-    subscriptions: List[SubscriptionStreamDict]
-    unsubscribed: List[SubscriptionStreamDict]
-    never_subscribed: List[NeverSubscribedStreamDict]
+    subscriptions: list[SubscriptionStreamDict]
+    unsubscribed: list[SubscriptionStreamDict]
+    never_subscribed: list[NeverSubscribedStreamDict]
 
 
 class RealmPlaygroundDict(TypedDict):
@@ -293,14 +293,14 @@ class GroupPermissionSetting:
     default_group_name: str
     id_field_name: str
     default_for_system_groups: Optional[str] = None
-    allowed_system_groups: List[str] = field(default_factory=list)
+    allowed_system_groups: list[str] = field(default_factory=list)
 
 
 @dataclass
 class ServerSupportedPermissionSettings:
-    realm: Dict[str, GroupPermissionSetting]
-    stream: Dict[str, GroupPermissionSetting]
-    group: Dict[str, GroupPermissionSetting]
+    realm: dict[str, GroupPermissionSetting]
+    stream: dict[str, GroupPermissionSetting]
+    group: dict[str, GroupPermissionSetting]
 
 
 class RawUserDict(TypedDict):

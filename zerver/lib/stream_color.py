@@ -1,5 +1,3 @@
-from typing import Dict, List, Set
-
 STREAM_ASSIGNMENT_COLORS = [
     "#76ce90",
     "#fae589",
@@ -29,8 +27,8 @@ STREAM_ASSIGNMENT_COLORS = [
 
 
 def pick_colors(
-    used_colors: Set[str], color_map: Dict[int, str], recipient_ids: List[int]
-) -> Dict[int, str]:
+    used_colors: set[str], color_map: dict[int, str], recipient_ids: list[int]
+) -> dict[int, str]:
     used_colors = set(used_colors)
     recipient_ids = sorted(recipient_ids)
     result = {}

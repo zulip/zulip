@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from django.db.models import Count
 
@@ -9,7 +9,7 @@ def realm_user_count(realm: Realm) -> int:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
 
 
-def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
+def realm_user_count_by_role(realm: Realm) -> dict[str, Any]:
     human_counts = {
         str(UserProfile.ROLE_REALM_ADMINISTRATOR): 0,
         str(UserProfile.ROLE_REALM_OWNER): 0,

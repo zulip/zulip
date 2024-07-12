@@ -29,7 +29,7 @@
 import logging
 import time
 from datetime import timedelta
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Iterable, Mapping, Optional, Union
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -66,7 +66,7 @@ TRANSACTION_DELETION_BATCH_SIZE = 100
 # hang off the Message table (with a foreign key to Message being part
 # of its primary lookup key).  This structure allows us to share the
 # code for managing these related tables.
-models_with_message_key: List[Dict[str, Any]] = [
+models_with_message_key: list[dict[str, Any]] = [
     {
         "class": Reaction,
         "archive_class": ArchivedReaction,
@@ -92,13 +92,13 @@ EXCLUDE_FIELDS = {Message._meta.get_field("search_tsvector")}
 
 @transaction.atomic(savepoint=False)
 def move_rows(
-    base_model: Type[Model],
+    base_model: type[Model],
     raw_query: SQL,
     *,
     src_db_table: Optional[str] = None,
     returning_id: bool = False,
     **kwargs: Composable,
-) -> List[int]:
+) -> list[int]:
     """Core helper for bulk moving rows between a table and its archive table"""
     if src_db_table is None:
         # Use base_model's db_table unless otherwise specified.
@@ -256,7 +256,7 @@ def move_expired_direct_messages_to_archive(
     return message_count
 
 
-def move_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
+def move_models_with_message_key_to_archive(msg_ids: list[int]) -> None:
     assert len(msg_ids) > 0
 
     for model in models_with_message_key:
@@ -282,7 +282,7 @@ def move_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
 # because they can be referenced by more than one Message, and we only
 # want to delete the Attachment if we're deleting the last message
 # referencing them.
-def move_attachments_to_archive(msg_ids: List[int]) -> None:
+def move_attachments_to_archive(msg_ids: list[int]) -> None:
     assert len(msg_ids) > 0
 
     query = SQL(
@@ -300,7 +300,7 @@ def move_attachments_to_archive(msg_ids: List[int]) -> None:
     move_rows(Attachment, query, message_ids=Literal(tuple(msg_ids)))
 
 
-def move_attachment_messages_to_archive(msg_ids: List[int]) -> None:
+def move_attachment_messages_to_archive(msg_ids: list[int]) -> None:
     assert len(msg_ids) > 0
 
     query = SQL(
@@ -317,7 +317,7 @@ def move_attachment_messages_to_archive(msg_ids: List[int]) -> None:
         cursor.execute(query, dict(message_ids=tuple(msg_ids)))
 
 
-def delete_messages(msg_ids: List[int]) -> None:
+def delete_messages(msg_ids: list[int]) -> None:
     # Important note: This also deletes related objects with a foreign
     # key to Message (due to `on_delete=CASCADE` in our models
     # configuration), so we need to be sure we've taken care of
@@ -339,7 +339,7 @@ def delete_expired_attachments(realm: Realm) -> None:
         logger.info("Cleaned up %s attachments for realm %s", num_deleted, realm.string_id)
 
 
-def move_related_objects_to_archive(msg_ids: List[int]) -> None:
+def move_related_objects_to_archive(msg_ids: list[int]) -> None:
     move_models_with_message_key_to_archive(msg_ids)
     move_attachments_to_archive(msg_ids)
     move_attachment_messages_to_archive(msg_ids)
@@ -363,13 +363,13 @@ def archive_direct_messages(realm: Realm, chunk_size: int = MESSAGE_BATCH_SIZE) 
 
 
 def archive_stream_messages(
-    realm: Realm, streams: List[Stream], chunk_size: int = STREAM_MESSAGE_BATCH_SIZE
+    realm: Realm, streams: list[Stream], chunk_size: int = STREAM_MESSAGE_BATCH_SIZE
 ) -> None:
     if not streams:
         return  # nocoverage # TODO
 
     logger.info("Archiving stream messages for realm %s", realm.string_id)
-    retention_policy_dict: Dict[int, int] = {}
+    retention_policy_dict: dict[int, int] = {}
     for stream in streams:
         #  if stream.message_retention_days is null, use the realm's policy
         if stream.message_retention_days:
@@ -404,7 +404,7 @@ def archive_messages(chunk_size: int = MESSAGE_BATCH_SIZE) -> None:
         delete_expired_attachments(realm)
 
 
-def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
+def get_realms_and_streams_for_archiving() -> list[tuple[Realm, list[Stream]]]:
     """
     This function constructs a list of (realm, streams_of_the_realm) tuples
     where each realm is a Realm that requires calling the archiving functions on it,
@@ -415,7 +415,7 @@ def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
     """
 
     realm_id_to_realm = {}
-    realm_id_to_streams_list: Dict[int, List[Stream]] = {}
+    realm_id_to_streams_list: dict[int, list[Stream]] = {}
 
     # All realms with a retention policy set qualify for archiving:
     for realm in Realm.objects.exclude(message_retention_days=-1):
@@ -455,7 +455,7 @@ def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
 
 
 def move_messages_to_archive(
-    message_ids: List[int], realm: Optional[Realm] = None, chunk_size: int = MESSAGE_BATCH_SIZE
+    message_ids: list[int], realm: Optional[Realm] = None, chunk_size: int = MESSAGE_BATCH_SIZE
 ) -> None:
     # Uses index: zerver_message_pkey
     query = SQL(
@@ -488,7 +488,7 @@ def move_messages_to_archive(
     ).delete()
 
 
-def restore_messages_from_archive(archive_transaction_id: int) -> List[int]:
+def restore_messages_from_archive(archive_transaction_id: int) -> list[int]:
     query = SQL(
         """
         INSERT INTO zerver_message ({dst_fields})

@@ -2,7 +2,7 @@ import contextlib
 import hashlib
 import logging
 import os
-from typing import Any, Iterator, Optional, Tuple
+from typing import Any, Iterator, Optional
 
 import boto3
 import botocore
@@ -56,7 +56,7 @@ def libvips_check_image(image_data: bytes) -> Iterator[pyvips.Image]:
 # From zerver.lib.thumbnail, with minor exception changes
 def resize_emoji(
     image_data: bytes, emoji_file_name: str, size: int = DEFAULT_EMOJI_SIZE
-) -> Tuple[bytes, Optional[bytes]]:
+) -> tuple[bytes, Optional[bytes]]:
     if len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:
         raise SkipImageError(f"Image has too many bytes: {len(image_data)}")
 

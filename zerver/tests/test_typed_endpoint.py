@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Literal, Optional, Type, TypeVar, Union, cast
+from typing import Any, Callable, Literal, Optional, TypeVar, Union, cast
 
 import orjson
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -42,7 +42,7 @@ class TestEndpoint(ZulipTestCase):
         """This test is only needed because we don't
         have coverage of is_optional in Python 3.11.
         """
-        self.assertTrue(is_optional(cast(Type[Optional[str]], Optional[str])))
+        self.assertTrue(is_optional(cast(type[Optional[str]], Optional[str])))
         self.assertFalse(is_optional(str))
 
     def test_coerce(self) -> None:
@@ -247,7 +247,7 @@ class TestEndpoint(ZulipTestCase):
             *,
             body: JsonBodyPayload[WildValue],
             non_body: Json[int] = 0,
-        ) -> Dict[str, object]:
+        ) -> dict[str, object]:
             status = body["totame"]["status"].tame(check_bool)
             return {"status": status, "foo": non_body}
 
@@ -590,16 +590,16 @@ class ValidationErrorHandlingTest(ZulipTestCase):
             def __repr__(self) -> str:
                 return f"Pydantic error type: {self.error_type}; Parameter type: {self.param_type}; Expected error message: {self.error_message}"
 
-        parameterized_tests: List[SubTest] = [
+        parameterized_tests: list[SubTest] = [
             SubTest(
                 error_type="string_too_short",
-                param_type=Json[List[Annotated[str, RequiredStringConstraint()]]],
+                param_type=Json[list[Annotated[str, RequiredStringConstraint()]]],
                 input_data=orjson.dumps([""]).decode(),
                 error_message="input[0] cannot be blank",
             ),
             SubTest(
                 error_type="string_too_short",
-                param_type=Json[List[Annotated[str, RequiredStringConstraint()]]],
+                param_type=Json[list[Annotated[str, RequiredStringConstraint()]]],
                 input_data=orjson.dumps(["g", "  "]).decode(),
                 error_message="input[1] cannot be blank",
             ),

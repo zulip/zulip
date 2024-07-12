@@ -3,7 +3,7 @@ import re
 import secrets
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
-from typing import Dict, List, Match, Optional, Tuple
+from typing import Match, Optional
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -350,7 +350,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
     return "\n".join(attachment_links)
 
 
-def decode_stream_email_address(email: str) -> Tuple[Stream, Dict[str, bool]]:
+def decode_stream_email_address(email: str) -> tuple[Stream, dict[str, bool]]:
     token, options = decode_email_address(email)
 
     try:
@@ -501,7 +501,7 @@ def validate_to_address(rcpt_to: str) -> None:
         decode_stream_email_address(rcpt_to)
 
 
-def mirror_email_message(rcpt_to: str, msg_base64: str) -> Dict[str, str]:
+def mirror_email_message(rcpt_to: str, msg_base64: str) -> dict[str, str]:
     try:
         validate_to_address(rcpt_to)
     except ZulipEmailForwardError as e:
@@ -533,7 +533,7 @@ class RateLimitedRealmMirror(RateLimitedObject):
         return f"{type(self).__name__}:{self.realm.string_id}"
 
     @override
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         return settings.RATE_LIMITING_MIRROR_REALM_RULES
 
 

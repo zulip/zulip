@@ -1,4 +1,4 @@
-from typing import Iterable, List, TypedDict
+from typing import Iterable, TypedDict
 
 from zerver.lib import retention
 from zerver.lib.retention import move_messages_to_archive
@@ -9,14 +9,14 @@ from zerver.tornado.django_api import send_event_on_commit
 
 class DeleteMessagesEvent(TypedDict, total=False):
     type: str
-    message_ids: List[int]
+    message_ids: list[int]
     message_type: str
     topic: str
     stream_id: int
 
 
 def check_update_first_message_id(
-    realm: Realm, stream: Stream, message_ids: List[int], users_to_notify: Iterable[int]
+    realm: Realm, stream: Stream, message_ids: list[int], users_to_notify: Iterable[int]
 ) -> None:
     # This will not update the `first_message_id` of streams where the
     # first message was deleted prior to the implementation of this function.

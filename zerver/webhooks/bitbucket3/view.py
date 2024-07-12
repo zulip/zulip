@@ -1,5 +1,5 @@
 import string
-from typing import Dict, List, Optional, Protocol
+from typing import Optional, Protocol
 
 from django.http import HttpRequest, HttpResponse
 
@@ -56,7 +56,7 @@ PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS_WITH_TITLE = """
 """.strip()
 
 
-def fixture_to_headers(fixture_name: str) -> Dict[str, str]:
+def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     if fixture_name == "diagnostics_ping":
         return {"HTTP_X_EVENT_KEY": "diagnostics:ping"}
     return {}
@@ -74,7 +74,7 @@ def ping_handler(
     payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     if include_title:
         topic_name = include_title
     else:
@@ -88,7 +88,7 @@ def repo_comment_handler(
     payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     repo_name = payload["repository"]["name"].tame(check_string)
     topic_name = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     sha = payload["commit"].tame(check_string)
@@ -113,7 +113,7 @@ def repo_forked_handler(
     payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     repo_name = payload["repository"]["origin"]["name"].tame(check_string)
     topic_name = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     body = BITBUCKET_FORK_BODY.format(
@@ -129,7 +129,7 @@ def repo_modified_handler(
     payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     topic_name_new = BITBUCKET_TOPIC_TEMPLATE.format(
         repository_name=payload["new"]["name"].tame(check_string)
     )
@@ -146,7 +146,7 @@ def repo_modified_handler(
     return [{"topic": topic_name_new, "body": body}]
 
 
-def repo_push_branch_data(payload: WildValue, change: WildValue) -> Dict[str, str]:
+def repo_push_branch_data(payload: WildValue, change: WildValue) -> dict[str, str]:
     event_type = change["type"].tame(check_string)
     repo_name = payload["repository"]["name"].tame(check_string)
     user_name = get_user_name(payload)
@@ -175,7 +175,7 @@ def repo_push_branch_data(payload: WildValue, change: WildValue) -> Dict[str, st
     return {"topic": topic_name, "body": body}
 
 
-def repo_push_tag_data(payload: WildValue, change: WildValue) -> Dict[str, str]:
+def repo_push_tag_data(payload: WildValue, change: WildValue) -> dict[str, str]:
     event_type = change["type"].tame(check_string)
     repo_name = payload["repository"]["name"].tame(check_string)
     tag_name = change["ref"]["displayId"].tame(check_string)
@@ -197,7 +197,7 @@ def repo_push_handler(
     payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     data = []
     for change in payload["changes"]:
         event_target_type = change["ref"]["type"].tame(check_string)
@@ -340,7 +340,7 @@ def pr_handler(
     payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     pr = payload["pullRequest"]
     topic_name = get_pr_topic(
         pr["toRef"]["repository"]["name"].tame(check_string),
@@ -367,7 +367,7 @@ def pr_comment_handler(
     payload: WildValue,
     branches: Optional[str],
     include_title: Optional[str],
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     pr = payload["pullRequest"]
     topic_name = get_pr_topic(
         pr["toRef"]["repository"]["name"].tame(check_string),
@@ -393,10 +393,10 @@ def pr_comment_handler(
 class EventHandler(Protocol):
     def __call__(
         self, payload: WildValue, branches: Optional[str], include_title: Optional[str]
-    ) -> List[Dict[str, str]]: ...
+    ) -> list[dict[str, str]]: ...
 
 
-EVENT_HANDLER_MAP: Dict[str, EventHandler] = {
+EVENT_HANDLER_MAP: dict[str, EventHandler] = {
     "diagnostics:ping": ping_handler,
     "repo:comment:added": partial(repo_comment_handler, "commented"),
     "repo:comment:edited": partial(repo_comment_handler, "edited their comment"),

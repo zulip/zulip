@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Optional, Protocol, Union
+from typing import Optional, Protocol, Union
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
@@ -28,7 +28,7 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 
-def fixture_to_headers(fixture_name: str) -> Dict[str, str]:
+def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     if fixture_name.startswith("build"):
         return {}  # Since there are 2 possible event types.
 
@@ -176,7 +176,7 @@ def get_merge_request_open_or_updated_body(
     )
 
 
-def get_assignees(payload: WildValue) -> Union[List[WildValue], WildValue]:
+def get_assignees(payload: WildValue) -> Union[list[WildValue], WildValue]:
     assignee_details = payload.get("assignees")
     if not assignee_details:
         single_assignee_details = payload.get("assignee")
@@ -189,8 +189,8 @@ def get_assignees(payload: WildValue) -> Union[List[WildValue], WildValue]:
 
 
 def replace_assignees_username_with_name(
-    assignees: Union[List[WildValue], WildValue],
-) -> List[Dict[str, str]]:
+    assignees: Union[list[WildValue], WildValue],
+) -> list[dict[str, str]]:
     """Replace the username of each assignee with their (full) name.
 
     This is a hack-like adaptor so that when assignees are passed to
@@ -382,7 +382,7 @@ class EventFunction(Protocol):
     def __call__(self, payload: WildValue, include_title: bool) -> str: ...
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, EventFunction] = {
+EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Push Hook": get_push_event_body,
     "Tag Push Hook": get_tag_push_event_body,
     "Test Hook": get_test_event_body,

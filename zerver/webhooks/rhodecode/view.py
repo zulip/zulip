@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Optional
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -68,7 +68,7 @@ def get_topic_based_on_event(payload: WildValue, event: str) -> str:
     return get_repository_name(payload)  # nocoverage
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], str]] = {
+EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {
     "repo-push": get_push_commits_body,
 }
 

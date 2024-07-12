@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, List
+from typing import Any, Callable
 
 from django.db import connection
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
@@ -11,7 +11,7 @@ from psycopg2.sql import SQL, Composable, Identifier
 def do_batch_update(
     cursor: CursorWrapper,
     table: str,
-    assignments: List[Composable],
+    assignments: list[Composable],
     batch_size: int = 10000,
     sleep: float = 0.1,
 ) -> None:

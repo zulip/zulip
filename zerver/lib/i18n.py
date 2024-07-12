@@ -3,7 +3,7 @@
 import logging
 import os
 from functools import lru_cache
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import orjson
 from django.conf import settings
@@ -16,7 +16,7 @@ from zerver.models import Realm
 
 
 @lru_cache(None)
-def get_language_list() -> List[Dict[str, Any]]:
+def get_language_list() -> list[dict[str, Any]]:
     path = os.path.join(settings.DEPLOY_ROOT, "locale", "language_name_map.json")
     with open(path, "rb") as reader:
         languages = orjson.loads(reader.read())
@@ -32,13 +32,13 @@ def get_language_name(code: str) -> str:
     return "Unknown"
 
 
-def get_available_language_codes() -> List[str]:
+def get_available_language_codes() -> list[str]:
     language_list = get_language_list()
     codes = [language["code"] for language in language_list]
     return codes
 
 
-def get_language_translation_data(language: str) -> Dict[str, str]:
+def get_language_translation_data(language: str) -> dict[str, str]:
     if language == "en":
         return {}
     locale = translation.to_locale(language)

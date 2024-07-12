@@ -2,7 +2,7 @@ import cProfile
 import logging
 import tempfile
 import time
-from typing import Any, Callable, Dict, List, MutableMapping, Optional, Tuple
+from typing import Any, Callable, MutableMapping, Optional
 from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
@@ -238,14 +238,14 @@ def parse_client(
     req_client: Annotated[
         Optional[str], ApiParamConfig("client", documentation_status=INTENTIONALLY_UNDOCUMENTED)
     ] = None,
-) -> Tuple[str, Optional[str]]:
+) -> tuple[str, Optional[str]]:
     # If the API request specified a client in the request content,
     # that has priority. Otherwise, extract the client from the
     # USER_AGENT.
     if req_client is not None:
         return req_client, None
     if "User-Agent" in request.headers:
-        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.headers["User-Agent"])
+        user_agent: Optional[dict[str, str]] = parse_user_agent(request.headers["User-Agent"])
     else:
         user_agent = None
     if user_agent is None:
@@ -299,8 +299,8 @@ class LogRequests(MiddlewareMixin):
         self,
         request: HttpRequest,
         view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
-        args: List[object],
-        kwargs: Dict[str, Any],
+        args: list[object],
+        kwargs: dict[str, Any],
     ) -> None:
         request_notes = RequestNotes.get_notes(request)
         if request_notes.saved_response is not None:
@@ -426,8 +426,8 @@ class TagRequests(MiddlewareMixin):
         self,
         request: HttpRequest,
         view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
-        args: List[object],
-        kwargs: Dict[str, Any],
+        args: list[object],
+        kwargs: dict[str, Any],
     ) -> None:
         self.process_request(request)
 
@@ -498,7 +498,7 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
 
 class RateLimitMiddleware(MiddlewareMixin):
     def set_response_headers(
-        self, response: HttpResponseBase, rate_limit_results: List[RateLimitResult]
+        self, response: HttpResponseBase, rate_limit_results: list[RateLimitResult]
     ) -> None:
         # The limit on the action that was requested is the minimum of the limits that get applied:
         limit = min(result.entity.max_api_calls() for result in rate_limit_results)
@@ -631,8 +631,8 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
         self,
         request: HttpRequest,
         view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
-        args: List[object],
-        kwargs: Dict[str, Any],
+        args: list[object],
+        kwargs: dict[str, Any],
     ) -> None:
         proxy_state_header = request.headers.get("X-Proxy-Misconfiguration", "")
         # Our nginx configuration sets this header if:

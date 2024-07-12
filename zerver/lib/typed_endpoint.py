@@ -4,7 +4,7 @@ import types
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import wraps
-from typing import Callable, Generic, List, Optional, Sequence, Tuple, Type, TypeVar, Union
+from typing import Callable, Generic, Optional, Sequence, TypeVar, Union
 
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
@@ -93,7 +93,7 @@ class ApiParamConfig:
     path_only: bool = False
     argument_type_is_body: bool = False
     documentation_status: DocumentationStatus = DOCUMENTED
-    aliases: Tuple[str, ...] = ()
+    aliases: tuple[str, ...] = ()
 
 
 # TypeAliases for common Annotated types
@@ -138,7 +138,7 @@ class FuncParam(Generic[T]):
     param_name: str
     # Inspected the underlying type of the parameter by unwrapping the Annotated
     # type if there is one.
-    param_type: Type[T]
+    param_type: type[T]
     # The Pydantic TypeAdapter used to parse arbitrary input to the desired type.
     # We store it on the FuncParam object as soon as the view function is
     # decorated because it is expensive to construct.
@@ -149,7 +149,7 @@ class FuncParam(Generic[T]):
     # annotation associated with this param:
     # Name of the corresponding variable in the request data to look
     # for. When argument_type_is_body is True, this is set to "request".
-    aliases: Tuple[str, ...]
+    aliases: tuple[str, ...]
     argument_type_is_body: bool
     documentation_status: DocumentationStatus
     path_only: bool
@@ -162,12 +162,12 @@ class ViewFuncInfo:
     parameters: Sequence[FuncParam[object]]
 
 
-def is_annotated(type_annotation: Type[object]) -> bool:
+def is_annotated(type_annotation: type[object]) -> bool:
     origin = get_origin(type_annotation)
     return origin is Annotated
 
 
-def is_optional(type_annotation: Type[object]) -> bool:
+def is_optional(type_annotation: type[object]) -> bool:
     origin = get_origin(type_annotation)
     type_args = get_args(type_annotation)
     return origin in (Union, types.UnionType) and type(None) in type_args and len(type_args) == 2
@@ -203,7 +203,7 @@ API_PARAM_CONFIG_USAGE_HINT = f"""
 
 
 def parse_single_parameter(
-    param_name: str, param_type: Type[T], parameter: inspect.Parameter
+    param_name: str, param_type: type[T], parameter: inspect.Parameter
 ) -> FuncParam[T]:
     param_default = parameter.default
     # inspect._empty is the internal type used by inspect to indicate not
@@ -291,7 +291,7 @@ def parse_view_func_signature(
     parameters = inspect.signature(view_func).parameters
     view_func_full_name = f"{view_func.__module__}.{view_func.__name__}"
 
-    process_parameters: List[FuncParam[object]] = []
+    process_parameters: list[FuncParam[object]] = []
 
     for param_name, parameter in parameters.items():
         assert param_name in type_hints

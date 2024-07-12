@@ -4,7 +4,7 @@ import random
 import secrets
 import shutil
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, Literal, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Iterator, Literal, Optional
 
 from django.conf import settings
 from typing_extensions import override
@@ -95,7 +95,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return delete_local_file("files", path_id)
 
     @override
-    def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
+    def all_message_attachments(self) -> Iterator[tuple[str, datetime]]:
         assert settings.LOCAL_UPLOADS_DIR is not None
         for dirname, _, files in os.walk(settings.LOCAL_UPLOADS_DIR + "/files"):
             for f in files:
@@ -110,7 +110,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return "/user_avatars/" + self.get_avatar_path(hash_key, medium)
 
     @override
-    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
         image_data = read_local_file("avatars", file_path + ".original")
         content_type = guess_type(file_path)[0]
         return image_data, content_type or "application/octet-stream"

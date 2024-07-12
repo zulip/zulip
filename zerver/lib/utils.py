@@ -1,6 +1,6 @@
 import re
 import secrets
-from typing import Callable, List, Optional, TypeVar
+from typing import Callable, Optional, TypeVar
 
 T = TypeVar("T")
 
@@ -23,7 +23,7 @@ def assert_is_not_none(value: Optional[T]) -> T:
 
 
 def process_list_in_batches(
-    lst: List[T], chunk_size: int, process_batch: Callable[[List[T]], None]
+    lst: list[T], chunk_size: int, process_batch: Callable[[list[T]], None]
 ) -> None:
     offset = 0
 

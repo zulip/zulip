@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Sequence, Set
+from typing import Optional, Sequence
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -61,7 +61,7 @@ def invite_users_backend(
     notify_referrer_on_join: bool = REQ(
         "notify_referrer_on_join", json_validator=check_bool, default=True
     ),
-    stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
+    stream_ids: list[int] = REQ(json_validator=check_list(check_int)),
     include_realm_default_subscriptions: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
@@ -83,7 +83,7 @@ def invite_users_backend(
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
-    streams: List[Stream] = []
+    streams: list[Stream] = []
     for stream_id in stream_ids:
         try:
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
@@ -122,7 +122,7 @@ def invite_users_backend(
     return json_success(request)
 
 
-def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
+def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
     invitee_emails_list = set(re.split(r"[,\n]", invitee_emails_raw))
     invitee_emails = set()
     for email in invitee_emails_list:

@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence, Union
+from typing import Optional, Sequence, Union
 
 from django.conf import settings
 from django.db import transaction
@@ -205,7 +205,7 @@ def update_user_group_backend(
 
 def notify_for_user_group_subscription_changes(
     acting_user: UserProfile,
-    recipient_users: List[UserProfile],
+    recipient_users: list[UserProfile],
     user_group: NamedUserGroup,
     *,
     send_subscription_message: bool = False,

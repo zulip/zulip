@@ -1,5 +1,5 @@
 import time
-from typing import Any, List, Optional, Type, TypedDict
+from typing import Any, Optional, TypedDict
 
 import orjson
 from django.db import migrations, transaction
@@ -39,7 +39,7 @@ class EditHistoryEvent(TypedDict, total=False):
 
 @transaction.atomic
 def backfill_message_edit_history_chunk(
-    first_id: int, last_id: int, message_model: Type[Any]
+    first_id: int, last_id: int, message_model: type[Any]
 ) -> None:
     """
     Migrate edit history events for the messages in the provided range to:
@@ -61,9 +61,9 @@ def backfill_message_edit_history_chunk(
     )
 
     for message in messages:
-        legacy_edit_history: List[LegacyEditHistoryEvent] = orjson.loads(message.edit_history)
+        legacy_edit_history: list[LegacyEditHistoryEvent] = orjson.loads(message.edit_history)
         message_type = message.recipient.type
-        modern_edit_history: List[EditHistoryEvent] = []
+        modern_edit_history: list[EditHistoryEvent] = []
 
         # Only Stream messages have topic / stream edit history data.
         if message_type == STREAM:

@@ -1,7 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Sequence, Set, TypedDict, Union
+from typing import Any, Iterable, Optional, Sequence, TypedDict, Union
 
 from django.conf import settings
 from django.db import transaction
@@ -38,10 +38,10 @@ class MissingMessageDict(TypedDict):
 
 def filter_by_subscription_history(
     user_profile: UserProfile,
-    all_stream_messages: DefaultDict[int, List[MissingMessageDict]],
-    all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]],
-) -> List[int]:
-    message_ids: Set[int] = set()
+    all_stream_messages: defaultdict[int, list[MissingMessageDict]],
+    all_stream_subscription_logs: defaultdict[int, list[RealmAuditLog]],
+) -> list[int]:
+    message_ids: set[int] = set()
 
     for stream_id, stream_messages_raw in all_stream_messages.items():
         stream_subscription_logs = all_stream_subscription_logs[stream_id]
@@ -184,7 +184,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         .only("id", "event_type", "modified_stream_id", "event_last_message_id")
     )
 
-    all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]] = defaultdict(list)
+    all_stream_subscription_logs: defaultdict[int, list[RealmAuditLog]] = defaultdict(list)
     for log in subscription_logs:
         all_stream_subscription_logs[assert_is_not_none(log.modified_stream_id)].append(log)
 
@@ -222,7 +222,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         .values("id", "recipient__type_id")
     )
 
-    stream_messages: DefaultDict[int, List[MissingMessageDict]] = defaultdict(list)
+    stream_messages: defaultdict[int, list[MissingMessageDict]] = defaultdict(list)
     for msg in new_stream_msgs:
         stream_messages[msg["recipient__type_id"]].append(
             MissingMessageDict(id=msg["id"], recipient__type_id=msg["recipient__type_id"])
@@ -268,7 +268,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
 
 def do_soft_deactivate_users(
     users: Union[Sequence[UserProfile], QuerySet[UserProfile]],
-) -> List[UserProfile]:
+) -> list[UserProfile]:
     BATCH_SIZE = 100
     users_soft_deactivated = []
     while True:
@@ -299,8 +299,8 @@ def do_soft_deactivate_users(
 
 def do_auto_soft_deactivate_users(
     inactive_for_days: int, realm: Optional[Realm]
-) -> List[UserProfile]:
-    filter_kwargs: Dict[str, Realm] = {}
+) -> list[UserProfile]:
+    filter_kwargs: dict[str, Realm] = {}
     if realm is not None:
         filter_kwargs = dict(user_profile__realm=realm)
     users_to_deactivate = get_users_for_soft_deactivation(inactive_for_days, filter_kwargs)
@@ -335,7 +335,7 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[User
 
 def get_users_for_soft_deactivation(
     inactive_for_days: int, filter_kwargs: Any
-) -> List[UserProfile]:
+) -> list[UserProfile]:
     users_activity = list(
         UserActivity.objects.filter(
             user_profile__is_active=True,
@@ -356,7 +356,7 @@ def get_users_for_soft_deactivation(
     return users_to_deactivate
 
 
-def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
+def do_soft_activate_users(users: list[UserProfile]) -> list[UserProfile]:
     return [
         user_activated
         for user_profile in users
@@ -364,7 +364,7 @@ def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
     ]
 
 
-def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> List[UserProfile]:
+def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> list[UserProfile]:
     users_caught_up = []
     failures = []
     for user_profile in users:
@@ -401,7 +401,7 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
 
 def soft_reactivate_if_personal_notification(
     user_profile: UserProfile,
-    unique_triggers: Set[str],
+    unique_triggers: set[str],
     mentioned_user_group_members_count: Optional[int],
 ) -> None:
     """When we're about to send an email/push notification to a

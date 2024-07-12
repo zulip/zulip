@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import Union
 
 from django.db import models
 from django.db.backends.base.base import BaseDatabaseWrapper
@@ -13,7 +13,7 @@ class AndZero(models.Lookup[int]):
     @override
     def as_sql(
         self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
-    ) -> Tuple[str, List[Union[str, int]]]:  # nocoverage # currently only used in migrations
+    ) -> tuple[str, list[Union[str, int]]]:  # nocoverage # currently only used in migrations
         lhs, lhs_params = self.process_lhs(compiler, connection)
         rhs, rhs_params = self.process_rhs(compiler, connection)
         return f"{lhs} & {rhs} = 0", lhs_params + rhs_params
@@ -26,7 +26,7 @@ class AndNonZero(models.Lookup[int]):
     @override
     def as_sql(
         self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
-    ) -> Tuple[str, List[Union[str, int]]]:  # nocoverage # currently only used in migrations
+    ) -> tuple[str, list[Union[str, int]]]:  # nocoverage # currently only used in migrations
         lhs, lhs_params = self.process_lhs(compiler, connection)
         rhs, rhs_params = self.process_rhs(compiler, connection)
         return f"{lhs} & {rhs} != 0", lhs_params + rhs_params

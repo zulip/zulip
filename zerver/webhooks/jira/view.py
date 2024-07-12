@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import re
 import string
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Optional
 
 from django.core.exceptions import ValidationError
 from django.db.models import Q
@@ -95,7 +95,7 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
     return content
 
 
-def get_in(payload: WildValue, keys: List[str], default: str = "") -> WildValue:
+def get_in(payload: WildValue, keys: list[str], default: str = "") -> WildValue:
     try:
         for key in keys:
             payload = payload[key]
@@ -339,7 +339,7 @@ def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
-JIRA_CONTENT_FUNCTION_MAPPER: Dict[str, Optional[Callable[[WildValue, UserProfile], str]]] = {
+JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Optional[Callable[[WildValue, UserProfile], str]]] = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
     "jira:issue_updated": handle_updated_issue_event,

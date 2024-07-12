@@ -8,7 +8,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from typing import List
 
 import orjson
 
@@ -74,13 +73,13 @@ def maybe_set_up_cache() -> None:
             fp.write(orjson.dumps([]))
 
 
-def load_cache() -> List[str]:
+def load_cache() -> list[str]:
     with open(CACHE_FILE, "rb") as fp:
         hash_list = orjson.loads(fp.read())
     return hash_list
 
 
-def update_cache(hash_list: List[str]) -> None:
+def update_cache(hash_list: list[str]) -> None:
     # We store last 100 hash entries. Aggressive caching is
     # not a problem as it is cheap to do.
     if len(hash_list) > 100:

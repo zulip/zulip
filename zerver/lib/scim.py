@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Optional, Union
 
 import django_scim.constants as scim_constants
 import django_scim.exceptions as scim_exceptions
@@ -79,7 +79,7 @@ class ZulipSCIMUser(SCIMUser):
         """
         return self.obj.full_name
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a ``dict`` conforming to the SCIM User Schema,
         ready for conversion to a JSON object.
@@ -124,7 +124,7 @@ class ZulipSCIMUser(SCIMUser):
             "meta": self.meta,
         }
 
-    def from_dict(self, d: Dict[str, Any]) -> None:
+    def from_dict(self, d: dict[str, Any]) -> None:
         """Consume a dictionary conforming to the SCIM User Schema. The
         dictionary was originally submitted as JSON by the client in
         PUT (update a user) and POST (create a new user) requests.  A
@@ -210,7 +210,7 @@ class ZulipSCIMUser(SCIMUser):
     def handle_replace(
         self,
         path: Optional[AttrPath],
-        value: Union[str, List[object], Dict[AttrPath, object]],
+        value: Union[str, list[object], dict[AttrPath, object]],
         operation: Any,
     ) -> None:
         """
@@ -346,8 +346,8 @@ class ZulipSCIMUser(SCIMUser):
 
 
 def get_extra_model_filter_kwargs_getter(
-    model: Type[models.Model],
-) -> Callable[[HttpRequest, Any, Any], Dict[str, object]]:
+    model: type[models.Model],
+) -> Callable[[HttpRequest, Any, Any], dict[str, object]]:
     """Registered as GET_EXTRA_MODEL_FILTER_KWARGS_GETTER in our
     SCIM configuration.
 
@@ -367,7 +367,7 @@ def get_extra_model_filter_kwargs_getter(
 
     def get_extra_filter_kwargs(
         request: HttpRequest, *args: Any, **kwargs: Any
-    ) -> Dict[str, object]:
+    ) -> dict[str, object]:
         realm = RequestNotes.get_notes(request).realm
         assert realm is not None
         return {"realm_id": realm.id, "is_bot": False}

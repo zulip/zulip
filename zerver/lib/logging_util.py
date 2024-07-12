@@ -6,7 +6,7 @@ import traceback
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from logging import Logger
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import orjson
 from django.conf import settings
@@ -39,7 +39,7 @@ class _RateLimitFilter:
     handling_exception = threading.local()
     should_reset_handling_exception = False
 
-    def can_use_remote_cache(self) -> Tuple[bool, bool]:
+    def can_use_remote_cache(self) -> tuple[bool, bool]:
         if getattr(self.handling_exception, "value", False):
             # If we're processing an exception that occurred
             # while handling an exception, this almost

@@ -1,5 +1,4 @@
 import operator
-from typing import Dict, List
 
 from django.http import HttpRequest, HttpResponse
 
@@ -94,7 +93,7 @@ def get_body(payload: WildValue) -> str:
         return ANSIBLETOWER_DEFAULT_MESSAGE_TEMPLATE.format(**data)
 
 
-def get_hosts_content(hosts_data: List[Dict[str, str]]) -> str:
+def get_hosts_content(hosts_data: list[dict[str, str]]) -> str:
     hosts_data = sorted(hosts_data, key=operator.itemgetter("hostname"))
     hosts_content = ""
     for host in hosts_data:

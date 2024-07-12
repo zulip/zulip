@@ -6,7 +6,7 @@ import time
 from abc import ABC, abstractmethod
 from collections import deque
 from types import FrameType
-from typing import Any, Callable, Dict, List, MutableSequence, Optional, Set, Tuple, Type, TypeVar
+from typing import Any, Callable, MutableSequence, Optional, TypeVar
 
 import orjson
 import sentry_sdk
@@ -54,8 +54,8 @@ def assign_queue(
     queue_name: str,
     enabled: bool = True,
     is_test_queue: bool = False,
-) -> Callable[[Type[ConcreteQueueWorker]], Type[ConcreteQueueWorker]]:
-    def decorate(clazz: Type[ConcreteQueueWorker]) -> Type[ConcreteQueueWorker]:
+) -> Callable[[type[ConcreteQueueWorker]], type[ConcreteQueueWorker]]:
+    def decorate(clazz: type[ConcreteQueueWorker]) -> type[ConcreteQueueWorker]:
         clazz.queue_name = queue_name
         if enabled:
             register_worker(queue_name, clazz, is_test_queue)
@@ -64,12 +64,12 @@ def assign_queue(
     return decorate
 
 
-worker_classes: Dict[str, Type["QueueProcessingWorker"]] = {}
-test_queues: Set[str] = set()
+worker_classes: dict[str, type["QueueProcessingWorker"]] = {}
+test_queues: set[str] = set()
 
 
 def register_worker(
-    queue_name: str, clazz: Type["QueueProcessingWorker"], is_test_queue: bool = False
+    queue_name: str, clazz: type["QueueProcessingWorker"], is_test_queue: bool = False
 ) -> None:
     worker_classes[queue_name] = clazz
     if is_test_queue:
@@ -115,7 +115,7 @@ class QueueProcessingWorker(ABC):
     def initialize_statistics(self) -> None:
         self.queue_last_emptied_timestamp = time.time()
         self.consumed_since_last_emptied = 0
-        self.recent_consume_times: MutableSequence[Tuple[int, float]] = deque(maxlen=50)
+        self.recent_consume_times: MutableSequence[tuple[int, float]] = deque(maxlen=50)
         self.consume_iteration_counter = 0
         self.idle = True
         self.last_statistics_update_time = 0.0
@@ -160,11 +160,11 @@ class QueueProcessingWorker(ABC):
             return 0
 
     @abstractmethod
-    def consume(self, data: Dict[str, Any]) -> None:
+    def consume(self, data: dict[str, Any]) -> None:
         pass
 
     def do_consume(
-        self, consume_func: Callable[[List[Dict[str, Any]]], None], events: List[Dict[str, Any]]
+        self, consume_func: Callable[[list[dict[str, Any]]], None], events: list[dict[str, Any]]
     ) -> None:
         consume_time_seconds: Optional[float] = None
         with sentry_sdk.start_transaction(
@@ -236,16 +236,16 @@ class QueueProcessingWorker(ABC):
                             self.consume_iteration_counter = 0
                             self.update_statistics()
 
-    def consume_single_event(self, event: Dict[str, Any]) -> None:
+    def consume_single_event(self, event: dict[str, Any]) -> None:
         consume_func = lambda events: self.consume(events[0])
         self.do_consume(consume_func, [event])
 
     def timer_expired(
-        self, limit: int, events: List[Dict[str, Any]], signal: int, frame: Optional[FrameType]
+        self, limit: int, events: list[dict[str, Any]], signal: int, frame: Optional[FrameType]
     ) -> None:
         raise WorkerTimeoutError(self.queue_name, limit, len(events))
 
-    def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
+    def _handle_consume_exception(self, events: list[dict[str, Any]], exception: Exception) -> None:
         if isinstance(exception, InterruptConsumeError):
             # The exception signals that no further error handling
             # is needed and the worker can proceed.
@@ -316,10 +316,10 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
         )
 
     @abstractmethod
-    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+    def consume_batch(self, events: list[dict[str, Any]]) -> None:
         pass
 
     @override
-    def consume(self, event: Dict[str, Any]) -> None:
+    def consume(self, event: dict[str, Any]) -> None:
         """In LoopQueueProcessingWorker, consume is used just for automated tests"""
         self.consume_batch([event])

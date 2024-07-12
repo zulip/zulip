@@ -17,20 +17,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from email.headerregistry import Address
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    TypedDict,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import Any, Callable, Optional, TypedDict, TypeVar, Union, cast
 from urllib.parse import urlencode
 
 import magic
@@ -129,7 +116,7 @@ from zproject.settings_types import OIDCIdPConfigDict
 redis_client = get_redis_client()
 
 
-def all_default_backend_names() -> List[str]:
+def all_default_backend_names() -> list[str]:
     if not settings.BILLING_ENABLED or settings.DEVELOPMENT:
         # If billing isn't enabled, it's a self-hosted server
         # and has access to all authentication backends.
@@ -154,7 +141,7 @@ def all_default_backend_names() -> List[str]:
 # `settings.AUTHENTICATION_BACKENDS`, queried via
 # `django.contrib.auth.get_backends`) and at the realm level (via the
 # `RealmAuthenticationMethod` table).
-def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
+def pad_method_dict(method_dict: dict[str, bool]) -> dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are
     configured on this server"""
@@ -165,9 +152,9 @@ def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
 
 
 def auth_enabled_helper(
-    backends_to_check: List[str],
+    backends_to_check: list[str],
     realm: Optional[Realm],
-    realm_authentication_methods: Optional[Dict[str, bool]] = None,
+    realm_authentication_methods: Optional[dict[str, bool]] = None,
 ) -> bool:
     """
     realm_authentication_methods can be passed if already fetched to avoid
@@ -192,19 +179,19 @@ def auth_enabled_helper(
 
 
 def ldap_auth_enabled(
-    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[dict[str, bool]] = None
 ) -> bool:
     return auth_enabled_helper(["LDAP"], realm, realm_authentication_methods)
 
 
 def email_auth_enabled(
-    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[dict[str, bool]] = None
 ) -> bool:
     return auth_enabled_helper(["Email"], realm, realm_authentication_methods)
 
 
 def password_auth_enabled(
-    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[dict[str, bool]] = None
 ) -> bool:
     return ldap_auth_enabled(realm, realm_authentication_methods) or email_auth_enabled(
         realm, realm_authentication_methods
@@ -212,37 +199,37 @@ def password_auth_enabled(
 
 
 def dev_auth_enabled(
-    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[dict[str, bool]] = None
 ) -> bool:
     return auth_enabled_helper(["Dev"], realm, realm_authentication_methods)
 
 
 def google_auth_enabled(
-    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[dict[str, bool]] = None
 ) -> bool:
     return auth_enabled_helper(["Google"], realm, realm_authentication_methods)
 
 
 def github_auth_enabled(
-    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[dict[str, bool]] = None
 ) -> bool:
     return auth_enabled_helper(["GitHub"], realm, realm_authentication_methods)
 
 
 def gitlab_auth_enabled(
-    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[dict[str, bool]] = None
 ) -> bool:
     return auth_enabled_helper(["GitLab"], realm, realm_authentication_methods)
 
 
 def apple_auth_enabled(
-    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[dict[str, bool]] = None
 ) -> bool:
     return auth_enabled_helper(["Apple"], realm, realm_authentication_methods)
 
 
 def saml_auth_enabled(
-    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[dict[str, bool]] = None
 ) -> bool:
     return auth_enabled_helper(["SAML"], realm, realm_authentication_methods)
 
@@ -253,7 +240,7 @@ def require_email_format_usernames(realm: Optional[Realm] = None) -> bool:
     return True
 
 
-def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, Any]] = None) -> bool:
+def is_user_active(user_profile: UserProfile, return_data: Optional[dict[str, Any]] = None) -> bool:
     if user_profile.realm.deactivated:
         if return_data is not None:
             return_data["inactive_realm"] = True
@@ -271,7 +258,7 @@ def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, An
 
 
 def common_get_active_user(
-    email: str, realm: Realm, return_data: Optional[Dict[str, Any]] = None
+    email: str, realm: Realm, return_data: Optional[dict[str, Any]] = None
 ) -> Optional[UserProfile]:
     """This is the core common function used by essentially all
     authentication backends to check if there's an active user account
@@ -299,7 +286,7 @@ def common_get_active_user(
     return user_profile
 
 
-def is_subdomain_in_allowed_subdomains_list(subdomain: str, allowed_subdomains: List[str]) -> bool:
+def is_subdomain_in_allowed_subdomains_list(subdomain: str, allowed_subdomains: list[str]) -> bool:
     if subdomain in allowed_subdomains:
         return True
 
@@ -331,7 +318,7 @@ class RateLimitedAuthenticationByUsername(RateLimitedObject):
         return f"{type(self).__name__}:{self.username}"
 
     @override
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         return settings.RATE_LIMITING_RULES["authenticate_by_username"]
 
 
@@ -419,7 +406,7 @@ def log_auth_attempt(
     realm: Realm,
     username: str,
     succeeded: bool,
-    return_data: Dict[str, Any],
+    return_data: dict[str, Any],
 ) -> None:
     ip_addr = request.META.get("REMOTE_ADDR")
     outcome = "success" if succeeded else "failed"
@@ -446,7 +433,7 @@ class ZulipAuthMixin:
     # Describes which plans gives access to this authentication method on zulipchat.com.
     # None means the backend is available regardless of the plan.
     # Otherwise, it should be a list of Realm.plan_type values that give access to the backend.
-    available_for_cloud_plans: Optional[List[int]] = None
+    available_for_cloud_plans: Optional[list[int]] = None
 
     @property
     def logger(self) -> logging.Logger:
@@ -482,7 +469,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
         username: str,
         realm: Realm,
         use_dummy_backend: bool = False,
-        return_data: Optional[Dict[str, Any]] = None,
+        return_data: Optional[dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
         if use_dummy_backend:
             return common_get_active_user(username, realm, return_data)
@@ -527,7 +514,7 @@ class EmailAuthBackend(ZulipAuthMixin):
         username: str,
         password: str,
         realm: Realm,
-        return_data: Optional[Dict[str, Any]] = None,
+        return_data: Optional[dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
         """Authenticate a user based on email address as the user name."""
         if not password_auth_enabled(realm):
@@ -601,7 +588,7 @@ def ldap_should_sync_active_status() -> bool:
     return False
 
 
-def find_ldap_users_by_email(email: str) -> List[_LDAPUser]:
+def find_ldap_users_by_email(email: str) -> list[_LDAPUser]:
     """
     Returns list of _LDAPUsers matching the email search
     """
@@ -655,7 +642,7 @@ class LDAPReverseEmailSearch(_LDAPUser):
         # for only making a search query, so we pass an empty string.
         super().__init__(LDAPBackend(), username="")
 
-    def search_for_users(self, email: str) -> List[_LDAPUser]:
+    def search_for_users(self, email: str) -> list[_LDAPUser]:
         search = settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
         USERNAME_ATTR = settings.AUTH_LDAP_USERNAME_ATTR
 
@@ -725,10 +712,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def has_module_perms(self, user: Optional[UserProfile], app_label: Optional[str]) -> bool:
         return False
 
-    def get_all_permissions(self, user: Optional[UserProfile], obj: Any = None) -> Set[Any]:
+    def get_all_permissions(self, user: Optional[UserProfile], obj: Any = None) -> set[Any]:
         return set()
 
-    def get_group_permissions(self, user: Optional[UserProfile], obj: Any = None) -> Set[Any]:
+    def get_group_permissions(self, user: Optional[UserProfile], obj: Any = None) -> set[Any]:
         return set()
 
     def django_to_ldap_username(self, username: str) -> str:
@@ -872,7 +859,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         # org_membership takes priority over AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL.
         if "org_membership" in settings.AUTH_LDAP_USER_ATTR_MAP:
             org_membership_attr = settings.AUTH_LDAP_USER_ATTR_MAP["org_membership"]
-            allowed_orgs: List[str] = ldap_user.attrs.get(org_membership_attr, [])
+            allowed_orgs: list[str] = ldap_user.attrs.get(org_membership_attr, [])
             if is_subdomain_in_allowed_subdomains_list(realm.subdomain, allowed_orgs):
                 return False
             # If Advanced is not configured, forbid access
@@ -942,7 +929,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def sync_custom_profile_fields_from_ldap(
         self, user_profile: UserProfile, ldap_user: _LDAPUser
     ) -> None:
-        values_by_var_name: Dict[str, Union[int, str, List[int]]] = {}
+        values_by_var_name: dict[str, Union[int, str, list[int]]] = {}
         for attr, ldap_attr in settings.AUTH_LDAP_USER_ATTR_MAP.items():
             if not attr.startswith("custom_profile_field__"):
                 continue
@@ -1049,7 +1036,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         realm: Realm,
         prereg_realm: Optional[PreregistrationRealm] = None,
         prereg_user: Optional[PreregistrationUser] = None,
-        return_data: Optional[Dict[str, Any]] = None,
+        return_data: Optional[dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
         self._realm = realm
         self._prereg_user = prereg_user
@@ -1078,7 +1065,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         # authenticated user's data from LDAP.
         return super().authenticate(request=request, username=username, password=password)
 
-    def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
+    def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> tuple[UserProfile, bool]:
         """The main function of our authentication backend extension of
         django-auth-ldap.  When this is called (from `authenticate`),
         django-auth-ldap will already have verified that the provided
@@ -1093,7 +1080,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         user account in the realm (assuming the realm is configured to
         allow that email address to sign up).
         """
-        return_data: Dict[str, Any] = {}
+        return_data: dict[str, Any] = {}
 
         username = self.user_email_from_ldapuser(username, ldap_user)
 
@@ -1158,7 +1145,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         except JsonableError as e:
             raise ZulipLDAPError(e.msg)
 
-        opts: Dict[str, Any] = {}
+        opts: dict[str, Any] = {}
         if self._prereg_user:
             invited_as = self._prereg_user.invited_as
             opts["prereg_user"] = self._prereg_user
@@ -1222,13 +1209,13 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
         username: str,
         password: str,
         realm: Realm,
-        return_data: Optional[Dict[str, Any]] = None,
+        return_data: Optional[dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
         return None
 
     def get_or_build_user(
         self, username: str, ldap_user: ZulipLDAPUser
-    ) -> Tuple[UserProfile, bool]:
+    ) -> tuple[UserProfile, bool]:
         """This is used only in non-authentication contexts such as:
         ./manage.py sync_ldap_user_data
         """
@@ -1327,7 +1314,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
 
 
 # Quick tool to test whether you're correctly authenticating to LDAP
-def query_ldap(email: str) -> List[str]:
+def query_ldap(email: str) -> list[str]:
     values = []
     backend = next(
         (backend for backend in get_backends() if isinstance(backend, LDAPBackend)), None
@@ -1365,7 +1352,7 @@ class DevAuthBackend(ZulipAuthMixin):
         *,
         dev_auth_username: str,
         realm: Realm,
-        return_data: Optional[Dict[str, Any]] = None,
+        return_data: Optional[dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
         if not dev_auth_enabled(realm):
             return None
@@ -1398,7 +1385,7 @@ class ExternalAuthMethod(ABC):
 
     @classmethod
     @abstractmethod
-    def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
+    def dict_representation(cls, realm: Optional[Realm] = None) -> list[ExternalAuthMethodDictT]:
         """
         Method returning dictionaries representing the authentication methods
         corresponding to the backend that subclasses this. The documentation
@@ -1409,10 +1396,10 @@ class ExternalAuthMethod(ABC):
         """
 
 
-EXTERNAL_AUTH_METHODS: List[Type[ExternalAuthMethod]] = []
+EXTERNAL_AUTH_METHODS: list[type[ExternalAuthMethod]] = []
 
 
-def external_auth_method(cls: Type[ExternalAuthMethod]) -> Type[ExternalAuthMethod]:
+def external_auth_method(cls: type[ExternalAuthMethod]) -> type[ExternalAuthMethod]:
     assert issubclass(cls, ExternalAuthMethod)
 
     EXTERNAL_AUTH_METHODS.append(cls)
@@ -1434,7 +1421,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     full_name_validated: bool
     # The mobile app doesn't actually use a session, so this
     # data is not applicable there.
-    params_to_store_in_authenticated_session: Dict[str, str]
+    params_to_store_in_authenticated_session: dict[str, str]
 
 
 class ExternalAuthResult:
@@ -1537,9 +1524,9 @@ class SyncUserError(Exception):
 
 
 def sync_user_profile_custom_fields(
-    user_profile: UserProfile, custom_field_name_to_value: Dict[str, Any]
+    user_profile: UserProfile, custom_field_name_to_value: dict[str, Any]
 ) -> None:
-    fields_by_var_name: Dict[str, CustomProfileField] = {}
+    fields_by_var_name: dict[str, CustomProfileField] = {}
     custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
     for field in custom_profile_fields:
         var_name = "_".join(field.name.lower().split(" "))
@@ -1550,7 +1537,7 @@ def sync_user_profile_custom_fields(
         var_name = "_".join(data["name"].lower().split(" "))
         existing_values[var_name] = data["value"]
 
-    profile_data: List[ProfileDataElementUpdateDict] = []
+    profile_data: list[ProfileDataElementUpdateDict] = []
     for var_name, value in custom_field_name_to_value.items():
         try:
             field = fields_by_var_name[var_name]
@@ -1597,7 +1584,7 @@ class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMeth
         *,
         remote_user: str,
         realm: Realm,
-        return_data: Optional[Dict[str, Any]] = None,
+        return_data: Optional[dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
         if not auth_enabled_helper(["RemoteUser"], realm):
             return None
@@ -1607,7 +1594,7 @@ class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMeth
 
     @classmethod
     @override
-    def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
+    def dict_representation(cls, realm: Optional[Realm] = None) -> list[ExternalAuthMethodDictT]:
         return [
             dict(
                 name=cls.name,
@@ -1643,7 +1630,7 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
 
 
 def social_associate_user_helper(
-    backend: BaseAuth, return_data: Dict[str, Any], *args: Any, **kwargs: Any
+    backend: BaseAuth, return_data: dict[str, Any], *args: Any, **kwargs: Any
 ) -> Union[HttpResponse, Optional[UserProfile]]:
     """Responsible for doing the Zulip account lookup and validation parts
     of the Zulip social auth pipeline (similar to the authenticate()
@@ -1796,7 +1783,7 @@ def social_associate_user_helper(
 @partial
 def social_auth_associate_user(
     backend: BaseAuth, *args: Any, **kwargs: Any
-) -> Union[HttpResponse, Dict[str, Any]]:
+) -> Union[HttpResponse, dict[str, Any]]:
     """A simple wrapper function to reformat the return data from
     social_associate_user_helper as a dictionary.  The
     python-social-auth infrastructure will then pass those values into
@@ -1804,7 +1791,7 @@ def social_auth_associate_user(
     social_auth_finish, as kwargs.
     """
     partial_token = backend.strategy.request_data().get("partial_token")
-    return_data: Dict[str, Any] = {}
+    return_data: dict[str, Any] = {}
     user_profile = social_associate_user_helper(backend, return_data, *args, **kwargs)
 
     if isinstance(user_profile, HttpResponse):
@@ -1819,7 +1806,7 @@ def social_auth_associate_user(
 
 
 def social_auth_finish(
-    backend: Any, details: Dict[str, Any], response: HttpResponse, *args: Any, **kwargs: Any
+    backend: Any, details: dict[str, Any], response: HttpResponse, *args: Any, **kwargs: Any
 ) -> Optional[HttpResponse]:
     """Given the determination in social_auth_associate_user for whether
     the user should be authenticated, this takes care of actually
@@ -2053,7 +2040,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     def should_auto_signup(self) -> bool:
         return False
 
-    def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
+    def get_params_to_store_in_authenticated_session(self) -> dict[str, str]:
         """
         Specifies a dict of keys:values to be saved in the user's session
         after successfully authenticating.
@@ -2062,7 +2049,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
 
     @classmethod
     @override
-    def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
+    def dict_representation(cls, realm: Optional[Realm] = None) -> list[ExternalAuthMethodDictT]:
         return [
             dict(
                 name=cls.name,
@@ -2081,7 +2068,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     sort_order = 100
     display_icon = staticfiles_storage.url("images/authentication_backends/github-icon.png")
 
-    def get_all_associated_email_objects(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+    def get_all_associated_email_objects(self, *args: Any, **kwargs: Any) -> list[dict[str, Any]]:
         access_token = kwargs["response"]["access_token"]
         try:
             emails = self._user_data(access_token, "/emails")
@@ -2092,18 +2079,18 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             emails = []
         return emails
 
-    def get_unverified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
+    def get_unverified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> list[str]:
         return [
             email_obj["email"]
             for email_obj in self.get_usable_email_objects(realm, *args, **kwargs)
             if not email_obj.get("verified")
         ]
 
-    def get_verified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
+    def get_verified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> list[str]:
         # We only let users log in using email addresses that are
         # verified by GitHub, because the whole point is for the user
         # to demonstrate that they control the target email address.
-        verified_emails: List[str] = []
+        verified_emails: list[str] = []
         for email_obj in [
             obj
             for obj in self.get_usable_email_objects(realm, *args, **kwargs)
@@ -2120,7 +2107,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
     def get_usable_email_objects(
         self, realm: Realm, *args: Any, **kwargs: Any
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         # We disallow creation of new accounts with
         # @noreply.github.com/@users.noreply.github.com email
         # addresses, because structurally, we only want to allow email
@@ -2140,7 +2127,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             )
         ]
 
-    def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
+    def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> dict[str, str]:
         """This patched user_data function lets us combine together the 3
         social auth backends into a single Zulip backend for GitHub OAuth2"""
         team_id = settings.SOCIAL_AUTH_GITHUB_TEAM_ID
@@ -2206,8 +2193,8 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     name = "google"
     display_icon = staticfiles_storage.url("images/authentication_backends/googl_e-icon.png")
 
-    def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
-        verified_emails: List[str] = []
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> list[str]:
+        verified_emails: list[str] = []
         details = kwargs["response"]
         email_verified = details.get("email_verified")
         if email_verified:
@@ -2324,7 +2311,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
                 self.strategy.session_set(param, value)
         return request_state
 
-    def get_user_details(self, response: Dict[str, Any]) -> Dict[str, Any]:
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
         """
         Overridden to correctly grab the user's name from the request params,
         as current upstream code expects it in the id_token and Apple changed
@@ -2399,7 +2386,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
 
 class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
-    def get_user_details(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
+    def get_user_details(self, attributes: dict[str, Any]) -> dict[str, Any]:
         """
         Overridden to support plumbing of additional Attributes
         from the SAMLResponse.
@@ -2491,7 +2478,7 @@ class SAMLDocument:
         return None
 
     @abstractmethod
-    def get_issuers(self) -> List[str]:
+    def get_issuers(self) -> list[str]:
         """
         Returns a list of the issuers of the SAML document.
         """
@@ -2499,7 +2486,7 @@ class SAMLDocument:
 
 class SAMLRequest(SAMLDocument):
     @override
-    def get_issuers(self) -> List[str]:
+    def get_issuers(self) -> list[str]:
         config = self.backend.generate_saml_config()
         saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
 
@@ -2517,7 +2504,7 @@ class SAMLRequest(SAMLDocument):
 
 class SAMLResponse(SAMLDocument):
     @override
-    def get_issuers(self) -> List[str]:
+    def get_issuers(self) -> list[str]:
         config = self.backend.generate_saml_config()
         saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
 
@@ -2641,7 +2628,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         return auth.login(return_to=relay_state)
 
     @classmethod
-    def put_data_in_redis(cls, data_to_relay: Dict[str, Any]) -> str:
+    def put_data_in_redis(cls, data_to_relay: dict[str, Any]) -> str:
         return put_dict_in_redis(
             redis_client,
             "saml_token_{token}",
@@ -2650,7 +2637,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         )
 
     @classmethod
-    def get_data_from_redis(cls, key: str) -> Optional[Dict[str, Any]]:
+    def get_data_from_redis(cls, key: str) -> Optional[dict[str, Any]]:
         data = None
         if key.startswith("saml_token_"):
             # Safety if statement, to not allow someone to poke around arbitrary Redis keys here.
@@ -2658,7 +2645,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return data
 
-    def get_relayed_params(self) -> Dict[str, Any]:
+    def get_relayed_params(self) -> dict[str, Any]:
         request_data = self.strategy.request_data()
         if "RelayState" not in request_data:
             return {}
@@ -2677,7 +2664,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         except orjson.JSONDecodeError:
             return {}
 
-    def choose_subdomain(self, relayed_params: Dict[str, Any]) -> Optional[str]:
+    def choose_subdomain(self, relayed_params: dict[str, Any]) -> Optional[str]:
         subdomain = relayed_params.get("subdomain")
         if subdomain is not None:
             return subdomain
@@ -2699,7 +2686,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             return request_subdomain
 
     def _check_entitlements(
-        self, idp: SAMLIdentityProvider, attributes: Dict[str, List[str]]
+        self, idp: SAMLIdentityProvider, attributes: dict[str, list[str]]
     ) -> None:
         """
         Below is the docstring from the social_core SAML backend.
@@ -2720,7 +2707,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             return
 
         subdomain = self.strategy.session_get("subdomain")
-        entitlements: Union[str, List[str]] = attributes.get(org_membership_attribute, [])
+        entitlements: Union[str, list[str]] = attributes.get(org_membership_attribute, [])
         if isinstance(entitlements, str):  # nocoverage
             # This shouldn't happen as we'd always expect a list from this attribute even
             # if it only has one element, but it's safer to have this defensive code.
@@ -2788,7 +2775,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             )
             return None
 
-        return_data: Dict[str, Any] = {}
+        return_data: dict[str, Any] = {}
 
         realm = get_realm(subdomain)
         user_profile = common_get_active_user(name_id, realm, return_data)
@@ -2961,8 +2948,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
     @classmethod
     @override
-    def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
-        result: List[ExternalAuthMethodDictT] = []
+    def dict_representation(cls, realm: Optional[Realm] = None) -> list[ExternalAuthMethodDictT]:
+        result: list[ExternalAuthMethodDictT] = []
         for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
             if realm and not cls.validate_idp_for_subdomain(idp_name, realm.subdomain):
                 continue
@@ -2995,7 +2982,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         return auto_signup
 
     @override
-    def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
+    def get_params_to_store_in_authenticated_session(self) -> dict[str, str]:
         idp_name = self.strategy.session_get("saml_idp_name")
         saml_session_index = self.strategy.session_get("saml_session_index")
 
@@ -3041,7 +3028,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     # configuration from.
     OIDC_ENDPOINT = settings_dict.get("oidc_url")
 
-    def get_key_and_secret(self) -> Tuple[str, str]:
+    def get_key_and_secret(self) -> tuple[str, str]:
         client_id = self.settings_dict.get("client_id", "")
         assert isinstance(client_id, str)
         secret = self.settings_dict.get("secret", "")
@@ -3063,7 +3050,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     @classmethod
     @override
-    def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
+    def dict_representation(cls, realm: Optional[Realm] = None) -> list[ExternalAuthMethodDictT]:
         return [
             dict(
                 name=f"oidc:{cls.name}",
@@ -3176,12 +3163,12 @@ class SAMLSPInitiatedLogout:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 
-def get_external_method_dicts(realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
+def get_external_method_dicts(realm: Optional[Realm] = None) -> list[ExternalAuthMethodDictT]:
     """
     Returns a list of dictionaries that represent social backends, sorted
     in the order in which they should be displayed.
     """
-    result: List[ExternalAuthMethodDictT] = []
+    result: list[ExternalAuthMethodDictT] = []
     for backend in EXTERNAL_AUTH_METHODS:
         # EXTERNAL_AUTH_METHODS is already sorted in the correct order,
         # so we don't need to worry about sorting here.
@@ -3191,7 +3178,7 @@ def get_external_method_dicts(realm: Optional[Realm] = None) -> List[ExternalAut
     return result
 
 
-AUTH_BACKEND_NAME_MAP: Dict[str, Any] = {
+AUTH_BACKEND_NAME_MAP: dict[str, Any] = {
     "Dev": DevAuthBackend,
     "Email": EmailAuthBackend,
     "LDAP": ZulipLDAPAuthBackend,

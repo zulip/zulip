@@ -2,7 +2,7 @@ import hashlib
 import random
 from datetime import timedelta
 from io import StringIO
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Set, Union
+from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
 from unittest import mock
 
 import orjson
@@ -136,8 +136,8 @@ class TestMiscStuff(ZulipTestCase):
         self.assertNotIn("* Denmark", s)
 
     def test_pick_colors(self) -> None:
-        used_colors: Set[str] = set()
-        color_map: Dict[int, str] = {}
+        used_colors: set[str] = set()
+        color_map: dict[int, str] = {}
         recipient_ids = list(range(30))
         user_color_map = pick_colors(used_colors, color_map, recipient_ids)
         self.assertEqual(
@@ -350,7 +350,7 @@ class TestCreateStreams(ZulipTestCase):
 
     def test_history_public_to_subscribers_on_stream_creation(self) -> None:
         realm = get_realm("zulip")
-        stream_dicts: List[StreamDict] = [
+        stream_dicts: list[StreamDict] = [
             {
                 "name": "publicstream",
                 "description": "Public stream with public history",
@@ -508,7 +508,7 @@ class TestCreateStreams(ZulipTestCase):
             final_usermessage_count - initial_usermessage_count, 4 + announce_stream_subs.count()
         )
 
-        def get_unread_stream_data(user: UserProfile) -> List[UnreadStreamInfo]:
+        def get_unread_stream_data(user: UserProfile) -> list[UnreadStreamInfo]:
             raw_unread_data = get_raw_unread_data(user)
             aggregated_data = aggregate_unread_data(raw_unread_data)
             return aggregated_data["streams"]
@@ -796,7 +796,7 @@ class StreamAdminTest(ZulipTestCase):
 
         stream_names = ["new1", "new2", "new3"]
         stream_descriptions = ["des1", "des2", "des3"]
-        streams_raw: List[StreamDict] = [
+        streams_raw: list[StreamDict] = [
             {"name": stream_name, "description": stream_description, "is_web_public": True}
             for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
         ]
@@ -1427,7 +1427,7 @@ class StreamAdminTest(ZulipTestCase):
         streams_to_remove = [ensure_stream(realm, "stream3", acting_user=None)]
         all_streams = streams_to_keep + streams_to_remove
 
-        def get_streams(group: DefaultStreamGroup) -> List[Stream]:
+        def get_streams(group: DefaultStreamGroup) -> list[Stream]:
             return list(group.streams.all().order_by("name"))
 
         group_name = "group1"
@@ -2369,7 +2369,7 @@ class StreamAdminTest(ZulipTestCase):
         """
         admin = self.example_user("iago")
 
-        streams_raw: List[StreamDict] = [
+        streams_raw: list[StreamDict] = [
             {
                 "name": "new_stream",
                 "message_retention_days": 10,
@@ -2566,7 +2566,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def attempt_unsubscribe_of_principal(
         self,
-        target_users: List[UserProfile],
+        target_users: list[UserProfile],
         query_count: int,
         cache_count: Optional[int] = None,
         is_realm_admin: bool = False,
@@ -2895,7 +2895,7 @@ class StreamAdminTest(ZulipTestCase):
 
 
 class DefaultStreamTest(ZulipTestCase):
-    def get_default_stream_names(self, realm: Realm) -> Set[str]:
+    def get_default_stream_names(self, realm: Realm) -> set[str]:
         streams = get_default_streams_for_realm_as_dicts(realm.id)
         return {s["name"] for s in streams}
 
@@ -3023,7 +3023,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             for stream_name in ["stream1", "stream2", "stream3"]
         ]
 
-        def get_streams(group: DefaultStreamGroup) -> List[Stream]:
+        def get_streams(group: DefaultStreamGroup) -> list[Stream]:
             return list(group.streams.all().order_by("name"))
 
         group_name = "group1"
@@ -3999,7 +3999,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.test_realm = self.user_profile.realm
         self.streams = self.get_streams(self.user_profile)
 
-    def make_random_stream_names(self, existing_stream_names: List[str]) -> List[str]:
+    def make_random_stream_names(self, existing_stream_names: list[str]) -> list[str]:
         """
         Helper function to make up random stream names. It takes
         existing_stream_names and randomly appends a digit to the end of each,
@@ -4096,12 +4096,12 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def helper_check_subs_before_and_after_add(
         self,
-        subscriptions: List[str],
-        other_params: Dict[str, Any],
-        subscribed: List[str],
-        already_subscribed: List[str],
+        subscriptions: list[str],
+        other_params: dict[str, Any],
+        subscribed: list[str],
+        already_subscribed: list[str],
         email: str,
-        new_subs: List[str],
+        new_subs: list[str],
         realm: Realm,
         invite_only: bool = False,
     ) -> None:
@@ -4690,7 +4690,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self,
         invitee_data: Union[str, int],
         invitee_realm: Realm,
-        streams: List[str],
+        streams: list[str],
         policy_name: str,
         invite_only: bool = False,
     ) -> None:
@@ -5326,10 +5326,10 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def helper_check_subs_before_and_after_remove(
         self,
-        subscriptions: List[str],
-        json_dict: Dict[str, Any],
+        subscriptions: list[str],
+        json_dict: dict[str, Any],
         email: str,
-        new_subs: List[str],
+        new_subs: list[str],
         realm: Realm,
     ) -> None:
         """
@@ -5454,7 +5454,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.send_stream_message(random_user, "stream2", "test", "test")
         self.send_stream_message(random_user, "private_stream", "test", "test")
 
-        def get_unread_stream_data() -> List[UnreadStreamInfo]:
+        def get_unread_stream_data() -> list[UnreadStreamInfo]:
             raw_unread_data = get_raw_unread_data(user)
             aggregated_data = aggregate_unread_data(raw_unread_data)
             return aggregated_data["streams"]
@@ -6000,7 +6000,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assertEqual(non_ws(msg.content), non_ws(expected_msg))
 
     def check_well_formed_result(
-        self, result: Dict[str, Any], stream_name: str, realm: Realm
+        self, result: dict[str, Any], stream_name: str, realm: Realm
     ) -> None:
         """
         A successful call to get_subscribers returns the list of subscribers in
@@ -6182,7 +6182,7 @@ class GetSubscribersTest(ZulipTestCase):
 
         create_private_streams()
 
-        def get_never_subscribed() -> List[NeverSubscribedStreamDict]:
+        def get_never_subscribed() -> list[NeverSubscribedStreamDict]:
             with self.assert_database_query_count(4):
                 sub_data = gather_subscriptions_helper(self.user_profile)
                 self.verify_sub_fields(sub_data)
@@ -6460,7 +6460,7 @@ class GetSubscribersTest(ZulipTestCase):
         result_dict = self.assert_json_success(result)
         self.assertIn("subscribers", result_dict)
         self.assertIsInstance(result_dict["subscribers"], list)
-        subscribers: List[int] = []
+        subscribers: list[int] = []
         for subscriber in result_dict["subscribers"]:
             self.assertIsInstance(subscriber, int)
             subscribers.append(subscriber)

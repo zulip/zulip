@@ -1,4 +1,4 @@
-from typing import Any, Dict, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -133,7 +133,7 @@ def update_realm(
     allow_edit_history: Optional[Json[bool]] = None,
     default_language: Optional[str] = None,
     waiting_period_threshold: Optional[Json[NonNegativeInt]] = None,
-    authentication_methods: Optional[Json[Dict[str, Any]]] = None,
+    authentication_methods: Optional[Json[dict[str, Any]]] = None,
     # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
     # are not offered here as it is maintained by the server, not via the API.
     new_stream_announcements_stream_id: Optional[Json[int]] = None,
@@ -246,7 +246,7 @@ def update_realm(
     if can_access_all_users_group_id is not None:
         realm.can_enable_restricted_user_access_for_guests()
 
-    data: Dict[str, Any] = {}
+    data: dict[str, Any] = {}
 
     message_content_delete_limit_seconds: Optional[int] = None
     if message_content_delete_limit_seconds_raw is not None:

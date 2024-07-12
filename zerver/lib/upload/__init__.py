@@ -4,7 +4,7 @@ import os
 import re
 import unicodedata
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple, Union
+from typing import IO, Any, BinaryIO, Callable, Iterator, Optional, Union
 from urllib.parse import unquote, urljoin
 
 from django.conf import settings
@@ -65,7 +65,7 @@ def create_attachment(
     notify_attachment_update(user_profile, "add", attachment.to_dict())
 
 
-def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
+def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
 
@@ -191,11 +191,11 @@ def delete_message_attachment(path_id: str) -> bool:
     return upload_backend.delete_message_attachment(path_id)
 
 
-def delete_message_attachments(path_ids: List[str]) -> None:
+def delete_message_attachments(path_ids: list[str]) -> None:
     return upload_backend.delete_message_attachments(path_ids)
 
 
-def all_message_attachments() -> Iterator[Tuple[str, datetime]]:
+def all_message_attachments() -> Iterator[tuple[str, datetime]]:
     return upload_backend.all_message_attachments()
 
 
@@ -377,7 +377,7 @@ def upload_emoji_image(
 
 def get_emoji_file_content(
     session: OutgoingSession, emoji_url: str, emoji_id: int, logger: logging.Logger
-) -> Tuple[bytes, str]:  # nocoverage
+) -> tuple[bytes, str]:  # nocoverage
     original_emoji_url = emoji_url + ".original"
 
     logger.info("Downloading %s", original_emoji_url)

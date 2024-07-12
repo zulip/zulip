@@ -10,7 +10,7 @@ import json
 import re
 import shlex
 from textwrap import dedent
-from typing import Any, Dict, List, Mapping, Match, Optional, Pattern
+from typing import Any, Mapping, Match, Optional, Pattern
 
 import markdown
 from django.conf import settings
@@ -108,8 +108,8 @@ ADMIN_CONFIG_LANGUAGES = ["python", "javascript"]
 
 
 def extract_code_example(
-    source: List[str], snippet: List[Any], example_regex: Pattern[str]
-) -> List[Any]:
+    source: list[str], snippet: list[Any], example_regex: Pattern[str]
+) -> list[Any]:
     start = -1
     end = -1
     for line in source:
@@ -131,7 +131,7 @@ def extract_code_example(
 
 def render_python_code_example(
     function: str, admin_config: bool = False, **kwargs: Any
-) -> List[str]:
+) -> list[str]:
     if function not in zerver.openapi.python_examples.TEST_FUNCTIONS:
         return []
     method = zerver.openapi.python_examples.TEST_FUNCTIONS[function]
@@ -167,7 +167,7 @@ def render_python_code_example(
 
 def render_javascript_code_example(
     function: str, admin_config: bool = False, **kwargs: Any
-) -> List[str]:
+) -> list[str]:
     pattern = rf'^add_example\(\s*"[^"]*",\s*{re.escape(json.dumps(function))},\s*\d+,\s*async \(client, console\) => \{{\n(.*?)^(?:\}}| *\}},\n)\);$'
     with open("zerver/openapi/javascript_examples.js") as f:
         m = re.search(pattern, f.read(), re.MULTILINE | re.DOTALL)
@@ -202,7 +202,7 @@ def render_javascript_code_example(
     return code_example
 
 
-def curl_method_arguments(endpoint: str, method: str, api_url: str) -> List[str]:
+def curl_method_arguments(endpoint: str, method: str, api_url: str) -> list[str]:
     # We also include the -sS verbosity arguments here.
     method = method.upper()
     url = f"{api_url}/v1{endpoint}"
@@ -268,9 +268,9 @@ def generate_curl_example(
     api_url: str,
     auth_email: str = DEFAULT_AUTH_EMAIL,
     auth_api_key: str = DEFAULT_AUTH_API_KEY,
-    exclude: Optional[List[str]] = None,
-    include: Optional[List[str]] = None,
-) -> List[str]:
+    exclude: Optional[list[str]] = None,
+    include: Optional[list[str]] = None,
+) -> list[str]:
     lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
     operation_entry = openapi_spec.openapi()["paths"][endpoint][method.lower()]
@@ -355,12 +355,12 @@ def render_curl_example(
     function: str,
     api_url: str,
     admin_config: bool = False,
-) -> List[str]:
+) -> list[str]:
     """A simple wrapper around generate_curl_example."""
     parts = function.split(":")
     endpoint = parts[0]
     method = parts[1]
-    kwargs: Dict[str, Any] = {}
+    kwargs: dict[str, Any] = {}
     if len(parts) > 2:
         kwargs["auth_email"] = parts[2]
     if len(parts) > 3:
@@ -380,7 +380,7 @@ def render_curl_example(
     return rendered_example
 
 
-SUPPORTED_LANGUAGES: Dict[str, Any] = {
+SUPPORTED_LANGUAGES: dict[str, Any] = {
     "python": {
         "client_config": PYTHON_CLIENT_CONFIG,
         "admin_config": PYTHON_CLIENT_ADMIN_CONFIG,
@@ -439,7 +439,7 @@ class BasePreprocessor(Preprocessor):
         self.REGEXP = regexp
 
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         done = False
         while not done:
             for line in lines:
@@ -463,12 +463,12 @@ class BasePreprocessor(Preprocessor):
                 done = True
         return lines
 
-    def generate_text(self, match: Match[str]) -> List[str]:
+    def generate_text(self, match: Match[str]) -> list[str]:
         function = match.group(1)
         text = self.render(function)
         return text
 
-    def render(self, function: str) -> List[str]:
+    def render(self, function: str) -> list[str]:
         raise NotImplementedError("Must be overridden by a child class")
 
 
@@ -477,7 +477,7 @@ class APICodeExamplesPreprocessor(BasePreprocessor):
         super().__init__(MACRO_REGEXP, md, config)
 
     @override
-    def generate_text(self, match: Match[str]) -> List[str]:
+    def generate_text(self, match: Match[str]) -> list[str]:
         language = match.group(1) or ""
         function = match.group(2)
         key = match.group(3)
@@ -497,7 +497,7 @@ class APICodeExamplesPreprocessor(BasePreprocessor):
         return text
 
     @override
-    def render(self, function: str) -> List[str]:
+    def render(self, function: str) -> list[str]:
         path, method = function.rsplit(":", 1)
         return generate_openapi_fixture(path, method)
 
@@ -507,7 +507,7 @@ class APIHeaderPreprocessor(BasePreprocessor):
         super().__init__(MACRO_REGEXP_HEADER, md, config)
 
     @override
-    def render(self, function: str) -> List[str]:
+    def render(self, function: str) -> list[str]:
         path, method = function.rsplit(":", 1)
         raw_title = get_openapi_summary(path, method)
         description_dict = get_openapi_description(path, method)
@@ -526,7 +526,7 @@ class ResponseDescriptionPreprocessor(BasePreprocessor):
         super().__init__(MACRO_REGEXP_RESPONSE_DESC, md, config)
 
     @override
-    def render(self, function: str) -> List[str]:
+    def render(self, function: str) -> list[str]:
         path, method = function.rsplit(":", 1)
         raw_description = get_responses_description(path, method)
         return raw_description.splitlines()
@@ -537,7 +537,7 @@ class ParameterDescriptionPreprocessor(BasePreprocessor):
         super().__init__(MACRO_REGEXP_PARAMETER_DESC, md, config)
 
     @override
-    def render(self, function: str) -> List[str]:
+    def render(self, function: str) -> list[str]:
         path, method = function.rsplit(":", 1)
         raw_description = get_parameters_description(path, method)
         return raw_description.splitlines()

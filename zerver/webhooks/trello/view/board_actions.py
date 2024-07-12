@@ -1,4 +1,4 @@
-from typing import Mapping, Optional, Tuple
+from typing import Mapping, Optional
 
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.validator import WildValue, check_string
@@ -27,7 +27,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
 
 def process_board_action(
     payload: WildValue, action_type: Optional[str]
-) -> Optional[Tuple[str, str]]:
+) -> Optional[tuple[str, str]]:
     action_type = get_proper_action(payload, action_type)
     if action_type is not None:
         return get_topic(payload), get_body(payload, action_type)

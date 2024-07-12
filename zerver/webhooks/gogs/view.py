@@ -1,5 +1,5 @@
 # vim:fenc=utf-8
-from typing import Dict, List, Optional, Protocol
+from typing import Optional, Protocol
 
 from django.http import HttpRequest, HttpResponse
 
@@ -46,7 +46,7 @@ def format_push_event(payload: WildValue) -> str:
     )
 
 
-def _transform_commits_list_to_common_format(commits: WildValue) -> List[Dict[str, str]]:
+def _transform_commits_list_to_common_format(commits: WildValue) -> list[dict[str, str]]:
     return [
         {
             "name": commit["author"]["username"].tame(check_string)

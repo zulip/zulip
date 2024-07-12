@@ -2,20 +2,7 @@ import inspect
 import os
 import types
 from collections import abc
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Union,
-    get_args,
-    get_origin,
-)
+from typing import Any, Callable, Mapping, Optional, Sequence, Union, get_args, get_origin
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -61,8 +48,8 @@ VARMAP = {
 
 
 def schema_type(
-    schema: Dict[str, Any], defs: Mapping[str, Any] = {}
-) -> Union[type, Tuple[type, object]]:
+    schema: dict[str, Any], defs: Mapping[str, Any] = {}
+) -> Union[type, tuple[type, object]]:
     if "oneOf" in schema:
         # Hack: Just use the type of the first value
         # Ideally, we'd turn this into a Union type.
@@ -114,7 +101,7 @@ class OpenAPIToolsTest(ZulipTestCase):
         with self.assertRaisesRegex(
             SchemaError, r"Additional properties are not allowed \('foo' was unexpected\)"
         ):
-            bad_content: Dict[str, object] = {
+            bad_content: dict[str, object] = {
                 "msg": "",
                 "result": "success",
                 "foo": "bar",
@@ -150,7 +137,7 @@ class OpenAPIToolsTest(ZulipTestCase):
         )
 
         # Overwrite the exception list with a mocked one
-        test_dict: Dict[str, Any] = {}
+        test_dict: dict[str, Any] = {}
 
         # Check that validate_against_openapi_schema correctly
         # descends into 'deep' objects and arrays.  Test 1 should
@@ -218,7 +205,7 @@ class OpenAPIToolsTest(ZulipTestCase):
 
 class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
-    checked_endpoints: Set[str] = set()
+    checked_endpoints: set[str] = set()
     pending_endpoints = {
         #### TODO: These endpoints are a priority to document:
         # These are a priority to document but don't match our normal URL schemes
@@ -289,7 +276,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
 
     # Endpoints where the documentation is currently failing our
     # consistency tests.  We aim to keep this list empty.
-    buggy_documentation_endpoints: Set[str] = set()
+    buggy_documentation_endpoints: set[str] = set()
 
     def ensure_no_documentation_if_intentionally_undocumented(
         self, url_pattern: str, method: str, msg: Optional[str] = None
@@ -325,8 +312,8 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
             raise AssertionError(msg)
 
     def get_type_by_priority(
-        self, types: Sequence[Union[type, Tuple[type, object]]]
-    ) -> Union[type, Tuple[type, object]]:
+        self, types: Sequence[Union[type, tuple[type, object]]]
+    ) -> Union[type, tuple[type, object]]:
         priority = {list: 1, dict: 2, str: 3, int: 4, bool: 5}
         tyiroirp = {1: list, 2: dict, 3: str, 4: int, 5: bool}
         val = 6
@@ -338,7 +325,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
                 val = v
         return tyiroirp.get(val, types[0])
 
-    def get_standardized_argument_type(self, t: Any) -> Union[type, Tuple[type, object]]:
+    def get_standardized_argument_type(self, t: Any) -> Union[type, tuple[type, object]]:
         """Given a type from the typing module such as List[str] or Union[str, int],
         convert it into a corresponding Python type. Unions are mapped to a canonical
         choice among the options.
@@ -364,9 +351,9 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
     def render_openapi_type_exception(
         self,
         function: Callable[..., HttpResponse],
-        openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]],
-        function_params: Set[Tuple[str, Union[type, Tuple[type, object]]]],
-        diff: Set[Tuple[str, Union[type, Tuple[type, object]]]],
+        openapi_params: set[tuple[str, Union[type, tuple[type, object]]]],
+        function_params: set[tuple[str, Union[type, tuple[type, object]]]],
+        diff: set[tuple[str, Union[type, tuple[type, object]]]],
     ) -> None:  # nocoverage
         """Print a *VERY* clear and verbose error message for when the types
         (between the OpenAPI documentation and the function declaration) don't match."""
@@ -395,7 +382,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         raise AssertionError(msg)
 
     def validate_json_schema(
-        self, function: Callable[..., HttpResponse], openapi_parameters: List[Parameter]
+        self, function: Callable[..., HttpResponse], openapi_parameters: list[Parameter]
     ) -> None:
         """Validate against the Pydantic generated JSON schema against our OpenAPI definitions"""
         USE_JSON_CONTENT_TYPE_HINT = f"""
@@ -475,7 +462,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
             self.render_openapi_type_exception(function, openapi_params, function_params, diff)
 
     def check_argument_types(
-        self, function: Callable[..., HttpResponse], openapi_parameters: List[Parameter]
+        self, function: Callable[..., HttpResponse], openapi_parameters: list[Parameter]
     ) -> None:
         """We construct for both the OpenAPI data and the function's definition a set of
         tuples of the form (var_name, type) and then compare those sets to see if the
@@ -496,8 +483,8 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         if use_endpoint_decorator:
             return self.validate_json_schema(function, openapi_parameters)
 
-        openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
-        json_params: Dict[str, Union[type, Tuple[type, object]]] = {}
+        openapi_params: set[tuple[str, Union[type, tuple[type, object]]]] = set()
+        json_params: dict[str, Union[type, tuple[type, object]]] = {}
         for openapi_parameter in openapi_parameters:
             name = openapi_parameter.name
             if openapi_parameter.json_encoded:
@@ -515,7 +502,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 continue
             openapi_params.add((name, schema_type(openapi_parameter.value_schema)))
 
-        function_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
+        function_params: set[tuple[str, Union[type, tuple[type, object]]]] = set()
 
         for pname, defval in inspect.signature(function).parameters.items():
             defval = defval.default
@@ -562,7 +549,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         function_name: str,
         function: Callable[..., HttpResponse],
         method: str,
-        tags: Set[str],
+        tags: set[str],
     ) -> None:
         # Our accounting logic in the `has_request_variables()`
         # code means we have the list of all arguments
@@ -665,7 +652,7 @@ so maybe we shouldn't include it in pending_endpoints.
         # for those using the rest_dispatch decorator; we then parse
         # its mapping of (HTTP_METHOD -> FUNCTION).
         for p in urlconf.v1_api_and_json_patterns + urlconf.v1_api_mobile_patterns:
-            methods_endpoints: Dict[str, Any] = {}
+            methods_endpoints: dict[str, Any] = {}
             if p.callback is not rest_dispatch:
                 # Endpoints not using rest_dispatch don't have extra data.
                 if str(p.pattern) in self.documented_post_only_endpoints:
@@ -680,7 +667,7 @@ so maybe we shouldn't include it in pending_endpoints.
             for method, value in methods_endpoints.items():
                 if callable(value):
                     function: Callable[..., HttpResponse] = value
-                    tags: Set[str] = set()
+                    tags: set[str] = set()
                 else:
                     function, tags = value
 
@@ -734,7 +721,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         },
     }
 
-    spec_mock_with_invalid_method: Dict[str, object] = {
+    spec_mock_with_invalid_method: dict[str, object] = {
         "security": [{"basicAuth": []}],
         "paths": {
             "/endpoint": {
@@ -851,7 +838,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         },
     }
 
-    def curl_example(self, endpoint: str, method: str, *args: Any, **kwargs: Any) -> List[str]:
+    def curl_example(self, endpoint: str, method: str, *args: Any, **kwargs: Any) -> list[str]:
         return generate_curl_example(endpoint, method, "http://localhost:9991/api", *args, **kwargs)
 
     def test_generate_and_render_curl_example(self) -> None:

@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
@@ -49,7 +47,7 @@ def api_netlify_webhook(
     return json_success(request)
 
 
-def get_template(request: HttpRequest, payload: WildValue) -> Tuple[str, str]:
+def get_template(request: HttpRequest, payload: WildValue) -> tuple[str, str]:
     message_template = "The build [{build_name}]({build_url}) on branch {branch_name} "
     event = validate_extract_webhook_http_header(request, "X-Netlify-Event", "Netlify")
 

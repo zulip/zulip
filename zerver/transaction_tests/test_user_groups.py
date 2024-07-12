@@ -1,5 +1,5 @@
 import threading
-from typing import Any, List, Optional
+from typing import Any, Optional
 from unittest import mock
 
 import orjson
@@ -63,7 +63,7 @@ def dev_update_subgroups(
 
 
 class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
-    created_user_groups: List[UserGroup] = []
+    created_user_groups: list[UserGroup] = []
     counter = 0
     CHAIN_LENGTH = 3
 
@@ -77,7 +77,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
 
         super().tearDown()
 
-    def create_user_group_chain(self, realm: Realm) -> List[NamedUserGroup]:
+    def create_user_group_chain(self, realm: Realm) -> list[NamedUserGroup]:
         """Build a user groups forming a chain through group-group memberships
         returning a list where each group is the supergroup of its subsequent group.
         """
@@ -101,7 +101,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
         class RacingThread(threading.Thread):
             def __init__(
                 self,
-                subgroup_ids: List[int],
+                subgroup_ids: list[int],
                 supergroup_id: int,
             ) -> None:
                 threading.Thread.__init__(self)

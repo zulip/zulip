@@ -1,4 +1,4 @@
-from typing import Collection, Dict, List, Optional, Set, Tuple, TypedDict, Union
+from typing import Collection, Optional, TypedDict, Union
 
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q, QuerySet
@@ -119,8 +119,8 @@ def render_stream_description(text: str, realm: Realm) -> str:
 def send_stream_creation_event(
     realm: Realm,
     stream: Stream,
-    user_ids: List[int],
-    recent_traffic: Optional[Dict[int, int]] = None,
+    user_ids: list[int],
+    recent_traffic: Optional[dict[int, int]] = None,
 ) -> None:
     event = dict(type="stream", op="create", streams=[stream_to_dict(stream, recent_traffic)])
     send_event_on_commit(realm, event, user_ids)
@@ -139,7 +139,7 @@ def create_stream_if_needed(
     message_retention_days: Optional[int] = None,
     can_remove_subscribers_group: Optional[UserGroup] = None,
     acting_user: Optional[UserProfile] = None,
-) -> Tuple[Stream, bool]:
+) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
     )
@@ -199,12 +199,12 @@ def create_stream_if_needed(
 
 
 def create_streams_if_needed(
-    realm: Realm, stream_dicts: List[StreamDict], acting_user: Optional[UserProfile] = None
-) -> Tuple[List[Stream], List[Stream]]:
+    realm: Realm, stream_dicts: list[StreamDict], acting_user: Optional[UserProfile] = None
+) -> tuple[list[Stream], list[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
-    added_streams: List[Stream] = []
-    existing_streams: List[Stream] = []
+    added_streams: list[Stream] = []
+    existing_streams: list[Stream] = []
     for stream_dict in stream_dicts:
         invite_only = stream_dict.get("invite_only", False)
         stream, created = create_stream_if_needed(
@@ -350,7 +350,7 @@ def check_stream_access_for_delete_or_update(
 
 def access_stream_for_delete_or_update(
     user_profile: UserProfile, stream_id: int
-) -> Tuple[Stream, Optional[Subscription]]:
+) -> tuple[Stream, Optional[Subscription]]:
     try:
         stream = Stream.objects.get(id=stream_id)
     except Stream.DoesNotExist:
@@ -436,7 +436,7 @@ def access_stream_by_id(
     stream_id: int,
     require_active: bool = True,
     allow_realm_admin: bool = False,
-) -> Tuple[Stream, Optional[Subscription]]:
+) -> tuple[Stream, Optional[Subscription]]:
     error = _("Invalid channel ID")
     try:
         stream = get_stream_by_id_in_realm(stream_id, user_profile.realm)
@@ -486,7 +486,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
 
 def access_stream_by_name(
     user_profile: UserProfile, stream_name: str, allow_realm_admin: bool = False
-) -> Tuple[Stream, Optional[Subscription]]:
+) -> tuple[Stream, Optional[Subscription]]:
     error = _("Invalid channel name '{channel_name}'").format(channel_name=stream_name)
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
@@ -547,14 +547,14 @@ def access_stream_to_remove_visibility_policy_by_id(
     return stream
 
 
-def private_stream_user_ids(stream_id: int) -> Set[int]:
+def private_stream_user_ids(stream_id: int) -> set[int]:
     subscriptions = get_active_subscriptions_for_stream_id(
         stream_id, include_deactivated_users=False
     )
     return {sub["user_profile_id"] for sub in subscriptions.values("user_profile_id")}
 
 
-def public_stream_user_ids(stream: Stream) -> Set[int]:
+def public_stream_user_ids(stream: Stream) -> set[int]:
     guest_subscriptions = get_active_subscriptions_for_stream_id(
         stream.id, include_deactivated_users=False
     ).filter(user_profile__role=UserProfile.ROLE_GUEST)
@@ -564,7 +564,7 @@ def public_stream_user_ids(stream: Stream) -> Set[int]:
     return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions_ids
 
 
-def can_access_stream_user_ids(stream: Stream) -> Set[int]:
+def can_access_stream_user_ids(stream: Stream) -> set[int]:
     # return user ids of users who can access the attributes of a
     # stream, such as its name/description.  Useful for sending events
     # to all users with access to a stream's attributes.
@@ -645,7 +645,7 @@ def can_remove_subscribers_from_stream(
 
 def filter_stream_authorization(
     user_profile: UserProfile, streams: Collection[Stream]
-) -> Tuple[List[Stream], List[Stream]]:
+) -> tuple[list[Stream], list[Stream]]:
     recipient_ids = [stream.recipient_id for stream in streams]
     subscribed_recipient_ids = set(
         Subscription.objects.filter(
@@ -653,7 +653,7 @@ def filter_stream_authorization(
         ).values_list("recipient_id", flat=True)
     )
 
-    unauthorized_streams: List[Stream] = []
+    unauthorized_streams: list[Stream] = []
     for stream in streams:
         # The user is authorized for their own streams
         if stream.recipient_id in subscribed_recipient_ids:
@@ -683,7 +683,7 @@ def list_to_streams(
     autocreate: bool = False,
     unsubscribing_others: bool = False,
     is_default_stream: bool = False,
-) -> Tuple[List[Stream], List[Stream]]:
+) -> tuple[list[Stream], list[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
@@ -707,8 +707,8 @@ def list_to_streams(
         assert stream_name == stream_name.strip()
         check_stream_name(stream_name)
 
-    existing_streams: List[Stream] = []
-    missing_stream_dicts: List[StreamDict] = []
+    existing_streams: list[Stream] = []
+    missing_stream_dicts: list[StreamDict] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
     if unsubscribing_others:
@@ -740,7 +740,7 @@ def list_to_streams(
     if len(missing_stream_dicts) == 0:
         # This is the happy path for callers who expected all of these
         # streams to exist already.
-        created_streams: List[Stream] = []
+        created_streams: list[Stream] = []
     else:
         # autocreate=True path starts here
         for stream_dict in missing_stream_dicts:
@@ -852,7 +852,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
 
 
 def stream_to_dict(
-    stream: Stream, recent_traffic: Optional[Dict[int, int]] = None
+    stream: Stream, recent_traffic: Optional[dict[int, int]] = None
 ) -> APIStreamDict:
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -886,7 +886,7 @@ def stream_to_dict(
     )
 
 
-def get_web_public_streams(realm: Realm) -> List[APIStreamDict]:  # nocoverage
+def get_web_public_streams(realm: Realm) -> list[APIStreamDict]:  # nocoverage
     query = get_web_public_streams_queryset(realm)
     streams = query.only(*Stream.API_FIELDS)
     stream_dicts = [stream_to_dict(stream) for stream in streams]
@@ -900,7 +900,7 @@ def get_streams_for_user(
     include_subscribed: bool = True,
     include_all_active: bool = False,
     include_owner_subscribed: bool = False,
-) -> List[Stream]:
+) -> list[Stream]:
     if include_all_active and not user_profile.is_realm_admin:
         raise JsonableError(_("User not authorized for this query"))
 
@@ -964,7 +964,7 @@ def do_get_streams(
     include_all_active: bool = False,
     include_default: bool = False,
     include_owner_subscribed: bool = False,
-) -> List[APIStreamDict]:
+) -> list[APIStreamDict]:
     # This function is only used by API clients now.
 
     streams = get_streams_for_user(

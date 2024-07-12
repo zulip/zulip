@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -72,7 +72,7 @@ class MessageDictTest(ZulipTestCase):
 
         def get_send_message_payload(
             msg_id: int, apply_markdown: bool, client_gravatar: bool
-        ) -> Dict[str, Any]:
+        ) -> dict[str, Any]:
             msg = reload_message(msg_id)
             wide_dict = MessageDict.wide_dict(msg)
 
@@ -85,7 +85,7 @@ class MessageDictTest(ZulipTestCase):
 
         def get_fetch_payload(
             msg_id: int, apply_markdown: bool, client_gravatar: bool
-        ) -> Dict[str, Any]:
+        ) -> dict[str, Any]:
             msg = reload_message(msg_id)
             unhydrated_dict = MessageDict.messages_to_encoded_cache_helper([msg])[0]
             # The next step mutates the dict in place
@@ -260,7 +260,7 @@ class MessageDictTest(ZulipTestCase):
             msg_id = self.send_stream_message(sender, "Denmark", "hello world", topic_name, realm)
             return Message.objects.get(id=msg_id)
 
-        def assert_topic_links(links: List[Dict[str, str]], msg: Message) -> None:
+        def assert_topic_links(links: list[dict[str, str]], msg: Message) -> None:
             dct = MessageDict.messages_to_encoded_cache_helper([msg])[0]
             self.assertEqual(dct[TOPIC_LINKS], links)
 
@@ -348,7 +348,7 @@ class MessageHydrationTest(ZulipTestCase):
 
     def test_hydrate_pm_recipient_info(self) -> None:
         cordelia = self.example_user("cordelia")
-        display_recipient: List[UserDisplayRecipient] = [
+        display_recipient: list[UserDisplayRecipient] = [
             dict(
                 email="aaron@example.com",
                 full_name="Aaron Smith",
@@ -524,7 +524,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
     def _verify_display_recipient(
         self,
         display_recipient: DisplayRecipientT,
-        expected_recipient_objects: List[UserProfile],
+        expected_recipient_objects: list[UserProfile],
     ) -> None:
         for user_profile in expected_recipient_objects:
             recipient_dict: UserDisplayRecipient = {

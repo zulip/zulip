@@ -8,18 +8,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from enum import Enum
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    Literal,
-    Optional,
-    Tuple,
-    TypedDict,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Generator, Literal, Optional, TypedDict, TypeVar, Union
 from urllib.parse import urlencode, urljoin
 
 import stripe
@@ -187,7 +176,7 @@ def get_seat_count(
     return max(non_guests, math.ceil(guests / 5))
 
 
-def sign_string(string: str) -> Tuple[str, str]:
+def sign_string(string: str) -> tuple[str, str]:
     salt = secrets.token_hex(32)
     signer = Signer(salt=salt)
     return signer.sign(string), salt
@@ -541,7 +530,7 @@ class PriceArgs(TypedDict, total=False):
 class StripeCustomerData:
     description: str
     email: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -754,7 +743,7 @@ class BillingSession(ABC):
         event_time: datetime,
         *,
         background_update: bool = False,
-        extra_data: Optional[Dict[str, Any]] = None,
+        extra_data: Optional[dict[str, Any]] = None,
     ) -> None:
         pass
 
@@ -764,8 +753,8 @@ class BillingSession(ABC):
 
     @abstractmethod
     def update_data_for_checkout_session_and_invoice_payment(
-        self, metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, metadata: dict[str, Any]
+    ) -> dict[str, Any]:
         pass
 
     @abstractmethod
@@ -956,7 +945,7 @@ class BillingSession(ABC):
 
     @abstractmethod
     def update_or_create_customer(
-        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
+        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[dict[str, Any]] = None
     ) -> Customer:
         pass
 
@@ -1013,11 +1002,11 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
+    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
         pass
 
     @abstractmethod
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, str]:
+    def get_metadata_for_stripe_update_card(self) -> dict[str, str]:
         pass
 
     @abstractmethod
@@ -1142,7 +1131,7 @@ class BillingSession(ABC):
 
     def create_stripe_invoice_and_charge(
         self,
-        metadata: Dict[str, Any],
+        metadata: dict[str, Any],
     ) -> str:
         """
         Charge customer based on `billing_modality`. If `billing_modality` is `charge_automatically`,
@@ -1217,7 +1206,7 @@ class BillingSession(ABC):
         self,
         manual_license_management: bool,
         tier: int,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         metadata = self.get_metadata_for_stripe_update_card()
         customer = self.update_or_create_stripe_customer()
         assert customer.stripe_customer_id is not None
@@ -1252,7 +1241,7 @@ class BillingSession(ABC):
             "stripe_session_id": stripe_session.id,
         }
 
-    def create_card_update_session(self) -> Dict[str, Any]:
+    def create_card_update_session(self) -> dict[str, Any]:
         metadata = self.get_metadata_for_stripe_update_card()
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
@@ -1429,7 +1418,7 @@ class BillingSession(ABC):
         required_plan_tier_name = CustomerPlan.name_from_tier(customer.required_plan_tier)
 
         fixed_price_cents = fixed_price * 100
-        fixed_price_plan_params: Dict[str, Any] = {
+        fixed_price_plan_params: dict[str, Any] = {
             "fixed_price": fixed_price_cents,
             "tier": customer.required_plan_tier,
         }
@@ -1591,7 +1580,7 @@ class BillingSession(ABC):
                     ]
                 )
 
-                def write_to_audit_log_plan_property_changed(extra_data: Dict[str, Any]) -> None:
+                def write_to_audit_log_plan_property_changed(extra_data: dict[str, Any]) -> None:
                     extra_data["plan_id"] = plan.id
                     self.write_to_audit_log(
                         event_type=AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED,
@@ -1942,7 +1931,7 @@ class BillingSession(ABC):
                 current_plan_id=plan.id,
             )
 
-    def do_upgrade(self, upgrade_request: UpgradeRequest) -> Dict[str, Any]:
+    def do_upgrade(self, upgrade_request: UpgradeRequest) -> dict[str, Any]:
         customer = self.get_customer()
         if customer is not None:
             self.ensure_current_plan_is_upgradable(customer, upgrade_request.tier)
@@ -1977,7 +1966,7 @@ class BillingSession(ABC):
             "annual": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             "monthly": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
         }[schedule]
-        data: Dict[str, Any] = {}
+        data: dict[str, Any] = {}
 
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         free_trial = is_free_trial_offer_enabled(is_self_hosted_billing, upgrade_request.tier)
@@ -2120,7 +2109,7 @@ class BillingSession(ABC):
     @transaction.atomic
     def make_end_of_cycle_updates_if_needed(
         self, plan: CustomerPlan, event_time: datetime
-    ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
+    ) -> tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
         last_ledger_entry = (
             LicenseLedger.objects.filter(plan=plan, event_time__lte=event_time)
             .order_by("-id")
@@ -2338,7 +2327,7 @@ class BillingSession(ABC):
         plan: CustomerPlan,
         last_ledger_entry: LicenseLedger,
         now: datetime,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
         downgrade_at_end_of_free_trial = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
@@ -2483,7 +2472,7 @@ class BillingSession(ABC):
         }
         return context
 
-    def get_billing_page_context(self) -> Dict[str, Any]:
+    def get_billing_page_context(self) -> dict[str, Any]:
         now = timezone_now()
 
         customer = self.get_customer()
@@ -2524,7 +2513,7 @@ class BillingSession(ABC):
                 context[key] = next_plan_context[key]
         return context
 
-    def get_flat_discount_info(self, customer: Optional[Customer] = None) -> Tuple[int, int]:
+    def get_flat_discount_info(self, customer: Optional[Customer] = None) -> tuple[int, int]:
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         flat_discount = 0
         flat_discounted_months = 0
@@ -2542,7 +2531,7 @@ class BillingSession(ABC):
 
     def get_initial_upgrade_context(
         self, initial_upgrade_request: InitialUpgradeRequest
-    ) -> Tuple[Optional[str], Optional[UpgradePageContext]]:
+    ) -> tuple[Optional[str], Optional[UpgradePageContext]]:
         customer = self.get_customer()
 
         # Allow users to upgrade to business regardless of current sponsorship status.
@@ -3200,7 +3189,7 @@ class BillingSession(ABC):
         assert type_of_tier_change == PlanTierChangeType.DOWNGRADE  # nocoverage
         return ""  # nocoverage
 
-    def get_event_status(self, event_status_request: EventStatusRequest) -> Dict[str, Any]:
+    def get_event_status(self, event_status_request: EventStatusRequest) -> dict[str, Any]:
         customer = self.get_customer()
 
         if customer is None:
@@ -3261,7 +3250,7 @@ class BillingSession(ABC):
 
         return sponsored_plan_name
 
-    def get_sponsorship_request_context(self) -> Optional[Dict[str, Any]]:
+    def get_sponsorship_request_context(self) -> Optional[dict[str, Any]]:
         customer = self.get_customer()
         is_remotely_hosted = isinstance(
             self, (RemoteRealmBillingSession, RemoteServerBillingSession)
@@ -3271,7 +3260,7 @@ class BillingSession(ABC):
         if is_remotely_hosted:
             plan_name = "Free"
 
-        context: Dict[str, Any] = {
+        context: dict[str, Any] = {
             "billing_base_url": self.billing_base_url,
             "is_remotely_hosted": is_remotely_hosted,
             "sponsorship_plan_name": self.get_sponsorship_plan_name(customer, is_remotely_hosted),
@@ -3837,7 +3826,7 @@ class RealmBillingSession(BillingSession):
         event_time: datetime,
         *,
         background_update: bool = False,
-        extra_data: Optional[Dict[str, Any]] = None,
+        extra_data: Optional[dict[str, Any]] = None,
     ) -> None:
         audit_log_event = self.get_audit_log_event(event_type)
         audit_log_data = {
@@ -3859,7 +3848,7 @@ class RealmBillingSession(BillingSession):
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
         assert self.user is not None
-        metadata: Dict[str, Any] = {}
+        metadata: dict[str, Any] = {}
         metadata["realm_id"] = self.realm.id
         metadata["realm_str"] = self.realm.string_id
         realm_stripe_customer_data = StripeCustomerData(
@@ -3871,8 +3860,8 @@ class RealmBillingSession(BillingSession):
 
     @override
     def update_data_for_checkout_session_and_invoice_payment(
-        self, metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, metadata: dict[str, Any]
+    ) -> dict[str, Any]:
         assert self.user is not None
         updated_metadata = dict(
             user_email=self.get_email(),
@@ -3885,7 +3874,7 @@ class RealmBillingSession(BillingSession):
 
     @override
     def update_or_create_customer(
-        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
+        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[dict[str, Any]] = None
     ) -> Customer:
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
@@ -3986,7 +3975,7 @@ class RealmBillingSession(BillingSession):
         return self.realm.plan_type == self.realm.PLAN_TYPE_STANDARD_FREE
 
     @override
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, str]:
+    def get_metadata_for_stripe_update_card(self) -> dict[str, str]:
         assert self.user is not None
         return {
             "type": "card_update",
@@ -4051,7 +4040,7 @@ class RealmBillingSession(BillingSession):
         return self.realm.name
 
     @override
-    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
+    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.realm.org_type,
             sorted_org_types=sorted(
@@ -4166,7 +4155,7 @@ class RemoteRealmBillingSession(BillingSession):
         # possible, in that the self-hosted server will have uploaded
         # current audit log data as needed as part of logging the user
         # in.
-        missing_data_context: Dict[str, Any] = {
+        missing_data_context: dict[str, Any] = {
             "remote_realm_session": True,
             "supports_remote_realms": self.remote_realm.server.last_api_feature_level is not None,
         }
@@ -4216,7 +4205,7 @@ class RemoteRealmBillingSession(BillingSession):
         event_time: datetime,
         *,
         background_update: bool = False,
-        extra_data: Optional[Dict[str, Any]] = None,
+        extra_data: Optional[dict[str, Any]] = None,
     ) -> None:
         # These audit logs don't use all the fields of `RemoteRealmAuditLog`:
         #
@@ -4250,7 +4239,7 @@ class RemoteRealmBillingSession(BillingSession):
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
-        metadata: Dict[str, Any] = {}
+        metadata: dict[str, Any] = {}
         metadata["remote_realm_uuid"] = self.remote_realm.uuid
         metadata["remote_realm_host"] = str(self.remote_realm.host)
         realm_stripe_customer_data = StripeCustomerData(
@@ -4262,8 +4251,8 @@ class RemoteRealmBillingSession(BillingSession):
 
     @override
     def update_data_for_checkout_session_and_invoice_payment(
-        self, metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, metadata: dict[str, Any]
+    ) -> dict[str, Any]:
         assert self.remote_billing_user is not None
         updated_metadata = dict(
             remote_realm_user_id=self.remote_billing_user.id,
@@ -4275,7 +4264,7 @@ class RemoteRealmBillingSession(BillingSession):
 
     @override
     def update_or_create_customer(
-        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
+        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[dict[str, Any]] = None
     ) -> Customer:
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
@@ -4381,7 +4370,7 @@ class RemoteRealmBillingSession(BillingSession):
         return self.remote_realm.plan_type == self.remote_realm.PLAN_TYPE_COMMUNITY
 
     @override
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, str]:  # nocoverage
+    def get_metadata_for_stripe_update_card(self) -> dict[str, str]:  # nocoverage
         assert self.remote_billing_user is not None
         return {"type": "card_update", "remote_realm_user_id": str(self.remote_billing_user.id)}
 
@@ -4487,7 +4476,7 @@ class RemoteRealmBillingSession(BillingSession):
         return self.remote_realm.host
 
     @override
-    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
+    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.remote_realm.org_type,
             sorted_org_types=sorted(
@@ -4659,7 +4648,7 @@ class RemoteServerBillingSession(BillingSession):
         event_time: datetime,
         *,
         background_update: bool = False,
-        extra_data: Optional[Dict[str, Any]] = None,
+        extra_data: Optional[dict[str, Any]] = None,
     ) -> None:
         audit_log_event = self.get_audit_log_event(event_type)
         log_data = {
@@ -4687,7 +4676,7 @@ class RemoteServerBillingSession(BillingSession):
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
-        metadata: Dict[str, Any] = {}
+        metadata: dict[str, Any] = {}
         metadata["remote_server_uuid"] = self.remote_server.uuid
         metadata["remote_server_str"] = str(self.remote_server)
         realm_stripe_customer_data = StripeCustomerData(
@@ -4699,8 +4688,8 @@ class RemoteServerBillingSession(BillingSession):
 
     @override
     def update_data_for_checkout_session_and_invoice_payment(
-        self, metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, metadata: dict[str, Any]
+    ) -> dict[str, Any]:
         assert self.remote_billing_user is not None
         updated_metadata = dict(
             remote_server_user_id=self.remote_billing_user.id,
@@ -4712,7 +4701,7 @@ class RemoteServerBillingSession(BillingSession):
 
     @override
     def update_or_create_customer(
-        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
+        self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[dict[str, Any]] = None
     ) -> Customer:
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
@@ -4848,7 +4837,7 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_server.plan_type == self.remote_server.PLAN_TYPE_COMMUNITY
 
     @override
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, str]:  # nocoverage
+    def get_metadata_for_stripe_update_card(self) -> dict[str, str]:  # nocoverage
         assert self.remote_billing_user is not None
         return {"type": "card_update", "remote_server_user_id": str(self.remote_billing_user.id)}
 
@@ -4936,7 +4925,7 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_server.hostname
 
     @override
-    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:  # nocoverage
+    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:  # nocoverage
         context.update(
             realm_org_type=self.remote_server.org_type,
             sorted_org_types=sorted(
@@ -5025,7 +5014,7 @@ def get_price_per_license(
             # We already have a set discounted price for the current tier.
             return price_per_license
 
-    price_map: Dict[int, Dict[str, int]] = {
+    price_map: dict[int, dict[str, int]] = {
         CustomerPlan.TIER_CLOUD_STANDARD: {"Annual": 8000, "Monthly": 800},
         CustomerPlan.TIER_CLOUD_PLUS: {"Annual": 12000, "Monthly": 1200},
         CustomerPlan.TIER_SELF_HOSTED_BASIC: {"Annual": 4200, "Monthly": 350},
@@ -5047,7 +5036,7 @@ def get_price_per_license(
 
 def get_price_per_license_and_discount(
     tier: int, billing_schedule: int, customer: Optional[Customer]
-) -> Tuple[int, Union[str, None]]:
+) -> tuple[int, Union[str, None]]:
     original_price_per_license = get_price_per_license(tier, billing_schedule)
     if customer is None:
         return original_price_per_license, None
@@ -5070,7 +5059,7 @@ def compute_plan_parameters(
     billing_cycle_anchor: Optional[datetime] = None,
     is_self_hosted_billing: bool = False,
     should_schedule_upgrade_for_legacy_remote_server: bool = False,
-) -> Tuple[datetime, datetime, datetime, int]:
+) -> tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
     # TODO talk about leap seconds?
@@ -5354,7 +5343,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
             billing_session = RealmBillingSession(user=None, realm=realm)
             billing_session.downgrade_now_without_creating_additional_invoices()
             billing_session.void_all_open_invoices()
-            context: Dict[str, Union[str, Realm]] = {
+            context: dict[str, Union[str, Realm]] = {
                 "upgrade_url": f"{realm.url}{reverse('upgrade_page')}",
                 "realm": realm,
             }

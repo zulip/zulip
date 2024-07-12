@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from typing import Dict, Iterable, Optional, Sequence, Union, cast
+from typing import Iterable, Optional, Sequence, Union, cast
 
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -233,7 +233,7 @@ def send_message_backend(
         # automatically marked as read for yourself.
         read_by_sender = client.default_read_by_sender()
 
-    data: Dict[str, int] = {}
+    data: dict[str, int] = {}
     sent_message_result = check_send_message(
         sender,
         client,

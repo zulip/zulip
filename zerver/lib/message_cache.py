@@ -2,7 +2,7 @@ import copy
 import zlib
 from datetime import datetime
 from email.headerregistry import Address
-from typing import Any, Dict, Iterable, List, Optional, TypedDict
+from typing import Any, Iterable, Optional, TypedDict
 
 import orjson
 
@@ -30,8 +30,8 @@ class RawReactionRow(TypedDict):
 
 
 def sew_messages_and_reactions(
-    messages: List[Dict[str, Any]], reactions: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
+    messages: list[dict[str, Any]], reactions: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
     """Given a iterable of messages and reactions stitch reactions
     into messages.
     """
@@ -49,7 +49,7 @@ def sew_messages_and_reactions(
 
 
 def sew_messages_and_submessages(
-    messages: List[Dict[str, Any]], submessages: List[Dict[str, Any]]
+    messages: list[dict[str, Any]], submessages: list[dict[str, Any]]
 ) -> None:
     # This is super similar to sew_messages_and_reactions.
     for message in messages:
@@ -64,11 +64,11 @@ def sew_messages_and_submessages(
             message["submessages"].append(submessage)
 
 
-def extract_message_dict(message_bytes: bytes) -> Dict[str, Any]:
+def extract_message_dict(message_bytes: bytes) -> dict[str, Any]:
     return orjson.loads(zlib.decompress(message_bytes))
 
 
-def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
+def stringify_message_dict(message_dict: dict[str, Any]) -> bytes:
     return zlib.compress(orjson.dumps(message_dict))
 
 
@@ -79,7 +79,7 @@ def message_to_encoded_cache(message: Message, realm_id: Optional[int] = None) -
 
 def update_message_cache(
     changed_messages: Iterable[Message], realm_id: Optional[int] = None
-) -> List[int]:
+) -> list[int]:
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
     items_for_remote_cache = {}
@@ -107,7 +107,7 @@ def save_message_rendered_content(message: Message, content: str) -> str:
 
 class ReactionDict:
     @staticmethod
-    def build_dict_from_raw_db_row(row: RawReactionRow) -> Dict[str, Any]:
+    def build_dict_from_raw_db_row(row: RawReactionRow) -> dict[str, Any]:
         return {
             "emoji_name": row["emoji_name"],
             "emoji_code": row["emoji_code"],
@@ -151,7 +151,7 @@ class MessageDict:
     """
 
     @staticmethod
-    def wide_dict(message: Message, realm_id: Optional[int] = None) -> Dict[str, Any]:
+    def wide_dict(message: Message, realm_id: Optional[int] = None) -> dict[str, Any]:
         """
         The next two lines get the cacheable field related
         to our message object, with the side effect of
@@ -173,7 +173,7 @@ class MessageDict:
 
     @staticmethod
     def post_process_dicts(
-        objs: List[Dict[str, Any]],
+        objs: list[dict[str, Any]],
         apply_markdown: bool,
         client_gravatar: bool,
         realm: Realm,
@@ -202,14 +202,14 @@ class MessageDict:
 
     @staticmethod
     def finalize_payload(
-        obj: Dict[str, Any],
+        obj: dict[str, Any],
         apply_markdown: bool,
         client_gravatar: bool,
         keep_rendered_content: bool = False,
         skip_copy: bool = False,
         can_access_sender: bool = True,
         realm_host: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         By default, we make a shallow copy of the incoming dict to avoid
         mutation-related bugs.  Code paths that are passing a unique object
@@ -262,8 +262,8 @@ class MessageDict:
 
     @staticmethod
     def sew_submessages_and_reactions_to_msgs(
-        messages: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        messages: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         msg_ids = [msg["id"] for msg in messages]
         submessages = SubMessage.get_raw_db_rows(msg_ids)
         sew_messages_and_submessages(messages, submessages)
@@ -274,7 +274,7 @@ class MessageDict:
     @staticmethod
     def messages_to_encoded_cache(
         messages: Iterable[Message], realm_id: Optional[int] = None
-    ) -> Dict[int, bytes]:
+    ) -> dict[int, bytes]:
         messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
         return encoded_messages
@@ -282,7 +282,7 @@ class MessageDict:
     @staticmethod
     def messages_to_encoded_cache_helper(
         messages: Iterable[Message], realm_id: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
         # code path that accepts already fetched Message objects
         # rather than message IDs.
@@ -321,7 +321,7 @@ class MessageDict:
         return [MessageDict.build_dict_from_raw_db_row(row) for row in message_rows]
 
     @staticmethod
-    def ids_to_dict(needed_ids: List[int]) -> List[Dict[str, Any]]:
+    def ids_to_dict(needed_ids: list[int]) -> list[dict[str, Any]]:
         # This is a special purpose function optimized for
         # callers like get_messages_backend().
         fields = [
@@ -346,7 +346,7 @@ class MessageDict:
         return [MessageDict.build_dict_from_raw_db_row(row) for row in messages]
 
     @staticmethod
-    def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    def build_dict_from_raw_db_row(row: dict[str, Any]) -> dict[str, Any]:
         """
         row is a row from a .values() call, and it needs to have
         all the relevant fields populated
@@ -388,9 +388,9 @@ class MessageDict:
         recipient_id: int,
         recipient_type: int,
         recipient_type_id: int,
-        reactions: List[RawReactionRow],
-        submessages: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        reactions: list[RawReactionRow],
+        submessages: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         obj = dict(
             id=message_id,
             sender_id=sender_id,
@@ -413,7 +413,7 @@ class MessageDict:
         if last_edit_time is not None:
             obj["last_edit_timestamp"] = datetime_to_timestamp(last_edit_time)
             assert edit_history_json is not None
-            edit_history: List[EditHistoryEvent] = orjson.loads(edit_history_json)
+            edit_history: list[EditHistoryEvent] = orjson.loads(edit_history_json)
             obj["edit_history"] = edit_history
 
         if Message.need_to_render_content(
@@ -455,7 +455,7 @@ class MessageDict:
         return obj
 
     @staticmethod
-    def bulk_hydrate_sender_info(objs: List[Dict[str, Any]]) -> None:
+    def bulk_hydrate_sender_info(objs: list[dict[str, Any]]) -> None:
         sender_ids = list({obj["sender_id"] for obj in objs})
 
         if not sender_ids:
@@ -490,7 +490,7 @@ class MessageDict:
             obj["sender_email_address_visibility"] = user_row["email_address_visibility"]
 
     @staticmethod
-    def hydrate_recipient_info(obj: Dict[str, Any], display_recipient: DisplayRecipientT) -> None:
+    def hydrate_recipient_info(obj: dict[str, Any], display_recipient: DisplayRecipientT) -> None:
         """
         This method hyrdrates recipient info with things
         like full names and emails of senders.  Eventually
@@ -532,7 +532,7 @@ class MessageDict:
             obj["stream_id"] = recipient_type_id
 
     @staticmethod
-    def bulk_hydrate_recipient_info(objs: List[Dict[str, Any]]) -> None:
+    def bulk_hydrate_recipient_info(objs: list[dict[str, Any]]) -> None:
         recipient_tuples = {  # We use set to eliminate duplicate tuples.
             (
                 obj["recipient_id"],
@@ -548,7 +548,7 @@ class MessageDict:
 
     @staticmethod
     def set_sender_avatar(
-        obj: Dict[str, Any], client_gravatar: bool, can_access_sender: bool = True
+        obj: dict[str, Any], client_gravatar: bool, can_access_sender: bool = True
     ) -> None:
         if not can_access_sender:
             obj["avatar_url"] = get_avatar_for_inaccessible_user()

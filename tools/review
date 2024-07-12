@@ -2,7 +2,6 @@
 import shlex
 import subprocess
 import sys
-from typing import List
 
 
 def exit(message: str) -> None:
@@ -11,12 +10,12 @@ def exit(message: str) -> None:
     sys.exit(1)
 
 
-def run(command: List[str]) -> None:
+def run(command: list[str]) -> None:
     print(f"\n>>> {shlex.join(command)}")
     subprocess.check_call(command)
 
 
-def check_output(command: List[str]) -> str:
+def check_output(command: list[str]) -> str:
     return subprocess.check_output(command, text=True)
 
 

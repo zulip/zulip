@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import timedelta
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
+from typing import Any, Iterable, Optional, Sequence
 
 from django.conf import settings
 from django.db import transaction
@@ -133,7 +133,7 @@ def set_up_streams_for_new_human_user(
     realm = user_profile.realm
 
     if prereg_user is not None:
-        streams: List[Stream] = list(prereg_user.streams.all())
+        streams: list[Stream] = list(prereg_user.streams.all())
         acting_user: Optional[UserProfile] = prereg_user.referred_by
 
         # A PregistrationUser should not be used for another UserProfile
@@ -351,10 +351,10 @@ def process_new_human_user(
     OnboardingStep.objects.create(user=user_profile, onboarding_step="visibility_policy_banner")
 
 
-def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -> None:
+def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -> None:
     user_row = user_profile_to_user_row(user_profile)
 
-    format_user_row_kwargs: Dict[str, Any] = {
+    format_user_row_kwargs: dict[str, Any] = {
         "realm_id": user_profile.realm_id,
         "row": user_row,
         # Since we don't know what the client
@@ -370,8 +370,8 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -
         "custom_profile_field_data": {},
     }
 
-    user_ids_without_access_to_created_user: List[int] = []
-    users_with_access_to_created_users: List[UserProfile] = []
+    user_ids_without_access_to_created_user: list[int] = []
+    users_with_access_to_created_users: list[UserProfile] = []
 
     if notify_user_ids:
         # This is currently used to send creation event when a guest
@@ -427,7 +427,7 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -
 
     if user_ids_with_real_email_access:
         assert person_for_real_email_access_users is not None
-        event: Dict[str, Any] = dict(
+        event: dict[str, Any] = dict(
             type="realm_user", op="add", person=person_for_real_email_access_users
         )
         send_event_on_commit(user_profile.realm, event, user_ids_with_real_email_access)
@@ -447,7 +447,7 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -
         send_event_on_commit(user_profile.realm, event, user_ids_without_access_to_created_user)
 
 
-def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
+def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
     def stream_name(stream: Optional[Stream]) -> Optional[str]:
         if not stream:
             return None
@@ -749,7 +749,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         streams=subscribed_streams,
     )
 
-    altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
+    altered_user_dict: dict[int, set[int]] = defaultdict(set)
     for stream in subscribed_streams:
         altered_user_dict[stream.id] = {user_profile.id}
 

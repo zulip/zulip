@@ -3,7 +3,7 @@ import os
 import random
 import shutil
 import unittest
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, Iterable, Optional, Union
 from unittest import TestSuite, runner
 from unittest.result import TestResult
 
@@ -56,9 +56,9 @@ class TextTestResult(runner.TextTestResult):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.failed_tests: List[str] = []
+        self.failed_tests: list[str] = []
 
-    def addInstrumentation(self, test: unittest.TestCase, data: Dict[str, Any]) -> None:
+    def addInstrumentation(self, test: unittest.TestCase, data: dict[str, Any]) -> None:
         append_instrumentation_data(data)
 
     @override
@@ -96,7 +96,7 @@ class RemoteTestResult(django_runner.RemoteTestResult):
     base class.
     """
 
-    def addInstrumentation(self, test: unittest.TestCase, data: Dict[str, Any]) -> None:
+    def addInstrumentation(self, test: unittest.TestCase, data: dict[str, Any]) -> None:
         # Some elements of data['info'] cannot be serialized.
         if "info" in data:
             del data["info"]
@@ -104,16 +104,16 @@ class RemoteTestResult(django_runner.RemoteTestResult):
         self.events.append(("addInstrumentation", self.test_index, data))
 
 
-def process_instrumented_calls(func: Callable[[Dict[str, Any]], None]) -> None:
+def process_instrumented_calls(func: Callable[[dict[str, Any]], None]) -> None:
     for call in test_helpers.INSTRUMENTED_CALLS:
         func(call)
 
 
-SerializedSubsuite: TypeAlias = Tuple[Type[TestSuite], List[str]]
-SubsuiteArgs: TypeAlias = Tuple[Type["RemoteTestRunner"], int, SerializedSubsuite, bool, bool]
+SerializedSubsuite: TypeAlias = tuple[type[TestSuite], list[str]]
+SubsuiteArgs: TypeAlias = tuple[type["RemoteTestRunner"], int, SerializedSubsuite, bool, bool]
 
 
-def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
+def run_subsuite(args: SubsuiteArgs) -> tuple[int, Any]:
     # Reset the accumulated INSTRUMENTED_CALLS before running this subsuite.
     test_helpers.INSTRUMENTED_CALLS = []
     # The first argument is the test runner class but we don't need it
@@ -181,12 +181,12 @@ def create_test_databases(worker_id: int) -> None:
 
 def init_worker(
     counter: "multiprocessing.sharedctypes.Synchronized[int]",
-    initial_settings: Optional[Dict[str, Any]] = None,
-    serialized_contents: Optional[Dict[str, str]] = None,
+    initial_settings: Optional[dict[str, Any]] = None,
+    serialized_contents: Optional[dict[str, str]] = None,
     process_setup: Optional[Callable[..., None]] = None,
-    process_setup_args: Optional[Tuple[Any, ...]] = None,
+    process_setup_args: Optional[tuple[Any, ...]] = None,
     debug_mode: Optional[bool] = None,
-    used_aliases: Optional[Set[str]] = None,
+    used_aliases: Optional[set[str]] = None,
 ) -> None:
     """
     This function runs only under parallel mode. It initializes the
@@ -259,17 +259,17 @@ class Runner(DiscoverRunner):
 
         # `templates_rendered` holds templates which were rendered
         # in proper logical tests.
-        self.templates_rendered: Set[str] = set()
+        self.templates_rendered: set[str] = set()
         # `shallow_tested_templates` holds templates which were rendered
         # in `zerver.tests.test_templates`.
-        self.shallow_tested_templates: Set[str] = set()
+        self.shallow_tested_templates: set[str] = set()
         template_rendered.connect(self.on_template_rendered)
 
     @override
-    def get_resultclass(self) -> Optional[Type[TextTestResult]]:
+    def get_resultclass(self) -> Optional[type[TextTestResult]]:
         return TextTestResult
 
-    def on_template_rendered(self, sender: Any, context: Dict[str, Any], **kwargs: Any) -> None:
+    def on_template_rendered(self, sender: Any, context: dict[str, Any], **kwargs: Any) -> None:
         if hasattr(sender, "template"):
             template_name = sender.template.name
             if template_name not in self.templates_rendered:
@@ -279,7 +279,7 @@ class Runner(DiscoverRunner):
                     self.templates_rendered.add(template_name)
                     self.shallow_tested_templates.discard(template_name)
 
-    def get_shallow_tested_templates(self) -> Set[str]:
+    def get_shallow_tested_templates(self) -> set[str]:
         return self.shallow_tested_templates
 
     @override
@@ -334,7 +334,7 @@ class Runner(DiscoverRunner):
         return super().teardown_test_environment(*args, **kwargs)
 
     def test_imports(
-        self, test_labels: List[str], suite: Union[TestSuite, ParallelTestSuite]
+        self, test_labels: list[str], suite: Union[TestSuite, ParallelTestSuite]
     ) -> None:
         prefix = "unittest.loader._FailedTest."
         for test_name in get_test_names(suite):
@@ -359,7 +359,7 @@ class Runner(DiscoverRunner):
     @override
     def run_tests(
         self,
-        test_labels: List[str],
+        test_labels: list[str],
         failed_tests_path: Optional[str] = None,
         full_suite: bool = False,
         include_webhooks: bool = False,
@@ -396,7 +396,7 @@ class Runner(DiscoverRunner):
         return failed
 
 
-def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
+def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> list[str]:
     if isinstance(suite, ParallelTestSuite):
         return [name for subsuite in suite.subsuites for name in get_test_names(subsuite)]
     else:

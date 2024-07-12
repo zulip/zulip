@@ -1,19 +1,6 @@
 import re
 from dataclasses import dataclass
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Generic, Iterable, Optional, Sequence, TypeVar, Union
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -101,7 +88,7 @@ class NarrowParameter(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def convert_term(cls, elem: Union[Dict[str, Any], List[str]]) -> Dict[str, Any]:
+    def convert_term(cls, elem: Union[dict[str, Any], list[str]]) -> dict[str, Any]:
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
             if len(elem) != 2 or any(not isinstance(x, str) for x in elem):
@@ -669,7 +656,7 @@ class NarrowBuilder:
         )
         return query.where(maybe_negate(cond))
 
-    def _get_direct_message_group_recipients(self, other_user: UserProfile) -> Set[int]:
+    def _get_direct_message_group_recipients(self, other_user: UserProfile) -> set[int]:
         self_recipient_ids = [
             recipient_tuple["recipient_id"]
             for recipient_tuple in Subscription.objects.filter(
@@ -823,7 +810,7 @@ class NarrowBuilder:
 
 
 def ok_to_include_history(
-    narrow: Optional[List[NarrowParameter]],
+    narrow: Optional[list[NarrowParameter]],
     user_profile: Optional[UserProfile],
     is_web_public_query: bool,
 ) -> bool:
@@ -875,7 +862,7 @@ def ok_to_include_history(
 
 
 def get_channel_from_narrow_access_unchecked(
-    narrow: Optional[List[NarrowParameter]], realm: Realm
+    narrow: Optional[list[NarrowParameter]], realm: Realm
 ) -> Optional[Stream]:
     if narrow is not None:
         for term in narrow:
@@ -961,9 +948,9 @@ def update_narrow_terms_containing_with_operator(
 
 
 def exclude_muting_conditions(
-    user_profile: UserProfile, narrow: Optional[List[NarrowParameter]]
-) -> List[ClauseElement]:
-    conditions: List[ClauseElement] = []
+    user_profile: UserProfile, narrow: Optional[list[NarrowParameter]]
+) -> list[ClauseElement]:
+    conditions: list[ClauseElement] = []
     channel_id = None
     try:
         # Note: It is okay here to not check access to channel
@@ -1007,7 +994,7 @@ def exclude_muting_conditions(
 
 def get_base_query_for_search(
     realm_id: int, user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
-) -> Tuple[Select, ColumnElement[Integer]]:
+) -> tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
         assert need_message
@@ -1054,10 +1041,10 @@ def add_narrow_conditions(
     user_profile: Optional[UserProfile],
     inner_msg_id_col: ColumnElement[Integer],
     query: Select,
-    narrow: Optional[List[NarrowParameter]],
+    narrow: Optional[list[NarrowParameter]],
     is_web_public_query: bool,
     realm: Realm,
-) -> Tuple[Select, bool]:
+) -> tuple[Select, bool]:
     is_search = False  # for now
 
     if narrow is None:
@@ -1091,7 +1078,7 @@ def add_narrow_conditions(
 def find_first_unread_anchor(
     sa_conn: Connection,
     user_profile: Optional[UserProfile],
-    narrow: Optional[List[NarrowParameter]],
+    narrow: Optional[list[NarrowParameter]],
 ) -> int:
     # For anonymous web users, all messages are treated as read, and so
     # always return LARGER_THAN_MAX_MESSAGE_ID.
@@ -1269,7 +1256,7 @@ MessageRowT = TypeVar("MessageRowT", bound=Sequence[Any])
 
 @dataclass
 class LimitedMessages(Generic[MessageRowT]):
-    rows: List[MessageRowT]
+    rows: list[MessageRowT]
     found_anchor: bool
     found_newest: bool
     found_oldest: bool
@@ -1352,7 +1339,7 @@ class FetchedMessages(LimitedMessages[Row]):
 
 def fetch_messages(
     *,
-    narrow: Optional[List[NarrowParameter]],
+    narrow: Optional[list[NarrowParameter]],
     user_profile: Optional[UserProfile],
     realm: Realm,
     is_web_public_query: bool,

@@ -39,7 +39,7 @@ from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-from typing import Iterable, Tuple
+from typing import Iterable
 
 from tools.lib.test_script import (
     add_provision_check_override_param,
@@ -94,7 +94,7 @@ def run_tests(files: Iterable[str], external_host: str, loop: int = 1) -> None:
     test_files = find_js_test_files(test_dir, files)
     total_tests = len(test_files)
 
-    def run_tests(test_number: int = 0) -> Tuple[int, int]:
+    def run_tests(test_number: int = 0) -> tuple[int, int]:
         current_test_num = test_number
         for test_file in test_files[test_number:]:
             return_code = run_single_test(test_file, current_test_num + 1, total_tests)

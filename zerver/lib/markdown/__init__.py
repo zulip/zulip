@@ -10,22 +10,7 @@ from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import lru_cache
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    List,
-    Match,
-    Optional,
-    Pattern,
-    Set,
-    Tuple,
-    TypedDict,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import Any, Callable, Generic, Match, Optional, Pattern, TypedDict, TypeVar, Union, cast
 from urllib.parse import parse_qs, quote, urlencode, urljoin, urlsplit, urlunsplit
 from xml.etree.ElementTree import Element, SubElement
 
@@ -121,12 +106,12 @@ class MessageRenderingResult:
     rendered_content: str
     mentions_topic_wildcard: bool
     mentions_stream_wildcard: bool
-    mentions_user_ids: Set[int]
-    mentions_user_group_ids: Set[int]
-    alert_words: Set[str]
-    links_for_preview: Set[str]
-    user_ids_with_alert_words: Set[int]
-    potential_attachment_path_ids: List[str]
+    mentions_user_ids: set[int]
+    mentions_user_group_ids: set[int]
+    alert_words: set[str]
+    links_for_preview: set[str]
+    user_ids_with_alert_words: set[int]
+    potential_attachment_path_ids: list[str]
 
 
 @dataclass
@@ -134,9 +119,9 @@ class DbData:
     mention_data: MentionData
     realm_url: str
     realm_alert_words_automaton: Optional[ahocorasick.Automaton]
-    active_realm_emoji: Dict[str, EmojiInfo]
+    active_realm_emoji: dict[str, EmojiInfo]
     sent_by_bot: bool
-    stream_names: Dict[str, int]
+    stream_names: dict[str, int]
     translate_emoticons: bool
 
 
@@ -323,7 +308,7 @@ def image_preview_enabled(
     return realm.inline_image_preview
 
 
-def list_of_tlds() -> List[str]:
+def list_of_tlds() -> list[str]:
     # Skip a few overly-common false-positives from file extensions
     common_false_positives = {"java", "md", "mov", "py", "zip"}
     return sorted(tld_set - common_false_positives, key=len, reverse=True)
@@ -331,7 +316,7 @@ def list_of_tlds() -> List[str]:
 
 def walk_tree(
     root: Element, processor: Callable[[Element], Optional[_T]], stop_after_first: bool = False
-) -> List[_T]:
+) -> list[_T]:
     results = []
     queue = deque([root])
 
@@ -381,7 +366,7 @@ class ElementPair:
 def walk_tree_with_family(
     root: Element,
     processor: Callable[[Element], Optional[_T]],
-) -> List[ResultWithFamily[_T]]:
+) -> list[ResultWithFamily[_T]]:
     results = []
 
     queue = deque([ElementPair(parent=None, value=root)])
@@ -423,7 +408,7 @@ def has_blockquote_ancestor(element_pair: Optional[ElementPair]) -> bool:
 
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database")
-def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
+def fetch_tweet_data(tweet_id: str) -> Optional[dict[str, Any]]:
     # Twitter removed support for the v1 API that this integration
     # used. Given that, there's no point wasting time trying to make
     # network requests to Twitter. But we leave this function, because
@@ -438,8 +423,8 @@ class OpenGraphSession(OutgoingSession):
         super().__init__(role="markdown", timeout=1)
 
 
-def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
-    og: Dict[str, Optional[str]] = {"image": None, "title": None, "desc": None}
+def fetch_open_graph_image(url: str) -> Optional[dict[str, Any]]:
+    og: dict[str, Optional[str]] = {"image": None, "title": None, "desc": None}
 
     try:
         with OpenGraphSession().get(
@@ -570,7 +555,7 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
+    ) -> tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         # Let upstream's implementation do its job as it is, we'll
         # just replace the text to not strip the group because it
         # makes it impossible to put leading/trailing whitespace in
@@ -757,7 +742,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return "https://linx.li/s" + parsed_url.path
         return None
 
-    def dropbox_image(self, url: str) -> Optional[Dict[str, Any]]:
+    def dropbox_image(self, url: str) -> Optional[dict[str, Any]]:
         # TODO: The returned Dict could possibly be a TypedDict in future.
         parsed_url = urlsplit(url)
         if parsed_url.netloc == "dropbox.com" or parsed_url.netloc.endswith(".dropbox.com"):
@@ -864,9 +849,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def twitter_text(
         self,
         text: str,
-        urls: List[Dict[str, str]],
-        user_mentions: List[Dict[str, Any]],
-        media: List[Dict[str, Any]],
+        urls: list[dict[str, str]],
+        user_mentions: list[dict[str, Any]],
+        media: list[dict[str, Any]],
     ) -> Element:
         """
         Use data from the Twitter API to turn links, mentions and media into A
@@ -889,7 +874,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         Finally we add any remaining text to the last node.
         """
 
-        to_process: List[Dict[str, Any]] = []
+        to_process: list[dict[str, Any]] = []
         # Build dicts for URLs
         for url_data in urls:
             to_process.extend(
@@ -990,7 +975,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             res = fetch_tweet_data(tweet_id)
             if res is None:
                 return None
-            user: Dict[str, Any] = res["user"]
+            user: dict[str, Any] = res["user"]
             tweet = Element("div")
             tweet.set("class", "twitter-tweet")
             img_a = SubElement(tweet, "a")
@@ -1008,7 +993,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             text = html.unescape(res["full_text"])
             urls = res.get("urls", [])
             user_mentions = res.get("user_mentions", [])
-            media: List[Dict[str, Any]] = res.get("media", [])
+            media: list[dict[str, Any]] = res.get("media", [])
             p = self.twitter_text(text, urls, user_mentions, media)
             tweet.append(p)
 
@@ -1048,7 +1033,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             markdown_logger.warning("Error building Twitter link", exc_info=True)
             return None
 
-    def get_url_data(self, e: Element) -> Optional[Tuple[str, Optional[str]]]:
+    def get_url_data(self, e: Element) -> Optional[tuple[str, Optional[str]]]:
         if e.tag == "a":
             url = e.get("href")
             assert url is not None
@@ -1058,7 +1043,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def get_inlining_information(
         self,
         root: Element,
-        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
+        found_url: ResultWithFamily[tuple[str, Optional[str]]],
     ) -> LinkInfo:
         grandparent = found_url.family.grandparent
         parent = found_url.family.parent
@@ -1107,7 +1092,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def handle_image_inlining(
         self,
         root: Element,
-        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
+        found_url: ResultWithFamily[tuple[str, Optional[str]]],
     ) -> None:
         info = self.get_inlining_information(root, found_url)
         (url, text) = found_url.result
@@ -1125,7 +1110,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def handle_tweet_inlining(
         self,
         root: Element,
-        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
+        found_url: ResultWithFamily[tuple[str, Optional[str]]],
         twitter_data: Element,
     ) -> None:
         info = self.get_inlining_information(root, found_url)
@@ -1142,7 +1127,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def handle_youtube_url_inlining(
         self,
         root: Element,
-        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
+        found_url: ResultWithFamily[tuple[str, Optional[str]]],
         yt_image: str,
     ) -> None:
         info = self.get_inlining_information(root, found_url)
@@ -1228,7 +1213,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         video.set("preload", "metadata")
 
     def handle_video_inlining(
-        self, root: Element, found_url: ResultWithFamily[Tuple[str, Optional[str]]]
+        self, root: Element, found_url: ResultWithFamily[tuple[str, Optional[str]]]
     ) -> None:
         info = self.get_inlining_information(root, found_url)
         url = found_url.result[0]
@@ -1280,7 +1265,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if len(unique_previewable_urls) > self.INLINE_PREVIEW_LIMIT_PER_MESSAGE:
             return
 
-        processed_urls: Set[str] = set()
+        processed_urls: set[str] = set()
         rendered_tweet_count = 0
 
         for found_url in found_urls:
@@ -1506,7 +1491,7 @@ class UnicodeEmoji(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, match: Match[str], data: str
-    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
+    ) -> tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         orig_syntax = match.group("syntax")
 
         # We want to avoid turning things like arrows (↔) and keycaps (numbers
@@ -1534,7 +1519,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        active_realm_emoji: Dict[str, EmojiInfo] = {}
+        active_realm_emoji: dict[str, EmojiInfo] = {}
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is not None:
             active_realm_emoji = db_data.active_realm_emoji
@@ -1709,7 +1694,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
     # run() is very slightly forked from the base class; see notes below.
     @override
-    def run(self, parent: Element, blocks: List[str]) -> None:
+    def run(self, parent: Element, blocks: list[str]) -> None:
         block = blocks.pop(0)
         m = self.RE.search(block)
         if m:
@@ -1762,11 +1747,11 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
 
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         """Insert a newline between a paragraph and ulist if missing"""
         inserts = 0
         in_code_fence: bool = False
-        open_fences: List[Fence] = []
+        open_fences: list[Fence] = []
         copy = lines[:]
         for i in range(len(lines) - 1):
             # Ignore anything that is inside a fenced code block but not quoted.
@@ -1854,7 +1839,7 @@ class LinkifierPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
+    ) -> tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         url = url_to_a(
             db_data,
@@ -1875,7 +1860,7 @@ class UserMentionPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
+    ) -> tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
@@ -1941,7 +1926,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
+    ) -> tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
@@ -1982,7 +1967,7 @@ class StreamPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
+    ) -> tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         name = m.group("stream_name")
 
         stream_id = self.find_stream_id(name)
@@ -2014,7 +1999,7 @@ class StreamTopicPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
+    ) -> tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
@@ -2033,7 +2018,7 @@ class StreamTopicPattern(CompiledInlineProcessor):
         return el, m.start(), m.end()
 
 
-def possible_linked_stream_names(content: str) -> Set[str]:
+def possible_linked_stream_names(content: str) -> set[str]:
     return {
         *re.findall(STREAM_LINK_REGEX, content, re.VERBOSE),
         *(
@@ -2077,7 +2062,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
         return False
 
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is not None:
             # We check for alert words here, the set of which are
@@ -2135,7 +2120,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
+    ) -> tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         ret = super().handleMatch(m, data)
         if ret[0] is not None:
             el, match_start, index = ret
@@ -2146,7 +2131,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return None, None, None
 
 
-def get_sub_registry(r: markdown.util.Registry[T], keys: List[str]) -> markdown.util.Registry[T]:
+def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.util.Registry[T]:
     # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
     # object instead of removing keys from the existing object.
@@ -2169,11 +2154,11 @@ class ZulipMarkdown(markdown.Markdown):
     zulip_rendering_result: MessageRenderingResult
     image_preview_enabled: bool
     url_embed_preview_enabled: bool
-    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]]
+    url_embed_data: Optional[dict[str, Optional[UrlEmbedData]]]
 
     def __init__(
         self,
-        linkifiers: List[LinkifierDict],
+        linkifiers: list[LinkifierDict],
         linkifiers_key: int,
         email_gateway: bool,
     ) -> None:
@@ -2385,8 +2370,8 @@ class ZulipMarkdown(markdown.Markdown):
             )
 
 
-md_engines: Dict[Tuple[int, bool], ZulipMarkdown] = {}
-linkifier_data: Dict[int, List[LinkifierDict]] = {}
+md_engines: dict[tuple[int, bool], ZulipMarkdown] = {}
+linkifier_data: dict[int, list[LinkifierDict]] = {}
 
 
 def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
@@ -2434,8 +2419,8 @@ class TopicLinkMatch:
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
 # are validated and escaped inside `url_to_a`).
-def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
-    matches: List[TopicLinkMatch] = []
+def topic_links(linkifiers_key: int, topic_name: str) -> list[dict[str, str]]:
+    matches: list[TopicLinkMatch] = []
     linkifiers = linkifiers_for_realm(linkifiers_key)
     precedence = 0
 
@@ -2522,7 +2507,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
     # The following removes overlapping intervals depending on the precedence of linkifier patterns.
     # This uses the same algorithm implemented in web/src/markdown.js.
     # To avoid mutating matches inside the loop, the final output gets appended to another list.
-    applied_matches: List[TopicLinkMatch] = []
+    applied_matches: list[TopicLinkMatch] = []
     for current_match in matches:
         # When the current match does not overlap with all existing matches,
         # we are confident that the link should present in the final output because
@@ -2576,7 +2561,7 @@ def do_convert(
     message_realm: Optional[Realm] = None,
     sent_by_bot: bool = False,
     translate_emoticons: bool = False,
-    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
+    url_embed_data: Optional[dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
@@ -2737,7 +2722,7 @@ def markdown_convert(
     message_realm: Optional[Realm] = None,
     sent_by_bot: bool = False,
     translate_emoticons: bool = False,
-    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
+    url_embed_data: Optional[dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
@@ -2764,7 +2749,7 @@ def render_message_markdown(
     content: str,
     realm: Optional[Realm] = None,
     realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
-    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
+    url_embed_data: Optional[dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
 ) -> MessageRenderingResult:

@@ -6,7 +6,7 @@ import threading
 from argparse import ArgumentParser
 from contextlib import contextmanager
 from types import FrameType
-from typing import Any, Iterator, List, Optional
+from typing import Any, Iterator, Optional
 
 from django.conf import settings
 from django.core.management.base import CommandError
@@ -73,7 +73,7 @@ class Command(ZulipBaseCommand):
                 logger.error("Cannot run a queue processor when USING_RABBITMQ is False!")
             raise CommandError
 
-        def run_threaded_workers(queues: List[str], logger: logging.Logger) -> None:
+        def run_threaded_workers(queues: list[str], logger: logging.Logger) -> None:
             cnt = 0
             for queue_name in queues:
                 if not settings.DEVELOPMENT:

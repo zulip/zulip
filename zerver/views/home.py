@@ -1,6 +1,6 @@
 import logging
 import secrets
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -102,13 +102,13 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
 
 def detect_narrowed_window(
     request: HttpRequest, user_profile: Optional[UserProfile]
-) -> Tuple[List[NarrowTerm], Optional[Stream], Optional[str]]:
+) -> tuple[list[NarrowTerm], Optional[Stream], Optional[str]]:
     """This function implements Zulip's support for a mini Zulip window
     that just handles messages from a single narrow"""
     if user_profile is None:
         return [], None, None
 
-    narrow: List[NarrowTerm] = []
+    narrow: list[NarrowTerm] = []
     narrow_stream = None
     narrow_topic_name = request.GET.get("topic")
 

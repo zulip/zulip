@@ -4,7 +4,7 @@ import logging
 import uuid
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
+from typing import Any, Iterator, Mapping, Optional, Union
 from unittest import mock, skipUnless
 
 import aioapns
@@ -1090,7 +1090,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     "last_realmauditlog_id": 0,
                 }
 
-                def mock_send_to_push_bouncer_response(method: str, *args: Any) -> Dict[str, Any]:
+                def mock_send_to_push_bouncer_response(method: str, *args: Any) -> dict[str, Any]:
                     if method == "POST":
                         return post_response
                     return get_response
@@ -1159,7 +1159,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.login_user(user)
         server = self.server
 
-        endpoints: List[Tuple[str, str, int, Mapping[str, str]]] = [
+        endpoints: list[tuple[str, str, int, Mapping[str, str]]] = [
             (
                 "/json/users/me/apns_device_token",
                 "apple-tokenaz",
@@ -2233,7 +2233,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 endpoint: str,
                 post_data: Union[bytes, Mapping[str, Union[str, int, None, bytes]]],
                 extra_headers: Mapping[str, str] = {},
-            ) -> Dict[str, Any]:
+            ) -> dict[str, Any]:
                 if endpoint == "server/analytics":
                     assert isinstance(post_data, dict)
                     assert isinstance(post_data["realmauditlog_rows"], str)
@@ -2544,7 +2544,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 "last_realmauditlog_id": 0,
             }
 
-            def mock_send_to_push_bouncer_response(method: str, *args: Any) -> Dict[str, int]:
+            def mock_send_to_push_bouncer_response(method: str, *args: Any) -> dict[str, int]:
                 if method == "POST":
                     raise PushNotificationBouncerRetryLaterError("Some problem")
                 return get_response
@@ -2721,7 +2721,7 @@ class PushNotificationTest(BouncerTestCase):
         return message
 
     @contextmanager
-    def mock_apns(self) -> Iterator[Tuple[APNsContext, mock.AsyncMock]]:
+    def mock_apns(self) -> Iterator[tuple[APNsContext, mock.AsyncMock]]:
         apns = mock.Mock(spec=aioapns.APNs)
         apns.send_notification = mock.AsyncMock()
         apns_context = APNsContext(
@@ -2770,7 +2770,7 @@ class PushNotificationTest(BouncerTestCase):
             )
 
     @contextmanager
-    def mock_fcm(self) -> Iterator[Tuple[mock.MagicMock, mock.MagicMock]]:
+    def mock_fcm(self) -> Iterator[tuple[mock.MagicMock, mock.MagicMock]]:
         with mock.patch("zerver.lib.push_notifications.fcm_app") as mock_fcm_app, mock.patch(
             "zerver.lib.push_notifications.firebase_messaging"
         ) as mock_fcm_messaging:
@@ -2801,7 +2801,7 @@ class PushNotificationTest(BouncerTestCase):
                 server=self.server,
             )
 
-    def make_fcm_success_response(self, tokens: List[str]) -> firebase_messaging.BatchResponse:
+    def make_fcm_success_response(self, tokens: list[str]) -> firebase_messaging.BatchResponse:
         responses = [
             firebase_messaging.SendResponse(exception=None, resp=dict(name=str(idx)))
             for idx, _ in enumerate(tokens)
@@ -2823,7 +2823,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.soft_deactivate_user(self.user_profile)
 
     @override
-    def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
+    def request_callback(self, request: PreparedRequest) -> tuple[int, ResponseHeaders, bytes]:
         assert request.url is not None  # allow mypy to infer url is present.
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
@@ -3786,14 +3786,14 @@ class HandlePushNotificationTest(PushNotificationTest):
 
 
 class TestAPNs(PushNotificationTest):
-    def devices(self) -> List[DeviceToken]:
+    def devices(self) -> list[DeviceToken]:
         return list(
             PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.APNS)
         )
 
     def send(
         self,
-        devices: Optional[List[Union[PushDeviceToken, RemotePushDeviceToken]]] = None,
+        devices: Optional[list[Union[PushDeviceToken, RemotePushDeviceToken]]] = None,
         payload_data: Mapping[str, Any] = {},
     ) -> None:
         send_apple_push_notification(
@@ -4675,7 +4675,7 @@ class TestPushApi(BouncerTestCase):
         user = self.example_user("cordelia")
         self.login_user(user)
 
-        endpoints: List[Tuple[str, str, Mapping[str, str]]] = [
+        endpoints: list[tuple[str, str, Mapping[str, str]]] = [
             ("/json/users/me/apns_device_token", "apple-tokenaz", {"appid": "org.zulip.Zulip"}),
             ("/json/users/me/android_gcm_reg_id", "android-token", {}),
         ]
@@ -4724,12 +4724,12 @@ class TestPushApi(BouncerTestCase):
         user = self.example_user("cordelia")
         self.login_user(user)
 
-        no_bouncer_requests: List[Tuple[str, str, Mapping[str, str]]] = [
+        no_bouncer_requests: list[tuple[str, str, Mapping[str, str]]] = [
             ("/json/users/me/apns_device_token", "apple-tokenaa", {"appid": "org.zulip.Zulip"}),
             ("/json/users/me/android_gcm_reg_id", "android-token-1", {}),
         ]
 
-        bouncer_requests: List[Tuple[str, str, Mapping[str, str]]] = [
+        bouncer_requests: list[tuple[str, str, Mapping[str, str]]] = [
             ("/json/users/me/apns_device_token", "apple-tokenbb", {"appid": "org.zulip.Zulip"}),
             ("/json/users/me/android_gcm_reg_id", "android-token-2", {}),
         ]
@@ -4831,7 +4831,7 @@ class FCMSendTest(PushNotificationTest):
         super().setUp()
         self.setup_fcm_tokens()
 
-    def get_fcm_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_fcm_data(self, **kwargs: Any) -> dict[str, Any]:
         data = {
             "key 1": "Data 1",
             "key 2": "Data 2",

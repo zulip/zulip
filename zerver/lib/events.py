@@ -3,7 +3,7 @@
 import copy
 import logging
 import time
-from typing import Any, Callable, Collection, Dict, Iterable, Mapping, Optional, Sequence, Set
+from typing import Any, Callable, Collection, Iterable, Mapping, Optional, Sequence
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -102,7 +102,7 @@ from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
-def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
+def add_realm_logo_fields(state: dict[str, Any], realm: Realm) -> None:
     state["realm_logo_url"] = get_realm_logo_url(realm, night=False)
     state["realm_logo_source"] = get_realm_logo_source(realm, night=False)
     state["realm_night_logo_url"] = get_realm_logo_url(realm, night=True)
@@ -138,7 +138,7 @@ def fetch_initial_state_data(
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
     apps).  Can also fetch a subset as determined by `event_types`.
@@ -150,7 +150,7 @@ def fetch_initial_state_data(
     corresponding events for changes in the data structures and new
     code to apply_events (and add a test in test_events.py).
     """
-    state: Dict[str, Any] = {"queue_id": queue_id}
+    state: dict[str, Any] = {"queue_id": queue_id}
 
     if event_types is None:
         # return True always
@@ -756,8 +756,8 @@ def fetch_initial_state_data(
 def apply_events(
     user_profile: UserProfile,
     *,
-    state: Dict[str, Any],
-    events: Iterable[Dict[str, Any]],
+    state: dict[str, Any],
+    events: Iterable[dict[str, Any]],
     fetch_event_types: Optional[Collection[str]],
     client_gravatar: bool,
     slim_presence: bool,
@@ -791,8 +791,8 @@ def apply_events(
 def apply_event(
     user_profile: UserProfile,
     *,
-    state: Dict[str, Any],
-    event: Dict[str, Any],
+    state: dict[str, Any],
+    event: dict[str, Any],
     client_gravatar: bool,
     slim_presence: bool,
     include_subscribers: bool,
@@ -1645,7 +1645,7 @@ def do_events_register(
     fetch_event_types: Optional[Collection[str]] = None,
     spectator_requested_language: Optional[str] = None,
     pronouns_field_type_supported: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_predicate will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
@@ -1662,7 +1662,7 @@ def do_events_register(
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
 
     if fetch_event_types is not None:
-        event_types_set: Optional[Set[str]] = set(fetch_event_types)
+        event_types_set: Optional[set[str]] = set(fetch_event_types)
     elif event_types is not None:
         event_types_set = set(event_types)
     else:
@@ -1771,7 +1771,7 @@ def do_events_register(
 
 
 def post_process_state(
-    user_profile: Optional[UserProfile], ret: Dict[str, Any], notification_settings_null: bool
+    user_profile: Optional[UserProfile], ret: dict[str, Any], notification_settings_null: bool
 ) -> None:
     """
     NOTE:

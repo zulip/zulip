@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from unittest import mock
 
 import orjson
@@ -44,7 +44,7 @@ def connection_error(final_url: Any, **request_kwargs: Any) -> Any:
 
 
 class DoRestCallTests(ZulipTestCase):
-    def mock_event(self, bot_user: UserProfile) -> Dict[str, Any]:
+    def mock_event(self, bot_user: UserProfile) -> dict[str, Any]:
         return {
             # In the tests there is no active queue processor, so retries don't get processed.
             # Therefore, we need to emulate `retry_event` in the last stage when the maximum
@@ -610,7 +610,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         bot_owner = self.example_user("othello")
         bot = self.create_outgoing_bot(bot_owner)
 
-        def wrapped(event: Dict[str, Any], failure_message: str) -> None:
+        def wrapped(event: dict[str, Any], failure_message: str) -> None:
             do_deactivate_stream(get_stream("Denmark", get_realm("zulip")), acting_user=None)
             fail_with_message(event, failure_message)
 

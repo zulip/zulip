@@ -1,12 +1,12 @@
 import json
 import re
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, SubMessage
 
 
-def get_widget_data(content: str) -> Tuple[Optional[str], Any]:
+def get_widget_data(content: str) -> tuple[Optional[str], Any]:
     valid_widget_types = ["poll", "todo"]
     tokens = re.split(r"\s+|\n+", content)
 

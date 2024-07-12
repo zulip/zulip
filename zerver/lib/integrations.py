@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Optional, Sequence
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import URLResolver, path
@@ -34,12 +34,12 @@ features for writing and configuring integrations efficiently.
 
 OptionValidator: TypeAlias = Callable[[str, str], Optional[str]]
 
-META_CATEGORY: Dict[str, StrPromise] = {
+META_CATEGORY: dict[str, StrPromise] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
     "bots": gettext_lazy("Interactive bots"),
 }
 
-CATEGORIES: Dict[str, StrPromise] = {
+CATEGORIES: dict[str, StrPromise] = {
     **META_CATEGORY,
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),
@@ -66,14 +66,14 @@ class Integration:
         self,
         name: str,
         client_name: str,
-        categories: List[str],
+        categories: list[str],
         logo: Optional[str] = None,
         secondary_line_text: Optional[str] = None,
         display_name: Optional[str] = None,
         doc: Optional[str] = None,
         stream_name: Optional[str] = None,
         legacy: bool = False,
-        config_options: Sequence[Tuple[str, str, OptionValidator]] = [],
+        config_options: Sequence[tuple[str, str, OptionValidator]] = [],
     ) -> None:
         self.name = name
         self.client_name = client_name
@@ -145,7 +145,7 @@ class BotIntegration(Integration):
     def __init__(
         self,
         name: str,
-        categories: List[str],
+        categories: list[str],
         logo: Optional[str] = None,
         secondary_line_text: Optional[str] = None,
         display_name: Optional[str] = None,
@@ -186,7 +186,7 @@ class WebhookIntegration(Integration):
     def __init__(
         self,
         name: str,
-        categories: List[str],
+        categories: list[str],
         client_name: Optional[str] = None,
         logo: Optional[str] = None,
         secondary_line_text: Optional[str] = None,
@@ -196,7 +196,7 @@ class WebhookIntegration(Integration):
         doc: Optional[str] = None,
         stream_name: Optional[str] = None,
         legacy: bool = False,
-        config_options: Sequence[Tuple[str, str, OptionValidator]] = [],
+        config_options: Sequence[tuple[str, str, OptionValidator]] = [],
         dir_name: Optional[str] = None,
     ) -> None:
         if client_name is None:
@@ -242,7 +242,7 @@ class WebhookIntegration(Integration):
         return path(self.url, self.function)
 
 
-def split_fixture_path(path: str) -> Tuple[str, str]:
+def split_fixture_path(path: str) -> tuple[str, str]:
     path, fixture_name = os.path.split(path)
     fixture_name, _ = os.path.splitext(fixture_name)
     integration_name = os.path.split(os.path.dirname(path))[-1]
@@ -261,14 +261,14 @@ class BaseScreenshotConfig:
 class ScreenshotConfig(BaseScreenshotConfig):
     payload_as_query_param: bool = False
     payload_param_name: str = "payload"
-    extra_params: Dict[str, str] = field(default_factory=dict)
+    extra_params: dict[str, str] = field(default_factory=dict)
     use_basic_auth: bool = False
-    custom_headers: Dict[str, str] = field(default_factory=dict)
+    custom_headers: dict[str, str] = field(default_factory=dict)
 
 
 def get_fixture_and_image_paths(
     integration: Integration, screenshot_config: BaseScreenshotConfig
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     if isinstance(integration, WebhookIntegration):
         fixture_dir = os.path.join("zerver", "webhooks", integration.dir_name, "fixtures")
     else:
@@ -286,7 +286,7 @@ class HubotIntegration(Integration):
     def __init__(
         self,
         name: str,
-        categories: List[str],
+        categories: list[str],
         display_name: Optional[str] = None,
         logo: Optional[str] = None,
         logo_alt: Optional[str] = None,
@@ -326,7 +326,7 @@ class EmbeddedBotIntegration(Integration):
         super().__init__(name, client_name, *args, **kwargs)
 
 
-EMBEDDED_BOTS: List[EmbeddedBotIntegration] = [
+EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
     EmbeddedBotIntegration("converter", []),
     EmbeddedBotIntegration("encrypt", []),
     EmbeddedBotIntegration("helloworld", []),
@@ -335,7 +335,7 @@ EMBEDDED_BOTS: List[EmbeddedBotIntegration] = [
     EmbeddedBotIntegration("followup", []),
 ]
 
-WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
+WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("airbrake", ["monitoring"]),
     WebhookIntegration(
         "alertmanager",
@@ -493,7 +493,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("zabbix", ["monitoring"], display_name="Zabbix"),
 ]
 
-INTEGRATIONS: Dict[str, Integration] = {
+INTEGRATIONS: dict[str, Integration] = {
     "asana": Integration(
         "asana", "asana", ["project-management"], doc="zerver/integrations/asana.md"
     ),
@@ -642,14 +642,14 @@ INTEGRATIONS: Dict[str, Integration] = {
     ),
 }
 
-BOT_INTEGRATIONS: List[BotIntegration] = [
+BOT_INTEGRATIONS: list[BotIntegration] = [
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
     BotIntegration(
         "xkcd", ["bots", "misc"], display_name="xkcd", logo="images/integrations/logos/xkcd.png"
     ),
 ]
 
-HUBOT_INTEGRATIONS: List[HubotIntegration] = [
+HUBOT_INTEGRATIONS: list[HubotIntegration] = [
     HubotIntegration(
         "assembla",
         ["version-control", "project-management"],
@@ -700,7 +700,7 @@ NO_SCREENSHOT_WEBHOOKS = {
 }
 
 
-DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
+DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "airbrake": [ScreenshotConfig("error_message.json")],
     "alertmanager": [
         ScreenshotConfig("alert.json", extra_params={"name": "topic", "desc": "description"})
@@ -847,7 +847,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
 }
 
 
-def get_all_event_types_for_integration(integration: Integration) -> Optional[List[str]]:
+def get_all_event_types_for_integration(integration: Integration) -> Optional[list[str]]:
     integration = INTEGRATIONS[integration.name]
     if isinstance(integration, WebhookIntegration):
         if integration.name == "githubsponsors":

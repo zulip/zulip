@@ -1,6 +1,6 @@
 import calendar
 from datetime import timedelta, timezone
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 from urllib.parse import urlsplit
 
@@ -497,7 +497,7 @@ class HomeTest(ZulipTestCase):
             )
 
     def test_sentry_keys(self) -> None:
-        def sentry_params() -> Dict[str, Any] | None:
+        def sentry_params() -> dict[str, Any] | None:
             result = self._get_home_page()
             self.assertEqual(result.status_code, 200)
             return self._get_sentry_params(result)

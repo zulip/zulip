@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import List, Optional
+from typing import Optional
 
 from django.conf import settings
 from django.db import transaction
@@ -29,7 +29,7 @@ class ZulipUpdateAnnouncement:
 
 # We don't translate the announcement message because they are quite unlikely to be
 # translated during the time between when we draft them and when they are published.
-zulip_update_announcements: List[ZulipUpdateAnnouncement] = [
+zulip_update_announcements: list[ZulipUpdateAnnouncement] = [
     ZulipUpdateAnnouncement(
         level=1,
         message="""
@@ -223,7 +223,7 @@ def is_group_direct_message_sent_to_admins_within_days(realm: Realm, days: int) 
 
 def internal_prep_zulip_update_announcements_stream_messages(
     current_level: int, latest_level: int, sender: UserProfile, realm: Realm
-) -> List[Optional[SendMessageRequest]]:
+) -> list[Optional[SendMessageRequest]]:
     message_requests = []
     stream = realm.zulip_update_announcements_stream
     assert stream is not None
@@ -247,7 +247,7 @@ def internal_prep_zulip_update_announcements_stream_messages(
 def send_messages_and_update_level(
     realm: Realm,
     new_zulip_update_announcements_level: int,
-    send_message_requests: List[Optional[SendMessageRequest]],
+    send_message_requests: list[Optional[SendMessageRequest]],
 ) -> None:
     sent_message_ids = []
     if send_message_requests:

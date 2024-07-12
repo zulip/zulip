@@ -3,7 +3,6 @@ import json
 import os
 import re
 from subprocess import check_output
-from typing import Dict, List
 
 LEGACY_STRINGS_MAP = {
     "<p>You are searching for messages that belong to more than one channel, which is not possible.</p>": "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
@@ -187,7 +186,7 @@ def get_legacy_filename(locale: str) -> str:
     return f"locale/{locale}/legacy_stream_translations.json"
 
 
-def get_locales() -> List[str]:
+def get_locales() -> list[str]:
     output = check_output(["git", "ls-files", "locale"], text=True)
     tracked_files = output.split()
     regex = re.compile(r"locale/(\w+)/LC_MESSAGES/django.po")
@@ -200,7 +199,7 @@ def get_locales() -> List[str]:
     return locales
 
 
-def get_translations(path: str) -> Dict[str, str]:
+def get_translations(path: str) -> dict[str, str]:
     with open(path) as raw_resource_file:
         translations = json.load(raw_resource_file)
 
@@ -208,10 +207,10 @@ def get_translations(path: str) -> Dict[str, str]:
 
 
 def update_for_legacy_stream_translations(
-    current: Dict[str, str], legacy: Dict[str, str], path: str
+    current: dict[str, str], legacy: dict[str, str], path: str
 ) -> None:
     number_of_updates = 0
-    updated_translations: Dict[str, str] = {}
+    updated_translations: dict[str, str] = {}
     for line in current:
         # If the string has a legacy string mapped and see if it's
         # not currently translated (e.g. an empty string), then use

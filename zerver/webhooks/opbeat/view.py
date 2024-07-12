@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from typing import Dict, List
 
 from django.http import HttpRequest, HttpResponse
 
@@ -10,7 +9,7 @@ from zerver.lib.validator import WildValue, check_int, check_none_or, check_stri
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-subject_types: Dict[str, List[List[str]]] = {
+subject_types: dict[str, list[list[str]]] = {
     "app": [  # Object type name
         ["name"],  # Title
         ["html_url"],  # Automatically put into title
@@ -57,7 +56,7 @@ def format_object(
 ) -> str:
     if subject_type not in subject_types:
         return message
-    keys: List[List[str]] = subject_types[subject_type][1:]
+    keys: list[list[str]] = subject_types[subject_type][1:]
     title = subject_types[subject_type][0]
     if title[0] != "":
         title_str = ""

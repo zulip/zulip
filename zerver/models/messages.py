@@ -3,7 +3,7 @@
 
 import time
 from datetime import timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from bitfield import BitField
 from bitfield.types import Bit, BitHandler
@@ -316,7 +316,7 @@ class SubMessage(AbstractSubMessage):
     message = models.ForeignKey(Message, on_delete=CASCADE)
 
     @staticmethod
-    def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
+    def get_raw_db_rows(needed_ids: list[int]) -> list[dict[str, Any]]:
         fields = ["id", "message_id", "sender_id", "msg_type", "content"]
         query = SubMessage.objects.filter(message_id__in=needed_ids).values(*fields)
         query = query.order_by("message_id", "id")
@@ -395,7 +395,7 @@ class Reaction(AbstractReaction):
         return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
 
     @staticmethod
-    def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
+    def get_raw_db_rows(needed_ids: list[int]) -> list[dict[str, Any]]:
         fields = [
             "message_id",
             "emoji_name",
@@ -527,12 +527,12 @@ class AbstractUserMessage(models.Model):
             AbstractUserMessage.flags.active_mobile_push_notification
         )
 
-    def flags_list(self) -> List[str]:
+    def flags_list(self) -> list[str]:
         flags = int(self.flags)
         return self.flags_list_for_flags(flags)
 
     @staticmethod
-    def flags_list_for_flags(val: int) -> List[str]:
+    def flags_list_for_flags(val: int) -> list[str]:
         """
         This function is highly optimized, because it actually slows down
         sending messages in a naive implementation.
@@ -752,7 +752,7 @@ class Attachment(AbstractAttachment):
     def is_claimed(self) -> bool:
         return self.messages.exists() or self.scheduled_messages.exists()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "name": self.file_name,

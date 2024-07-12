@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
@@ -26,7 +26,7 @@ def notify_reaction_update(
         "full_name": user_profile.full_name,
     }
 
-    event: Dict[str, Any] = {
+    event: dict[str, Any] = {
         "type": "reaction",
         "op": op,
         "user_id": user_profile.id,

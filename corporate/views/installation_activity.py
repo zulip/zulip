@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, Optional
+from typing import Optional
 
 from django.conf import settings
 from django.db import connection
@@ -33,7 +33,7 @@ from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import get_org_type_display_name
 
 
-def get_realm_day_counts() -> Dict[str, Dict[str, Markup]]:
+def get_realm_day_counts() -> dict[str, dict[str, Markup]]:
     # To align with UTC days, we subtract an hour from end_time to
     # get the start_time, since the hour that starts at midnight was
     # on the previous day.
@@ -61,7 +61,7 @@ def get_realm_day_counts() -> Dict[str, Dict[str, Markup]]:
     rows = dictfetchall(cursor)
     cursor.close()
 
-    counts: Dict[str, Dict[int, int]] = defaultdict(dict)
+    counts: dict[str, dict[int, int]] = defaultdict(dict)
     for row in rows:
         counts[row["string_id"]][row["age"]] = row["cnt"]
 

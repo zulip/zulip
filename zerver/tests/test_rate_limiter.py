@@ -1,7 +1,6 @@
 import secrets
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Type
 from unittest import mock
 
 from typing_extensions import override
@@ -22,7 +21,7 @@ RANDOM_KEY_PREFIX = secrets.token_hex(16)
 
 class RateLimitedTestObject(RateLimitedObject):
     def __init__(
-        self, name: str, rules: List[Tuple[int, int]], backend: Type[RateLimiterBackend]
+        self, name: str, rules: list[tuple[int, int]], backend: type[RateLimiterBackend]
     ) -> None:
         self.name = name
         self._rules = rules
@@ -34,19 +33,19 @@ class RateLimitedTestObject(RateLimitedObject):
         return RANDOM_KEY_PREFIX + self.name
 
     @override
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         return self._rules
 
 
 class RateLimiterBackendBase(ZulipTestCase, ABC):
-    backend: Type[RateLimiterBackend]
+    backend: type[RateLimiterBackend]
 
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.requests_record: Dict[str, List[float]] = {}
+        self.requests_record: dict[str, list[float]] = {}
 
-    def create_object(self, name: str, rules: List[Tuple[int, int]]) -> RateLimitedTestObject:
+    def create_object(self, name: str, rules: list[tuple[int, int]]) -> RateLimitedTestObject:
         obj = RateLimitedTestObject(name, rules, self.backend)
         obj.clear_history()
 
@@ -80,7 +79,7 @@ class RateLimiterBackendBase(ZulipTestCase, ABC):
         self.assertEqual(expected_calls_remaining, calls_remaining)
         self.assertEqual(expected_time_till_reset, time_till_reset)
 
-    def expected_api_calls_left(self, obj: RateLimitedTestObject, now: float) -> Tuple[int, float]:
+    def expected_api_calls_left(self, obj: RateLimitedTestObject, now: float) -> tuple[int, float]:
         longest_rule = obj.get_rules()[-1]
         max_window, max_calls = longest_rule
         history = self.requests_record.get(obj.key())
@@ -92,8 +91,8 @@ class RateLimiterBackendBase(ZulipTestCase, ABC):
 
     @abstractmethod
     def api_calls_left_from_history(
-        self, history: List[float], max_window: int, max_calls: int, now: float
-    ) -> Tuple[int, float]:
+        self, history: list[float], max_window: int, max_calls: int, now: float
+    ) -> tuple[int, float]:
         """
         This depends on the algorithm used in the backend, and should be defined by the test class.
         """
@@ -162,8 +161,8 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
 
     @override
     def api_calls_left_from_history(
-        self, history: List[float], max_window: int, max_calls: int, now: float
-    ) -> Tuple[int, float]:
+        self, history: list[float], max_window: int, max_calls: int, now: float
+    ) -> tuple[int, float]:
         latest_timestamp = history[-1]
         relevant_requests = [t for t in history if t >= now - max_window]
         relevant_requests_amount = len(relevant_requests)
@@ -188,8 +187,8 @@ class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
 
     @override
     def api_calls_left_from_history(
-        self, history: List[float], max_window: int, max_calls: int, now: float
-    ) -> Tuple[int, float]:
+        self, history: list[float], max_window: int, max_calls: int, now: float
+    ) -> tuple[int, float]:
         reset_time = 0.0
         for timestamp in history:
             reset_time = max(reset_time, timestamp) + (max_window / max_calls)

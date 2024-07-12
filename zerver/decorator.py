@@ -3,18 +3,7 @@ import logging
 from datetime import datetime
 from functools import wraps
 from io import BytesIO
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Dict,
-    Optional,
-    Sequence,
-    Tuple,
-    TypeVar,
-    Union,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Callable, Optional, Sequence, TypeVar, Union, cast, overload
 from urllib.parse import urlsplit
 
 import django_otp
@@ -712,7 +701,7 @@ def authenticated_uploads_api_view(
 
 def get_basic_credentials(
     request: HttpRequest, beanstalk_email_decode: bool = False
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """
     Extracts the role and API key as a tuple from the Authorization header
     for HTTP basic authentication.
@@ -1036,7 +1025,7 @@ def zulip_otp_required_if_logged_in(
     return decorator
 
 
-def add_google_analytics_context(context: Dict[str, object]) -> None:
+def add_google_analytics_context(context: dict[str, object]) -> None:
     if settings.GOOGLE_ANALYTICS_ID is not None:  # nocoverage
         page_params = context.setdefault("page_params", {})
         assert isinstance(page_params, dict)
