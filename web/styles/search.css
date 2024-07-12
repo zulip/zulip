@@ -43,11 +43,6 @@
         /* Leave room for the focus outline. */
         margin-right: 1px;
 
-        &:focus {
-            /* Reduce height to leave 1px on top and bottom for the outline. */
-            height: calc(100% - 2px);
-        }
-
         &:not(:focus-visible) {
             outline: none;
         }

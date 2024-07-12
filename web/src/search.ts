@@ -96,11 +96,11 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
     const $searchbox_form = $("#searchbox_form");
     const $pill_container = $("#searchbox-input-container.pill-container");
 
-    $(".search-input-and-pills").on("focusin", () => {
+    $("#searchbox_form").on("focusin", () => {
         $("#searchbox-input-container").toggleClass("focused", true);
     });
 
-    $(".search-input-and-pills").on("focusout", () => {
+    $("#searchbox_form").on("focusout", () => {
         $("#searchbox-input-container").toggleClass("focused", false);
     });
 
