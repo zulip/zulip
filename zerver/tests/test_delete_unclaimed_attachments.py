@@ -2,6 +2,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from io import StringIO
+from unittest.mock import patch
 
 import time_machine
 from django.conf import settings
@@ -336,4 +337,63 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=False, has_attachment=False, has_archived_attachment=False
+        )
+
+    def test_delete_batch_size(self) -> None:
+        attachments = [self.make_attachment("unused.txt") for _ in range(10)]
+
+        with (
+            patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 6),
+            patch("zerver.actions.uploads.delete_message_attachments") as delete_mock,
+        ):
+            do_delete_old_unclaimed_attachments(1)
+
+        # We expect all of the 10 attachments to be deleted,
+        # across two different calls of 6- and 4-element lists
+        self.assertEqual(delete_mock.call_count, 2)
+        self.assert_length(delete_mock.call_args_list[0][0][0], 6)
+        self.assert_length(delete_mock.call_args_list[1][0][0], 4)
+
+        self.assertEqual(
+            set(delete_mock.call_args_list[0][0][0] + delete_mock.call_args_list[1][0][0]),
+            {attachment.path_id for attachment in attachments},
+        )
+
+    def test_delete_batch_size_archived(self) -> None:
+        hamlet = self.example_user("hamlet")
+        attachments = [self.make_attachment("unused.txt") for _ in range(20)]
+
+        # Send message referencing 10/20 of those attachments
+        self.subscribe(hamlet, "Denmark")
+        body = "Some files here\n" + "\n".join(
+            f"[a](http://{hamlet.realm.host}/user_uploads/{attachment.path_id}"
+            for attachment in attachments[:10]
+        )
+        message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
+
+        # Delete and purge the message, leaving both the ArchivedAttachments dangling
+        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])
+        with self.settings(ARCHIVED_DATA_VACUUMING_DELAY_DAYS=0):
+            clean_archived_data()
+
+        # Removing unclaimed attachments now cleans them all out
+        with (
+            patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 6),
+            patch("zerver.actions.uploads.delete_message_attachments") as delete_mock,
+        ):
+            do_delete_old_unclaimed_attachments(1)
+
+        # We expect all of the 20 attachments (10 of which are
+        # ArchivedAttachments) to be deleted, across four different
+        # calls: 6, 6, 6, 2
+        self.assertEqual(delete_mock.call_count, 4)
+        self.assert_length(delete_mock.call_args_list[0][0][0], 6)
+        self.assert_length(delete_mock.call_args_list[1][0][0], 6)
+        self.assert_length(delete_mock.call_args_list[2][0][0], 6)
+        self.assert_length(delete_mock.call_args_list[3][0][0], 2)
+
+        deleted_path_ids = {elem for call in delete_mock.call_args_list for elem in call[0][0]}
+        self.assertEqual(
+            deleted_path_ids,
+            {attachment.path_id for attachment in attachments},
         )

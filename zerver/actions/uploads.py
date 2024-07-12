@@ -3,7 +3,7 @@ from typing import Any
 
 from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.upload import claim_attachment, delete_message_attachment
+from zerver.lib.upload import claim_attachment, delete_message_attachments
 from zerver.models import Attachment, Message, ScheduledMessage, Stream, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -62,6 +62,9 @@ def do_claim_attachments(
     return claimed
 
 
+DELETE_BATCH_SIZE = 1000
+
+
 def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     old_unclaimed_attachments, old_unclaimed_archived_attachments = get_old_unclaimed_attachments(
         weeks_ago
@@ -71,14 +74,23 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     # ArchiveAttachments in the same run; prevent warnings from the
     # backing store by only removing it from there once.
     already_removed = set()
+    storage_paths = []
     for attachment in old_unclaimed_attachments:
-        delete_message_attachment(attachment.path_id)
+        storage_paths.append(attachment.path_id)
         already_removed.add(attachment.path_id)
         attachment.delete()
+        if len(storage_paths) >= DELETE_BATCH_SIZE:
+            delete_message_attachments(storage_paths)
+            storage_paths = []
     for archived_attachment in old_unclaimed_archived_attachments:
         if archived_attachment.path_id not in already_removed:
-            delete_message_attachment(archived_attachment.path_id)
+            storage_paths.append(archived_attachment.path_id)
         archived_attachment.delete()
+        if len(storage_paths) >= DELETE_BATCH_SIZE:
+            delete_message_attachments(storage_paths)
+            storage_paths = []
+    if storage_paths:
+        delete_message_attachments(storage_paths)
 
 
 def check_attachment_reference_change(
