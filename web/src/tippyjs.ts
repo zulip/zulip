@@ -602,7 +602,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".personal-menu-clear-status",
+        target: [".personal-menu-clear-status", ".user-card-clear-status-button"].join(","),
         placement: "top",
         appendTo: () => document.body,
     });
