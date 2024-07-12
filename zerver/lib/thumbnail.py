@@ -133,9 +133,6 @@ def resize_logo(image_data: bytes) -> bytes:
 def resize_emoji(
     image_data: bytes, emoji_file_name: str, size: int = DEFAULT_EMOJI_SIZE
 ) -> Tuple[bytes, Optional[bytes]]:
-    if len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:
-        raise BadImageError(_("Image size exceeds limit."))
-
     # Square brackets are used for providing options to libvips' save
     # operation; the extension on the filename comes from reversing
     # the content-type, which removes most of the attacker control of

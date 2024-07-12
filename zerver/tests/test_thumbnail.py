@@ -134,13 +134,6 @@ class EmojiTest(ZulipTestCase):
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data, "corrupt.gif")
 
-    def test_resize_too_large_pre_resize(self) -> None:
-        """An image that is too many bytes pre-resize is an error"""
-        animated_large_img_data = read_test_image_file("animated_large_img.gif")
-        with patch("zerver.lib.thumbnail.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 1024):
-            with self.assertRaises(BadImageError):
-                resize_emoji(animated_large_img_data, "animated_large_img.gif", size=50)
-
     def test_resize_too_many_pixels(self) -> None:
         """An image file with too many pixels is not resized"""
         with patch("zerver.lib.thumbnail.IMAGE_BOMB_TOTAL_PIXELS", 100):
