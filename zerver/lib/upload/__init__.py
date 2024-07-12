@@ -361,7 +361,7 @@ def upload_emoji_image(
     if still_image_data is not None:
         if len(still_image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
             raise BadImageError(_("Image size exceeds limit"))
-    elif len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
+    elif len(resized_image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
         raise BadImageError(_("Image size exceeds limit"))
     backend.upload_single_emoji_image(emoji_path, content_type, user_profile, resized_image_data)
     if still_image_data is None:
