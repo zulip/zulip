@@ -22,6 +22,7 @@ def notify_realm_emoji(realm: Realm, realm_emoji: Dict[str, EmojiInfo]) -> None:
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
+@transaction.atomic(durable=True)
 def check_add_realm_emoji(
     realm: Realm, name: str, author: UserProfile, image_file: IO[bytes], content_type: str
 ) -> RealmEmoji:
@@ -30,7 +31,10 @@ def check_add_realm_emoji(
         realm_emoji.full_clean()
         realm_emoji.save()
     except (IntegrityError, ValidationError):
-        # Match the string in upload_emoji.
+        # This exists to handle races; upload_emoji checked prior to
+        # calling, and also hand-validated the name, but we're now in
+        # a transaction.  The error string should match the one in
+        # upload_emoji.
         raise JsonableError(_("A custom emoji with this name already exists."))
 
     # This mirrors the check in upload_emoji_image because we want to
@@ -40,15 +44,8 @@ def check_add_realm_emoji(
         raise BadImageError(_("Invalid image format"))
 
     emoji_file_name = get_emoji_file_name(content_type, realm_emoji.id)
+    is_animated = upload_emoji_image(image_file, emoji_file_name, author, content_type)
 
-    emoji_uploaded_successfully = False
-    is_animated = False
-    try:
-        is_animated = upload_emoji_image(image_file, emoji_file_name, author, content_type)
-        emoji_uploaded_successfully = True
-    finally:
-        if not emoji_uploaded_successfully:
-            realm_emoji.delete()
     realm_emoji.file_name = emoji_file_name
     realm_emoji.is_animated = is_animated
     realm_emoji.save(update_fields=["file_name", "is_animated"])
