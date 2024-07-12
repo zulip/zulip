@@ -327,6 +327,14 @@ function show_user_card_popover(
                 if (on_mount) {
                     on_mount(instance);
                 }
+                // Note: We pass the normal-size avatar in initial rendering, and
+                // then query the server to replace it with the medium-size
+                // avatar.  The purpose of this double-fetch approach is to take
+                // advantage of the fact that the browser should already have the
+                // low-resolution image cached and thus display a low-resolution
+                // avatar rather than a blank area during the network delay for
+                // fetching the medium-size one.
+                load_medium_avatar(user, $(".popover-menu-user-avatar"));
                 init_email_clipboard();
                 init_email_tooltip(user);
             },
@@ -379,6 +387,16 @@ function init_email_tooltip(user) {
                 appendTo: () => document.body,
             });
         }
+    });
+}
+
+function load_medium_avatar(user, $elt) {
+    const user_avatar_url = people.medium_avatar_url_for_person(user);
+    const sender_avatar_medium = new Image();
+
+    sender_avatar_medium.src = user_avatar_url;
+    $(sender_avatar_medium).on("load", function () {
+        $elt.attr("src", $(this).attr("src"));
     });
 }
 
