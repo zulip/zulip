@@ -3,7 +3,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from operator import attrgetter
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Iterable
 from urllib.parse import urlencode, urlsplit
 
 from django import forms
@@ -215,7 +215,7 @@ def get_plan_type_string(plan_type: int) -> str:
 
 
 def get_confirmations(
-    types: list[int], object_ids: Iterable[int], hostname: Optional[str] = None
+    types: list[int], object_ids: Iterable[int], hostname: str | None = None
 ) -> list[dict[str, Any]]:
     lowest_datetime = timezone_now() - timedelta(days=30)
     confirmations = Confirmation.objects.filter(
@@ -332,22 +332,22 @@ VALID_BILLING_MODALITY_VALUES = Literal[
 def support(
     request: HttpRequest,
     *,
-    realm_id: Optional[Json[NonNegativeInt]] = None,
-    plan_type: Optional[Json[NonNegativeInt]] = None,
-    monthly_discounted_price: Optional[Json[NonNegativeInt]] = None,
-    annual_discounted_price: Optional[Json[NonNegativeInt]] = None,
-    minimum_licenses: Optional[Json[NonNegativeInt]] = None,
-    required_plan_tier: Optional[Json[NonNegativeInt]] = None,
-    new_subdomain: Optional[str] = None,
-    status: Optional[VALID_STATUS_VALUES] = None,
-    billing_modality: Optional[VALID_BILLING_MODALITY_VALUES] = None,
-    sponsorship_pending: Optional[Json[bool]] = None,
+    realm_id: Json[NonNegativeInt] | None = None,
+    plan_type: Json[NonNegativeInt] | None = None,
+    monthly_discounted_price: Json[NonNegativeInt] | None = None,
+    annual_discounted_price: Json[NonNegativeInt] | None = None,
+    minimum_licenses: Json[NonNegativeInt] | None = None,
+    required_plan_tier: Json[NonNegativeInt] | None = None,
+    new_subdomain: str | None = None,
+    status: VALID_STATUS_VALUES | None = None,
+    billing_modality: VALID_BILLING_MODALITY_VALUES | None = None,
+    sponsorship_pending: Json[bool] | None = None,
     approve_sponsorship: Json[bool] = False,
-    modify_plan: Optional[VALID_MODIFY_PLAN_METHODS] = None,
+    modify_plan: VALID_MODIFY_PLAN_METHODS | None = None,
     scrub_realm: Json[bool] = False,
-    delete_user_by_id: Optional[Json[NonNegativeInt]] = None,
-    query: Annotated[Optional[str], ApiParamConfig("q")] = None,
-    org_type: Optional[Json[NonNegativeInt]] = None,
+    delete_user_by_id: Json[NonNegativeInt] | None = None,
+    query: Annotated[str | None, ApiParamConfig("q")] = None,
+    org_type: Json[NonNegativeInt] | None = None,
 ) -> HttpResponse:
     context: dict[str, Any] = {}
 
@@ -580,7 +580,7 @@ def support(
 
 
 def get_remote_servers_for_support(
-    email_to_search: Optional[str], uuid_to_search: Optional[str], hostname_to_search: Optional[str]
+    email_to_search: str | None, uuid_to_search: str | None, hostname_to_search: str | None
 ) -> list["RemoteZulipServer"]:
     remote_servers_query = RemoteZulipServer.objects.order_by("id")
 
@@ -626,24 +626,23 @@ def get_remote_servers_for_support(
 def remote_servers_support(
     request: HttpRequest,
     *,
-    query: Annotated[Optional[str], ApiParamConfig("q")] = None,
-    remote_server_id: Optional[Json[NonNegativeInt]] = None,
-    remote_realm_id: Optional[Json[NonNegativeInt]] = None,
-    monthly_discounted_price: Optional[Json[NonNegativeInt]] = None,
-    annual_discounted_price: Optional[Json[NonNegativeInt]] = None,
-    minimum_licenses: Optional[Json[NonNegativeInt]] = None,
-    required_plan_tier: Optional[Json[NonNegativeInt]] = None,
-    fixed_price: Optional[Json[NonNegativeInt]] = None,
-    sent_invoice_id: Optional[str] = None,
-    sponsorship_pending: Optional[Json[bool]] = None,
+    query: Annotated[str | None, ApiParamConfig("q")] = None,
+    remote_server_id: Json[NonNegativeInt] | None = None,
+    remote_realm_id: Json[NonNegativeInt] | None = None,
+    monthly_discounted_price: Json[NonNegativeInt] | None = None,
+    annual_discounted_price: Json[NonNegativeInt] | None = None,
+    minimum_licenses: Json[NonNegativeInt] | None = None,
+    required_plan_tier: Json[NonNegativeInt] | None = None,
+    fixed_price: Json[NonNegativeInt] | None = None,
+    sent_invoice_id: str | None = None,
+    sponsorship_pending: Json[bool] | None = None,
     approve_sponsorship: Json[bool] = False,
-    billing_modality: Optional[VALID_BILLING_MODALITY_VALUES] = None,
-    plan_end_date: Optional[
-        Annotated[str, AfterValidator(lambda x: check_date("plan_end_date", x))]
-    ] = None,
-    modify_plan: Optional[VALID_MODIFY_PLAN_METHODS] = None,
+    billing_modality: VALID_BILLING_MODALITY_VALUES | None = None,
+    plan_end_date: Annotated[str, AfterValidator(lambda x: check_date("plan_end_date", x))]
+    | None = None,
+    modify_plan: VALID_MODIFY_PLAN_METHODS | None = None,
     delete_fixed_price_next_plan: Json[bool] = False,
-    remote_server_status: Optional[VALID_STATUS_VALUES] = None,
+    remote_server_status: VALID_STATUS_VALUES | None = None,
 ) -> HttpResponse:
     context: dict[str, Any] = {}
 
@@ -778,7 +777,7 @@ def remote_servers_support(
         uuid_to_search=uuid_to_search,
         hostname_to_search=hostname_to_search,
     )
-    remote_server_to_max_monthly_messages: dict[int, Union[int, str]] = dict()
+    remote_server_to_max_monthly_messages: dict[int, int | str] = dict()
     server_support_data: dict[int, RemoteSupportData] = {}
     realm_support_data: dict[int, RemoteSupportData] = {}
     remote_realms: dict[int, list[RemoteRealm]] = {}

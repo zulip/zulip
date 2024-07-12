@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import timedelta
-from typing import Any, Iterable, Optional, Sequence
+from typing import Any, Iterable, Sequence
 
 from django.conf import settings
 from django.db import transaction
@@ -125,7 +125,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
 def set_up_streams_for_new_human_user(
     *,
     user_profile: UserProfile,
-    prereg_user: Optional[PreregistrationUser] = None,
+    prereg_user: PreregistrationUser | None = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     add_initial_stream_subscriptions: bool = True,
     realm_creation: bool = False,
@@ -134,7 +134,7 @@ def set_up_streams_for_new_human_user(
 
     if prereg_user is not None:
         streams: list[Stream] = list(prereg_user.streams.all())
-        acting_user: Optional[UserProfile] = prereg_user.referred_by
+        acting_user: UserProfile | None = prereg_user.referred_by
 
         # A PregistrationUser should not be used for another UserProfile
         assert prereg_user.created_user is None, "PregistrationUser should not be reused"
@@ -267,7 +267,7 @@ def add_new_user_history(
 # * Mark 'visibility_policy_banner' as read
 def process_new_human_user(
     user_profile: UserProfile,
-    prereg_user: Optional[PreregistrationUser] = None,
+    prereg_user: PreregistrationUser | None = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     realm_creation: bool = False,
     add_initial_stream_subscriptions: bool = True,
@@ -448,7 +448,7 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -
 
 
 def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
-    def stream_name(stream: Optional[Stream]) -> Optional[str]:
+    def stream_name(stream: Stream | None) -> str | None:
         if not stream:
             return None
         return stream.name
@@ -486,28 +486,28 @@ def notify_created_bot(user_profile: UserProfile) -> None:
 
 def do_create_user(
     email: str,
-    password: Optional[str],
+    password: str | None,
     realm: Realm,
     full_name: str,
-    bot_type: Optional[int] = None,
-    role: Optional[int] = None,
-    bot_owner: Optional[UserProfile] = None,
-    tos_version: Optional[str] = None,
+    bot_type: int | None = None,
+    role: int | None = None,
+    bot_owner: UserProfile | None = None,
+    tos_version: str | None = None,
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
-    default_language: Optional[str] = None,
-    default_sending_stream: Optional[Stream] = None,
-    default_events_register_stream: Optional[Stream] = None,
-    default_all_public_streams: Optional[bool] = None,
-    prereg_user: Optional[PreregistrationUser] = None,
-    prereg_realm: Optional[PreregistrationRealm] = None,
+    default_language: str | None = None,
+    default_sending_stream: Stream | None = None,
+    default_events_register_stream: Stream | None = None,
+    default_all_public_streams: bool | None = None,
+    prereg_user: PreregistrationUser | None = None,
+    prereg_realm: PreregistrationRealm | None = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
-    source_profile: Optional[UserProfile] = None,
+    source_profile: UserProfile | None = None,
     realm_creation: bool = False,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
     enable_marketing_emails: bool = True,
-    email_address_visibility: Optional[int] = None,
+    email_address_visibility: int | None = None,
     add_initial_stream_subscriptions: bool = True,
 ) -> UserProfile:
     with transaction.atomic():
@@ -624,7 +624,7 @@ def do_create_user(
 
 
 def do_activate_mirror_dummy_user(
-    user_profile: UserProfile, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile, *, acting_user: UserProfile | None
 ) -> None:
     """Called to have a user "take over" a "mirror dummy" user
     (i.e. is_mirror_dummy=True) account when they sign up with the
@@ -669,7 +669,7 @@ def do_activate_mirror_dummy_user(
 
 
 @transaction.atomic(savepoint=False)
-def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
+def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
     """Reactivate a user that had previously been deactivated"""
     if user_profile.is_mirror_dummy:
         raise JsonableError(

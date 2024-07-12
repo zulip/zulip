@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import Callable, Optional, TypedDict
+from typing import Callable, TypedDict
 
 from django.db import connection, transaction
 from django.db.models import QuerySet
@@ -21,7 +21,7 @@ def get_user_topics(
     user_profile: UserProfile,
     include_deactivated: bool = False,
     include_stream_name: bool = False,
-    visibility_policy: Optional[int] = None,
+    visibility_policy: int | None = None,
 ) -> list[UserTopicDict]:
     """
     Fetches UserTopic objects associated with the target user.
@@ -84,7 +84,7 @@ def set_topic_visibility_policy(
     user_profile: UserProfile,
     topics: list[list[str]],
     visibility_policy: int,
-    last_updated: Optional[datetime] = None,
+    last_updated: datetime | None = None,
 ) -> None:
     """
     This is only used in tests.
@@ -134,8 +134,8 @@ def bulk_set_user_topic_visibility_policy_in_database(
     topic_name: str,
     *,
     visibility_policy: int,
-    recipient_id: Optional[int] = None,
-    last_updated: Optional[datetime] = None,
+    recipient_id: int | None = None,
+    last_updated: datetime | None = None,
 ) -> list[UserProfile]:
     # returns the list of user_profiles whose user_topic row
     # is either deleted, updated, or created.
@@ -228,7 +228,7 @@ def topic_has_visibility_policy(
 
 
 def exclude_topic_mutes(
-    conditions: list[ClauseElement], user_profile: UserProfile, stream_id: Optional[int]
+    conditions: list[ClauseElement], user_profile: UserProfile, stream_id: int | None
 ) -> list[ClauseElement]:
     # Note: Unlike get_topic_mutes, here we always want to
     # consider topics in deactivated streams, so they are

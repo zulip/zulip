@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable, Optional
+from typing import Callable
 from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
@@ -128,7 +128,7 @@ def authenticated_remote_realm_management_endpoint(
     return _wrapped_view_func
 
 
-def get_next_page_param_from_request_path(request: HttpRequest) -> Optional[str]:
+def get_next_page_param_from_request_path(request: HttpRequest) -> str | None:
     # Our endpoint URLs in this subsystem end with something like
     # /sponsorship or /plans etc.
     # Therefore we can use this nice property to figure out easily what

@@ -1,4 +1,3 @@
-from typing import Optional
 from unittest.mock import Mock, patch
 
 from django.conf import settings
@@ -139,7 +138,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
             return f"CacheWithKeyDecoratorTest:test_cache_with_key_none_values:{user_id}"
 
         @cache_with_key(cache_key_function, timeout=1000)
-        def get_user_function_can_return_none(user_id: int) -> Optional[UserProfile]:
+        def get_user_function_can_return_none(user_id: int) -> UserProfile | None:
             try:
                 return UserProfile.objects.get(id=user_id)
             except UserProfile.DoesNotExist:

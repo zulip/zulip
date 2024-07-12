@@ -20,7 +20,7 @@ from users:
 
 import os
 from dataclasses import dataclass
-from typing import Collection, Optional, Sequence
+from typing import Collection, Sequence
 
 from django.conf import settings
 
@@ -40,7 +40,7 @@ def narrow_dataclasses_from_tuples(tups: Collection[Sequence[str]]) -> Collectio
     return [NarrowTerm(operator=tup[0], operand=tup[1]) for tup in tups]
 
 
-stop_words_list: Optional[list[str]] = None
+stop_words_list: list[str] | None = None
 
 
 def read_stop_words() -> list[str]:

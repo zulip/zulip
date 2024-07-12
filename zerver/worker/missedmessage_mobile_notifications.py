@@ -1,6 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from typing_extensions import override
@@ -29,7 +29,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
         self,
         threaded: bool = False,
         disable_timeout: bool = False,
-        worker_num: Optional[int] = None,
+        worker_num: int | None = None,
     ) -> None:
         if settings.MOBILE_NOTIFICATIONS_SHARDS > 1 and worker_num is not None:  # nocoverage
             self.queue_name = self.queue_name + f"_shard{worker_num}"

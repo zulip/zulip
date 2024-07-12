@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -281,8 +281,8 @@ class UnreadCountTests(ZulipTestCase):
             *,
             user_id: int,
             message_ids: list[int],
-            flagattr: Optional[int] = None,
-            flag_target: Optional[int] = None,
+            flagattr: int | None = None,
+            flag_target: int | None = None,
         ) -> None:
             UserMessage.objects.create(
                 user_profile_id=user_id, message_id=message_ids[0], flags=DEFAULT_HISTORICAL_FLAGS

@@ -3,7 +3,7 @@ import re
 import secrets
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
-from typing import Match, Optional
+from typing import Match
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -64,7 +64,7 @@ def redact_email_address(error_message: str) -> str:
     return re.sub(rf"\b(\S*?)(@{re.escape(domain)})", redact, error_message)
 
 
-def log_error(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
+def log_error(email_message: EmailMessage, error_message: str, to: str | None) -> None:
     recipient = to or "No recipient found"
     error_message = "Sender: {}\nTo: {}\n{}".format(
         email_message.get("From"), recipient, error_message
@@ -90,7 +90,7 @@ def is_missed_message_address(address: str) -> bool:
     return is_mm_32_format(msg_string)
 
 
-def is_mm_32_format(msg_string: Optional[str]) -> bool:
+def is_mm_32_format(msg_string: str | None) -> bool:
     """
     Missed message strings are formatted with a little "mm" prefix
     followed by a randomly generated 32-character string.
@@ -223,7 +223,7 @@ def send_mm_reply_to_stream(
         )
 
 
-def get_message_part_by_type(message: EmailMessage, content_type: str) -> Optional[str]:
+def get_message_part_by_type(message: EmailMessage, content_type: str) -> str | None:
     charsets = message.get_charsets()
 
     for idx, part in enumerate(message.walk()):
@@ -276,7 +276,7 @@ def extract_body(
 talon_initialized = False
 
 
-def extract_plaintext_body(message: EmailMessage, include_quotes: bool = False) -> Optional[str]:
+def extract_plaintext_body(message: EmailMessage, include_quotes: bool = False) -> str | None:
     import talon_core
 
     global talon_initialized
@@ -294,7 +294,7 @@ def extract_plaintext_body(message: EmailMessage, include_quotes: bool = False) 
         return None
 
 
-def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> Optional[str]:
+def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> str | None:
     import talon_core
 
     global talon_initialized
@@ -474,8 +474,8 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
     )
 
 
-def process_message(message: EmailMessage, rcpt_to: Optional[str] = None) -> None:
-    to: Optional[str] = None
+def process_message(message: EmailMessage, rcpt_to: str | None = None) -> None:
+    to: str | None = None
 
     try:
         if rcpt_to is not None:

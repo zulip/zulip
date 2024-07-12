@@ -1,7 +1,7 @@
 import itertools
 from collections import defaultdict
 from datetime import timedelta
-from typing import AbstractSet, Any, Iterable, Optional
+from typing import AbstractSet, Any, Iterable
 
 from django.conf import settings
 from django.db import transaction
@@ -90,10 +90,10 @@ def subscriber_info(user_id: int) -> dict[str, Any]:
 
 def validate_message_edit_payload(
     message: Message,
-    stream_id: Optional[int],
-    topic_name: Optional[str],
-    propagate_mode: Optional[str],
-    content: Optional[str],
+    stream_id: int | None,
+    topic_name: str | None,
+    propagate_mode: str | None,
+    content: str | None,
 ) -> None:
     """
     Checks that the data sent is well-formed. Does not handle editability, permissions etc.
@@ -148,7 +148,7 @@ def maybe_send_resolve_topic_notifications(
     new_topic_name: str,
     changed_messages: QuerySet[Message],
     pre_truncation_new_topic_name: str,
-) -> tuple[Optional[int], bool]:
+) -> tuple[int | None, bool]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
     resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
@@ -245,10 +245,10 @@ def send_message_moved_breadcrumbs(
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic_name: str,
-    old_thread_notification_string: Optional[StrPromise],
+    old_thread_notification_string: StrPromise | None,
     new_stream: Stream,
-    new_topic_name: Optional[str],
-    new_thread_notification_string: Optional[StrPromise],
+    new_topic_name: str | None,
+    new_thread_notification_string: StrPromise | None,
     changed_messages_count: int,
 ) -> None:
     # Since moving content between streams is highly disruptive,
@@ -362,7 +362,7 @@ def update_user_message_flags(
 def do_update_embedded_data(
     user_profile: UserProfile,
     message: Message,
-    content: Optional[str],
+    content: str | None,
     rendering_result: MessageRenderingResult,
 ) -> None:
     timestamp = timezone_now()
@@ -374,7 +374,7 @@ def do_update_embedded_data(
         "rendering_only": True,
     }
     changed_messages = [message]
-    rendered_content: Optional[str] = None
+    rendered_content: str | None = None
 
     ums = UserMessage.objects.filter(message=message.id)
 
@@ -426,15 +426,15 @@ def get_visibility_policy_after_merge(
 def do_update_message(
     user_profile: UserProfile,
     target_message: Message,
-    new_stream: Optional[Stream],
-    topic_name: Optional[str],
-    propagate_mode: Optional[str],
+    new_stream: Stream | None,
+    topic_name: str | None,
+    propagate_mode: str | None,
     send_notification_to_old_thread: bool,
     send_notification_to_new_thread: bool,
-    content: Optional[str],
-    rendering_result: Optional[MessageRenderingResult],
+    content: str | None,
+    rendering_result: MessageRenderingResult | None,
     prior_mention_user_ids: set[int],
-    mention_data: Optional[MentionData] = None,
+    mention_data: MentionData | None = None,
 ) -> int:
     """
     The main function for message editing.  A message edit event can
@@ -524,7 +524,7 @@ def do_update_message(
             else:
                 new_topic_name = target_message.topic_name()
 
-            stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
+            stream_topic: StreamTopicTarget | None = StreamTopicTarget(
                 stream_id=stream_id,
                 topic_name=new_topic_name,
             )
@@ -792,7 +792,7 @@ def do_update_message(
     # freshly-fetched-from-the-database changed messages.
     changed_messages = save_changes_for_propagation_mode()
 
-    realm_id: Optional[int] = None
+    realm_id: int | None = None
     if stream_being_edited is not None:
         realm_id = stream_being_edited.realm_id
 
@@ -1145,8 +1145,8 @@ def do_update_message(
 def check_time_limit_for_change_all_propagate_mode(
     message: Message,
     user_profile: UserProfile,
-    topic_name: Optional[str] = None,
-    stream_id: Optional[int] = None,
+    topic_name: str | None = None,
+    stream_id: int | None = None,
 ) -> None:
     realm = user_profile.realm
     message_move_limit_buffer = 20
@@ -1238,12 +1238,12 @@ def check_time_limit_for_change_all_propagate_mode(
 def check_update_message(
     user_profile: UserProfile,
     message_id: int,
-    stream_id: Optional[int] = None,
-    topic_name: Optional[str] = None,
+    stream_id: int | None = None,
+    topic_name: str | None = None,
     propagate_mode: str = "change_one",
     send_notification_to_old_thread: bool = True,
     send_notification_to_new_thread: bool = True,
-    content: Optional[str] = None,
+    content: str | None = None,
 ) -> int:
     """This will update a message given the message id and user profile.
     It checks whether the user profile has the permission to edit the message
@@ -1293,7 +1293,7 @@ def check_update_message(
     rendering_result = None
     links_for_embed: set[str] = set()
     prior_mention_user_ids: set[int] = set()
-    mention_data: Optional[MentionData] = None
+    mention_data: MentionData | None = None
     if content is not None:
         if content.rstrip() == "":
             content = "(deleted)"

@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
-from typing import Collection, Iterable, Iterator, Mapping, Optional, TypedDict, Union
+from typing import Collection, Iterable, Iterator, Mapping, TypedDict
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -38,8 +38,8 @@ class AnonymousSettingGroupDict:
 
 @dataclass
 class GroupSettingChangeRequest:
-    new: Union[int, AnonymousSettingGroupDict]
-    old: Optional[Union[int, AnonymousSettingGroupDict]] = None
+    new: int | AnonymousSettingGroupDict
+    old: int | AnonymousSettingGroupDict | None = None
 
 
 class UserGroupDict(TypedDict):
@@ -49,7 +49,7 @@ class UserGroupDict(TypedDict):
     members: list[int]
     direct_subgroup_ids: list[int]
     is_system_group: bool
-    can_mention_group: Union[int, AnonymousSettingGroupDict]
+    can_mention_group: int | AnonymousSettingGroupDict
 
 
 @dataclass
@@ -254,7 +254,7 @@ def update_or_create_user_group_for_setting(
     realm: Realm,
     direct_members: list[int],
     direct_subgroups: list[int],
-    current_setting_value: Optional[UserGroup],
+    current_setting_value: UserGroup | None,
 ) -> UserGroup:
     if current_setting_value is not None and not hasattr(current_setting_value, "named_user_group"):
         # We do not create a new group if the setting was already set
@@ -285,12 +285,12 @@ def update_or_create_user_group_for_setting(
 
 
 def access_user_group_for_setting(
-    setting_user_group: Union[int, AnonymousSettingGroupDict],
+    setting_user_group: int | AnonymousSettingGroupDict,
     user_profile: UserProfile,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
-    current_setting_value: Optional[UserGroup] = None,
+    current_setting_value: UserGroup | None = None,
 ) -> UserGroup:
     if isinstance(setting_user_group, int):
         named_user_group = access_user_group_by_id(setting_user_group, user_profile, for_read=True)
@@ -335,7 +335,7 @@ def check_user_group_name(group_name: str) -> str:
 
 def get_group_setting_value_for_api(
     setting_value_group: UserGroup,
-) -> Union[int, AnonymousSettingGroupDict]:
+) -> int | AnonymousSettingGroupDict:
     if hasattr(setting_value_group, "named_user_group"):
         return setting_value_group.id
 
@@ -728,9 +728,9 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
 
 
 def parse_group_setting_value(
-    setting_value: Union[int, AnonymousSettingGroupDict],
+    setting_value: int | AnonymousSettingGroupDict,
     setting_name: str,
-) -> Union[int, AnonymousSettingGroupDict]:
+) -> int | AnonymousSettingGroupDict:
     if isinstance(setting_value, int):
         return setting_value
 
@@ -744,8 +744,8 @@ def parse_group_setting_value(
 
 
 def are_both_group_setting_values_equal(
-    first_setting_value: Union[int, AnonymousSettingGroupDict],
-    second_setting_value: Union[int, AnonymousSettingGroupDict],
+    first_setting_value: int | AnonymousSettingGroupDict,
+    second_setting_value: int | AnonymousSettingGroupDict,
 ) -> bool:
     if isinstance(first_setting_value, int) and isinstance(second_setting_value, int):
         return first_setting_value == second_setting_value
@@ -763,9 +763,9 @@ def are_both_group_setting_values_equal(
 
 
 def validate_group_setting_value_change(
-    current_setting_api_value: Union[int, AnonymousSettingGroupDict],
-    new_setting_value: Union[int, AnonymousSettingGroupDict],
-    expected_current_setting_value: Optional[Union[int, AnonymousSettingGroupDict]],
+    current_setting_api_value: int | AnonymousSettingGroupDict,
+    new_setting_value: int | AnonymousSettingGroupDict,
+    expected_current_setting_value: int | AnonymousSettingGroupDict | None,
 ) -> bool:
     if expected_current_setting_value is not None and not are_both_group_setting_values_equal(
         expected_current_setting_value,
@@ -780,8 +780,8 @@ def validate_group_setting_value_change(
 
 
 def get_group_setting_value_for_audit_log_data(
-    setting_value: Union[int, AnonymousSettingGroupDict],
-) -> Union[int, dict[str, list[int]]]:
+    setting_value: int | AnonymousSettingGroupDict,
+) -> int | dict[str, list[int]]:
     if isinstance(setting_value, int):
         return setting_value
 

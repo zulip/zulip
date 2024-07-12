@@ -1,7 +1,7 @@
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any, Mapping, Sequence
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -45,7 +45,7 @@ def get_presence_dicts_for_rows(
 
 
 def user_presence_datetime_with_date_joined_default(
-    dt: Optional[datetime], date_joined: datetime
+    dt: datetime | None, date_joined: datetime
 ) -> datetime:
     """
     Our data models support UserPresence objects not having None
@@ -149,8 +149,8 @@ def get_presence_for_user(
 def get_presence_dict_by_realm(
     realm: Realm,
     slim_presence: bool = False,
-    last_update_id_fetched_by_client: Optional[int] = None,
-    requesting_user_profile: Optional[UserProfile] = None,
+    last_update_id_fetched_by_client: int | None = None,
+    requesting_user_profile: UserProfile | None = None,
 ) -> tuple[dict[str, dict[str, Any]], int]:
     two_weeks_ago = timezone_now() - timedelta(weeks=2)
     kwargs: dict[str, object] = dict()
@@ -188,7 +188,7 @@ def get_presence_dict_by_realm(
     )
     # Get max last_update_id from the list.
     if presence_rows:
-        last_update_id_fetched_by_server: Optional[int] = max(
+        last_update_id_fetched_by_server: int | None = max(
             row["last_update_id"] for row in presence_rows
         )
     elif last_update_id_fetched_by_client is not None:
@@ -211,7 +211,7 @@ def get_presence_dict_by_realm(
 def get_presences_for_realm(
     realm: Realm,
     slim_presence: bool,
-    last_update_id_fetched_by_client: Optional[int],
+    last_update_id_fetched_by_client: int | None,
     requesting_user_profile: UserProfile,
 ) -> tuple[dict[str, dict[str, dict[str, Any]]], int]:
     if realm.presence_disabled:
@@ -229,7 +229,7 @@ def get_presences_for_realm(
 def get_presence_response(
     requesting_user_profile: UserProfile,
     slim_presence: bool,
-    last_update_id_fetched_by_client: Optional[int] = None,
+    last_update_id_fetched_by_client: int | None = None,
 ) -> dict[str, Any]:
     realm = requesting_user_profile.realm
     server_timestamp = time.time()

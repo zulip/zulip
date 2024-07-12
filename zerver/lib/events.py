@@ -3,7 +3,7 @@
 import copy
 import logging
 import time
-from typing import Any, Callable, Collection, Iterable, Mapping, Optional, Sequence
+from typing import Any, Callable, Collection, Iterable, Mapping, Sequence
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -122,19 +122,19 @@ def always_want(msg_type: str) -> bool:
 
 
 def fetch_initial_state_data(
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     *,
     realm: Realm,
-    event_types: Optional[Iterable[str]] = None,
-    queue_id: Optional[str] = "",
+    event_types: Iterable[str] | None = None,
+    queue_id: str | None = "",
     client_gravatar: bool = False,
     user_avatar_url_field_optional: bool = False,
     user_settings_object: bool = False,
     slim_presence: bool = False,
-    presence_last_update_id_fetched_by_client: Optional[int] = None,
+    presence_last_update_id_fetched_by_client: int | None = None,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    spectator_requested_language: Optional[str] = None,
+    spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
@@ -758,7 +758,7 @@ def apply_events(
     *,
     state: dict[str, Any],
     events: Iterable[dict[str, Any]],
-    fetch_event_types: Optional[Collection[str]],
+    fetch_event_types: Collection[str] | None,
     client_gravatar: bool,
     slim_presence: bool,
     include_subscribers: bool,
@@ -1628,22 +1628,22 @@ def apply_event(
 
 
 def do_events_register(
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     realm: Realm,
     user_client: Client,
     apply_markdown: bool = True,
     client_gravatar: bool = False,
     slim_presence: bool = False,
-    presence_last_update_id_fetched_by_client: Optional[int] = None,
-    event_types: Optional[Sequence[str]] = None,
+    presence_last_update_id_fetched_by_client: int | None = None,
+    event_types: Sequence[str] | None = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
     client_capabilities: Mapping[str, bool] = {},
     narrow: Collection[NarrowTerm] = [],
-    fetch_event_types: Optional[Collection[str]] = None,
-    spectator_requested_language: Optional[str] = None,
+    fetch_event_types: Collection[str] | None = None,
+    spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
 ) -> dict[str, Any]:
     # Technically we don't need to check this here because
@@ -1662,7 +1662,7 @@ def do_events_register(
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
 
     if fetch_event_types is not None:
-        event_types_set: Optional[set[str]] = set(fetch_event_types)
+        event_types_set: set[str] | None = set(fetch_event_types)
     elif event_types is not None:
         event_types_set = set(event_types)
     else:
@@ -1771,7 +1771,7 @@ def do_events_register(
 
 
 def post_process_state(
-    user_profile: Optional[UserProfile], ret: dict[str, Any], notification_settings_null: bool
+    user_profile: UserProfile | None, ret: dict[str, Any], notification_settings_null: bool
 ) -> None:
     """
     NOTE:

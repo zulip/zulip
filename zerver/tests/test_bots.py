@@ -1,6 +1,6 @@
 import filecmp
 import os
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -25,7 +25,7 @@ from zerver.models.users import get_user, is_cross_realm_bot_email
 
 
 # A test validator
-def _check_string(var_name: str, val: str) -> Optional[str]:
+def _check_string(var_name: str, val: str) -> str | None:
     if val.startswith("_"):
         return f'{var_name} starts with a "_" and is hence invalid.'
     return None

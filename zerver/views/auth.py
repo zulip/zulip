@@ -1,7 +1,7 @@
 import logging
 import secrets
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Mapping, cast
 from urllib.parse import urlencode, urljoin
 
 import jwt
@@ -102,7 +102,7 @@ if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
 
 ParamT = ParamSpec("ParamT")
-ExtraContext: TypeAlias = Optional[dict[str, Any]]
+ExtraContext: TypeAlias = dict[str, Any] | None
 
 EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS = 3600
 
@@ -120,11 +120,11 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
 
 def create_preregistration_user(
     email: str,
-    realm: Optional[Realm],
+    realm: Realm | None,
     password_required: bool = True,
-    full_name: Optional[str] = None,
+    full_name: str | None = None,
     full_name_validated: bool = False,
-    multiuse_invite: Optional[MultiuseInvite] = None,
+    multiuse_invite: MultiuseInvite | None = None,
 ) -> PreregistrationUser:
     return PreregistrationUser.objects.create(
         email=email,
@@ -156,12 +156,12 @@ def maybe_send_to_registration(
     request: HttpRequest,
     email: str,
     full_name: str = "",
-    mobile_flow_otp: Optional[str] = None,
-    desktop_flow_otp: Optional[str] = None,
+    mobile_flow_otp: str | None = None,
+    desktop_flow_otp: str | None = None,
     is_signup: bool = False,
     multiuse_object_key: str = "",
     full_name_validated: bool = False,
-    params_to_store_in_authenticated_session: Optional[dict[str, str]] = None,
+    params_to_store_in_authenticated_session: dict[str, str] | None = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
@@ -213,11 +213,11 @@ def maybe_send_to_registration(
     try:
         # TODO: This should use get_realm_from_request, but a bunch of tests
         # rely on mocking get_subdomain here, so they'll need to be tweaked first.
-        realm: Optional[Realm] = get_realm(get_subdomain(request))
+        realm: Realm | None = get_realm(get_subdomain(request))
     except Realm.DoesNotExist:
         realm = None
 
-    multiuse_obj: Optional[MultiuseInvite] = None
+    multiuse_obj: MultiuseInvite | None = None
     from_multiuse_invite = False
     if multiuse_object_key:
         from_multiuse_invite = True
@@ -409,7 +409,7 @@ def finish_desktop_flow(
     request: HttpRequest,
     user_profile: UserProfile,
     otp: str,
-    params_to_store_in_authenticated_session: Optional[dict[str, str]] = None,
+    params_to_store_in_authenticated_session: dict[str, str] | None = None,
 ) -> HttpResponse:
     """
     The desktop otp flow returns to the app (through the clipboard)
@@ -492,13 +492,13 @@ def create_response_for_otp_flow(
 @has_request_variables
 def remote_user_sso(
     request: HttpRequest,
-    mobile_flow_otp: Optional[str] = REQ(default=None),
-    desktop_flow_otp: Optional[str] = REQ(default=None),
+    mobile_flow_otp: str | None = REQ(default=None),
+    desktop_flow_otp: str | None = REQ(default=None),
     next: str = REQ(default="/"),
 ) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
-        realm: Optional[Realm] = get_realm(subdomain)
+        realm: Realm | None = get_realm(subdomain)
     except Realm.DoesNotExist:
         realm = None
 
@@ -599,10 +599,10 @@ def oauth_redirect_to_root(
     sso_type: str,
     is_signup: bool = False,
     extra_url_params: Mapping[str, str] = {},
-    next: Optional[str] = REQ(default=None),
+    next: str | None = REQ(default=None),
     multiuse_object_key: str = REQ(default=""),
-    mobile_flow_otp: Optional[str] = REQ(default=None),
-    desktop_flow_otp: Optional[str] = REQ(default=None),
+    mobile_flow_otp: str | None = REQ(default=None),
+    desktop_flow_otp: str | None = REQ(default=None),
 ) -> HttpResponse:
     main_site_url = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":
@@ -668,7 +668,7 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
 def start_social_login(
     request: HttpRequest,
     backend: str,
-    extra_arg: Optional[str] = None,
+    extra_arg: str | None = None,
 ) -> HttpResponse:
     backend_url = reverse("social:begin", args=[backend])
     extra_url_params: dict[str, str] = {}
@@ -704,7 +704,7 @@ def start_social_login(
 def start_social_signup(
     request: HttpRequest,
     backend: str,
-    extra_arg: Optional[str] = None,
+    extra_arg: str | None = None,
 ) -> HttpResponse:
     backend_url = reverse("social:begin", args=[backend])
     extra_url_params: dict[str, str] = {}

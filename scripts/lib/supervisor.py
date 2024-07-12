@@ -1,7 +1,6 @@
 import socket
 import time
 from http.client import HTTPConnection
-from typing import Optional, Union
 from xmlrpc import client
 
 from typing_extensions import override
@@ -32,9 +31,7 @@ class UnixStreamTransport(client.Transport):
         super().__init__()
 
     @override
-    def make_connection(
-        self, host: Union[tuple[str, dict[str, str]], str]
-    ) -> UnixStreamHTTPConnection:
+    def make_connection(self, host: tuple[str, dict[str, str]] | str) -> UnixStreamHTTPConnection:
         return UnixStreamHTTPConnection(self.socket_path)
 
 
@@ -45,7 +42,7 @@ def rpc() -> client.ServerProxy:
 
 
 def list_supervisor_processes(
-    filter_names: Optional[list[str]] = None, *, only_running: Optional[bool] = None
+    filter_names: list[str] | None = None, *, only_running: bool | None = None
 ) -> list[str]:
     results = []
     processes = rpc().supervisor.getAllProcessInfo()

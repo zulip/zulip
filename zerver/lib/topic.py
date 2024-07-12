@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 import orjson
 from django.db import connection
@@ -45,7 +45,7 @@ def get_topic_from_message_info(message_info: dict[str, Any]) -> str:
     return message_info["subject"]
 
 
-def REQ_topic() -> Optional[str]:
+def REQ_topic() -> str | None:
     # REQ handlers really return a REQ, but we
     # lie to make the rest of the type matching work.
     return REQ(
@@ -131,8 +131,8 @@ def update_messages_for_topic_edit(
     edited_message: Message,
     propagate_mode: str,
     orig_topic_name: str,
-    topic_name: Optional[str],
-    new_stream: Optional[Stream],
+    topic_name: str | None,
+    new_stream: Stream | None,
     old_stream: Stream,
     edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,

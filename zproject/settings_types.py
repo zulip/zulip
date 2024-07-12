@@ -1,4 +1,4 @@
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 
 class JwtAuthKey(TypedDict):
@@ -31,9 +31,9 @@ class SAMLIdPConfigDict(TypedDict, total=False):
 class OIDCIdPConfigDict(TypedDict, total=False):
     oidc_url: str
     display_name: str
-    display_icon: Optional[str]
+    display_icon: str | None
     client_id: str
-    secret: Optional[str]
+    secret: str | None
     auto_signup: bool
 
 

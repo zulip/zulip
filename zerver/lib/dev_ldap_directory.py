@@ -2,7 +2,7 @@ import glob
 import logging
 import os
 from email.headerregistry import Address
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 
@@ -60,7 +60,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int = 8) -> dict[str, dict[str, 
 
 
 def init_fakeldap(
-    directory: Optional[dict[str, dict[str, list[str]]]] = None,
+    directory: dict[str, dict[str, list[str]]] | None = None,
 ) -> None:  # nocoverage
     # We only use this in development.  Importing mock inside
     # this function is an import time optimization, which

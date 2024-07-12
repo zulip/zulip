@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Mapping, Optional, Sequence, TypedDict, Union
+from typing import Mapping, Sequence, TypedDict
 
 import django.db.utils
 from django.db import transaction
@@ -40,7 +40,7 @@ def create_user_group_in_database(
     members: list[UserProfile],
     realm: Realm,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
     description: str = "",
     group_settings_map: Mapping[str, UserGroup] = {},
     is_system_group: bool = False,
@@ -92,7 +92,7 @@ def create_user_group_in_database(
 
 @transaction.atomic(savepoint=False)
 def update_users_in_full_members_system_group(
-    realm: Realm, affected_user_ids: Sequence[int] = [], *, acting_user: Optional[UserProfile]
+    realm: Realm, affected_user_ids: Sequence[int] = [], *, acting_user: UserProfile | None
 ) -> None:
     full_members_system_group = NamedUserGroup.objects.get(
         realm=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
@@ -191,7 +191,7 @@ def check_add_user_group(
     description: str = "",
     group_settings_map: Mapping[str, UserGroup] = {},
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> NamedUserGroup:
     try:
         user_group = create_user_group_in_database(
@@ -209,7 +209,7 @@ def check_add_user_group(
 
 
 def do_send_user_group_update_event(
-    user_group: NamedUserGroup, data: dict[str, Union[str, int, AnonymousSettingGroupDict]]
+    user_group: NamedUserGroup, data: dict[str, str | int | AnonymousSettingGroupDict]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -217,7 +217,7 @@ def do_send_user_group_update_event(
 
 @transaction.atomic(savepoint=False)
 def do_update_user_group_name(
-    user_group: NamedUserGroup, name: str, *, acting_user: Optional[UserProfile]
+    user_group: NamedUserGroup, name: str, *, acting_user: UserProfile | None
 ) -> None:
     try:
         old_value = user_group.name
@@ -241,7 +241,7 @@ def do_update_user_group_name(
 
 @transaction.atomic(savepoint=False)
 def do_update_user_group_description(
-    user_group: NamedUserGroup, description: str, *, acting_user: Optional[UserProfile]
+    user_group: NamedUserGroup, description: str, *, acting_user: UserProfile | None
 ) -> None:
     old_value = user_group.description
     user_group.description = description
@@ -272,7 +272,7 @@ def bulk_add_members_to_user_groups(
     user_groups: list[NamedUserGroup],
     user_profile_ids: list[int],
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     # All intended callers of this function involve a single user
     # being added to one or more groups, or many users being added to
@@ -308,7 +308,7 @@ def bulk_remove_members_from_user_groups(
     user_groups: list[NamedUserGroup],
     user_profile_ids: list[int],
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     # All intended callers of this function involve a single user
     # being added to one or more groups, or many users being added to
@@ -350,7 +350,7 @@ def add_subgroups_to_user_group(
     user_group: NamedUserGroup,
     subgroups: list[NamedUserGroup],
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     group_memberships = [
         GroupGroupMembership(supergroup=user_group, subgroup=subgroup) for subgroup in subgroups
@@ -390,7 +390,7 @@ def remove_subgroups_from_user_group(
     user_group: NamedUserGroup,
     subgroups: list[NamedUserGroup],
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     GroupGroupMembership.objects.filter(supergroup=user_group, subgroup__in=subgroups).delete()
 
@@ -439,8 +439,8 @@ def do_change_user_group_permission_setting(
     setting_name: str,
     setting_value_group: UserGroup,
     *,
-    old_setting_api_value: Union[int, AnonymousSettingGroupDict],
-    acting_user: Optional[UserProfile],
+    old_setting_api_value: int | AnonymousSettingGroupDict,
+    acting_user: UserProfile | None,
 ) -> None:
     old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
@@ -475,7 +475,7 @@ def do_change_user_group_permission_setting(
         },
     )
 
-    event_data_dict: dict[str, Union[str, int, AnonymousSettingGroupDict]] = {
+    event_data_dict: dict[str, str | int | AnonymousSettingGroupDict] = {
         setting_name: new_setting_api_value
     }
     do_send_user_group_update_event(user_group, event_data_dict)

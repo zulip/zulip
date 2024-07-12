@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -27,7 +27,7 @@ from zerver.views.errors import config_error
 from zproject.backends import dev_auth_enabled
 
 
-def get_dev_users(realm: Optional[Realm] = None, extra_users_count: int = 10) -> list[UserProfile]:
+def get_dev_users(realm: Realm | None = None, extra_users_count: int = 10) -> list[UserProfile]:
     # Development environments usually have only a few users, but
     # it still makes sense to limit how many extra users we render to
     # support performance testing with DevAuthBackend.
@@ -48,7 +48,7 @@ def get_dev_users(realm: Optional[Realm] = None, extra_users_count: int = 10) ->
     return users
 
 
-def add_dev_login_context(realm: Optional[Realm], context: dict[str, Any]) -> None:
+def add_dev_login_context(realm: Realm | None, context: dict[str, Any]) -> None:
     users = get_dev_users(realm)
     context["current_realm"] = realm
     context["all_realms"] = Realm.objects.all()

@@ -1,7 +1,7 @@
 """Webhooks for external integrations."""
 
 import re
-from typing import Any, Optional
+from typing import Any
 
 import orjson
 from defusedxml.ElementTree import fromstring as xml_fromstring
@@ -110,7 +110,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> t
     content = ""
     topic_name = f"#{story_id}: {story_name}"
 
-    def extract_comment(change: dict[str, Any]) -> Optional[str]:
+    def extract_comment(change: dict[str, Any]) -> str | None:
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None

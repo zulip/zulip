@@ -104,7 +104,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # on_finish and on_connection_close.
         self.handler_id = allocate_handler_id(self)
 
-        self._request: Optional[HttpRequest] = None
+        self._request: HttpRequest | None = None
 
     @override
     def on_finish(self) -> None:

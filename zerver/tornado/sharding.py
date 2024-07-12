@@ -1,14 +1,14 @@
 import json
 import os
 import re
-from typing import Pattern, Union
+from typing import Pattern
 
 from django.conf import settings
 
 from zerver.models import Realm, UserProfile
 
-shard_map: dict[str, Union[int, list[int]]] = {}
-shard_regexes: list[tuple[Pattern[str], Union[int, list[int]]]] = []
+shard_map: dict[str, int | list[int]] = {}
+shard_regexes: list[tuple[Pattern[str], int | list[int]]] = []
 if os.path.exists("/etc/zulip/sharding.json"):
     with open("/etc/zulip/sharding.json") as f:
         data = json.loads(f.read())

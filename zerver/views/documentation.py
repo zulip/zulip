@@ -3,7 +3,7 @@ import random
 import re
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
@@ -37,8 +37,8 @@ from zerver.openapi.openapi import get_endpoint_from_operationid, get_openapi_su
 class DocumentationArticle:
     article_path: str
     article_http_status: int
-    endpoint_path: Optional[str]
-    endpoint_method: Optional[str]
+    endpoint_path: str | None
+    endpoint_method: str | None
 
 
 def add_api_url_context(context: dict[str, Any], request: HttpRequest) -> None:
@@ -85,10 +85,10 @@ class MarkdownDirectoryView(ApiURLView):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._post_render_callbacks: list[Callable[[HttpResponse], Optional[HttpResponse]]] = []
+        self._post_render_callbacks: list[Callable[[HttpResponse], HttpResponse | None]] = []
 
     def add_post_render_callback(
-        self, callback: Callable[[HttpResponse], Optional[HttpResponse]]
+        self, callback: Callable[[HttpResponse], HttpResponse | None]
     ) -> None:
         self._post_render_callbacks.append(callback)
 

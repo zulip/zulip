@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable, Union
+from typing import Callable
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.urls import path
@@ -48,7 +48,7 @@ def default_never_cache_responses(
 
 def get_target_view_function_or_response(
     request: HttpRequest, rest_dispatch_kwargs: dict[str, object]
-) -> Union[tuple[Callable[..., HttpResponse], set[str]], HttpResponse]:
+) -> tuple[Callable[..., HttpResponse], set[str]] | HttpResponse:
     """Helper for REST API request dispatch. The rest_dispatch_kwargs
     parameter is expected to be a dictionary mapping HTTP methods to
     a mix of view functions and (view_function, {view_flags}) tuples.
@@ -205,9 +205,6 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
 
 def rest_path(
     route: str,
-    **handlers: Union[
-        Callable[..., HttpResponseBase],
-        tuple[Callable[..., HttpResponseBase], set[str]],
-    ],
+    **handlers: Callable[..., HttpResponseBase] | tuple[Callable[..., HttpResponseBase], set[str]],
 ) -> URLPattern:
     return path(route, rest_dispatch, handlers)

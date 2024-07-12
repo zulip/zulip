@@ -1,6 +1,6 @@
 import sys
 from argparse import ArgumentParser
-from typing import Any, Union
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
@@ -28,7 +28,7 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser, required=True)
 
     @override
-    def handle(self, *args: Any, **options: Union[str, bool]) -> None:
+    def handle(self, *args: Any, **options: str | bool) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":

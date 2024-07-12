@@ -1,7 +1,7 @@
 import secrets
 from collections import defaultdict
 from email.headerregistry import Address
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from django.db import transaction
@@ -56,7 +56,7 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import RealmBillingSession
 
 
-def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
+def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
     if user_profile.realm.is_zephyr_mirror_realm:
         raise AssertionError("Deleting zephyr mirror users is not supported")
 
@@ -318,7 +318,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
 
 
 def do_deactivate_user(
-    user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile, _cascade: bool = True, *, acting_user: UserProfile | None
 ) -> None:
     if not user_profile.is_active:
         return
@@ -433,7 +433,7 @@ def send_stream_events_for_role_update(
 
 @transaction.atomic(savepoint=False)
 def do_change_user_role(
-    user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile, value: int, *, acting_user: UserProfile | None
 ) -> None:
     # We want to both (a) take a lock on the UserProfile row, and (b)
     # modify the passed-in UserProfile object, so that callers see the

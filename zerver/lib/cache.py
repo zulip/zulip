@@ -8,7 +8,7 @@ import sys
 import time
 import traceback
 from functools import _lru_cache_wrapper, lru_cache, wraps
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Optional, Sequence, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Sequence, TypeVar
 
 from django.conf import settings
 from django.core.cache import caches
@@ -104,7 +104,7 @@ def bounce_key_prefix_for_testing(test_name: str) -> None:
     KEY_PREFIX = hashlib.sha1(KEY_PREFIX.encode()).hexdigest() + ":"
 
 
-def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
+def get_cache_backend(cache_name: str | None) -> BaseCache:
     if cache_name is None:
         cache_name = "default"
     return caches[cache_name]
@@ -112,8 +112,8 @@ def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
 
 def cache_with_key(
     keyfunc: Callable[ParamT, str],
-    cache_name: Optional[str] = None,
-    timeout: Optional[int] = None,
+    cache_name: str | None = None,
+    timeout: int | None = None,
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
@@ -186,7 +186,7 @@ def validate_cache_key(key: str) -> None:
 
 
 def cache_set(
-    key: str, val: Any, cache_name: Optional[str] = None, timeout: Optional[int] = None
+    key: str, val: Any, cache_name: str | None = None, timeout: int | None = None
 ) -> None:
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
@@ -197,7 +197,7 @@ def cache_set(
     remote_cache_stats_finish()
 
 
-def cache_get(key: str, cache_name: Optional[str] = None) -> Any:
+def cache_get(key: str, cache_name: str | None = None) -> Any:
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
 
@@ -208,7 +208,7 @@ def cache_get(key: str, cache_name: Optional[str] = None) -> Any:
     return ret
 
 
-def cache_get_many(keys: list[str], cache_name: Optional[str] = None) -> dict[str, Any]:
+def cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
     keys = [KEY_PREFIX + key for key in keys]
     for key in keys:
         validate_cache_key(key)
@@ -218,7 +218,7 @@ def cache_get_many(keys: list[str], cache_name: Optional[str] = None) -> dict[st
     return {key[len(KEY_PREFIX) :]: value for key, value in ret.items()}
 
 
-def safe_cache_get_many(keys: list[str], cache_name: Optional[str] = None) -> dict[str, Any]:
+def safe_cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
     """Variant of cache_get_many that drops any keys that fail
     validation, rather than throwing an exception visible to the
     caller."""
@@ -236,7 +236,7 @@ def safe_cache_get_many(keys: list[str], cache_name: Optional[str] = None) -> di
 
 
 def cache_set_many(
-    items: dict[str, Any], cache_name: Optional[str] = None, timeout: Optional[int] = None
+    items: dict[str, Any], cache_name: str | None = None, timeout: int | None = None
 ) -> None:
     new_items = {}
     for key in items:
@@ -250,7 +250,7 @@ def cache_set_many(
 
 
 def safe_cache_set_many(
-    items: dict[str, Any], cache_name: Optional[str] = None, timeout: Optional[int] = None
+    items: dict[str, Any], cache_name: str | None = None, timeout: int | None = None
 ) -> None:
     """Variant of cache_set_many that drops saving any keys that fail
     validation, rather than throwing an exception visible to the
@@ -270,7 +270,7 @@ def safe_cache_set_many(
         return cache_set_many(good_items, cache_name, timeout)
 
 
-def cache_delete(key: str, cache_name: Optional[str] = None) -> None:
+def cache_delete(key: str, cache_name: str | None = None) -> None:
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
 
@@ -279,7 +279,7 @@ def cache_delete(key: str, cache_name: Optional[str] = None) -> None:
     remote_cache_stats_finish()
 
 
-def cache_delete_many(items: Iterable[str], cache_name: Optional[str] = None) -> None:
+def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> None:
     keys = [KEY_PREFIX + item for item in items]
     for key in keys:
         validate_cache_key(key)
@@ -536,7 +536,7 @@ def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
     cache_delete_many(keys)
 
 
-def changed(update_fields: Optional[Sequence[str]], fields: list[str]) -> bool:
+def changed(update_fields: Sequence[str] | None, fields: list[str]) -> bool:
     if update_fields is None:
         # adds/deletes should invalidate the cache
         return True
@@ -550,7 +550,7 @@ def changed(update_fields: Optional[Sequence[str]], fields: list[str]) -> bool:
 def flush_user_profile(
     *,
     instance: "UserProfile",
-    update_fields: Optional[Sequence[str]] = None,
+    update_fields: Sequence[str] | None = None,
     **kwargs: object,
 ) -> None:
     user_profile = instance
@@ -588,7 +588,7 @@ def flush_muting_users_cache(*, instance: "MutedUser", **kwargs: object) -> None
 def flush_realm(
     *,
     instance: "Realm",
-    update_fields: Optional[Sequence[str]] = None,
+    update_fields: Sequence[str] | None = None,
     from_deletion: bool = False,
     **kwargs: object,
 ) -> None:
@@ -635,7 +635,7 @@ def realm_text_description_cache_key(realm: "Realm") -> str:
 def flush_stream(
     *,
     instance: "Stream",
-    update_fields: Optional[Sequence[str]] = None,
+    update_fields: Sequence[str] | None = None,
     **kwargs: object,
 ) -> None:
     from zerver.models import UserProfile
@@ -667,7 +667,7 @@ def to_dict_cache_key_id(message_id: int) -> str:
     return f"message_dict:{message_id}"
 
 
-def to_dict_cache_key(message: "Message", realm_id: Optional[int] = None) -> str:
+def to_dict_cache_key(message: "Message", realm_id: int | None = None) -> str:
     return to_dict_cache_key_id(message.id)
 
 

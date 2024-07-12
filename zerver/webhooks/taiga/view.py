@@ -7,8 +7,6 @@ value should always be in bold; otherwise the subject of US/task
 should be in bold.
 """
 
-from typing import Optional, Union
-
 from django.http import HttpRequest, HttpResponse
 from typing_extensions import TypeAlias
 
@@ -19,7 +17,7 @@ from zerver.lib.validator import WildValue, check_bool, check_none_or, check_str
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-EventType: TypeAlias = dict[str, Union[str, dict[str, Optional[Union[str, bool]]]]]
+EventType: TypeAlias = dict[str, str | dict[str, str | bool | None]]
 ReturnType: TypeAlias = tuple[WildValue, WildValue]
 
 
@@ -204,10 +202,10 @@ def parse_create_or_delete(
     }
 
 
-def parse_change_event(change_type: str, message: WildValue) -> Optional[EventType]:
+def parse_change_event(change_type: str, message: WildValue) -> EventType | None:
     """Parses change event."""
     evt: EventType = {}
-    values: dict[str, Optional[Union[str, bool]]] = {
+    values: dict[str, str | bool | None] = {
         "user": get_owner_name(message),
         "user_link": get_owner_link(message),
         "subject": get_subject(message),

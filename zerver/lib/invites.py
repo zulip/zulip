@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
@@ -10,7 +8,7 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_invites_changed(
-    realm: Realm, *, changed_invite_referrer: Optional[UserProfile] = None
+    realm: Realm, *, changed_invite_referrer: UserProfile | None = None
 ) -> None:
     event = dict(type="invites_changed")
     admin_ids = [user.id for user in realm.get_admin_users_and_bots()]

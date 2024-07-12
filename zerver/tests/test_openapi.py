@@ -2,7 +2,7 @@ import inspect
 import os
 import types
 from collections import abc
-from typing import Any, Callable, Mapping, Optional, Sequence, Union, get_args, get_origin
+from typing import Any, Callable, Mapping, Sequence, Union, get_args, get_origin
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -47,9 +47,7 @@ VARMAP = {
 }
 
 
-def schema_type(
-    schema: dict[str, Any], defs: Mapping[str, Any] = {}
-) -> Union[type, tuple[type, object]]:
+def schema_type(schema: dict[str, Any], defs: Mapping[str, Any] = {}) -> type | tuple[type, object]:
     if "oneOf" in schema:
         # Hack: Just use the type of the first value
         # Ideally, we'd turn this into a Union type.
@@ -279,7 +277,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     buggy_documentation_endpoints: set[str] = set()
 
     def ensure_no_documentation_if_intentionally_undocumented(
-        self, url_pattern: str, method: str, msg: Optional[str] = None
+        self, url_pattern: str, method: str, msg: str | None = None
     ) -> None:
         try:
             get_openapi_parameters(url_pattern, method)
@@ -312,8 +310,8 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
             raise AssertionError(msg)
 
     def get_type_by_priority(
-        self, types: Sequence[Union[type, tuple[type, object]]]
-    ) -> Union[type, tuple[type, object]]:
+        self, types: Sequence[type | tuple[type, object]]
+    ) -> type | tuple[type, object]:
         priority = {list: 1, dict: 2, str: 3, int: 4, bool: 5}
         tyiroirp = {1: list, 2: dict, 3: str, 4: int, 5: bool}
         val = 6
@@ -325,7 +323,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
                 val = v
         return tyiroirp.get(val, types[0])
 
-    def get_standardized_argument_type(self, t: Any) -> Union[type, tuple[type, object]]:
+    def get_standardized_argument_type(self, t: Any) -> type | tuple[type, object]:
         """Given a type from the typing module such as List[str] or Union[str, int],
         convert it into a corresponding Python type. Unions are mapped to a canonical
         choice among the options.
@@ -351,9 +349,9 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
     def render_openapi_type_exception(
         self,
         function: Callable[..., HttpResponse],
-        openapi_params: set[tuple[str, Union[type, tuple[type, object]]]],
-        function_params: set[tuple[str, Union[type, tuple[type, object]]]],
-        diff: set[tuple[str, Union[type, tuple[type, object]]]],
+        openapi_params: set[tuple[str, type | tuple[type, object]]],
+        function_params: set[tuple[str, type | tuple[type, object]]],
+        diff: set[tuple[str, type | tuple[type, object]]],
     ) -> None:  # nocoverage
         """Print a *VERY* clear and verbose error message for when the types
         (between the OpenAPI documentation and the function declaration) don't match."""
@@ -483,8 +481,8 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         if use_endpoint_decorator:
             return self.validate_json_schema(function, openapi_parameters)
 
-        openapi_params: set[tuple[str, Union[type, tuple[type, object]]]] = set()
-        json_params: dict[str, Union[type, tuple[type, object]]] = {}
+        openapi_params: set[tuple[str, type | tuple[type, object]]] = set()
+        json_params: dict[str, type | tuple[type, object]] = {}
         for openapi_parameter in openapi_parameters:
             name = openapi_parameter.name
             if openapi_parameter.json_encoded:
@@ -502,7 +500,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 continue
             openapi_params.add((name, schema_type(openapi_parameter.value_schema)))
 
-        function_params: set[tuple[str, Union[type, tuple[type, object]]]] = set()
+        function_params: set[tuple[str, type | tuple[type, object]]] = set()
 
         for pname, defval in inspect.signature(function).parameters.items():
             defval = defval.default

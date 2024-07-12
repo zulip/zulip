@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
@@ -14,9 +12,9 @@ from zerver.models import Realm, UserProfile
 
 def validate_thumbnail_request(
     realm: Realm,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     path: str,
-) -> Optional[bool]:
+) -> bool | None:
     # path here does not have a leading / as it is parsed from request hitting the
     # thumbnail endpoint (defined in urls.py) that way.
     if path.startswith("user_uploads/"):
@@ -30,7 +28,7 @@ def validate_thumbnail_request(
 @typed_endpoint
 def backend_serve_thumbnail(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     *,
     url: str,
     size: str,

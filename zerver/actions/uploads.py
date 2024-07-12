@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Union
+from typing import Any
 
 from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
 from zerver.lib.markdown import MessageRenderingResult
@@ -21,7 +21,7 @@ def notify_attachment_update(
 
 
 def do_claim_attachments(
-    message: Union[Message, ScheduledMessage], potential_path_ids: list[str]
+    message: Message | ScheduledMessage, potential_path_ids: list[str]
 ) -> bool:
     claimed = False
     for path_id in potential_path_ids:
@@ -82,7 +82,7 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
 
 
 def check_attachment_reference_change(
-    message: Union[Message, ScheduledMessage], rendering_result: MessageRenderingResult
+    message: Message | ScheduledMessage, rendering_result: MessageRenderingResult
 ) -> bool:
     # For a unsaved message edit (message.* has been updated, but not
     # saved to the database), adjusts Attachment data to correspond to

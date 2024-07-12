@@ -10,18 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Literal,
-    Mapping,
-    Optional,
-    Sequence,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Callable, Literal, Mapping, Optional, Sequence, TypeVar, cast
 from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
 
@@ -434,23 +423,23 @@ class StripeTestCase(ZulipTestCase):
         hamlet.is_billing_admin = True
         hamlet.save(update_fields=["is_billing_admin"])
 
-        self.billing_session: Union[
-            RealmBillingSession, RemoteRealmBillingSession, RemoteServerBillingSession
-        ] = RealmBillingSession(user=hamlet, realm=realm)
+        self.billing_session: (
+            RealmBillingSession | RemoteRealmBillingSession | RemoteServerBillingSession
+        ) = RealmBillingSession(user=hamlet, realm=realm)
 
-    def get_signed_seat_count_from_response(self, response: "TestHttpResponse") -> Optional[str]:
+    def get_signed_seat_count_from_response(self, response: "TestHttpResponse") -> str | None:
         match = re.search(r"name=\"signed_seat_count\" value=\"(.+)\"", response.content.decode())
         return match.group(1) if match else None
 
-    def get_salt_from_response(self, response: "TestHttpResponse") -> Optional[str]:
+    def get_salt_from_response(self, response: "TestHttpResponse") -> str | None:
         match = re.search(r"name=\"salt\" value=\"(\w+)\"", response.content.decode())
         return match.group(1) if match else None
 
     def get_test_card_token(
         self,
         attaches_to_customer: bool,
-        charge_succeeds: Optional[bool] = None,
-        card_provider: Optional[str] = None,
+        charge_succeeds: bool | None = None,
+        card_provider: str | None = None,
     ) -> str:
         if attaches_to_customer:
             assert charge_succeeds is not None
@@ -699,7 +688,7 @@ class StripeTestCase(ZulipTestCase):
         return upgrade_json_response
 
     def add_card_and_upgrade(
-        self, user: Optional[UserProfile] = None, **kwargs: Any
+        self, user: UserProfile | None = None, **kwargs: Any
     ) -> stripe.Customer:
         # Add card
         with time_machine.travel(self.now, tick=False):
@@ -2169,7 +2158,7 @@ class StripeTest(StripeTestCase):
 
         def check_min_licenses_error(
             invoice: bool,
-            licenses: Optional[int],
+            licenses: int | None,
             min_licenses_in_response: int,
             upgrade_params: Mapping[str, Any] = {},
         ) -> None:
@@ -2199,7 +2188,7 @@ class StripeTest(StripeTestCase):
             )
 
         def check_success(
-            invoice: bool, licenses: Optional[int], upgrade_params: Mapping[str, Any] = {}
+            invoice: bool, licenses: int | None, upgrade_params: Mapping[str, Any] = {}
         ) -> None:
             upgrade_params = dict(upgrade_params)
             if licenses is None:
@@ -4494,8 +4483,8 @@ class StripeTest(StripeTestCase):
             users_to_create: int,
             create_stripe_customer: bool,
             create_plan: bool,
-            num_invoices: Optional[int] = None,
-        ) -> tuple[Realm, Optional[CustomerPlan], list[stripe.Invoice]]:
+            num_invoices: int | None = None,
+        ) -> tuple[Realm, CustomerPlan | None, list[stripe.Invoice]]:
             nonlocal test_realm_count
             test_realm_count += 1
             realm_string_id = "test-realm-" + str(test_realm_count)
@@ -4532,8 +4521,8 @@ class StripeTest(StripeTestCase):
         class Row:
             realm: Realm
             expected_plan_type: int
-            plan: Optional[CustomerPlan]
-            expected_plan_status: Optional[int]
+            plan: CustomerPlan | None
+            expected_plan_status: int | None
             expected_invoice_count: int
             email_expected_to_be_sent: bool
 
@@ -6475,9 +6464,9 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
         event_time = timezone_now()
 
         def assert_audit_log(
-            audit_log: Union[RemoteRealmAuditLog, RemoteZulipServerAuditLog],
-            acting_remote_user: Optional[Union[RemoteRealmBillingUser, RemoteServerBillingUser]],
-            acting_support_user: Optional[UserProfile],
+            audit_log: RemoteRealmAuditLog | RemoteZulipServerAuditLog,
+            acting_remote_user: RemoteRealmBillingUser | RemoteServerBillingUser | None,
+            acting_support_user: UserProfile | None,
             event_type: int,
             event_time: datetime,
         ) -> None:
@@ -6503,7 +6492,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
             # Necessary cast or mypy doesn't understand that we can use Django's
             # model .objects. style queries on this.
             audit_log_model = cast(
-                Union[type[RemoteRealmAuditLog], type[RemoteZulipServerAuditLog]], audit_log_class
+                type[RemoteRealmAuditLog] | type[RemoteZulipServerAuditLog], audit_log_class
             )
             assert isinstance(remote_user, (RemoteRealmBillingUser, RemoteServerBillingUser))
             # No acting user:

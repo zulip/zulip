@@ -1,6 +1,6 @@
 import time
 from functools import wraps
-from typing import Any, Callable, Literal, Union
+from typing import Any, Callable, Literal
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -28,7 +28,7 @@ class DraftData(BaseModel):
     to: list[int]
     topic: str
     content: Annotated[str, RequiredStringConstraint()]
-    timestamp: Union[int, float, None] = None
+    timestamp: int | float | None = None
 
 
 def further_validated_draft_dict(

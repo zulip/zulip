@@ -1,6 +1,5 @@
 from datetime import datetime
 from email.headerregistry import Address
-from typing import Optional, Union
 
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
@@ -22,7 +21,7 @@ from zerver.models.realms import get_fake_email_domain
 
 
 def copy_default_settings(
-    settings_source: Union[UserProfile, RealmUserDefault], target_profile: UserProfile
+    settings_source: UserProfile | RealmUserDefault, target_profile: UserProfile
 ) -> None:
     # Important note: Code run from here to configure the user's
     # settings should not call send_event, as that would cause clients
@@ -84,18 +83,18 @@ def get_display_email_address(user_profile: UserProfile) -> str:
 def create_user_profile(
     realm: Realm,
     email: str,
-    password: Optional[str],
+    password: str | None,
     active: bool,
-    bot_type: Optional[int],
+    bot_type: int | None,
     full_name: str,
-    bot_owner: Optional[UserProfile],
+    bot_owner: UserProfile | None,
     is_mirror_dummy: bool,
-    tos_version: Optional[str],
+    tos_version: str | None,
     timezone: str,
     default_language: str,
     tutorial_status: str = UserProfile.TUTORIAL_WAITING,
-    force_id: Optional[int] = None,
-    force_date_joined: Optional[datetime] = None,
+    force_id: int | None = None,
+    force_date_joined: datetime | None = None,
     *,
     email_address_visibility: int,
 ) -> UserProfile:
@@ -140,27 +139,27 @@ def create_user_profile(
 
 def create_user(
     email: str,
-    password: Optional[str],
+    password: str | None,
     realm: Realm,
     full_name: str,
     active: bool = True,
-    role: Optional[int] = None,
-    bot_type: Optional[int] = None,
-    bot_owner: Optional[UserProfile] = None,
-    tos_version: Optional[str] = None,
+    role: int | None = None,
+    bot_type: int | None = None,
+    bot_owner: UserProfile | None = None,
+    tos_version: str | None = None,
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
     is_mirror_dummy: bool = False,
-    default_language: Optional[str] = None,
-    default_sending_stream: Optional[Stream] = None,
-    default_events_register_stream: Optional[Stream] = None,
-    default_all_public_streams: Optional[bool] = None,
-    source_profile: Optional[UserProfile] = None,
-    force_id: Optional[int] = None,
-    force_date_joined: Optional[datetime] = None,
+    default_language: str | None = None,
+    default_sending_stream: Stream | None = None,
+    default_events_register_stream: Stream | None = None,
+    default_all_public_streams: bool | None = None,
+    source_profile: UserProfile | None = None,
+    force_id: int | None = None,
+    force_date_joined: datetime | None = None,
     create_personal_recipient: bool = True,
-    enable_marketing_emails: Optional[bool] = None,
-    email_address_visibility: Optional[int] = None,
+    enable_marketing_emails: bool | None = None,
+    email_address_visibility: int | None = None,
 ) -> UserProfile:
     realm_user_default = RealmUserDefault.objects.get(realm=realm)
     if bot_type is None:

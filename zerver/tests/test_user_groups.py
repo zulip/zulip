@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Iterable, Optional
+from typing import Iterable
 from unittest import mock
 
 import orjson
@@ -1310,7 +1310,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
-        def check_create_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
+        def check_create_user_group(acting_user: str, error_msg: str | None = None) -> None:
             self.login(acting_user)
             params = {
                 "name": "support",
@@ -1325,7 +1325,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             else:
                 self.assert_json_error(result, error_msg)
 
-        def check_delete_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
+        def check_delete_user_group(acting_user: str, error_msg: str | None = None) -> None:
             self.login(acting_user)
             user_group = NamedUserGroup.objects.get(name="support")
             with transaction.atomic():
@@ -1423,7 +1423,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             new_name: str,
             new_description: str,
             acting_user: str,
-            error_msg: Optional[str] = None,
+            error_msg: str | None = None,
         ) -> None:
             self.login(acting_user)
             params = {
@@ -1517,9 +1517,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
 
-        def check_adding_members_to_group(
-            acting_user: str, error_msg: Optional[str] = None
-        ) -> None:
+        def check_adding_members_to_group(acting_user: str, error_msg: str | None = None) -> None:
             self.login(acting_user)
             params = {"add": orjson.dumps([aaron.id]).decode()}
             self.assert_user_membership(user_group, [othello])
@@ -1531,7 +1529,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 self.assert_json_error(result, error_msg)
 
         def check_removing_members_from_group(
-            acting_user: str, error_msg: Optional[str] = None
+            acting_user: str, error_msg: str | None = None
         ) -> None:
             self.login(acting_user)
             params = {"delete": orjson.dumps([aaron.id]).decode()}

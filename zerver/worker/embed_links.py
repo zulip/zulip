@@ -2,7 +2,7 @@
 import logging
 import time
 from types import FrameType
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping
 
 from django.db import transaction
 from typing_extensions import override
@@ -25,7 +25,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
     @override
     def consume(self, event: Mapping[str, Any]) -> None:
-        url_embed_data: dict[str, Optional[UrlEmbedData]] = {}
+        url_embed_data: dict[str, UrlEmbedData | None] = {}
         for url in event["urls"]:
             start_time = time.time()
             url_embed_data[url] = url_preview.get_link_embed_data(url)
@@ -59,7 +59,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
     @override
     def timer_expired(
-        self, limit: int, events: list[dict[str, Any]], signal: int, frame: Optional[FrameType]
+        self, limit: int, events: list[dict[str, Any]], signal: int, frame: FrameType | None
     ) -> None:
         assert len(events) == 1
         event = events[0]

@@ -9,7 +9,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Optional, Union
+from typing import Any
 
 import lxml.html
 import zoneinfo
@@ -157,7 +157,7 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
         m = FENCE_RE.match(line)
         if m:
             fence = m.group("fence")
-            lang: Optional[str] = m.group("lang")
+            lang: str | None = m.group("lang")
             if lang == "spoiler":
                 open_fence = fence
                 output.append(line)
@@ -186,7 +186,7 @@ def add_quote_prefix_in_text(content: str) -> str:
 def build_message_list(
     user: UserProfile,
     messages: list[Message],
-    stream_id_map: Optional[dict[int, Stream]] = None,  # only needs id, name
+    stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
 ) -> list[dict[str, Any]]:
     """
     Builds the message list object for the message notification email template.
@@ -222,7 +222,7 @@ def build_message_list(
             message_soup.insert(0, sender_name_soup)
         return message_plain, str(message_soup)
 
-    def build_message_payload(message: Message, sender: Optional[str] = None) -> dict[str, str]:
+    def build_message_payload(message: Message, sender: str | None = None) -> dict[str, str]:
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         # There's a small chance of colliding with non-Zulip URLs containing
@@ -592,7 +592,7 @@ def do_send_missedmessage_events_reply_in_zulip(
 @dataclass
 class MissedMessageData:
     trigger: str
-    mentioned_user_group_id: Optional[int] = None
+    mentioned_user_group_id: int | None = None
 
 
 def handle_missedmessage_emails(
@@ -629,7 +629,7 @@ def handle_missedmessage_emails(
     # We bucket messages by tuples that identify similar messages.
     # For streams it's recipient_id and topic.
     # For direct messages it's recipient id and sender.
-    messages_by_bucket: dict[tuple[int, Union[int, str]], list[Message]] = defaultdict(list)
+    messages_by_bucket: dict[tuple[int, int | str], list[Message]] = defaultdict(list)
     for msg in messages:
         if msg.recipient.type == Recipient.PERSONAL:
             # For direct messages group using (recipient, sender).
@@ -649,7 +649,7 @@ def handle_missedmessage_emails(
             msg_list.extend(filtered_context_messages)
 
     # Sort emails by least recently-active discussion.
-    bucket_tups: list[tuple[tuple[int, Union[int, str]], int]] = []
+    bucket_tups: list[tuple[tuple[int, int | str], int]] = []
     for bucket_tup, msg_list in messages_by_bucket.items():
         max_message_id = max(msg_list, key=lambda msg: msg.id).id
         bucket_tups.append((bucket_tup, max_message_id))
@@ -761,7 +761,7 @@ def get_org_type_zulip_guide(realm: Realm) -> tuple[Any, str]:
     return (None, "")
 
 
-def welcome_sender_information() -> tuple[Optional[str], str]:
+def welcome_sender_information() -> tuple[str | None, str]:
     if settings.WELCOME_EMAIL_SENDER is not None:
         from_name = settings.WELCOME_EMAIL_SENDER["name"]
         from_address = settings.WELCOME_EMAIL_SENDER["email"]

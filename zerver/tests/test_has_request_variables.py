@@ -1,4 +1,4 @@
-from typing import Any, Optional, Sequence
+from typing import Any, Sequence
 
 import orjson
 from django.http import HttpRequest, HttpResponse
@@ -160,8 +160,8 @@ class TestIgnoredParametersUnsupported(ZulipTestCase):
         @has_request_variables
         def test_view(
             request: HttpRequest,
-            name: Optional[str] = REQ(default=None),
-            age: Optional[int] = 0,
+            name: str | None = REQ(default=None),
+            age: int | None = 0,
         ) -> HttpResponse:
             return json_success(request)
 

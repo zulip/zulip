@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -81,7 +81,7 @@ class DoRestCallTests(ZulipTestCase):
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        def _helper(content: Optional[str]) -> None:
+        def _helper(content: str | None) -> None:
             expect_send_response = mock.patch("zerver.lib.outgoing_webhook.send_response_message")
             with mock.patch.object(
                 service_handler, "session"

@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Optional, Union, cast
+from typing import Any, Iterable, cast
 from unittest import mock
 
 import orjson
@@ -100,7 +100,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
     def test_create_select_field(self) -> None:
         self.login("iago")
-        data: dict[str, Union[str, int]] = {}
+        data: dict[str, str | int] = {}
         data["name"] = "Favorite programming language"
         data["field_type"] = CustomProfileField.SELECT
 
@@ -241,7 +241,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_create_external_account_field(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        data: dict[str, Union[str, int, dict[str, str]]] = {}
+        data: dict[str, str | int | dict[str, str]] = {}
         data["name"] = "Twitter username"
         data["field_type"] = CustomProfileField.EXTERNAL_ACCOUNT
 
@@ -724,7 +724,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update_profile_data_successfully(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        fields: list[tuple[str, Union[str, list[int]]]] = [
+        fields: list[tuple[str, str | list[int]]] = [
             ("Phone number", "*short* text data"),
             ("Biography", "~~short~~ **long** text data"),
             ("Favorite food", "long short text data"),
@@ -738,7 +738,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data: list[ProfileDataElementUpdateDict] = []
         expected_value: dict[int, ProfileDataElementValue] = {}
-        expected_rendered_value: dict[int, Optional[str]] = {}
+        expected_rendered_value: dict[int, str | None] = {}
         for i, field_value in enumerate(fields):
             name, value = field_value
             field = CustomProfileField.objects.get(name=name, realm=realm)

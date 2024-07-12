@@ -16,7 +16,7 @@ import sys
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import IO, Any, Literal, Optional, Sequence, Union, overload
+from typing import IO, Any, Literal, Sequence, overload
 from urllib.parse import SplitResult
 
 import zoneinfo
@@ -586,7 +586,7 @@ def get_config(
     section: str,
     key: str,
     default_value: None = None,
-) -> Optional[str]: ...
+) -> str | None: ...
 @overload
 def get_config(
     config_file: configparser.RawConfigParser,
@@ -602,8 +602,8 @@ def get_config(
     config_file: configparser.RawConfigParser,
     section: str,
     key: str,
-    default_value: Union[str, bool, None] = None,
-) -> Union[str, bool, None]:
+    default_value: str | bool | None = None,
+) -> str | bool | None:
     if config_file.has_option(section, key):
         val = config_file.get(section, key)
         if isinstance(default_value, bool):
@@ -726,8 +726,8 @@ def listening_publicly(port: int) -> list[str]:
 def atomic_nagios_write(
     name: str,
     status: Literal["ok", "warning", "critical", "unknown"],
-    message: Optional[str] = None,
-    event_time: Optional[int] = None,
+    message: str | None = None,
+    event_time: int | None = None,
 ) -> int:
     if message is None:
         message = status

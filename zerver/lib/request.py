@@ -11,7 +11,6 @@ from typing import (
     Optional,
     Sequence,
     TypeVar,
-    Union,
     cast,
     overload,
 )
@@ -48,23 +47,23 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     of `assert request_notes.foo is not None` when accessing them.
     """
 
-    client: Optional[Client] = None
-    client_name: Optional[str] = None
-    client_version: Optional[str] = None
-    log_data: Optional[MutableMapping[str, Any]] = None
-    rate_limit: Optional[str] = None
-    requester_for_logs: Optional[str] = None
+    client: Client | None = None
+    client_name: str | None = None
+    client_version: str | None = None
+    log_data: MutableMapping[str, Any] | None = None
+    rate_limit: str | None = None
+    requester_for_logs: str | None = None
     # We use realm_cached to indicate whether the realm is cached or not.
     # Because the default value of realm is None, which can indicate "unset"
     # and "nonexistence" at the same time.
-    realm: Optional[Realm] = None
+    realm: Realm | None = None
     has_fetched_realm: bool = False
-    set_language: Optional[str] = None
+    set_language: str | None = None
     ratelimits_applied: list[rate_limiter.RateLimitResult] = field(default_factory=list)
-    query: Optional[str] = None
-    error_format: Optional[str] = None
-    saved_response: Optional[HttpResponse] = None
-    tornado_handler_id: Optional[int] = None
+    query: str | None = None
+    error_format: str | None = None
+    saved_response: HttpResponse | None = None
+    tornado_handler_id: int | None = None
     processed_parameters: set[str] = field(default_factory=set)
     remote_server: Optional["RemoteZulipServer"] = None
     is_webhook_view: bool = False
@@ -131,13 +130,13 @@ class _REQ(Generic[ResultT]):
 
     def __init__(
         self,
-        whence: Optional[str] = None,
+        whence: str | None = None,
         *,
-        converter: Optional[Callable[[str, str], ResultT]] = None,
-        default: Union[_NotSpecified, ResultT, None] = NotSpecified,
-        json_validator: Optional[Validator[ResultT]] = None,
-        str_validator: Optional[Validator[ResultT]] = None,
-        argument_type: Optional[str] = None,
+        converter: Callable[[str, str], ResultT] | None = None,
+        default: _NotSpecified | ResultT | None = NotSpecified,
+        json_validator: Validator[ResultT] | None = None,
+        str_validator: Validator[ResultT] | None = None,
+        argument_type: str | None = None,
         intentionally_undocumented: bool = False,
         documentation_pending: bool = False,
         aliases: Sequence[str] = [],
@@ -176,7 +175,7 @@ class _REQ(Generic[ResultT]):
             json_validator = cast(Callable[[str, object], ResultT], check_anything)
 
         self.post_var_name = whence
-        self.func_var_name: Optional[str] = None
+        self.func_var_name: str | None = None
         self.converter = converter
         self.json_validator = json_validator
         self.str_validator = str_validator
@@ -209,11 +208,11 @@ class _REQ(Generic[ResultT]):
 # Overload 1: converter
 @overload
 def REQ(
-    whence: Optional[str] = ...,
+    whence: str | None = ...,
     *,
     converter: Callable[[str, str], ResultT],
     default: ResultT = ...,
-    argument_type: Optional[Literal["body"]] = ...,
+    argument_type: Literal["body"] | None = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
@@ -224,11 +223,11 @@ def REQ(
 # Overload 2: json_validator
 @overload
 def REQ(
-    whence: Optional[str] = ...,
+    whence: str | None = ...,
     *,
     default: ResultT = ...,
     json_validator: Validator[ResultT],
-    argument_type: Optional[Literal["body"]] = ...,
+    argument_type: Literal["body"] | None = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
@@ -239,10 +238,10 @@ def REQ(
 # Overload 3: no converter/json_validator, default: str or unspecified, argument_type=None
 @overload
 def REQ(
-    whence: Optional[str] = ...,
+    whence: str | None = ...,
     *,
     default: str = ...,
-    str_validator: Optional[Validator[str]] = ...,
+    str_validator: Validator[str] | None = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
@@ -253,21 +252,21 @@ def REQ(
 # Overload 4: no converter/validator, default=None, argument_type=None
 @overload
 def REQ(
-    whence: Optional[str] = ...,
+    whence: str | None = ...,
     *,
     default: None,
-    str_validator: Optional[Validator[str]] = ...,
+    str_validator: Validator[str] | None = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> Optional[str]: ...
+) -> str | None: ...
 
 
 # Overload 5: argument_type="body"
 @overload
 def REQ(
-    whence: Optional[str] = ...,
+    whence: str | None = ...,
     *,
     default: ResultT = ...,
     argument_type: Literal["body"],
@@ -280,13 +279,13 @@ def REQ(
 
 # Implementation
 def REQ(
-    whence: Optional[str] = None,
+    whence: str | None = None,
     *,
-    converter: Optional[Callable[[str, str], ResultT]] = None,
-    default: Union[_REQ._NotSpecified, ResultT] = _REQ.NotSpecified,
-    json_validator: Optional[Validator[ResultT]] = None,
-    str_validator: Optional[Validator[ResultT]] = None,
-    argument_type: Optional[str] = None,
+    converter: Callable[[str, str], ResultT] | None = None,
+    default: _REQ._NotSpecified | ResultT = _REQ.NotSpecified,
+    json_validator: Validator[ResultT] | None = None,
+    str_validator: Validator[ResultT] | None = None,
+    argument_type: str | None = None,
     intentionally_undocumented: bool = False,
     documentation_pending: bool = False,
     aliases: Sequence[str] = [],
@@ -379,7 +378,7 @@ def has_request_variables(
                 continue
             assert func_var_name is not None
 
-            post_var_name: Optional[str]
+            post_var_name: str | None
 
             if param.argument_type == "body":
                 post_var_name = "request"

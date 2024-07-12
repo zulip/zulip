@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, Optional
+from typing import IO, Any, BinaryIO, Callable, Iterator
 
 from zerver.models import Realm, UserProfile
 
@@ -75,7 +75,7 @@ class ZulipUploadBackend:
         *,
         user_profile: UserProfile,
         image_data: bytes,
-        content_type: Optional[str],
+        content_type: str | None,
         future: bool = True,
     ) -> None:
         raise NotImplementedError
@@ -110,7 +110,7 @@ class ZulipUploadBackend:
     def upload_single_emoji_image(
         self,
         path: str,
-        content_type: Optional[str],
+        content_type: str | None,
         user_profile: UserProfile,
         image_data: bytes,
     ) -> None:
@@ -124,9 +124,9 @@ class ZulipUploadBackend:
         self,
         realm: Realm,
         tarball_path: str,
-        percent_callback: Optional[Callable[[Any], None]] = None,
+        percent_callback: Callable[[Any], None] | None = None,
     ) -> str:
         raise NotImplementedError
 
-    def delete_export_tarball(self, export_path: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> str | None:
         raise NotImplementedError

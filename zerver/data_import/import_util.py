@@ -4,17 +4,7 @@ import random
 import shutil
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import (
-    AbstractSet,
-    Any,
-    Callable,
-    Iterable,
-    Iterator,
-    Mapping,
-    Optional,
-    Protocol,
-    TypeVar,
-)
+from typing import AbstractSet, Any, Callable, Iterable, Iterator, Mapping, Protocol, TypeVar
 
 import orjson
 import requests
@@ -51,8 +41,8 @@ class SubscriberHandler:
     def set_info(
         self,
         users: set[int],
-        stream_id: Optional[int] = None,
-        direct_message_group_id: Optional[int] = None,
+        stream_id: int | None = None,
+        direct_message_group_id: int | None = None,
     ) -> None:
         if stream_id is not None:
             self.stream_info[stream_id] = users
@@ -62,7 +52,7 @@ class SubscriberHandler:
             raise AssertionError("stream_id or direct_message_group_id is required")
 
     def get_users(
-        self, stream_id: Optional[int] = None, direct_message_group_id: Optional[int] = None
+        self, stream_id: int | None = None, direct_message_group_id: int | None = None
     ) -> set[int]:
         if stream_id is not None:
             return self.stream_info[stream_id]
@@ -104,7 +94,7 @@ def build_user_profile(
     short_name: str,
     timezone: str,
     is_bot: bool = False,
-    bot_type: Optional[int] = None,
+    bot_type: int | None = None,
 ) -> ZerverFieldsT:
     obj = UserProfile(
         avatar_source=avatar_source,
@@ -494,7 +484,7 @@ def build_message(
     date_sent: float,
     message_id: int,
     content: str,
-    rendered_content: Optional[str],
+    rendered_content: str | None,
     user_id: int,
     recipient_id: int,
     realm_id: int,
@@ -759,7 +749,7 @@ ExternalId = TypeVar("ExternalId")
 
 def long_term_idle_helper(
     message_iterator: Iterator[ZerverFieldsT],
-    user_from_message: Callable[[ZerverFieldsT], Optional[ExternalId]],
+    user_from_message: Callable[[ZerverFieldsT], ExternalId | None],
     timestamp_from_message: Callable[[ZerverFieldsT], float],
     zulip_user_id_from_user: Callable[[ExternalId], int],
     all_user_ids_iterator: Iterator[ExternalId],

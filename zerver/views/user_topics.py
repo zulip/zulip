@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -24,8 +23,8 @@ from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
 def mute_topic(
     user_profile: UserProfile,
-    stream_id: Optional[int],
-    stream_name: Optional[str],
+    stream_id: int | None,
+    stream_name: str | None,
     topic_name: str,
     date_muted: datetime,
 ) -> None:
@@ -46,8 +45,8 @@ def mute_topic(
 
 def unmute_topic(
     user_profile: UserProfile,
-    stream_id: Optional[int],
-    stream_name: Optional[str],
+    stream_id: int | None,
+    stream_name: str | None,
     topic_name: str,
 ) -> None:
     error = _("Topic is not muted")
@@ -68,8 +67,8 @@ def update_muted_topic(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    stream_id: Optional[Json[int]] = None,
-    stream: Optional[str] = None,
+    stream_id: Json[int] | None = None,
+    stream: str | None = None,
     topic: Annotated[str, StringConstraints(max_length=MAX_TOPIC_NAME_LENGTH)],
     op: Literal["add", "remove"],
 ) -> HttpResponse:

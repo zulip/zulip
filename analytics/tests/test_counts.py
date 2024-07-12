@@ -1,6 +1,6 @@
 from contextlib import AbstractContextManager, ExitStack, contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator
 from unittest import mock
 
 import time_machine
@@ -111,7 +111,7 @@ class AnalyticsTestCase(ZulipTestCase):
         # used to generate unique names in self.create_*
         self.name_counter = 100
         # used as defaults in self.assert_table_count
-        self.current_property: Optional[str] = None
+        self.current_property: str | None = None
 
         # Delete RemoteRealm registrations to have a clean slate - the relevant
         # tests want to construct this from scratch.
@@ -226,10 +226,10 @@ class AnalyticsTestCase(ZulipTestCase):
         self,
         table: type[BaseCount],
         value: int,
-        property: Optional[str] = None,
-        subgroup: Optional[str] = None,
+        property: str | None = None,
+        subgroup: str | None = None,
         end_time: datetime = TIME_ZERO,
-        realm: Optional[Realm] = None,
+        realm: Realm | None = None,
         **kwargs: models.Model,
     ) -> None:
         if property is None:
@@ -1812,7 +1812,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.current_property = self.stat.property
 
     def add_event(
-        self, event_type: int, days_offset: float, user: Optional[UserProfile] = None
+        self, event_type: int, days_offset: float, user: UserProfile | None = None
     ) -> None:
         hours_offset = int(24 * days_offset)
         if user is None:
@@ -1984,7 +1984,7 @@ class TestRealmActiveHumans(AnalyticsTestCase):
         self.stat = COUNT_STATS["realm_active_humans::day"]
         self.current_property = self.stat.property
 
-    def mark_15day_active(self, user: UserProfile, end_time: Optional[datetime] = None) -> None:
+    def mark_15day_active(self, user: UserProfile, end_time: datetime | None = None) -> None:
         if end_time is None:
             end_time = self.TIME_ZERO
         UserCount.objects.create(

@@ -1,6 +1,5 @@
 import os
 import pwd
-from typing import Optional
 
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import SCIMConfigDict
@@ -94,7 +93,7 @@ LOGIN_URL = "/devlogin/"
 # For development convenience, configure the ToS/Privacy Policies
 POLICIES_DIRECTORY = "corporate/policies"
 TERMS_OF_SERVICE_VERSION = "1.0"
-TERMS_OF_SERVICE_MESSAGE: Optional[str] = "Description of changes to the ToS!"
+TERMS_OF_SERVICE_MESSAGE: str | None = "Description of changes to the ToS!"
 
 EMBEDDED_BOTS_ENABLED = True
 
@@ -133,7 +132,7 @@ TWO_FACTOR_SMS_GATEWAY = "two_factor.gateways.fake.Fake"
 #   (C) If LDAP usernames are completely unrelated to email addresses.
 #
 # Fake LDAP data has e.g. ("ldapuser1", "ldapuser1@zulip.com") for username/email.
-FAKE_LDAP_MODE: Optional[str] = None
+FAKE_LDAP_MODE: str | None = None
 # FAKE_LDAP_NUM_USERS = 8
 
 if FAKE_LDAP_MODE:
@@ -180,7 +179,7 @@ if FAKE_LDAP_MODE:
     AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipLDAPAuthBackend",)
 
 BILLING_ENABLED = True
-LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
+LANDING_PAGE_NAVBAR_MESSAGE: str | None = None
 
 # Our run-dev proxy uses X-Forwarded-Port to communicate to Django
 # that the request is actually on port 9991, not port 9992 (the Django
@@ -194,7 +193,7 @@ SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
 
 SOCIAL_AUTH_SUBDOMAIN = "auth"
 
-MEMCACHED_USERNAME: Optional[str] = None
+MEMCACHED_USERNAME: str | None = None
 
 SCIM_CONFIG: dict[str, SCIMConfigDict] = {
     "zulip": {

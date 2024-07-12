@@ -1,5 +1,5 @@
 import re
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping
 
 import markdown
 from markdown.extensions import Extension
@@ -201,7 +201,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
 
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))
 
-    def parse_tabs(self, lines: list[str]) -> Optional[dict[str, Any]]:
+    def parse_tabs(self, lines: list[str]) -> dict[str, Any] | None:
         block: dict[str, Any] = {}
         for index, line in enumerate(lines):
             start_match = START_TABBED_SECTION_REGEX.search(line)

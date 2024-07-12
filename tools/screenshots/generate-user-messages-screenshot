@@ -6,7 +6,6 @@ import os
 import subprocess
 import sys
 from datetime import datetime, timezone
-from typing import Optional
 
 from django.conf import settings
 from pydantic import BaseModel, ConfigDict
@@ -86,7 +85,7 @@ class MessageThread(BaseModel):
     date: dict[str, int]
 
 
-def create_user(full_name: str, avatar_filename: Optional[str]) -> None:
+def create_user(full_name: str, avatar_filename: str | None) -> None:
     email = f'{full_name.replace(" ", "")}@zulip.com'
     try:
         user = UserProfile.objects.get(realm=realm, full_name=full_name)
@@ -104,7 +103,7 @@ def set_avatar(user: UserProfile, filename: str) -> None:
 
 
 def create_and_subscribe_stream(
-    stream_name: str, users: list[str], color: Optional[str] = None, invite_only: bool = False
+    stream_name: str, users: list[str], color: str | None = None, invite_only: bool = False
 ) -> None:
     stream = ensure_stream(realm, stream_name, invite_only=invite_only, acting_user=DEFAULT_USER)
     bulk_add_subscriptions(
@@ -138,7 +137,7 @@ def send_stream_messages(
 
     subscribers["Notification Bot"] = NOTIFICATION_BOT
 
-    messages: list[Optional[SendMessageRequest]] = []
+    messages: list[SendMessageRequest | None] = []
 
     for message in staged_messages:
         date_sent = message["date"]

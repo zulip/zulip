@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Sequence
 from unittest.mock import patch
 from urllib.parse import quote, urlencode
 
@@ -176,11 +176,11 @@ class InviteUserBase(ZulipTestCase):
         invitee_emails: str,
         stream_names: Sequence[str],
         notify_referrer_on_join: bool = True,
-        invite_expires_in_minutes: Optional[int] = INVITATION_LINK_VALIDITY_MINUTES,
+        invite_expires_in_minutes: int | None = INVITATION_LINK_VALIDITY_MINUTES,
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
         include_realm_default_subscriptions: bool = False,
-        realm: Optional[Realm] = None,
+        realm: Realm | None = None,
     ) -> "TestHttpResponse":
         """
         Invites the specified users to Zulip with the specified streams.
@@ -192,7 +192,7 @@ class InviteUserBase(ZulipTestCase):
         """
         stream_ids = [self.get_stream_id(stream_name, realm=realm) for stream_name in stream_names]
 
-        invite_expires_in: Union[str, Optional[int]] = invite_expires_in_minutes
+        invite_expires_in: str | int | None = invite_expires_in_minutes
         if invite_expires_in is None:
             invite_expires_in = orjson.dumps(None).decode()
 
@@ -258,7 +258,7 @@ class InviteUserTest(InviteUserBase):
             new_realm_max: int,
             realm_max: int,
             open_realm_creation: bool = True,
-            realm: Optional[Realm] = None,
+            realm: Realm | None = None,
             stream_name: str = "Denmark",
         ) -> "TestHttpResponse":
             if realm is None:
@@ -2446,8 +2446,8 @@ class MultiuseInviteTest(ZulipTestCase):
 
     def generate_multiuse_invite_link(
         self,
-        streams: Optional[list[Stream]] = None,
-        date_sent: Optional[datetime] = None,
+        streams: list[Stream] | None = None,
+        date_sent: datetime | None = None,
         include_realm_default_subscriptions: bool = False,
     ) -> str:
         invite = MultiuseInvite(

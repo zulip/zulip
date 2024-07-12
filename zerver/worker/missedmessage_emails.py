@@ -3,7 +3,7 @@ import logging
 import threading
 from collections import defaultdict
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any
 
 import sentry_sdk
 from django.db import transaction
@@ -32,7 +32,7 @@ class MissedMessageWorker(QueueProcessingWorker):
     # CHECK_FREQUENCY_SECONDS, to avoid excessive activity.
     CHECK_FREQUENCY_SECONDS = 5
 
-    worker_thread: Optional[threading.Thread] = None
+    worker_thread: threading.Thread | None = None
 
     # This condition variable mediates the stopping and has_timeout
     # pieces of state, below it.
@@ -176,7 +176,7 @@ class MissedMessageWorker(QueueProcessingWorker):
             #     them regularly; this happens by hitting the
             #     timeout and calling maybe_send_batched_emails().
             #     There is no explicit notify() for this.
-            timeout: Optional[int] = None
+            timeout: int | None = None
             if ScheduledMessageNotificationEmail.objects.exists():
                 timeout = self.CHECK_FREQUENCY_SECONDS
             self.has_timeout = timeout is not None

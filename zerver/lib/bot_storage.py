@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.conf import settings
 from django.db.models import F, Sum
 from django.db.models.functions import Length
@@ -18,7 +16,7 @@ def get_bot_storage(bot_profile: UserProfile, key: str) -> str:
         raise StateError("Key does not exist.")
 
 
-def get_bot_storage_size(bot_profile: UserProfile, key: Optional[str] = None) -> int:
+def get_bot_storage_size(bot_profile: UserProfile, key: str | None = None) -> int:
     if key is None:
         return (
             BotStorageData.objects.filter(bot_profile=bot_profile)

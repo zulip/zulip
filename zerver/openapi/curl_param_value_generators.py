@@ -6,7 +6,7 @@
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from django.utils.timezone import now as timezone_now
 
@@ -73,8 +73,8 @@ def assert_all_helper_functions_called() -> None:
 def patch_openapi_example_values(
     entry: str,
     parameters: list[Parameter],
-    request_body: Optional[dict[str, Any]] = None,
-) -> tuple[list[Parameter], Optional[dict[str, object]]]:
+    request_body: dict[str, Any] | None = None,
+) -> tuple[list[Parameter], dict[str, object] | None]:
     if entry not in GENERATOR_FUNCTIONS:
         return parameters, request_body
     func = GENERATOR_FUNCTIONS[entry]

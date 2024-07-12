@@ -1,6 +1,6 @@
 import base64
 import struct
-from typing import Any, Optional
+from typing import Any
 
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in
 # https://github.com/davidben/webathena, which has the following
@@ -101,7 +101,7 @@ def der_encode_octet_string(val: bytes) -> bytes:
     return der_encode_tlv(0x04, val)
 
 
-def der_encode_sequence(tlvs: list[Optional[bytes]], tagged: bool = True) -> bytes:
+def der_encode_sequence(tlvs: list[bytes | None], tagged: bool = True) -> bytes:
     body = []
     for i, tlv in enumerate(tlvs):
         # Missing optional elements represented as None.

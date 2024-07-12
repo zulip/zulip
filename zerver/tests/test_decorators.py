@@ -3,7 +3,7 @@ import os
 import re
 import uuid
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable
 from unittest import mock, skipUnless
 
 import orjson
@@ -468,7 +468,7 @@ class RateLimitTestCase(ZulipTestCase):
     @staticmethod
     @public_json_view
     def ratelimited_json_view(
-        req: HttpRequest, maybe_user_profile: Union[AnonymousUser, UserProfile], /
+        req: HttpRequest, maybe_user_profile: AnonymousUser | UserProfile, /
     ) -> HttpResponse:
         return HttpResponse("some value")
 
@@ -1235,7 +1235,7 @@ class TestPublicJsonViewDecorator(ZulipTestCase):
 
         @public_json_view
         def public_view(
-            request: HttpRequest, maybe_user_profile: Union[UserProfile, AnonymousUser]
+            request: HttpRequest, maybe_user_profile: UserProfile | AnonymousUser
         ) -> HttpResponse:
             self.assertEqual(maybe_user_profile, hamlet)
             return json_success(request)
@@ -1543,7 +1543,7 @@ class TestRequestNotes(ZulipTestCase):
         depending on the subdomain.
         """
 
-        def mock_home(expected_realm: Optional[Realm]) -> Callable[[HttpRequest], HttpResponse]:
+        def mock_home(expected_realm: Realm | None) -> Callable[[HttpRequest], HttpResponse]:
             def inner(request: HttpRequest) -> HttpResponse:
                 self.assertEqual(RequestNotes.get_notes(request).realm, expected_realm)
                 return HttpResponse()

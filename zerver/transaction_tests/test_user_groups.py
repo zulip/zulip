@@ -1,5 +1,5 @@
 import threading
-from typing import Any, Optional
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -16,14 +16,14 @@ from zerver.models import NamedUserGroup, Realm, UserGroup, UserProfile
 from zerver.models.realms import get_realm
 from zerver.views.user_groups import update_subgroups_of_user_group
 
-BARRIER: Optional[threading.Barrier] = None
+BARRIER: threading.Barrier | None = None
 
 
 def dev_update_subgroups(
     request: HttpRequest,
     user_profile: UserProfile,
     user_group_id: int,
-) -> Optional[str]:
+) -> str | None:
     # The test is expected to set up the barrier before accessing this endpoint.
     assert BARRIER is not None
     try:
@@ -105,7 +105,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
                 supergroup_id: int,
             ) -> None:
                 threading.Thread.__init__(self)
-                self.response: Optional[str] = None
+                self.response: str | None = None
                 self.subgroup_ids = subgroup_ids
                 self.supergroup_id = supergroup_id
 

@@ -1,6 +1,6 @@
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Iterable, Optional, TypeVar, Union
+from typing import Any, Iterable, TypeVar
 from unittest import mock
 
 import orjson
@@ -797,7 +797,7 @@ class PermissionTest(ZulipTestCase):
         empty_profile_data = []
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            value: Union[str, None, list[Any]] = ""
+            value: str | None | list[Any] = ""
             if field.field_type == CustomProfileField.USER:
                 value = []
             empty_profile_data.append(
@@ -2365,7 +2365,7 @@ class BulkUsersTest(ZulipTestCase):
 
         hamlet = self.example_user("hamlet")
 
-        def get_hamlet_avatar(client_gravatar: bool) -> Optional[str]:
+        def get_hamlet_avatar(client_gravatar: bool) -> str | None:
             data = dict(client_gravatar=orjson.dumps(client_gravatar).decode())
             result = self.client_get("/json/users", data)
             rows = self.assert_json_success(result)["members"]

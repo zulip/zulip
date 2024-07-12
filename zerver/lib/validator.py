@@ -31,19 +31,7 @@ for any particular type of object.
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import (
-    Any,
-    Callable,
-    Collection,
-    Container,
-    Iterator,
-    NoReturn,
-    Optional,
-    TypeVar,
-    Union,
-    cast,
-    overload,
-)
+from typing import Any, Callable, Collection, Container, Iterator, NoReturn, TypeVar, cast, overload
 
 import orjson
 import zoneinfo
@@ -209,8 +197,8 @@ def check_color(var_name: str, val: object) -> str:
     return s
 
 
-def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[ResultT]]:
-    def f(var_name: str, val: object) -> Optional[ResultT]:
+def check_none_or(sub_validator: Validator[ResultT]) -> Validator[ResultT | None]:
+    def f(var_name: str, val: object) -> ResultT | None:
         if val is None:
             return val
         else:
@@ -220,7 +208,7 @@ def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[Resul
 
 
 def check_list(
-    sub_validator: Validator[ResultT], length: Optional[int] = None
+    sub_validator: Validator[ResultT], length: int | None = None
 ) -> Validator[list[ResultT]]:
     def f(var_name: str, val: object) -> list[ResultT]:
         if not isinstance(val, list):
@@ -264,7 +252,7 @@ def check_dict(
     required_keys: Collection[tuple[str, Validator[ResultT]]] = [],
     optional_keys: Collection[tuple[str, Validator[ResultT]]] = [],
     *,
-    value_validator: Optional[Validator[ResultT]] = None,
+    value_validator: Validator[ResultT] | None = None,
     _allow_only_listed_keys: bool = False,
 ) -> Validator[dict[str, ResultT]]:
     def f(var_name: str, val: object) -> dict[str, ResultT]:
@@ -622,7 +610,7 @@ def to_converted_or_fallback(
     return converter
 
 
-def check_string_or_int_list(var_name: str, val: object) -> Union[str, list[int]]:
+def check_string_or_int_list(var_name: str, val: object) -> str | list[int]:
     if isinstance(val, str):
         return val
 
@@ -634,7 +622,7 @@ def check_string_or_int_list(var_name: str, val: object) -> Union[str, list[int]
     return check_list(check_int)(var_name, val)
 
 
-def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
+def check_string_or_int(var_name: str, val: object) -> str | int:
     if isinstance(val, (str, int)):
         return val
 
@@ -687,7 +675,7 @@ class WildValue:
     def __contains__(self, key: str) -> bool:
         self._need_dict()
 
-    def __getitem__(self, key: Union[int, str]) -> "WildValue":
+    def __getitem__(self, key: int | str) -> "WildValue":
         if isinstance(key, int):
             self._need_list()
         else:
@@ -718,7 +706,7 @@ class WildValueList(WildValue):
             yield wrap_wild_value(f"{self.var_name}[{i}]", item)
 
     @override
-    def __getitem__(self, key: Union[int, str]) -> WildValue:
+    def __getitem__(self, key: int | str) -> WildValue:
         if not isinstance(key, int):
             return super().__getitem__(key)
 
@@ -740,7 +728,7 @@ class WildValueDict(WildValue):
         return key in self.value
 
     @override
-    def __getitem__(self, key: Union[int, str]) -> WildValue:
+    def __getitem__(self, key: int | str) -> WildValue:
         if not isinstance(key, str):
             return super().__getitem__(key)
 

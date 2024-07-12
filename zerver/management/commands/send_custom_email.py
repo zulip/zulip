@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 import orjson
 from django.conf import settings
@@ -97,7 +97,7 @@ class Command(ZulipBaseCommand):
         self, *args: Any, dry_run: bool = False, admins_only: bool = False, **options: str
     ) -> None:
         users: QuerySet[UserProfile] = UserProfile.objects.none()
-        add_context: Optional[Callable[[dict[str, object], UserProfile], None]] = None
+        add_context: Callable[[dict[str, object], UserProfile], None] | None = None
         distinct_email = False
 
         if options["remote_servers"]:

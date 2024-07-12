@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Sequence
+from typing import Sequence
 
 from django.conf import settings
 from django.db import transaction
@@ -34,13 +34,13 @@ def check_schedule_message(
     client: Client,
     recipient_type_name: str,
     message_to: list[int],
-    topic_name: Optional[str],
+    topic_name: str | None,
     message_content: str,
     deliver_at: datetime,
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
     *,
-    forwarder_user_profile: Optional[UserProfile] = None,
-    read_by_sender: Optional[bool] = None,
+    forwarder_user_profile: UserProfile | None = None,
+    read_by_sender: bool | None = None,
 ) -> int:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     send_request = check_message(
@@ -130,11 +130,11 @@ def edit_scheduled_message(
     sender: UserProfile,
     client: Client,
     scheduled_message_id: int,
-    recipient_type_name: Optional[str],
-    message_to: Optional[str],
-    topic_name: Optional[str],
-    message_content: Optional[str],
-    deliver_at: Optional[datetime],
+    recipient_type_name: str | None,
+    message_to: str | None,
+    topic_name: str | None,
+    message_content: str | None,
+    deliver_at: datetime | None,
     realm: Realm,
 ) -> None:
     with transaction.atomic():

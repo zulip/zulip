@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Union
+from typing import Iterable
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -83,8 +83,8 @@ def get_search_fields(
 
 
 def clean_narrow_for_web_public_api(
-    narrow: Optional[list[NarrowParameter]],
-) -> Optional[list[NarrowParameter]]:
+    narrow: list[NarrowParameter] | None,
+) -> list[NarrowParameter] | None:
     if narrow is None:
         return None
 
@@ -101,13 +101,13 @@ def clean_narrow_for_web_public_api(
 @typed_endpoint
 def get_messages_backend(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    anchor_val: Annotated[Optional[str], ApiParamConfig("anchor")] = None,
+    anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
     include_anchor: Json[bool] = True,
     num_before: Json[NonNegativeInt],
     num_after: Json[NonNegativeInt],
-    narrow: Json[Optional[list[NarrowParameter]]] = None,
+    narrow: Json[list[NarrowParameter] | None] = None,
     use_first_unread_anchor_val: Annotated[
         Json[bool], ApiParamConfig("use_first_unread_anchor")
     ] = False,
@@ -148,7 +148,7 @@ def get_messages_backend(
         # We use None to indicate unauthenticated requests as it's more
         # readable than using AnonymousUser, and the lack of Django
         # stubs means that mypy can't check AnonymousUser well.
-        user_profile: Optional[UserProfile] = None
+        user_profile: UserProfile | None = None
         is_web_public_query = True
     else:
         assert isinstance(maybe_user_profile, UserProfile)

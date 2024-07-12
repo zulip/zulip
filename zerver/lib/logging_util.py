@@ -6,7 +6,6 @@ import traceback
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from logging import Logger
-from typing import Optional, Union
 
 import orjson
 from django.conf import settings
@@ -120,7 +119,7 @@ class RequireReallyDeployed(logging.Filter):
         return settings.PRODUCTION
 
 
-def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
+def find_log_caller_module(record: logging.LogRecord) -> str | None:
     """Find the module name corresponding to where this record was logged.
 
     Sadly `record.module` is just the innermost component of the full
@@ -224,7 +223,7 @@ class ZulipWebhookFormatter(ZulipFormatter):
 
     @override
     def format(self, record: logging.LogRecord) -> str:
-        request: Optional[HttpRequest] = getattr(record, "request", None)
+        request: HttpRequest | None = getattr(record, "request", None)
         if request is None:
             record.user = None
             record.client = None
@@ -235,7 +234,7 @@ class ZulipWebhookFormatter(ZulipFormatter):
             return super().format(record)
 
         if request.content_type == "application/json":
-            payload: Union[str, bytes] = request.body
+            payload: str | bytes = request.body
         else:
             payload = request.POST["payload"]
 

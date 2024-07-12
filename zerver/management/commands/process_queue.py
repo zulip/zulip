@@ -6,7 +6,7 @@ import threading
 from argparse import ArgumentParser
 from contextlib import contextmanager
 from types import FrameType
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator
 
 from django.conf import settings
 from django.core.management.base import CommandError
@@ -57,7 +57,7 @@ class Command(ZulipBaseCommand):
         logging.basicConfig()
         logger = logging.getLogger("process_queue")
 
-        def exit_with_three(signal: int, frame: Optional[FrameType]) -> None:
+        def exit_with_three(signal: int, frame: FrameType | None) -> None:
             """
             This process is watched by Django's autoreload, so exiting
             with status code 3 will cause this process to restart.
@@ -95,7 +95,7 @@ class Command(ZulipBaseCommand):
             queue_name = options["queue_name"]
             worker_num = options["worker_num"]
 
-            def signal_handler(signal: int, frame: Optional[FrameType]) -> None:
+            def signal_handler(signal: int, frame: FrameType | None) -> None:
                 logger.info("Worker %d disconnecting from queue %s", worker_num, queue_name)
                 worker.stop()
                 sys.exit(0)

@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
 
@@ -139,7 +139,7 @@ def get_topic_based_on_event(payload: WildValue, event: str) -> str:
     return get_code_repository_name(payload)  # nocoverage
 
 
-def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]:
+def get_event_name(payload: WildValue, branches: str | None) -> str | None:
     event_name = payload["eventType"].tame(check_string)
     if event_name == "git.push" and branches is not None:
         branch = get_code_push_branch_name(payload)
@@ -175,7 +175,7 @@ def api_azuredevops_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
 ) -> HttpResponse:
     event = get_event_name(payload, branches)
     if event is None:

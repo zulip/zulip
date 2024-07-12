@@ -4,7 +4,7 @@ import random
 import re
 import string
 from datetime import datetime, timedelta
-from typing import Any, Union
+from typing import Any
 from unittest import mock, skipUnless
 
 import orjson
@@ -1529,7 +1529,7 @@ class RealmAPITest(ZulipTestCase):
         super().setUp()
         self.login("desdemona")
 
-    def update_with_api(self, name: str, value: Union[int, str]) -> Realm:
+    def update_with_api(self, name: str, value: int | str) -> Realm:
         if not isinstance(value, str):
             value = orjson.dumps(value).decode()
         result = self.client_patch("/json/realm", {name: value})

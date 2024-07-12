@@ -9,12 +9,12 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Mapping, Optional, Protocol
+from typing import Mapping, Protocol
 from urllib.parse import parse_qs, urlsplit
 
 
 class GaugeMetric(Protocol):
-    def __call__(self, value: float, labels: Optional[Mapping[str, str]] = None, /) -> None:
+    def __call__(self, value: float, labels: Mapping[str, str] | None = None, /) -> None:
         pass
 
 
@@ -27,7 +27,7 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
     server_version = "wal-g-prometheus-server/1.0"
 
     def gauge(
-        self, name: str, description: Optional[str] = None, default_value: Optional[float] = None
+        self, name: str, description: str | None = None, default_value: float | None = None
     ) -> GaugeMetric:
         if name in self.metrics:
             raise ValueError(f"Redefinition of {name} metric")
@@ -35,7 +35,7 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
         if description is not None:
             self.metrics[name].append(f"# HELP {self.METRIC_PREFIX}{name} {description}")
 
-        def inner(value: float, labels: Optional[Mapping[str, str]] = None) -> None:
+        def inner(value: float, labels: Mapping[str, str] | None = None) -> None:
             label_str = ""
             if labels:
                 label_str = "{" + ",".join(f'{k}="{v}"' for k, v in labels.items()) + "}"

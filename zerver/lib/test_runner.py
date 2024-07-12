@@ -3,7 +3,7 @@ import os
 import random
 import shutil
 import unittest
-from typing import Any, Callable, Iterable, Optional, Union
+from typing import Any, Callable, Iterable
 from unittest import TestSuite, runner
 from unittest.result import TestResult
 
@@ -34,7 +34,7 @@ from zerver.lib.test_helpers import append_instrumentation_data, write_instrumen
 random_id_range_start = str(random.randint(1, 10000000))
 
 
-def get_database_id(worker_id: Optional[int] = None) -> str:
+def get_database_id(worker_id: int | None = None) -> str:
     if worker_id:
         return f"{random_id_range_start}_{worker_id}"
     return random_id_range_start
@@ -130,7 +130,7 @@ def run_subsuite(args: SubsuiteArgs) -> tuple[int, Any]:
     return subsuite_index, result.events
 
 
-def destroy_test_databases(worker_id: Optional[int] = None) -> None:
+def destroy_test_databases(worker_id: int | None = None) -> None:
     for alias in connections:
         connection = connections[alias]
 
@@ -181,12 +181,12 @@ def create_test_databases(worker_id: int) -> None:
 
 def init_worker(
     counter: "multiprocessing.sharedctypes.Synchronized[int]",
-    initial_settings: Optional[dict[str, Any]] = None,
-    serialized_contents: Optional[dict[str, str]] = None,
-    process_setup: Optional[Callable[..., None]] = None,
-    process_setup_args: Optional[tuple[Any, ...]] = None,
-    debug_mode: Optional[bool] = None,
-    used_aliases: Optional[set[str]] = None,
+    initial_settings: dict[str, Any] | None = None,
+    serialized_contents: dict[str, str] | None = None,
+    process_setup: Callable[..., None] | None = None,
+    process_setup_args: tuple[Any, ...] | None = None,
+    debug_mode: bool | None = None,
+    used_aliases: set[str] | None = None,
 ) -> None:
     """
     This function runs only under parallel mode. It initializes the
@@ -266,7 +266,7 @@ class Runner(DiscoverRunner):
         template_rendered.connect(self.on_template_rendered)
 
     @override
-    def get_resultclass(self) -> Optional[type[TextTestResult]]:
+    def get_resultclass(self) -> type[TextTestResult] | None:
         return TextTestResult
 
     def on_template_rendered(self, sender: Any, context: dict[str, Any], **kwargs: Any) -> None:
@@ -333,9 +333,7 @@ class Runner(DiscoverRunner):
             print("Unable to clean up the test run's directory.")
         return super().teardown_test_environment(*args, **kwargs)
 
-    def test_imports(
-        self, test_labels: list[str], suite: Union[TestSuite, ParallelTestSuite]
-    ) -> None:
+    def test_imports(self, test_labels: list[str], suite: TestSuite | ParallelTestSuite) -> None:
         prefix = "unittest.loader._FailedTest."
         for test_name in get_test_names(suite):
             if test_name.startswith(prefix):
@@ -360,7 +358,7 @@ class Runner(DiscoverRunner):
     def run_tests(
         self,
         test_labels: list[str],
-        failed_tests_path: Optional[str] = None,
+        failed_tests_path: str | None = None,
         full_suite: bool = False,
         include_webhooks: bool = False,
         **kwargs: Any,
@@ -396,7 +394,7 @@ class Runner(DiscoverRunner):
         return failed
 
 
-def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> list[str]:
+def get_test_names(suite: TestSuite | ParallelTestSuite) -> list[str]:
     if isinstance(suite, ParallelTestSuite):
         return [name for subsuite in suite.subsuites for name in get_test_names(subsuite)]
     else:

@@ -14,7 +14,7 @@ import difflib
 import os
 import subprocess
 import sys
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 import orjson
 
@@ -87,7 +87,7 @@ DEPRECATED_EVENTS = [
 ]
 
 
-def get_event_checker(event: dict[str, Any]) -> Optional[Callable[[str, dict[str, Any]], None]]:
+def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], None] | None:
     name = event["type"]
     if "op" in event:
         name += "_" + event["op"]

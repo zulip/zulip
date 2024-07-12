@@ -1,6 +1,6 @@
 import re
 from collections import OrderedDict
-from typing import Any, Optional, Union
+from typing import Any
 from unittest import mock
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -330,7 +330,7 @@ class PreviewTestCase(ZulipTestCase):
         status: int = 200,
         relative_url: bool = False,
         content_type: str = "text/html",
-        body: Optional[Union[str, ConnectionError]] = None,
+        body: str | ConnectionError | None = None,
     ) -> None:
         if body is None:
             body = cls.open_graph_html

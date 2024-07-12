@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable
 
 import stripe
 from django.conf import settings
@@ -28,9 +28,9 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 def stripe_event_handler_decorator(
     func: Callable[[Any, Any], None],
-) -> Callable[[Union[stripe.checkout.Session, stripe.Invoice], Event], None]:
+) -> Callable[[stripe.checkout.Session | stripe.Invoice, Event], None]:
     def wrapper(
-        stripe_object: Union[stripe.checkout.Session, stripe.Invoice],
+        stripe_object: stripe.checkout.Session | stripe.Invoice,
         event: Event,
     ) -> None:
         event.status = Event.EVENT_HANDLER_STARTED
@@ -84,8 +84,8 @@ def stripe_event_handler_decorator(
 
 
 def get_billing_session_for_stripe_webhook(
-    customer: Customer, user_id: Optional[str]
-) -> Union[RealmBillingSession, RemoteRealmBillingSession, RemoteServerBillingSession]:
+    customer: Customer, user_id: str | None
+) -> RealmBillingSession | RemoteRealmBillingSession | RemoteServerBillingSession:
     if customer.remote_realm is not None:  # nocoverage
         return RemoteRealmBillingSession(customer.remote_realm)
     elif customer.remote_server is not None:  # nocoverage

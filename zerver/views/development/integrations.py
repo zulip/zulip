@@ -1,6 +1,6 @@
 import os
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import orjson
 from django.http import HttpRequest, HttpResponse
@@ -27,7 +27,7 @@ def get_webhook_integrations() -> list[str]:
     return [integration.name for integration in WEBHOOK_INTEGRATIONS]
 
 
-def get_valid_integration_name(name: str) -> Optional[str]:
+def get_valid_integration_name(name: str) -> str | None:
     for integration_name in get_webhook_integrations():
         if name == integration_name:
             return integration_name

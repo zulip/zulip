@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import orjson
 
@@ -13,7 +13,7 @@ from zerver.models import UserProfile, UserStatus
 from zerver.models.clients import get_client
 
 
-def user_status_info(user: UserProfile, acting_user: Optional[UserProfile] = None) -> UserInfoDict:
+def user_status_info(user: UserProfile, acting_user: UserProfile | None = None) -> UserInfoDict:
     if acting_user is None:
         acting_user = user
     user_dict = get_all_users_status_dict(user.realm, acting_user)

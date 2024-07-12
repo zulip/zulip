@@ -3,7 +3,7 @@
 
 import time
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any
 
 from bitfield import BitField
 from bitfield.types import Bit, BitHandler
@@ -263,8 +263,8 @@ class Message(AbstractMessage):
 
     @staticmethod
     def need_to_render_content(
-        rendered_content: Optional[str],
-        rendered_content_version: Optional[int],
+        rendered_content: str | None,
+        rendered_content_version: int | None,
         markdown_version: int,
     ) -> bool:
         return (
@@ -644,9 +644,7 @@ class UserMessage(AbstractUserMessage):
         ).exists()
 
 
-def get_usermessage_by_message_id(
-    user_profile: UserProfile, message_id: int
-) -> Optional[UserMessage]:
+def get_usermessage_by_message_id(user_profile: UserProfile, message_id: int) -> UserMessage | None:
     try:
         return UserMessage.objects.get(user_profile=user_profile, message_id=message_id)
     except UserMessage.DoesNotExist:

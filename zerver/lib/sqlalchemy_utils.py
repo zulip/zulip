@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Iterator, Optional
+from typing import Iterator
 
 import sqlalchemy
 from django.db import connection
@@ -20,7 +20,7 @@ class NonClosingPool(sqlalchemy.pool.NullPool):
         pass
 
 
-sqlalchemy_engine: Optional[Engine] = None
+sqlalchemy_engine: Engine | None = None
 
 
 @contextmanager

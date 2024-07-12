@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping
 from urllib.parse import urljoin
 
 import orjson
@@ -54,7 +54,7 @@ class RealmCountDataForAnalytics(BaseModel):
     realm: int
     id: int
     end_time: float
-    subgroup: Optional[str]
+    subgroup: str | None
     value: int
 
 
@@ -62,7 +62,7 @@ class InstallationCountDataForAnalytics(BaseModel):
     property: str
     id: int
     end_time: float
-    subgroup: Optional[str]
+    subgroup: str | None
     value: int
 
 
@@ -71,7 +71,7 @@ class RealmAuditLogDataForAnalytics(BaseModel):
     realm: int
     event_time: float
     backfilled: bool
-    extra_data: Optional[Union[str, dict[str, Any]]]
+    extra_data: str | dict[str, Any] | None
     event_type: int
 
 
@@ -104,11 +104,11 @@ class RealmDataForAnalytics(BaseModel):
 class AnalyticsRequest(BaseModel):
     realm_counts: Json[list[RealmCountDataForAnalytics]]
     installation_counts: Json[list[InstallationCountDataForAnalytics]]
-    realmauditlog_rows: Optional[Json[list[RealmAuditLogDataForAnalytics]]] = None
+    realmauditlog_rows: Json[list[RealmAuditLogDataForAnalytics]] | None = None
     realms: Json[list[RealmDataForAnalytics]]
-    version: Optional[Json[str]]
-    merge_base: Optional[Json[str]]
-    api_feature_level: Optional[Json[int]]
+    version: Json[str] | None
+    merge_base: Json[str] | None
+    api_feature_level: Json[int] | None
 
 
 class UserDataForRemoteBilling(BaseModel):
@@ -120,7 +120,7 @@ class UserDataForRemoteBilling(BaseModel):
 def send_to_push_bouncer(
     method: str,
     endpoint: str,
-    post_data: Union[bytes, Mapping[str, Union[str, int, None, bytes]]],
+    post_data: bytes | Mapping[str, str | int | None | bytes],
     extra_headers: Mapping[str, str] = {},
 ) -> dict[str, object]:
     """While it does actually send the notice, this function has a lot of
@@ -275,7 +275,7 @@ def check_push_notifications_recently_working() -> bool:
 
 
 def maybe_mark_pushes_disabled(
-    e: Union[JsonableError, orjson.JSONDecodeError], logger: logging.Logger
+    e: JsonableError | orjson.JSONDecodeError, logger: logging.Logger
 ) -> None:
     if isinstance(e, PushNotificationBouncerServerError):
         # We don't fall through and deactivate the flag, since this is
@@ -355,7 +355,7 @@ def build_analytics_data(
     return realm_count_data, installation_count_data, zerver_realmauditlog
 
 
-def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> list[RealmDataForAnalytics]:
+def get_realms_info_for_push_bouncer(realm_id: int | None = None) -> list[RealmDataForAnalytics]:
     realms = Realm.objects.order_by("id")
     if realm_id is not None:  # nocoverage
         realms = realms.filter(id=realm_id)

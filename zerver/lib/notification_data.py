@@ -1,6 +1,6 @@
 import math
 from dataclasses import dataclass
-from typing import Any, Collection, Optional
+from typing import Any, Collection
 
 from zerver.lib.mention import MentionData
 from zerver.lib.user_groups import get_user_group_member_ids
@@ -199,7 +199,7 @@ class UserMessageNotificationsData:
     def is_push_notifiable(self, acting_user_id: int, idle: bool) -> bool:
         return self.get_push_notification_trigger(acting_user_id, idle) is not None
 
-    def get_push_notification_trigger(self, acting_user_id: int, idle: bool) -> Optional[str]:
+    def get_push_notification_trigger(self, acting_user_id: int, idle: bool) -> str | None:
         if not idle and not self.online_push_enabled:
             return None
 
@@ -231,7 +231,7 @@ class UserMessageNotificationsData:
     def is_email_notifiable(self, acting_user_id: int, idle: bool) -> bool:
         return self.get_email_notification_trigger(acting_user_id, idle) is not None
 
-    def get_email_notification_trigger(self, acting_user_id: int, idle: bool) -> Optional[str]:
+    def get_email_notification_trigger(self, acting_user_id: int, idle: bool) -> str | None:
         if not idle:
             return None
 
@@ -264,7 +264,7 @@ class UserMessageNotificationsData:
 def user_allows_notifications_in_StreamTopic(
     stream_is_muted: bool,
     visibility_policy: int,
-    stream_specific_setting: Optional[bool],
+    stream_specific_setting: bool | None,
     global_setting: bool,
 ) -> bool:
     """
@@ -322,7 +322,7 @@ class MentionedUserGroup:
 
 def get_mentioned_user_group(
     messages: list[dict[str, Any]], user_profile: UserProfile
-) -> Optional[MentionedUserGroup]:
+) -> MentionedUserGroup | None:
     """Returns the user group name to display in the email notification
     if user group(s) are mentioned.
 

@@ -1,5 +1,4 @@
 import optparse
-from typing import Union
 
 from scrapy.commands import crawl
 from scrapy.crawler import Crawler
@@ -10,7 +9,7 @@ class Command(crawl.Command):
         crawlers = []
         real_create_crawler = self.crawler_process.create_crawler
 
-        def create_crawler(crawler_or_spidercls: Union[Crawler, str]) -> Crawler:
+        def create_crawler(crawler_or_spidercls: Crawler | str) -> Crawler:
             crawler = real_create_crawler(crawler_or_spidercls)
             crawlers.append(crawler)
             return crawler

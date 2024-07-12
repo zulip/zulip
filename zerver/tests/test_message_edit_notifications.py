@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Union
+from typing import Any, Mapping
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -121,7 +121,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         queue_messages = []
 
-        def fake_publish(queue_name: str, event: Union[Mapping[str, Any], str], *args: Any) -> None:
+        def fake_publish(queue_name: str, event: Mapping[str, Any] | str, *args: Any) -> None:
             queue_messages.append(
                 dict(
                     queue_name=queue_name,

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Literal, Optional, TypeVar, Union, cast
+from typing import Any, Callable, Literal, TypeVar, cast
 
 import orjson
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -42,7 +42,7 @@ class TestEndpoint(ZulipTestCase):
         """This test is only needed because we don't
         have coverage of is_optional in Python 3.11.
         """
-        self.assertTrue(is_optional(cast(type[Optional[str]], Optional[str])))
+        self.assertTrue(is_optional(cast(type[str | None], str | None)))
         self.assertFalse(is_optional(str))
 
     def test_coerce(self) -> None:
@@ -79,10 +79,10 @@ class TestEndpoint(ZulipTestCase):
             json_int: Json[int],
             json_str: Json[str],
             json_data: Json[Foo],
-            json_optional: Optional[Json[Union[int, None]]] = None,
+            json_optional: Json[int | None] | None = None,
             json_default: Json[Foo] = Foo(10, 10),
             non_json: str = "ok",
-            non_json_optional: Optional[str] = None,
+            non_json_optional: str | None = None,
         ) -> HttpResponse:
             return MutableJsonResponse(
                 data={
@@ -396,7 +396,7 @@ class TestEndpoint(ZulipTestCase):
             request: HttpRequest,
             *,
             bar: Annotated[
-                Optional[str],
+                str | None,
                 StringConstraints(strip_whitespace=True, max_length=3),
                 ApiParamConfig("test"),
             ] = None,
@@ -410,7 +410,7 @@ class TestEndpoint(ZulipTestCase):
         def nesting_with_config(
             request: HttpRequest,
             *,
-            invalid_param: Optional[Annotated[str, ApiParamConfig("test")]] = None,
+            invalid_param: Annotated[str, ApiParamConfig("test")] | None = None,
         ) -> None:
             raise AssertionError
 
@@ -425,7 +425,7 @@ class TestEndpoint(ZulipTestCase):
         def nesting_without_config(
             request: HttpRequest,
             *,
-            bar: Optional[Annotated[str, StringConstraints(max_length=3)]] = None,
+            bar: Annotated[str, StringConstraints(max_length=3)] | None = None,
         ) -> None:
             raise AssertionError
 
@@ -540,11 +540,11 @@ class TestEndpoint(ZulipTestCase):
         # all. The only possible way for val to be None is through the default
         # value (if it has one).
         @typed_endpoint
-        def foo(request: HttpRequest, *, val: Optional[Json[int]]) -> None: ...
+        def foo(request: HttpRequest, *, val: Json[int] | None) -> None: ...
 
         # Json[Optional[int]] however, allows client specified None value.
         @typed_endpoint
-        def bar(request: HttpRequest, *, val: Json[Optional[int]]) -> None: ...
+        def bar(request: HttpRequest, *, val: Json[int | None]) -> None: ...
 
         with self.assertRaisesMessage(ApiParamValidationError, "val is not an integer"):
             call_endpoint(foo, HostRequestMock({"val": orjson.dumps(None).decode()}))

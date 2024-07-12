@@ -29,14 +29,14 @@ class TinyStreamResult(TypedDict):
 
 
 def get_display_recipient_cache_key(
-    recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
+    recipient_id: int, recipient_type: int, recipient_type_id: int | None
 ) -> str:
     return display_recipient_cache_key(recipient_id)
 
 
 @cache_with_key(get_display_recipient_cache_key, timeout=3600 * 24 * 7)
 def get_display_recipient_remote_cache(
-    recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
+    recipient_id: int, recipient_type: int, recipient_type_id: int | None
 ) -> list[UserDisplayRecipient]:
     """
     This returns an appropriate object describing the recipient of a
@@ -208,7 +208,7 @@ def bulk_fetch_display_recipients(
 
 @return_same_value_during_entire_request
 def get_display_recipient_by_id(
-    recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
+    recipient_id: int, recipient_type: int, recipient_type_id: int | None
 ) -> list[UserDisplayRecipient]:
     """
     returns: an object describing the recipient (using a cache).

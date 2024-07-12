@@ -14,7 +14,7 @@ import shutil
 import subprocess
 import sys
 import time
-from typing import Literal, Optional
+from typing import Literal
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -122,7 +122,7 @@ old_merge_base = (
 # Check if rabbitmq port 25672 is listening on anything except 127.0.0.1
 rabbitmq_dist_listen = listening_publicly(25672)
 # Check the erlang magic cookie size
-cookie_size: Optional[int] = None
+cookie_size: int | None = None
 if os.path.exists("/var/lib/rabbitmq/.erlang.cookie"):
     with open("/var/lib/rabbitmq/.erlang.cookie") as cookie_fh:
         cookie_size = len(cookie_fh.readline())

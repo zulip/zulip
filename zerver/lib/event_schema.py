@@ -27,7 +27,7 @@
 # See check_delete_message and check_presence for examples of this
 # paradigm.
 
-from typing import Sequence, Union
+from typing import Sequence
 
 from zerver.lib.data_types import (
     DictType,
@@ -1636,7 +1636,7 @@ _check_update_global_notifications = make_checker(update_global_notifications_ev
 def check_update_global_notifications(
     var_name: str,
     event: dict[str, object],
-    desired_val: Union[bool, int, str],
+    desired_val: bool | int | str,
 ) -> None:
     """
     See UserProfile.notification_settings_legacy for

@@ -1,4 +1,4 @@
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
@@ -84,11 +84,11 @@ def get_all_users_status_dict(realm: Realm, user_profile: UserProfile) -> dict[s
 
 def update_user_status(
     user_profile_id: int,
-    status_text: Optional[str],
+    status_text: str | None,
     client_id: int,
-    emoji_name: Optional[str],
-    emoji_code: Optional[str],
-    reaction_type: Optional[str],
+    emoji_name: str | None,
+    emoji_code: str | None,
+    reaction_type: str | None,
 ) -> None:
     timestamp = timezone_now()
 

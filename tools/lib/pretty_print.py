@@ -1,5 +1,4 @@
 import subprocess
-from typing import Optional
 
 from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
@@ -40,7 +39,7 @@ def token_allows_children_to_skip_indents(token: Token) -> bool:
 
 
 def adjust_block_indentation(tokens: list[Token], fn: str) -> None:
-    start_token: Optional[Token] = None
+    start_token: Token | None = None
 
     for token in tokens:
         if token.kind in ("indent", "whitespace", "newline"):

@@ -1,6 +1,6 @@
 from email.headerregistry import Address
 from enum import IntEnum
-from typing import TYPE_CHECKING, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Optional, TypedDict
 from uuid import uuid4
 
 import django.contrib.auth
@@ -37,7 +37,7 @@ SECONDS_PER_DAY = 86400
 # these values cannot change in a running production system, but do
 # regularly change within unit tests; we address the latter by calling
 # clear_supported_auth_backends_cache in our standard tearDown code.
-supported_backends: Optional[list["BaseBackend"]] = None
+supported_backends: list["BaseBackend"] | None = None
 
 
 def supported_auth_backends() -> list["BaseBackend"]:
@@ -96,7 +96,7 @@ class OrgTypeDict(TypedDict):
     id: int
     hidden: bool
     display_order: int
-    onboarding_zulip_guide_url: Optional[str]
+    onboarding_zulip_guide_url: str | None
 
 
 class CommonPolicyEnum(IntEnum):
@@ -640,7 +640,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     enable_guest_user_indicator = models.BooleanField(default=True)
 
     # Define the types of the various automatically managed properties
-    property_types: dict[str, Union[type, tuple[type, ...]]] = dict(
+    property_types: dict[str, type | tuple[type, ...]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
         allow_message_editing=bool,
@@ -920,11 +920,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         return self._max_invites
 
     @max_invites.setter
-    def max_invites(self, value: Optional[int]) -> None:
+    def max_invites(self, value: int | None) -> None:
         self._max_invites = value
 
     @property
-    def upload_quota_gb(self) -> Optional[int]:
+    def upload_quota_gb(self) -> int | None:
         # See upload_quota_bytes; don't interpret upload_quota_gb directly.
 
         if self.custom_upload_quota_gb is not None:
@@ -951,7 +951,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         else:
             raise AssertionError("Invalid plan type")
 
-    def upload_quota_bytes(self) -> Optional[int]:
+    def upload_quota_bytes(self) -> int | None:
         if self.upload_quota_gb is None:
             return None
         # We describe the quota to users in "GB" or "gigabytes", but actually apply
@@ -1120,14 +1120,14 @@ def get_realm_with_settings(realm_id: int) -> Realm:
     ).get(id=realm_id)
 
 
-def require_unique_names(realm: Optional[Realm]) -> bool:
+def require_unique_names(realm: Realm | None) -> bool:
     if realm is None:
         # realm is None when a new realm is being created.
         return False
     return realm.require_unique_names
 
 
-def name_changes_disabled(realm: Optional[Realm]) -> bool:
+def name_changes_disabled(realm: Realm | None) -> bool:
     if realm is None:
         return settings.NAME_CHANGES_DISABLED
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled

@@ -1,7 +1,7 @@
 import functools
 import re
 from dataclasses import dataclass
-from typing import Match, Optional
+from typing import Match
 
 from django.conf import settings
 from django.db.models import Q
@@ -34,8 +34,8 @@ class FullNameInfo:
 
 @dataclass
 class UserFilter:
-    id: Optional[int]
-    full_name: Optional[str]
+    id: int | None
+    full_name: str | None
 
     def Q(self) -> Q:
         if self.full_name is not None and self.id is not None:
@@ -50,7 +50,7 @@ class UserFilter:
 
 @dataclass
 class MentionText:
-    text: Optional[str]
+    text: str | None
     is_topic_wildcard: bool
     is_stream_wildcard: bool
 
@@ -76,7 +76,7 @@ class MentionBackend:
         self.stream_cache: dict[str, int] = {}
 
     def get_full_name_info_list(
-        self, user_filters: list[UserFilter], message_sender: Optional[UserProfile]
+        self, user_filters: list[UserFilter], message_sender: UserProfile | None
     ) -> list[FullNameInfo]:
         result: list[FullNameInfo] = []
         unseen_user_filters: list[UserFilter] = []
@@ -215,7 +215,7 @@ def possible_user_group_mentions(content: str) -> set[str]:
 
 
 def get_possible_mentions_info(
-    mention_backend: MentionBackend, mention_texts: set[str], message_sender: Optional[UserProfile]
+    mention_backend: MentionBackend, mention_texts: set[str], message_sender: UserProfile | None
 ) -> list[FullNameInfo]:
     if not mention_texts:
         return []
@@ -244,7 +244,7 @@ def get_possible_mentions_info(
 
 class MentionData:
     def __init__(
-        self, mention_backend: MentionBackend, content: str, message_sender: Optional[UserProfile]
+        self, mention_backend: MentionBackend, content: str, message_sender: UserProfile | None
     ) -> None:
         self.mention_backend = mention_backend
         realm_id = mention_backend.realm_id
@@ -275,13 +275,13 @@ class MentionData:
                 self.user_group_name_info[group.name.lower()] = group
                 self.user_group_members[group.id] = [m.id for m in group.direct_members.all()]
 
-    def get_user_by_name(self, name: str) -> Optional[FullNameInfo]:
+    def get_user_by_name(self, name: str) -> FullNameInfo | None:
         # warning: get_user_by_name is not dependable if two
         # users of the same full name are mentioned. Use
         # get_user_by_id where possible.
         return self.full_name_info.get(name.lower(), None)
 
-    def get_user_by_id(self, id: int) -> Optional[FullNameInfo]:
+    def get_user_by_id(self, id: int) -> FullNameInfo | None:
         return self.user_id_info.get(id, None)
 
     def get_user_ids(self) -> set[int]:
@@ -293,7 +293,7 @@ class MentionData:
         """
         return set(self.user_id_info.keys())
 
-    def get_user_group(self, name: str) -> Optional[NamedUserGroup]:
+    def get_user_group(self, name: str) -> NamedUserGroup | None:
         return self.user_group_name_info.get(name.lower(), None)
 
     def get_group_members(self, user_group_id: int) -> list[int]:

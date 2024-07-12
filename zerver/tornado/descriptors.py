@@ -20,10 +20,10 @@ def clear_descriptor_by_handler_id(handler_id: int) -> None:
     del descriptors_by_handler_id[handler_id]
 
 
-current_port: Optional[int] = None
+current_port: int | None = None
 
 
-def is_current_port(port: int) -> Optional[int]:
+def is_current_port(port: int) -> int | None:
     return settings.TEST_SUITE or current_port == port
 
 

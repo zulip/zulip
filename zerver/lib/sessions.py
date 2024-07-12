@@ -1,7 +1,7 @@
 import logging
 from datetime import timedelta
 from importlib import import_module
-from typing import Any, Mapping, Optional, Protocol, cast
+from typing import Any, Mapping, Protocol, cast
 
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model
@@ -21,7 +21,7 @@ class SessionEngine(Protocol):
 session_engine = cast(SessionEngine, import_module(settings.SESSION_ENGINE))
 
 
-def get_session_dict_user(session_dict: Mapping[str, int]) -> Optional[int]:
+def get_session_dict_user(session_dict: Mapping[str, int]) -> int | None:
     # Compare django.contrib.auth._get_user_session_key
     try:
         pk = get_user_model()._meta.pk
@@ -31,7 +31,7 @@ def get_session_dict_user(session_dict: Mapping[str, int]) -> Optional[int]:
         return None
 
 
-def get_session_user_id(session: Session) -> Optional[int]:
+def get_session_user_id(session: Session) -> int | None:
     return get_session_dict_user(session.get_decoded())
 
 

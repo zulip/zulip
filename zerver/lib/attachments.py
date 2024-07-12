@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Optional, Union
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -52,7 +52,7 @@ def remove_attachment(user_profile: UserProfile, attachment: Attachment) -> None
 
 def validate_attachment_request_for_spectator_access(
     realm: Realm, attachment: Attachment
-) -> Optional[bool]:
+) -> bool | None:
     if attachment.realm != realm:
         return False
 
@@ -89,10 +89,10 @@ def validate_attachment_request_for_spectator_access(
 
 
 def validate_attachment_request(
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     path_id: str,
-    realm: Optional[Realm] = None,
-) -> Optional[bool]:
+    realm: Realm | None = None,
+) -> bool | None:
     try:
         attachment = Attachment.objects.get(path_id=path_id)
     except Attachment.DoesNotExist:

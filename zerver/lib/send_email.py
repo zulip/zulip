@@ -8,7 +8,7 @@ from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Callable, Mapping, Optional, Union
+from typing import Any, Callable, Mapping
 
 import backoff
 import css_inline
@@ -69,7 +69,7 @@ class FromAddress:
 
     @staticmethod
     def security_email_from_name(
-        language: Optional[str] = None, user_profile: Optional[UserProfile] = None
+        language: str | None = None, user_profile: UserProfile | None = None
     ) -> str:
         if language is None:
             assert user_profile is not None
@@ -83,14 +83,14 @@ class FromAddress:
 
 def build_email(
     template_prefix: str,
-    to_user_ids: Optional[list[int]] = None,
-    to_emails: Optional[list[str]] = None,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    reply_to_email: Optional[str] = None,
-    language: Optional[str] = None,
+    to_user_ids: list[int] | None = None,
+    to_emails: list[str] | None = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    reply_to_email: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
 ) -> EmailMultiAlternatives:
     # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_ids is None) ^ (to_emails is None)
@@ -244,17 +244,17 @@ class NoEmailArgumentError(CommandError):
 # migration to change or remove any emails in ScheduledEmail.
 def send_email(
     template_prefix: str,
-    to_user_ids: Optional[list[int]] = None,
-    to_emails: Optional[list[str]] = None,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    reply_to_email: Optional[str] = None,
-    language: Optional[str] = None,
+    to_user_ids: list[int] | None = None,
+    to_emails: list[str] | None = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    reply_to_email: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
-    realm: Optional[Realm] = None,
-    connection: Optional[BaseEmailBackend] = None,
+    realm: Realm | None = None,
+    connection: BaseEmailBackend | None = None,
     dry_run: bool = False,
-    request: Optional[HttpRequest] = None,
+    request: HttpRequest | None = None,
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -282,7 +282,7 @@ def send_email(
     if request is not None:
         cause = f" (triggered from {request.META['REMOTE_ADDR']})"
 
-    logging_recipient: Union[str, list[str]] = mail.to
+    logging_recipient: str | list[str] = mail.to
     if realm is not None:
         logging_recipient = f"{mail.to} in {realm.string_id}"
 
@@ -310,7 +310,7 @@ def send_email(
 
 
 @backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
-def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
+def initialize_connection(connection: BaseEmailBackend | None = None) -> BaseEmailBackend:
     if not connection:
         connection = get_connection()
         assert connection is not None
@@ -347,11 +347,11 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
 def send_future_email(
     template_prefix: str,
     realm: Realm,
-    to_user_ids: Optional[list[int]] = None,
-    to_emails: Optional[list[str]] = None,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    language: Optional[str] = None,
+    to_user_ids: list[int] | None = None,
+    to_emails: list[str] | None = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
     delay: timedelta = timedelta(0),
 ) -> None:
@@ -404,9 +404,9 @@ def send_future_email(
 def send_email_to_admins(
     template_prefix: str,
     realm: Realm,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    language: Optional[str] = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
 ) -> None:
     admins = realm.get_human_admin_users()
@@ -424,9 +424,9 @@ def send_email_to_admins(
 def send_email_to_billing_admins_and_realm_owners(
     template_prefix: str,
     realm: Realm,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    language: Optional[str] = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
 ) -> None:
     send_email(
@@ -449,7 +449,7 @@ def clear_scheduled_invitation_emails(email: str) -> None:
 
 
 @transaction.atomic(savepoint=False)
-def clear_scheduled_emails(user_id: int, email_type: Optional[int] = None) -> None:
+def clear_scheduled_emails(user_id: int, email_type: int | None = None) -> None:
     # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
     # execution of this function (or something else) from deleting them before we access
     # the .users attribute.
@@ -506,7 +506,7 @@ def deliver_scheduled_emails(email: ScheduledEmail) -> None:
     email.delete()
 
 
-def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
+def get_header(option: str | None, header: str | None, name: str) -> str:
     if option and header:
         raise DoubledEmailArgumentError(name)
     if not option and not header:
@@ -517,10 +517,10 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
 def custom_email_sender(
     markdown_template_path: str,
     dry_run: bool,
-    subject: Optional[str] = None,
+    subject: str | None = None,
     from_address: str = FromAddress.SUPPORT,
-    from_name: Optional[str] = None,
-    reply_to: Optional[str] = None,
+    from_name: str | None = None,
+    reply_to: str | None = None,
     **kwargs: Any,
 ) -> Callable[..., None]:
     with open(markdown_template_path) as f:
@@ -561,7 +561,7 @@ def custom_email_sender(
         f.write(get_header(subject, parsed_email_template.get("subject"), "subject"))
 
     def send_one_email(
-        context: dict[str, Any], to_user_id: Optional[int] = None, to_email: Optional[str] = None
+        context: dict[str, Any], to_user_id: int | None = None, to_email: str | None = None
     ) -> None:
         assert to_user_id is not None or to_email is not None
         with suppress(EmailNotDeliveredError):
@@ -584,7 +584,7 @@ def send_custom_email(
     *,
     dry_run: bool,
     options: dict[str, str],
-    add_context: Optional[Callable[[dict[str, object], UserProfile], None]] = None,
+    add_context: Callable[[dict[str, object], UserProfile], None] | None = None,
     distinct_email: bool = False,
 ) -> QuerySet[UserProfile]:
     """
@@ -632,7 +632,7 @@ def send_custom_server_email(
     *,
     dry_run: bool,
     options: dict[str, str],
-    add_context: Optional[Callable[[dict[str, object], "RemoteZulipServer"], None]] = None,
+    add_context: Callable[[dict[str, object], "RemoteZulipServer"], None] | None = None,
 ) -> None:
     assert settings.CORPORATE_ENABLED
     from corporate.lib.stripe import BILLING_SUPPORT_EMAIL

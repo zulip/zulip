@@ -8,7 +8,7 @@
 import json
 import os
 import re
-from typing import Any, Literal, Mapping, Optional, Union
+from typing import Any, Literal, Mapping
 
 import orjson
 from openapi_core import OpenAPI
@@ -75,10 +75,10 @@ def naively_merge_allOf_dict(obj: dict[str, object]) -> dict[str, object]:
 class OpenAPISpec:
     def __init__(self, openapi_path: str) -> None:
         self.openapi_path = openapi_path
-        self.mtime: Optional[float] = None
+        self.mtime: float | None = None
         self._openapi: dict[str, Any] = {}
         self._endpoints_dict: dict[str, str] = {}
-        self._spec: Optional[OpenAPI] = None
+        self._spec: OpenAPI | None = None
 
     def check_reload(self) -> None:
         # Because importing yaml takes significant time, and we only
@@ -232,7 +232,7 @@ def check_requires_administrator(endpoint: str, method: str) -> bool:
     )
 
 
-def check_additional_imports(endpoint: str, method: str) -> Optional[list[str]]:
+def check_additional_imports(endpoint: str, method: str) -> list[str] | None:
     """Fetch the additional imports required for an endpoint."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
         "x-python-examples-extra-imports", None
@@ -413,7 +413,7 @@ def get_openapi_return_values(endpoint: str, method: str) -> dict[str, Any]:
     return schema["properties"]
 
 
-def find_openapi_endpoint(path: str) -> Optional[str]:
+def find_openapi_endpoint(path: str) -> str | None:
     for path_regex, endpoint in openapi_spec.endpoints_dict().items():
         matches = re.match(path_regex, path)
         if matches:
@@ -541,7 +541,7 @@ SKIP_JSON = {
 def validate_request(
     url: str,
     method: str,
-    data: Union[str, bytes, Mapping[str, Any]],
+    data: str | bytes | Mapping[str, Any],
     http_headers: dict[str, str],
     json_url: bool,
     status_code: str,

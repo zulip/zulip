@@ -13,7 +13,7 @@ import random
 import sys
 import time
 import traceback
-from typing import Any, Literal, NoReturn, Optional
+from typing import Any, Literal, NoReturn
 
 sys.path.append(".")
 sys.path.append("/home/zulip/deployments/current")
@@ -50,8 +50,8 @@ options = parser.parse_args()
 
 def report(
     state: Literal["ok", "warning", "critical", "unknown"],
-    timestamp: Optional[float] = None,
-    msg: Optional[str] = None,
+    timestamp: float | None = None,
+    msg: str | None = None,
 ) -> NoReturn:
     if msg is None:
         msg = f"send time was {timestamp}"

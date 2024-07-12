@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -712,9 +712,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 html_response,
             )
 
-        def create_invitation(
-            stream: str, invitee_email: str, realm: Optional[Realm] = None
-        ) -> None:
+        def create_invitation(stream: str, invitee_email: str, realm: Realm | None = None) -> None:
             invite_expires_in_minutes = 10 * 24 * 60
             with self.captureOnCommitCallbacks(execute=True):
                 self.client_post(

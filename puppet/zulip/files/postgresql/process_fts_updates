@@ -41,7 +41,6 @@ import os
 import select
 import sys
 import time
-from typing import Optional
 
 import psycopg2
 import psycopg2.extensions
@@ -164,7 +163,7 @@ except (ImportError, PermissionError):
         pg_args["host"] = "localhost"
     pg_args["dbname"] = get_config(config_file, "postgresql", "database_name", "zulip")
 
-conn: Optional[psycopg2.extensions.connection]
+conn: psycopg2.extensions.connection | None
 
 if options.nagios_check:
     # Nagios connects as itself, unless you specify otherwise

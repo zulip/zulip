@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import re
 import string
-from typing import Optional, Protocol
+from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
 
@@ -83,7 +83,7 @@ def api_bitbucket2_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     type = get_type(request, payload)
@@ -119,7 +119,7 @@ def api_bitbucket2_webhook(
 
 
 def get_topic_for_branch_specified_events(
-    payload: WildValue, branch_name: Optional[str] = None
+    payload: WildValue, branch_name: str | None = None
 ) -> str:
     return TOPIC_WITH_BRANCH_TEMPLATE.format(
         repo=get_repository_name(payload["repository"]),
@@ -525,7 +525,7 @@ def get_actor_info(request: HttpRequest, payload: WildValue) -> str:
     return get_user_info(request, actor)
 
 
-def get_branch_name_for_push_event(payload: WildValue) -> Optional[str]:
+def get_branch_name_for_push_event(payload: WildValue) -> str | None:
     change = payload["push"]["changes"][-1]
     potential_tag = (change["new"] or change["old"])["type"].tame(check_string)
     if potential_tag == "tag":

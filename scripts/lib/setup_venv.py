@@ -2,7 +2,6 @@ import logging
 import os
 import shutil
 import subprocess
-from typing import Optional
 
 from scripts.lib.hash_reqs import expand_reqs, python_version
 from scripts.lib.zulip_tools import ENDC, WARNING, os_families, run, run_as_root
@@ -276,7 +275,7 @@ def generate_hash(requirements_file: str) -> str:
 
 
 def setup_virtualenv(
-    target_venv_path: Optional[str],
+    target_venv_path: str | None,
     requirements_file: str,
     patch_activate_script: bool = False,
 ) -> str:

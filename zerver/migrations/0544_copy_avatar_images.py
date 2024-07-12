@@ -1,7 +1,7 @@
 import contextlib
 import hashlib
 import os
-from typing import Any, Optional, Union
+from typing import Any
 
 import boto3
 import pyvips
@@ -20,9 +20,9 @@ MEDIUM_AVATAR_SIZE = 500
 
 
 def resize_avatar(
-    image_data: Union[bytes, pyvips.Image],
+    image_data: bytes | pyvips.Image,
     size: int,
-) -> Optional[bytes]:
+) -> bytes | None:
     try:
         source_image = pyvips.Image.new_from_buffer(image_data, "")
         if source_image.width * source_image.height > IMAGE_BOMB_TOTAL_PIXELS:

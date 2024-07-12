@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 import ldap
 from django_auth_ldap.config import LDAPSearch
@@ -155,8 +154,8 @@ HOME_NOT_LOGGED_IN = "/login/"
 LOGIN_URL = "/accounts/login/"
 
 # If dev_settings.py found a key or cert file to use here, ignore it.
-APNS_TOKEN_KEY_FILE: Optional[str] = None
-APNS_CERT_FILE: Optional[str] = None
+APNS_TOKEN_KEY_FILE: str | None = None
+APNS_CERT_FILE: str | None = None
 
 # By default will not send emails when login occurs.
 # Explicitly set this to True within tests that must have this on.
@@ -202,7 +201,7 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
-PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
+PUSH_NOTIFICATION_BOUNCER_URL: str | None = None
 DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
 
 # Logging the emails while running the tests adds them
@@ -258,8 +257,8 @@ RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {
     "sends_email_by_remote_server": [],
 }
 
-CLOUD_FREE_TRIAL_DAYS: Optional[int] = None
-SELF_HOSTING_FREE_TRIAL_DAYS: Optional[int] = None
+CLOUD_FREE_TRIAL_DAYS: int | None = None
+SELF_HOSTING_FREE_TRIAL_DAYS: int | None = None
 
 SCIM_CONFIG: dict[str, SCIMConfigDict] = {
     "zulip": {

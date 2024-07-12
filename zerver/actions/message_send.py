@@ -3,7 +3,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import AbstractSet, Any, Callable, Collection, Optional, Sequence, TypedDict, Union
+from typing import AbstractSet, Any, Callable, Collection, Sequence, TypedDict
 
 import orjson
 from django.conf import settings
@@ -143,8 +143,8 @@ def render_incoming_message(
     message: Message,
     content: str,
     realm: Realm,
-    mention_data: Optional[MentionData] = None,
-    url_embed_data: Optional[dict[str, Optional[UrlEmbedData]]] = None,
+    mention_data: MentionData | None = None,
+    url_embed_data: dict[str, UrlEmbedData | None] | None = None,
     email_gateway: bool = False,
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
@@ -184,7 +184,7 @@ class RecipientInfoResult:
     service_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
     topic_participant_user_ids: set[int]
-    sender_muted_stream: Optional[bool]
+    sender_muted_stream: bool | None
 
 
 class ActiveUserDict(TypedDict):
@@ -194,13 +194,13 @@ class ActiveUserDict(TypedDict):
     enable_offline_push_notifications: bool
     long_term_idle: bool
     is_bot: bool
-    bot_type: Optional[int]
+    bot_type: int | None
 
 
 @dataclass
 class SentMessageResult:
     message_id: int
-    automatic_new_visibility_policy: Optional[int] = None
+    automatic_new_visibility_policy: int | None = None
 
 
 def get_recipient_info(
@@ -208,7 +208,7 @@ def get_recipient_info(
     realm_id: int,
     recipient: Recipient,
     sender_id: int,
-    stream_topic: Optional[StreamTopicTarget],
+    stream_topic: StreamTopicTarget | None,
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
@@ -223,7 +223,7 @@ def get_recipient_info(
     stream_wildcard_mention_in_followed_topic_user_ids: set[int] = set()
     muted_sender_user_ids: set[int] = get_muting_users(sender_id)
     topic_participant_user_ids: set[int] = set()
-    sender_muted_stream: Optional[bool] = None
+    sender_muted_stream: bool | None = None
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -560,15 +560,15 @@ def get_service_bot_events(
 
 def build_message_send_dict(
     message: Message,
-    stream: Optional[Stream] = None,
-    local_id: Optional[str] = None,
-    sender_queue_id: Optional[str] = None,
-    widget_content_dict: Optional[dict[str, Any]] = None,
+    stream: Stream | None = None,
+    local_id: str | None = None,
+    sender_queue_id: str | None = None,
+    widget_content_dict: dict[str, Any] | None = None,
     email_gateway: bool = False,
-    mention_backend: Optional[MentionBackend] = None,
-    limit_unread_user_ids: Optional[set[int]] = None,
+    mention_backend: MentionBackend | None = None,
+    limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
-    recipients_for_user_creation_events: Optional[dict[UserProfile, set[int]]] = None,
+    recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -587,7 +587,7 @@ def build_message_send_dict(
 
     if message.is_stream_message():
         stream_id = message.recipient.type_id
-        stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
+        stream_topic: StreamTopicTarget | None = StreamTopicTarget(
             stream_id=stream_id,
             topic_name=message.topic_name(),
         )
@@ -714,7 +714,7 @@ def create_user_messages(
     followed_topic_push_user_ids: AbstractSet[int],
     followed_topic_email_user_ids: AbstractSet[int],
     mark_as_read_user_ids: set[int],
-    limit_unread_user_ids: Optional[set[int]],
+    limit_unread_user_ids: set[int] | None,
     topic_participant_user_ids: set[int],
 ) -> list[UserMessageLite]:
     # These properties on the Message are set via
@@ -835,7 +835,7 @@ def get_active_presence_idle_user_ids(
 
 @transaction.atomic(savepoint=False)
 def do_send_messages(
-    send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
+    send_message_requests_maybe_none: Sequence[SendMessageRequest | None],
     *,
     mark_as_read: Sequence[int] = [],
 ) -> list[SentMessageResult]:
@@ -917,7 +917,7 @@ def do_send_messages(
     # * Implementing the Welcome Bot reply hack
     # * Adding links to the embed_links queue for open graph processing.
     for send_request in send_message_requests:
-        realm_id: Optional[int] = None
+        realm_id: int | None = None
         if send_request.message.is_stream_message():
             if send_request.stream is None:
                 stream_id = send_request.message.recipient.type_id
@@ -1033,7 +1033,7 @@ def do_send_messages(
         class UserData(TypedDict):
             id: int
             flags: list[str]
-            mentioned_user_group_id: Optional[int]
+            mentioned_user_group_id: int | None
 
         users: list[UserData] = []
         for user_id in user_list:
@@ -1209,7 +1209,7 @@ def do_send_messages(
     return sent_message_results
 
 
-def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
+def already_sent_mirrored_message_id(message: Message) -> int | None:
     if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         # For group direct messages, we use a 10-second window because
         # the timestamps aren't guaranteed to actually match between
@@ -1235,7 +1235,7 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
     return None
 
 
-def extract_stream_indicator(s: str) -> Union[str, int]:
+def extract_stream_indicator(s: str) -> str | int:
     # Users can pass stream name as either an id or a name,
     # and if they choose to pass a name, they may JSON encode
     # it for legacy reasons.
@@ -1265,7 +1265,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
     raise JsonableError(_("Invalid data type for channel"))
 
 
-def extract_private_recipients(s: str) -> Union[list[str], list[int]]:
+def extract_private_recipients(s: str) -> list[str] | list[int]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
 
@@ -1316,7 +1316,7 @@ def check_send_stream_message(
     topic_name: str,
     body: str,
     *,
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
     read_by_sender: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic_name)
@@ -1333,7 +1333,7 @@ def check_send_stream_message_by_id(
     stream_id: int,
     topic_name: str,
     body: str,
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
 ) -> int:
     addressee = Addressee.for_stream_id(stream_id, topic_name)
     message = check_message(sender, client, addressee, body, realm)
@@ -1356,16 +1356,16 @@ def check_send_message(
     sender: UserProfile,
     client: Client,
     recipient_type_name: str,
-    message_to: Union[Sequence[int], Sequence[str]],
-    topic_name: Optional[str],
+    message_to: Sequence[int] | Sequence[str],
+    topic_name: str | None,
     message_content: str,
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
     forged: bool = False,
-    forged_timestamp: Optional[float] = None,
-    forwarder_user_profile: Optional[UserProfile] = None,
-    local_id: Optional[str] = None,
-    sender_queue_id: Optional[str] = None,
-    widget_content: Optional[str] = None,
+    forged_timestamp: float | None = None,
+    forwarder_user_profile: UserProfile | None = None,
+    local_id: str | None = None,
+    sender_queue_id: str | None = None,
+    widget_content: str | None = None,
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
@@ -1430,11 +1430,11 @@ def send_rate_limited_pm_notification_to_bot_owner(
 
 
 def send_pm_if_empty_stream(
-    stream: Optional[Stream],
+    stream: Stream | None,
     realm: Realm,
     sender: UserProfile,
-    stream_name: Optional[str] = None,
-    stream_id: Optional[int] = None,
+    stream_name: str | None = None,
+    stream_id: int | None = None,
 ) -> None:
     """If a bot sends a message to a stream that doesn't exist or has no
     subscribers, sends a notification to the bot owner (if not a
@@ -1641,19 +1641,19 @@ def check_message(
     client: Client,
     addressee: Addressee,
     message_content_raw: str,
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
     forged: bool = False,
-    forged_timestamp: Optional[float] = None,
-    forwarder_user_profile: Optional[UserProfile] = None,
-    local_id: Optional[str] = None,
-    sender_queue_id: Optional[str] = None,
-    widget_content: Optional[str] = None,
+    forged_timestamp: float | None = None,
+    forwarder_user_profile: UserProfile | None = None,
+    local_id: str | None = None,
+    sender_queue_id: str | None = None,
+    widget_content: str | None = None,
     email_gateway: bool = False,
     *,
     skip_stream_access_check: bool = False,
     message_type: int = Message.MessageType.NORMAL,
-    mention_backend: Optional[MentionBackend] = None,
-    limit_unread_user_ids: Optional[set[int]] = None,
+    mention_backend: MentionBackend | None = None,
+    limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
 ) -> SendMessageRequest:
     """See
@@ -1827,12 +1827,12 @@ def _internal_prep_message(
     *,
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
-    mention_backend: Optional[MentionBackend] = None,
-    limit_unread_user_ids: Optional[set[int]] = None,
+    mention_backend: MentionBackend | None = None,
+    limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     forged: bool = False,
-    forged_timestamp: Optional[float] = None,
-) -> Optional[SendMessageRequest]:
+    forged_timestamp: float | None = None,
+) -> SendMessageRequest | None:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
     The internal function that calls this can therefore batch send a bunch of created
@@ -1883,10 +1883,10 @@ def internal_prep_stream_message(
     *,
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
-    limit_unread_user_ids: Optional[set[int]] = None,
+    limit_unread_user_ids: set[int] | None = None,
     forged: bool = False,
-    forged_timestamp: Optional[float] = None,
-) -> Optional[SendMessageRequest]:
+    forged_timestamp: float | None = None,
+) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
     """
@@ -1912,7 +1912,7 @@ def internal_prep_stream_message_by_name(
     stream_name: str,
     topic_name: str,
     content: str,
-) -> Optional[SendMessageRequest]:
+) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
     """
@@ -1931,9 +1931,9 @@ def internal_prep_private_message(
     recipient_user: UserProfile,
     content: str,
     *,
-    mention_backend: Optional[MentionBackend] = None,
+    mention_backend: MentionBackend | None = None,
     disable_external_notifications: bool = False,
-) -> Optional[SendMessageRequest]:
+) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
     """
@@ -1959,7 +1959,7 @@ def internal_send_private_message(
     content: str,
     *,
     disable_external_notifications: bool = False,
-) -> Optional[int]:
+) -> int | None:
     message = internal_prep_private_message(
         sender,
         recipient_user,
@@ -1980,8 +1980,8 @@ def internal_send_stream_message(
     *,
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
-    limit_unread_user_ids: Optional[set[int]] = None,
-) -> Optional[int]:
+    limit_unread_user_ids: set[int] | None = None,
+) -> int | None:
     message = internal_prep_stream_message(
         sender,
         stream,
@@ -2005,7 +2005,7 @@ def internal_send_stream_message_by_name(
     stream_name: str,
     topic_name: str,
     content: str,
-) -> Optional[int]:
+) -> int | None:
     message = internal_prep_stream_message_by_name(
         realm,
         sender,
@@ -2025,9 +2025,9 @@ def internal_prep_group_direct_message(
     sender: UserProfile,
     content: str,
     *,
-    emails: Optional[list[str]] = None,
-    recipient_users: Optional[list[UserProfile]] = None,
-) -> Optional[SendMessageRequest]:
+    emails: list[str] | None = None,
+    recipient_users: list[UserProfile] | None = None,
+) -> SendMessageRequest | None:
     if recipient_users is not None:
         addressee = Addressee.for_user_profiles(recipient_users)
     else:
@@ -2047,9 +2047,9 @@ def internal_send_group_direct_message(
     sender: UserProfile,
     content: str,
     *,
-    emails: Optional[list[str]] = None,
-    recipient_users: Optional[list[UserProfile]] = None,
-) -> Optional[int]:
+    emails: list[str] | None = None,
+    recipient_users: list[UserProfile] | None = None,
+) -> int | None:
     message = internal_prep_group_direct_message(
         realm, sender, content, emails=emails, recipient_users=recipient_users
     )

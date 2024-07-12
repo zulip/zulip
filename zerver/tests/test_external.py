@@ -1,7 +1,7 @@
 import time
 import uuid
 from contextlib import contextmanager
-from typing import IO, TYPE_CHECKING, Any, Callable, Iterator, Optional, Sequence
+from typing import IO, TYPE_CHECKING, Any, Callable, Iterator, Sequence
 from unittest import mock, skipUnless
 
 import DNS
@@ -291,7 +291,7 @@ class RateLimitTests(ZulipTestCase):
     @contextmanager
     def tor_mock(
         self,
-        side_effect: Optional[Exception] = None,
+        side_effect: Exception | None = None,
         read_data: Sequence[str] = ["1.2.3.4", "5.6.7.8"],
     ) -> Iterator[mock.Mock]:
         # We need to reset the circuitbreaker before starting.  We

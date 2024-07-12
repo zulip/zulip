@@ -3,7 +3,7 @@ import heapq
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Any, Collection, Iterator, Optional
+from typing import Any, Collection, Iterator
 
 from django.conf import settings
 from django.db import transaction
@@ -151,8 +151,8 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime) -> None:
         )
 
 
-last_realm_id: Optional[int] = None
-last_cutoff: Optional[float] = None
+last_realm_id: int | None = None
+last_cutoff: float | None = None
 
 
 def maybe_clear_recent_topics_cache(realm_id: int, cutoff: float) -> None:

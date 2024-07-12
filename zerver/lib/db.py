@@ -1,13 +1,13 @@
 import time
-from typing import Any, Callable, Iterable, Mapping, Sequence, TypeVar, Union
+from typing import Any, Callable, Iterable, Mapping, Sequence, TypeVar
 
 from psycopg2.extensions import connection, cursor
 from psycopg2.sql import Composable
 from typing_extensions import TypeAlias, override
 
 CursorObj = TypeVar("CursorObj", bound=cursor)
-Query: TypeAlias = Union[str, bytes, Composable]
-Params: TypeAlias = Union[Sequence[object], Mapping[str, object], None]
+Query: TypeAlias = str | bytes | Composable
+Params: TypeAlias = Sequence[object] | Mapping[str, object] | None
 ParamsT = TypeVar("ParamsT")
 
 

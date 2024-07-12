@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Sequence, Union, cast
+from typing import Iterable, Sequence, cast
 
 from django.utils.translation import gettext as _
 
@@ -48,11 +48,11 @@ class Addressee:
     def __init__(
         self,
         msg_type: str,
-        user_profiles: Optional[Sequence[UserProfile]] = None,
-        stream: Optional[Stream] = None,
-        stream_name: Optional[str] = None,
-        stream_id: Optional[int] = None,
-        topic_name: Optional[str] = None,
+        user_profiles: Sequence[UserProfile] | None = None,
+        stream: Stream | None = None,
+        stream_name: str | None = None,
+        stream_id: int | None = None,
+        topic_name: str | None = None,
     ) -> None:
         assert msg_type in ["stream", "private"]
         if msg_type == "stream" and topic_name is None:
@@ -75,15 +75,15 @@ class Addressee:
         assert self._user_profiles is not None
         return self._user_profiles
 
-    def stream(self) -> Optional[Stream]:
+    def stream(self) -> Stream | None:
         assert self.is_stream()
         return self._stream
 
-    def stream_name(self) -> Optional[str]:
+    def stream_name(self) -> str | None:
         assert self.is_stream()
         return self._stream_name
 
-    def stream_id(self) -> Optional[int]:
+    def stream_id(self) -> int | None:
         assert self.is_stream()
         return self._stream_id
 
@@ -96,9 +96,9 @@ class Addressee:
     def legacy_build(
         sender: UserProfile,
         recipient_type_name: str,
-        message_to: Union[Sequence[int], Sequence[str]],
-        topic_name: Optional[str],
-        realm: Optional[Realm] = None,
+        message_to: Sequence[int] | Sequence[str],
+        topic_name: str | None,
+        realm: Realm | None = None,
     ) -> "Addressee":
         # For legacy reason message_to used to be either a list of
         # emails or a list of streams.  We haven't fixed all of our

@@ -4,7 +4,7 @@ import os
 import re
 import unicodedata
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, Optional, Union
+from typing import IO, Any, BinaryIO, Callable, Iterator
 from urllib.parse import unquote, urljoin
 
 from django.conf import settings
@@ -128,7 +128,7 @@ def upload_message_attachment(
     content_type: str,
     file_data: bytes,
     user_profile: UserProfile,
-    target_realm: Optional[Realm] = None,
+    target_realm: Realm | None = None,
 ) -> str:
     if target_realm is None:
         target_realm = user_profile.realm
@@ -154,7 +154,7 @@ def upload_message_attachment(
 
 def claim_attachment(
     path_id: str,
-    message: Union[Message, ScheduledMessage],
+    message: Message | ScheduledMessage,
     is_message_realm_public: bool,
     is_message_web_public: bool = False,
 ) -> Attachment:
@@ -211,8 +211,8 @@ def write_avatar_images(
     user_profile: UserProfile,
     image_data: bytes,
     *,
-    content_type: Optional[str],
-    backend: Optional[ZulipUploadBackend] = None,
+    content_type: str | None,
+    backend: ZulipUploadBackend | None = None,
     future: bool = True,
 ) -> None:
     if backend is None:
@@ -245,8 +245,8 @@ def write_avatar_images(
 def upload_avatar_image(
     user_file: IO[bytes],
     user_profile: UserProfile,
-    content_type: Optional[str] = None,
-    backend: Optional[ZulipUploadBackend] = None,
+    content_type: str | None = None,
+    backend: ZulipUploadBackend | None = None,
     future: bool = True,
 ) -> None:
     if content_type is None:
@@ -335,7 +335,7 @@ def upload_emoji_image(
     emoji_file_name: str,
     user_profile: UserProfile,
     content_type: str,
-    backend: Optional[ZulipUploadBackend] = None,
+    backend: ZulipUploadBackend | None = None,
 ) -> bool:
     if backend is None:
         backend = upload_backend
@@ -433,12 +433,12 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
 
 
 def upload_export_tarball(
-    realm: Realm, tarball_path: str, percent_callback: Optional[Callable[[Any], None]] = None
+    realm: Realm, tarball_path: str, percent_callback: Callable[[Any], None] | None = None
 ) -> str:
     return upload_backend.upload_export_tarball(
         realm, tarball_path, percent_callback=percent_callback
     )
 
 
-def delete_export_tarball(export_path: str) -> Optional[str]:
+def delete_export_tarball(export_path: str) -> str | None:
     return upload_backend.delete_export_tarball(export_path)

@@ -5,7 +5,7 @@
 import os
 import shutil
 import sys
-from typing import Any, Iterator, Optional, Sequence
+from typing import Any, Iterator, Sequence
 
 import orjson
 
@@ -290,7 +290,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: list[dict[str, Any]]) -> None
     def setup_emoji_farm(
         emojiset: str,
         emoji_data: list[dict[str, Any]],
-        alt_name: Optional[str] = None,
+        alt_name: str | None = None,
         fallback_emoji_data: Sequence[dict[str, Any]] = [],
     ) -> None:
         # `alt_name` is an optional parameter that we use to avoid duplicating below

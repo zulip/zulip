@@ -1,7 +1,7 @@
 import re
 import time
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Sequence, Union
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote, quote_plus, urlencode, urlsplit
 
@@ -926,7 +926,7 @@ class LoginTest(ZulipTestCase):
 
     def test_login_bad_password(self) -> None:
         user = self.example_user("hamlet")
-        password: Optional[str] = "wrongpassword"
+        password: str | None = "wrongpassword"
         result = self.login_with_return(user.delivery_email, password=password)
         self.assert_in_success_response([user.delivery_email], result)
         self.assert_logged_in_user_id(None)
@@ -2228,10 +2228,10 @@ class UserSignUpTest(ZulipTestCase):
         self,
         *,
         email: str = "newguy@zulip.com",
-        password: Optional[str] = "newpassword",
+        password: str | None = "newpassword",
         full_name: str = "New user's name",
-        realm: Optional[Realm] = None,
-        subdomain: Optional[str] = None,
+        realm: Realm | None = None,
+        subdomain: str | None = None,
     ) -> Union[UserProfile, "TestHttpResponse"]:
         """Common test function for signup tests.  It is a goal to use this
         common function for all signup tests to avoid code duplication; doing

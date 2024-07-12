@@ -3,7 +3,7 @@ import email
 import email.policy
 import os
 from email.message import EmailMessage
-from typing import Any, Optional
+from typing import Any
 
 import orjson
 from django.conf import settings
@@ -59,7 +59,7 @@ Example:
         self.add_realm_args(parser, help="Specify which realm to connect to; default is zulip")
 
     @override
-    def handle(self, *args: Any, **options: Optional[str]) -> None:
+    def handle(self, *args: Any, **options: str | None) -> None:
         if options["fixture"] is None:
             self.print_help("./manage.py", "send_to_email_mirror")
             raise CommandError
