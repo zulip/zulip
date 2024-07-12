@@ -32,13 +32,13 @@ const admins_pill = {
     group_id: admins.id,
     group_name: admins.name,
     type: "user_group",
-    display_value: admins.name + ": " + admins.members.length + " users",
+    display_value: "translated HTML: " + admins.name + ": " + admins.members.length + " users",
 };
 const testers_pill = {
     group_id: testers.id,
     group_name: testers.name,
     type: "user_group",
-    display_value: testers.name + ": " + testers.members.length + " users",
+    display_value: "translated HTML: " + testers.name + ": " + testers.members.length + " users",
 };
 const everyone_pill = {
     group_id: everyone.id,
@@ -47,7 +47,7 @@ const everyone_pill = {
     // While we can programmatically set the user count below,
     // calculating it would almost mimic the entire display function
     // here, reducing the usefulness of the test.
-    display_value: "translated: Everyone: 5 users",
+    display_value: "translated HTML: translated: Everyone: 5 users",
 };
 
 const groups = [admins, testers, everyone];

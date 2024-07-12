@@ -1,3 +1,4 @@
+import {$t_html} from "./i18n";
 import type {InputPillContainer, InputPillItem} from "./input_pill";
 import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 import type {UserGroup} from "./user_groups";
@@ -18,7 +19,10 @@ export type UserGroupPillData = UserGroup & {
 
 function display_pill(group: UserGroup): string {
     const group_members = user_groups.get_recursive_group_members(group);
-    return `${user_groups.get_display_group_name(group)}: ${group_members.size} users`;
+    return $t_html(
+        {defaultMessage: "{group_name}: {group_size, plural, one {# user} other {# users}}"},
+        {group_name: user_groups.get_display_group_name(group), group_size: group_members.size},
+    );
 }
 
 export function create_item_from_group_name(
