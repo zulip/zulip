@@ -3307,8 +3307,9 @@ class MarkdownErrorTests(ZulipTestCase):
         throws an exception"""
         msg = "mock rendered message\n" * 10 * settings.MAX_MESSAGE_LENGTH
 
-        with mock.patch("zerver.lib.markdown.unsafe_timeout", return_value=msg), mock.patch(
-            "zerver.lib.markdown.markdown_logger"
+        with (
+            mock.patch("zerver.lib.markdown.unsafe_timeout", return_value=msg),
+            mock.patch("zerver.lib.markdown.markdown_logger"),
         ):
             with self.assertRaises(MarkdownRenderingError):
                 markdown_convert_wrapper(msg)

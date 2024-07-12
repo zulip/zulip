@@ -1,8 +1,8 @@
+import zoneinfo
 from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 
 import time_machine
-import zoneinfo
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings

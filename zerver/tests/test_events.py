@@ -3324,9 +3324,10 @@ class NormalActionsTest(BaseAction):
         )
         self.login_user(self.user_profile)
 
-        with mock.patch(
-            "zerver.lib.export.do_export_realm", side_effect=Exception("Some failure")
-        ), self.assertLogs(level="ERROR") as error_log:
+        with (
+            mock.patch("zerver.lib.export.do_export_realm", side_effect=Exception("Some failure")),
+            self.assertLogs(level="ERROR") as error_log,
+        ):
             with stdout_suppressed():
                 with self.verify_action(state_change_expected=False, num_events=2) as events:
                     self.client_post("/json/export/realm")

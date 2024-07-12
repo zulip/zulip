@@ -473,9 +473,10 @@ class TestConvertMattermostData(ZulipTestCase):
     COMMAND_NAME = "convert_mattermost_data"
 
     def test_if_command_calls_do_convert_data(self) -> None:
-        with patch(
-            "zerver.management.commands.convert_mattermost_data.do_convert_data"
-        ) as m, patch("builtins.print") as mock_print:
+        with (
+            patch("zerver.management.commands.convert_mattermost_data.do_convert_data") as m,
+            patch("builtins.print") as mock_print,
+        ):
             mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
             call_command(self.COMMAND_NAME, mm_fixtures, f"--output={output_dir}")
@@ -532,9 +533,11 @@ class TestExport(ZulipTestCase):
             self.example_user("hamlet"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
         )
 
-        with patch("zerver.management.commands.export.export_realm_wrapper") as m, patch(
-            "builtins.print"
-        ) as mock_print, patch("builtins.input", return_value="y") as mock_input:
+        with (
+            patch("zerver.management.commands.export.export_realm_wrapper") as m,
+            patch("builtins.print") as mock_print,
+            patch("builtins.input", return_value="y") as mock_input,
+        ):
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(
                 realm=realm,
@@ -559,9 +562,10 @@ class TestExport(ZulipTestCase):
             ],
         )
 
-        with self.assertRaisesRegex(CommandError, "Message with given ID does not"), patch(
-            "builtins.print"
-        ) as mock_print:
+        with (
+            self.assertRaisesRegex(CommandError, "Message with given ID does not"),
+            patch("builtins.print") as mock_print,
+        ):
             call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id=123456")
         self.assertEqual(
             mock_print.mock_calls,
@@ -572,9 +576,10 @@ class TestExport(ZulipTestCase):
 
         message.last_edit_time = timezone_now()
         message.save()
-        with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."), patch(
-            "builtins.print"
-        ) as mock_print:
+        with (
+            self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."),
+            patch("builtins.print") as mock_print,
+        ):
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
         self.assertEqual(
             mock_print.mock_calls,
@@ -588,9 +593,12 @@ class TestExport(ZulipTestCase):
         do_add_reaction(
             self.mit_user("sipbtest"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
         )
-        with self.assertRaisesRegex(
-            CommandError, "Users from a different realm reacted to message. Aborting..."
-        ), patch("builtins.print") as mock_print:
+        with (
+            self.assertRaisesRegex(
+                CommandError, "Users from a different realm reacted to message. Aborting..."
+            ),
+            patch("builtins.print") as mock_print,
+        ):
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
 
         self.assertEqual(

@@ -1550,9 +1550,11 @@ class RealmImportExportTest(ExportFile):
 
         self.export_realm_and_create_auditlog(original_realm)
 
-        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"), patch(
-            "zerver.lib.remote_server.send_to_push_bouncer"
-        ) as m:
+        with (
+            self.settings(BILLING_ENABLED=False),
+            self.assertLogs(level="INFO"),
+            patch("zerver.lib.remote_server.send_to_push_bouncer") as m,
+        ):
             get_response = {
                 "last_realm_count_id": 0,
                 "last_installation_count_id": 0,

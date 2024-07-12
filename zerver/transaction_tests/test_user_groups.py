@@ -27,9 +27,10 @@ def dev_update_subgroups(
     # The test is expected to set up the barrier before accessing this endpoint.
     assert BARRIER is not None
     try:
-        with transaction.atomic(), mock.patch(
-            "zerver.lib.user_groups.access_user_group_by_id"
-        ) as m:
+        with (
+            transaction.atomic(),
+            mock.patch("zerver.lib.user_groups.access_user_group_by_id") as m,
+        ):
 
             def wait_after_recursive_query(*args: Any, **kwargs: Any) -> UserGroup:
                 # When updating the subgroups, we access the supergroup group

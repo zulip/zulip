@@ -1,8 +1,8 @@
 import logging
+import zoneinfo
 from email.headerregistry import Address
 from typing import Any, Literal
 
-import zoneinfo
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name

@@ -877,8 +877,9 @@ class RocketChatImporter(ZulipTestCase):
         rocketchat_data_dir = self.fixture_file_name("", "rocketchat_fixtures")
         output_dir = self.make_import_output_dir("rocketchat")
 
-        with self.assertLogs(level="INFO") as info_log, self.settings(
-            EXTERNAL_HOST="zulip.example.com"
+        with (
+            self.assertLogs(level="INFO") as info_log,
+            self.settings(EXTERNAL_HOST="zulip.example.com"),
         ):
             # We need to mock EXTERNAL_HOST to be a valid domain because rocketchat's importer
             # uses it to generate email addresses for users without an email specified.

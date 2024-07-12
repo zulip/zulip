@@ -283,9 +283,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
     def test_self_hosted_config_error_page(self) -> None:
         self.login("desdemona")
 
-        with self.settings(
-            CORPORATE_ENABLED=False, PUSH_NOTIFICATION_BOUNCER_URL=None
-        ), self.assertLogs("django.request"):
+        with (
+            self.settings(CORPORATE_ENABLED=False, PUSH_NOTIFICATION_BOUNCER_URL=None),
+            self.assertLogs("django.request"),
+        ):
             result = self.client_get("/self-hosted-billing/not-configured/")
             self.assertEqual(result.status_code, 500)
             self.assert_in_response(
@@ -703,9 +704,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Now click the second confirmation link. The RemoteRealmBillingUser entry
         # stays the same, since it's already been created, and the user is redirected
         # normally further through the flow, while we log this event.
-        with time_machine.travel(now + timedelta(seconds=1), tick=False), self.assertLogs(
-            "corporate.stripe", "INFO"
-        ) as mock_logger:
+        with (
+            time_machine.travel(now + timedelta(seconds=1), tick=False),
+            self.assertLogs("corporate.stripe", "INFO") as mock_logger,
+        ):
             result = self.client_get(second_confirmation_url, subdomain="selfhosting")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].startswith("/remote-billing-login/"))

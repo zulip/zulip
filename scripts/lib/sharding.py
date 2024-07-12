@@ -33,9 +33,10 @@ def write_updated_configs() -> None:
     expected_ports = list(range(9800, ports[-1] + 1))
     assert ports == expected_ports, f"ports ({ports}) must be contiguous, starting with 9800"
 
-    with open("/etc/zulip/nginx_sharding_map.conf.tmp", "w") as nginx_sharding_conf_f, open(
-        "/etc/zulip/sharding.json.tmp", "w"
-    ) as sharding_json_f:
+    with (
+        open("/etc/zulip/nginx_sharding_map.conf.tmp", "w") as nginx_sharding_conf_f,
+        open("/etc/zulip/sharding.json.tmp", "w") as sharding_json_f,
+    ):
         if len(ports) == 1:
             nginx_sharding_conf_f.write('map "" $tornado_server {\n')
             nginx_sharding_conf_f.write("    default http://tornado;\n")

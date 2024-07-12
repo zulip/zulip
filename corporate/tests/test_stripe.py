@@ -2253,10 +2253,13 @@ class StripeTest(StripeTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         self.add_card_to_customer_for_upgrade()
-        with patch(
-            "corporate.lib.stripe.BillingSession.create_stripe_invoice_and_charge",
-            side_effect=Exception,
-        ), self.assertLogs("corporate.stripe", "WARNING") as m:
+        with (
+            patch(
+                "corporate.lib.stripe.BillingSession.create_stripe_invoice_and_charge",
+                side_effect=Exception,
+            ),
+            self.assertLogs("corporate.stripe", "WARNING") as m,
+        ):
             response = self.upgrade(talk_to_stripe=False)
             self.assertIn("ERROR:corporate.stripe:Uncaught exception in billing", m.output[0])
             self.assertIn(m.records[0].stack_info, m.output[0])
@@ -2273,9 +2276,12 @@ class StripeTest(StripeTestCase):
         self.login_user(hamlet)
         self.add_card_to_customer_for_upgrade()
 
-        with patch(
-            "corporate.lib.stripe.BillingSession.process_initial_upgrade", side_effect=Exception
-        ), self.assertLogs("corporate.stripe", "WARNING"):
+        with (
+            patch(
+                "corporate.lib.stripe.BillingSession.process_initial_upgrade", side_effect=Exception
+            ),
+            self.assertLogs("corporate.stripe", "WARNING"),
+        ):
             response = self.upgrade()
 
         response_dict = self.assert_json_success(response)
@@ -2609,9 +2615,10 @@ class StripeTest(StripeTestCase):
                 self.assert_in_response(substring, response)
 
             # schedule downgrade
-            with time_machine.travel(self.now + timedelta(days=3), tick=False), self.assertLogs(
-                "corporate.stripe", "INFO"
-            ) as m:
+            with (
+                time_machine.travel(self.now + timedelta(days=3), tick=False),
+                self.assertLogs("corporate.stripe", "INFO") as m,
+            ):
                 response = self.client_billing_patch(
                     "/billing/plan",
                     {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
@@ -3927,9 +3934,10 @@ class StripeTest(StripeTestCase):
             expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
             self.assertEqual(m.output[0], expected_log)
 
-        with self.assertRaises(BillingError) as context, self.assertLogs(
-            "corporate.stripe", "WARNING"
-        ) as m:
+        with (
+            self.assertRaises(BillingError) as context,
+            self.assertLogs("corporate.stripe", "WARNING") as m,
+        ):
             with time_machine.travel(self.now, tick=False):
                 self.local_upgrade(
                     self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
@@ -7010,9 +7018,10 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
                 self.assert_in_response(substring, response)
 
             # schedule downgrade
-            with time_machine.travel(self.now + timedelta(days=3), tick=False), self.assertLogs(
-                "corporate.stripe", "INFO"
-            ) as m:
+            with (
+                time_machine.travel(self.now + timedelta(days=3), tick=False),
+                self.assertLogs("corporate.stripe", "INFO") as m,
+            ):
                 response = self.client_billing_patch(
                     "/billing/plan",
                     {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
@@ -7400,8 +7409,9 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.execute_remote_billing_authentication_flow(hamlet)
         mock_invoice = MagicMock()
         mock_invoice.hosted_invoice_url = "payments_page_url"
-        with time_machine.travel(self.now, tick=False), mock.patch(
-            "stripe.Invoice.retrieve", return_value=mock_invoice
+        with (
+            time_machine.travel(self.now, tick=False),
+            mock.patch("stripe.Invoice.retrieve", return_value=mock_invoice),
         ):
             result = self.client_get(
                 f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
@@ -8894,9 +8904,10 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
                 self.assert_in_response(substring, response)
 
             # schedule downgrade
-            with time_machine.travel(self.now + timedelta(days=3), tick=False), self.assertLogs(
-                "corporate.stripe", "INFO"
-            ) as m:
+            with (
+                time_machine.travel(self.now + timedelta(days=3), tick=False),
+                self.assertLogs("corporate.stripe", "INFO") as m,
+            ):
                 response = self.client_billing_patch(
                     "/billing/plan",
                     {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
@@ -9210,8 +9221,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.execute_remote_billing_authentication_flow(hamlet.delivery_email, hamlet.full_name)
         mock_invoice = MagicMock()
         mock_invoice.hosted_invoice_url = "payments_page_url"
-        with time_machine.travel(self.now, tick=False), mock.patch(
-            "stripe.Invoice.retrieve", return_value=mock_invoice
+        with (
+            time_machine.travel(self.now, tick=False),
+            mock.patch("stripe.Invoice.retrieve", return_value=mock_invoice),
         ):
             result = self.client_get(
                 f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
@@ -9663,9 +9675,11 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
         )
 
-        with mock.patch("stripe.Invoice.create") as invoice_create, mock.patch(
-            "corporate.lib.stripe.send_email"
-        ) as send_email, time_machine.travel(plan_end_date, tick=False):
+        with (
+            mock.patch("stripe.Invoice.create") as invoice_create,
+            mock.patch("corporate.lib.stripe.send_email") as send_email,
+            time_machine.travel(plan_end_date, tick=False),
+        ):
             invoice_plans_as_needed()
             # Verify that for legacy plan with no next plan scheduled,
             # invoice overdue email is not sent even if the last audit log
@@ -9730,9 +9744,11 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         )
         licenses = max(min_licenses, server_user_count)
 
-        with mock.patch("stripe.Invoice.finalize_invoice") as invoice_create, mock.patch(
-            "corporate.lib.stripe.send_email"
-        ) as send_email, time_machine.travel(end_date, tick=False):
+        with (
+            mock.patch("stripe.Invoice.finalize_invoice") as invoice_create,
+            mock.patch("corporate.lib.stripe.send_email") as send_email,
+            time_machine.travel(end_date, tick=False),
+        ):
             invoice_plans_as_needed()
             # Verify that for legacy plan with next plan scheduled, invoice
             # overdue email is sent if the last audit log is stale.

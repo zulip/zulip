@@ -83,9 +83,10 @@ class DoRestCallTests(ZulipTestCase):
 
         def _helper(content: str | None) -> None:
             expect_send_response = mock.patch("zerver.lib.outgoing_webhook.send_response_message")
-            with mock.patch.object(
-                service_handler, "session"
-            ) as session, expect_send_response as mock_send:
+            with (
+                mock.patch.object(service_handler, "session") as session,
+                expect_send_response as mock_send,
+            ):
                 session.post.return_value = ResponseMock(200, orjson.dumps(dict(content=content)))
                 with self.assertLogs(level="INFO") as logs:
                     do_rest_call("", mock_event, service_handler)
@@ -120,9 +121,10 @@ class DoRestCallTests(ZulipTestCase):
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        with mock.patch.object(service_handler, "session") as session, self.assertLogs(
-            level="WARNING"
-        ) as m:
+        with (
+            mock.patch.object(service_handler, "session") as session,
+            self.assertLogs(level="WARNING") as m,
+        ):
             session.post.return_value = ResponseMock(500)
             final_response = do_rest_call("", mock_event, service_handler)
             assert final_response is not None
@@ -149,9 +151,11 @@ The webhook got a response with status code *500*.""",
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
         mock_event["message"]["type"] = "unknown"
-        with mock.patch.object(service_handler, "session") as session, self.assertRaises(
-            JsonableError
-        ), self.assertLogs(level="INFO"):
+        with (
+            mock.patch.object(service_handler, "session") as session,
+            self.assertRaises(JsonableError),
+            self.assertLogs(level="INFO"),
+        ):
             session.post.return_value = ResponseMock(200)
             url = "http://somewhere.com/api/call"
             with mock.patch("zerver.lib.outgoing_webhook.get_message_url", return_value=url):
@@ -162,10 +166,13 @@ The webhook got a response with status code *500*.""",
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        with mock.patch(
-            "zerver.lib.outgoing_webhook.GenericOutgoingWebhookService.make_request",
-            return_value=None,
-        ), self.assertLogs(level="INFO") as logs:
+        with (
+            mock.patch(
+                "zerver.lib.outgoing_webhook.GenericOutgoingWebhookService.make_request",
+                return_value=None,
+            ),
+            self.assertLogs(level="INFO") as logs,
+        ):
             resp = do_rest_call("", mock_event, service_handler)
             self.assertEqual(resp, None)
         self.assert_length(logs.output, 1)
@@ -177,9 +184,11 @@ The webhook got a response with status code *500*.""",
 
         expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
 
-        with mock.patch.object(
-            service_handler, "session"
-        ) as session, expect_fail as mock_fail, self.assertLogs(level="WARNING") as m:
+        with (
+            mock.patch.object(service_handler, "session") as session,
+            expect_fail as mock_fail,
+            self.assertLogs(level="WARNING") as m,
+        ):
             session.post.return_value = ResponseMock(400)
             final_response = do_rest_call("", mock_event, service_handler)
             assert final_response is not None
@@ -269,9 +278,11 @@ The webhook got a response with status code *400*.""",
 
         # Don't think that we should catch and assert whole log output(which is actually a very big error traceback).
         # We are already asserting bot_owner_notification.content which verifies exception did occur.
-        with mock.patch.object(
-            service_handler, "session"
-        ) as session, expect_logging_exception, expect_fail as mock_fail:
+        with (
+            mock.patch.object(service_handler, "session") as session,
+            expect_logging_exception,
+            expect_fail as mock_fail,
+        ):
             session.post.side_effect = request_exception_error
             do_rest_call("", mock_event, service_handler)
 

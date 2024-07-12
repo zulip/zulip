@@ -732,9 +732,10 @@ class FixUnreadTests(ZulipTestCase):
         assert_unread(um_unsubscribed_id)
 
         # fix unsubscribed
-        with connection.cursor() as cursor, self.assertLogs(
-            "zulip.fix_unreads", "INFO"
-        ) as info_logs:
+        with (
+            connection.cursor() as cursor,
+            self.assertLogs("zulip.fix_unreads", "INFO") as info_logs,
+        ):
             fix_unsubscribed(cursor, user)
 
         self.assertEqual(info_logs.output[0], "INFO:zulip.fix_unreads:get recipients")

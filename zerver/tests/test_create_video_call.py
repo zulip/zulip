@@ -230,8 +230,9 @@ class TestVideoCall(ZulipTestCase):
         self.assert_json_success(response)
 
     def test_create_bigbluebutton_link(self) -> None:
-        with mock.patch("zerver.views.video_calls.random.randint", return_value="1"), mock.patch(
-            "secrets.token_bytes", return_value=b"\x00" * 20
+        with (
+            mock.patch("zerver.views.video_calls.random.randint", return_value="1"),
+            mock.patch("secrets.token_bytes", return_value=b"\x00" * 20),
         ):
             response = self.client_get(
                 "/json/calls/bigbluebutton/create?meeting_name=general > meeting"

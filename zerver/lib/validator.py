@@ -29,13 +29,13 @@ for any particular type of object.
 """
 
 import re
+import zoneinfo
 from collections.abc import Callable, Collection, Container, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, NoReturn, TypeVar, cast, overload
 
 import orjson
-import zoneinfo
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _

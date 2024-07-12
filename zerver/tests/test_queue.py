@@ -93,9 +93,10 @@ class TestQueueImplementation(ZulipTestCase):
                 raise AMQPConnectionError("test")
             actual_publish(*args, **kwargs)
 
-        with mock.patch(
-            "zerver.lib.queue.SimpleQueueClient.publish", throw_connection_error_once
-        ), self.assertLogs("zulip.queue", level="WARN") as warn_logs:
+        with (
+            mock.patch("zerver.lib.queue.SimpleQueueClient.publish", throw_connection_error_once),
+            self.assertLogs("zulip.queue", level="WARN") as warn_logs,
+        ):
             queue_json_publish("test_suite", {"event": "my_event"})
         self.assertEqual(
             warn_logs.output,
