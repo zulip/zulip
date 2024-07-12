@@ -451,13 +451,21 @@ export class Typeahead<ItemType extends string | object> {
                 // We have event handlers to hide the typeahead, so we
                 // don't want tippy to hide it for us.
                 hideOnClick: false,
+                onMount: () => {
+                    // The container has `display: none` as a default style.
+                    // We make sure to display it. For tippy elements, this
+                    // must happen after we insert the typeahead into the DOM.
+                    this.$container.show();
+                },
             });
         }
 
-        // The container has `display: none` as a default style. We make sure to display
-        // it. For tippy elements, this must happen after we insert the typeahead into
-        // the DOM.
-        this.$container.show();
+        if (this.non_tippy_parent_element) {
+            // Call this after $container is in DOM which is true here since
+            // that happens in the constructor for non-tippy typeaheads.
+            this.$container.show();
+        }
+
         return this;
     }
 
