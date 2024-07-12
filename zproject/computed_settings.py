@@ -890,7 +890,7 @@ LOGGING: Dict[str, Any] = {
             "propagate": False,
         },
         "pyvips": {
-            "level": "WARNING",
+            "level": "ERROR",
             "handlers": ["console", "errors_file"],
             "propagate": False,
         },
