@@ -500,7 +500,7 @@ def catch_stripe_errors(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, Ret
                 err.get("code"),
                 err.get("param"),
             )
-            if isinstance(e, (stripe.RateLimitError, stripe.APIConnectionError)):  # nocoverage TODO
+            if isinstance(e, stripe.RateLimitError | stripe.APIConnectionError):  # nocoverage TODO
                 raise StripeConnectionError(
                     "stripe connection error",
                     _("Something went wrong. Please wait a few seconds and try again."),
@@ -3252,7 +3252,7 @@ class BillingSession(ABC):
     def get_sponsorship_request_context(self) -> dict[str, Any] | None:
         customer = self.get_customer()
         is_remotely_hosted = isinstance(
-            self, (RemoteRealmBillingSession, RemoteServerBillingSession)
+            self, RemoteRealmBillingSession | RemoteServerBillingSession
         )
 
         plan_name = "Zulip Cloud Free"

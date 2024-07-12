@@ -100,7 +100,7 @@ def sentry_tunnel(
 # failing to connect at the TCP level will report as
 # ProxyErrors.
 def open_circuit_for(exc_type: type[Exception], exc_value: Exception) -> bool:
-    if issubclass(exc_type, (ProxyError, Timeout)):
+    if issubclass(exc_type, ProxyError | Timeout):
         return True
     if isinstance(exc_value, HTTPError):
         response = exc_value.response

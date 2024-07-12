@@ -6495,7 +6495,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
             audit_log_model = cast(
                 type[RemoteRealmAuditLog] | type[RemoteZulipServerAuditLog], audit_log_class
             )
-            assert isinstance(remote_user, (RemoteRealmBillingUser, RemoteServerBillingUser))
+            assert isinstance(remote_user, RemoteRealmBillingUser | RemoteServerBillingUser)
             # No acting user:
             session = session_class(remote_object)
             session.write_to_audit_log(
