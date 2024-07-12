@@ -61,10 +61,6 @@
         }
     }
 
-    .zulip-icon-close {
-        font-size: 10px;
-    }
-
     .search-input-and-pills {
         grid-area: search-pills;
         display: flex;
