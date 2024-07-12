@@ -15,6 +15,7 @@ import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import type {StreamSubscription} from "./sub_store";
 import {parse_html} from "./ui_util";
+import * as util from "./util";
 
 /* Sync with max-height set in zulip.css */
 export const DEFAULT_DROPDOWN_HEIGHT = 210;
@@ -191,6 +192,14 @@ export class DropdownWidget {
             theme: "dropdown-widget",
             arrow: false,
             onShow: (instance: tippy.Instance) => {
+                if (util.is_mobile()) {
+                    // The dropdown trigger button can be hidden by the
+                    // keyboard on mobile or if it is scrolled out of
+                    // view to keyboard being displayed.
+                    // So, we show the dropdown even if reference is hidden on
+                    // mobile.
+                    $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+                }
                 instance.setContent(
                     parse_html(
                         render_dropdown_list_container({
