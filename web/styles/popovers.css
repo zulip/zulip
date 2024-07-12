@@ -990,7 +990,7 @@ ul.popover-group-menu-member-list {
     }
 }
 
-.user-email-field {
+.user-card-popover-email-field {
     & .user_popover_email {
         text-overflow: ellipsis;
         white-space: nowrap;
