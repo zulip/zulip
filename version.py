@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 270  # Last bumped for direct_message_permission_group
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (285, 0)  # bumped 2024-06-27 for upgrading Python requirements
+PROVISION_VERSION = (285, 1)  # bumped 2024-07-12 for adding textarea-caret
