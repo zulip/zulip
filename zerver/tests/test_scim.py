@@ -100,11 +100,13 @@ class TestExceptionDetailsNotRevealedToClient(SCIMTestCase):
         Verify that, unlike in default django-scim2 behavior, details of an exception
         are not revealed in the HttpResponse.
         """
-        with mock.patch(
-            "zerver.lib.scim.ZulipSCIMUser.to_dict", side_effect=Exception("test exception")
-        ), self.assertLogs("django_scim.views", "ERROR") as mock_scim_logger, self.assertLogs(
-            "django.request", "ERROR"
-        ) as mock_request_logger:
+        with (
+            mock.patch(
+                "zerver.lib.scim.ZulipSCIMUser.to_dict", side_effect=Exception("test exception")
+            ),
+            self.assertLogs("django_scim.views", "ERROR") as mock_scim_logger,
+            self.assertLogs("django.request", "ERROR") as mock_request_logger,
+        ):
             result = self.client_get("/scim/v2/Users", {}, **self.scim_headers())
             # Only a generic error message is returned:
             self.assertEqual(

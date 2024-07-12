@@ -1,6 +1,6 @@
+import zoneinfo
 from datetime import datetime, timezone
 
-import zoneinfo
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import ZulipTestCase

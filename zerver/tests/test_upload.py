@@ -1297,16 +1297,18 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         source_original_path_id = avatar_disk_path(source_user_profile, original=True)
         target_original_path_id = avatar_disk_path(target_user_profile, original=True)
-        with open(source_original_path_id, "rb") as source, open(
-            target_original_path_id, "rb"
-        ) as target:
+        with (
+            open(source_original_path_id, "rb") as source,
+            open(target_original_path_id, "rb") as target,
+        ):
             self.assertEqual(source.read(), target.read())
 
         source_medium_path_id = avatar_disk_path(source_user_profile, medium=True)
         target_medium_path_id = avatar_disk_path(target_user_profile, medium=True)
-        with open(source_medium_path_id, "rb") as source, open(
-            target_medium_path_id, "rb"
-        ) as target:
+        with (
+            open(source_medium_path_id, "rb") as source,
+            open(target_medium_path_id, "rb") as target,
+        ):
             self.assertEqual(source.read(), target.read())
 
     def test_delete_avatar_image(self) -> None:

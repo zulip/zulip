@@ -1931,9 +1931,10 @@ class InvitationsTestCase(InviteUserBase):
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
-        with time_machine.travel(
-            (timezone_now() - timedelta(days=3)), tick=False
-        ), self.captureOnCommitCallbacks(execute=True):
+        with (
+            time_machine.travel((timezone_now() - timedelta(days=3)), tick=False),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
@@ -1983,9 +1984,10 @@ class InvitationsTestCase(InviteUserBase):
             get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
         ]
 
-        with time_machine.travel(
-            (timezone_now() - timedelta(days=1000)), tick=False
-        ), self.captureOnCommitCallbacks(execute=True):
+        with (
+            time_machine.travel((timezone_now() - timedelta(days=1000)), tick=False),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
             # Testing the invitation with expiry date set to "None" exists
             # after a large amount of days.
             do_invite_users(
@@ -2624,9 +2626,10 @@ class MultiuseInviteTest(ZulipTestCase):
         request = HttpRequest()
         confirmation = Confirmation.objects.get(confirmation_key=key)
         multiuse_object = confirmation.content_object
-        with patch(
-            "zerver.views.registration.get_subdomain", return_value="zulip"
-        ), self.assertRaises(AssertionError):
+        with (
+            patch("zerver.views.registration.get_subdomain", return_value="zulip"),
+            self.assertRaises(AssertionError),
+        ):
             accounts_home(request, multiuse_object=multiuse_object)
 
     def test_create_multiuse_link_api_call(self) -> None:

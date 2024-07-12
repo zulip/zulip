@@ -123,8 +123,9 @@ class ThreadedWorker(threading.Thread):
 
     @override
     def run(self) -> None:
-        with configure_scope() as scope, log_and_exit_if_exception(
-            self.logger, self.queue_name, threaded=True
+        with (
+            configure_scope() as scope,
+            log_and_exit_if_exception(self.logger, self.queue_name, threaded=True),
         ):
             scope.set_tag("queue_worker", self.queue_name)
             worker = get_worker(self.queue_name, threaded=True)

@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import sys
+import zoneinfo
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
@@ -12,7 +13,6 @@ from email.headerregistry import Address
 from typing import Any
 
 import lxml.html
-import zoneinfo
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_backends

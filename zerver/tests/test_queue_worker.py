@@ -312,9 +312,10 @@ class WorkerTest(ZulipTestCase):
 
         # Enqueues the events to the internal queue, as if from RabbitMQ
         time_zero = datetime(2021, 1, 1, tzinfo=timezone.utc)
-        with time_machine.travel(time_zero, tick=False), patch.object(
-            mmw.cv, "notify"
-        ) as notify_mock:
+        with (
+            time_machine.travel(time_zero, tick=False),
+            patch.object(mmw.cv, "notify") as notify_mock,
+        ):
             for event in events:
                 mmw.consume_single_event(event)
         # All of these notify, because has_timeout is still false in
@@ -351,9 +352,10 @@ class WorkerTest(ZulipTestCase):
         # `expected_scheduled_timestamp` as the earlier events.
 
         few_moments_later = time_zero + timedelta(seconds=3)
-        with time_machine.travel(few_moments_later, tick=False), patch.object(
-            mmw.cv, "notify"
-        ) as notify_mock:
+        with (
+            time_machine.travel(few_moments_later, tick=False),
+            patch.object(mmw.cv, "notify") as notify_mock,
+        ):
             mmw.consume_single_event(bonus_event_hamlet)
         self.assertEqual(notify_mock.call_count, 0)
 
@@ -424,12 +426,14 @@ class WorkerTest(ZulipTestCase):
         # details, but the summary is that IntegrityErrors due to database constraints are raised at
         # the end of the test, not inside the `try` block. So, we have the code inside the `try` block
         # raise `IntegrityError` by mocking.
-        with patch(
-            "zerver.models.ScheduledMessageNotificationEmail.objects.create",
-            side_effect=IntegrityError,
-        ), self.assertLogs(level="DEBUG") as debug_logs, patch.object(
-            mmw.cv, "notify"
-        ) as notify_mock:
+        with (
+            patch(
+                "zerver.models.ScheduledMessageNotificationEmail.objects.create",
+                side_effect=IntegrityError,
+            ),
+            self.assertLogs(level="DEBUG") as debug_logs,
+            patch.object(mmw.cv, "notify") as notify_mock,
+        ):
             mmw.consume_single_event(hamlet_event1)
             self.assertEqual(notify_mock.call_count, 0)
             self.assertIn(
@@ -441,9 +445,10 @@ class WorkerTest(ZulipTestCase):
         # throws an exception.  First, enqueue the messages, and get
         # them to create database rows:
         time_zero = datetime(2021, 1, 1, tzinfo=timezone.utc)
-        with time_machine.travel(time_zero, tick=False), patch.object(
-            mmw.cv, "notify"
-        ) as notify_mock:
+        with (
+            time_machine.travel(time_zero, tick=False),
+            patch.object(mmw.cv, "notify") as notify_mock,
+        ):
             mmw.consume_single_event(hamlet_event1)
             mmw.consume_single_event(hamlet_event2)
             mmw.consume_single_event(othello_event)
@@ -458,9 +463,11 @@ class WorkerTest(ZulipTestCase):
                 raise RuntimeError
 
         one_minute_overdue = expected_scheduled_timestamp + timedelta(seconds=60)
-        with time_machine.travel(one_minute_overdue, tick=False), self.assertLogs(
-            level="ERROR"
-        ) as error_logs, send_mock as sm:
+        with (
+            time_machine.travel(one_minute_overdue, tick=False),
+            self.assertLogs(level="ERROR") as error_logs,
+            send_mock as sm,
+        ):
             sm.side_effect = fail_some
             has_timeout = advance()
             self.assertTrue(has_timeout)
@@ -500,12 +507,16 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(fake_client):
             worker = PushNotificationsWorker()
             worker.setup()
-            with patch(
-                "zerver.worker.missedmessage_mobile_notifications.handle_push_notification"
-            ) as mock_handle_new, patch(
-                "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification"
-            ) as mock_handle_remove, patch(
-                "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
+            with (
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_push_notification"
+                ) as mock_handle_new,
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification"
+                ) as mock_handle_remove,
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
+                ),
             ):
                 event_new = generate_new_message_notification()
                 event_remove = generate_remove_notification()
@@ -518,25 +529,32 @@ class WorkerTest(ZulipTestCase):
                     event_remove["user_profile_id"], event_remove["message_ids"]
                 )
 
-            with patch(
-                "zerver.worker.missedmessage_mobile_notifications.handle_push_notification",
-                side_effect=PushNotificationBouncerRetryLaterError("test"),
-            ) as mock_handle_new, patch(
-                "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification",
-                side_effect=PushNotificationBouncerRetryLaterError("test"),
-            ) as mock_handle_remove, patch(
-                "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
+            with (
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_push_notification",
+                    side_effect=PushNotificationBouncerRetryLaterError("test"),
+                ) as mock_handle_new,
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification",
+                    side_effect=PushNotificationBouncerRetryLaterError("test"),
+                ) as mock_handle_remove,
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
+                ),
             ):
                 event_new = generate_new_message_notification()
                 event_remove = generate_remove_notification()
                 fake_client.enqueue("missedmessage_mobile_notifications", event_new)
                 fake_client.enqueue("missedmessage_mobile_notifications", event_remove)
 
-                with mock_queue_publish(
-                    "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
-                ), self.assertLogs(
-                    "zerver.worker.missedmessage_mobile_notifications", "WARNING"
-                ) as warn_logs:
+                with (
+                    mock_queue_publish(
+                        "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
+                    ),
+                    self.assertLogs(
+                        "zerver.worker.missedmessage_mobile_notifications", "WARNING"
+                    ) as warn_logs,
+                ):
                     worker.start()
                     self.assertEqual(mock_handle_new.call_count, 1 + MAX_REQUEST_RETRIES)
                     self.assertEqual(mock_handle_remove.call_count, 1 + MAX_REQUEST_RETRIES)
@@ -588,9 +606,10 @@ class WorkerTest(ZulipTestCase):
         for element in data:
             fake_client.enqueue("email_mirror", element)
 
-        with simulated_queue_client(fake_client), self.assertLogs(
-            "zerver.worker.email_mirror", level="WARNING"
-        ) as warn_logs:
+        with (
+            simulated_queue_client(fake_client),
+            self.assertLogs("zerver.worker.email_mirror", level="WARNING") as warn_logs,
+        ):
             start_time = time.time()
             with patch("time.time", return_value=start_time):
                 worker = MirrorWorker()
@@ -668,11 +687,11 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(fake_client):
             worker = EmailSendingWorker()
             worker.setup()
-            with patch(
-                "zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError
-            ), mock_queue_publish(
-                "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
-            ), self.assertLogs(level="ERROR") as m:
+            with (
+                patch("zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError),
+                mock_queue_publish("zerver.lib.queue.queue_json_publish", side_effect=fake_publish),
+                self.assertLogs(level="ERROR") as m,
+            ):
                 worker.start()
                 self.assertIn("failed due to exception EmailNotDeliveredError", m.output[0])
 

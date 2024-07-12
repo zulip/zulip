@@ -114,9 +114,10 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         do_deactivate_user(hamlet, acting_user=None)
 
-        with mock.patch("zerver.lib.digest.enough_traffic", return_value=True), mock.patch(
-            "zerver.lib.digest.send_future_email"
-        ) as mock_send_email:
+        with (
+            mock.patch("zerver.lib.digest.enough_traffic", return_value=True),
+            mock.patch("zerver.lib.digest.send_future_email") as mock_send_email,
+        ):
             bulk_handle_digest_email(user_ids, 1)
 
         emailed_user_ids = [

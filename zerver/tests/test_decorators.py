@@ -122,9 +122,10 @@ class DecoratorTestCase(ZulipTestCase):
         request = HttpRequest()
         request.POST["param"] = "test"
         request.META["HTTP_USER_AGENT"] = "mocked should fail"
-        with mock.patch(
-            "zerver.middleware.parse_client", side_effect=JsonableError("message")
-        ) as m, self.assertLogs(level="ERROR"):
+        with (
+            mock.patch("zerver.middleware.parse_client", side_effect=JsonableError("message")) as m,
+            self.assertLogs(level="ERROR"),
+        ):
             LogRequests(lambda request: HttpResponse()).process_request(request)
         request_notes = RequestNotes.get_notes(request)
         self.assertEqual(request_notes.client_name, "Unparsable")
@@ -490,11 +491,10 @@ class RateLimitTestCase(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver", client_name=client_name, meta_data=META)
         view_func = self.ratelimited_web_view if check_web_view else self.ratelimited_json_view
 
-        with mock.patch(
-            "zerver.lib.rate_limiter.RateLimitedUser"
-        ) as rate_limit_user_mock, mock.patch(
-            "zerver.lib.rate_limiter.RateLimitedIPAddr"
-        ) as rate_limit_ip_mock:
+        with (
+            mock.patch("zerver.lib.rate_limiter.RateLimitedUser") as rate_limit_user_mock,
+            mock.patch("zerver.lib.rate_limiter.RateLimitedIPAddr") as rate_limit_ip_mock,
+        ):
             self.assert_in_success_response(["some value"], view_func(request))
         self.assertEqual(rate_limit_ip_mock.called, expect_rate_limit)
         self.assertFalse(rate_limit_user_mock.called)
@@ -506,11 +506,10 @@ class RateLimitTestCase(ZulipTestCase):
         request = HostRequestMock(
             user_profile=user, host="zulip.testserver", client_name=client_name, meta_data=META
         )
-        with mock.patch(
-            "zerver.lib.rate_limiter.RateLimitedUser"
-        ) as rate_limit_user_mock, mock.patch(
-            "zerver.lib.rate_limiter.RateLimitedIPAddr"
-        ) as rate_limit_ip_mock:
+        with (
+            mock.patch("zerver.lib.rate_limiter.RateLimitedUser") as rate_limit_user_mock,
+            mock.patch("zerver.lib.rate_limiter.RateLimitedIPAddr") as rate_limit_ip_mock,
+        ):
             self.assert_in_success_response(["some value"], view_func(request))
         self.assertEqual(rate_limit_user_mock.called, expect_rate_limit)
         self.assertFalse(rate_limit_ip_mock.called)
@@ -562,9 +561,10 @@ class RateLimitTestCase(ZulipTestCase):
         )
         server.save()
 
-        with self.settings(RATE_LIMITING=True), mock.patch(
-            "zilencer.auth.rate_limit_remote_server"
-        ) as rate_limit_mock:
+        with (
+            self.settings(RATE_LIMITING=True),
+            mock.patch("zilencer.auth.rate_limit_remote_server") as rate_limit_mock,
+        ):
             result = self.uuid_post(
                 server_uuid,
                 "/api/v1/remotes/push/unregister/all",
@@ -1165,8 +1165,9 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         email = user.delivery_email
         self.login_user(user)
 
-        with self.assertLogs(level="WARNING") as m, mock.patch(
-            "zerver.decorator.get_subdomain", return_value=""
+        with (
+            self.assertLogs(level="WARNING") as m,
+            mock.patch("zerver.decorator.get_subdomain", return_value=""),
         ):
             self.assert_json_error_contains(
                 self._do_test(email), "Account is not associated with this subdomain"
@@ -1180,8 +1181,9 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
             ],
         )
 
-        with self.assertLogs(level="WARNING") as m, mock.patch(
-            "zerver.decorator.get_subdomain", return_value="acme"
+        with (
+            self.assertLogs(level="WARNING") as m,
+            mock.patch("zerver.decorator.get_subdomain", return_value="acme"),
         ):
             self.assert_json_error_contains(
                 self._do_test(email), "Account is not associated with this subdomain"

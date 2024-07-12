@@ -971,13 +971,16 @@ class LoginTest(ZulipTestCase):
             user_profile.set_password(password)
             user_profile.save()
 
-        with self.settings(
-            PASSWORD_HASHERS=(
-                "django.contrib.auth.hashers.MD5PasswordHasher",
-                "django.contrib.auth.hashers.SHA1PasswordHasher",
+        with (
+            self.settings(
+                PASSWORD_HASHERS=(
+                    "django.contrib.auth.hashers.MD5PasswordHasher",
+                    "django.contrib.auth.hashers.SHA1PasswordHasher",
+                ),
+                PASSWORD_MIN_LENGTH=30,
             ),
-            PASSWORD_MIN_LENGTH=30,
-        ), self.assertLogs("zulip.auth.email", level="INFO"):
+            self.assertLogs("zulip.auth.email", level="INFO"),
+        ):
             result = self.login_with_return(self.example_email("hamlet"), password)
             self.assertEqual(result.status_code, 200)
             self.assert_in_response(
@@ -3305,13 +3308,15 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
 
-        with self.settings(
-            POPULATE_PROFILE_VIA_LDAP=True,
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-        ), self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs, self.assertLogs(
-            level="WARNING"
-        ) as root_logs:
+        with (
+            self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN="zulip.com",
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            ),
+            self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs,
+            self.assertLogs(level="WARNING") as root_logs,
+        ):
             # Click confirmation link
             result = self.submit_reg_form_for_user(
                 email,
@@ -3537,9 +3542,12 @@ class UserSignUpTest(ZulipTestCase):
 
         self.change_ldap_user_attr("newuser_with_email", "mail", "thisisnotavalidemail")
 
-        with self.settings(
-            LDAP_EMAIL_ATTR="mail",
-        ), self.assertLogs("zulip.auth.ldap", "WARNING") as mock_log:
+        with (
+            self.settings(
+                LDAP_EMAIL_ATTR="mail",
+            ),
+            self.assertLogs("zulip.auth.ldap", "WARNING") as mock_log,
+        ):
             original_user_count = UserProfile.objects.count()
             self.login_with_return(username, password, HTTP_HOST=subdomain + ".testserver")
             # Verify that the process failed as intended - no UserProfile is created.
@@ -3688,11 +3696,14 @@ class UserSignUpTest(ZulipTestCase):
 
         # If the user's email is not in the LDAP directory, but fits LDAP_APPEND_DOMAIN,
         # we refuse to create the account.
-        with self.settings(
-            POPULATE_PROFILE_VIA_LDAP=True,
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-        ), self.assertLogs("zulip.ldap", "DEBUG") as debug_log:
+        with (
+            self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN="zulip.com",
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            ),
+            self.assertLogs("zulip.ldap", "DEBUG") as debug_log,
+        ):
             result = self.submit_reg_form_for_user(
                 email,
                 password,
@@ -4099,9 +4110,10 @@ class UserSignUpTest(ZulipTestCase):
         # (this is an invalid state, so it's a bug we got here):
         change_user_is_active(user_profile, True)
 
-        with self.assertRaisesRegex(
-            AssertionError, "Mirror dummy user is already active!"
-        ), self.assertLogs("django.request", "ERROR") as error_log:
+        with (
+            self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"),
+            self.assertLogs("django.request", "ERROR") as error_log,
+        ):
             result = self.submit_reg_form_for_user(
                 email,
                 password,
@@ -4153,9 +4165,10 @@ class UserSignUpTest(ZulipTestCase):
         user_profile.save()
         change_user_is_active(user_profile, True)
 
-        with self.assertRaisesRegex(
-            AssertionError, "Mirror dummy user is already active!"
-        ), self.assertLogs("django.request", "ERROR") as error_log:
+        with (
+            self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"),
+            self.assertLogs("django.request", "ERROR") as error_log,
+        ):
             self.client_post("/register/", {"email": email}, subdomain="zephyr")
         self.assertTrue(
             "ERROR:django.request:Internal Server Error: /register/" in error_log.output[0]

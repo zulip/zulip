@@ -226,9 +226,10 @@ class ZulipTestCaseMixin(SimpleTestCase):
         if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
             return super().run(result)
         extra_output_finder = ExtraConsoleOutputFinder()
-        with tee_stderr_and_find_extra_console_output(
-            extra_output_finder
-        ), tee_stdout_and_find_extra_console_output(extra_output_finder):
+        with (
+            tee_stderr_and_find_extra_console_output(extra_output_finder),
+            tee_stdout_and_find_extra_console_output(extra_output_finder),
+        ):
             test_result = super().run(result)
         if extra_output_finder.full_extra_output and (
             test_result is None or test_result.wasSuccessful()
@@ -1567,9 +1568,13 @@ Output:
         This raises a failure inside of the try/except block of
         markdown.__init__.do_convert.
         """
-        with mock.patch(
-            "zerver.lib.markdown.unsafe_timeout", side_effect=subprocess.CalledProcessError(1, [])
-        ), self.assertLogs(level="ERROR"):  # For markdown_logger.exception
+        with (
+            mock.patch(
+                "zerver.lib.markdown.unsafe_timeout",
+                side_effect=subprocess.CalledProcessError(1, []),
+            ),
+            self.assertLogs(level="ERROR"),
+        ):  # For markdown_logger.exception
             yield
 
     def create_default_device(

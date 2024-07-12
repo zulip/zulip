@@ -115,9 +115,10 @@ class UserPresenceModelTests(ZulipTestCase):
             cursor = connection.cursor()
             return cursor
 
-        with mock.patch("zerver.actions.presence.connection") as mock_connection, self.assertLogs(
-            "zerver.actions.presence", level="INFO"
-        ) as mock_logs:
+        with (
+            mock.patch("zerver.actions.presence.connection") as mock_connection,
+            self.assertLogs("zerver.actions.presence", level="INFO") as mock_logs,
+        ):
             # This is a tricky mock. We need to set things up so that connection.cursor()
             # in do_update_user_presence runs our custom code when the caller tries to
             # enter the context manager.

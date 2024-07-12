@@ -81,9 +81,12 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_creation_ensures_internal_realms(self) -> None:
         with mock.patch("zerver.actions.create_realm.server_initialized", return_value=False):
-            with mock.patch(
-                "zerver.actions.create_realm.create_internal_realm"
-            ) as mock_create_internal, self.assertLogs(level="INFO") as info_logs:
+            with (
+                mock.patch(
+                    "zerver.actions.create_realm.create_internal_realm"
+                ) as mock_create_internal,
+                self.assertLogs(level="INFO") as info_logs,
+            ):
                 do_create_realm("testrealm", "Test Realm")
                 mock_create_internal.assert_called_once()
             self.assertEqual(

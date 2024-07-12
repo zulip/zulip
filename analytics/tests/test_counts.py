@@ -1432,12 +1432,16 @@ class TestLoggingCountStats(AnalyticsTestCase):
             "gcm_options": gcm_options,
         }
         now = timezone_now()
-        with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-            return_value=10,
-        ), self.assertLogs("zilencer.views", level="INFO"):
+        with (
+            time_machine.travel(now, tick=False),
+            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
+            mock.patch(
+                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1491,12 +1495,16 @@ class TestLoggingCountStats(AnalyticsTestCase):
             "apns_payload": apns_payload,
             "gcm_options": gcm_options,
         }
-        with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-            return_value=10,
-        ), self.assertLogs("zilencer.views", level="INFO"):
+        with (
+            time_machine.travel(now, tick=False),
+            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
+            mock.patch(
+                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1549,12 +1557,16 @@ class TestLoggingCountStats(AnalyticsTestCase):
             realm_date_created=realm.date_created,
         )
 
-        with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-            return_value=10,
-        ), self.assertLogs("zilencer.views", level="INFO"):
+        with (
+            time_machine.travel(now, tick=False),
+            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",

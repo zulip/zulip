@@ -604,8 +604,9 @@ class HomeTest(ZulipTestCase):
         self.assertIn("test_stream_7", html)
 
     def _get_home_page(self, **kwargs: Any) -> "TestHttpResponse":
-        with patch("zerver.lib.events.request_event_queue", return_value=42), patch(
-            "zerver.lib.events.get_user_events", return_value=[]
+        with (
+            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/", dict(**kwargs))
         return result
@@ -663,9 +664,10 @@ class HomeTest(ZulipTestCase):
         user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
         user.save()
 
-        with self.settings(
-            FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE="corporate/hello.html"
-        ), self.settings(TERMS_OF_SERVICE_VERSION="99.99"):
+        with (
+            self.settings(FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE="corporate/hello.html"),
+            self.settings(TERMS_OF_SERVICE_VERSION="99.99"),
+        ):
             result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
@@ -1378,8 +1380,9 @@ class HomeTest(ZulipTestCase):
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
-        with patch("zerver.lib.events.request_event_queue", return_value=42), patch(
-            "zerver.lib.events.get_user_events", return_value=[]
+        with (
+            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/de/")
         page_params = self._get_page_params(result)
