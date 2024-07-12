@@ -302,7 +302,9 @@ class TestCreateStreams(ZulipTestCase):
                     "message_retention_days": -1,
                     "can_remove_subscribers_group": moderators_system_group,
                 }
-                for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
+                for (stream_name, stream_description) in zip(
+                    stream_names, stream_descriptions, strict=False
+                )
             ],
         )
 
@@ -325,7 +327,9 @@ class TestCreateStreams(ZulipTestCase):
             realm,
             [
                 {"name": stream_name, "description": stream_description, "invite_only": True}
-                for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
+                for (stream_name, stream_description) in zip(
+                    stream_names, stream_descriptions, strict=False
+                )
             ],
         )
 
@@ -799,7 +803,9 @@ class StreamAdminTest(ZulipTestCase):
         stream_descriptions = ["des1", "des2", "des3"]
         streams_raw: list[StreamDict] = [
             {"name": stream_name, "description": stream_description, "is_web_public": True}
-            for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
+            for (stream_name, stream_description) in zip(
+                stream_names, stream_descriptions, strict=False
+            )
         ]
 
         self.assertFalse(user_profile.can_create_web_public_streams())

@@ -167,7 +167,7 @@ def send_stream_messages(
     global message_thread_ids
     message_thread_ids += message_ids
 
-    for message, message_id in zip(staged_messages, message_ids):
+    for message, message_id in zip(staged_messages, message_ids, strict=False):
         if message.get("reactions") is not None:
             reactions = message["reactions"]
             for reaction, user_names in reactions.items():

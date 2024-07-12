@@ -358,7 +358,7 @@ class SlackImporter(ZulipTestCase):
             ("U22222222", "foreignteam2"),
             ("U33333333", "foreignteam2"),
         ]
-        for expected, found in zip(expected_users, later_users):
+        for expected, found in zip(expected_users, later_users, strict=False):
             self.assertEqual(found["id"], expected[0])
             self.assertEqual(found["team_domain"], expected[1])
             self.assertEqual(found["is_mirror_dummy"], True)

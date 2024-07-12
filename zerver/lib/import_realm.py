@@ -1610,7 +1610,7 @@ def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
 
     new_id_list = allocate_ids(model_class=Message, count=count)
 
-    for old_id, new_id in zip(old_id_list, new_id_list):
+    for old_id, new_id in zip(old_id_list, new_id_list, strict=False):
         update_id_map(
             table="message",
             old_id=old_id,

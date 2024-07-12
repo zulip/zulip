@@ -93,7 +93,7 @@ full_real_paths = [f"{config_file_path}/{filename}" for filename in base_files]
 full_new_paths = [f"{filename}.tmp" for filename in full_real_paths]
 try:
     write_updated_configs()
-    for old, new in zip(full_real_paths, full_new_paths):
+    for old, new in zip(full_real_paths, full_new_paths, strict=False):
         if not filecmp.cmp(old, new):
             # There are changes; leave .tmp files and exit 0
             if "SUPPRESS_SHARDING_NOTICE" not in os.environ:

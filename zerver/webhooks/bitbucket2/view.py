@@ -98,7 +98,7 @@ def api_bitbucket2_webhook(
         topic_names = get_push_topics(payload)
         bodies = get_push_bodies(request, payload)
 
-        for b, t in zip(bodies, topic_names):
+        for b, t in zip(bodies, topic_names, strict=False):
             check_send_webhook_message(
                 request, user_profile, t, b, type, unquote_url_parameters=True
             )

@@ -405,7 +405,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             return True, blocking_ttl
 
         now = time.time()
-        for timestamp, (range_seconds, num_requests) in zip(rule_timestamps, rules):
+        for timestamp, (range_seconds, num_requests) in zip(rule_timestamps, rules, strict=False):
             # Check if the nth timestamp is newer than the associated rule. If so,
             # it means we've hit our limit for this rule
             if timestamp is None:

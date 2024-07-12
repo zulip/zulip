@@ -89,7 +89,7 @@ def get_query_data(query: Composable) -> list[list[Any]]:
 def dictfetchall(cursor: CursorWrapper) -> list[dict[str, Any]]:
     """Returns all rows from a cursor as a dict"""
     desc = cursor.description
-    return [dict(zip((col[0] for col in desc), row)) for row in cursor.fetchall()]
+    return [dict(zip((col[0] for col in desc), row, strict=False)) for row in cursor.fetchall()]
 
 
 def format_optional_datetime(date: datetime | None, display_none: bool = False) -> str:
