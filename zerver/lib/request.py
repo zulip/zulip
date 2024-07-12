@@ -5,14 +5,11 @@ from types import FunctionType
 from typing import (
     Any,
     Callable,
-    Dict,
     Generic,
-    List,
     Literal,
     MutableMapping,
     Optional,
     Sequence,
-    Set,
     TypeVar,
     Union,
     cast,
@@ -63,12 +60,12 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     realm: Optional[Realm] = None
     has_fetched_realm: bool = False
     set_language: Optional[str] = None
-    ratelimits_applied: List[rate_limiter.RateLimitResult] = field(default_factory=list)
+    ratelimits_applied: list[rate_limiter.RateLimitResult] = field(default_factory=list)
     query: Optional[str] = None
     error_format: Optional[str] = None
     saved_response: Optional[HttpResponse] = None
     tornado_handler_id: Optional[int] = None
-    processed_parameters: Set[str] = field(default_factory=set)
+    processed_parameters: set[str] = field(default_factory=set)
     remote_server: Optional["RemoteZulipServer"] = None
     is_webhook_view: bool = False
 
@@ -312,7 +309,7 @@ def REQ(
     )
 
 
-arguments_map: Dict[str, List[str]] = defaultdict(list)
+arguments_map: dict[str, list[str]] = defaultdict(list)
 ParamT = ParamSpec("ParamT")
 ReturnT = TypeVar("ReturnT")
 

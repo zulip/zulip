@@ -5,7 +5,7 @@ import time
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
+from typing import Any, Callable, Iterator, Mapping, Optional
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -37,24 +37,24 @@ from zerver.worker.missedmessage_emails import MissedMessageWorker
 from zerver.worker.missedmessage_mobile_notifications import PushNotificationsWorker
 from zerver.worker.user_activity import UserActivityWorker
 
-Event: TypeAlias = Dict[str, Any]
+Event: TypeAlias = dict[str, Any]
 
 
 class FakeClient:
     def __init__(self, prefetch: int = 0) -> None:
-        self.queues: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+        self.queues: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
-    def enqueue(self, queue_name: str, data: Dict[str, Any]) -> None:
+    def enqueue(self, queue_name: str, data: dict[str, Any]) -> None:
         self.queues[queue_name].append(data)
 
     def start_json_consumer(
         self,
         queue_name: str,
-        callback: Callable[[List[Dict[str, Any]]], None],
+        callback: Callable[[list[dict[str, Any]]], None],
         batch_size: int = 1,
         timeout: Optional[int] = None,
     ) -> None:
-        chunk: List[Dict[str, Any]] = []
+        chunk: list[dict[str, Any]] = []
         queue = self.queues[queue_name]
         while queue:
             chunk.append(queue.pop(0))
@@ -482,14 +482,14 @@ class WorkerTest(ZulipTestCase):
         fake_client = FakeClient()
 
         def fake_publish(
-            queue_name: str, event: Dict[str, Any], processor: Callable[[Any], None]
+            queue_name: str, event: dict[str, Any], processor: Callable[[Any], None]
         ) -> None:
             fake_client.enqueue(queue_name, event)
 
-        def generate_new_message_notification() -> Dict[str, Any]:
+        def generate_new_message_notification() -> dict[str, Any]:
             return build_offline_notification(1, 1)
 
-        def generate_remove_notification() -> Dict[str, Any]:
+        def generate_remove_notification() -> dict[str, Any]:
             return {
                 "type": "remove",
                 "user_profile_id": 1,
@@ -660,7 +660,7 @@ class WorkerTest(ZulipTestCase):
         fake_client.enqueue("email_senders", data)
 
         def fake_publish(
-            queue_name: str, event: Dict[str, Any], processor: Optional[Callable[[Any], None]]
+            queue_name: str, event: dict[str, Any], processor: Optional[Callable[[Any], None]]
         ) -> None:
             fake_client.enqueue(queue_name, event)
 
@@ -719,7 +719,7 @@ class WorkerTest(ZulipTestCase):
         @base_worker.assign_queue("unreliable_loopworker", is_test_queue=True)
         class UnreliableLoopWorker(base_worker.LoopQueueProcessingWorker):
             @override
-            def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+            def consume_batch(self, events: list[dict[str, Any]]) -> None:
                 for event in events:
                     if event["type"] == "unexpected behaviour":
                         raise Exception("Worker task not performing as expected!")

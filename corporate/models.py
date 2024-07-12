@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -109,7 +109,7 @@ class Event(models.Model):
 
     handler_error = models.JSONField(default=None, null=True)
 
-    def get_event_handler_details_as_dict(self) -> Dict[str, Any]:
+    def get_event_handler_details_as_dict(self) -> dict[str, Any]:
         details_dict = {}
         details_dict["status"] = {
             Event.RECEIVED: "not_started",
@@ -158,8 +158,8 @@ class Session(models.Model):
             Session.CARD_UPDATE_FROM_UPGRADE_PAGE: "card_update_from_upgrade_page",
         }[self.type]
 
-    def to_dict(self) -> Dict[str, Any]:
-        session_dict: Dict[str, Any] = {}
+    def to_dict(self) -> dict[str, Any]:
+        session_dict: dict[str, Any] = {}
 
         session_dict["status"] = self.get_status_as_string()
         session_dict["type"] = self.get_type_as_string()
@@ -216,8 +216,8 @@ class PaymentIntent(models.Model):  # nocoverage
             return None  # nocoverage
         return get_last_associated_event_by_type(self, event_type)
 
-    def to_dict(self) -> Dict[str, Any]:
-        payment_intent_dict: Dict[str, Any] = {}
+    def to_dict(self) -> dict[str, Any]:
+        payment_intent_dict: dict[str, Any] = {}
         payment_intent_dict["status"] = self.get_status_as_string()
         event = self.get_last_associated_event()
         if event is not None:
@@ -251,8 +251,8 @@ class Invoice(models.Model):
             return None  # nocoverage
         return get_last_associated_event_by_type(self, event_type)
 
-    def to_dict(self) -> Dict[str, Any]:
-        stripe_invoice_dict: Dict[str, Any] = {}
+    def to_dict(self) -> dict[str, Any]:
+        stripe_invoice_dict: dict[str, Any] = {}
         stripe_invoice_dict["status"] = self.get_status_as_string()
         event = self.get_last_associated_event()
         if event is not None:

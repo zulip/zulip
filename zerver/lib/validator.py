@@ -36,13 +36,9 @@ from typing import (
     Callable,
     Collection,
     Container,
-    Dict,
     Iterator,
-    List,
     NoReturn,
     Optional,
-    Set,
-    Tuple,
     TypeVar,
     Union,
     cast,
@@ -162,7 +158,7 @@ def check_int(var_name: str, val: object) -> int:
     return val
 
 
-def check_int_in(possible_values: List[int]) -> Validator[int]:
+def check_int_in(possible_values: list[int]) -> Validator[int]:
     """
     Assert that the input is an integer and is contained in `possible_values`. If the input is not in
     `possible_values`, a `ValidationError` is raised containing the failing field's name.
@@ -225,8 +221,8 @@ def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[Resul
 
 def check_list(
     sub_validator: Validator[ResultT], length: Optional[int] = None
-) -> Validator[List[ResultT]]:
-    def f(var_name: str, val: object) -> List[ResultT]:
+) -> Validator[list[ResultT]]:
+    def f(var_name: str, val: object) -> list[ResultT]:
         if not isinstance(val, list):
             raise ValidationError(_("{var_name} is not a list").format(var_name=var_name))
 
@@ -243,7 +239,7 @@ def check_list(
             valid_item = sub_validator(vname, item)
             assert item is valid_item  # To justify the unchecked cast below
 
-        return cast(List[ResultT], val)
+        return cast(list[ResultT], val)
 
     return f
 
@@ -251,27 +247,27 @@ def check_list(
 # https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
 @overload
 def check_dict(
-    required_keys: Collection[Tuple[str, Validator[object]]] = [],
-    optional_keys: Collection[Tuple[str, Validator[object]]] = [],
+    required_keys: Collection[tuple[str, Validator[object]]] = [],
+    optional_keys: Collection[tuple[str, Validator[object]]] = [],
     *,
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, object]]: ...
+) -> Validator[dict[str, object]]: ...
 @overload
 def check_dict(
-    required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
-    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[tuple[str, Validator[ResultT]]] = [],
+    optional_keys: Collection[tuple[str, Validator[ResultT]]] = [],
     *,
     value_validator: Validator[ResultT],
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, ResultT]]: ...
+) -> Validator[dict[str, ResultT]]: ...
 def check_dict(
-    required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
-    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[tuple[str, Validator[ResultT]]] = [],
+    optional_keys: Collection[tuple[str, Validator[ResultT]]] = [],
     *,
     value_validator: Optional[Validator[ResultT]] = None,
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, ResultT]]:
-    def f(var_name: str, val: object) -> Dict[str, ResultT]:
+) -> Validator[dict[str, ResultT]]:
+    def f(var_name: str, val: object) -> dict[str, ResultT]:
         if not isinstance(val, dict):
             raise ValidationError(_("{var_name} is not a dict").format(var_name=var_name))
 
@@ -309,17 +305,17 @@ def check_dict(
                     _("Unexpected arguments: {keys}").format(keys=", ".join(delta_keys))
                 )
 
-        return cast(Dict[str, ResultT], val)
+        return cast(dict[str, ResultT], val)
 
     return f
 
 
 def check_dict_only(
-    required_keys: Collection[Tuple[str, Validator[ResultT]]],
-    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
-) -> Validator[Dict[str, ResultT]]:
+    required_keys: Collection[tuple[str, Validator[ResultT]]],
+    optional_keys: Collection[tuple[str, Validator[ResultT]]] = [],
+) -> Validator[dict[str, ResultT]]:
     return cast(
-        Validator[Dict[str, ResultT]],
+        Validator[dict[str, ResultT]],
         check_dict(required_keys, optional_keys, _allow_only_listed_keys=True),
     )
 
@@ -405,7 +401,7 @@ def check_external_account_url_pattern(var_name: str, val: object) -> str:
     return s
 
 
-def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[str, str]]:
+def validate_select_field_data(field_data: ProfileFieldData) -> dict[str, dict[str, str]]:
     """
     This function is used to validate the data sent to the server while
     creating/editing choices of the choice field in Organization settings.
@@ -418,7 +414,7 @@ def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[s
     )
 
     # To create an array of texts of each option
-    distinct_field_names: Set[str] = set()
+    distinct_field_names: set[str] = set()
 
     for key, value in field_data.items():
         if not key.strip():
@@ -433,7 +429,7 @@ def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[s
     if len(field_data) != len(distinct_field_names):
         raise ValidationError(_("Field must not have duplicate choices."))
 
-    return cast(Dict[str, Dict[str, str]], field_data)
+    return cast(dict[str, dict[str, str]], field_data)
 
 
 def validate_select_field(var_name: str, field_data: str, value: object) -> str:
@@ -449,7 +445,7 @@ def validate_select_field(var_name: str, field_data: str, value: object) -> str:
     return s
 
 
-def check_widget_content(widget_content: object) -> Dict[str, Any]:
+def check_widget_content(widget_content: object) -> dict[str, Any]:
     if not isinstance(widget_content, dict):
         raise ValidationError("widget_content is not a dict")
 
@@ -626,7 +622,7 @@ def to_converted_or_fallback(
     return converter
 
 
-def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]]:
+def check_string_or_int_list(var_name: str, val: object) -> Union[str, list[int]]:
     if isinstance(val, str):
         return val
 
@@ -706,7 +702,7 @@ class WildValue:
     def values(self) -> Iterator["WildValue"]:
         self._need_dict()
 
-    def items(self) -> Iterator[Tuple[str, "WildValue"]]:
+    def items(self) -> Iterator[tuple[str, "WildValue"]]:
         self._need_dict()
 
     def tame(self, validator: Validator[ResultT]) -> ResultT:
@@ -714,7 +710,7 @@ class WildValue:
 
 
 class WildValueList(WildValue):
-    value: List[object]
+    value: list[object]
 
     @override
     def __iter__(self) -> Iterator[WildValue]:
@@ -737,7 +733,7 @@ class WildValueList(WildValue):
 
 
 class WildValueDict(WildValue):
-    value: Dict[str, object]
+    value: dict[str, object]
 
     @override
     def __contains__(self, key: str) -> bool:
@@ -774,7 +770,7 @@ class WildValueDict(WildValue):
             yield wrap_wild_value(f"{self.var_name}[{key!r}]", value)
 
     @override
-    def items(self) -> Iterator[Tuple[str, WildValue]]:
+    def items(self) -> Iterator[tuple[str, WildValue]]:
         for key, value in self.value.items():
             yield key, wrap_wild_value(f"{self.var_name}[{key!r}]", value)
 

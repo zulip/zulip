@@ -14,7 +14,6 @@ import re
 import socket
 import sys
 from argparse import ArgumentParser
-from typing import List
 
 import requests
 
@@ -30,7 +29,7 @@ append_key = """\
 """
 
 
-def get_mentor_keys(username: str) -> List[str]:
+def get_mentor_keys(username: str) -> list[str]:
     url = f"https://api.github.com/users/{username}/keys"
 
     r = requests.get(url)

@@ -1,6 +1,6 @@
 import time
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -343,7 +343,7 @@ class ChangeSettingsTest(ZulipTestCase):
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
     def do_test_change_user_setting(self, setting_name: str) -> None:
-        test_changes: Dict[str, Any] = dict(
+        test_changes: dict[str, Any] = dict(
             default_language="de",
             web_home_view="all_messages",
             emojiset="google",

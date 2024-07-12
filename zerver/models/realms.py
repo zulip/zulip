@@ -1,6 +1,6 @@
 from email.headerregistry import Address
 from enum import IntEnum
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypedDict, Union
+from typing import TYPE_CHECKING, Optional, TypedDict, Union
 from uuid import uuid4
 
 import django.contrib.auth
@@ -37,10 +37,10 @@ SECONDS_PER_DAY = 86400
 # these values cannot change in a running production system, but do
 # regularly change within unit tests; we address the latter by calling
 # clear_supported_auth_backends_cache in our standard tearDown code.
-supported_backends: Optional[List["BaseBackend"]] = None
+supported_backends: Optional[list["BaseBackend"]] = None
 
 
-def supported_auth_backends() -> List["BaseBackend"]:
+def supported_auth_backends() -> list["BaseBackend"]:
     global supported_backends
     # Caching temporarily disabled for debugging
     supported_backends = django.contrib.auth.get_backends()
@@ -439,7 +439,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     first_visible_message_id = models.IntegerField(default=0)
 
     # Valid org types
-    ORG_TYPES: Dict[str, OrgTypeDict] = {
+    ORG_TYPES: dict[str, OrgTypeDict] = {
         "unspecified": {
             "name": "Unspecified",
             "id": OrgTypeEnum.Unspecified.value,
@@ -533,7 +533,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         },
     }
 
-    ORG_TYPE_IDS: List[int] = [t["id"] for t in ORG_TYPES.values()]
+    ORG_TYPE_IDS: list[int] = [t["id"] for t in ORG_TYPES.values()]
 
     org_type = models.PositiveSmallIntegerField(
         default=ORG_TYPES["unspecified"]["id"],
@@ -640,7 +640,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     enable_guest_user_indicator = models.BooleanField(default=True)
 
     # Define the types of the various automatically managed properties
-    property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
+    property_types: dict[str, Union[type, tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
         allow_message_editing=bool,
@@ -687,7 +687,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         wildcard_mention_policy=int,
     )
 
-    REALM_PERMISSION_GROUP_SETTINGS: Dict[str, GroupPermissionSetting] = dict(
+    REALM_PERMISSION_GROUP_SETTINGS: dict[str, GroupPermissionSetting] = dict(
         create_multiuse_invite_group=GroupPermissionSetting(
             require_system_group=True,
             allow_internet_group=False,
@@ -793,7 +793,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     def __str__(self) -> str:
         return f"{self.string_id} {self.id}"
 
-    def get_giphy_rating_options(self) -> Dict[str, Dict[str, object]]:
+    def get_giphy_rating_options(self) -> dict[str, dict[str, object]]:
         """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
         of the lazily evaluated `name` field without modifying the original."""
         return {
@@ -801,7 +801,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
         }
 
-    def authentication_methods_dict(self) -> Dict[str, bool]:
+    def authentication_methods_dict(self) -> dict[str, bool]:
         """Returns the mapping from authentication flags to their status,
         showing only those authentication flags that are supported on
         the current server (i.e. if EmailAuthBackend is not configured
@@ -810,7 +810,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         # dependency.
         from zproject.backends import AUTH_BACKEND_NAME_MAP
 
-        ret: Dict[str, bool] = {}
+        ret: dict[str, bool] = {}
         supported_backends = [type(backend) for backend in supported_auth_backends()]
 
         for backend_name, backend_class in AUTH_BACKEND_NAME_MAP.items():
@@ -1148,7 +1148,7 @@ def get_org_type_display_name(org_type: int) -> str:
 def get_corresponding_policy_value_for_group_setting(
     realm: Realm,
     group_setting_name: str,
-    valid_policy_enums: List[int],
+    valid_policy_enums: list[int],
 ) -> int:
     setting_group = getattr(realm, group_setting_name)
     if (
@@ -1196,7 +1196,7 @@ class RealmDomainDict(TypedDict):
     allow_subdomains: bool
 
 
-def get_realm_domains(realm: Realm) -> List[RealmDomainDict]:
+def get_realm_domains(realm: Realm) -> list[RealmDomainDict]:
     return list(realm.realmdomain_set.values("domain", "allow_subdomains"))
 
 

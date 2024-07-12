@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Optional
 from unittest import mock
 
 import orjson
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
-def check_flags(flags: List[str], expected: Set[str]) -> None:
+def check_flags(flags: list[str], expected: set[str]) -> None:
     """
     The has_alert_word flag can be ignored for most tests.
     """
@@ -280,7 +280,7 @@ class UnreadCountTests(ZulipTestCase):
         def race_creation(
             *,
             user_id: int,
-            message_ids: List[int],
+            message_ids: list[int],
             flagattr: Optional[int] = None,
             flag_target: Optional[int] = None,
         ) -> None:
@@ -782,7 +782,7 @@ class FixUnreadTests(ZulipTestCase):
 
 
 class PushNotificationMarkReadFlowsTest(ZulipTestCase):
-    def get_mobile_push_notification_ids(self, user_profile: UserProfile) -> List[int]:
+    def get_mobile_push_notification_ids(self, user_profile: UserProfile) -> list[int]:
         return list(
             UserMessage.objects.filter(
                 user_profile=user_profile,
@@ -945,7 +945,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             self.subscribe(hamlet, stream_name)
             self.subscribe(cordelia, stream_name)
 
-        all_message_ids: Set[int] = set()
+        all_message_ids: set[int] = set()
         message_ids = {}
 
         tups = [
@@ -1438,7 +1438,7 @@ class MessageAccessTests(ZulipTestCase):
         self.assert_json_error(result, "Invalid message flag operation: 'bogus'")
 
     def change_star(
-        self, messages: List[int], add: bool = True, **kwargs: Any
+        self, messages: list[int], add: bool = True, **kwargs: Any
     ) -> "TestHttpResponse":
         return self.client_post(
             "/json/messages/flags",
@@ -1726,11 +1726,11 @@ class MessageAccessTests(ZulipTestCase):
     def assert_bulk_access(
         self,
         user: UserProfile,
-        message_ids: List[int],
+        message_ids: list[int],
         stream: Stream,
         bulk_access_messages_count: int,
         bulk_access_stream_messages_query_count: int,
-    ) -> List[Message]:
+    ) -> list[Message]:
         with self.assert_database_query_count(bulk_access_messages_count):
             messages = [
                 Message.objects.select_related("recipient").get(id=message_id)

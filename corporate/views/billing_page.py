@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal, Optional
 
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
@@ -55,7 +55,7 @@ def billing_page(
 
     billing_session = RealmBillingSession(user=user, realm=user.realm)
 
-    context: Dict[str, Any] = {
+    context: dict[str, Any] = {
         "admin_access": user.has_billing_access,
         "has_active_plan": False,
         "org_name": billing_session.org_name(),
@@ -101,7 +101,7 @@ def remote_realm_billing_page(
     success_message: str = "",
 ) -> HttpResponse:
     realm_uuid = billing_session.remote_realm.uuid
-    context: Dict[str, Any] = {
+    context: dict[str, Any] = {
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
@@ -161,7 +161,7 @@ def remote_server_billing_page(
     *,
     success_message: str = "",
 ) -> HttpResponse:
-    context: Dict[str, Any] = {
+    context: dict[str, Any] = {
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,

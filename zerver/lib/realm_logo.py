@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -29,7 +29,7 @@ def get_realm_logo_url(realm: Realm, night: bool) -> str:
     return staticfiles_storage.url("images/logo/zulip-org-logo.svg") + "?version=0"
 
 
-def get_realm_logo_data(realm: Realm, night: bool) -> Dict[str, Any]:
+def get_realm_logo_data(realm: Realm, night: bool) -> dict[str, Any]:
     if night:
         return dict(
             night_logo_url=get_realm_logo_url(realm, night),

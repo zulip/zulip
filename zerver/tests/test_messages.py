@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import List
 
 from django.utils.timezone import now as timezone_now
 
@@ -24,7 +23,7 @@ class MissedMessageTest(ZulipTestCase):
         hamlet_notifications_data = self.create_user_notifications_data_object(user_id=hamlet.id)
         othello_notifications_data = self.create_user_notifications_data_object(user_id=othello.id)
 
-        def assert_active_presence_idle_user_ids(user_ids: List[int]) -> None:
+        def assert_active_presence_idle_user_ids(user_ids: list[int]) -> None:
             presence_idle_user_ids = get_active_presence_idle_user_ids(
                 realm=realm,
                 sender_id=sender.id,

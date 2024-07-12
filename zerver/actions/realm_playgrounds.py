@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -12,7 +12,7 @@ from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
-def notify_realm_playgrounds(realm: Realm, realm_playgrounds: List[RealmPlaygroundDict]) -> None:
+def notify_realm_playgrounds(realm: Realm, realm_playgrounds: list[RealmPlaygroundDict]) -> None:
     event = dict(type="realm_playgrounds", realm_playgrounds=realm_playgrounds)
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 

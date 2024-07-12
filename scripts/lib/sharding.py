@@ -5,7 +5,7 @@ import json
 import os
 import subprocess
 import sys
-from typing import Dict, List, Tuple, Union
+from typing import Union
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -46,8 +46,8 @@ def write_updated_configs() -> None:
 
         nginx_sharding_conf_f.write("map $host $tornado_server {\n")
         nginx_sharding_conf_f.write("    default http://tornado9800;\n")
-        shard_map: Dict[str, Union[int, List[int]]] = {}
-        shard_regexes: List[Tuple[str, Union[int, List[int]]]] = []
+        shard_map: dict[str, Union[int, list[int]]] = {}
+        shard_regexes: list[tuple[str, Union[int, list[int]]]] = []
         external_host = subprocess.check_output(
             [os.path.join(BASE_DIR, "scripts/get-django-setting"), "EXTERNAL_HOST"],
             text=True,

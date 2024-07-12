@@ -1,5 +1,3 @@
-from typing import List
-
 from zulint.custom_rules import Rule, RuleList
 
 # Rule help:
@@ -39,7 +37,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     "zerver/tests/test_message_fetch.py",
 }
 
-shebang_rules: List["Rule"] = [
+shebang_rules: list["Rule"] = [
     {
         "pattern": r"\A#!",
         "description": "zerver library code shouldn't have a shebang line.",
@@ -59,7 +57,7 @@ shebang_rules: List["Rule"] = [
     },
 ]
 
-base_whitespace_rules: List["Rule"] = [
+base_whitespace_rules: list["Rule"] = [
     {
         "pattern": r"[\t ]+$",
         "exclude": {"tools/ci/success-http-headers.template.txt"},
@@ -70,7 +68,7 @@ base_whitespace_rules: List["Rule"] = [
         "description": "Missing newline at end of file",
     },
 ]
-whitespace_rules: List["Rule"] = [
+whitespace_rules: list["Rule"] = [
     *base_whitespace_rules,
     {
         "pattern": "http://zulip.readthedocs.io",
@@ -85,7 +83,7 @@ whitespace_rules: List["Rule"] = [
         "description": "Web app should be two words",
     },
 ]
-comma_whitespace_rule: List["Rule"] = [
+comma_whitespace_rule: list["Rule"] = [
     {
         "pattern": ", {2,}[^#/ ]",
         "exclude": {"zerver/tests", "web/tests", "corporate/tests"},
@@ -94,7 +92,7 @@ comma_whitespace_rule: List["Rule"] = [
         "bad_lines": ["foo(1,  2, 3)", "foo(1,    2, 3)"],
     },
 ]
-markdown_whitespace_rules: List["Rule"] = [
+markdown_whitespace_rules: list["Rule"] = [
     *(rule for rule in whitespace_rules if rule["pattern"] != r"[\t ]+$"),
     # Two spaces trailing a line with other content is okay--it's a Markdown line break.
     # This rule finds one space trailing a non-space, three or more trailing spaces, and
@@ -508,7 +506,7 @@ css_rules = RuleList(
     ],
 )
 
-prose_style_rules: List["Rule"] = [
+prose_style_rules: list["Rule"] = [
     {
         "pattern": r'^[\t ]*[^\n{].*?[^\n\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs/custom-markdown
         "exclude": {"docs/documentation/api.md", "templates/corporate/policies/privacy.md"},
@@ -531,7 +529,7 @@ prose_style_rules: List["Rule"] = [
     },
     *comma_whitespace_rule,
 ]
-html_rules: List["Rule"] = [
+html_rules: list["Rule"] = [
     *whitespace_rules,
     *prose_style_rules,
     {

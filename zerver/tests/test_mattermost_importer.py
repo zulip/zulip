@@ -1,6 +1,6 @@
 import filecmp
 import os
-from typing import Any, Dict, List
+from typing import Any
 from unittest.mock import call, patch
 
 import orjson
@@ -443,8 +443,8 @@ class MatterMostImporter(ZulipTestCase):
             team_name=team_name,
         )
 
-        zerver_attachments: List[ZerverFieldsT] = []
-        uploads_list: List[ZerverFieldsT] = []
+        zerver_attachments: list[ZerverFieldsT] = []
+        uploads_list: list[ZerverFieldsT] = []
 
         process_message_attachments(
             attachments=mattermost_data["post"]["direct_post"][0]["attachments"],
@@ -594,7 +594,7 @@ class MatterMostImporter(ZulipTestCase):
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
 
-        total_reactions: List[Dict[str, Any]] = []
+        total_reactions: list[dict[str, Any]] = []
 
         reactions = [
             {"user": "harry", "create_at": 1553165521410, "emoji_name": "tick"},

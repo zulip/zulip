@@ -1,7 +1,7 @@
 # This file contains various helper functions used by `build_emoji` tool.
 # See docs/subsystems/emoji.md for details on how this system works.
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Any
 
 from zerver.lib.emoji_utils import emoji_to_hex_codepoint, hex_codepoint_to_emoji, unqualify_emoji
 
@@ -50,8 +50,8 @@ EMOTICON_CONVERSIONS = {
 }
 
 
-def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
-    emoji_names: List[str] = []
+def emoji_names_for_picker(emoji_name_maps: dict[str, dict[str, Any]]) -> list[str]:
+    emoji_names: list[str] = []
     for name_info in emoji_name_maps.values():
         emoji_names.append(name_info["canonical_name"])
         emoji_names.extend(name_info["aliases"])
@@ -59,7 +59,7 @@ def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[s
     return sorted(emoji_names)
 
 
-def get_emoji_code(emoji_dict: Dict[str, Any]) -> str:
+def get_emoji_code(emoji_dict: dict[str, Any]) -> str:
     # There is a `non_qualified` field on `emoji_dict` but it's
     # inconsistently present, so we'll always use the unqualified
     # emoji by unqualifying it ourselves. This gives us more consistent
@@ -72,10 +72,10 @@ def get_emoji_code(emoji_dict: Dict[str, Any]) -> str:
 # codepoints are sorted according to the `sort_order` as defined in
 # `emoji_data`.
 def generate_emoji_catalog(
-    emoji_data: List[Dict[str, Any]], emoji_name_maps: Dict[str, Dict[str, Any]]
-) -> Dict[str, List[str]]:
-    sort_order: Dict[str, int] = {}
-    emoji_catalog: Dict[str, List[str]] = defaultdict(list)
+    emoji_data: list[dict[str, Any]], emoji_name_maps: dict[str, dict[str, Any]]
+) -> dict[str, list[str]]:
+    sort_order: dict[str, int] = {}
+    emoji_catalog: dict[str, list[str]] = defaultdict(list)
 
     for emoji_dict in emoji_data:
         emoji_code = get_emoji_code(emoji_dict)
@@ -93,8 +93,8 @@ def generate_emoji_catalog(
     return dict(emoji_catalog)
 
 
-def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
-    codepoint_to_name: Dict[str, str] = {}
+def generate_codepoint_to_name_map(emoji_name_maps: dict[str, dict[str, Any]]) -> dict[str, str]:
+    codepoint_to_name: dict[str, str] = {}
     for emoji_code, name_info in emoji_name_maps.items():
         codepoint_to_name[emoji_code] = name_info["canonical_name"]
     return codepoint_to_name
@@ -102,13 +102,13 @@ def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -
 
 # We support Google Modern, and fall back to Google Modern when emoji
 # aren't supported by the other styles we use.
-def emoji_is_supported(emoji_dict: Dict[str, Any]) -> bool:
+def emoji_is_supported(emoji_dict: dict[str, Any]) -> bool:
     return emoji_dict["has_img_google"]
 
 
 def generate_codepoint_to_names_map(
-    emoji_name_maps: Dict[str, Dict[str, Any]],
-) -> Dict[str, List[str]]:
+    emoji_name_maps: dict[str, dict[str, Any]],
+) -> dict[str, list[str]]:
     # The first element of the names list is always the canonical name.
     return {
         emoji_code: [name_info["canonical_name"], *name_info["aliases"]]
@@ -116,7 +116,7 @@ def generate_codepoint_to_names_map(
     }
 
 
-def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
+def generate_name_to_codepoint_map(emoji_name_maps: dict[str, dict[str, Any]]) -> dict[str, str]:
     name_to_codepoint = {}
     for emoji_code, name_info in emoji_name_maps.items():
         canonical_name = name_info["canonical_name"]

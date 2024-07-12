@@ -1,10 +1,9 @@
 import os
-from typing import List
 
 from zerver.lib.storage import static_path
 
 
-def get_available_notification_sounds() -> List[str]:
+def get_available_notification_sounds() -> list[str]:
     notification_sounds_path = static_path("audio/notification_sounds")
     available_notification_sounds = []
 

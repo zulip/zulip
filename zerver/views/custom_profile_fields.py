@@ -1,4 +1,4 @@
-from typing import Annotated, List, Optional
+from typing import Annotated, Optional
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -288,7 +288,7 @@ def reorder_realm_custom_profile_fields(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    order: Json[List[int]],
+    order: Json[list[int]],
 ) -> HttpResponse:
     try_reorder_realm_custom_profile_fields(user_profile.realm, order)
     return json_success(request)
@@ -300,7 +300,7 @@ def remove_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    data: Json[List[int]],
+    data: Json[list[int]],
 ) -> HttpResponse:
     for field_id in data:
         check_remove_custom_profile_field_value(user_profile, field_id)
@@ -313,7 +313,7 @@ def update_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    data: Json[List[ProfileDataElementUpdateDict]],
+    data: Json[list[ProfileDataElementUpdateDict]],
 ) -> HttpResponse:
     validate_user_custom_profile_data(user_profile.realm.id, data)
     do_update_user_custom_profile_data_if_changed(user_profile, data)

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -170,7 +170,7 @@ def update_active_status_backend(
         update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
 
     if ping_only:
-        ret: Dict[str, Any] = {}
+        ret: dict[str, Any] = {}
     else:
         ret = get_presence_response(
             user_profile, slim_presence, last_update_id_fetched_by_client=last_update_id

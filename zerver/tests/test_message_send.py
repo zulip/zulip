@@ -1,6 +1,6 @@
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Optional, Set
+from typing import Any, Optional
 from unittest import mock
 
 import orjson
@@ -1770,7 +1770,7 @@ class StreamMessagesTest(ZulipTestCase):
             ).flags.is_private.is_set
         )
 
-    def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> Set[int]:
+    def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> set[int]:
         with self.capture_send_event_calls(expected_num_events=1) as events:
             self.send_stream_message(
                 user,
@@ -1794,7 +1794,7 @@ class StreamMessagesTest(ZulipTestCase):
             user_profile=cordelia,
         ).delete()
 
-        def mention_cordelia() -> Set[int]:
+        def mention_cordelia() -> set[int]:
             content = "test @**Cordelia, Lear's daughter** rules"
 
             user_ids = self._send_stream_message(

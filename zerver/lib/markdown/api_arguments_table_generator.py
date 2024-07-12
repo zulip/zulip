@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Dict, List, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 import markdown
 from django.utils.html import escape as escape_html
@@ -83,7 +83,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         super().__init__(md)
 
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         done = False
         while not done:
             for line in lines:
@@ -118,7 +118,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 done = True
         return lines
 
-    def render_oneof_block(self, object_schema: Dict[str, Any], name: str) -> str:
+    def render_oneof_block(self, object_schema: dict[str, Any], name: str) -> str:
         md_engine = markdown.Markdown(extensions=[])
         content = ""
         for element in object_schema["oneOf"]:
@@ -136,7 +136,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 )
         return ONEOF_DETAILS_TEMPLATE.format(values=content)
 
-    def render_parameters(self, parameters: Sequence[Parameter]) -> List[str]:
+    def render_parameters(self, parameters: Sequence[Parameter]) -> list[str]:
         lines = []
 
         md_engine = markdown.Markdown(extensions=[])
@@ -225,7 +225,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 description = object_values[value]["description"]
 
             # check for default, enum, required or example in documentation
-            additions: List[str] = []
+            additions: list[str] = []
 
             default = object_values.get(value, {}).get("default")
             if default is not None:

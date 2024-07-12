@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import re
 import string
-from typing import Dict, List, Optional, Protocol
+from typing import Optional, Protocol
 
 from django.http import HttpRequest, HttpResponse
 
@@ -127,7 +127,7 @@ def get_topic_for_branch_specified_events(
     )
 
 
-def get_push_topics(payload: WildValue) -> List[str]:
+def get_push_topics(payload: WildValue) -> list[str]:
     topics_list = []
     for change in payload["push"]["changes"]:
         potential_tag = (change["new"] or change["old"])["type"].tame(check_string)
@@ -210,7 +210,7 @@ def get_body_based_on_type(
     return GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER[type]
 
 
-def get_push_bodies(request: HttpRequest, payload: WildValue) -> List[str]:
+def get_push_bodies(request: HttpRequest, payload: WildValue) -> list[str]:
     messages_list = []
     for change in payload["push"]["changes"]:
         potential_tag = (change["new"] or change["old"])["type"].tame(check_string)
@@ -534,7 +534,7 @@ def get_branch_name_for_push_event(payload: WildValue) -> Optional[str]:
         return (change["new"] or change["old"])["name"].tame(check_string)
 
 
-GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER: Dict[str, BodyGetter] = {
+GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER: dict[str, BodyGetter] = {
     "fork": get_fork_body,
     "commit_comment": get_commit_comment_body,
     "change_commit_status": get_commit_status_changed_body,

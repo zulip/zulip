@@ -2,7 +2,7 @@ import logging
 import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Callable, Optional, Sequence, Union
 
 from django.conf import settings
 from django.db import connection, models
@@ -82,7 +82,7 @@ class CountStat:
 
 
 class LoggingCountStat(CountStat):
-    def __init__(self, property: str, output_table: Type[BaseCount], frequency: str) -> None:
+    def __init__(self, property: str, output_table: type[BaseCount], frequency: str) -> None:
         CountStat.__init__(self, property, DataCollector(output_table, None), frequency)
 
 
@@ -102,7 +102,7 @@ class DependentCountStat(CountStat):
 class DataCollector:
     def __init__(
         self,
-        output_table: Type[BaseCount],
+        output_table: type[BaseCount],
         pull_function: Optional[Callable[[str, datetime, datetime, Optional[Realm]], int]],
     ) -> None:
         self.output_table = output_table
@@ -311,8 +311,8 @@ def do_increment_logging_stat(
         return
 
     table = stat.data_collector.output_table
-    id_args: Dict[str, Union[int, None]] = {}
-    conflict_args: List[str] = []
+    id_args: dict[str, Union[int, None]] = {}
+    conflict_args: list[str] = []
     if table == RealmCount:
         assert isinstance(model_object_for_bucket, Realm)
         id_args = {"realm_id": model_object_for_bucket.id}
@@ -425,7 +425,7 @@ def do_drop_single_stat(property: str) -> None:
 
 ## DataCollector-level operations ##
 
-QueryFn: TypeAlias = Callable[[Dict[str, Composable]], Composable]
+QueryFn: TypeAlias = Callable[[dict[str, Composable]], Composable]
 
 
 def do_pull_by_sql_query(
@@ -433,7 +433,7 @@ def do_pull_by_sql_query(
     start_time: datetime,
     end_time: datetime,
     query: QueryFn,
-    group_by: Optional[Tuple[Type[models.Model], str]],
+    group_by: Optional[tuple[type[models.Model], str]],
 ) -> int:
     if group_by is None:
         subgroup: Composable = SQL("NULL")
@@ -467,9 +467,9 @@ def do_pull_by_sql_query(
 
 
 def sql_data_collector(
-    output_table: Type[BaseCount],
+    output_table: type[BaseCount],
     query: QueryFn,
-    group_by: Optional[Tuple[Type[models.Model], str]],
+    group_by: Optional[tuple[type[models.Model], str]],
 ) -> DataCollector:
     def pull_function(
         property: str, start_time: datetime, end_time: datetime, realm: Optional[Realm] = None
@@ -533,7 +533,7 @@ def do_pull_minutes_active(
         .values_list("user_profile_id", "user_profile__realm_id", "start", "end")
     )
 
-    seconds_active: Dict[Tuple[int, int], float] = defaultdict(float)
+    seconds_active: dict[tuple[int, int], float] = defaultdict(float)
     for user_id, realm_id, interval_start, interval_end in user_activity_intervals:
         if realm is None or realm.id == realm_id:
             start = max(start_time, interval_start)
@@ -817,7 +817,7 @@ count_stream_by_realm_query = lambda kwargs: SQL(
 ).format(**kwargs)
 
 
-def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
+def get_count_stats(realm: Optional[Realm] = None) -> dict[str, CountStat]:
     ## CountStat declarations ##
 
     count_stats_ = [

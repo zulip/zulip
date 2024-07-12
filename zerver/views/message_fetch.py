@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Iterable, Optional, Union
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -33,7 +33,7 @@ from zerver.models import UserMessage, UserProfile
 MAX_MESSAGES_PER_FETCH = 5000
 
 
-def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
+def highlight_string(text: str, locs: Iterable[tuple[int, int]]) -> str:
     highlight_start = '<span class="highlight">'
     highlight_stop = "</span>"
     pos = 0
@@ -73,9 +73,9 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
 def get_search_fields(
     rendered_content: str,
     topic_name: str,
-    content_matches: Iterable[Tuple[int, int]],
-    topic_matches: Iterable[Tuple[int, int]],
-) -> Dict[str, str]:
+    content_matches: Iterable[tuple[int, int]],
+    topic_matches: Iterable[tuple[int, int]],
+) -> dict[str, str]:
     return {
         "match_content": highlight_string(rendered_content, content_matches),
         MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
@@ -83,8 +83,8 @@ def get_search_fields(
 
 
 def clean_narrow_for_web_public_api(
-    narrow: Optional[List[NarrowParameter]],
-) -> Optional[List[NarrowParameter]]:
+    narrow: Optional[list[NarrowParameter]],
+) -> Optional[list[NarrowParameter]]:
     if narrow is None:
         return None
 
@@ -107,7 +107,7 @@ def get_messages_backend(
     include_anchor: Json[bool] = True,
     num_before: Json[NonNegativeInt],
     num_after: Json[NonNegativeInt],
-    narrow: Json[Optional[List[NarrowParameter]]] = None,
+    narrow: Json[Optional[list[NarrowParameter]]] = None,
     use_first_unread_anchor_val: Annotated[
         Json[bool], ApiParamConfig("use_first_unread_anchor")
     ] = False,
@@ -224,8 +224,8 @@ def get_messages_backend(
         # rendered message dict before returning it.  We attempt to
         # bulk-fetch rendered message dicts from remote cache using the
         # 'messages' list.
-        message_ids: List[int] = []
-        user_message_flags: Dict[int, List[str]] = {}
+        message_ids: list[int] = []
+        user_message_flags: dict[int, list[str]] = {}
         if is_web_public_query:
             # For spectators, we treat all historical messages as read.
             for row in rows:
@@ -252,7 +252,7 @@ def get_messages_backend(
                 user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
                 message_ids.append(message_id)
 
-        search_fields: Dict[int, Dict[str, str]] = {}
+        search_fields: dict[int, dict[str, str]] = {}
         if is_search:
             for row in rows:
                 message_id = row[0]
@@ -290,8 +290,8 @@ def messages_in_narrow_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    msg_ids: Json[List[int]],
-    narrow: Json[List[NarrowParameter]],
+    msg_ids: Json[list[int]],
+    narrow: Json[list[NarrowParameter]],
 ) -> HttpResponse:
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]

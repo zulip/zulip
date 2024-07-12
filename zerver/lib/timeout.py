@@ -4,7 +4,7 @@ import sys
 import threading
 import time
 from types import TracebackType
-from typing import Callable, Optional, Tuple, Type, TypeVar
+from typing import Callable, Optional, TypeVar
 
 from typing_extensions import override
 
@@ -42,8 +42,8 @@ def unsafe_timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
         def __init__(self) -> None:
             threading.Thread.__init__(self)
             self.result: Optional[ResultT] = None
-            self.exc_info: Tuple[
-                Optional[Type[BaseException]],
+            self.exc_info: tuple[
+                Optional[type[BaseException]],
                 Optional[BaseException],
                 Optional[TracebackType],
             ] = (None, None, None)

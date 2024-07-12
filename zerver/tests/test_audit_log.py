@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, Union
+from typing import Any, Union
 
 from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now as timezone_now
@@ -92,7 +92,7 @@ from zerver.models.streams import get_stream
 
 
 class TestRealmAuditLog(ZulipTestCase):
-    def check_role_count_schema(self, role_counts: Dict[str, Any]) -> None:
+    def check_role_count_schema(self, role_counts: dict[str, Any]) -> None:
         for key in [
             UserProfile.ROLE_REALM_ADMINISTRATOR,
             UserProfile.ROLE_MEMBER,

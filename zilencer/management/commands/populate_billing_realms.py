@@ -2,7 +2,7 @@ import contextlib
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import stripe
 from django.conf import settings
@@ -413,7 +413,7 @@ def populate_realm(customer_profile: CustomerProfile) -> Optional[Realm]:
     return realm
 
 
-def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
+def populate_remote_server(customer_profile: CustomerProfile) -> dict[str, str]:
     unique_id = customer_profile.unique_id
 
     if (
@@ -520,7 +520,7 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
     }
 
 
-def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
+def populate_remote_realms(customer_profile: CustomerProfile) -> dict[str, str]:
     # Delete existing remote realm.
     RemoteRealm.objects.filter(name=customer_profile.unique_id).delete()
     flush_cache(None)

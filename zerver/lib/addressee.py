@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Sequence, Union, cast
+from typing import Iterable, Optional, Sequence, Union, cast
 
 from django.utils.translation import gettext as _
 
@@ -11,8 +11,8 @@ from zerver.models.users import (
 )
 
 
-def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
-    user_profiles: List[UserProfile] = []
+def get_user_profiles(emails: Iterable[str], realm: Realm) -> list[UserProfile]:
+    user_profiles: list[UserProfile] = []
     for email in emails:
         try:
             user_profile = get_user_including_cross_realm(email, realm)
@@ -22,8 +22,8 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     return user_profiles
 
 
-def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[UserProfile]:
-    user_profiles: List[UserProfile] = []
+def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> list[UserProfile]:
+    user_profiles: list[UserProfile] = []
     for user_id in user_ids:
         try:
             user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)

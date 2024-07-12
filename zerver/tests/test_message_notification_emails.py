@@ -1,7 +1,7 @@
 import random
 import re
 from email.headerregistry import Address
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Optional, Sequence, Union
 from unittest import mock
 from unittest.mock import patch
 
@@ -93,13 +93,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
         s = s.strip()
         return re.sub(r"\s+", " ", s)
 
-    def _get_tokens(self) -> List[str]:
+    def _get_tokens(self) -> list[str]:
         return ["mm" + str(random.getrandbits(32)) for _ in range(30)]
 
     def _test_cases(
         self,
         msg_id: int,
-        verify_body_include: List[str],
+        verify_body_include: list[str],
         email_subject: str,
         verify_html_body: bool = False,
         show_message_content: bool = True,
@@ -186,7 +186,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 "You are receiving this because you were personally mentioned.",
             ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -246,7 +246,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                     "You are receiving this because you have email notifications enabled for #Denmark.",
                 ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -286,7 +286,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 "You are receiving this because you have wildcard mention notifications enabled for topics you follow.",
             ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -345,7 +345,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                     "You are receiving this because you have email notifications enabled for #Denmark.",
                 ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -385,7 +385,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 "You are receiving this because everyone was mentioned in #Denmark.",
             ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -493,7 +493,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         if show_message_content:
             verify_body_include = ["> Extremely personal message!"]
             email_subject = "DMs with Othello, the Moor of Venice"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             if message_content_disabled_by_realm:
                 verify_body_include = [
@@ -562,7 +562,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 "Othello, the Moor of Venice: > Group personal message! -- Reply"
             ]
             email_subject = "Group DMs with Iago and Othello, the Moor of Venice"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
@@ -1318,7 +1318,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         othello = self.example_user("othello")
         iago = self.example_user("iago")
 
-        message_ids: Dict[int, MissedMessageData] = {}
+        message_ids: dict[int, MissedMessageData] = {}
         for i in range(1, 4):
             msg_id = self.send_stream_message(othello, "Denmark", content=str(i))
             message_ids[msg_id] = MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL)

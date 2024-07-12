@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from unittest import mock, skipUnless
 from unittest.mock import MagicMock, call, patch
 from urllib.parse import quote, quote_plus
@@ -89,12 +89,12 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(get_user_profile_by_email(email), user_profile)
 
     def get_users_sorted(
-        self, options: Dict[str, Any], realm: Optional[Realm], **kwargs: Any
-    ) -> List[UserProfile]:
+        self, options: dict[str, Any], realm: Optional[Realm], **kwargs: Any
+    ) -> list[UserProfile]:
         user_profiles = self.command.get_users(options, realm, **kwargs)
         return sorted(user_profiles, key=lambda x: x.email)
 
-    def sorted_users(self, users: List[UserProfile]) -> List[UserProfile]:
+    def sorted_users(self, users: list[UserProfile]) -> list[UserProfile]:
         return sorted(users, key=lambda x: x.email)
 
     def test_get_users(self) -> None:

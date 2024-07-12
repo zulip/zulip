@@ -1,5 +1,5 @@
 # Webhooks for external integrations.
-from typing import Optional, Tuple
+from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -40,7 +40,7 @@ def canary_kind(message: WildValue) -> str:
         return "canary"
 
 
-def source_ip_and_reverse_dns(message: WildValue) -> Tuple[Optional[str], Optional[str]]:
+def source_ip_and_reverse_dns(message: WildValue) -> tuple[Optional[str], Optional[str]]:
     """
     Extract the source IP and reverse DNS information from a canary request.
     """

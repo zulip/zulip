@@ -1,6 +1,6 @@
 import logging
 from contextlib import suppress
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, Iterable, Optional, Union
 from urllib.parse import urlencode, urljoin
 
 import orjson
@@ -159,7 +159,7 @@ def get_prereg_key_and_redirect(
 
 def check_prereg_key(
     request: HttpRequest, confirmation_key: str
-) -> Tuple[Union[PreregistrationUser, PreregistrationRealm], bool]:
+) -> tuple[Union[PreregistrationUser, PreregistrationRealm], bool]:
     """
     Checks if the Confirmation key is valid, returning the PreregistrationUser or
     PreregistrationRealm object in case of success and raising an appropriate
@@ -536,7 +536,7 @@ def registration_helper(
             existing_user_profile = None
 
         user_profile: Optional[UserProfile] = None
-        return_data: Dict[str, bool] = {}
+        return_data: dict[str, bool] = {}
         if ldap_auth_enabled(realm):
             # If the user was authenticated using an external SSO
             # mechanism like Google or GitHub auth, then authentication
@@ -1118,7 +1118,7 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
 def find_account(request: HttpRequest) -> HttpResponse:
     url = reverse("find_account")
     form = FindMyTeamForm()
-    emails: List[str] = []
+    emails: list[str] = []
     if request.method == "POST":
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
@@ -1152,8 +1152,8 @@ def find_account(request: HttpRequest) -> HttpResponse:
             # one outgoing email per provided email address, with each
             # email listing all of the accounts that email address has
             # with the current Zulip server.
-            emails_account_found: Set[str] = set()
-            context: Dict[str, Dict[str, Any]] = {}
+            emails_account_found: set[str] = set()
+            context: dict[str, dict[str, Any]] = {}
             for user in user_profiles:
                 key = user.delivery_email.lower()
                 context.setdefault(key, {})
@@ -1192,7 +1192,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 )
 
             emails_lower_with_account = {email.lower() for email in emails_account_found}
-            emails_without_account: Set[str] = {
+            emails_without_account: set[str] = {
                 email for email in emails if email.lower() not in emails_lower_with_account
             }
             if emails_without_account:

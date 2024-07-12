@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Iterable, Optional, Union
 
 import orjson
 from django.db import transaction
@@ -146,7 +146,7 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: Iterable[int]) 
 
 
 def notify_user_update_custom_profile_data(
-    user_profile: UserProfile, field: Dict[str, Union[int, str, List[int], None]]
+    user_profile: UserProfile, field: dict[str, Union[int, str, list[int], None]]
 ) -> None:
     data = dict(id=field["id"], value=field["value"])
 
@@ -159,7 +159,7 @@ def notify_user_update_custom_profile_data(
 
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
-    data: List[ProfileDataElementUpdateDict],
+    data: list[ProfileDataElementUpdateDict],
 ) -> None:
     with transaction.atomic():
         for custom_profile_field in data:

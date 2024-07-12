@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import orjson
 from django.conf import settings
@@ -51,7 +51,7 @@ approach shown above.
             parser, help="Specify which realm/subdomain to connect to; default is zulip"
         )
 
-    def parse_headers(self, custom_headers: Union[None, str]) -> Union[None, Dict[str, str]]:
+    def parse_headers(self, custom_headers: Union[None, str]) -> Union[None, dict[str, str]]:
         if not custom_headers:
             return {}
         try:

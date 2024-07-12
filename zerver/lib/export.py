@@ -15,7 +15,7 @@ import tempfile
 from contextlib import suppress
 from datetime import datetime
 from functools import cache
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypedDict
+from typing import Any, Callable, Iterable, Mapping, Optional, TypedDict
 
 import orjson
 from django.apps import apps
@@ -76,22 +76,22 @@ from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 # Custom mypy types follow:
-Record: TypeAlias = Dict[str, Any]
+Record: TypeAlias = dict[str, Any]
 TableName = str
-TableData: TypeAlias = Dict[TableName, List[Record]]
+TableData: TypeAlias = dict[TableName, list[Record]]
 Field = str
 Path = str
-Context: TypeAlias = Dict[str, Any]
-FilterArgs: TypeAlias = Dict[str, Any]
-IdSource: TypeAlias = Tuple[TableName, Field]
+Context: TypeAlias = dict[str, Any]
+FilterArgs: TypeAlias = dict[str, Any]
+IdSource: TypeAlias = tuple[TableName, Field]
 SourceFilter: TypeAlias = Callable[[Record], bool]
 
 CustomFetch: TypeAlias = Callable[[TableData, Context], None]
 
 
 class MessagePartial(TypedDict):
-    zerver_message: List[Record]
-    zerver_userprofile_ids: List[int]
+    zerver_message: list[Record]
+    zerver_userprofile_ids: list[int]
     realm_id: int
 
 
@@ -286,7 +286,7 @@ ANALYTICS_TABLES = {
 #
 # TODO: This data structure could likely eventually be replaced by
 # inspecting the corresponding Django models
-DATE_FIELDS: Dict[TableName, List[Field]] = {
+DATE_FIELDS: dict[TableName, list[Field]] = {
     "analytics_installationcount": ["end_time"],
     "analytics_realmcount": ["end_time"],
     "analytics_streamcount": ["end_time"],
@@ -378,7 +378,7 @@ def write_data_to_file(output_file: Path, data: Any) -> None:
     logging.info("Finished writing %s", output_file)
 
 
-def write_table_data(output_file: str, data: Dict[str, Any]) -> None:
+def write_table_data(output_file: str, data: dict[str, Any]) -> None:
     # We sort by ids mostly so that humans can quickly do diffs
     # on two export jobs to see what changed (either due to new
     # data arriving or new code being deployed).
@@ -390,7 +390,7 @@ def write_table_data(output_file: str, data: Dict[str, Any]) -> None:
     write_data_to_file(output_file, data)
 
 
-def write_records_json_file(output_dir: str, records: List[Dict[str, Any]]) -> None:
+def write_records_json_file(output_dir: str, records: list[dict[str, Any]]) -> None:
     # We want a somewhat deterministic sorting order here. All of our
     # versions of records.json include a "path" field in each element,
     # even though there's some variation among avatars/emoji/realm_icons/uploads
@@ -409,7 +409,7 @@ def write_records_json_file(output_dir: str, records: List[Dict[str, Any]]) -> N
     logging.info("Finished writing %s", output_file)
 
 
-def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
+def make_raw(query: Any, exclude: Optional[list[Field]] = None) -> list[Record]:
     """
     Takes a Django query and returns a JSONable list
     of dictionaries corresponding to the database rows.
@@ -469,14 +469,14 @@ class Config:
         virtual_parent: Optional["Config"] = None,
         filter_args: Optional[FilterArgs] = None,
         custom_fetch: Optional[CustomFetch] = None,
-        custom_tables: Optional[List[TableName]] = None,
-        concat_and_destroy: Optional[List[TableName]] = None,
+        custom_tables: Optional[list[TableName]] = None,
+        concat_and_destroy: Optional[list[TableName]] = None,
         id_source: Optional[IdSource] = None,
         source_filter: Optional[SourceFilter] = None,
         include_rows: Optional[Field] = None,
         use_all: bool = False,
         is_seeded: bool = False,
-        exclude: Optional[List[Field]] = None,
+        exclude: Optional[list[Field]] = None,
     ) -> None:
         assert table or custom_tables
         self.table = table
@@ -493,7 +493,7 @@ class Config:
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
         self.source_filter = source_filter
-        self.children: List[Config] = []
+        self.children: list[Config] = []
 
         if self.include_rows:
             assert self.include_rows.endswith("_id__in")
@@ -596,7 +596,7 @@ def export_from_config(
         # When we concat_and_destroy, we are working with
         # temporary "tables" that are lists of records that
         # should already be ready to export.
-        data: List[Record] = []
+        data: list[Record] = []
         for t in config.concat_and_destroy:
             data += response[t]
             del response[t]
@@ -619,7 +619,7 @@ def export_from_config(
         assert parent.table is not None
         assert config.include_rows is not None
         parent_ids = [r["id"] for r in response[parent.table]]
-        filter_params: Dict[str, Any] = {config.include_rows: parent_ids}
+        filter_params: dict[str, Any] = {config.include_rows: parent_ids}
         if config.filter_args is not None:
             filter_params.update(config.filter_args)
         assert model is not None
@@ -1016,8 +1016,8 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     exclude = EXCLUDED_USER_PROFILE_FIELDS
     rows = make_raw(list(query), exclude=exclude)
 
-    normal_rows: List[Record] = []
-    dummy_rows: List[Record] = []
+    normal_rows: list[Record] = []
+    dummy_rows: list[Record] = []
 
     for row in rows:
         if exportable_user_ids is not None:
@@ -1072,8 +1072,8 @@ def custom_fetch_user_profile_cross_realm(response: TableData, context: Context)
 
 
 def fetch_attachment_data(
-    response: TableData, realm_id: int, message_ids: Set[int], scheduled_message_ids: Set[int]
-) -> List[Attachment]:
+    response: TableData, realm_id: int, message_ids: set[int], scheduled_message_ids: set[int]
+) -> list[Attachment]:
     attachments = list(
         Attachment.objects.filter(
             Q(messages__in=message_ids) | Q(scheduled_messages__in=scheduled_message_ids),
@@ -1114,7 +1114,7 @@ def custom_fetch_realm_audit_logs_for_user(response: TableData, context: Context
     response["zerver_realmauditlog"] = rows
 
 
-def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
+def fetch_reaction_data(response: TableData, message_ids: set[int]) -> None:
     query = Reaction.objects.filter(message_id__in=list(message_ids))
     response["zerver_reaction"] = make_raw(list(query))
 
@@ -1199,11 +1199,11 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
 
 def fetch_usermessages(
     realm: Realm,
-    message_ids: Set[int],
-    user_profile_ids: Set[int],
+    message_ids: set[int],
+    user_profile_ids: set[int],
     message_filename: Path,
     consent_message_id: Optional[int] = None,
-) -> List[Record]:
+) -> list[Record]:
     # UserMessage export security rule: You can export UserMessages
     # for the messages you exported for the users in your realm.
     user_message_query = UserMessage.objects.filter(
@@ -1261,11 +1261,11 @@ def export_partial_message_files(
     output_dir: Optional[Path] = None,
     public_only: bool = False,
     consent_message_id: Optional[int] = None,
-) -> Set[int]:
+) -> set[int]:
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
-    def get_ids(records: Iterable[Mapping[str, Any]]) -> Set[int]:
+    def get_ids(records: Iterable[Mapping[str, Any]]) -> set[int]:
         return {x["id"] for x in records}
 
     # Basic security rule: You can export everything either...
@@ -1292,7 +1292,7 @@ def export_partial_message_files(
         + response["zerver_userprofile_crossrealm"]
     )
 
-    consented_user_ids: Set[int] = set()
+    consented_user_ids: set[int] = set()
     if consent_message_id is not None:
         consented_user_ids = get_consented_user_ids(consent_message_id)
 
@@ -1397,7 +1397,7 @@ def export_partial_message_files(
 
         message_queries.append(messages_we_sent_to_them)
 
-    all_message_ids: Set[int] = set()
+    all_message_ids: set[int] = set()
 
     for message_query in message_queries:
         message_ids = set(get_id_list_gently_from_database(base_query=message_query, id_field="id"))
@@ -1424,9 +1424,9 @@ def export_partial_message_files(
 def write_message_partials(
     *,
     realm: Realm,
-    message_id_chunks: List[List[int]],
+    message_id_chunks: list[list[int]],
     output_dir: Path,
-    user_profile_ids: Set[int],
+    user_profile_ids: set[int],
 ) -> None:
     dump_file_id = 1
 
@@ -1462,7 +1462,7 @@ def write_message_partials(
 def export_uploads_and_avatars(
     realm: Realm,
     *,
-    attachments: Optional[List[Attachment]] = None,
+    attachments: Optional[list[Attachment]] = None,
     user: Optional[UserProfile],
     output_dir: Path,
 ) -> None:
@@ -1589,9 +1589,9 @@ def export_uploads_and_avatars(
 
 def _get_exported_s3_record(
     bucket_name: str, key: Object, processing_emoji: bool
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     # Helper function for export_files_from_s3
-    record: Dict[str, Any] = dict(
+    record: dict[str, Any] = dict(
         s3_path=key.key,
         bucket=bucket_name,
         size=key.content_length,
@@ -1666,8 +1666,8 @@ def export_files_from_s3(
     bucket_name: str,
     object_prefix: str,
     output_dir: Path,
-    user_ids: Set[int],
-    valid_hashes: Optional[Set[str]],
+    user_ids: set[int],
+    valid_hashes: Optional[set[str]],
 ) -> None:
     processing_uploads = flavor == "upload"
     processing_emoji = flavor == "emoji"
@@ -1732,7 +1732,7 @@ def export_files_from_s3(
 
 
 def export_uploads_from_local(
-    realm: Realm, local_dir: Path, output_dir: Path, attachments: List[Attachment]
+    realm: Realm, local_dir: Path, output_dir: Path, attachments: list[Attachment]
 ) -> None:
     records = []
     for count, attachment in enumerate(attachments, 1):
@@ -1769,7 +1769,7 @@ def export_avatars_from_local(
     realm: Realm,
     local_dir: Path,
     output_dir: Path,
-    users: List[UserProfile],
+    users: list[UserProfile],
     handle_system_bots: bool,
 ) -> None:
     count = 0
@@ -1846,7 +1846,7 @@ def get_emoji_path(realm_emoji: RealmEmoji) -> str:
 
 
 def export_emoji_from_local(
-    realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: List[RealmEmoji]
+    realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: list[RealmEmoji]
 ) -> None:
     records = []
     for count, realm_emoji in enumerate(realm_emojis, 1):
@@ -1915,7 +1915,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
 
 def get_exportable_scheduled_message_ids(
     realm: Realm, public_only: bool = False, consent_message_id: Optional[int] = None
-) -> Set[int]:
+) -> set[int]:
     """
     Scheduled messages are private to the sender, so which ones we export depends on the
     public/consent/full export mode.
@@ -1939,7 +1939,7 @@ def do_export_realm(
     realm: Realm,
     output_dir: Path,
     threads: int,
-    exportable_user_ids: Optional[Set[int]] = None,
+    exportable_user_ids: Optional[set[int]] = None,
     public_only: bool = False,
     consent_message_id: Optional[int] = None,
     export_as_active: Optional[bool] = None,
@@ -2040,8 +2040,8 @@ def do_export_realm(
 
 
 def export_attachment_table(
-    realm: Realm, output_dir: Path, message_ids: Set[int], scheduled_message_ids: Set[int]
-) -> List[Attachment]:
+    realm: Realm, output_dir: Path, message_ids: set[int], scheduled_message_ids: set[int]
+) -> list[Attachment]:
     response: TableData = {}
     attachments = fetch_attachment_data(
         response=response,
@@ -2107,7 +2107,7 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     export_file = os.path.join(output_dir, "user.json")
     write_table_data(output_file=export_file, data=response)
 
-    reaction_message_ids: Set[int] = {row["message"] for row in response["zerver_reaction"]}
+    reaction_message_ids: set[int] = {row["message"] for row in response["zerver_reaction"]}
 
     logging.info("Exporting messages")
     export_messages_single_user(
@@ -2203,7 +2203,7 @@ def get_single_user_config() -> Config:
     return user_profile_config
 
 
-def get_id_list_gently_from_database(*, base_query: Any, id_field: str) -> List[int]:
+def get_id_list_gently_from_database(*, base_query: Any, id_field: str) -> list[int]:
     """
     Use this function if you need a HUGE number of ids from
     the database, and you don't mind a few extra trips.  Particularly
@@ -2240,7 +2240,7 @@ def get_id_list_gently_from_database(*, base_query: Any, id_field: str) -> List[
     return all_ids
 
 
-def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
+def chunkify(lst: list[int], chunk_size: int) -> list[list[int]]:
     # chunkify([1,2,3,4,5], 2) == [[1,2], [3,4], [5]]
     result = []
     i = 0
@@ -2256,7 +2256,7 @@ def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
 
 
 def export_messages_single_user(
-    user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: Set[int]
+    user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: set[int]
 ) -> None:
     @cache
     def get_recipient(recipient_id: int) -> str:
@@ -2294,7 +2294,7 @@ def export_messages_single_user(
     )
 
     # Find all message ids that pertain to us.
-    all_message_ids: Set[int] = set()
+    all_message_ids: set[int] = set()
 
     for query in [messages_from_me, messages_to_me]:
         all_message_ids |= set(get_id_list_gently_from_database(base_query=query, id_field="id"))
@@ -2385,7 +2385,7 @@ def get_analytics_config() -> Config:
     return analytics_config
 
 
-def get_consented_user_ids(consent_message_id: int) -> Set[int]:
+def get_consented_user_ids(consent_message_id: int) -> set[int]:
     return set(
         Reaction.objects.filter(
             message_id=consent_message_id,
@@ -2433,7 +2433,7 @@ def export_realm_wrapper(
     return public_url
 
 
-def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
+def get_realm_exports_serialized(user: UserProfile) -> list[dict[str, Any]]:
     # Exclude exports made via shell. 'acting_user=None', since they
     # aren't supported in the current API format.
     #

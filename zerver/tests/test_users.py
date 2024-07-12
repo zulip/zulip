@@ -1,6 +1,6 @@
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
+from typing import Any, Iterable, Optional, TypeVar, Union
 from unittest import mock
 
 import orjson
@@ -91,7 +91,7 @@ K = TypeVar("K")
 V = TypeVar("V")
 
 
-def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
+def find_dict(lst: Iterable[dict[K, V]], k: K, v: V) -> dict[K, V]:
     for dct in lst:
         if dct[k] == v:
             return dct
@@ -797,7 +797,7 @@ class PermissionTest(ZulipTestCase):
         empty_profile_data = []
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            value: Union[str, None, List[Any]] = ""
+            value: Union[str, None, list[Any]] = ""
             if field.field_type == CustomProfileField.USER:
                 value = []
             empty_profile_data.append(
@@ -1226,7 +1226,7 @@ class UserProfileTest(ZulipTestCase):
     def test_get_accounts_for_email(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        def check_account_present_in_accounts(user: UserProfile, accounts: List[Account]) -> None:
+        def check_account_present_in_accounts(user: UserProfile, accounts: list[Account]) -> None:
             for account in accounts:
                 realm = user.realm
                 if (
@@ -1419,7 +1419,7 @@ class UserProfileTest(ZulipTestCase):
             get_user_by_id_in_realm_including_cross_realm(hamlet.id, None)
 
     def test_cross_realm_dicts(self) -> None:
-        def user_row(email: str) -> Dict[str, object]:
+        def user_row(email: str) -> dict[str, object]:
             user = UserProfile.objects.get(email=email)
             avatar_url = get_avatar_field(
                 user_id=user.id,

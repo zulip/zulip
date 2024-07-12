@@ -3,7 +3,7 @@ import os
 import sys
 import time
 from copy import deepcopy
-from typing import Any, Dict, Final, List, Literal, Tuple, Union
+from typing import Any, Final, Literal, Union
 from urllib.parse import urljoin
 
 from scripts.lib.zulip_tools import get_tornado_ports
@@ -261,7 +261,7 @@ SILENCED_SYSTEM_CHECKS = [
 # We implement these options with a default DATABASES configuration
 # supporting peer authentication, with logic to override it as
 # appropriate if DEVELOPMENT or REMOTE_POSTGRES_HOST is set.
-DATABASES: Dict[str, Dict[str, Any]] = {
+DATABASES: dict[str, dict[str, Any]] = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": get_config("postgresql", "database_name", "zulip"),
@@ -332,7 +332,7 @@ SESSION_ENGINE = "zerver.lib.safe_session_cached_db"
 
 MEMCACHED_PASSWORD = get_secret("memcached_password")
 
-CACHES: Dict[str, Dict[str, object]] = {
+CACHES: dict[str, dict[str, object]] = {
     "default": {
         "BACKEND": "zerver.lib.singleton_bmemcached.SingletonBMemcached",
         "LOCATION": MEMCACHED_LOCATION,
@@ -484,7 +484,7 @@ INTERNAL_BOTS = [
 ]
 
 # Bots that are created for each realm like the reminder-bot goes here.
-REALM_INTERNAL_BOTS: List[Dict[str, str]] = []
+REALM_INTERNAL_BOTS: list[dict[str, str]] = []
 # These are realm-internal bots that may exist in some organizations,
 # so configure power the setting, but should not be auto-created at this time.
 DISABLED_REALM_INTERNAL_BOTS = [
@@ -576,7 +576,7 @@ else:
 ########################################################################
 
 # List of callables that know how to import templates from various sources.
-LOADERS: List[Union[str, Tuple[object, ...]]] = [
+LOADERS: list[Union[str, tuple[object, ...]]] = [
     "django.template.loaders.filesystem.Loader",
     "django.template.loaders.app_directories.Loader",
 ]
@@ -584,7 +584,7 @@ if PRODUCTION:
     # Template caching is a significant performance win in production.
     LOADERS = [("django.template.loaders.cached.Loader", LOADERS)]
 
-base_template_engine_settings: Dict[str, Any] = {
+base_template_engine_settings: dict[str, Any] = {
     "BACKEND": "django.template.backends.jinja2.Jinja2",
     "OPTIONS": {
         "environment": "zproject.jinja2.environment",
@@ -730,7 +730,7 @@ def file_handler(
     filename: str,
     level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG",
     formatter: str = "default",
-) -> Dict[str, str]:
+) -> dict[str, str]:
     return {
         "filename": filename,
         "level": level,
@@ -739,7 +739,7 @@ def file_handler(
     }
 
 
-LOGGING: Dict[str, Any] = {
+LOGGING: dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {

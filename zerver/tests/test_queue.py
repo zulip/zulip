@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -37,7 +37,7 @@ class TestQueueImplementation(ZulipTestCase):
 
         queue_client = get_queue_client()
 
-        def collect(events: List[Dict[str, Any]]) -> None:
+        def collect(events: list[dict[str, Any]]) -> None:
             assert isinstance(queue_client, SimpleQueueClient)
             assert len(events) == 1
             output.append(events[0])
@@ -57,7 +57,7 @@ class TestQueueImplementation(ZulipTestCase):
 
         queue_client = get_queue_client()
 
-        def collect(events: List[Dict[str, Any]]) -> None:
+        def collect(events: list[dict[str, Any]]) -> None:
             assert isinstance(queue_client, SimpleQueueClient)
             assert len(events) == 1
             queue_client.stop_consuming()

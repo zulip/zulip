@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence, Union
+from typing import Optional, Sequence, Union
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -49,7 +49,7 @@ def events_register_backend(
     slim_presence: bool = REQ(default=False, json_validator=check_bool),
     all_public_streams: Optional[bool] = REQ(default=None, json_validator=check_bool),
     include_subscribers: bool = REQ(default=False, json_validator=check_bool),
-    client_capabilities: Optional[Dict[str, bool]] = REQ(
+    client_capabilities: Optional[dict[str, bool]] = REQ(
         json_validator=check_dict(
             [
                 # This field was accidentally made required when it was added in v2.0.0-781;

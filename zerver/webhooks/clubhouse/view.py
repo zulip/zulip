@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Iterable, Iterator, List, Optional
+from typing import Callable, Iterable, Iterator, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -456,7 +456,7 @@ def get_story_update_attachment_body(payload: WildValue, action: WildValue) -> O
     return FILE_ATTACHMENT_TEMPLATE.format(**kwargs)
 
 
-def get_story_joined_label_list(payload: WildValue, label_ids_added: List[int]) -> str:
+def get_story_joined_label_list(payload: WildValue, label_ids_added: list[int]) -> str:
     labels = []
 
     for label_id in label_ids_added:
@@ -701,7 +701,7 @@ def send_channel_messages_for_actions(
         check_send_webhook_message(request, user_profile, topic_name, body, event)
 
 
-EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
+EVENT_BODY_FUNCTION_MAPPER: dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
     "story_update_archived": partial(get_update_archived_body, "story"),
     "epic_update_archived": partial(get_update_archived_body, "epic"),
     "story_create": get_story_create_body,
@@ -734,7 +734,7 @@ EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[
 
 ALL_EVENT_TYPES = list(EVENT_BODY_FUNCTION_MAPPER.keys())
 
-EVENT_TOPIC_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
+EVENT_TOPIC_FUNCTION_MAPPER: dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
     "story": partial(get_entity_name, "story"),
     "pull-request": partial(get_entity_name, "story"),
     "branch": partial(get_entity_name, "story"),
@@ -748,7 +748,7 @@ IGNORED_EVENTS = {
     "story-comment_update",
 }
 
-EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Iterator[WildValue]]] = {
+EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: dict[str, Callable[[WildValue], Iterator[WildValue]]] = {
     "pull-request_create": partial(get_secondary_actions_with_param, "story", "pull_request_ids"),
     "branch_create": partial(get_secondary_actions_with_param, "story", "branch_ids"),
     "pull-request_comment": partial(get_secondary_actions_with_param, "story", "pull_request_ids"),

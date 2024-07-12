@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, TypeVar, Union
+from typing import Any, Callable, Iterable, Mapping, Sequence, TypeVar, Union
 
 from psycopg2.extensions import connection, cursor
 from psycopg2.sql import Composable
@@ -49,5 +49,5 @@ class TimeTrackingConnection(connection):
     """A psycopg2 connection class that uses TimeTrackingCursors."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self.queries: List[Dict[str, str]] = []
+        self.queries: list[dict[str, str]] = []
         super().__init__(*args, **kwargs)

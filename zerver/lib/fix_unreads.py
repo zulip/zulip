@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Callable, List, TypeVar
+from typing import Callable, TypeVar
 
 from django.db import connection
 from django.db.backends.utils import CursorWrapper
@@ -21,7 +21,7 @@ logger = logging.getLogger("zulip.fix_unreads")
 logger.setLevel(logging.WARNING)
 
 
-def update_unread_flags(cursor: CursorWrapper, user_message_ids: List[int]) -> None:
+def update_unread_flags(cursor: CursorWrapper, user_message_ids: list[int]) -> None:
     query = SQL(
         """
         UPDATE zerver_usermessage
@@ -43,7 +43,7 @@ def get_timing(message: str, f: Callable[[], T]) -> T:
 
 
 def fix_unsubscribed(cursor: CursorWrapper, user_profile: UserProfile) -> None:
-    def find_recipients() -> List[int]:
+    def find_recipients() -> list[int]:
         query = SQL(
             """
             SELECT
@@ -74,7 +74,7 @@ def fix_unsubscribed(cursor: CursorWrapper, user_profile: UserProfile) -> None:
     if not recipient_ids:
         return
 
-    def find() -> List[int]:
+    def find() -> list[int]:
         query = SQL(
             """
             SELECT

@@ -5,7 +5,7 @@ import subprocess
 from email import message_from_string
 from email.headerregistry import Address
 from email.message import EmailMessage, MIMEPart
-from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional
 from unittest import mock
 
 import orjson
@@ -52,7 +52,7 @@ logger_name = "zerver.lib.email_mirror"
 class TestEncodeDecode(ZulipTestCase):
     def _assert_options(
         self,
-        options: Dict[str, bool],
+        options: dict[str, bool],
         show_sender: bool = False,
         include_footer: bool = False,
         include_quotes: bool = False,

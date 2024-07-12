@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import List, Optional, Sequence, Tuple
+from typing import Optional, Sequence
 
 from django.conf import settings
 from django.db import transaction
@@ -33,7 +33,7 @@ def check_schedule_message(
     sender: UserProfile,
     client: Client,
     recipient_type_name: str,
-    message_to: List[int],
+    message_to: list[int],
     topic_name: Optional[str],
     message_content: str,
     deliver_at: datetime,
@@ -69,8 +69,8 @@ def do_schedule_messages(
     sender: UserProfile,
     *,
     read_by_sender: bool = False,
-) -> List[int]:
-    scheduled_messages: List[Tuple[ScheduledMessage, SendMessageRequest]] = []
+) -> list[int]:
+    scheduled_messages: list[tuple[ScheduledMessage, SendMessageRequest]] = []
 
     for send_request in send_message_requests:
         scheduled_message = ScheduledMessage()

@@ -5,7 +5,7 @@ import sys
 from contextlib import contextmanager
 from io import SEEK_SET, TextIOWrapper
 from types import TracebackType
-from typing import IO, TYPE_CHECKING, Iterable, Iterator, List, Optional, Type
+from typing import IO, TYPE_CHECKING, Iterable, Iterator, Optional
 
 from typing_extensions import override
 
@@ -95,7 +95,7 @@ class WrappedIO(IO[bytes]):
         return self.stream.readline(limit)
 
     @override
-    def readlines(self, hint: int = -1) -> List[bytes]:
+    def readlines(self, hint: int = -1) -> list[bytes]:
         return self.stream.readlines(hint)
 
     @override
@@ -147,7 +147,7 @@ class WrappedIO(IO[bytes]):
     @override
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:

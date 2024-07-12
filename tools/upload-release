@@ -5,7 +5,7 @@ import os
 import re
 import sys
 import tempfile
-from typing import IO, Dict, List, cast
+from typing import IO, cast
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.setup_path import setup_path
@@ -41,7 +41,7 @@ session = boto3.session.Session()
 client: S3Client = session.client("s3")
 bucket = session.resource("s3", region_name="us-east-1").Bucket("zulip-download")
 
-file_hashes: Dict[str, str] = {}
+file_hashes: dict[str, str] = {}
 with open(args.filename, "rb") as new_file:
     print(f"Hashing {new_basename}..")
     file_hashes[new_basename] = sha256_contents(new_file)
@@ -75,7 +75,7 @@ for obj_summary in bucket.objects.filter(Prefix="server/zulip-server-"):
 
     file_hashes[filename] = metadata["sha256sum"]
 
-ordered_filenames = cast(List[str], natsorted(file_hashes.keys(), reverse=True))
+ordered_filenames = cast(list[str], natsorted(file_hashes.keys(), reverse=True))
 assert ordered_filenames[0] == "zulip-server-latest.tar.gz"
 
 print(f"Uploading {new_basename}..")

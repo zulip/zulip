@@ -2,7 +2,7 @@ import re
 import time
 from datetime import timedelta
 from io import StringIO
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Union
 from unittest import mock
 
 import orjson
@@ -33,7 +33,7 @@ class ScheduledMessageTest(ZulipTestCase):
     def do_schedule_message(
         self,
         msg_type: str,
-        to: Union[int, List[str], List[int]],
+        to: Union[int, list[str], list[int]],
         msg: str,
         scheduled_delivery_timestamp: int,
     ) -> "TestHttpResponse":
@@ -443,7 +443,7 @@ class ScheduledMessageTest(ZulipTestCase):
             timestamp_to_datetime(scheduled_delivery_timestamp),
         )
         scheduled_message_id = scheduled_message.id
-        payload: Dict[str, Any]
+        payload: dict[str, Any]
 
         # Edit message with other stream message type ("stream") and no other changes
         # results in no changes to the scheduled message.

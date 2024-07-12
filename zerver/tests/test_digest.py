@@ -1,6 +1,5 @@
 import time
 from datetime import datetime, timedelta, timezone
-from typing import List, Set
 from unittest import mock
 
 import time_machine
@@ -285,7 +284,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         scotland = get_stream("Scotland", realm)
         denmark = get_stream("Denmark", realm)
 
-        def user_streams(user: UserProfile) -> Set[Stream]:
+        def user_streams(user: UserProfile) -> set[Stream]:
             data = get_user_stream_map([user.id], one_hour_ago)
             return {Stream.objects.get(id=stream_id) for stream_id in data[user.id]}
 
@@ -331,7 +330,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(streams[othello.id], {scotland.id, denmark.id})
         self.assertEqual(streams[cordelia.id], {verona.id, scotland.id})
 
-    def active_human_users(self, realm: Realm) -> List[UserProfile]:
+    def active_human_users(self, realm: Realm) -> list[UserProfile]:
         users = list(
             UserProfile.objects.filter(
                 realm=realm,
@@ -536,7 +535,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(stream_count, 0)
         self.assertEqual(stream_info["html"], [])
 
-    def simulate_stream_conversation(self, stream: str, senders: List[str]) -> List[int]:
+    def simulate_stream_conversation(self, stream: str, senders: list[str]) -> list[int]:
         message_ids = []  # List[int]
         for sender_name in senders:
             sender = self.example_user(sender_name)

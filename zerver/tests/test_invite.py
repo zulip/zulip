@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Optional, Sequence, Union
 from unittest.mock import patch
 from urllib.parse import quote, urlencode
 
@@ -154,7 +154,7 @@ class StreamSetupTest(ZulipTestCase):
 
 
 class InviteUserBase(ZulipTestCase):
-    def check_sent_emails(self, correct_recipients: List[str], clear: bool = False) -> None:
+    def check_sent_emails(self, correct_recipients: list[str], clear: bool = False) -> None:
         self.assert_length(mail.outbox, len(correct_recipients))
         email_recipients = [email.recipients()[0] for email in mail.outbox]
         self.assertEqual(sorted(email_recipients), sorted(correct_recipients))
@@ -2446,7 +2446,7 @@ class MultiuseInviteTest(ZulipTestCase):
 
     def generate_multiuse_invite_link(
         self,
-        streams: Optional[List[Stream]] = None,
+        streams: Optional[list[Stream]] = None,
         date_sent: Optional[datetime] = None,
         include_realm_default_subscriptions: bool = False,
     ) -> str:

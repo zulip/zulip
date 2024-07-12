@@ -14,14 +14,10 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
-    List,
     Literal,
     Mapping,
     Optional,
     Sequence,
-    Tuple,
-    Type,
     TypeVar,
     Union,
     cast,
@@ -139,7 +135,7 @@ def stripe_fixture_path(
     return f"{STRIPE_FIXTURES_DIR}/{decorated_function_name}--{mocked_function_name[7:]}.{call_count}.json"
 
 
-def fixture_files_for_function(decorated_function: CallableT) -> List[str]:  # nocoverage
+def fixture_files_for_function(decorated_function: CallableT) -> list[str]:  # nocoverage
     decorated_function_name = decorated_function.__name__
     if decorated_function_name[:5] == "test_":
         decorated_function_name = decorated_function_name[5:]
@@ -269,7 +265,7 @@ def normalize_fixture_data(
             f'"{timestamp_field}": 1{i + 1:02}%07d'
         )
 
-    normalized_values: Dict[str, Dict[str, str]] = {pattern: {} for pattern in pattern_translations}
+    normalized_values: dict[str, dict[str, str]] = {pattern: {} for pattern in pattern_translations}
     for fixture_file in fixture_files_for_function(decorated_function):
         with open(fixture_file) as f:
             file_content = f.read()
@@ -470,7 +466,7 @@ class StripeTestCase(ZulipTestCase):
             return "tok_visa_chargeDeclined"
 
     def assert_details_of_valid_session_from_event_status_endpoint(
-        self, stripe_session_id: str, expected_details: Dict[str, Any]
+        self, stripe_session_id: str, expected_details: dict[str, Any]
     ) -> None:
         json_response = self.client_billing_get(
             "/billing/event/status",
@@ -484,7 +480,7 @@ class StripeTestCase(ZulipTestCase):
     def assert_details_of_valid_invoice_payment_from_event_status_endpoint(
         self,
         stripe_invoice_id: str,
-        expected_details: Dict[str, Any],
+        expected_details: dict[str, Any],
     ) -> None:
         json_response = self.client_billing_get(
             "/billing/event/status",
@@ -626,7 +622,7 @@ class StripeTestCase(ZulipTestCase):
                 upgrade_page_response = self.client_get(upgrade_url, {}, subdomain="selfhosting")
             else:
                 upgrade_page_response = self.client_get(upgrade_url, {})
-        params: Dict[str, Any] = {
+        params: dict[str, Any] = {
             "schedule": "annual",
             "signed_seat_count": self.get_signed_seat_count_from_response(upgrade_page_response),
             "salt": self.get_salt_from_response(upgrade_page_response),
@@ -4468,7 +4464,7 @@ class StripeTest(StripeTestCase):
         for invoice in invoices:
             self.assertEqual(invoice.status, "void")
 
-    def create_invoices(self, customer: Customer, num_invoices: int) -> List[stripe.Invoice]:
+    def create_invoices(self, customer: Customer, num_invoices: int) -> list[stripe.Invoice]:
         invoices = []
         assert customer.stripe_customer_id is not None
         for _ in range(num_invoices):
@@ -4499,7 +4495,7 @@ class StripeTest(StripeTestCase):
             create_stripe_customer: bool,
             create_plan: bool,
             num_invoices: Optional[int] = None,
-        ) -> Tuple[Realm, Optional[CustomerPlan], List[stripe.Invoice]]:
+        ) -> tuple[Realm, Optional[CustomerPlan], list[stripe.Invoice]]:
             nonlocal test_realm_count
             test_realm_count += 1
             realm_string_id = "test-realm-" + str(test_realm_count)
@@ -4541,7 +4537,7 @@ class StripeTest(StripeTestCase):
             expected_invoice_count: int
             email_expected_to_be_sent: bool
 
-        rows: List[Row] = []
+        rows: list[Row] = []
 
         # no stripe customer ID (excluded from query)
         realm, _, _ = create_realm(
@@ -4970,11 +4966,11 @@ class RequiresBillingAccessTest(StripeTestCase):
         tested_endpoints = set()
 
         def check_users_cant_access(
-            users: List[UserProfile],
+            users: list[UserProfile],
             error_message: str,
             url: str,
             method: str,
-            data: Dict[str, Any],
+            data: dict[str, Any],
         ) -> None:
             tested_endpoints.add(url)
             for user in users:
@@ -6507,7 +6503,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
             # Necessary cast or mypy doesn't understand that we can use Django's
             # model .objects. style queries on this.
             audit_log_model = cast(
-                Union[Type[RemoteRealmAuditLog], Type[RemoteZulipServerAuditLog]], audit_log_class
+                Union[type[RemoteRealmAuditLog], type[RemoteZulipServerAuditLog]], audit_log_class
             )
             assert isinstance(remote_user, (RemoteRealmBillingUser, RemoteServerBillingUser))
             # No acting user:

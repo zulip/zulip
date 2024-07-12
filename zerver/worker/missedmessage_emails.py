@@ -3,7 +3,7 @@ import logging
 import threading
 from collections import defaultdict
 from datetime import timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import sentry_sdk
 from django.db import transaction
@@ -44,7 +44,7 @@ class MissedMessageWorker(QueueProcessingWorker):
     # database rows from them.
     @override
     @sentry_sdk.trace
-    def consume(self, event: Dict[str, Any]) -> None:
+    def consume(self, event: dict[str, Any]) -> None:
         logging.debug("Processing missedmessage_emails event: %s", event)
         # When we consume an event, check if there are existing pending emails
         # for that user, and if so use the same scheduled timestamp.
@@ -222,7 +222,7 @@ class MissedMessageWorker(QueueProcessingWorker):
             ).select_for_update()
 
             # Batch the entries by user
-            events_by_recipient: Dict[int, Dict[int, MissedMessageData]] = defaultdict(dict)
+            events_by_recipient: dict[int, dict[int, MissedMessageData]] = defaultdict(dict)
             for event in events_to_process:
                 events_by_recipient[event.user_profile_id][event.message_id] = MissedMessageData(
                     trigger=event.trigger, mentioned_user_group_id=event.mentioned_user_group_id

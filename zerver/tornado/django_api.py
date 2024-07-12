@@ -1,6 +1,6 @@
 from collections import defaultdict
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Iterable, Mapping, Optional, Sequence, Union
 from urllib.parse import urlsplit
 
 import orjson
@@ -37,9 +37,9 @@ class TornadoAdapter(HTTPAdapter):
         self,
         request: PreparedRequest,
         stream: bool = False,
-        timeout: Union[None, float, Tuple[float, float], Tuple[float, None]] = 0.5,
+        timeout: Union[None, float, tuple[float, float], tuple[float, None]] = 0.5,
         verify: Union[bool, str] = True,
-        cert: Union[None, bytes, str, Tuple[Union[bytes, str], Union[bytes, str]]] = None,
+        cert: Union[None, bytes, str, tuple[Union[bytes, str], Union[bytes, str]]] = None,
         proxies: Optional[Mapping[str, str]] = None,
     ) -> Response:
         # Don't talk to Tornado through proxies, which only allow
@@ -123,12 +123,12 @@ def request_event_queue(
 
 def get_user_events(
     user_profile: UserProfile, queue_id: str, last_event_id: int
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     if not settings.USING_TORNADO:
         return []
 
     tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
-    post_data: Dict[str, Any] = {
+    post_data: dict[str, Any] = {
         "queue_id": queue_id,
         "last_event_id": last_event_id,
         "dont_block": "true",

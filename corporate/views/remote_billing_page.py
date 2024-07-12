@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Literal, Optional, Union, cast
+from typing import Any, Literal, Optional, Union, cast
 from urllib.parse import urlsplit, urlunsplit
 
 from django.conf import settings
@@ -526,7 +526,7 @@ def remote_billing_legacy_server_login(
     zulip_org_key: Optional[str] = None,
     next_page: VALID_NEXT_PAGES_TYPE = None,
 ) -> HttpResponse:
-    context: Dict[str, Any] = {"next_page": next_page}
+    context: dict[str, Any] = {"next_page": next_page}
     if zulip_org_id is None or zulip_org_key is None:
         context.update({"error_message": False})
         return render(request, "corporate/billing/legacy_server_login.html", context)

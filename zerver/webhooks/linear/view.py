@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -99,7 +99,7 @@ def get_comment_message(payload: WildValue, event: str) -> str:
     )
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, str], str]] = {
+EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, str], str]] = {
     "issue": get_issue_or_sub_issue_message,
     "sub_issue": get_issue_or_sub_issue_message,
     "comment": get_comment_message,

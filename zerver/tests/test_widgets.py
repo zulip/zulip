@@ -1,5 +1,5 @@
 import re
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -29,7 +29,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         assert_error(dict(widget_type="bogus", extra_data={}), "unknown widget type: bogus")
 
-        extra_data: Dict[str, Any] = {}
+        extra_data: dict[str, Any] = {}
         obj = dict(widget_type="zform", extra_data=extra_data)
 
         assert_error(obj, "zform is missing type field")
@@ -377,7 +377,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         message = self.get_last_message()
 
-        def post(sender: UserProfile, data: Dict[str, object]) -> "TestHttpResponse":
+        def post(sender: UserProfile, data: dict[str, object]) -> "TestHttpResponse":
             payload = dict(
                 message_id=message.id, msg_type="widget", content=orjson.dumps(data).decode()
             )
@@ -406,7 +406,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         message = self.get_last_message()
 
-        def post(sender: UserProfile, data: Dict[str, object]) -> "TestHttpResponse":
+        def post(sender: UserProfile, data: dict[str, object]) -> "TestHttpResponse":
             payload = dict(
                 message_id=message.id, msg_type="widget", content=orjson.dumps(data).decode()
             )
@@ -465,7 +465,7 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_error('{"type": "new_option", "idx": 1001, "option": "pizza"}', "too large")
         assert_error('{"type": "new_option", "idx": "bogus", "option": "maybe"}', "not an int")
 
-        def assert_success(data: Dict[str, object]) -> None:
+        def assert_success(data: dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             result = post_submessage(content)
             self.assert_json_success(result)
@@ -525,7 +525,7 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_error('{"type": "strike"}', "key is missing")
         assert_error('{"type": "strike", "key": 999}', 'data["key"] is not a string')
 
-        def assert_success(data: Dict[str, object]) -> None:
+        def assert_success(data: dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             result = post_submessage(content)
             self.assert_json_success(result)

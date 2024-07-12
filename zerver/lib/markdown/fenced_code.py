@@ -77,7 +77,7 @@ Dependencies:
 """
 
 import re
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableSequence, Optional, Sequence
+from typing import Any, Callable, Iterable, Mapping, MutableSequence, Optional, Sequence
 
 import lxml.html
 from django.utils.html import escape
@@ -128,7 +128,7 @@ CODE_WRAP = "<pre><code{}>{}\n</code></pre>"
 LANG_TAG = ' class="{}"'
 
 
-def validate_curl_content(lines: List[str]) -> None:
+def validate_curl_content(lines: list[str]) -> None:
     error_msg = """
 Missing required -X argument in curl command:
 
@@ -141,7 +141,7 @@ Missing required -X argument in curl command:
             raise MarkdownRenderingError(error_msg.format(command=line.strip()))
 
 
-CODE_VALIDATORS: Dict[Optional[str], Callable[[List[str]], None]] = {
+CODE_VALIDATORS: dict[Optional[str], Callable[[list[str]], None]] = {
     "curl": validate_curl_content,
 }
 
@@ -182,7 +182,7 @@ class ZulipBaseHandler:
         self.output = output
         self.fence = fence
         self.process_contents = process_contents
-        self.lines: List[str] = []
+        self.lines: list[str] = []
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -423,15 +423,15 @@ class FencedBlockPreprocessor(Preprocessor):
         self.handlers.pop()
 
     @override
-    def run(self, lines: Iterable[str]) -> List[str]:
+    def run(self, lines: Iterable[str]) -> list[str]:
         """Match and store Fenced Code Blocks in the HtmlStash."""
 
         from zerver.lib.markdown import ZulipMarkdown
 
-        output: List[str] = []
+        output: list[str] = []
 
         processor = self
-        self.handlers: List[ZulipBaseHandler] = []
+        self.handlers: list[ZulipBaseHandler] = []
 
         default_language = None
         if isinstance(self.md, ZulipMarkdown) and self.md.zulip_realm is not None:

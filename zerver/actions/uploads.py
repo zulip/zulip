@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
 from zerver.lib.markdown import MessageRenderingResult
@@ -9,7 +9,7 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_attachment_update(
-    user_profile: UserProfile, op: str, attachment_dict: Dict[str, Any]
+    user_profile: UserProfile, op: str, attachment_dict: dict[str, Any]
 ) -> None:
     event = {
         "type": "attachment",
@@ -21,7 +21,7 @@ def notify_attachment_update(
 
 
 def do_claim_attachments(
-    message: Union[Message, ScheduledMessage], potential_path_ids: List[str]
+    message: Union[Message, ScheduledMessage], potential_path_ids: list[str]
 ) -> bool:
     claimed = False
     for path_id in potential_path_ids:

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -15,7 +15,7 @@ from zerver.tornado.django_api import send_event_on_commit
 
 @transaction.atomic(savepoint=False)
 def bulk_do_set_user_topic_visibility_policy(
-    user_profiles: List[UserProfile],
+    user_profiles: list[UserProfile],
     stream: Stream,
     topic_name: str,
     *,
@@ -51,7 +51,7 @@ def bulk_do_set_user_topic_visibility_policy(
             )
             send_event_on_commit(user_profile.realm, muted_topics_event, [user_profile.id])
 
-        user_topic_event: Dict[str, Any] = {
+        user_topic_event: dict[str, Any] = {
             "type": "user_topic",
             "stream_id": stream.id,
             "topic_name": topic_name,

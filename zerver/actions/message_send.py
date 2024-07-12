@@ -3,20 +3,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import (
-    AbstractSet,
-    Any,
-    Callable,
-    Collection,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypedDict,
-    Union,
-)
+from typing import AbstractSet, Any, Callable, Collection, Optional, Sequence, TypedDict, Union
 
 import orjson
 from django.conf import settings
@@ -157,7 +144,7 @@ def render_incoming_message(
     content: str,
     realm: Realm,
     mention_data: Optional[MentionData] = None,
-    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
+    url_embed_data: Optional[dict[str, Optional[UrlEmbedData]]] = None,
     email_gateway: bool = False,
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
@@ -178,25 +165,25 @@ def render_incoming_message(
 
 @dataclass
 class RecipientInfoResult:
-    active_user_ids: Set[int]
-    online_push_user_ids: Set[int]
-    dm_mention_email_disabled_user_ids: Set[int]
-    dm_mention_push_disabled_user_ids: Set[int]
-    stream_email_user_ids: Set[int]
-    stream_push_user_ids: Set[int]
-    topic_wildcard_mention_user_ids: Set[int]
-    stream_wildcard_mention_user_ids: Set[int]
-    followed_topic_email_user_ids: Set[int]
-    followed_topic_push_user_ids: Set[int]
-    topic_wildcard_mention_in_followed_topic_user_ids: Set[int]
-    stream_wildcard_mention_in_followed_topic_user_ids: Set[int]
-    muted_sender_user_ids: Set[int]
-    um_eligible_user_ids: Set[int]
-    long_term_idle_user_ids: Set[int]
-    default_bot_user_ids: Set[int]
-    service_bot_tuples: List[Tuple[int, int]]
-    all_bot_user_ids: Set[int]
-    topic_participant_user_ids: Set[int]
+    active_user_ids: set[int]
+    online_push_user_ids: set[int]
+    dm_mention_email_disabled_user_ids: set[int]
+    dm_mention_push_disabled_user_ids: set[int]
+    stream_email_user_ids: set[int]
+    stream_push_user_ids: set[int]
+    topic_wildcard_mention_user_ids: set[int]
+    stream_wildcard_mention_user_ids: set[int]
+    followed_topic_email_user_ids: set[int]
+    followed_topic_push_user_ids: set[int]
+    topic_wildcard_mention_in_followed_topic_user_ids: set[int]
+    stream_wildcard_mention_in_followed_topic_user_ids: set[int]
+    muted_sender_user_ids: set[int]
+    um_eligible_user_ids: set[int]
+    long_term_idle_user_ids: set[int]
+    default_bot_user_ids: set[int]
+    service_bot_tuples: list[tuple[int, int]]
+    all_bot_user_ids: set[int]
+    topic_participant_user_ids: set[int]
     sender_muted_stream: Optional[bool]
 
 
@@ -226,16 +213,16 @@ def get_recipient_info(
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
 ) -> RecipientInfoResult:
-    stream_push_user_ids: Set[int] = set()
-    stream_email_user_ids: Set[int] = set()
-    topic_wildcard_mention_user_ids: Set[int] = set()
-    stream_wildcard_mention_user_ids: Set[int] = set()
-    followed_topic_push_user_ids: Set[int] = set()
-    followed_topic_email_user_ids: Set[int] = set()
-    topic_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
-    stream_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
-    muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
-    topic_participant_user_ids: Set[int] = set()
+    stream_push_user_ids: set[int] = set()
+    stream_email_user_ids: set[int] = set()
+    topic_wildcard_mention_user_ids: set[int] = set()
+    stream_wildcard_mention_user_ids: set[int] = set()
+    followed_topic_push_user_ids: set[int] = set()
+    followed_topic_email_user_ids: set[int] = set()
+    topic_wildcard_mention_in_followed_topic_user_ids: set[int] = set()
+    stream_wildcard_mention_in_followed_topic_user_ids: set[int] = set()
+    muted_sender_user_ids: set[int] = get_muting_users(sender_id)
+    topic_participant_user_ids: set[int] = set()
     sender_muted_stream: Optional[bool] = None
 
     if recipient.type == Recipient.PERSONAL:
@@ -315,7 +302,7 @@ def get_recipient_info(
 
         user_id_to_visibility_policy = stream_topic.user_id_to_visibility_policy_dict()
 
-        def notification_recipients(setting: str) -> Set[int]:
+        def notification_recipients(setting: str) -> set[int]:
             return {
                 row["user_profile_id"]
                 for row in subscription_rows
@@ -332,7 +319,7 @@ def get_recipient_info(
         stream_push_user_ids = notification_recipients("push_notifications")
         stream_email_user_ids = notification_recipients("email_notifications")
 
-        def followed_topic_notification_recipients(setting: str) -> Set[int]:
+        def followed_topic_notification_recipients(setting: str) -> set[int]:
             return {
                 row["user_profile_id"]
                 for row in subscription_rows
@@ -427,7 +414,7 @@ def get_recipient_info(
         #         to-do.
         rows = []
 
-    def get_ids_for(f: Callable[[ActiveUserDict], bool]) -> Set[int]:
+    def get_ids_for(f: Callable[[ActiveUserDict], bool]) -> set[int]:
         """Only includes users on the explicit message to line"""
         return {row["id"] for row in rows if f(row)} & message_to_user_id_set
 
@@ -506,12 +493,12 @@ def get_recipient_info(
 
 def get_service_bot_events(
     sender: UserProfile,
-    service_bot_tuples: List[Tuple[int, int]],
-    mentioned_user_ids: Set[int],
-    active_user_ids: Set[int],
+    service_bot_tuples: list[tuple[int, int]],
+    mentioned_user_ids: set[int],
+    active_user_ids: set[int],
     recipient_type: int,
-) -> Dict[str, List[Dict[str, Any]]]:
-    event_dict: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+) -> dict[str, list[dict[str, Any]]]:
+    event_dict: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
     # Avoid infinite loops by preventing messages sent by bots from generating
     # Service events.
@@ -576,12 +563,12 @@ def build_message_send_dict(
     stream: Optional[Stream] = None,
     local_id: Optional[str] = None,
     sender_queue_id: Optional[str] = None,
-    widget_content_dict: Optional[Dict[str, Any]] = None,
+    widget_content_dict: Optional[dict[str, Any]] = None,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
-    limit_unread_user_ids: Optional[Set[int]] = None,
+    limit_unread_user_ids: Optional[set[int]] = None,
     disable_external_notifications: bool = False,
-    recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None,
+    recipients_for_user_creation_events: Optional[dict[UserProfile, set[int]]] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -726,10 +713,10 @@ def create_user_messages(
     mentioned_user_ids: AbstractSet[int],
     followed_topic_push_user_ids: AbstractSet[int],
     followed_topic_email_user_ids: AbstractSet[int],
-    mark_as_read_user_ids: Set[int],
-    limit_unread_user_ids: Optional[Set[int]],
-    topic_participant_user_ids: Set[int],
-) -> List[UserMessageLite]:
+    mark_as_read_user_ids: set[int],
+    limit_unread_user_ids: Optional[set[int]],
+    topic_participant_user_ids: set[int],
+) -> list[UserMessageLite]:
     # These properties on the Message are set via
     # render_message_markdown by code in the Markdown inline patterns
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
@@ -798,7 +785,7 @@ def create_user_messages(
     return user_messages
 
 
-def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
+def filter_presence_idle_user_ids(user_ids: set[int]) -> list[int]:
     # Given a set of user IDs (the recipients of a message), accesses
     # the UserPresence table to determine which of these users are
     # currently idle and should potentially get email notifications
@@ -821,8 +808,8 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
 def get_active_presence_idle_user_ids(
     realm: Realm,
     sender_id: int,
-    user_notifications_data_list: List[UserMessageNotificationsData],
-) -> List[int]:
+    user_notifications_data_list: list[UserMessageNotificationsData],
+) -> list[int]:
     """
     Given a list of active_user_ids, we build up a subset
     of those users who fit these criteria:
@@ -851,7 +838,7 @@ def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
     mark_as_read: Sequence[int] = [],
-) -> List[SentMessageResult]:
+) -> list[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
@@ -865,7 +852,7 @@ def do_send_messages(
     ]
 
     # Save the message receipts in the database
-    user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
+    user_message_flags: dict[int, dict[int, list[str]]] = defaultdict(dict)
 
     Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
@@ -877,7 +864,7 @@ def do_send_messages(
             send_request.message.has_attachment = True
             send_request.message.save(update_fields=["has_attachment"])
 
-    ums: List[UserMessageLite] = []
+    ums: list[UserMessageLite] = []
     for send_request in send_message_requests:
         # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
         # they will be processed later.
@@ -978,7 +965,7 @@ def do_send_messages(
             human_user_personal_mentions = send_request.rendering_result.mentions_user_ids & (
                 send_request.active_user_ids - send_request.all_bot_user_ids
             )
-            expect_follow_user_profiles: Set[UserProfile] = set()
+            expect_follow_user_profiles: set[UserProfile] = set()
 
             if len(human_user_personal_mentions) > 0:
                 expect_follow_user_profiles = set(
@@ -1045,10 +1032,10 @@ def do_send_messages(
 
         class UserData(TypedDict):
             id: int
-            flags: List[str]
+            flags: list[str]
             mentioned_user_group_id: Optional[int]
 
-        users: List[UserData] = []
+        users: list[UserData] = []
         for user_id in user_list:
             flags = user_flags.get(user_id, [])
             # TODO/compatibility: The `wildcard_mentioned` flag was deprecated in favor of
@@ -1278,7 +1265,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
     raise JsonableError(_("Invalid data type for channel"))
 
 
-def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
+def extract_private_recipients(s: str) -> Union[list[str], list[int]]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
 
@@ -1306,7 +1293,7 @@ def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
     return get_validated_user_ids(data)
 
 
-def get_validated_user_ids(user_ids: Collection[int]) -> List[int]:
+def get_validated_user_ids(user_ids: Collection[int]) -> list[int]:
     for user_id in user_ids:
         if not isinstance(user_id, int):
             raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
@@ -1314,7 +1301,7 @@ def get_validated_user_ids(user_ids: Collection[int]) -> List[int]:
     return list(set(user_ids))
 
 
-def get_validated_emails(emails: Collection[str]) -> List[str]:
+def get_validated_emails(emails: Collection[str]) -> list[str]:
     for email in emails:
         if not isinstance(email, str):
             raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
@@ -1457,7 +1444,7 @@ def send_pm_if_empty_stream(
 
     if sender.bot_owner is not None:
         with override_language(sender.bot_owner.default_language):
-            arg_dict: Dict[str, Any] = {
+            arg_dict: dict[str, Any] = {
                 "bot_identity": f"`{sender.delivery_email}`",
             }
             if stream is None:
@@ -1596,14 +1583,14 @@ def check_sender_can_access_recipients(
 
 def get_recipients_for_user_creation_events(
     realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
-) -> Dict[UserProfile, Set[int]]:
+) -> dict[UserProfile, set[int]]:
     """
     This function returns a dictionary with data about which users would
     receive stream creation events due to gaining access to a user.
     The key of the dictionary is a user object and the value is a set of
     user_ids that would gain access to that user.
     """
-    recipients_for_user_creation_events: Dict[UserProfile, Set[int]] = defaultdict(set)
+    recipients_for_user_creation_events: dict[UserProfile, set[int]] = defaultdict(set)
 
     # If none of the users in the direct message conversation are
     # guests, then there is no possible can_access_all_users_group
@@ -1666,7 +1653,7 @@ def check_message(
     skip_stream_access_check: bool = False,
     message_type: int = Message.MessageType.NORMAL,
     mention_backend: Optional[MentionBackend] = None,
-    limit_unread_user_ids: Optional[Set[int]] = None,
+    limit_unread_user_ids: Optional[set[int]] = None,
     disable_external_notifications: bool = False,
 ) -> SendMessageRequest:
     """See
@@ -1841,7 +1828,7 @@ def _internal_prep_message(
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
     mention_backend: Optional[MentionBackend] = None,
-    limit_unread_user_ids: Optional[Set[int]] = None,
+    limit_unread_user_ids: Optional[set[int]] = None,
     disable_external_notifications: bool = False,
     forged: bool = False,
     forged_timestamp: Optional[float] = None,
@@ -1896,7 +1883,7 @@ def internal_prep_stream_message(
     *,
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
-    limit_unread_user_ids: Optional[Set[int]] = None,
+    limit_unread_user_ids: Optional[set[int]] = None,
     forged: bool = False,
     forged_timestamp: Optional[float] = None,
 ) -> Optional[SendMessageRequest]:
@@ -1993,7 +1980,7 @@ def internal_send_stream_message(
     *,
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
-    limit_unread_user_ids: Optional[Set[int]] = None,
+    limit_unread_user_ids: Optional[set[int]] = None,
 ) -> Optional[int]:
     message = internal_prep_stream_message(
         sender,
@@ -2038,8 +2025,8 @@ def internal_prep_group_direct_message(
     sender: UserProfile,
     content: str,
     *,
-    emails: Optional[List[str]] = None,
-    recipient_users: Optional[List[UserProfile]] = None,
+    emails: Optional[list[str]] = None,
+    recipient_users: Optional[list[UserProfile]] = None,
 ) -> Optional[SendMessageRequest]:
     if recipient_users is not None:
         addressee = Addressee.for_user_profiles(recipient_users)
@@ -2060,8 +2047,8 @@ def internal_send_group_direct_message(
     sender: UserProfile,
     content: str,
     *,
-    emails: Optional[List[str]] = None,
-    recipient_users: Optional[List[UserProfile]] = None,
+    emails: Optional[list[str]] = None,
+    recipient_users: Optional[list[UserProfile]] = None,
 ) -> Optional[int]:
     message = internal_prep_group_direct_message(
         realm, sender, content, emails=emails, recipient_users=recipient_users

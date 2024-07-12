@@ -2,7 +2,7 @@ import logging
 import os
 import secrets
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Dict, Iterator, List, Literal, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Iterator, Literal, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import boto3
@@ -75,7 +75,7 @@ def upload_image_to_s3(
         "STANDARD_IA",
     ] = "STANDARD",
     cache_control: Optional[str] = None,
-    extra_metadata: Optional[Dict[str, str]] = None,
+    extra_metadata: Optional[dict[str, str]] = None,
 ) -> None:
     key = bucket.Object(file_name)
     metadata = {
@@ -233,13 +233,13 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.delete_file_from_s3(path_id, self.uploads_bucket)
 
     @override
-    def delete_message_attachments(self, path_ids: List[str]) -> None:
+    def delete_message_attachments(self, path_ids: list[str]) -> None:
         self.uploads_bucket.delete_objects(
             Delete={"Objects": [{"Key": path_id} for path_id in path_ids]}
         )
 
     @override
-    def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
+    def all_message_attachments(self) -> Iterator[tuple[str, datetime]]:
         client = self.uploads_bucket.meta.client
         paginator = client.get_paginator("list_objects_v2")
         page_iterator = paginator.paginate(Bucket=self.uploads_bucket.name)
@@ -257,7 +257,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.get_public_upload_url(self.get_avatar_path(hash_key, medium))
 
     @override
-    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
         key = self.avatar_bucket.Object(file_path + ".original")
         image_data = key.get()["Body"].read()
         content_type = key.content_type

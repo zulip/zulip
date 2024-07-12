@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence
+from typing import Optional, Sequence
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -72,7 +72,7 @@ def get_recipient_from_user_profiles(
 def validate_recipient_user_profiles(
     user_profiles: Sequence[UserProfile], sender: UserProfile, allow_deactivated: bool = False
 ) -> Sequence[UserProfile]:
-    recipient_profiles_map: Dict[int, UserProfile] = {}
+    recipient_profiles_map: dict[int, UserProfile] = {}
 
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same realm.

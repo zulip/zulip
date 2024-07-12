@@ -1,5 +1,3 @@
-from typing import List
-
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -85,7 +83,7 @@ def update_linkifier(
 def reorder_linkifiers(
     request: HttpRequest,
     user_profile: UserProfile,
-    ordered_linkifier_ids: List[int] = REQ(json_validator=check_list(check_int)),
+    ordered_linkifier_ids: list[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
     check_reorder_linkifiers(user_profile.realm, ordered_linkifier_ids, acting_user=user_profile)
     return json_success(request)

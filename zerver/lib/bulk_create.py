@@ -1,4 +1,4 @@
-from typing import Any, Collection, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Collection, Iterable, Optional, Union
 
 from django.db.models import Model, QuerySet
 from django.utils.timezone import now as timezone_now
@@ -22,7 +22,7 @@ from zerver.models.groups import SystemGroups
 
 def bulk_create_users(
     realm: Realm,
-    users_raw: Set[Tuple[str, str, bool]],
+    users_raw: set[tuple[str, str, bool]],
     bot_type: Optional[int] = None,
     bot_owner: Optional[UserProfile] = None,
     tos_version: Optional[str] = None,
@@ -46,7 +46,7 @@ def bulk_create_users(
         email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
 
     # Now create user_profiles
-    profiles_to_create: List[UserProfile] = []
+    profiles_to_create: list[UserProfile] = []
     for email, full_name, active in users:
         profile = create_user_profile(
             realm,
@@ -112,7 +112,7 @@ def bulk_create_users(
         UserProfile, profiles_to_create, recipients_to_create
     )
 
-    recipients_by_user_id: Dict[int, Recipient] = {}
+    recipients_by_user_id: dict[int, Recipient] = {}
     for recipient in recipients_to_create:
         recipients_by_user_id[recipient.type_id] = recipient
 
@@ -133,7 +133,7 @@ def bulk_create_users(
     members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
     )
-    group_memberships_to_create: List[UserGroupMembership] = []
+    group_memberships_to_create: list[UserGroupMembership] = []
     for user_profile in profiles_to_create:
         # All users are members since this function is only used to create bots
         # and test and development environment users.
@@ -162,7 +162,7 @@ def bulk_create_users(
 
 
 def bulk_set_users_or_streams_recipient_fields(
-    model: Type[Model],
+    model: type[Model],
     objects: Union[
         Collection[UserProfile], QuerySet[UserProfile], Collection[Stream], QuerySet[Stream]
     ],
@@ -194,14 +194,14 @@ def bulk_set_users_or_streams_recipient_fields(
 
 
 # This is only sed in populate_db, so doesn't really need tests
-def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:  # nocoverage
+def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) -> None:  # nocoverage
     existing_streams = {
         name.lower() for name in Stream.objects.filter(realm=realm).values_list("name", flat=True)
     }
     administrators_user_group = NamedUserGroup.objects.get(
         name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
     )
-    streams_to_create: List[Stream] = []
+    streams_to_create: list[Stream] = []
     for name, options in stream_dict.items():
         if "history_public_to_subscribers" not in options:
             options["history_public_to_subscribers"] = (
@@ -247,7 +247,7 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
 
 
 def create_users(
-    realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: Optional[int] = None
+    realm: Realm, name_list: Iterable[tuple[str, str]], bot_type: Optional[int] = None
 ) -> None:
     user_set = set()
     for full_name, email in name_list:

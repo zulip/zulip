@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
@@ -21,13 +21,13 @@ def check_string_fixed_length(string: str, length: int) -> Optional[str]:
     return string
 
 
-def check_string_in(val: str, possible_values: List[str]) -> str:
+def check_string_in(val: str, possible_values: list[str]) -> str:
     if val not in possible_values:
         raise ValueError(_("Not in the list of possible values"))
     return val
 
 
-def check_int_in(val: int, possible_values: List[int]) -> int:
+def check_int_in(val: int, possible_values: list[int]) -> int:
     if val not in possible_values:
         raise ValueError(_("Not in the list of possible values"))
     return val

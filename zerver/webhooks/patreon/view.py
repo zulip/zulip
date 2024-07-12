@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -17,8 +17,8 @@ from zerver.models import UserProfile
 # The events for this integration contain the ":" character, which is not appropriate in a
 # filename and requires us to deviate from the common `get_http_headers_from_filename` method
 # from zerver.lib.webhooks.common.
-def get_custom_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict[str, str]]:
-    def fixture_to_headers(filename: str) -> Dict[str, str]:
+def get_custom_http_headers_from_filename(http_header_key: str) -> Callable[[str], dict[str, str]]:
+    def fixture_to_headers(filename: str) -> dict[str, str]:
         event_type = filename.replace("_", ":")
         return {http_header_key: event_type}
 
@@ -128,7 +128,7 @@ def get_pay_per_name(payload: WildValue) -> str:
     return payload["included"][0]["attributes"]["pay_per_name"].tame(check_string)
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Optional[str]]] = {
+EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue], Optional[str]]] = {
     "members:create": get_members_create_body,
     "members:update": get_members_update_body,
     "members:delete": get_members_delete_body,

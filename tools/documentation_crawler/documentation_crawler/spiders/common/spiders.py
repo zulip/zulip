@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from typing import Callable, Iterator, List, Optional, Union
+from typing import Callable, Iterator, Optional, Union
 from urllib.parse import urlsplit
 
 import scrapy
@@ -60,10 +60,10 @@ ZULIP_SERVER_GITHUB_DIRECTORY_PATH_PREFIX = "/zulip/zulip/tree/main"
 class BaseDocumentationSpider(scrapy.Spider):
     name: Optional[str] = None
     # Exclude domain address.
-    deny_domains: List[str] = []
-    start_urls: List[str] = []
-    deny: List[str] = []
-    file_extensions: List[str] = ["." + ext for ext in IGNORED_EXTENSIONS]
+    deny_domains: list[str] = []
+    start_urls: list[str] = []
+    deny: list[str] = []
+    file_extensions: list[str] = ["." + ext for ext in IGNORED_EXTENSIONS]
     tags = ("a", "area", "img")
     attrs = ("href", "src")
 

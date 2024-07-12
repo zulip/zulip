@@ -1,7 +1,7 @@
 import os
 import re
 import secrets
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 import orjson
 import redis
@@ -62,7 +62,7 @@ def get_dict_from_redis(
     redis_client: "redis.StrictRedis[bytes]",
     key_format: str,
     key: str,
-) -> Optional[Dict[str, Any]]:
+) -> Optional[dict[str, Any]]:
     # This function requires inputting the intended key_format to validate
     # that the key fits it, as an additionally security measure. This protects
     # against bugs where a caller requests a key based on user input and doesn't

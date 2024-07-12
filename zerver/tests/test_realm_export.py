@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Set
+from typing import Optional
 from unittest.mock import patch
 
 import botocore.exceptions
@@ -118,7 +118,7 @@ class RealmExportTest(ZulipTestCase):
             realm: Realm,
             output_dir: str,
             threads: int,
-            exportable_user_ids: Optional[Set[int]] = None,
+            exportable_user_ids: Optional[set[int]] = None,
             public_only: bool = False,
             consent_message_id: Optional[int] = None,
             export_as_active: Optional[bool] = None,

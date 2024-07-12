@@ -1,7 +1,7 @@
 import re
 import time
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote, quote_plus, urlencode, urlsplit
 
@@ -2240,7 +2240,7 @@ class UserSignUpTest(ZulipTestCase):
         if realm is None:  # nocoverage
             realm = get_realm("zulip")
 
-        client_kwargs: Dict[str, Any] = {}
+        client_kwargs: dict[str, Any] = {}
         if subdomain:
             client_kwargs["subdomain"] = subdomain
 

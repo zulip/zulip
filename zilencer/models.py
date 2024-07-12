@@ -3,7 +3,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import List, Tuple
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -493,7 +492,7 @@ class RateLimitedRemoteZulipServer(RateLimitedObject):
         return f"{type(self).__name__}:<{self.uuid}>:{self.domain}"
 
     @override
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         return rate_limiter_rules[self.domain]
 
 
@@ -504,7 +503,7 @@ class RemoteCustomerUserCount:
 
 
 def get_remote_customer_user_count(
-    audit_logs: List[RemoteRealmAuditLog],
+    audit_logs: list[RemoteRealmAuditLog],
 ) -> RemoteCustomerUserCount:
     guest_count = 0
     non_guest_count = 0

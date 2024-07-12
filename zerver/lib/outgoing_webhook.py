@@ -3,7 +3,7 @@ import json
 import logging
 from contextlib import suppress
 from time import perf_counter
-from typing import Any, AnyStr, Dict, Optional
+from typing import Any, AnyStr, Optional
 
 import requests
 from django.conf import settings
@@ -38,19 +38,19 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def make_request(
-        self, base_url: str, event: Dict[str, Any], realm: Realm
+        self, base_url: str, event: dict[str, Any], realm: Realm
     ) -> Optional[Response]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def process_success(self, response_json: dict[str, Any]) -> Optional[dict[str, Any]]:
         raise NotImplementedError
 
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
     @override
     def make_request(
-        self, base_url: str, event: Dict[str, Any], realm: Realm
+        self, base_url: str, event: dict[str, Any], realm: Realm
     ) -> Optional[Response]:
         """
         We send a simple version of the message to outgoing
@@ -80,7 +80,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return self.session.post(base_url, json=request_data)
 
     @override
-    def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def process_success(self, response_json: dict[str, Any]) -> Optional[dict[str, Any]]:
         if response_json.get("response_not_required", False):
             return None
 
@@ -103,7 +103,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
     @override
     def make_request(
-        self, base_url: str, event: Dict[str, Any], realm: Realm
+        self, base_url: str, event: dict[str, Any], realm: Realm
     ) -> Optional[Response]:
         if event["message"]["type"] == "private":
             failure_message = "Slack outgoing webhooks don't support direct messages."
@@ -142,7 +142,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return self.session.post(base_url, data=request_data)
 
     @override
-    def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def process_success(self, response_json: dict[str, Any]) -> Optional[dict[str, Any]]:
         if "text" in response_json:
             content = response_json["text"]
             success_data = dict(content=content)
@@ -151,7 +151,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return None
 
 
-AVAILABLE_OUTGOING_WEBHOOK_INTERFACES: Dict[str, Any] = {
+AVAILABLE_OUTGOING_WEBHOOK_INTERFACES: dict[str, Any] = {
     GENERIC_INTERFACE: GenericOutgoingWebhookService,
     SLACK_INTERFACE: SlackOutgoingWebhookService,
 }
@@ -173,7 +173,7 @@ def get_outgoing_webhook_service_handler(service: Service) -> Any:
 
 
 def send_response_message(
-    bot_id: int, message_info: Dict[str, Any], response_data: Dict[str, Any]
+    bot_id: int, message_info: dict[str, Any], response_data: dict[str, Any]
 ) -> None:
     """
     bot_id is the user_id of the bot sending the response
@@ -227,7 +227,7 @@ def send_response_message(
     )
 
 
-def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
+def fail_with_message(event: dict[str, Any], failure_message: str) -> None:
     bot_id = event["user_profile_id"]
     message_info = event["message"]
     content = "Failure! " + failure_message
@@ -238,7 +238,7 @@ def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
         send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 
-def get_message_url(event: Dict[str, Any]) -> str:
+def get_message_url(event: dict[str, Any]) -> str:
     bot_user = get_user_profile_by_id(event["user_profile_id"])
     message = event["message"]
     realm = bot_user.realm
@@ -250,7 +250,7 @@ def get_message_url(event: Dict[str, Any]) -> str:
 
 
 def notify_bot_owner(
-    event: Dict[str, Any],
+    event: dict[str, Any],
     status_code: Optional[int] = None,
     response_content: Optional[AnyStr] = None,
     failure_message: Optional[str] = None,
@@ -290,8 +290,8 @@ def notify_bot_owner(
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 
-def request_retry(event: Dict[str, Any], failure_message: Optional[str] = None) -> None:
-    def failure_processor(event: Dict[str, Any]) -> None:
+def request_retry(event: dict[str, Any], failure_message: Optional[str] = None) -> None:
+    def failure_processor(event: dict[str, Any]) -> None:
         """
         The name of the argument is 'event' on purpose. This argument will hide
         the 'event' argument of the request_retry function. Keeping the same name
@@ -310,7 +310,7 @@ def request_retry(event: Dict[str, Any], failure_message: Optional[str] = None) 
 
 
 def process_success_response(
-    event: Dict[str, Any], service_handler: Any, response: Response
+    event: dict[str, Any], service_handler: Any, response: Response
 ) -> None:
     try:
         response_json = json.loads(response.text)
@@ -345,7 +345,7 @@ def process_success_response(
 
 def do_rest_call(
     base_url: str,
-    event: Dict[str, Any],
+    event: dict[str, Any],
     service_handler: OutgoingWebhookServiceInterface,
 ) -> Optional[Response]:
     """Returns response of call if no exception occurs."""

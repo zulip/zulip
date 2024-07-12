@@ -1,6 +1,5 @@
 import importlib
 import os
-from typing import List
 from unittest import mock
 
 import django.urls.resolvers
@@ -23,7 +22,7 @@ class PublicURLTest(ZulipTestCase):
     URLs redirect to a page.
     """
 
-    def fetch(self, method: str, urls: List[str], expected_status: int) -> None:
+    def fetch(self, method: str, urls: list[str], expected_status: int) -> None:
         for url in urls:
             # e.g. self.client_post(url) if method is "post"
             response = getattr(self, method)(url)

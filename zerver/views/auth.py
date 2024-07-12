@@ -1,7 +1,7 @@
 import logging
 import secrets
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, cast
 from urllib.parse import urlencode, urljoin
 
 import jwt
@@ -102,7 +102,7 @@ if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
 
 ParamT = ParamSpec("ParamT")
-ExtraContext: TypeAlias = Optional[Dict[str, Any]]
+ExtraContext: TypeAlias = Optional[dict[str, Any]]
 
 EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS = 3600
 
@@ -161,7 +161,7 @@ def maybe_send_to_registration(
     is_signup: bool = False,
     multiuse_object_key: str = "",
     full_name_validated: bool = False,
-    params_to_store_in_authenticated_session: Optional[Dict[str, str]] = None,
+    params_to_store_in_authenticated_session: Optional[dict[str, str]] = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
@@ -323,7 +323,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     # We have verified the user controls an email address, but
     # there's no associated Zulip user account.  Consider sending
     # the request to registration.
-    kwargs: Dict[str, Any] = dict(result.data_dict)
+    kwargs: dict[str, Any] = dict(result.data_dict)
     # maybe_send_to_registration doesn't take these arguments, so delete them.
 
     # These are the kwargs taken by maybe_send_to_registration. Remove anything
@@ -409,7 +409,7 @@ def finish_desktop_flow(
     request: HttpRequest,
     user_profile: UserProfile,
     otp: str,
-    params_to_store_in_authenticated_session: Optional[Dict[str, str]] = None,
+    params_to_store_in_authenticated_session: Optional[dict[str, str]] = None,
 ) -> HttpResponse:
     """
     The desktop otp flow returns to the app (through the clipboard)
@@ -546,7 +546,7 @@ def remote_user_sso(
 @has_request_variables
 def get_email_and_realm_from_jwt_authentication_request(
     request: HttpRequest, json_web_token: str
-) -> Tuple[str, Realm]:
+) -> tuple[str, Realm]:
     realm = get_realm_from_request(request)
     if realm is None:
         raise InvalidSubdomainError
@@ -671,7 +671,7 @@ def start_social_login(
     extra_arg: Optional[str] = None,
 ) -> HttpResponse:
     backend_url = reverse("social:begin", args=[backend])
-    extra_url_params: Dict[str, str] = {}
+    extra_url_params: dict[str, str] = {}
     if backend == "saml":
         if not SAMLAuthBackend.check_config():
             return config_error(request, "saml")
@@ -707,7 +707,7 @@ def start_social_signup(
     extra_arg: Optional[str] = None,
 ) -> HttpResponse:
     backend_url = reverse("social:begin", args=[backend])
-    extra_url_params: Dict[str, str] = {}
+    extra_url_params: dict[str, str] = {}
     if backend == "saml":
         if not SAMLAuthBackend.check_config():
             return config_error(request, "saml")
@@ -780,7 +780,7 @@ def redirect_to_deactivation_notice() -> HttpResponse:
     return HttpResponseRedirect(reverse(show_deactivation_notice))
 
 
-def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
+def update_login_page_context(request: HttpRequest, context: dict[str, Any]) -> None:
     for key in ("email", "already_registered"):
         if key in request.GET:
             context[key] = request.GET[key]
@@ -809,7 +809,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         self.extra_context = extra_context
         super().__init__(*args, **kwargs)
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         if self.extra_context is not None:
             context.update(self.extra_context)
@@ -823,7 +823,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         )
         return context
 
-    def done(self, form_list: List[Form], **kwargs: Any) -> HttpResponse:
+    def done(self, form_list: list[Form], **kwargs: Any) -> HttpResponse:
         """
         Log in the user and redirect to the desired page.
 
@@ -985,7 +985,7 @@ def process_api_key_fetch_authenticate_result(
     return api_key
 
 
-def get_api_key_fetch_authenticate_failure(return_data: Dict[str, bool]) -> JsonableError:
+def get_api_key_fetch_authenticate_failure(return_data: dict[str, bool]) -> JsonableError:
     if return_data.get("inactive_user"):
         return UserDeactivatedError()
     if return_data.get("inactive_realm"):
@@ -1010,7 +1010,7 @@ def jwt_fetch_api_key(
 ) -> HttpResponse:
     remote_email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
 
-    return_data: Dict[str, bool] = {}
+    return_data: dict[str, bool] = {}
 
     user_profile = authenticate(
         username=remote_email, realm=realm, return_data=return_data, use_dummy_backend=True
@@ -1022,7 +1022,7 @@ def jwt_fetch_api_key(
 
     api_key = process_api_key_fetch_authenticate_result(request, user_profile)
 
-    result: Dict[str, Any] = {
+    result: dict[str, Any] = {
         "api_key": api_key,
         "email": user_profile.delivery_email,
     }
@@ -1047,7 +1047,7 @@ def jwt_fetch_api_key(
 def api_fetch_api_key(
     request: HttpRequest, username: str = REQ(), password: str = REQ()
 ) -> HttpResponse:
-    return_data: Dict[str, bool] = {}
+    return_data: dict[str, bool] = {}
 
     realm = get_realm_from_request(request)
     if realm is None:
@@ -1073,7 +1073,7 @@ def api_fetch_api_key(
     )
 
 
-def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
+def get_auth_backends_data(request: HttpRequest) -> dict[str, Any]:
     """Returns which authentication methods are enabled on the server"""
     subdomain = get_subdomain(request)
     try:

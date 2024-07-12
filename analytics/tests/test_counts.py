@@ -1,6 +1,6 @@
 from contextlib import AbstractContextManager, ExitStack, contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
+from typing import Any, Iterator, Optional
 from unittest import mock
 
 import time_machine
@@ -132,7 +132,7 @@ class AnalyticsTestCase(ZulipTestCase):
             kwargs[key] = kwargs.get(key, value)
         kwargs["delivery_email"] = kwargs["email"]
         with time_machine.travel(kwargs["date_joined"], tick=False):
-            pass_kwargs: Dict[str, Any] = {}
+            pass_kwargs: dict[str, Any] = {}
             if kwargs["is_bot"]:
                 pass_kwargs["bot_type"] = UserProfile.DEFAULT_BOT
                 pass_kwargs["bot_owner"] = None
@@ -158,7 +158,7 @@ class AnalyticsTestCase(ZulipTestCase):
                 )
             return user
 
-    def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
+    def create_stream_with_recipient(self, **kwargs: Any) -> tuple[Stream, Recipient]:
         self.name_counter += 1
         defaults = {
             "name": f"stream name {self.name_counter}",
@@ -174,7 +174,7 @@ class AnalyticsTestCase(ZulipTestCase):
         stream.save(update_fields=["recipient"])
         return stream, recipient
 
-    def create_huddle_with_recipient(self, **kwargs: Any) -> Tuple[DirectMessageGroup, Recipient]:
+    def create_huddle_with_recipient(self, **kwargs: Any) -> tuple[DirectMessageGroup, Recipient]:
         self.name_counter += 1
         defaults = {"huddle_hash": f"hash{self.name_counter}"}
         for key, value in defaults.items():
@@ -224,7 +224,7 @@ class AnalyticsTestCase(ZulipTestCase):
     # kwargs should only ever be a UserProfile or Stream.
     def assert_table_count(
         self,
-        table: Type[BaseCount],
+        table: type[BaseCount],
         value: int,
         property: Optional[str] = None,
         subgroup: Optional[str] = None,
@@ -246,7 +246,7 @@ class AnalyticsTestCase(ZulipTestCase):
         self.assertEqual(queryset.values_list("value", flat=True)[0], value)
 
     def assertTableState(
-        self, table: Type[BaseCount], arg_keys: List[str], arg_values: List[List[object]]
+        self, table: type[BaseCount], arg_keys: list[str], arg_values: list[list[object]]
     ) -> None:
         """Assert that the state of a *Count table is what it should be.
 
@@ -276,7 +276,7 @@ class AnalyticsTestCase(ZulipTestCase):
             "value": 1,
         }
         for values in arg_values:
-            kwargs: Dict[str, Any] = {}
+            kwargs: dict[str, Any] = {}
             for i in range(len(values)):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
@@ -1619,7 +1619,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         def invite_context(
             too_many_recent_realm_invites: bool = False, failure: bool = False
         ) -> Iterator[None]:
-            managers: List[AbstractContextManager[Any]] = [
+            managers: list[AbstractContextManager[Any]] = [
                 mock.patch(
                     "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
                 ),

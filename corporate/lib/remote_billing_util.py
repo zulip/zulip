@@ -1,5 +1,5 @@
 import logging
-from typing import Literal, Optional, Tuple, TypedDict, Union, cast
+from typing import Literal, Optional, TypedDict, Union, cast
 
 from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
@@ -102,7 +102,7 @@ def get_identity_dict_from_session(
 def get_remote_realm_and_user_from_session(
     request: HttpRequest,
     realm_uuid: Optional[str],
-) -> Tuple[RemoteRealm, RemoteRealmBillingUser]:
+) -> tuple[RemoteRealm, RemoteRealmBillingUser]:
     # Cannot use isinstance with TypeDicts, to make mypy know
     # which of the TypedDicts in the Union this is - so just cast it.
     identity_dict = cast(
@@ -151,7 +151,7 @@ def get_remote_realm_and_user_from_session(
 def get_remote_server_and_user_from_session(
     request: HttpRequest,
     server_uuid: str,
-) -> Tuple[RemoteZulipServer, Optional[RemoteServerBillingUser]]:
+) -> tuple[RemoteZulipServer, Optional[RemoteServerBillingUser]]:
     identity_dict: Optional[LegacyServerIdentityDict] = get_identity_dict_from_session(
         request, realm_uuid=None, server_uuid=server_uuid
     )

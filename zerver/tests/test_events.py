@@ -9,7 +9,7 @@ import time
 from contextlib import contextmanager
 from datetime import timedelta
 from io import StringIO
-from typing import Any, Dict, Iterator, List, Optional, Set
+from typing import Any, Iterator, Optional
 from unittest import mock
 
 import orjson
@@ -276,7 +276,7 @@ class BaseAction(ZulipTestCase):
     def verify_action(
         self,
         *,
-        event_types: Optional[List[str]] = None,
+        event_types: Optional[list[str]] = None,
         include_subscribers: bool = True,
         state_change_expected: bool = True,
         notification_settings_null: bool = False,
@@ -292,7 +292,7 @@ class BaseAction(ZulipTestCase):
         linkifier_url_template: bool = True,
         user_list_incomplete: bool = False,
         client_is_old: bool = False,
-    ) -> Iterator[List[Dict[str, Any]]]:
+    ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
         If we don't do this, then certain failures will only manifest when you
@@ -344,7 +344,7 @@ class BaseAction(ZulipTestCase):
         if client_is_old:
             mark_clients_to_reload([client.event_queue.id])
 
-        events: List[Dict[str, Any]] = []
+        events: list[dict[str, Any]] = []
 
         # We want even those `send_event` calls which have been hooked to
         # `transaction.on_commit` to execute in tests.
@@ -413,9 +413,9 @@ class BaseAction(ZulipTestCase):
         self.match_states(hybrid_state, normal_state, events)
 
     def match_states(
-        self, state1: Dict[str, Any], state2: Dict[str, Any], events: List[Dict[str, Any]]
+        self, state1: dict[str, Any], state2: dict[str, Any], events: list[dict[str, Any]]
     ) -> None:
-        def normalize(state: Dict[str, Any]) -> None:
+        def normalize(state: dict[str, Any]) -> None:
             if "never_subscribed" in state:
                 for u in state["never_subscribed"]:
                     if "subscribers" in u:
@@ -566,7 +566,7 @@ class NormalActionsTest(BaseAction):
         pm = Message.objects.order_by("-id")[0]
         content = "new content"
         rendering_result = render_message_markdown(pm, content)
-        prior_mention_user_ids: Set[int] = set()
+        prior_mention_user_ids: set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,
@@ -654,7 +654,7 @@ class NormalActionsTest(BaseAction):
             do_change_subscription_property(hamlet, sub, stream, "is_muted", True, acting_user=None)
 
         def verify_events_generated_and_reset_visibility_policy(
-            events: List[Dict[str, Any]], stream_name: str, topic_name: str
+            events: list[dict[str, Any]], stream_name: str, topic_name: str
         ) -> None:
             # event-type: muted_topics
             check_muted_topics("events[0]", events[0])
@@ -870,7 +870,7 @@ class NormalActionsTest(BaseAction):
         message = Message.objects.order_by("-id")[0]
         content = "new content"
         rendering_result = render_message_markdown(message, content)
-        prior_mention_user_ids: Set[int] = set()
+        prior_mention_user_ids: set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,
@@ -3398,8 +3398,8 @@ class NormalActionsTest(BaseAction):
 
 class RealmPropertyActionTest(BaseAction):
     def do_set_realm_property_test(self, name: str) -> None:
-        bool_tests: List[bool] = [True, False, True]
-        test_values: Dict[str, Any] = dict(
+        bool_tests: list[bool] = [True, False, True]
+        test_values: dict[str, Any] = dict(
             default_language=["es", "de", "en"],
             description=["Realm description", "New description"],
             digest_weekday=[0, 1, 2],
@@ -3742,8 +3742,8 @@ class RealmPropertyActionTest(BaseAction):
                 self.do_set_realm_permission_group_setting_to_anonymous_groups_test(prop)
 
     def do_set_realm_user_default_setting_test(self, name: str) -> None:
-        bool_tests: List[bool] = [True, False, True]
-        test_values: Dict[str, Any] = dict(
+        bool_tests: list[bool] = [True, False, True]
+        test_values: dict[str, Any] = dict(
             web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
             web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
@@ -3874,7 +3874,7 @@ class UserDisplayActionTest(BaseAction):
     def do_change_user_settings_test(self, setting_name: str) -> None:
         """Test updating each setting in UserProfile.property_types dict."""
 
-        test_changes: Dict[str, Any] = dict(
+        test_changes: dict[str, Any] = dict(
             emojiset=["twitter"],
             default_language=["es", "de", "en"],
             web_home_view=["all_messages", "inbox", "recent_topics"],

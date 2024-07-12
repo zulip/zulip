@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import ldap
 from django_auth_ldap.config import LDAPSearch
@@ -24,7 +24,7 @@ PUPPETEER_TESTS = "PUPPETEER_TESTS" in os.environ
 FAKE_EMAIL_DOMAIN = "zulip.testserver"
 
 # Clear out the REALM_HOSTS set in dev_settings.py
-REALM_HOSTS: Dict[str, str] = {}
+REALM_HOSTS: dict[str, str] = {}
 
 DATABASES["default"] = {
     "NAME": os.getenv("ZULIP_DB_NAME", "zulip_test"),
@@ -181,7 +181,7 @@ SOCIAL_AUTH_APPLE_TEAM = "TEAMSTRING"
 SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")
 
 
-SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, OIDCIdPConfigDict] = {
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {
     "testoidc": {
         "display_name": "Test OIDC",
         "oidc_url": "https://example.com/api/openid",
@@ -231,7 +231,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "emailAddress": "support@example.com",
 }
 
-SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
+SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, SAMLIdPConfigDict] = {
     "test_idp": {
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
@@ -247,7 +247,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
     },
 }
 
-RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
+RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {
     "api_by_user": [],
     "api_by_ip": [],
     "api_by_remote_server": [],
@@ -261,7 +261,7 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
 CLOUD_FREE_TRIAL_DAYS: Optional[int] = None
 SELF_HOSTING_FREE_TRIAL_DAYS: Optional[int] = None
 
-SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
+SCIM_CONFIG: dict[str, SCIMConfigDict] = {
     "zulip": {
         "bearer_token": "token1234",
         "scim_client_name": "test-scim-client",

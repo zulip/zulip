@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Match
+from typing import Any, Match
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -52,7 +52,7 @@ class EmoticonTranslationsHelpExtension(Extension):
 
 class EmoticonTranslation(Preprocessor):
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         for loc, line in enumerate(lines):
             match = REGEXP.search(line)
             if match:
@@ -61,7 +61,7 @@ class EmoticonTranslation(Preprocessor):
                 break
         return lines
 
-    def handleMatch(self, match: Match[str]) -> List[str]:
+    def handleMatch(self, match: Match[str]) -> list[str]:
         rows = [
             ROW_HTML.format(
                 emoticon=emoticon,

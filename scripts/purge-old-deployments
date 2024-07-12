@@ -3,7 +3,6 @@ import argparse
 import os
 import subprocess
 import sys
-from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
@@ -56,7 +55,7 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def get_deployments_to_be_purged(recent_deployments: Set[str]) -> Set[str]:
+def get_deployments_to_be_purged(recent_deployments: set[str]) -> set[str]:
     all_deployments = {
         os.path.join(DEPLOYMENTS_DIR, deployment) for deployment in os.listdir(DEPLOYMENTS_DIR)
     }

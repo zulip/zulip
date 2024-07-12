@@ -1,14 +1,14 @@
 import json
 import os
 import re
-from typing import Dict, List, Pattern, Tuple, Union
+from typing import Pattern, Union
 
 from django.conf import settings
 
 from zerver.models import Realm, UserProfile
 
-shard_map: Dict[str, Union[int, List[int]]] = {}
-shard_regexes: List[Tuple[Pattern[str], Union[int, List[int]]]] = []
+shard_map: dict[str, Union[int, list[int]]] = {}
+shard_regexes: list[tuple[Pattern[str], Union[int, list[int]]]] = []
 if os.path.exists("/etc/zulip/sharding.json"):
     with open("/etc/zulip/sharding.json") as f:
         data = json.loads(f.read())
@@ -22,7 +22,7 @@ if os.path.exists("/etc/zulip/sharding.json"):
         ]
 
 
-def get_realm_tornado_ports(realm: Realm) -> List[int]:
+def get_realm_tornado_ports(realm: Realm) -> list[int]:
     if realm.host in shard_map:
         ports = shard_map[realm.host]
         return [ports] if isinstance(ports, int) else ports
@@ -34,7 +34,7 @@ def get_realm_tornado_ports(realm: Realm) -> List[int]:
     return [settings.TORNADO_PORTS[0]]
 
 
-def get_user_id_tornado_port(realm_ports: List[int], user_id: int) -> int:
+def get_user_id_tornado_port(realm_ports: list[int], user_id: int) -> int:
     return realm_ports[user_id % len(realm_ports)]
 
 

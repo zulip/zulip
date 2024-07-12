@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -639,7 +639,7 @@ class EmojiReactionBase(ZulipTestCase):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-    def post_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
+    def post_reaction(self, reaction_info: dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_post(
@@ -647,7 +647,7 @@ class EmojiReactionBase(ZulipTestCase):
         )
         return result
 
-    def post_other_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
+    def post_other_reaction(self, reaction_info: dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_post(
@@ -655,7 +655,7 @@ class EmojiReactionBase(ZulipTestCase):
         )
         return result
 
-    def delete_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
+    def delete_reaction(self, reaction_info: dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_delete(
@@ -665,7 +665,7 @@ class EmojiReactionBase(ZulipTestCase):
 
     def get_message_reactions(
         self, message_id: int, emoji_code: str, reaction_type: str
-    ) -> List[Reaction]:
+    ) -> list[Reaction]:
         message = Message.objects.get(id=message_id)
         reactions = Reaction.objects.filter(
             message=message, emoji_code=emoji_code, reaction_type=reaction_type

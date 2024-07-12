@@ -9,20 +9,7 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-)
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, Mapping, Optional, Sequence
 from unittest import mock
 from urllib.parse import parse_qs, urlencode, urlsplit
 
@@ -184,8 +171,8 @@ class AuthBackendTest(ZulipTestCase):
         self,
         backend: Any,
         *,
-        good_kwargs: Dict[str, Any],
-        bad_kwargs: Optional[Dict[str, Any]] = None,
+        good_kwargs: dict[str, Any],
+        bad_kwargs: Optional[dict[str, Any]] = None,
     ) -> None:
         clear_supported_auth_backends_cache()
         user_profile = self.example_user("hamlet")
@@ -294,7 +281,7 @@ class AuthBackendTest(ZulipTestCase):
         with mock.patch("zproject.backends.email_auth_enabled", return_value=False), mock.patch(
             "zproject.backends.password_auth_enabled", return_value=True
         ):
-            return_data: Dict[str, bool] = {}
+            return_data: dict[str, bool] = {}
             user = EmailAuthBackend().authenticate(
                 request=mock.MagicMock(),
                 username=user_profile.delivery_email,
@@ -747,7 +734,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
                                   according to the respective backend.
     """
 
-    BACKEND_CLASS: "Type[SocialAuthMixin]"
+    BACKEND_CLASS: "type[SocialAuthMixin]"
     LOGIN_URL: str
     SIGNUP_URL: str
     AUTHORIZATION_URL: str
@@ -758,7 +745,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     CLIENT_SECRET_SETTING: str
 
     @abstractmethod
-    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+    def get_account_data_dict(self, email: str, name: str) -> dict[str, Any]:
         raise NotImplementedError
 
     @override
@@ -786,7 +773,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         **extra_data: Any,
     ) -> None:
         pass
@@ -802,8 +789,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         alternative_start_url: Optional[str] = None,
         *,
         user_agent: Optional[str] = None,
-        extra_headers: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[str, Dict[str, Any]]:
+        extra_headers: Optional[dict[str, Any]] = None,
+    ) -> tuple[str, dict[str, Any]]:
         url = self.LOGIN_URL
         if alternative_start_url is not None:
             url = alternative_start_url
@@ -838,7 +825,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     def social_auth_test_finish(
         self,
         result: "TestHttpResponse",
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         expect_choose_email_screen: bool,
         headers: Any,
         **extra_data: Any,
@@ -848,7 +835,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         result = self.client_get(self.AUTH_FINISH_URL, dict(state=csrf_state), **headers)
         return result
 
-    def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+    def generate_access_token_url_payload(self, account_data_dict: dict[str, str]) -> str:
         return json.dumps(
             {
                 "access_token": "foobar",
@@ -858,7 +845,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
     def social_auth_test(
         self,
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         *,
         subdomain: str,
         mobile_flow_otp: Optional[str] = None,
@@ -869,7 +856,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         expect_choose_email_screen: bool = False,
         alternative_start_url: Optional[str] = None,
         user_agent: Optional[str] = None,
-        extra_headers: Optional[Dict[str, Any]] = None,
+        extra_headers: Optional[dict[str, Any]] = None,
         **extra_data: Any,
     ) -> "TestHttpResponse":
         """Main entry point for all social authentication tests.
@@ -1647,7 +1634,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         realm.invite_required = True
         realm.save()
 
-        streams: List[Stream] = []
+        streams: list[Stream] = []
 
         # Generate an invitation for a different realm than the one we'll attempt to join:
         lear_realm = get_realm("lear")
@@ -1934,7 +1921,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
     @override
     def social_auth_test(
         self,
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         *,
         subdomain: str,
         mobile_flow_otp: Optional[str] = None,
@@ -1943,8 +1930,8 @@ class SAMLAuthBackendTest(SocialAuthBase):
         next: str = "",
         multiuse_object_key: str = "",
         user_agent: Optional[str] = None,
-        extra_attributes: Mapping[str, List[str]] = {},
-        extra_headers: Optional[Dict[str, Any]] = None,
+        extra_attributes: Mapping[str, list[str]] = {},
+        extra_headers: Optional[dict[str, Any]] = None,
         **extra_data: Any,
     ) -> "TestHttpResponse":
         url, headers = self.prepare_login_url_and_headers(
@@ -2011,7 +1998,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self,
         email: str,
         name: str,
-        extra_attributes: Mapping[str, List[str]] = {},
+        extra_attributes: Mapping[str, list[str]] = {},
         include_session_index: bool = True,
     ) -> str:
         """
@@ -2095,7 +2082,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         return result
 
     @override
-    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+    def get_account_data_dict(self, email: str, name: str) -> dict[str, Any]:
         return dict(email=email, name=name)
 
     def test_saml_sp_initiated_logout_success(self) -> None:
@@ -3281,7 +3268,7 @@ class AppleAuthMixin:
     AUTH_FINISH_URL = "/complete/apple/"
 
     def generate_id_token(
-        self, account_data_dict: Dict[str, str], audience: Optional[str] = None
+        self, account_data_dict: dict[str, str], audience: Optional[str] = None
     ) -> str:
         payload = dict(email=account_data_dict["email"])
 
@@ -3300,7 +3287,7 @@ class AppleAuthMixin:
 
         return id_token
 
-    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+    def get_account_data_dict(self, email: str, name: str) -> dict[str, Any]:
         name_parts = name.split(" ")
         first_name = name_parts[0]
         last_name = ""
@@ -3322,7 +3309,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
     def social_auth_test_finish(
         self,
         result: "TestHttpResponse",
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         expect_choose_email_screen: bool,
         headers: Any,
         **extra_data: Any,
@@ -3340,7 +3327,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         **extra_data: Any,
     ) -> None:
         # This is an URL of an endpoint on Apple servers that returns
@@ -3354,7 +3341,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
         )
 
     @override
-    def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+    def generate_access_token_url_payload(self, account_data_dict: dict[str, str]) -> str:
         # The ACCESS_TOKEN_URL endpoint works a bit different than in standard Oauth2,
         # and here, similarly to OIDC, id_token is also returned in the response.
         # In Apple auth, all the user information is carried in the id_token.
@@ -3459,8 +3446,8 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         account_data_dict: Mapping[str, str] = {},
         *,
         user_agent: Optional[str] = None,
-        extra_headers: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[str, Dict[str, Any]]:
+        extra_headers: Optional[dict[str, Any]] = None,
+    ) -> tuple[str, dict[str, Any]]:
         url, headers = super().prepare_login_url_and_headers(
             subdomain,
             mobile_flow_otp,
@@ -3492,7 +3479,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
     @override
     def social_auth_test(
         self,
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         *,
         subdomain: str,
         mobile_flow_otp: Optional[str] = None,
@@ -3503,7 +3490,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         alternative_start_url: Optional[str] = None,
         skip_id_token: bool = False,
         user_agent: Optional[str] = None,
-        extra_headers: Optional[Dict[str, Any]] = None,
+        extra_headers: Optional[dict[str, Any]] = None,
         **extra_data: Any,
     ) -> "TestHttpResponse":
         """In Apple's native authentication flow, the client app authenticates
@@ -3728,7 +3715,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         **extra_data: Any,
     ) -> None:
         requests_mock.add(
@@ -3739,7 +3726,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         )
 
     @override
-    def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+    def generate_access_token_url_payload(self, account_data_dict: dict[str, str]) -> str:
         return json.dumps(
             {
                 "access_token": "foobar",
@@ -3750,7 +3737,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         )
 
     @override
-    def get_account_data_dict(self, email: str, name: Optional[str]) -> Dict[str, Any]:
+    def get_account_data_dict(self, email: str, name: Optional[str]) -> dict[str, Any]:
         if name is not None:
             name_parts = name.split(" ")
             given_name = name_parts[0]
@@ -3898,13 +3885,13 @@ class GitHubAuthBackendTest(SocialAuthBase):
     ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
     USER_INFO_URL = "https://api.github.com/user"
     AUTH_FINISH_URL = "/complete/github/"
-    email_data: List[Dict[str, Any]] = []
+    email_data: list[dict[str, Any]] = []
 
     @override
     def social_auth_test_finish(
         self,
         result: "TestHttpResponse",
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         expect_choose_email_screen: bool,
         headers: Any,
         expect_noreply_email_allowed: bool = False,
@@ -3955,7 +3942,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
-        account_data_dict: Dict[str, str],
+        account_data_dict: dict[str, str],
         **extra_data: Any,
     ) -> None:
         # Keeping a verified email before the primary email makes sure
@@ -3981,7 +3968,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override
     def get_account_data_dict(
         self, email: str, name: str, user_avatar_url: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return dict(email=email, name=name, user_avatar_url=user_avatar_url)
 
     def test_social_auth_email_not_verified(self) -> None:
@@ -4419,7 +4406,7 @@ class GitLabAuthBackendTest(SocialAuthBase):
             self.assertTrue(gitlab_auth_enabled())
 
     @override
-    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+    def get_account_data_dict(self, email: str, name: str) -> dict[str, Any]:
         return dict(email=email, name=name, email_verified=True)
 
 
@@ -4435,7 +4422,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
     AUTH_FINISH_URL = "/complete/google/"
 
     @override
-    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+    def get_account_data_dict(self, email: str, name: str) -> dict[str, Any]:
         return dict(email=email, name=name, email_verified=True)
 
     def test_social_auth_email_not_verified(self) -> None:
@@ -5119,7 +5106,7 @@ class ExternalMethodDictsTests(ZulipTestCase):
             ),
         ):
             external_auth_methods = get_external_method_dicts()
-            external_auth_backends: List[Type[ExternalAuthMethod]] = [
+            external_auth_backends: list[type[ExternalAuthMethod]] = [
                 ZulipRemoteUserBackend,
                 GitHubAuthBackend,
                 AzureADAuthBackend,
@@ -5209,7 +5196,7 @@ class ExternalMethodDictsTests(ZulipTestCase):
 class FetchAuthBackends(ZulipTestCase):
     def test_get_server_settings(self) -> None:
         def check_result(
-            result: "TestHttpResponse", extra_fields: Sequence[Tuple[str, Validator[object]]] = []
+            result: "TestHttpResponse", extra_fields: Sequence[tuple[str, Validator[object]]] = []
         ) -> None:
             authentication_methods_list = [
                 ("password", check_bool),
@@ -5896,7 +5883,7 @@ class TestJWTLogin(ZulipTestCase):
             self.assert_logged_in_user_id(user_profile.id)
 
     def test_login_failure_when_email_is_missing(self) -> None:
-        payload: Dict[str, str] = {}
+        payload: dict[str, str] = {}
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]

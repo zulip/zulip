@@ -2,7 +2,7 @@
 # mypy: disable-error-code="explicit-override"
 
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import uuid4
 
 from django.conf import settings
@@ -354,7 +354,7 @@ class UserBaseSettings(models.Model):
         web_navigate_to_sent_message=bool,
     )
 
-    modern_notification_settings: Dict[str, Any] = dict(
+    modern_notification_settings: dict[str, Any] = dict(
         # Add new notification settings here.
         enable_followed_topic_desktop_notifications=bool,
         enable_followed_topic_email_notifications=bool,
@@ -382,7 +382,7 @@ class UserBaseSettings(models.Model):
         abstract = True
 
     @staticmethod
-    def emojiset_choices() -> List[Dict[str, str]]:
+    def emojiset_choices() -> list[dict[str, str]]:
         return [
             dict(key=emojiset[0], text=emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES
         ]
@@ -746,7 +746,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
 
     @property
-    def allowed_bot_types(self) -> List[int]:
+    def allowed_bot_types(self) -> list[int]:
         from zerver.models.realms import BotCreationPolicyEnum
 
         allowed_bot_types = []
@@ -977,7 +977,7 @@ def get_user_by_delivery_email(email: str, realm: "Realm") -> UserProfile:
     ).get(delivery_email__iexact=email.strip(), realm=realm)
 
 
-def get_users_by_delivery_email(emails: Set[str], realm: "Realm") -> QuerySet[UserProfile]:
+def get_users_by_delivery_email(emails: set[str], realm: "Realm") -> QuerySet[UserProfile]:
     """This is similar to get_user_by_delivery_email, and
     it has the same security caveats.  It gets multiple
     users and returns a QuerySet, since most callers
@@ -1084,7 +1084,7 @@ def get_user_by_id_in_realm_including_cross_realm(
 
 
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600 * 24 * 7)
-def get_realm_user_dicts(realm_id: int) -> List[RawUserDict]:
+def get_realm_user_dicts(realm_id: int) -> list[RawUserDict]:
     return list(
         UserProfile.objects.filter(
             realm_id=realm_id,
@@ -1093,7 +1093,7 @@ def get_realm_user_dicts(realm_id: int) -> List[RawUserDict]:
 
 
 @cache_with_key(active_user_ids_cache_key, timeout=3600 * 24 * 7)
-def active_user_ids(realm_id: int) -> List[int]:
+def active_user_ids(realm_id: int) -> list[int]:
     query = UserProfile.objects.filter(
         realm_id=realm_id,
         is_active=True,
@@ -1102,7 +1102,7 @@ def active_user_ids(realm_id: int) -> List[int]:
 
 
 @cache_with_key(active_non_guest_user_ids_cache_key, timeout=3600 * 24 * 7)
-def active_non_guest_user_ids(realm_id: int) -> List[int]:
+def active_non_guest_user_ids(realm_id: int) -> list[int]:
     query = (
         UserProfile.objects.filter(
             realm_id=realm_id,
@@ -1116,7 +1116,7 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
     return list(query)
 
 
-def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
+def bot_owner_user_ids(user_profile: UserProfile) -> set[int]:
     is_private_bot = (
         user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only
     ) or (
@@ -1143,7 +1143,7 @@ def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
 
 
 @cache_with_key(lambda realm: bot_dicts_in_realm_cache_key(realm.id), timeout=3600 * 24 * 7)
-def get_bot_dicts_in_realm(realm: "Realm") -> List[Dict[str, Any]]:
+def get_bot_dicts_in_realm(realm: "Realm") -> list[dict[str, Any]]:
     return list(UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields))
 
 

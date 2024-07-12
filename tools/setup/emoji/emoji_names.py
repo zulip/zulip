@@ -1,8 +1,8 @@
-from typing import Any, Dict
+from typing import Any
 
 # Generated with `generate_emoji_names`.
 
-EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
+EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "0023-20e3": {"canonical_name": "hash", "aliases": []},
     "002a-20e3": {"canonical_name": "asterisk", "aliases": []},
     "0030-20e3": {"canonical_name": "zero", "aliases": []},

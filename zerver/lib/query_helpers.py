@@ -1,4 +1,4 @@
-from typing import List, TypeVar
+from typing import TypeVar
 
 from django.db import models
 from django_stubs_ext import ValuesQuerySet
@@ -9,7 +9,7 @@ RowT = TypeVar("RowT")
 
 def query_for_ids(
     query: ValuesQuerySet[ModelT, RowT],
-    user_ids: List[int],
+    user_ids: list[int],
     field: str,
 ) -> ValuesQuerySet[ModelT, RowT]:
     """

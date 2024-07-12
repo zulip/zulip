@@ -3,7 +3,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from operator import attrgetter
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Iterable, Optional, Union
 from urllib.parse import urlencode, urlsplit
 
 from django import forms
@@ -215,8 +215,8 @@ def get_plan_type_string(plan_type: int) -> str:
 
 
 def get_confirmations(
-    types: List[int], object_ids: Iterable[int], hostname: Optional[str] = None
-) -> List[Dict[str, Any]]:
+    types: list[int], object_ids: Iterable[int], hostname: Optional[str] = None
+) -> list[dict[str, Any]]:
     lowest_datetime = timezone_now() - timedelta(days=30)
     confirmations = Confirmation.objects.filter(
         type__in=types, object_id__in=object_ids, date_sent__gte=lowest_datetime
@@ -265,7 +265,7 @@ class SupportSelectOption:
     value: int
 
 
-def get_remote_plan_tier_options() -> List[SupportSelectOption]:
+def get_remote_plan_tier_options() -> list[SupportSelectOption]:
     remote_plan_tiers = [
         SupportSelectOption("None", 0),
         SupportSelectOption(
@@ -280,7 +280,7 @@ def get_remote_plan_tier_options() -> List[SupportSelectOption]:
     return remote_plan_tiers
 
 
-def get_realm_plan_type_options() -> List[SupportSelectOption]:
+def get_realm_plan_type_options() -> list[SupportSelectOption]:
     plan_types = [
         SupportSelectOption(
             get_plan_type_string(Realm.PLAN_TYPE_SELF_HOSTED), Realm.PLAN_TYPE_SELF_HOSTED
@@ -297,7 +297,7 @@ def get_realm_plan_type_options() -> List[SupportSelectOption]:
     return plan_types
 
 
-def get_realm_plan_type_options_for_discount() -> List[SupportSelectOption]:
+def get_realm_plan_type_options_for_discount() -> list[SupportSelectOption]:
     plan_types = [
         SupportSelectOption("None", 0),
         SupportSelectOption(
@@ -349,7 +349,7 @@ def support(
     query: Annotated[Optional[str], ApiParamConfig("q")] = None,
     org_type: Optional[Json[NonNegativeInt]] = None,
 ) -> HttpResponse:
-    context: Dict[str, Any] = {}
+    context: dict[str, Any] = {}
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
@@ -499,7 +499,7 @@ def support(
         context["users"] = users
         context["realms"] = realms
 
-        confirmations: List[Dict[str, Any]] = []
+        confirmations: list[dict[str, Any]] = []
 
         preregistration_user_ids = [
             user.id for user in PreregistrationUser.objects.filter(email__in=key_words)
@@ -544,7 +544,7 @@ def support(
             ]
             + [user.realm for user in users]
         )
-        realm_support_data: Dict[int, CloudSupportData] = {}
+        realm_support_data: dict[int, CloudSupportData] = {}
         for realm in all_realms:
             billing_session = RealmBillingSession(user=None, realm=realm)
             realm_data = get_data_for_cloud_support_view(billing_session)
@@ -581,7 +581,7 @@ def support(
 
 def get_remote_servers_for_support(
     email_to_search: Optional[str], uuid_to_search: Optional[str], hostname_to_search: Optional[str]
-) -> List["RemoteZulipServer"]:
+) -> list["RemoteZulipServer"]:
     remote_servers_query = RemoteZulipServer.objects.order_by("id")
 
     if email_to_search:
@@ -645,7 +645,7 @@ def remote_servers_support(
     delete_fixed_price_next_plan: Json[bool] = False,
     remote_server_status: Optional[VALID_STATUS_VALUES] = None,
 ) -> HttpResponse:
-    context: Dict[str, Any] = {}
+    context: dict[str, Any] = {}
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
@@ -778,10 +778,10 @@ def remote_servers_support(
         uuid_to_search=uuid_to_search,
         hostname_to_search=hostname_to_search,
     )
-    remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
-    server_support_data: Dict[int, RemoteSupportData] = {}
-    realm_support_data: Dict[int, RemoteSupportData] = {}
-    remote_realms: Dict[int, List[RemoteRealm]] = {}
+    remote_server_to_max_monthly_messages: dict[int, Union[int, str]] = dict()
+    server_support_data: dict[int, RemoteSupportData] = {}
+    realm_support_data: dict[int, RemoteSupportData] = {}
+    remote_realms: dict[int, list[RemoteRealm]] = {}
     for remote_server in remote_servers:
         # Get remote realms attached to remote server
         remote_realms_for_server = list(

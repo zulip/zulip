@@ -1,6 +1,6 @@
 import os
 import pwd
-from typing import Dict, Optional, Set, Tuple
+from typing import Optional
 
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import SCIMConfigDict
@@ -52,7 +52,7 @@ ALLOWED_HOSTS = ["*"]
 
 # Uncomment extra backends if you want to test with them.  Note that
 # for Google and GitHub auth you'll need to do some pre-setup.
-AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
+AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     "zproject.backends.DevAuthBackend",
     "zproject.backends.EmailAuthBackend",
     "zproject.backends.GitHubAuthBackend",
@@ -98,7 +98,7 @@ TERMS_OF_SERVICE_MESSAGE: Optional[str] = "Description of changes to the ToS!"
 
 EMBEDDED_BOTS_ENABLED = True
 
-SYSTEM_ONLY_REALMS: Set[str] = set()
+SYSTEM_ONLY_REALMS: set[str] = set()
 USING_PGROONGA = True
 # Flush cache after migration.
 POST_MIGRATION_CACHE_FLUSHING = True
@@ -196,7 +196,7 @@ SOCIAL_AUTH_SUBDOMAIN = "auth"
 
 MEMCACHED_USERNAME: Optional[str] = None
 
-SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
+SCIM_CONFIG: dict[str, SCIMConfigDict] = {
     "zulip": {
         "bearer_token": "token1234",
         "scim_client_name": "test-scim-client",

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List
+from typing import Any, Iterable
 
 from django.db import transaction
 from django.utils.translation import gettext as _
@@ -37,8 +37,8 @@ def check_default_stream_group_name(group_name: str) -> None:
 
 
 def lookup_default_stream_groups(
-    default_stream_group_names: List[str], realm: Realm
-) -> List[DefaultStreamGroup]:
+    default_stream_group_names: list[str], realm: Realm
+) -> list[DefaultStreamGroup]:
     default_stream_groups = []
     for group_name in default_stream_group_names:
         try:
@@ -86,7 +86,7 @@ def do_remove_default_stream(stream: Stream) -> None:
 
 
 def do_create_default_stream_group(
-    realm: Realm, group_name: str, description: str, streams: List[Stream]
+    realm: Realm, group_name: str, description: str, streams: list[Stream]
 ) -> None:
     default_stream_ids = get_default_stream_ids_for_realm(realm.id)
     for stream in streams:
@@ -113,7 +113,7 @@ def do_create_default_stream_group(
 
 
 def do_add_streams_to_default_stream_group(
-    realm: Realm, group: DefaultStreamGroup, streams: List[Stream]
+    realm: Realm, group: DefaultStreamGroup, streams: list[Stream]
 ) -> None:
     default_stream_ids = get_default_stream_ids_for_realm(realm.id)
     for stream in streams:
@@ -136,7 +136,7 @@ def do_add_streams_to_default_stream_group(
 
 
 def do_remove_streams_from_default_stream_group(
-    realm: Realm, group: DefaultStreamGroup, streams: List[Stream]
+    realm: Realm, group: DefaultStreamGroup, streams: list[Stream]
 ) -> None:
     group_stream_ids = {stream.id for stream in group.streams.all()}
     for stream in streams:
@@ -190,5 +190,5 @@ def do_remove_default_stream_group(realm: Realm, group: DefaultStreamGroup) -> N
 
 def default_stream_groups_to_dicts_sorted(
     groups: Iterable[DefaultStreamGroup],
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     return sorted((group.to_dict() for group in groups), key=lambda elt: elt["name"])

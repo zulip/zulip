@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -20,7 +20,7 @@ def send_notification_backend(
     *,
     req_type: Annotated[Literal["direct", "stream", "channel"], ApiParamConfig("type")] = "direct",
     operator: Annotated[Literal["start", "stop"], ApiParamConfig("op")],
-    notification_to: Annotated[Json[Optional[List[int]]], ApiParamConfig("to")] = None,
+    notification_to: Annotated[Json[Optional[list[int]]], ApiParamConfig("to")] = None,
     stream_id: Json[Optional[int]] = None,
     topic: OptionalTopic = None,
 ) -> HttpResponse:

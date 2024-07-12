@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -137,7 +137,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             user_profile: UserProfile,
             message: Message,
             topic_name: str,
-            users_to_be_notified: List[Dict[str, Any]],
+            users_to_be_notified: list[dict[str, Any]],
         ) -> None:
             do_update_message(
                 user_profile=user_profile,
@@ -156,7 +156,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             mock_send_event.assert_called_with(mock.ANY, mock.ANY, users_to_be_notified)
 
         # Returns the users that need to be notified when a message topic is changed
-        def notify(user_id: int) -> Dict[str, Any]:
+        def notify(user_id: int) -> dict[str, Any]:
             um = UserMessage.objects.get(message=message_id)
             if um.user_profile_id == user_id:
                 return {
@@ -249,8 +249,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         # users that need to be notified by send_event in the case of change-topic-name operation.
-        users_to_be_notified_via_muted_topics_event: List[int] = []
-        users_to_be_notified_via_user_topic_event: List[int] = []
+        users_to_be_notified_via_muted_topics_event: list[int] = []
+        users_to_be_notified_via_user_topic_event: list[int] = []
         for user_topic in get_users_with_user_topic_visibility_policy(stream.id, "Topic1"):
             # We are appending the same data twice because 'user_topic' event notifies
             # the user during delete and create operation.
@@ -280,8 +280,8 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         # Extract the send_event call where event type is 'user_topic' or 'muted_topics.
         # Here we assert that the expected users are notified properly.
-        users_notified_via_muted_topics_event: List[int] = []
-        users_notified_via_user_topic_event: List[int] = []
+        users_notified_via_muted_topics_event: list[int] = []
+        users_notified_via_user_topic_event: list[int] = []
         for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
@@ -516,8 +516,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(othello, topics, UserTopic.VisibilityPolicy.UNMUTED)
 
         # users that need to be notified by send_event in the case of change-topic-name operation.
-        users_to_be_notified_via_muted_topics_event: List[int] = []
-        users_to_be_notified_via_user_topic_event: List[int] = []
+        users_to_be_notified_via_muted_topics_event: list[int] = []
+        users_to_be_notified_via_user_topic_event: list[int] = []
         for user_topic in get_users_with_user_topic_visibility_policy(stream.id, "Topic1"):
             # We are appending the same data twice because 'user_topic' event notifies
             # the user during delete and create operation.
@@ -542,8 +542,8 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         # Extract the send_event call where event type is 'user_topic' or 'muted_topics.
         # Here we assert that the expected users are notified properly.
-        users_notified_via_muted_topics_event: List[int] = []
-        users_notified_via_user_topic_event: List[int] = []
+        users_notified_via_muted_topics_event: list[int] = []
+        users_notified_via_user_topic_event: list[int] = []
         for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":

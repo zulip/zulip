@@ -2,7 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Optional, Sequence, Union
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -52,7 +52,7 @@ def make_table(
 ) -> str:
     if not has_row_class:
 
-        def fix_row(row: Any) -> Dict[str, Any]:
+        def fix_row(row: Any) -> dict[str, Any]:
             return dict(cells=row, row_class=None)
 
         rows = list(map(fix_row, rows))
@@ -68,7 +68,7 @@ def make_table(
 
 
 def fix_rows(
-    rows: List[List[Any]],
+    rows: list[list[Any]],
     i: int,
     fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str], Callable[[int], int]],
 ) -> None:
@@ -76,7 +76,7 @@ def fix_rows(
         row[i] = fixup_func(row[i])
 
 
-def get_query_data(query: Composable) -> List[List[Any]]:
+def get_query_data(query: Composable) -> list[list[Any]]:
     cursor = connection.cursor()
     cursor.execute(query)
     rows = cursor.fetchall()
@@ -85,7 +85,7 @@ def get_query_data(query: Composable) -> List[List[Any]]:
     return rows
 
 
-def dictfetchall(cursor: CursorWrapper) -> List[Dict[str, Any]]:
+def dictfetchall(cursor: CursorWrapper) -> list[dict[str, Any]]:
     """Returns all rows from a cursor as a dict"""
     desc = cursor.description
     return [dict(zip((col[0] for col in desc), row)) for row in cursor.fetchall()]
@@ -208,7 +208,7 @@ def get_remote_activity_plan_data(
     )
 
 
-def get_estimated_arr_and_rate_by_realm() -> Tuple[Dict[str, int], Dict[str, str]]:  # nocoverage
+def get_estimated_arr_and_rate_by_realm() -> tuple[dict[str, int], dict[str, str]]:  # nocoverage
     # NOTE: Customers without a plan might still have a discount attached to them which
     # are not included in `plan_rate`.
     annual_revenue = {}
@@ -241,8 +241,8 @@ def get_estimated_arr_and_rate_by_realm() -> Tuple[Dict[str, int], Dict[str, str
     return annual_revenue, plan_rate
 
 
-def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # nocoverage
-    remote_server_plan_data: Dict[int, RemoteActivityPlanData] = {}
+def get_plan_data_by_remote_server() -> dict[int, RemoteActivityPlanData]:  # nocoverage
+    remote_server_plan_data: dict[int, RemoteActivityPlanData] = {}
     plans = (
         CustomerPlan.objects.filter(
             status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD,
@@ -290,8 +290,8 @@ def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # no
     return remote_server_plan_data
 
 
-def get_plan_data_by_remote_realm() -> Dict[int, Dict[int, RemoteActivityPlanData]]:  # nocoverage
-    remote_server_plan_data_by_realm: Dict[int, Dict[int, RemoteActivityPlanData]] = {}
+def get_plan_data_by_remote_realm() -> dict[int, dict[int, RemoteActivityPlanData]]:  # nocoverage
+    remote_server_plan_data_by_realm: dict[int, dict[int, RemoteActivityPlanData]] = {}
     plans = (
         CustomerPlan.objects.filter(
             status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD,
@@ -351,8 +351,8 @@ def get_plan_data_by_remote_realm() -> Dict[int, Dict[int, RemoteActivityPlanDat
 
 def get_remote_realm_user_counts(
     event_time: datetime = timezone_now(),
-) -> Dict[int, RemoteCustomerUserCount]:  # nocoverage
-    user_counts_by_realm: Dict[int, RemoteCustomerUserCount] = {}
+) -> dict[int, RemoteCustomerUserCount]:  # nocoverage
+    user_counts_by_realm: dict[int, RemoteCustomerUserCount] = {}
     for log in (
         RemoteRealmAuditLog.objects.filter(
             event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
@@ -378,8 +378,8 @@ def get_remote_realm_user_counts(
 
 def get_remote_server_audit_logs(
     event_time: datetime = timezone_now(),
-) -> Dict[int, List[RemoteRealmAuditLog]]:
-    logs_per_server: Dict[int, List[RemoteRealmAuditLog]] = defaultdict(list)
+) -> dict[int, list[RemoteRealmAuditLog]]:
+    logs_per_server: dict[int, list[RemoteRealmAuditLog]] = defaultdict(list)
     for log in (
         RemoteRealmAuditLog.objects.filter(
             event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,

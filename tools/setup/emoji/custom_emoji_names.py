@@ -1,6 +1,6 @@
-from typing import Any, Dict
+from typing import Any
 
-CUSTOM_EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
+CUSTOM_EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     # seems like best emoji for happy
     "1f600": {"canonical_name": "grinning", "aliases": ["happy"]},
     "1f603": {"canonical_name": "smiley", "aliases": []},

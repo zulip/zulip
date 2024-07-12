@@ -6,7 +6,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Optional
 
 from django.conf import settings
 from pydantic import BaseModel, ConfigDict
@@ -59,7 +59,7 @@ realm.save()
 
 DEFAULT_USER = get_user_by_delivery_email("iago@zulip.com", realm)
 NOTIFICATION_BOT = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
-message_thread_ids: List[int] = []
+message_thread_ids: list[int] = []
 
 USER_AVATARS_MAP = {
     "Ariella Drake": "tools/screenshots/user_avatars/AriellaDrake.png",
@@ -82,8 +82,8 @@ class MessageThread(BaseModel):
     content: str
     starred: bool
     edited: bool
-    reactions: Dict[str, List[str]]
-    date: Dict[str, int]
+    reactions: dict[str, list[str]]
+    date: dict[str, int]
 
 
 def create_user(full_name: str, avatar_filename: Optional[str]) -> None:
@@ -104,7 +104,7 @@ def set_avatar(user: UserProfile, filename: str) -> None:
 
 
 def create_and_subscribe_stream(
-    stream_name: str, users: List[str], color: Optional[str] = None, invite_only: bool = False
+    stream_name: str, users: list[str], color: Optional[str] = None, invite_only: bool = False
 ) -> None:
     stream = ensure_stream(realm, stream_name, invite_only=invite_only, acting_user=DEFAULT_USER)
     bulk_add_subscriptions(
@@ -123,22 +123,22 @@ def create_and_subscribe_stream(
 
 
 def send_stream_messages(
-    stream_name: str, topic: str, staged_messages_data: List[MessageThread]
-) -> List[int]:
+    stream_name: str, topic: str, staged_messages_data: list[MessageThread]
+) -> list[int]:
     staged_messages = [dict(staged_message) for staged_message in staged_messages_data]
     stream = ensure_stream(realm, stream_name, acting_user=DEFAULT_USER)
     subscribers_query = get_active_subscriptions_for_stream_id(
         stream.id, include_deactivated_users=False
     ).values_list("user_profile", flat=True)
 
-    subscribers: Dict[str, UserProfile] = {}
+    subscribers: dict[str, UserProfile] = {}
     for subscriber_id in subscribers_query:
         subscriber = UserProfile.objects.get(realm=realm, id=subscriber_id)
         subscribers[subscriber.full_name] = subscriber
 
     subscribers["Notification Bot"] = NOTIFICATION_BOT
 
-    messages: List[Optional[SendMessageRequest]] = []
+    messages: list[Optional[SendMessageRequest]] = []
 
     for message in staged_messages:
         date_sent = message["date"]
@@ -186,7 +186,7 @@ def send_stream_messages(
     return message_ids
 
 
-def add_message_reactions(message_id: int, emoji: str, users: List[UserProfile]) -> None:
+def add_message_reactions(message_id: int, emoji: str, users: list[UserProfile]) -> None:
     preview_message = access_message(user_profile=DEFAULT_USER, message_id=message_id)
     emoji_data = get_emoji_data(realm.id, emoji)
     for user in users:
@@ -195,7 +195,7 @@ def add_message_reactions(message_id: int, emoji: str, users: List[UserProfile])
         )
 
 
-def create_user_group(group_name: str, members: List[str]) -> None:
+def create_user_group(group_name: str, members: list[str]) -> None:
     member_profiles = [
         UserProfile.objects.get(realm=realm, full_name=member_name) for member_name in members
     ]

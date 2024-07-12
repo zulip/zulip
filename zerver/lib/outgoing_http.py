@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
 from typing_extensions import override
@@ -10,7 +10,7 @@ class OutgoingSession(requests.Session):
         self,
         role: str,
         timeout: float,
-        headers: Optional[Dict[str, str]] = None,
+        headers: Optional[dict[str, str]] = None,
         max_retries: Optional[Union[int, Retry]] = None,
     ) -> None:
         super().__init__()
@@ -43,5 +43,5 @@ class OutgoingHTTPAdapter(requests.adapters.HTTPAdapter):
         return super().send(*args, **kwargs)
 
     @override
-    def proxy_headers(self, proxy: str) -> Dict[str, str]:
+    def proxy_headers(self, proxy: str) -> dict[str, str]:
         return {"X-Smokescreen-Role": self.role}

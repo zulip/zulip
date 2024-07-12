@@ -1,6 +1,6 @@
 import importlib
 import json
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -79,10 +79,10 @@ class EmbeddedBotHandler:
     def identity(self) -> BotIdentity:
         return BotIdentity(self.full_name, self.email)
 
-    def react(self, message: Dict[str, Any], emoji_name: str) -> Dict[str, Any]:
+    def react(self, message: dict[str, Any], emoji_name: str) -> dict[str, Any]:
         return {}  # Not implemented
 
-    def send_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
+    def send_message(self, message: dict[str, Any]) -> dict[str, Any]:
         if not self._rate_limit.is_legal():
             self._rate_limit.show_error_and_exit()
 
@@ -115,8 +115,8 @@ class EmbeddedBotHandler:
         return {"id": message_id}
 
     def send_reply(
-        self, message: Dict[str, Any], response: str, widget_content: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, message: dict[str, Any], response: str, widget_content: Optional[str] = None
+    ) -> dict[str, Any]:
         if message["type"] == "private":
             result = self.send_message(
                 dict(
@@ -138,11 +138,11 @@ class EmbeddedBotHandler:
             )
         return {"id": result["id"]}
 
-    def update_message(self, message: Dict[str, Any]) -> None:
+    def update_message(self, message: dict[str, Any]) -> None:
         pass  # Not implemented
 
     # The bot_name argument exists only to comply with ExternalBotHandler.get_config_info().
-    def get_config_info(self, bot_name: str, optional: bool = False) -> Dict[str, str]:
+    def get_config_info(self, bot_name: str, optional: bool = False) -> dict[str, str]:
         try:
             return get_bot_config(self.user_profile)
         except ConfigError:

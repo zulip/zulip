@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timezone
-from typing import Callable, Dict, Optional
+from typing import Callable, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -811,7 +811,7 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
     return get_repository_name(payload)
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
+EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "commit_comment": get_commit_comment_body,
     "closed_pull_request": get_closed_pull_request_body,
     "create": partial(get_create_or_delete_body, "created"),
