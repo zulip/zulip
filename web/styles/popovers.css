@@ -124,45 +124,47 @@
     white-space: nowrap;
 }
 
-.custom-profile-field-value {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.custom-profile-field-value.rendered_markdown p {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    /* Overriding CSS from rendered_markdown.css */
-    margin: 0;
-}
-
-.custom-profile-field-link {
-    color: var(--color-text-item);
-
-    &:hover {
-        color: var(--color-text-link);
-        text-decoration: none;
-    }
-
-    &:focus-visible {
-        color: var(--color-text-url-hover);
-        outline: 1px solid var(--color-outline-focus) !important;
-        outline-offset: 2px;
-        border-radius: 2px;
-    }
-
-    .custom-profile-field-text {
+.user-card-popover-actions {
+    .custom-profile-field-value {
+        display: flex;
+        align-items: center;
+        gap: 5px;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+    }
+
+    .custom-profile-field-value.rendered_markdown p {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        /* Overriding CSS from rendered_markdown.css */
+        margin: 0;
+    }
+
+    .custom-profile-field-link {
+        color: var(--color-text-item);
 
         &:hover {
-            text-decoration: underline;
+            color: var(--color-text-link);
+            text-decoration: none;
+        }
+
+        &:focus-visible {
+            color: var(--color-text-url-hover);
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
+        .custom-profile-field-text {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+
+            &:hover {
+                text-decoration: underline;
+            }
         }
     }
 }
