@@ -430,7 +430,7 @@ html {
         transition: all 0.3s ease;
 
         &:hover {
-            background-color: hsl(213deg 33% 31%);
+            background-color: hsl(352deg 97% 45%);
         }
 
         &:active {
