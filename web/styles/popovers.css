@@ -1422,7 +1422,8 @@ ul.popover-menu-list {
         font-weight: 500;
         /* 14px at 14px/1em */
         line-height: 1em;
-        min-width: 1.25rem;
+        /* 20px at 14px/1em */
+        min-width: 1.4285em;
         padding: 2px 4px;
         border-radius: 3px;
         border: 1px solid var(--color-border-popover-hotkey-hint);
