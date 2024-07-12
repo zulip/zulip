@@ -1,12 +1,11 @@
 from datetime import timedelta
-from typing import Any
+from typing import Annotated, Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
-from typing_extensions import Annotated
 
 from zerver.actions.presence import update_user_presence
 from zerver.actions.user_status import do_update_user_status

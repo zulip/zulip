@@ -1,6 +1,7 @@
 import re
+from collections.abc import Sequence
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 from urllib.parse import quote, urlencode
 

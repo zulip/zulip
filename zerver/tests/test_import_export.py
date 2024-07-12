@@ -3,8 +3,9 @@ import os
 import shutil
 import uuid
 from collections import defaultdict
+from collections.abc import Callable, Iterable
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Iterable
+from typing import Any
 from unittest.mock import patch
 
 import orjson

@@ -2,7 +2,7 @@ import logging
 from collections import Counter
 from datetime import datetime, timezone
 from email.headerregistry import Address
-from typing import Any, TypedDict, TypeVar
+from typing import Annotated, Any, TypedDict, TypeVar
 from uuid import UUID
 
 import orjson
@@ -21,7 +21,6 @@ from dns import resolver as dns_resolver
 from dns.exception import DNSException
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints
 from pydantic.functional_validators import AfterValidator
-from typing_extensions import Annotated
 
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,

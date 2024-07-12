@@ -1,5 +1,6 @@
 import re
-from typing import Any, Match
+from re import Match
+from typing import Any
 
 from markdown import Markdown
 from markdown.extensions import Extension

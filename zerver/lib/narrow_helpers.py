@@ -19,8 +19,8 @@ from users:
 """
 
 import os
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
-from typing import Collection, Sequence
 
 from django.conf import settings
 

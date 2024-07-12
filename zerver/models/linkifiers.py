@@ -1,4 +1,4 @@
-from typing import Pattern
+from re import Pattern
 
 import re2
 import uri_template

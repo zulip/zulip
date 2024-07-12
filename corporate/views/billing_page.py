@@ -1,12 +1,11 @@
 import logging
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from pydantic import AfterValidator, Json
-from typing_extensions import Annotated
 
 from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,

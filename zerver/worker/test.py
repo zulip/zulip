@@ -1,7 +1,8 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
 import time
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 import orjson
 from django.conf import settings

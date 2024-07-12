@@ -3,8 +3,9 @@
 __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import secrets
 from base64 import b32encode
+from collections.abc import Mapping
 from datetime import timedelta
-from typing import Mapping, Optional, Union, cast
+from typing import Optional, TypeAlias, Union, cast
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -16,7 +17,7 @@ from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
 from zerver.lib.types import UnspecifiedValue

@@ -1,6 +1,7 @@
 import hashlib
 from collections import defaultdict
-from typing import Any, Collection, Iterable, Mapping
+from collections.abc import Collection, Iterable, Mapping
+from typing import Any, TypeAlias
 
 from django.conf import settings
 from django.db import transaction
@@ -9,7 +10,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from django_stubs_ext import ValuesQuerySet
-from typing_extensions import TypeAlias
 
 from zerver.actions.default_streams import (
     do_remove_default_stream,

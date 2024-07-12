@@ -1,4 +1,5 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import django_scim.constants as scim_constants
 import django_scim.exceptions as scim_exceptions

@@ -1,5 +1,6 @@
 import time
-from typing import Any, Callable, Collection
+from collections.abc import Callable, Collection
+from typing import Any
 from unittest import mock
 
 import orjson

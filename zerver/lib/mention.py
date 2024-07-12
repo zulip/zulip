@@ -1,7 +1,7 @@
 import functools
 import re
 from dataclasses import dataclass
-from typing import Match
+from re import Match
 
 from django.conf import settings
 from django.db.models import Q

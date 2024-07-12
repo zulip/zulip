@@ -2,8 +2,9 @@ import copy
 import json
 import re
 from collections import OrderedDict
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 import markdown
 from markdown.extensions import Extension

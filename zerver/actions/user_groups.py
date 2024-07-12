@@ -1,5 +1,6 @@
+from collections.abc import Mapping, Sequence
 from datetime import datetime
-from typing import Mapping, Sequence, TypedDict
+from typing import TypedDict
 
 import django.db.utils
 from django.db import transaction

@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 
 from django.http import HttpRequest, HttpResponse
 

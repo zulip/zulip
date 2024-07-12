@@ -1,6 +1,7 @@
 import weakref
 from abc import ABCMeta, abstractmethod
-from typing import Any, ClassVar, Generic, MutableMapping, TypeVar
+from collections.abc import MutableMapping
+from typing import Any, ClassVar, Generic, TypeVar
 
 from typing_extensions import override
 

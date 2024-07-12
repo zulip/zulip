@@ -1,9 +1,11 @@
 import logging
 from collections import defaultdict
+from collections.abc import Callable, Collection, Sequence
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import AbstractSet, Any, Callable, Collection, Sequence, TypedDict
+from typing import Any, TypedDict
 
 import orjson
 from django.conf import settings

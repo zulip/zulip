@@ -1,5 +1,6 @@
+from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
-from typing import Any, Callable, Mapping
+from typing import Any
 
 import orjson
 from django.http import HttpRequest, HttpResponse

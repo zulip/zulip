@@ -1,7 +1,7 @@
 import logging
 import os
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 from urllib.parse import urljoin
 
 import pyvips

@@ -3,8 +3,9 @@ Context managers, i.e. things you can use with the 'with' statement.
 """
 
 import fcntl
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import IO, Any, Iterator
+from typing import IO, Any
 
 
 @contextmanager

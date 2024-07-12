@@ -1,6 +1,7 @@
 import logging
 import time
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 from django.db import connection
 from django.db.backends.utils import CursorWrapper

@@ -1,4 +1,5 @@
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from django.db import transaction
 from django.utils.translation import gettext as _

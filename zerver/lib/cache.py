@@ -7,8 +7,9 @@ import secrets
 import sys
 import time
 import traceback
+from collections.abc import Callable, Iterable, Sequence
 from functools import _lru_cache_wrapper, lru_cache, wraps
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Sequence, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from django.conf import settings
 from django.core.cache import caches

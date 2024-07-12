@@ -3,7 +3,8 @@
 import copy
 import logging
 import time
-from typing import Any, Callable, Collection, Iterable, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
+from typing import Any
 
 from django.conf import settings
 from django.utils.translation import gettext as _

@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _

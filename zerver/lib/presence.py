@@ -1,7 +1,8 @@
 import time
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timedelta
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now

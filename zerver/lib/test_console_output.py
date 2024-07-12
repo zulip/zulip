@@ -2,10 +2,11 @@ import itertools
 import logging
 import re
 import sys
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from io import SEEK_SET, TextIOWrapper
 from types import TracebackType
-from typing import IO, TYPE_CHECKING, Iterable, Iterator
+from typing import IO, TYPE_CHECKING
 
 from typing_extensions import override
 

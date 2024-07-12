@@ -3,7 +3,7 @@ import re
 import secrets
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
-from typing import Match
+from re import Match
 
 from django.conf import settings
 from django.utils.translation import gettext as _

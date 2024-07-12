@@ -1,8 +1,10 @@
 import itertools
 from collections import defaultdict
+from collections.abc import Collection
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import AbstractSet, Any, Collection
+from typing import Any
 
 from django.db.models import Q, QuerySet
 from django_stubs_ext import ValuesQuerySet

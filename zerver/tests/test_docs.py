@@ -1,6 +1,7 @@
 import os
 import re
-from typing import TYPE_CHECKING, Any, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 from urllib.parse import urlsplit
 

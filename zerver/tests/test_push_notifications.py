@@ -2,9 +2,10 @@ import asyncio
 import base64
 import logging
 import uuid
+from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterator, Mapping
+from typing import Any
 from unittest import mock, skipUnless
 
 import aioapns

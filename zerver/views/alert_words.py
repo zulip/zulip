@@ -1,6 +1,7 @@
+from typing import Annotated
+
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json, StringConstraints
-from typing_extensions import Annotated
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import user_alert_words

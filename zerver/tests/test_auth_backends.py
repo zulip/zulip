@@ -6,10 +6,11 @@ import re
 import secrets
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Iterator, Mapping, Sequence
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 from urllib.parse import parse_qs, urlencode, urlsplit
 

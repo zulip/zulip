@@ -1,5 +1,7 @@
 import re
-from typing import Any, Callable, Match
+from collections.abc import Callable
+from re import Match
+from typing import Any
 from urllib.parse import urljoin
 
 import magic

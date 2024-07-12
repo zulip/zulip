@@ -1,6 +1,7 @@
 import os
+from collections.abc import Callable
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Callable, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 

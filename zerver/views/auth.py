@@ -1,7 +1,8 @@
 import logging
 import secrets
+from collections.abc import Callable, Mapping
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Mapping, cast
+from typing import TYPE_CHECKING, Any, Concatenate, TypeAlias, cast
 from urllib.parse import urlencode, urljoin
 
 import jwt
@@ -25,7 +26,7 @@ from django.views.decorators.http import require_safe
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
-from typing_extensions import Concatenate, ParamSpec, TypeAlias
+from typing_extensions import ParamSpec
 
 from confirmation.models import (
     Confirmation,

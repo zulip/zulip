@@ -1,4 +1,4 @@
-from typing import Mapping
+from collections.abc import Mapping
 
 from bs4 import BeautifulSoup
 from django.utils.html import escape

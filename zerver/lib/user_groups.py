@@ -1,6 +1,7 @@
+from collections.abc import Collection, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
-from typing import Collection, Iterable, Iterator, Mapping, TypedDict
+from typing import TypedDict
 
 from django.conf import settings
 from django.db import connection, transaction

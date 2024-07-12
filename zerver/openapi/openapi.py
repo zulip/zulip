@@ -8,7 +8,8 @@
 import json
 import os
 import re
-from typing import Any, Literal, Mapping
+from collections.abc import Mapping
+from typing import Any, Literal
 
 import orjson
 from openapi_core import OpenAPI

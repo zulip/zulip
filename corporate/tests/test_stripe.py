@@ -6,11 +6,12 @@ import re
 import sys
 import typing
 import uuid
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Literal, Mapping, Optional, Sequence, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypeVar, cast
 from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
 

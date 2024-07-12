@@ -1,4 +1,5 @@
-from typing import Any, Collection, Iterable
+from collections.abc import Collection, Iterable
+from typing import Any
 
 from django.db.models import Model, QuerySet
 from django.utils.timezone import now as timezone_now

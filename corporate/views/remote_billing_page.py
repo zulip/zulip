@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Literal, cast
+from typing import Any, Literal, TypeAlias, cast
 from urllib.parse import urlsplit, urlunsplit
 
 from django.conf import settings
@@ -15,7 +15,6 @@ from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
-from typing_extensions import TypeAlias
 
 from confirmation.models import (
     Confirmation,

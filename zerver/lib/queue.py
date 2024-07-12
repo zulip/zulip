@@ -5,7 +5,8 @@ import threading
 import time
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from typing import Any, Callable, Generic, Mapping, TypeVar
+from collections.abc import Callable, Mapping
+from typing import Any, Generic, TypeAlias, TypeVar
 
 import orjson
 import pika
@@ -18,7 +19,7 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
 from pika.spec import Basic
 from tornado import ioloop
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from zerver.lib.utils import assert_is_not_none
 

@@ -29,9 +29,10 @@ for any particular type of object.
 """
 
 import re
+from collections.abc import Callable, Collection, Container, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Callable, Collection, Container, Iterator, NoReturn, TypeVar, cast, overload
+from typing import Any, NoReturn, TypeVar, cast, overload
 
 import orjson
 import zoneinfo

@@ -1,5 +1,6 @@
 import time
-from typing import Any, Callable, Mapping, Sequence, TypeVar
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, TypeVar
 
 from asgiref.sync import async_to_sync
 from django.conf import settings

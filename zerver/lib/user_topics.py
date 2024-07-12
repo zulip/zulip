@@ -1,7 +1,8 @@
 import logging
 from collections import defaultdict
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable, TypedDict
+from typing import TypedDict
 
 from django.db import connection, transaction
 from django.db.models import QuerySet

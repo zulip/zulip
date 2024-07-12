@@ -1,10 +1,10 @@
 from datetime import datetime
+from typing import Annotated, Literal
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import AfterValidator, Json, StringConstraints
-from typing_extensions import Annotated, Literal
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.response import json_success

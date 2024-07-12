@@ -7,10 +7,12 @@ import mimetypes
 import re
 import time
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import lru_cache
-from typing import Any, Callable, Generic, Match, Optional, Pattern, TypedDict, TypeVar, cast
+from re import Match, Pattern
+from typing import Any, Generic, Optional, TypeAlias, TypedDict, TypeVar, cast
 from urllib.parse import parse_qs, quote, urlencode, urljoin, urlsplit, urlunsplit
 from xml.etree.ElementTree import Element, SubElement
 
@@ -34,7 +36,7 @@ from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
-from typing_extensions import Self, TypeAlias, override
+from typing_extensions import Self, override
 
 from zerver.lib import mention
 from zerver.lib.cache import cache_with_key

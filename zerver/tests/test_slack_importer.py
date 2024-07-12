@@ -1,7 +1,8 @@
 import os
 import shutil
+from collections.abc import Iterator
 from io import BytesIO
-from typing import Any, Iterator
+from typing import Any
 from unittest import mock
 from unittest.mock import ANY
 from urllib.parse import parse_qs, urlsplit

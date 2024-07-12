@@ -9,8 +9,10 @@ import inspect
 import json
 import re
 import shlex
+from collections.abc import Mapping
+from re import Match, Pattern
 from textwrap import dedent
-from typing import Any, Mapping, Match, Pattern
+from typing import Any
 
 import markdown
 from django.conf import settings

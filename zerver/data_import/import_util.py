@@ -3,14 +3,15 @@ import os
 import random
 import shutil
 from collections import defaultdict
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from collections.abc import Set as AbstractSet
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import AbstractSet, Any, Callable, Iterable, Iterator, Mapping, Protocol, TypeVar
+from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
 import requests
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
-from typing_extensions import TypeAlias
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids

@@ -1,6 +1,7 @@
 import copy
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Iterator, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 from unittest import mock
 
 import orjson

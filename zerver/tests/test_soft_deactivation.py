@@ -1,4 +1,4 @@
-from typing import AbstractSet
+from collections.abc import Set as AbstractSet
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now

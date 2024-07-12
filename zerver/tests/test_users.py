@@ -1,6 +1,7 @@
+from collections.abc import Iterable
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Iterable, TypeVar
+from typing import Any, TypeVar
 from unittest import mock
 
 import orjson

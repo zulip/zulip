@@ -1,6 +1,7 @@
 import os
+from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator
+from typing import IO, Any, BinaryIO
 
 from zerver.models import Realm, UserProfile
 

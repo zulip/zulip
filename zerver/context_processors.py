@@ -1,4 +1,5 @@
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 from urllib.parse import urljoin
 
 from django.conf import settings

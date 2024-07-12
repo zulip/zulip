@@ -1,4 +1,5 @@
-from typing import Iterable, TypedDict
+from collections.abc import Iterable
+from typing import TypedDict
 
 from zerver.lib import retention
 from zerver.lib.retention import move_messages_to_archive

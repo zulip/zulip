@@ -21,9 +21,10 @@ recipient address and retrieve, forward, and archive the message.
 import email
 import email.policy
 import logging
+from collections.abc import Generator
 from email.message import EmailMessage
 from imaplib import IMAP4_SSL
-from typing import Any, Generator
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError

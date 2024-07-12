@@ -1,6 +1,7 @@
 import itertools
+from collections.abc import Callable, Collection, Iterable, Mapping
 from operator import itemgetter
-from typing import Any, Callable, Collection, Iterable, Mapping
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.db import connection

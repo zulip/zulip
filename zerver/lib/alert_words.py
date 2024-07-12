@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 import ahocorasick
 from django.db import transaction

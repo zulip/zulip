@@ -3,7 +3,8 @@
 import contextlib
 import sys
 import time
-from typing import Any, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path

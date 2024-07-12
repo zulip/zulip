@@ -8,21 +8,11 @@ import time
 import traceback
 import uuid
 from collections import deque
+from collections.abc import Callable, Collection, Iterable, Mapping, MutableMapping, Sequence
+from collections.abc import Set as AbstractSet
 from contextlib import suppress
 from functools import cache
-from typing import (
-    AbstractSet,
-    Any,
-    Callable,
-    Collection,
-    Iterable,
-    Literal,
-    Mapping,
-    MutableMapping,
-    Sequence,
-    TypedDict,
-    cast,
-)
+from typing import Any, Literal, TypedDict, cast
 
 import orjson
 import tornado.ioloop

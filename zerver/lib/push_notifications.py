@@ -5,10 +5,11 @@ import base64
 import copy
 import logging
 import re
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from email.headerregistry import Address
 from functools import cache
-from typing import TYPE_CHECKING, Any, Iterable, Mapping, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Optional, TypeAlias, Union
 
 import lxml.html
 import orjson
@@ -24,7 +25,7 @@ from firebase_admin import exceptions as firebase_exceptions
 from firebase_admin import initialize_app as firebase_initialize_app
 from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.realm_settings import (

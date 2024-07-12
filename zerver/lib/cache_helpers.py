@@ -1,7 +1,8 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
 import logging
+from collections.abc import Callable, Iterable
 from datetime import timedelta
-from typing import Any, Callable, Iterable
+from typing import Any
 
 from django.conf import settings
 from django.contrib.sessions.models import Session

@@ -1,6 +1,7 @@
 import time
 from collections import defaultdict
-from typing import Any, Callable, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any
 
 import orjson
 from django.conf import settings

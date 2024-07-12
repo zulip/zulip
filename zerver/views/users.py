@@ -1,5 +1,6 @@
+from collections.abc import Mapping
 from email.headerregistry import Address
-from typing import Any, Mapping, TypeAlias
+from typing import Annotated, Any, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -8,7 +9,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 from pydantic import AfterValidator, BaseModel, Json, StringConstraints
-from typing_extensions import Annotated
 
 from zerver.actions.bots import (
     do_change_bot_owner,

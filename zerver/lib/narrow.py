@@ -1,6 +1,7 @@
 import re
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import Any, Callable, Generic, Iterable, Sequence, TypeVar
+from typing import Any, Generic, TypeAlias, TypeVar
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -28,7 +29,7 @@ from sqlalchemy.sql import (
 )
 from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError

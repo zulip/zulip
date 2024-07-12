@@ -2,10 +2,11 @@ import base64
 import email.policy
 import os
 import subprocess
+from collections.abc import Callable, Mapping
 from email import message_from_string
 from email.headerregistry import Address
 from email.message import EmailMessage, MIMEPart
-from typing import TYPE_CHECKING, Any, Callable, Mapping
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson

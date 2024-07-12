@@ -1,9 +1,10 @@
 import base64
 import logging
+from collections.abc import Callable, Sequence
 from datetime import datetime
 from functools import wraps
 from io import BytesIO
-from typing import TYPE_CHECKING, Callable, Sequence, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Concatenate, TypeVar, cast, overload
 from urllib.parse import urlsplit
 
 import django_otp
@@ -23,7 +24,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
 from two_factor.utils import default_device
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import ParamSpec
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import (

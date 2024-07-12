@@ -1,6 +1,6 @@
 import re
+from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
 

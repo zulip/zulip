@@ -1,9 +1,10 @@
 import time
-from typing import Any, Callable, Iterable, Mapping, Sequence, TypeVar
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from typing import Any, TypeAlias, TypeVar
 
 from psycopg2.extensions import connection, cursor
 from psycopg2.sql import Composable
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 CursorObj = TypeVar("CursorObj", bound=cursor)
 Query: TypeAlias = str | bytes | Composable

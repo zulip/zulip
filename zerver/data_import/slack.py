@@ -7,9 +7,10 @@ import secrets
 import shutil
 import zipfile
 from collections import defaultdict
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from email.headerregistry import Address
-from typing import Any, Iterator, TypeVar
+from typing import Any, TypeAlias, TypeVar
 from urllib.parse import urlsplit
 
 import orjson
@@ -17,7 +18,6 @@ import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
-from typing_extensions import TypeAlias
 
 from zerver.data_import.import_util import (
     ZerverFieldsT,

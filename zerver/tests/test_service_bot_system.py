@@ -1,11 +1,12 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Concatenate
 from unittest import mock
 
 import orjson
 from django.conf import settings
 from django.test import override_settings
-from typing_extensions import Concatenate, ParamSpec, override
+from typing_extensions import ParamSpec, override
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events

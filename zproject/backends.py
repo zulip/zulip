@@ -16,8 +16,9 @@ import binascii
 import json
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from email.headerregistry import Address
-from typing import Any, Callable, TypedDict, TypeVar, cast
+from typing import Any, TypedDict, TypeVar, cast
 from urllib.parse import urlencode
 
 import magic

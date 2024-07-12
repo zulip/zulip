@@ -1,8 +1,9 @@
 import itertools
 import re
+from collections.abc import Collection
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Collection
+from typing import Any
 
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound

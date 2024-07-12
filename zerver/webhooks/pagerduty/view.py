@@ -1,7 +1,7 @@
 from email.headerregistry import Address
+from typing import TypeAlias
 
 from django.http import HttpRequest, HttpResponse
-from typing_extensions import TypeAlias
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError

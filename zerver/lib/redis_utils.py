@@ -1,7 +1,8 @@
 import os
 import re
 import secrets
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import orjson
 import redis

@@ -1,7 +1,8 @@
+from typing import Annotated
+
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
-from typing_extensions import Annotated
 
 from zerver.actions.message_flags import (
     do_mark_all_as_read,

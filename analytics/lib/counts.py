@@ -1,13 +1,14 @@
 import logging
 import time
 from collections import OrderedDict, defaultdict
+from collections.abc import Callable, Sequence
 from datetime import datetime, timedelta
-from typing import Callable, Sequence, Union
+from typing import TypeAlias, Union
 
 from django.conf import settings
 from django.db import connection, models
 from psycopg2.sql import SQL, Composable, Identifier, Literal
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from analytics.models import (
     BaseCount,

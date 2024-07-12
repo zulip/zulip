@@ -1,6 +1,7 @@
+from collections.abc import Iterator
 from contextlib import AbstractContextManager, ExitStack, contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterator
+from typing import Any
 from unittest import mock
 
 import time_machine

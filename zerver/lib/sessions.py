@@ -1,7 +1,8 @@
 import logging
+from collections.abc import Mapping
 from datetime import timedelta
 from importlib import import_module
-from typing import Any, Mapping, Protocol, cast
+from typing import Any, Protocol, cast
 
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model

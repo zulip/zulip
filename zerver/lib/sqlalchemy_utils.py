@@ -1,5 +1,5 @@
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 import sqlalchemy
 from django.db import connection

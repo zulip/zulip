@@ -2,13 +2,14 @@ import hashlib
 import logging
 import os
 import smtplib
+from collections.abc import Callable, Mapping
 from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Callable, Mapping
+from typing import Any
 
 import backoff
 import css_inline

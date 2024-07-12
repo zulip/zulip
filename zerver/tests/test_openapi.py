@@ -2,7 +2,8 @@ import inspect
 import os
 import types
 from collections import abc
-from typing import Any, Callable, Mapping, Sequence, Union, get_args, get_origin
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, Union, get_args, get_origin
 from unittest.mock import MagicMock, patch
 
 import yaml

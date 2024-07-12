@@ -10,7 +10,8 @@ import re
 import secrets
 import shutil
 import subprocess
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import orjson
 from django.conf import settings

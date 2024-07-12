@@ -3,8 +3,9 @@ import logging
 import os
 import re
 import unicodedata
+from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator
+from typing import IO, Any, BinaryIO
 from urllib.parse import unquote, urljoin
 
 from django.conf import settings

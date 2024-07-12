@@ -6,10 +6,11 @@
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import timedelta
 from io import StringIO
-from typing import Any, Iterator
+from typing import Any
 from unittest import mock
 
 import orjson

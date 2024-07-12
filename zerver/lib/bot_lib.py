@@ -1,6 +1,7 @@
 import importlib
 import json
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from django.conf import settings
 from django.utils.translation import gettext as _

@@ -2,8 +2,9 @@ import os
 import random
 import re
 from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound

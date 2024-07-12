@@ -1,4 +1,5 @@
-from typing import Any, Iterator, Mapping
+from collections.abc import Iterator, Mapping
+from typing import Any
 
 import orjson
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed

@@ -1,8 +1,9 @@
 from collections import defaultdict
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Callable, Sequence
+from typing import Any
 from urllib.parse import urlencode
 
 from django.conf import settings

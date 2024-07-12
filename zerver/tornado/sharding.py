@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from typing import Pattern
+from re import Pattern
 
 from django.conf import settings
 

@@ -5,8 +5,9 @@
 # based on Zulip's OpenAPI definitions, as well as test setup and
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from django.utils.timezone import now as timezone_now
 

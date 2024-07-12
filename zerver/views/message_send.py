@@ -1,5 +1,6 @@
+from collections.abc import Iterable, Sequence
 from email.headerregistry import Address
-from typing import Iterable, Sequence, cast
+from typing import cast
 
 from django.core import validators
 from django.core.exceptions import ValidationError

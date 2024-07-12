@@ -2,8 +2,9 @@
 import copy
 import logging
 import socket
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from django.core.mail.backends.base import BaseEmailBackend
 from typing_extensions import override

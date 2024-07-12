@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional, TypeVar, cast
+from typing import Any, Optional, TypeAlias, TypeVar, cast
 
 from django.conf import settings
 from django.db.models import QuerySet
@@ -10,7 +10,6 @@ from django.shortcuts import render
 from django.utils import translation
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from typing_extensions import TypeAlias
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
