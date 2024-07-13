@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 273**
+
+* [`POST /register`](/api/register-queue): Added `server_thumbnail_formats`
+  describing what formats the server will thumbnail images into.
+
 **Feature level 272**
 
 * [`POST /user_uploads`](/api/upload-file): `uri` was renamed

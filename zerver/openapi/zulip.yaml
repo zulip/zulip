@@ -16397,6 +16397,43 @@ paths:
                           Clients containing administrative UI for changing
                           `realm_inline_url_embed_preview` should consult this field before offering
                           that feature.
+                      server_thumbnail_formats:
+                        description: |
+                          A list describing the image formats that uploaded
+                          images will be thumbnailed into. Any image with a
+                          source starting with `/user_uploads/thumbnail/` can
+                          have its last path component replaced with any of the
+                          names contained in this list, to obtain the desired
+                          thumbnail size.
+
+                          **Changes**: New in Zulip 9.0 (feature level 273).
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The file path component of the thumbnail format.
+                            max_width:
+                              type: integer
+                              description: |
+                                The maximum width of this format.
+                            max_height:
+                              type: integer
+                              description: |
+                                The maximum height of this format.
+                            format:
+                              type: string
+                              description: |
+                                The extension of this format.
+                            animated:
+                              type: boolean
+                              description: |
+                                If this file format is animated. These formats
+                                are only generated for uploaded imates which
+                                themselves are animated.
                       server_avatar_changes_disabled:
                         type: boolean
                         description: |
