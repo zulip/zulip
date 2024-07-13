@@ -389,6 +389,10 @@
     .rendered_markdown .message_inline_image {
         background: hsl(0deg 0% 100% / 3%);
 
+        img.image-loading-placeholder {
+            content: url("../images/loading/loader-white.svg");
+        }
+
         &:hover {
             background: hsl(0deg 0% 100% / 15%);
         }
