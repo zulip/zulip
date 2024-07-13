@@ -126,6 +126,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
 import * as theme from "./theme";
+import * as thumbnail from "./thumbnail";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -426,6 +427,7 @@ export function initialize_everything(state_data) {
     if (page_params.is_spectator) {
         theme.initialize_theme_for_spectator();
     }
+    thumbnail.initialize();
     widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();

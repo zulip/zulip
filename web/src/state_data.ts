@@ -179,6 +179,14 @@ const one_time_notice_schema = z.object({
     type: z.literal("one_time_notice"),
 });
 
+export const thumbnail_format_schema = z.object({
+    name: z.string(),
+    max_width: z.number(),
+    max_height: z.number(),
+    format: z.string(),
+    animated: z.boolean(),
+});
+
 /* We may introduce onboarding step of types other than 'one time notice'
 in future. Earlier, we had 'hotspot' and 'one time notice' as the two
 types. We can simply do:
@@ -374,6 +382,7 @@ const realm_schema = z.object({
         stream: z.record(group_permission_setting_schema),
         group: z.record(group_permission_setting_schema),
     }),
+    server_thumbnail_formats: z.array(thumbnail_format_schema),
     server_typing_started_expiry_period_milliseconds: z.number(),
     server_typing_started_wait_period_milliseconds: z.number(),
     server_typing_stopped_wait_period_milliseconds: z.number(),

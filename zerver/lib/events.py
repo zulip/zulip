@@ -54,6 +54,7 @@ from zerver.lib.subscription_info import (
     gather_subscriptions_helper,
     get_web_public_subs,
 )
+from zerver.lib.thumbnail import THUMBNAIL_OUTPUT_FORMATS
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
@@ -381,6 +382,16 @@ def fetch_initial_state_data(
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
+        state["server_thumbnail_formats"] = [
+            {
+                "name": str(thumbnail_format),
+                "max_width": thumbnail_format.max_width,
+                "max_height": thumbnail_format.max_height,
+                "format": thumbnail_format.extension,
+                "animated": thumbnail_format.animated,
+            }
+            for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS
+        ]
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED

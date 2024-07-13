@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 272  # Last bumped for "POST /user_uploads"
+API_FEATURE_LEVEL = 273  # Last bumped for server_thumbnail_formats
 
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
