@@ -83,12 +83,14 @@
     }
 
     .autocomplete_secondary {
-        align-self: center;
+        align-self: end;
         opacity: 0.8;
         font-size: 85%;
         flex: 1 1 0;
         overflow: hidden;
         text-overflow: ellipsis;
+        position: relative;
+        top: -1px;
     }
 
     .active .autocomplete_secondary {
