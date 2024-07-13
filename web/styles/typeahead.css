@@ -25,7 +25,7 @@
             font-weight: normal;
             /* We want to keep this `max-width` less than 320px. */
             max-width: 292px;
-            line-height: var(--base-line-height-unitless);
+            line-height: 1.43; /* 20px / 14px */
             color: var(--color-dropdown-item);
             white-space: nowrap;
 
