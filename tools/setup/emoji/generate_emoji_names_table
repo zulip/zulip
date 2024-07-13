@@ -55,7 +55,7 @@ EMOJI_LISTING_TEMPLATE = """
         <style>
             {table_css}
         </style>
-        <title>Zulip emoji names</title>
+        <title>Red Bangle emoji names</title>
     </head>
     <body>
         <table>
