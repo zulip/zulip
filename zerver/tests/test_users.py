@@ -1158,12 +1158,18 @@ class UserProfileTest(ZulipTestCase):
         othello = self.example_user("othello")
         bot = self.example_user("default_bot")
 
-        # Invalid user ID
+        # Invalid user IDs
         invalid_uid: object = 1000
+        another_invalid_uid: object = 1001
         with self.assertRaisesRegex(ValidationError, r"User IDs is not a list"):
             check_valid_user_ids(realm.id, invalid_uid)
-        with self.assertRaisesRegex(ValidationError, rf"Invalid user ID: {invalid_uid}"):
+        with self.assertRaisesRegex(ValidationError, rf"Invalid user IDs: {invalid_uid}"):
             check_valid_user_ids(realm.id, [invalid_uid])
+
+        with self.assertRaisesRegex(
+            ValidationError, rf"Invalid user IDs: {invalid_uid}, {another_invalid_uid}"
+        ):
+            check_valid_user_ids(realm.id, [invalid_uid, another_invalid_uid])
 
         invalid_uid = "abc"
         with self.assertRaisesRegex(ValidationError, r"User IDs\[0\] is not an integer"):
@@ -1174,7 +1180,7 @@ class UserProfileTest(ZulipTestCase):
             check_valid_user_ids(realm.id, [invalid_uid])
 
         # User is in different realm
-        with self.assertRaisesRegex(ValidationError, rf"Invalid user ID: {hamlet.id}"):
+        with self.assertRaisesRegex(ValidationError, rf"Invalid user IDs: {hamlet.id}"):
             check_valid_user_ids(get_realm("zephyr").id, [hamlet.id])
 
         # User is not active

@@ -29,29 +29,31 @@ from zerver.lib.validator import (
     validate_select_field,
 )
 from zerver.models.realms import Realm
-from zerver.models.users import UserProfile, get_user_profile_by_id_in_realm
+from zerver.models.users import UserProfile
 
 
 def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> List[int]:
     user_ids = check_list(check_int)("User IDs", val)
-    realm = Realm.objects.get(id=realm_id)
-    for user_id in user_ids:
-        # TODO: Structurally, we should be doing a bulk fetch query to
-        # get the users here, not doing these in a loop.  But because
-        # this is a rarely used feature and likely to never have more
-        # than a handful of users, it's probably mostly OK.
-        try:
-            user_profile = get_user_profile_by_id_in_realm(user_id, realm)
-        except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid user ID: {user_id}").format(user_id=user_id))
+    user_profiles = UserProfile.objects.filter(realm_id=realm_id, id__in=user_ids)
 
-        if not allow_deactivated and not user_profile.is_active:
+    valid_users_ids = set(user_profiles.values_list("id", flat=True))
+    invalid_users_ids = [invalid_id for invalid_id in user_ids if invalid_id not in valid_users_ids]
+
+    if invalid_users_ids:
+        raise ValidationError(
+            _("Invalid user IDs: {invalid_ids}").format(
+                invalid_ids=", ".join(map(str, invalid_users_ids))
+            )
+        )
+
+    for user in user_profiles:
+        if not allow_deactivated and not user.is_active:
             raise ValidationError(
-                _("User with ID {user_id} is deactivated").format(user_id=user_id)
+                _("User with ID {user_id} is deactivated").format(user_id=user.id)
             )
 
-        if user_profile.is_bot:
-            raise ValidationError(_("User with ID {user_id} is a bot").format(user_id=user_id))
+        if user.is_bot:
+            raise ValidationError(_("User with ID {user_id} is a bot").format(user_id=user.id))
 
     return user_ids
 
