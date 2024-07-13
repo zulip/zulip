@@ -299,6 +299,7 @@ export function _possible_unread_message_ids(
             return [];
         }
         if (sub === undefined || topic_name === undefined) {
+            /* istanbul ignore next */
             return [];
         }
         return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
