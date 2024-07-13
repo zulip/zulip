@@ -99,6 +99,7 @@ export function scroll_finished() {
         // the edge of what we already have from the server.
         message_fetch.maybe_load_older_messages({
             msg_list: message_lists.current,
+            msg_list_data: message_lists.current.data,
         });
     }
 
