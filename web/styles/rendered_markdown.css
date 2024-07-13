@@ -412,6 +412,10 @@
             height: 100%;
             width: 100%;
         }
+
+        img.image-loading-placeholder {
+            content: url("../images/loading/loader-black.svg");
+        }
     }
 
     &.rtl .twitter-image,
