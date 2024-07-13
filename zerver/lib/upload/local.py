@@ -52,8 +52,16 @@ def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
     assert_is_local_storage_path(type, file_path)
 
     if os.path.isfile(file_path):
-        # This removes the file but the empty folders still remain.
         os.remove(file_path)
+
+        # Remove as many directories up the tree as are now empty
+        directory = os.path.dirname(file_path)
+        while directory != settings.LOCAL_UPLOADS_DIR:
+            try:
+                os.rmdir(directory)
+                directory = os.path.dirname(directory)
+            except OSError:
+                break
         return True
     file_name = path.split("/")[-1]
     logging.warning("%s does not exist. Its entry in the database will be removed.", file_name)
