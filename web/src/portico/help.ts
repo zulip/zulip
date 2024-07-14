@@ -8,7 +8,7 @@ import * as common from "../common";
 
 import {activate_correct_tab} from "./tabbed-instructions";
 
-function register_tabbed_section($tabbed_section) {
+function register_tabbed_section($tabbed_section: JQuery): void {
     const $li = $tabbed_section.find("ul.nav li");
     const $blocks = $tabbed_section.find(".blocks div");
 
@@ -31,13 +31,13 @@ function register_tabbed_section($tabbed_section) {
 
 // Display the copy-to-clipboard button inside the .codehilite element
 // within the API and Help Center docs using clipboard.js
-function add_copy_to_clipboard_element($codehilite) {
+function add_copy_to_clipboard_element($codehilite: JQuery): void {
     const $copy_button = $("<button>").addClass("copy-codeblock");
     $copy_button.html(copy_to_clipboard_svg());
 
     $($codehilite).append($copy_button);
 
-    const clipboard = new ClipboardJS($copy_button[0], {
+    const clipboard = new ClipboardJS($copy_button[0]!, {
         text(copy_element) {
             // trim to remove trailing whitespace introduced
             // by additional elements inside <pre>
@@ -46,14 +46,14 @@ function add_copy_to_clipboard_element($codehilite) {
     });
 
     // Show a tippy tooltip when the button is hovered
-    const tooltip_copy = tippy.default($copy_button[0], {
+    const tooltip_copy = tippy.default($copy_button[0]!, {
         content: "Copy code",
         trigger: "mouseenter",
         placement: "top",
     });
 
     // Show a tippy tooltip when the code is copied
-    const tooltip_copied = tippy.default($copy_button[0], {
+    const tooltip_copied = tippy.default($copy_button[0]!, {
         content: "Copied!",
         trigger: "manual",
         placement: "top",
@@ -71,7 +71,7 @@ function add_copy_to_clipboard_element($codehilite) {
     });
 }
 
-function render_tabbed_sections() {
+function render_tabbed_sections(): void {
     $(".tabbed-section").each(function () {
         activate_correct_tab($(this));
         register_tabbed_section($(this));
@@ -89,7 +89,7 @@ function render_tabbed_sections() {
     });
 }
 
-new SimpleBar($(".sidebar")[0], {tabIndex: -1});
+new SimpleBar($(".sidebar")[0]!, {tabIndex: -1});
 
 // Scroll to anchor link when clicked. Note that landing-page.js has a
 // similar function; this file and landing-page.js are never included
@@ -98,7 +98,7 @@ $(document).on(
     "click",
     ".markdown .content h1, .markdown .content h2, .markdown .content h3",
     function () {
-        window.location.hash = $(this).attr("id");
+        window.location.hash = $(this).attr("id")!;
     },
 );
 
@@ -116,7 +116,7 @@ $(".markdown").on("click", () => {
 
 render_tabbed_sections();
 
-if ($(window).width() > 800) {
+if ($(window).width()! > 800) {
     $(".highlighted").eq(0).trigger("focus");
     $(".highlighted")
         .eq(0)
