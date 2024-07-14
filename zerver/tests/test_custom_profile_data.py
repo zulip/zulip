@@ -740,8 +740,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data: list[ProfileDataElementUpdateDict] = []
         expected_value: dict[int, ProfileDataElementValue] = {}
         expected_rendered_value: dict[int, str | None] = {}
-        for i, field_value in enumerate(fields):
-            name, value = field_value
+        for name, value in fields:
             field = CustomProfileField.objects.get(name=name, realm=realm)
             data.append(
                 {
