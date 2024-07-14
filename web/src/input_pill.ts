@@ -528,7 +528,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         });
 
         // when the "×" is clicked on a pill, it should delete that pill and then
-        // select the next pill (or input).
+        // select the input field.
         store.$parent.on("click", ".exit", function (this: HTMLElement, e) {
             const $user_pill_container = $(this).parents(".user-pill-container");
             if ($user_pill_container.length) {
@@ -540,17 +540,15 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 const user_id = $(this).closest(".pill").attr("data-user-id");
                 assert(user_id !== undefined);
                 funcs.removeUserPill($user_pill_container[0]!, Number.parseInt(user_id, 10));
-                return;
+            } else {
+                e.stopPropagation();
+                const $pill = $(this).closest(".pill");
+                funcs.removePill($pill[0]!);
             }
-            e.stopPropagation();
-            const $pill = $(this).closest(".pill");
-            const $next = $pill.next();
-
-            funcs.removePill($pill[0]!);
             // Since removing a pill moves the $input, typeahead needs to refresh
             // to appear at the correct position.
             store.$input.trigger(new $.Event("typeahead.refreshPosition"));
-            $next.trigger("focus");
+            store.$input.trigger("focus");
         });
 
         store.$parent.on("click", function (e) {
