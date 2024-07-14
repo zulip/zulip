@@ -317,7 +317,7 @@ export function show(raw_terms, opts) {
 
     // No operators is an alias for the Combined Feed view.
     if (raw_terms.length === 0) {
-        raw_terms = [{operator: "is", operand: "home"}];
+        raw_terms = [{operator: "in", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
     filter.try_adjusting_for_moved_with_target();
