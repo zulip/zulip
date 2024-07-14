@@ -282,13 +282,8 @@ export function _possible_unread_message_ids(
     assert(!current_filter.requires_adjustment_for_moved_with_target);
 
     if (current_filter.can_bucket_by("channel", "topic", "with")) {
-        sub = stream_sub(current_filter);
-        topic_name = topic(current_filter);
-
-        if (sub === undefined || topic_name === undefined) {
-            /* istanbul ignore next */
-            return [];
-        }
+        sub = stream_sub(current_filter)!;
+        topic_name = topic(current_filter)!;
         return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
     }
 
