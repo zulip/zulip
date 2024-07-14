@@ -128,7 +128,7 @@ configuration, you can access the feed from the channel menu.
 [Learn more]({channel_feed_help_url}).
 - You can also [configure]({automatically_go_to_conversation_help_url}) whether Zulip
 automatically takes you to the conversation to which you sent a message, if you
-aren't already viewing it.
+aren't already viewing it (on by default).
 - You can now [filter]({find_a_dm_conversation_help_url}) direct message
 conversations in the left sidebar to conversations that include a specific
 person.
