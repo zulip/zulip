@@ -284,16 +284,20 @@
     display: flex;
     align-items: flex-start;
     gap: 5px;
-    font-size: 18px;
+    /* 18px at 15px/1em */
+    font-size: 1.2em;
     font-weight: 600;
-    line-height: 20px;
+    /* 20px at 18px/1em */
+    line-height: 1.1111em;
     color: var(--color-text-full-name);
     word-break: break-word;
 }
 
 .popover-group-menu-description {
-    font-size: 15px;
-    line-height: 16px;
+    /* 15px at 15px/1em */
+    font-size: 1em;
+    /* 16px at 15px/1em */
+    line-height: 1.0667em;
 }
 
 ul.popover-group-menu-member-list {
