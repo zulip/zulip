@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
 import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import type {NarrowTerm} from "./state_data";
@@ -286,18 +285,6 @@ export function _possible_unread_message_ids(
         sub = stream_sub(current_filter);
         topic_name = topic(current_filter);
 
-        const with_operand = current_filter.operands("with")[0]!;
-        const target_id = Number.parseInt(with_operand, 10);
-        const target_message = message_store.get(target_id)!;
-
-        if (target_message?.type === "private") {
-            // BUG: In theory, the fact that we've asserted
-            // !current_filter.requires_adjustment_for_moved_with_target
-            // should mean this is not possible; but
-            // filter.adjusted_terms_if_moved incorrectly does not
-            // ensure this. Once that bug is fixed, we can delete this case.
-            return [];
-        }
         if (sub === undefined || topic_name === undefined) {
             /* istanbul ignore next */
             return [];

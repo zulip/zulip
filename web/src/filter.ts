@@ -807,13 +807,27 @@ export class Filter {
     }
 
     static adjusted_terms_if_moved(raw_terms: NarrowTerm[], message: Message): NarrowTerm[] | null {
+        // In case of narrow containing non-stream messages, we replace the
+        // channel/topic/dm operators with singular dm operator corresponding
+        // to the message if it contains `with` operator.
         if (message.type !== "stream") {
-            // BUG: We should be replacing the channel/topic/dm
-            // operators with the singular dm operator for the
-            // conversation in question. This isn't very important,
-            // because direct messages cannot be moved, but it should
-            // be fixed, since it is triggerable incorrect behavior.
-            return null;
+            const contains_with_operator = raw_terms.some((term) => term.operator === "with");
+
+            if (!contains_with_operator) {
+                return null;
+            }
+            const conversation_terms = new Set(["channel", "topic", "dm"]);
+            const filtered_terms = raw_terms.filter((term) => {
+                const operator = Filter.canonicalize_operator(term.operator);
+                return !conversation_terms.has(operator);
+            });
+
+            assert(typeof message.display_recipient !== "string");
+            const dm_participants = message.display_recipient.map((user) => user.email);
+            const dm_operand = dm_participants.join(",");
+
+            const dm_conversation_terms = [{operator: "dm", operand: dm_operand, negated: false}];
+            return [...dm_conversation_terms, ...filtered_terms];
         }
 
         assert(typeof message.display_recipient === "string");

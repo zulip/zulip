@@ -1762,7 +1762,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     const messages = {
         12: {type: "stream", display_recipient: "Scotland", topic: "Test 1", id: 12},
         17: {type: "stream", display_recipient: "Verona", topic: "Test 2", id: 17},
-        2: {type: "direct", id: 2},
+        2: {type: "direct", id: 2, display_recipient: [{id: 3, email: "user3@zulip.com"}]},
     };
 
     override(message_store, "get", (msg_id) => messages[msg_id]);
@@ -1807,9 +1807,9 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     assert.deepEqual(filter.requires_adjustment_for_moved_with_target, true);
     assert.deepEqual(filter.terms(), terms);
 
-    // Since only "stream" recipient type can be moved, if the message
-    // is of any type other than "stream", same narrow terms are
-    // returned without the `with` operator.
+    // When the narrow consists of `channel` or `topic` operators, while
+    // the `with` operator corresponds to that of a direct message, then
+    // the narrow is adjusted to point to the narrow containing the message.
     terms = [
         {operator: "channel", operand: "Scotland", negated: false},
         {operator: "topic", operand: "Test 1", negated: false},
@@ -1818,7 +1818,9 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     filter = new Filter(terms);
     filter.try_adjusting_for_moved_with_target();
     assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
-    assert.deepEqual(filter.terms(), terms);
+    assert.deepEqual(filter.terms(), [
+        {operator: "dm", operand: "user3@zulip.com", negated: false},
+    ]);
 });
 
 function make_private_sub(name, stream_id) {
@@ -2375,11 +2377,25 @@ run_test("equals", () => {
 });
 
 run_test("adjusted_terms_if_moved", () => {
-    // should return null for non-stream messages
+    // should return null for non-stream messages containing no
+    // `with` operator
     let raw_terms = [{operator: "channel", operand: "Foo"}];
     let message = {type: "private"};
     let result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.strictEqual(result, null);
+
+    // should adjust terms to contain `dm` for non-stream messages
+    // if it contains `with` operator
+    message = {type: "private", id: 2, display_recipient: [{id: 3, email: "user3@zulip.com"}]};
+    raw_terms = [
+        {operator: "channel", operand: "Foo"},
+        {operator: "with", operand: `${message.id}`},
+    ];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepEqual(result, [
+        {operator: "dm", operand: "user3@zulip.com", negated: false},
+        {operator: "with", operand: "2"},
+    ]);
 
     // should return null if no terms are changed
     raw_terms = [{operator: "channel", operand: "general"}];

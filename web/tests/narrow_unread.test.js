@@ -76,7 +76,7 @@ run_test("get_unread_ids", () => {
         id: 102,
         type: "private",
         unread: true,
-        display_recipient: [{id: alice.user_id}],
+        display_recipient: [{id: alice.user_id, email: alice.email}],
     };
 
     const other_topic_message = {
@@ -249,7 +249,7 @@ run_test("get_unread_ids", () => {
     ];
     set_filter(terms);
     unread_ids = candidate_ids();
-    assert.deepEqual(unread_ids, []);
+    assert.deepEqual(unread_ids, [private_msg.id]);
 
     message_lists.set_current(undefined);
     blueslip.expect("error", "unexpected call to get_first_unread_info");
