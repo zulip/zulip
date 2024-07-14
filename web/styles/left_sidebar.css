@@ -861,6 +861,7 @@ li.top_left_scheduled_messages {
     .unread_count {
         margin: 1px 0 0 6px;
         border-color: var(--color-border-unread-counter-popover-menu);
+        width: max-content;
     }
 }
 
