@@ -215,8 +215,8 @@ def get_web_link_regex() -> Pattern[str]:
                    """
     nested_paren_chunk = paren_group
     for i in range(6):
-        nested_paren_chunk = nested_paren_chunk % (paren_group,)
-    nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
+        nested_paren_chunk %= (paren_group,)
+    nested_paren_chunk %= (inner_paren_contents,)
 
     file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
     REGEX = rf"""

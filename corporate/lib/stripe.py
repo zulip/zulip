@@ -2412,7 +2412,7 @@ class BillingSession(ABC):
         if plan.fixed_price is None and flat_discounted_months > 0:
             flat_discounted_months = min(flat_discounted_months, num_months_next_cycle)
             discount = flat_discount * flat_discounted_months
-            renewal_cents = renewal_cents - discount
+            renewal_cents -= discount
 
         charge_automatically = plan.charge_automatically
         if customer.stripe_customer_id is not None:

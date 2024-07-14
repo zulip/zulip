@@ -361,9 +361,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         key = generated_link[-24:]
         # Manually expire the link by changing the date of creation
         obj = RealmCreationKey.objects.get(creation_key=key)
-        obj.date_created = obj.date_created - timedelta(
-            days=settings.REALM_CREATION_LINK_VALIDITY_DAYS + 1
-        )
+        obj.date_created -= timedelta(days=settings.REALM_CREATION_LINK_VALIDITY_DAYS + 1)
         obj.save()
 
         result = self.client_get(generated_link)

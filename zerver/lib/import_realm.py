@@ -1025,7 +1025,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         data = orjson.loads(f.read())
 
     # Merge in zerver_userprofile_mirrordummy
-    data["zerver_userprofile"] = data["zerver_userprofile"] + data["zerver_userprofile_mirrordummy"]
+    data["zerver_userprofile"] += data["zerver_userprofile_mirrordummy"]
     del data["zerver_userprofile_mirrordummy"]
     data["zerver_userprofile"].sort(key=lambda r: r["id"])
 

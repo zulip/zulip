@@ -78,7 +78,7 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, "unlimited")
         msg_id = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id)
-        message.date_sent = message.date_sent - timedelta(seconds=600)
+        message.date_sent -= timedelta(seconds=600)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id)
@@ -91,12 +91,12 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, 240)
         msg_id_1 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_1)
-        message.date_sent = message.date_sent - timedelta(seconds=120)
+        message.date_sent -= timedelta(seconds=120)
         message.save()
 
         msg_id_2 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_2)
-        message.date_sent = message.date_sent - timedelta(seconds=360)
+        message.date_sent -= timedelta(seconds=360)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id_1)

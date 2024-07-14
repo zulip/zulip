@@ -48,7 +48,7 @@ def mark_introduce_zulip_view_modals_as_read(
             )
 
         print(f"Processed {upper_id_bound} / {max_id}")
-        lower_id_bound = lower_id_bound + BATCH_SIZE
+        lower_id_bound += BATCH_SIZE
 
 
 def mark_introduce_zulip_view_modals_as_unread(

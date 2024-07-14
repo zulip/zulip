@@ -346,7 +346,7 @@ def generate_curl_example(
             lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
 
     for i in range(1, len(lines) - 1):
-        lines[i] = lines[i] + " \\"
+        lines[i] += " \\"
 
     lines.append("```")
 
@@ -378,7 +378,7 @@ def render_curl_example(
             kwargs["exclude"] = element["parameters"]["enum"]
         if "description" in element:
             rendered_example.extend(element["description"].splitlines())
-        rendered_example = rendered_example + generate_curl_example(endpoint, method, **kwargs)
+        rendered_example += generate_curl_example(endpoint, method, **kwargs)
     return rendered_example
 
 

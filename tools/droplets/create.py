@@ -224,7 +224,7 @@ def delete_existing_records(records: list[digitalocean.Record], record_name: str
             and record.type in ("AAAA", "A")
         ):
             record.destroy()
-            count = count + 1
+            count += 1
     if count:
         print(f"Deleted {count} existing A / AAAA records for {record_name}.zulipdev.org.")
 

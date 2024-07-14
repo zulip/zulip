@@ -161,7 +161,7 @@ def add_md(mode: str, text: str) -> str:
     start = random.randrange(len(vals))
     end = random.randrange(len(vals) - start) + start
     vals[start] = mode + vals[start]
-    vals[end] = vals[end] + mode
+    vals[end] += mode
 
     return " ".join(vals).strip()
 

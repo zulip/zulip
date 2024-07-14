@@ -34,14 +34,14 @@ def send_bot_owner_update_events(
             {previous_owner_id},
         )
         # Do not send update event for previous bot owner.
-        update_users = update_users - {previous_owner.id}
+        update_users.discard(previous_owner.id)
 
     # Notify the new owner that the bot has been added.
     if not bot_owner.is_realm_admin:
         add_event = created_bot_event(user_profile)
         send_event_on_commit(user_profile.realm, add_event, {bot_owner.id})
         # Do not send update event for bot_owner.
-        update_users = update_users - {bot_owner.id}
+        update_users.discard(bot_owner.id)
 
     bot_event = dict(
         type="realm_bot",

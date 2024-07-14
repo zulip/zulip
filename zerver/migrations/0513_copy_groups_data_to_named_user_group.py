@@ -42,7 +42,7 @@ def create_named_user_group_objects_for_groups(
             )
 
         print(f"Processed {upper_id_bound} / {max_id}")
-        lower_id_bound = lower_id_bound + BATCH_SIZE
+        lower_id_bound += BATCH_SIZE
 
 
 class Migration(migrations.Migration):
