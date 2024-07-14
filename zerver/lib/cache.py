@@ -49,8 +49,7 @@ def remote_cache_stats_start() -> None:
 
 
 def remote_cache_stats_finish() -> None:
-    global remote_cache_total_time
-    global remote_cache_total_requests
+    global remote_cache_total_time, remote_cache_total_requests
     remote_cache_total_requests += 1
     remote_cache_total_time += time.time() - remote_cache_time_start
 
