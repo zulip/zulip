@@ -883,9 +883,9 @@ def get_channel_from_narrow_access_unchecked(
 # operators for the conversation view containing the targeted message.
 def update_narrow_terms_containing_with_operator(
     realm: Realm,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
-    narrow: Optional[List[NarrowParameter]],
-) -> Optional[List[NarrowParameter]]:
+    maybe_user_profile: UserProfile | AnonymousUser,
+    narrow: list[NarrowParameter] | None,
+) -> list[NarrowParameter] | None:
     if narrow is None:
         return narrow
 
