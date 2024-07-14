@@ -1,5 +1,5 @@
 import weakref
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import MutableMapping
 from typing import Any, ClassVar, Generic, TypeVar
 
@@ -9,7 +9,7 @@ _KeyT = TypeVar("_KeyT")
 _DataT = TypeVar("_DataT")
 
 
-class BaseNotes(Generic[_KeyT, _DataT], metaclass=ABCMeta):
+class BaseNotes(Generic[_KeyT, _DataT], ABC):
     """This class defines a generic type-safe mechanism for associating
     additional data with an object (without modifying the original
     object via subclassing or monkey-patching).

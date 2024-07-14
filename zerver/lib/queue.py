@@ -3,7 +3,7 @@ import random
 import ssl
 import threading
 import time
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Mapping
 from typing import Any, Generic, TypeAlias, TypeVar
@@ -32,7 +32,7 @@ Consumer: TypeAlias = Callable[[ChannelT, Basic.Deliver, pika.BasicProperties, b
 # RabbitMQ/Pika's queuing system; its purpose is to just provide an
 # interface for external files to put things into queues and take them
 # out from bots without having to import pika code all over our codebase.
-class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
+class QueueClient(Generic[ChannelT], ABC):
     def __init__(
         self,
         # Disable RabbitMQ heartbeats by default because BlockingConnection can't process them
