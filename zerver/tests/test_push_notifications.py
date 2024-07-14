@@ -1316,7 +1316,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assert_length(tokens, 2)
 
         # Remove tokens
-        time_sent = time_sent + timedelta(minutes=1)
+        time_sent += timedelta(minutes=1)
         for endpoint, token, kind, appid in endpoints:
             with time_machine.travel(time_sent, tick=False):
                 result = self.client_delete(endpoint, {"token": token}, subdomain="zulip")
@@ -1355,7 +1355,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_length(tokens, 2)
 
         # Now we successfully remove them:
-        time_sent = time_sent + timedelta(minutes=1)
+        time_sent += timedelta(minutes=1)
         with time_machine.travel(time_sent, tick=False):
             do_regenerate_api_key(user, user)
         tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))

@@ -941,7 +941,7 @@ class EditMessageTest(ZulipTestCase):
             self.example_user("iago"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
-        message.date_sent = message.date_sent - timedelta(seconds=180)
+        message.date_sent -= timedelta(seconds=180)
         message.save()
 
         # test the various possible message editing settings
@@ -1019,7 +1019,7 @@ class EditMessageTest(ZulipTestCase):
             self.example_user("hamlet"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
-        message.date_sent = message.date_sent - timedelta(seconds=180)
+        message.date_sent -= timedelta(seconds=180)
         message.save()
 
         # Guest user must be subscribed to the stream to access the message.
@@ -1097,7 +1097,7 @@ class EditMessageTest(ZulipTestCase):
 
         # non-admin users cannot edit topics sent > 1 week ago including
         # sender of the message.
-        message.date_sent = message.date_sent - timedelta(seconds=604900)
+        message.date_sent -= timedelta(seconds=604900)
         message.save()
         set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.EVERYONE)
         do_edit_message_assert_success(id_, "E", "iago")

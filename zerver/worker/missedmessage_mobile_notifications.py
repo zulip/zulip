@@ -32,7 +32,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
         worker_num: int | None = None,
     ) -> None:
         if settings.MOBILE_NOTIFICATIONS_SHARDS > 1 and worker_num is not None:  # nocoverage
-            self.queue_name = self.queue_name + f"_shard{worker_num}"
+            self.queue_name += f"_shard{worker_num}"
         super().__init__(threaded, disable_timeout, worker_num)
 
     @override

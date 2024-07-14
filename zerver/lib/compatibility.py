@@ -34,7 +34,7 @@ def is_outdated_server(user_profile: UserProfile | None) -> bool:
 
     if user_profile is None or not user_profile.is_realm_admin:
         # Administrators get warned at the deadline; all users 30 days later.
-        deadline = deadline + timedelta(days=30)
+        deadline += timedelta(days=30)
 
     if timezone_now() > deadline:
         return True

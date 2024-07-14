@@ -337,7 +337,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertEqual(InstallationCount.objects.filter(property=stat.property).count(), 1)
 
         # clean stat, with update
-        current_time = current_time + self.HOUR
+        current_time += self.HOUR
         stat = self.make_dummy_count_stat("test stat")
         process_count_stat(stat, current_time)
         self.assertFillStateEquals(stat, current_time)

@@ -958,9 +958,7 @@ def send_user_remove_events_on_removing_subscriptions(
     for user in altered_users:
         users_in_unsubscribed_streams: set[int] = set()
         for stream_id in altered_user_dict[user]:
-            users_in_unsubscribed_streams = (
-                users_in_unsubscribed_streams | subscribers_dict[stream_id]
-            )
+            users_in_unsubscribed_streams |= subscribers_dict[stream_id]
 
         users_who_can_access_altered_user = (
             set(non_guest_user_ids)

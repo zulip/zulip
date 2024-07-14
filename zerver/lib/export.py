@@ -1211,7 +1211,7 @@ def fetch_usermessages(
     )
     if consent_message_id is not None:
         consented_user_ids = get_consented_user_ids(consent_message_id)
-        user_profile_ids = user_profile_ids & consented_user_ids
+        user_profile_ids = consented_user_ids & user_profile_ids
     user_message_chunk = []
     for user_message in user_message_query:
         if user_message.user_profile_id not in user_profile_ids:

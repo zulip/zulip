@@ -307,5 +307,5 @@ def generate_data_type(schema: Mapping[str, Any]) -> str:
     else:
         data_type = schema["type"]
         if schema.get("nullable", False):
-            data_type = data_type + " | null"
+            data_type += " | null"
     return data_type

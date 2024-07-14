@@ -1125,19 +1125,19 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.send_stream_message(hamlet, "privatestream", topic_name="topic1")
 
         message = Message.objects.get(id=id1)
-        message.date_sent = message.date_sent - timedelta(days=10)
+        message.date_sent -= timedelta(days=10)
         message.save()
 
         message = Message.objects.get(id=id2)
-        message.date_sent = message.date_sent - timedelta(days=9)
+        message.date_sent -= timedelta(days=9)
         message.save()
 
         message = Message.objects.get(id=id3)
-        message.date_sent = message.date_sent - timedelta(days=8)
+        message.date_sent -= timedelta(days=8)
         message.save()
 
         message = Message.objects.get(id=id4)
-        message.date_sent = message.date_sent - timedelta(days=6)
+        message.date_sent -= timedelta(days=6)
         message.save()
 
         self.login("hamlet")

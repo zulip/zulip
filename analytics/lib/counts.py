@@ -158,7 +158,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime, realm: Realm | N
                 return
             fill_to_time = min(fill_to_time, dependency_fill_time)
 
-    currently_filled = currently_filled + stat.time_increment
+    currently_filled += stat.time_increment
     while currently_filled <= fill_to_time:
         logger.info("START %s %s", stat.property, currently_filled)
         start = time.time()
@@ -166,7 +166,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime, realm: Realm | N
         do_fill_count_stat_at_hour(stat, currently_filled, realm)
         do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         end = time.time()
-        currently_filled = currently_filled + stat.time_increment
+        currently_filled += stat.time_increment
         logger.info("DONE %s (%dms)", stat.property, (end - start) * 1000)
 
 

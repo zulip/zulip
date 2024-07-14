@@ -118,15 +118,15 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
         message = Message.objects.get(id=id1)
-        message.date_sent = message.date_sent - timedelta(days=10)
+        message.date_sent -= timedelta(days=10)
         message.save()
 
         message = Message.objects.get(id=id2)
-        message.date_sent = message.date_sent - timedelta(days=8)
+        message.date_sent -= timedelta(days=8)
         message.save()
 
         message = Message.objects.get(id=id3)
-        message.date_sent = message.date_sent - timedelta(days=5)
+        message.date_sent -= timedelta(days=5)
         message.save()
 
         verona = get_stream("Verona", user_profile.realm)
@@ -940,7 +940,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         # non-admin and non-moderator users cannot move messages sent > 1 week ago
         # including sender of the message.
         message = Message.objects.get(id=msg_id)
-        message.date_sent = message.date_sent - timedelta(seconds=604900)
+        message.date_sent -= timedelta(seconds=604900)
         message.save()
         check_move_message_to_stream(
             cordelia,

@@ -3276,7 +3276,7 @@ class CheckMessageTest(ZulipTestCase):
         # after; this should send an error to the bot owner that the
         # stream doesn't exist
         assert sender.last_reminder is not None
-        sender.last_reminder = sender.last_reminder - timedelta(hours=1)
+        sender.last_reminder -= timedelta(hours=1)
         sender.save(update_fields=["last_reminder"])
         ret = check_message(sender, client, addressee, message_content)
 
