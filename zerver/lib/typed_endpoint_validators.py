@@ -1,10 +1,13 @@
+import zoneinfo
 from collections.abc import Collection
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.utils.translation import gettext as _
-from pydantic import AfterValidator
+from pydantic import AfterValidator, BeforeValidator, NonNegativeInt
 from pydantic_core import PydanticCustomError
+
+from zerver.lib.timezone import canonicalize_timezone
 
 # The Pydantic.StringConstraints does not have validation for the string to be
 # of the specified length. So, we need to create a custom validator for that.
@@ -49,3 +52,34 @@ def check_url(val: str) -> str:
         return val
     except ValidationError:
         raise ValueError(_("Not a URL"))
+
+
+def to_timezone_or_empty(s: str) -> str:
+    try:
+        s = canonicalize_timezone(s)
+        zoneinfo.ZoneInfo(s)
+    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
+        return ""
+    else:
+        return s
+
+
+def timezone_or_empty_validator() -> AfterValidator:
+    return AfterValidator(lambda s: to_timezone_or_empty(s))
+
+
+def to_non_negative_int_or_none(s: str) -> NonNegativeInt | None:
+    try:
+        i = int(s)
+        if i < 0:
+            return None
+        return i
+    except ValueError:
+        return None
+
+
+# We use BeforeValidator, not AfterValidator, here, because the int
+# type conversion will raise a ValueError if the string is not a valid
+# integer, and we want to return None in that case.
+def non_negative_int_or_none_validator() -> BeforeValidator:
+    return BeforeValidator(lambda s: to_non_negative_int_or_none(s))

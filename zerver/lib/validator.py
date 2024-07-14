@@ -30,7 +30,7 @@ for any particular type of object.
 
 import re
 import zoneinfo
-from collections.abc import Callable, Collection, Container, Iterator
+from collections.abc import Collection, Container, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, NoReturn, TypeVar, cast, overload
@@ -587,28 +587,6 @@ def to_non_negative_int(var_name: str, s: str, max_int_size: int = 2**32 - 1) ->
 
 def to_float(var_name: str, s: str) -> float:
     return float(s)
-
-
-def to_timezone_or_empty(var_name: str, s: str) -> str:
-    try:
-        s = canonicalize_timezone(s)
-        zoneinfo.ZoneInfo(s)
-    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
-        return ""
-    else:
-        return s
-
-
-def to_converted_or_fallback(
-    sub_converter: Callable[[str, str], ResultT], default: ResultT
-) -> Callable[[str, str], ResultT]:
-    def converter(var_name: str, s: str) -> ResultT:
-        try:
-            return sub_converter(var_name, s)
-        except ValueError:
-            return default
-
-    return converter
 
 
 def check_string_or_int_list(var_name: str, val: object) -> str | list[int]:
