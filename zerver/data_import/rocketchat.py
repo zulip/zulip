@@ -252,9 +252,9 @@ def convert_direct_message_group_data(
         zerver_direct_message_group.append(direct_message_group)
 
         direct_message_group_dict = huddle_id_to_huddle_map[rc_huddle_id]
-        direct_message_group_user_ids = set()
-        for rc_user_id in direct_message_group_dict["uids"]:
-            direct_message_group_user_ids.add(user_id_mapper.get(rc_user_id))
+        direct_message_group_user_ids = {
+            user_id_mapper.get(rc_user_id) for rc_user_id in direct_message_group_dict["uids"]
+        }
         subscriber_handler.set_info(
             users=direct_message_group_user_ids,
             direct_message_group_id=direct_message_group_id,

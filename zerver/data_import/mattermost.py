@@ -218,12 +218,10 @@ def convert_channel_data(
             invite_only=invite_only,
         )
 
-        channel_users = set()
-        for username in channel_admins_map[stream_name]:
-            channel_users.add(user_id_mapper.get(username))
-
-        for username in channel_members_map[stream_name]:
-            channel_users.add(user_id_mapper.get(username))
+        channel_users = {
+            *(user_id_mapper.get(username) for username in channel_admins_map[stream_name]),
+            *(user_id_mapper.get(username) for username in channel_members_map[stream_name]),
+        }
 
         subscriber_handler.set_info(
             users=channel_users,
@@ -260,9 +258,9 @@ def convert_direct_message_group_data(
             )
             direct_message_group_id = huddle_id_mapper.get(direct_message_group_name)
             direct_message_group_dict = build_direct_message_group(direct_message_group_id)
-            direct_message_group_user_ids = set()
-            for username in direct_message_group["members"]:
-                direct_message_group_user_ids.add(user_id_mapper.get(username))
+            direct_message_group_user_ids = {
+                user_id_mapper.get(username) for username in direct_message_group["members"]
+            }
             subscriber_handler.set_info(
                 users=direct_message_group_user_ids,
                 direct_message_group_id=direct_message_group_id,

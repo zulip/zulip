@@ -251,7 +251,5 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
 def create_users(
     realm: Realm, name_list: Iterable[tuple[str, str]], bot_type: int | None = None
 ) -> None:
-    user_set = set()
-    for full_name, email in name_list:
-        user_set.add((email, full_name, True))
+    user_set = {(email, full_name, True) for full_name, email in name_list}
     bulk_create_users(realm, user_set, bot_type)

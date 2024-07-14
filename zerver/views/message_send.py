@@ -41,8 +41,7 @@ def create_mirrored_message_users(
     sender_email = sender.strip().lower()
     referenced_users = {sender_email}
     if recipient_type_name == "private":
-        for email in recipients:
-            referenced_users.add(email.lower())
+        referenced_users.update(email.lower() for email in recipients)
 
     if client.name == "zephyr_mirror":
         user_check = same_realm_zephyr_user
