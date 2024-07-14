@@ -361,8 +361,7 @@ def support(
         # We check that request.POST only has two keys in it: The
         # realm_id and a field to change.
         keys = set(request.POST.keys())
-        if "csrfmiddlewaretoken" in keys:
-            keys.remove("csrfmiddlewaretoken")
+        keys.discard("csrfmiddlewaretoken")
         REQUIRED_KEYS = 2
         if monthly_discounted_price is not None or annual_discounted_price is not None:
             REQUIRED_KEYS = 3
@@ -662,8 +661,7 @@ def remote_servers_support(
     assert isinstance(acting_user, UserProfile)
     if settings.BILLING_ENABLED and request.method == "POST":
         keys = set(request.POST.keys())
-        if "csrfmiddlewaretoken" in keys:
-            keys.remove("csrfmiddlewaretoken")
+        keys.discard("csrfmiddlewaretoken")
 
         if remote_realm_id is not None:
             remote_realm_support_request = True
