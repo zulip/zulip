@@ -982,17 +982,21 @@ ul.popover-group-menu-member-list {
     }
 
     .popover-menu-user-full-name {
-        font-size: 18px;
+        /* 18px at 15px/1em */
+        font-size: 1.2em;
         font-weight: 600;
-        line-height: 20px;
+        /* 20px at 18px/1em */
+        line-height: 1.1111em;
         color: var(--color-text-full-name);
         word-break: break-word;
     }
 
     .popover-menu-user-type {
-        font-size: 14px;
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
         font-weight: 400;
-        line-height: 16px;
+        /* 16px at 14px/1em */
+        line-height: 1.1428em;
         color: var(--color-text-item);
     }
 
