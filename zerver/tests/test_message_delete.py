@@ -301,12 +301,14 @@ class DeleteMessageTest(ZulipTestCase):
         self.send_stream_message(hamlet, "Denmark")
         message = self.get_last_message()
 
-        with self.capture_send_event_calls(expected_num_events=1):
-            with mock.patch("zerver.tornado.django_api.queue_json_publish") as m:
-                m.side_effect = AssertionError(
-                    "Events should be sent only after the transaction commits."
-                )
-                do_delete_messages(hamlet.realm, [message])
+        with (
+            self.capture_send_event_calls(expected_num_events=1),
+            mock.patch("zerver.tornado.django_api.queue_json_publish") as m,
+        ):
+            m.side_effect = AssertionError(
+                "Events should be sent only after the transaction commits."
+            )
+            do_delete_messages(hamlet.realm, [message])
 
     def test_delete_message_in_unsubscribed_private_stream(self) -> None:
         hamlet = self.example_user("hamlet")

@@ -1390,9 +1390,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_avatar_upload_file_size_error(self) -> None:
         self.login("hamlet")
-        with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_AVATAR_FILE_SIZE_MIB=0):
-                result = self.client_post("/json/users/me/avatar", {"file": fp})
+        with (
+            get_test_image_file(self.correct_files[0][0]) as fp,
+            self.settings(MAX_AVATAR_FILE_SIZE_MIB=0),
+        ):
+            result = self.client_post("/json/users/me/avatar", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
 
@@ -1537,9 +1539,11 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_realm_icon_upload_file_size_error(self) -> None:
         self.login("iago")
-        with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_ICON_FILE_SIZE_MIB=0):
-                result = self.client_post("/json/realm/icon", {"file": fp})
+        with (
+            get_test_image_file(self.correct_files[0][0]) as fp,
+            self.settings(MAX_ICON_FILE_SIZE_MIB=0),
+        ):
+            result = self.client_post("/json/realm/icon", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
 
@@ -1743,11 +1747,13 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_logo_upload_file_size_error(self) -> None:
         self.login("iago")
-        with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_LOGO_FILE_SIZE_MIB=0):
-                result = self.client_post(
-                    "/json/realm/logo", {"file": fp, "night": orjson.dumps(self.night).decode()}
-                )
+        with (
+            get_test_image_file(self.correct_files[0][0]) as fp,
+            self.settings(MAX_LOGO_FILE_SIZE_MIB=0),
+        ):
+            result = self.client_post(
+                "/json/realm/logo", {"file": fp, "night": orjson.dumps(self.night).decode()}
+            )
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
 
@@ -1766,53 +1772,63 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
     def test_non_image(self) -> None:
         """Non-image is not resized"""
         self.login("iago")
-        with get_test_image_file("text.txt") as f:
-            with patch("zerver.lib.upload.resize_emoji", return_value=(b"a", None)) as resize_mock:
-                result = self.client_post("/json/realm/emoji/new", {"f1": f})
-                self.assert_json_error(result, "Invalid image format")
-                resize_mock.assert_not_called()
+        with (
+            get_test_image_file("text.txt") as f,
+            patch("zerver.lib.upload.resize_emoji", return_value=(b"a", None)) as resize_mock,
+        ):
+            result = self.client_post("/json/realm/emoji/new", {"f1": f})
+            self.assert_json_error(result, "Invalid image format")
+            resize_mock.assert_not_called()
 
     def test_upsupported_format(self) -> None:
         """Invalid format is not resized"""
         self.login("iago")
-        with get_test_image_file("img.bmp") as f:
-            with patch("zerver.lib.upload.resize_emoji", return_value=(b"a", None)) as resize_mock:
-                result = self.client_post("/json/realm/emoji/new", {"f1": f})
-                self.assert_json_error(result, "Invalid image format")
-                resize_mock.assert_not_called()
+        with (
+            get_test_image_file("img.bmp") as f,
+            patch("zerver.lib.upload.resize_emoji", return_value=(b"a", None)) as resize_mock,
+        ):
+            result = self.client_post("/json/realm/emoji/new", {"f1": f})
+            self.assert_json_error(result, "Invalid image format")
+            resize_mock.assert_not_called()
 
     def test_upload_too_big_after_resize(self) -> None:
         """Non-animated image is too big after resizing"""
         self.login("iago")
-        with get_test_image_file("img.png") as f:
-            with patch(
+        with (
+            get_test_image_file("img.png") as f,
+            patch(
                 "zerver.lib.upload.resize_emoji", return_value=(b"a" * (200 * 1024), None)
-            ) as resize_mock:
-                result = self.client_post("/json/realm/emoji/new", {"f1": f})
-                self.assert_json_error(result, "Image size exceeds limit")
-                resize_mock.assert_called_once()
+            ) as resize_mock,
+        ):
+            result = self.client_post("/json/realm/emoji/new", {"f1": f})
+            self.assert_json_error(result, "Image size exceeds limit")
+            resize_mock.assert_called_once()
 
     def test_upload_big_after_animated_resize(self) -> None:
         """A big animated image is fine as long as the still is small"""
         self.login("iago")
-        with get_test_image_file("animated_img.gif") as f:
-            with patch(
+        with (
+            get_test_image_file("animated_img.gif") as f,
+            patch(
                 "zerver.lib.upload.resize_emoji", return_value=(b"a" * (200 * 1024), b"aaa")
-            ) as resize_mock:
-                result = self.client_post("/json/realm/emoji/new", {"f1": f})
-                self.assert_json_success(result)
-                resize_mock.assert_called_once()
+            ) as resize_mock,
+        ):
+            result = self.client_post("/json/realm/emoji/new", {"f1": f})
+            self.assert_json_success(result)
+            resize_mock.assert_called_once()
 
     def test_upload_too_big_after_animated_resize_still(self) -> None:
         """Still of animated image is too big after resizing"""
         self.login("iago")
-        with get_test_image_file("animated_img.gif") as f:
-            with patch(
+        with (
+            get_test_image_file("animated_img.gif") as f,
+            patch(
                 "zerver.lib.upload.resize_emoji", return_value=(b"aaa", b"a" * (200 * 1024))
-            ) as resize_mock:
-                result = self.client_post("/json/realm/emoji/new", {"f1": f})
-                self.assert_json_error(result, "Image size exceeds limit")
-                resize_mock.assert_called_once()
+            ) as resize_mock,
+        ):
+            result = self.client_post("/json/realm/emoji/new", {"f1": f})
+            self.assert_json_error(result, "Image size exceeds limit")
+            resize_mock.assert_called_once()
 
 
 class SanitizeNameTests(ZulipTestCase):

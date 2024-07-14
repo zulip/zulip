@@ -560,12 +560,15 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         )
 
         # Try the case where the identity dict is simultaneously expired.
-        with time_machine.travel(
-            now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
-            tick=False,
+        with (
+            time_machine.travel(
+                now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
+                tick=False,
+            ),
+            self.assertLogs("django.request", "ERROR") as m,
+            self.assertRaises(AssertionError),
         ):
-            with self.assertLogs("django.request", "ERROR") as m, self.assertRaises(AssertionError):
-                self.client_get(final_url, subdomain="selfhosting")
+            self.client_get(final_url, subdomain="selfhosting")
         # The django.request log should be a traceback, mentioning the relevant
         # exceptions that occurred.
         self.assertIn(

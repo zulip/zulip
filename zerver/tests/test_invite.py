@@ -2547,9 +2547,11 @@ class MultiuseInviteTest(ZulipTestCase):
         email = self.nonreg_email("newuser")
         invite_link = "/join/invalid_key/"
 
-        with patch("zerver.views.registration.get_realm_from_request", return_value=self.realm):
-            with patch("zerver.views.registration.get_realm", return_value=self.realm):
-                self.check_user_able_to_register(email, invite_link)
+        with (
+            patch("zerver.views.registration.get_realm_from_request", return_value=self.realm),
+            patch("zerver.views.registration.get_realm", return_value=self.realm),
+        ):
+            self.check_user_able_to_register(email, invite_link)
 
     def test_multiuse_link_with_specified_streams(self) -> None:
         name1 = "newuser"

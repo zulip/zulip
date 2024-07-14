@@ -86,12 +86,14 @@ class EventsEndpointTest(ZulipTestCase):
         test_event = dict(id=6, type=event_type, realm_emoji=empty_realm_emoji_dict)
 
         # Test that call is made to deal with a returning soft deactivated user.
-        with mock.patch("zerver.lib.events.reactivate_user_if_soft_deactivated") as fa:
-            with stub_event_queue_user_events(return_event_queue, return_user_events):
-                result = self.api_post(
-                    user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
-                )
-                self.assertEqual(fa.call_count, 1)
+        with (
+            mock.patch("zerver.lib.events.reactivate_user_if_soft_deactivated") as fa,
+            stub_event_queue_user_events(return_event_queue, return_user_events),
+        ):
+            result = self.api_post(
+                user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
+            )
+            self.assertEqual(fa.call_count, 1)
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
@@ -1171,9 +1173,11 @@ class FetchQueriesTest(ZulipTestCase):
         # count in production.
         realm = get_realm_with_settings(realm_id=user.realm_id)
 
-        with self.assert_database_query_count(43):
-            with mock.patch("zerver.lib.events.always_want") as want_mock:
-                fetch_initial_state_data(user, realm=realm)
+        with (
+            self.assert_database_query_count(43),
+            mock.patch("zerver.lib.events.always_want") as want_mock,
+        ):
+            fetch_initial_state_data(user, realm=realm)
 
         expected_counts = dict(
             alert_words=1,

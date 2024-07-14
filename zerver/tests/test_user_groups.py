@@ -1156,9 +1156,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         munge = lambda obj: orjson.dumps(obj).decode()
         params = dict(add=munge(new_user_ids))
 
-        with mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"):
-            with self.assert_database_query_count(11):
-                result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        with (
+            mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"),
+            self.assert_database_query_count(11),
+        ):
+            result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
 
         with self.assert_database_query_count(1):

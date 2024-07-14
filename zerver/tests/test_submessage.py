@@ -194,12 +194,14 @@ class TestBasics(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         message_id = self.send_stream_message(hamlet, "Denmark")
 
-        with self.capture_send_event_calls(expected_num_events=1):
-            with mock.patch("zerver.tornado.django_api.queue_json_publish") as m:
-                m.side_effect = AssertionError(
-                    "Events should be sent only after the transaction commits."
-                )
-                do_add_submessage(hamlet.realm, hamlet.id, message_id, "whatever", "whatever")
+        with (
+            self.capture_send_event_calls(expected_num_events=1),
+            mock.patch("zerver.tornado.django_api.queue_json_publish") as m,
+        ):
+            m.side_effect = AssertionError(
+                "Events should be sent only after the transaction commits."
+            )
+            do_add_submessage(hamlet.realm, hamlet.id, message_id, "whatever", "whatever")
 
     def test_fetch_message_containing_submessages(self) -> None:
         cordelia = self.example_user("cordelia")

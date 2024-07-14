@@ -1103,31 +1103,33 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 not_configured_warn_log,
             )
 
-        with mock.patch(
-            "zerver.lib.push_notifications.uses_notification_bouncer", return_value=True
+        with (
+            mock.patch(
+                "zerver.lib.push_notifications.uses_notification_bouncer", return_value=True
+            ),
+            mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as m,
         ):
-            with mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as m:
-                post_response = {
-                    "realms": {realm.uuid: {"can_push": True, "expected_end_timestamp": None}}
-                }
-                get_response = {
-                    "last_realm_count_id": 0,
-                    "last_installation_count_id": 0,
-                    "last_realmauditlog_id": 0,
-                }
+            post_response = {
+                "realms": {realm.uuid: {"can_push": True, "expected_end_timestamp": None}}
+            }
+            get_response = {
+                "last_realm_count_id": 0,
+                "last_installation_count_id": 0,
+                "last_realmauditlog_id": 0,
+            }
 
-                def mock_send_to_push_bouncer_response(method: str, *args: Any) -> dict[str, Any]:
-                    if method == "POST":
-                        return post_response
-                    return get_response
+            def mock_send_to_push_bouncer_response(method: str, *args: Any) -> dict[str, Any]:
+                if method == "POST":
+                    return post_response
+                return get_response
 
-                m.side_effect = mock_send_to_push_bouncer_response
+            m.side_effect = mock_send_to_push_bouncer_response
 
-                initialize_push_notifications()
+            initialize_push_notifications()
 
-                realm = get_realm("zulip")
-                self.assertTrue(realm.push_notifications_enabled)
-                self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+            realm = get_realm("zulip")
+            self.assertTrue(realm.push_notifications_enabled)
+            self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
@@ -2340,84 +2342,90 @@ class AnalyticsBouncerTest(BouncerTestCase):
     def test_realm_properties_after_send_analytics(self) -> None:
         self.add_mock_response()
 
-        with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer", return_value=None
-        ) as m:
-            with mock.patch(
+        with (
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_customer", return_value=None
+            ) as m,
+            mock.patch(
                 "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
                 return_value=10,
-            ):
-                send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                m.assert_called()
-                realms = Realm.objects.all()
-                for realm in realms:
-                    self.assertEqual(realm.push_notifications_enabled, True)
-                    self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+            ),
+        ):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, True)
+                self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
-        with mock.patch(
-            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=None
-        ) as m:
-            with mock.patch(
+        with (
+            mock.patch(
+                "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=None
+            ) as m,
+            mock.patch(
                 "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
                 return_value=11,
-            ):
-                send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                m.assert_called()
-                realms = Realm.objects.all()
-                for realm in realms:
-                    self.assertEqual(realm.push_notifications_enabled, False)
-                    self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+            ),
+        ):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, False)
+                self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
         dummy_customer = mock.MagicMock()
-        with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
-            return_value=dummy_customer,
+        with (
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+                return_value=dummy_customer,
+            ),
+            mock.patch("corporate.lib.stripe.get_current_plan_by_customer", return_value=None) as m,
         ):
-            with mock.patch(
-                "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
-            ) as m:
-                send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                m.assert_called()
-                realms = Realm.objects.all()
-                for realm in realms:
-                    self.assertEqual(realm.push_notifications_enabled, True)
-                    self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, True)
+                self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
         dummy_customer = mock.MagicMock()
-        with mock.patch(
-            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+        with (
+            mock.patch(
+                "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+            ),
+            mock.patch("corporate.lib.stripe.get_current_plan_by_customer", return_value=None) as m,
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                return_value=11,
+            ),
         ):
-            with mock.patch(
-                "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
-            ) as m:
-                with mock.patch(
-                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                    return_value=11,
-                ):
-                    send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                    m.assert_called()
-                    realms = Realm.objects.all()
-                    for realm in realms:
-                        self.assertEqual(realm.push_notifications_enabled, False)
-                        self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, False)
+                self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
         RemoteRealm.objects.filter(server=self.server).update(
             plan_type=RemoteRealm.PLAN_TYPE_COMMUNITY
         )
 
-        with mock.patch(
-            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+        with (
+            mock.patch(
+                "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+            ),
+            mock.patch("corporate.lib.stripe.get_current_plan_by_customer", return_value=None),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses"
+            ) as m,
         ):
-            with mock.patch("corporate.lib.stripe.get_current_plan_by_customer", return_value=None):
-                with mock.patch(
-                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses"
-                ) as m:
-                    send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                    m.assert_not_called()
-                    realms = Realm.objects.all()
-                    for realm in realms:
-                        self.assertEqual(realm.push_notifications_enabled, True)
-                        self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_not_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, True)
+                self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
         # Reset the plan type to test remaining cases.
         RemoteRealm.objects.filter(server=self.server).update(
@@ -2427,118 +2435,122 @@ class AnalyticsBouncerTest(BouncerTestCase):
         dummy_customer_plan = mock.MagicMock()
         dummy_customer_plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
         dummy_date = datetime(year=2023, month=12, day=3, tzinfo=timezone.utc)
-        with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
-            return_value=dummy_customer,
-        ):
-            with mock.patch(
+        with (
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+                return_value=dummy_customer,
+            ),
+            mock.patch(
                 "corporate.lib.stripe.get_current_plan_by_customer",
                 return_value=dummy_customer_plan,
-            ):
-                with mock.patch(
-                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                    return_value=11,
-                ):
-                    with (
-                        mock.patch(
-                            "corporate.lib.stripe.RemoteRealmBillingSession.get_next_billing_cycle",
-                            return_value=dummy_date,
-                        ) as m,
-                        self.assertLogs("zulip.analytics", level="INFO") as info_log,
-                    ):
-                        send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                        m.assert_called()
-                        realms = Realm.objects.all()
-                        for realm in realms:
-                            self.assertEqual(realm.push_notifications_enabled, True)
-                            self.assertEqual(
-                                realm.push_notifications_enabled_end_timestamp,
-                                dummy_date,
-                            )
-                        self.assertIn(
-                            "INFO:zulip.analytics:Reported 0 records",
-                            info_log.output[0],
-                        )
+            ),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                return_value=11,
+            ),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_next_billing_cycle",
+                return_value=dummy_date,
+            ) as m,
+            self.assertLogs("zulip.analytics", level="INFO") as info_log,
+        ):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, True)
+                self.assertEqual(
+                    realm.push_notifications_enabled_end_timestamp,
+                    dummy_date,
+                )
+            self.assertIn(
+                "INFO:zulip.analytics:Reported 0 records",
+                info_log.output[0],
+            )
 
-        with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
-            return_value=dummy_customer,
-        ):
-            with mock.patch(
+        with (
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+                return_value=dummy_customer,
+            ),
+            mock.patch(
                 "corporate.lib.stripe.get_current_plan_by_customer",
                 return_value=dummy_customer_plan,
-            ):
-                with mock.patch(
-                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                    side_effect=MissingDataError,
-                ):
-                    with (
-                        mock.patch(
-                            "corporate.lib.stripe.RemoteRealmBillingSession.get_next_billing_cycle",
-                            return_value=dummy_date,
-                        ) as m,
-                        self.assertLogs("zulip.analytics", level="INFO") as info_log,
-                    ):
-                        send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                        m.assert_called()
-                        realms = Realm.objects.all()
-                        for realm in realms:
-                            self.assertEqual(realm.push_notifications_enabled, True)
-                            self.assertEqual(
-                                realm.push_notifications_enabled_end_timestamp,
-                                dummy_date,
-                            )
-                        self.assertIn(
-                            "INFO:zulip.analytics:Reported 0 records",
-                            info_log.output[0],
-                        )
+            ),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                side_effect=MissingDataError,
+            ),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_next_billing_cycle",
+                return_value=dummy_date,
+            ) as m,
+            self.assertLogs("zulip.analytics", level="INFO") as info_log,
+        ):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, True)
+                self.assertEqual(
+                    realm.push_notifications_enabled_end_timestamp,
+                    dummy_date,
+                )
+            self.assertIn(
+                "INFO:zulip.analytics:Reported 0 records",
+                info_log.output[0],
+            )
 
-        with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
-            return_value=dummy_customer,
-        ):
-            with mock.patch(
+        with (
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+                return_value=dummy_customer,
+            ),
+            mock.patch(
                 "corporate.lib.stripe.get_current_plan_by_customer",
                 return_value=dummy_customer_plan,
-            ):
-                with mock.patch(
-                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                    return_value=10,
-                ):
-                    send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                    m.assert_called()
-                    realms = Realm.objects.all()
-                    for realm in realms:
-                        self.assertEqual(realm.push_notifications_enabled, True)
-                        self.assertEqual(
-                            realm.push_notifications_enabled_end_timestamp,
-                            None,
-                        )
+            ),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+        ):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, True)
+                self.assertEqual(
+                    realm.push_notifications_enabled_end_timestamp,
+                    None,
+                )
 
         dummy_customer_plan = mock.MagicMock()
         dummy_customer_plan.status = CustomerPlan.ACTIVE
-        with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
-            return_value=dummy_customer,
-        ):
-            with mock.patch(
+        with (
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+                return_value=dummy_customer,
+            ),
+            mock.patch(
                 "corporate.lib.stripe.get_current_plan_by_customer",
                 return_value=dummy_customer_plan,
-            ):
-                with self.assertLogs("zulip.analytics", level="INFO") as info_log:
-                    send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                    m.assert_called()
-                    realms = Realm.objects.all()
-                    for realm in realms:
-                        self.assertEqual(realm.push_notifications_enabled, True)
-                        self.assertEqual(
-                            realm.push_notifications_enabled_end_timestamp,
-                            None,
-                        )
-                    self.assertIn(
-                        "INFO:zulip.analytics:Reported 0 records",
-                        info_log.output[0],
-                    )
+            ),
+            self.assertLogs("zulip.analytics", level="INFO") as info_log,
+        ):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, True)
+                self.assertEqual(
+                    realm.push_notifications_enabled_end_timestamp,
+                    None,
+                )
+            self.assertIn(
+                "INFO:zulip.analytics:Reported 0 records",
+                info_log.output[0],
+            )
 
         # Remote realm is on an inactive plan. Remote server on active plan.
         # ACTIVE plan takes precedence.

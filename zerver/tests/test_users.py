@@ -909,17 +909,19 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(84):
-            with self.assert_memcached_count(19):
-                with self.capture_send_event_calls(expected_num_events=10) as events:
-                    fred = do_create_user(
-                        email="fred@zulip.com",
-                        password="password",
-                        realm=realm,
-                        full_name="Fred Flintstone",
-                        prereg_user=prereg_user,
-                        acting_user=None,
-                    )
+        with (
+            self.assert_database_query_count(84),
+            self.assert_memcached_count(19),
+            self.capture_send_event_calls(expected_num_events=10) as events,
+        ):
+            fred = do_create_user(
+                email="fred@zulip.com",
+                password="password",
+                realm=realm,
+                full_name="Fred Flintstone",
+                prereg_user=prereg_user,
+                acting_user=None,
+            )
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
@@ -2404,9 +2406,8 @@ class GetProfileTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         email = self.example_user("hamlet").email
-        with self.assert_database_query_count(1):
-            with simulated_empty_cache() as cache_queries:
-                user_profile = get_user(email, realm)
+        with self.assert_database_query_count(1), simulated_empty_cache() as cache_queries:
+            user_profile = get_user(email, realm)
 
         self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, email)

@@ -1050,9 +1050,12 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(94), self.assert_memcached_count(14):
-            with self.captureOnCommitCallbacks(execute=True):
-                self.register(self.nonreg_email("test"), "test")
+        with (
+            self.assert_database_query_count(94),
+            self.assert_memcached_count(14),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            self.register(self.nonreg_email("test"), "test")
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -2946,21 +2949,23 @@ class UserSignUpTest(ZulipTestCase):
             return_data = kwargs.get("return_data", {})
             return_data["invalid_subdomain"] = True
 
-        with patch("zerver.views.registration.authenticate", side_effect=invalid_subdomain):
-            with self.assertLogs(level="ERROR") as m:
-                result = self.client_post(
-                    "/accounts/register/",
-                    {
-                        "password": password,
-                        "full_name": "New User",
-                        "key": find_key_by_email(email),
-                        "terms": True,
-                    },
-                )
-                self.assertEqual(
-                    m.output,
-                    ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
-                )
+        with (
+            patch("zerver.views.registration.authenticate", side_effect=invalid_subdomain),
+            self.assertLogs(level="ERROR") as m,
+        ):
+            result = self.client_post(
+                "/accounts/register/",
+                {
+                    "password": password,
+                    "full_name": "New User",
+                    "key": find_key_by_email(email),
+                    "terms": True,
+                },
+            )
+            self.assertEqual(
+                m.output,
+                ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
+            )
         self.assertEqual(result.status_code, 302)
 
     def test_signup_using_invalid_subdomain_preserves_state_of_form(self) -> None:

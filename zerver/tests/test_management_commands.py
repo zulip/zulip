@@ -29,11 +29,13 @@ from zerver.models.users import get_user_profile_by_email
 class TestCheckConfig(ZulipTestCase):
     def test_check_config(self) -> None:
         check_config()
-        with self.settings(REQUIRED_SETTINGS=[("asdf", "not asdf")]):
-            with self.assertRaisesRegex(
+        with (
+            self.settings(REQUIRED_SETTINGS=[("asdf", "not asdf")]),
+            self.assertRaisesRegex(
                 CommandError, "Error: You must set asdf in /etc/zulip/settings.py."
-            ):
-                check_config()
+            ),
+        ):
+            check_config()
 
     @override_settings(WARN_NO_EMAIL=True)
     def test_check_send_email(self) -> None:
@@ -210,9 +212,8 @@ class TestCommandsCanStart(ZulipTestCase):
     def test_management_commands_show_help(self) -> None:
         with stdout_suppressed():
             for command in self.commands:
-                with self.subTest(management_command=command):
-                    with self.assertRaises(SystemExit):
-                        call_command(command, "--help")
+                with self.subTest(management_command=command), self.assertRaises(SystemExit):
+                    call_command(command, "--help")
         # zerver/management/commands/runtornado.py sets this to True;
         # we need to reset it here.  See #3685 for details.
         settings.RUNNING_INSIDE_TORNADO = False

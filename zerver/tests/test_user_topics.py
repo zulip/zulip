@@ -338,10 +338,12 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
-                result = self.api_post(user, url, data)
-                self.assert_json_success(result)
+        with (
+            self.capture_send_event_calls(expected_num_events=2) as events,
+            time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False),
+        ):
+            result = self.api_post(user, url, data)
+            self.assert_json_success(result)
 
         self.assertTrue(
             topic_has_visibility_policy(
@@ -404,10 +406,12 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_mute_removed = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
-                result = self.api_post(user, url, data)
-                self.assert_json_success(result)
+        with (
+            self.capture_send_event_calls(expected_num_events=2) as events,
+            time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False),
+        ):
+            result = self.api_post(user, url, data)
+            self.assert_json_success(result)
 
         self.assertFalse(
             topic_has_visibility_policy(
@@ -553,10 +557,12 @@ class UnmutedTopicsTests(ZulipTestCase):
 
         mock_date_unmuted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
-                result = self.api_post(user, url, data)
-                self.assert_json_success(result)
+        with (
+            self.capture_send_event_calls(expected_num_events=2) as events,
+            time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False),
+        ):
+            result = self.api_post(user, url, data)
+            self.assert_json_success(result)
 
         self.assertTrue(
             topic_has_visibility_policy(
@@ -619,10 +625,12 @@ class UnmutedTopicsTests(ZulipTestCase):
 
         mock_date_unmute_removed = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
-                result = self.api_post(user, url, data)
-                self.assert_json_success(result)
+        with (
+            self.capture_send_event_calls(expected_num_events=2) as events,
+            time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False),
+        ):
+            result = self.api_post(user, url, data)
+            self.assert_json_success(result)
 
         self.assertFalse(
             topic_has_visibility_policy(
