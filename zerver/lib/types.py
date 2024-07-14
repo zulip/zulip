@@ -1,10 +1,10 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeAlias, TypeVar
+from typing import Any, TypeAlias, TypedDict, TypeVar
 
 from django_stubs_ext import StrPromise
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import NotRequired
 
 # See zerver/lib/validator.py for more details of Validators,
 # including many examples
