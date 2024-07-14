@@ -7761,8 +7761,7 @@ class TestCustomAuthDecorator(ZulipTestCase):
         def custom_auth_wrapper(
             auth_func: AuthFuncT, *args: Any, **kwargs: Any
         ) -> UserProfile | None:
-            nonlocal call_count
-            nonlocal backends_with_restriction
+            nonlocal call_count, backends_with_restriction
             call_count += 1
 
             backend = args[0]

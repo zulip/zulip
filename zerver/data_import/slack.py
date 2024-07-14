@@ -534,10 +534,7 @@ def channels_to_zerver_stream(
     direct_message_group_id_count = 0
 
     def process_channels(channels: list[dict[str, Any]], invite_only: bool = False) -> None:
-        nonlocal stream_id_count
-        nonlocal recipient_id_count
-        nonlocal defaultstream_id
-        nonlocal subscription_id_count
+        nonlocal stream_id_count, recipient_id_count, defaultstream_id, subscription_id_count
 
         for channel in channels:
             # map Slack's topic and purpose content into Zulip's stream description.
@@ -606,9 +603,7 @@ def channels_to_zerver_stream(
 
     # mpim is the Slack equivalent of direct message group.
     def process_mpims(mpims: list[dict[str, Any]]) -> None:
-        nonlocal direct_message_group_id_count
-        nonlocal recipient_id_count
-        nonlocal subscription_id_count
+        nonlocal direct_message_group_id_count, recipient_id_count, subscription_id_count
 
         for mpim in mpims:
             direct_message_group = build_direct_message_group(direct_message_group_id_count)

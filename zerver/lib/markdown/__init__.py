@@ -2709,8 +2709,7 @@ def markdown_stats_start() -> None:
 
 
 def markdown_stats_finish() -> None:
-    global markdown_total_time
-    global markdown_total_requests
+    global markdown_total_time, markdown_total_requests
     markdown_total_requests += 1
     markdown_total_time += time.time() - markdown_time_start
 

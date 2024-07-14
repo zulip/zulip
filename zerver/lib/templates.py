@@ -103,8 +103,7 @@ def render_markdown_path(
 
     set_relative_help_links(bool(context is not None and context.get("html_settings_links")))
 
-    global md_extensions
-    global md_macro_extension
+    global md_extensions, md_macro_extension
     if md_extensions is None:
         md_extensions = [
             markdown.extensions.extra.makeExtension(),
