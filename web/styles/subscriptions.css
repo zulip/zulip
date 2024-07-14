@@ -379,10 +379,16 @@ h4.user_group_setting_subsection_title {
         border-right: 1px solid hsl(0deg 0% 87%);
 
         .list-toggler-container {
+            align-items: center;
             padding: 6px 8px;
             border-bottom: 1px solid hsl(0deg 0% 87%);
             display: flex;
             justify-content: space-between;
+
+            #add_new_subscription {
+                position: relative;
+                top: -2px;
+            }
         }
     }
 
@@ -698,6 +704,11 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
+    .tab-switcher {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
     #user-group-creation,
     #stream-creation {
         overflow: auto;
