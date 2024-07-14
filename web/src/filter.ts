@@ -296,11 +296,13 @@ export class Filter {
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
     requires_adjustment_for_moved_with_target?: boolean;
+    narrow_requires_hash_change: boolean;
 
     constructor(terms: NarrowTerm[]) {
         this._terms = terms;
         this.setup_filter(terms);
         this.requires_adjustment_for_moved_with_target = this.has_operator("with");
+        this.narrow_requires_hash_change = false;
     }
 
     static canonicalize_operator(operator: string): string {
@@ -1623,6 +1625,9 @@ export class Filter {
 
         const adjusted_terms = Filter.adjusted_terms_if_moved(this._terms, message);
         if (adjusted_terms) {
+            // If the narrow terms are adjusted, then we need to update the
+            // hash user entered, to point to the updated narrow.
+            this.narrow_requires_hash_change = true;
             this.setup_filter(adjusted_terms);
         }
         this.requires_adjustment_for_moved_with_target = false;

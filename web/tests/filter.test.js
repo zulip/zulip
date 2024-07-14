@@ -1821,6 +1821,60 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     assert.deepEqual(filter.terms(), [
         {operator: "dm", operand: "user3@zulip.com", negated: false},
     ]);
+
+    // When message id attached to `with` operator is found locally,
+    // and is present in the same narrow as the original one, then
+    // no hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "17", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.narrow_requires_hash_change, false);
+
+    // When message id attached to `with` operator is not found
+    // locally, but messages fetched are in same narrow as
+    // original narrow, then no hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "1", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    // now messages are fetched from server, and a single
+    // fetched message is used to adjust narrow terms.
+    filter.try_adjusting_for_moved_with_target(messages["17"]);
+    assert.deepEqual(filter.narrow_requires_hash_change, false);
+
+    // When message id attached to `with` operator is found locally,
+    // and is not present in the same narrow as the original one,
+    // then hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "12", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.narrow_requires_hash_change, true);
+
+    // When message id attached to `with` operator is not found
+    // locally, and messages fetched are in different narrow from
+    // original narrow, then hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "1", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    // now messages are fetched from server, and a single
+    // fetched message is used to adjust narrow terms.
+    filter.try_adjusting_for_moved_with_target(messages["12"]);
+    assert.deepEqual(filter.narrow_requires_hash_change, true);
 });
 
 function make_private_sub(name, stream_id) {
