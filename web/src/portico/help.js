@@ -59,11 +59,6 @@ function add_copy_to_clipboard_element($codehilite) {
         placement: "top",
     });
 
-    // Copy code on button click
-    $copy_button.on("click", () => {
-        clipboard.onClick({currentTarget: $copy_button[0]});
-    });
-
     // Show "Copied!" tooltip when code is successfully copied
     clipboard.on("success", () => {
         tooltip_copy.hide();
