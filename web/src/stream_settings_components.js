@@ -104,7 +104,7 @@ export function dropdown_setup() {
         },
         $events_container: $("#subscription_overlay"),
         tippy_props: {
-            placement: "bottom-start",
+            placement: "top-start",
         },
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
