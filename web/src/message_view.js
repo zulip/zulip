@@ -661,14 +661,12 @@ export function show(raw_terms, opts) {
                     validate_filter_topic_post_fetch:
                         filter.requires_adjustment_for_moved_with_target,
                     cont() {
-                        if (
-                            !filter.requires_adjustment_for_moved_with_target &&
-                            filter.has_operator("with")
-                        ) {
+                        if (filter.narrow_requires_hash_change) {
                             // We've already adjusted our filter via
                             // filter.try_adjusting_for_moved_with_target, and
                             // should update the URL hash accordingly.
                             update_hash_to_match_filter(filter, "retarget topic location");
+                            filter.narrow_requires_hash_change = false;
                         }
                         if (!select_immediately) {
                             render_message_list_with_selected_message({
