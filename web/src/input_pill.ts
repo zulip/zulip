@@ -91,7 +91,7 @@ export type InputPillContainer<T> = {
     onPillRemove: (callback: (pill: InputPill<T>) => void) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
-    clear: () => void;
+    clear: (quiet?: boolean) => void;
     clear_text: () => void;
     getCurrentText: () => string | null;
     is_pending: () => boolean;
@@ -590,7 +590,9 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             store.createPillonPaste = callback;
         },
 
-        clear: funcs.removeAllPills.bind(funcs),
+        clear(quiet?: boolean) {
+            funcs.removeAllPills.bind(funcs)(quiet);
+        },
         clear_text: funcs.clear_text.bind(funcs),
         is_pending: funcs.is_pending.bind(funcs),
         _get_pills_for_testing: funcs._get_pills_for_testing.bind(funcs),
