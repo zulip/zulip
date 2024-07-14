@@ -377,13 +377,16 @@ class WorkerTest(ZulipTestCase):
 
         # If called after `expected_scheduled_timestamp`, it should process all emails.
         one_minute_overdue = expected_scheduled_timestamp + timedelta(seconds=60)
-        with time_machine.travel(one_minute_overdue, tick=True):
-            with send_mock as sm, self.assertLogs(level="INFO") as info_logs:
-                has_timeout = advance()
-                self.assertTrue(has_timeout)
-                self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
-                has_timeout = advance()
-                self.assertFalse(has_timeout)
+        with (
+            time_machine.travel(one_minute_overdue, tick=True),
+            send_mock as sm,
+            self.assertLogs(level="INFO") as info_logs,
+        ):
+            has_timeout = advance()
+            self.assertTrue(has_timeout)
+            self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
+            has_timeout = advance()
+            self.assertFalse(has_timeout)
 
         self.assertEqual(
             [
@@ -643,20 +646,22 @@ class WorkerTest(ZulipTestCase):
                 self.assertEqual(mock_mirror_email.call_count, 4)
 
                 # If RateLimiterLockingError is thrown, we rate-limit the new message:
-                with patch(
-                    "zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit",
-                    side_effect=RateLimiterLockingError,
+                with (
+                    patch(
+                        "zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit",
+                        side_effect=RateLimiterLockingError,
+                    ),
+                    self.assertLogs("zerver.lib.rate_limiter", "WARNING") as mock_warn,
                 ):
-                    with self.assertLogs("zerver.lib.rate_limiter", "WARNING") as mock_warn:
-                        fake_client.enqueue("email_mirror", data[0])
-                        worker.start()
-                        self.assertEqual(mock_mirror_email.call_count, 4)
-                        self.assertEqual(
-                            mock_warn.output,
-                            [
-                                "WARNING:zerver.lib.rate_limiter:Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip"
-                            ],
-                        )
+                    fake_client.enqueue("email_mirror", data[0])
+                    worker.start()
+                    self.assertEqual(mock_mirror_email.call_count, 4)
+                    self.assertEqual(
+                        mock_warn.output,
+                        [
+                            "WARNING:zerver.lib.rate_limiter:Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip"
+                        ],
+                    )
         self.assertEqual(
             warn_logs.output,
             [

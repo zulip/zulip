@@ -1104,9 +1104,11 @@ class MarkdownTest(ZulipTestCase):
         )
 
     def test_fetch_tweet_data_settings_validation(self) -> None:
-        with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
-            with self.assertRaises(NotImplementedError):
-                fetch_tweet_data("287977969287315459")
+        with (
+            self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None),
+            self.assertRaises(NotImplementedError),
+        ):
+            fetch_tweet_data("287977969287315459")
 
     def test_content_has_emoji(self) -> None:
         self.assertFalse(content_has_emoji_syntax("boring"))
@@ -1710,9 +1712,11 @@ class MarkdownTest(ZulipTestCase):
             self.assertEqual(linkifiers_for_realm(realm.id), [])
 
         # Verify that our in-memory cache avoids round trips.
-        with self.assert_database_query_count(0, keep_cache_warm=True):
-            with self.assert_memcached_count(0):
-                self.assertEqual(linkifiers_for_realm(realm.id), [])
+        with (
+            self.assert_database_query_count(0, keep_cache_warm=True),
+            self.assert_memcached_count(0),
+        ):
+            self.assertEqual(linkifiers_for_realm(realm.id), [])
 
         linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_template="whatever")
         linkifier.save()
@@ -1724,12 +1728,14 @@ class MarkdownTest(ZulipTestCase):
         )
 
         # And the in-process cache works again.
-        with self.assert_database_query_count(0, keep_cache_warm=True):
-            with self.assert_memcached_count(0):
-                self.assertEqual(
-                    linkifiers_for_realm(realm.id),
-                    [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
-                )
+        with (
+            self.assert_database_query_count(0, keep_cache_warm=True),
+            self.assert_memcached_count(0),
+        ):
+            self.assertEqual(
+                linkifiers_for_realm(realm.id),
+                [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+            )
 
     def test_alert_words(self) -> None:
         user_profile = self.example_user("othello")
@@ -3289,17 +3295,18 @@ class MarkdownApiTests(ZulipTestCase):
 
 class MarkdownErrorTests(ZulipTestCase):
     def test_markdown_error_handling(self) -> None:
-        with self.simulated_markdown_failure():
-            with self.assertRaises(MarkdownRenderingError):
-                markdown_convert_wrapper("")
+        with self.simulated_markdown_failure(), self.assertRaises(MarkdownRenderingError):
+            markdown_convert_wrapper("")
 
     def test_send_message_errors(self) -> None:
         message = "whatever"
-        with self.simulated_markdown_failure():
+        with (
+            self.simulated_markdown_failure(),
             # We don't use assertRaisesRegex because it seems to not
             # handle i18n properly here on some systems.
-            with self.assertRaises(JsonableError):
-                self.send_stream_message(self.example_user("othello"), "Denmark", message)
+            self.assertRaises(JsonableError),
+        ):
+            self.send_stream_message(self.example_user("othello"), "Denmark", message)
 
     @override_settings(MAX_MESSAGE_LENGTH=10)
     def test_ultra_long_rendering(self) -> None:
@@ -3310,9 +3317,9 @@ class MarkdownErrorTests(ZulipTestCase):
         with (
             mock.patch("zerver.lib.markdown.unsafe_timeout", return_value=msg),
             mock.patch("zerver.lib.markdown.markdown_logger"),
+            self.assertRaises(MarkdownRenderingError),
         ):
-            with self.assertRaises(MarkdownRenderingError):
-                markdown_convert_wrapper(msg)
+            markdown_convert_wrapper(msg)
 
     def test_curl_code_block_validation(self) -> None:
         processor = SimulatedFencedBlockPreprocessor(Markdown())

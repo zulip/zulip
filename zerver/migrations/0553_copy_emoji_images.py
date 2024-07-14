@@ -186,9 +186,11 @@ def thumbnail_local_emoji(apps: StateApps) -> None:
             )
             new_file_name = get_emoji_file_name("image/png", emoji.id)
             try:
-                with open(f"{settings.DEPLOY_ROOT}/static/images/bad-emoji.png", "rb") as f:
-                    with open(f"{base_path}/{new_file_name}", "wb") as new_f:
-                        new_f.write(f.read())
+                with (
+                    open(f"{settings.DEPLOY_ROOT}/static/images/bad-emoji.png", "rb") as f,
+                    open(f"{base_path}/{new_file_name}", "wb") as new_f,
+                ):
+                    new_f.write(f.read())
                 emoji.deactivated = True
                 emoji.is_animated = False
                 emoji.file_name = new_file_name

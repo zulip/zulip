@@ -261,10 +261,12 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        with self.assert_database_query_count(54):
-            with patch("zerver.lib.cache.cache_set") as cache_mock:
-                result = self._get_home_page(stream="Denmark")
-                self.check_rendered_logged_in_app(result)
+        with (
+            self.assert_database_query_count(54),
+            patch("zerver.lib.cache.cache_set") as cache_mock,
+        ):
+            result = self._get_home_page(stream="Denmark")
+            self.check_rendered_logged_in_app(result)
         self.assertEqual(
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
@@ -312,10 +314,9 @@ class HomeTest(ZulipTestCase):
         self.login("hamlet")
 
         # Verify succeeds once logged-in
-        with queries_captured():
-            with patch("zerver.lib.cache.cache_set"):
-                result = self._get_home_page(stream="Denmark")
-                self.check_rendered_logged_in_app(result)
+        with queries_captured(), patch("zerver.lib.cache.cache_set"):
+            result = self._get_home_page(stream="Denmark")
+            self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
         self.assertCountEqual(page_params, self.expected_page_params_keys)
@@ -565,11 +566,13 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        with self.assert_database_query_count(54):
-            with patch("zerver.lib.cache.cache_set") as cache_mock:
-                result = self._get_home_page()
-                self.check_rendered_logged_in_app(result)
-                self.assert_length(cache_mock.call_args_list, 7)
+        with (
+            self.assert_database_query_count(54),
+            patch("zerver.lib.cache.cache_set") as cache_mock,
+        ):
+            result = self._get_home_page()
+            self.check_rendered_logged_in_app(result)
+            self.assert_length(cache_mock.call_args_list, 7)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")

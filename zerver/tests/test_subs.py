@@ -2607,16 +2607,18 @@ class StreamAdminTest(ZulipTestCase):
         for user in other_sub_users:
             self.subscribe(user, stream_name)
 
-        with self.assert_database_query_count(query_count):
-            with cache_tries_captured() as cache_tries:
-                with self.captureOnCommitCallbacks(execute=True):
-                    result = self.client_delete(
-                        "/json/users/me/subscriptions",
-                        {
-                            "subscriptions": orjson.dumps([stream_name]).decode(),
-                            "principals": orjson.dumps(principals).decode(),
-                        },
-                    )
+        with (
+            self.assert_database_query_count(query_count),
+            cache_tries_captured() as cache_tries,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream_name]).decode(),
+                    "principals": orjson.dumps(principals).decode(),
+                },
+            )
         if cache_count is not None:
             self.assert_length(cache_tries, cache_count)
 
@@ -4744,13 +4746,15 @@ class SubscriptionAPITest(ZulipTestCase):
         user2 = self.example_user("iago")
         realm = get_realm("zulip")
         streams_to_sub = ["multi_user_stream"]
-        with self.capture_send_event_calls(expected_num_events=5) as events:
-            with self.assert_database_query_count(38):
-                self.common_subscribe_to_streams(
-                    self.test_user,
-                    streams_to_sub,
-                    dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
-                )
+        with (
+            self.capture_send_event_calls(expected_num_events=5) as events,
+            self.assert_database_query_count(38),
+        ):
+            self.common_subscribe_to_streams(
+                self.test_user,
+                streams_to_sub,
+                dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
+            )
 
         for ev in [x for x in events if x["event"]["type"] not in ("message", "stream")]:
             if ev["event"]["op"] == "add":
@@ -4768,13 +4772,15 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(num_subscribers_for_stream_id(stream.id), 2)
 
         # Now add ourselves
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            with self.assert_database_query_count(14):
-                self.common_subscribe_to_streams(
-                    self.test_user,
-                    streams_to_sub,
-                    dict(principals=orjson.dumps([self.test_user.id]).decode()),
-                )
+        with (
+            self.capture_send_event_calls(expected_num_events=2) as events,
+            self.assert_database_query_count(14),
+        ):
+            self.common_subscribe_to_streams(
+                self.test_user,
+                streams_to_sub,
+                dict(principals=orjson.dumps([self.test_user.id]).decode()),
+            )
 
         add_event, add_peer_event = events
         self.assertEqual(add_event["event"]["type"], "subscription")
@@ -5061,15 +5067,17 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Sends 3 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
-        with self.assert_database_query_count(16):
-            with self.assert_memcached_count(3):
-                with self.capture_send_event_calls(expected_num_events=7) as events:
-                    bulk_remove_subscriptions(
-                        realm,
-                        [user1, user2],
-                        [stream1, stream2, stream3, private],
-                        acting_user=None,
-                    )
+        with (
+            self.assert_database_query_count(16),
+            self.assert_memcached_count(3),
+            self.capture_send_event_calls(expected_num_events=7) as events,
+        ):
+            bulk_remove_subscriptions(
+                realm,
+                [user1, user2],
+                [stream1, stream2, stream3, private],
+                acting_user=None,
+            )
 
         peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]
         stream_delete_events = [
@@ -5214,14 +5222,16 @@ class SubscriptionAPITest(ZulipTestCase):
         # The only known O(N) behavior here is that we call
         # principal_to_user_profile for each of our users, but it
         # should be cached.
-        with self.assert_database_query_count(21):
-            with self.assert_memcached_count(3):
-                with mock.patch("zerver.views.streams.send_messages_for_new_subscribers"):
-                    self.common_subscribe_to_streams(
-                        desdemona,
-                        streams,
-                        dict(principals=orjson.dumps(test_user_ids).decode()),
-                    )
+        with (
+            self.assert_database_query_count(21),
+            self.assert_memcached_count(3),
+            mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
+        ):
+            self.common_subscribe_to_streams(
+                desdemona,
+                streams,
+                dict(principals=orjson.dumps(test_user_ids).decode()),
+            )
 
     def test_subscriptions_add_for_principal(self) -> None:
         """

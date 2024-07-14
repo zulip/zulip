@@ -186,7 +186,6 @@ ignore = [
     "SIM103", # Return the condition directly
     "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
     "SIM114", # Combine `if` branches using logical `or` operator
-    "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
     "SIM401", # Use `d.get(key, default)` instead of an `if` block
     "TCH001", # Move application import into a type-checking block
     "TCH002", # Move third-party import into a type-checking block

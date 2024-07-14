@@ -548,15 +548,17 @@ def custom_email_sender(
     rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
 
     # And then extend it with our standard email headers.
-    with open(html_template_path, "w") as f:
-        with open(markdown_email_base_template_path) as base_template:
-            # We use an ugly string substitution here, because we want to:
-            #  1. Only run Jinja once on the supplied content
-            #  2. Allow the supplied content to have jinja interpolation in it
-            #  3. Have that interpolation happen in the context of
-            #     each individual email we send, so the contents can
-            #     vary user-to-user
-            f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
+    with (
+        open(html_template_path, "w") as f,
+        open(markdown_email_base_template_path) as base_template,
+    ):
+        # We use an ugly string substitution here, because we want to:
+        #  1. Only run Jinja once on the supplied content
+        #  2. Allow the supplied content to have jinja interpolation in it
+        #  3. Have that interpolation happen in the context of
+        #     each individual email we send, so the contents can
+        #     vary user-to-user
+        f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
 
     with open(subject_path, "w") as f:
         f.write(get_header(subject, parsed_email_template.get("subject"), "subject"))

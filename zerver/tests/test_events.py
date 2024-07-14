@@ -1742,17 +1742,19 @@ class NormalActionsTest(BaseAction):
         cordelia.save()
 
         away_val = False
-        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
-            with self.verify_action(num_events=0, state_change_expected=False) as events:
-                do_update_user_status(
-                    user_profile=cordelia,
-                    away=away_val,
-                    status_text="out to lunch",
-                    emoji_name="car",
-                    emoji_code="1f697",
-                    reaction_type=UserStatus.UNICODE_EMOJI,
-                    client_id=client.id,
-                )
+        with (
+            self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True),
+            self.verify_action(num_events=0, state_change_expected=False) as events,
+        ):
+            do_update_user_status(
+                user_profile=cordelia,
+                away=away_val,
+                status_text="out to lunch",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+                client_id=client.id,
+            )
 
         away_val = True
         with self.verify_action(num_events=1, state_change_expected=True) as events:
@@ -2128,13 +2130,12 @@ class NormalActionsTest(BaseAction):
             {"Google": False, "Email": False, "GitHub": True, "LDAP": False, "Dev": True},
             {"Google": False, "Email": True, "GitHub": True, "LDAP": True, "Dev": False},
         ):
-            with fake_backends():
-                with self.verify_action() as events:
-                    do_set_realm_authentication_methods(
-                        self.user_profile.realm,
-                        auth_method_dict,
-                        acting_user=None,
-                    )
+            with fake_backends(), self.verify_action() as events:
+                do_set_realm_authentication_methods(
+                    self.user_profile.realm,
+                    auth_method_dict,
+                    acting_user=None,
+                )
 
             check_realm_update_dict("events[0]", events[0])
 
@@ -2664,11 +2665,10 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_emoji_events(self) -> None:
         author = self.example_user("iago")
-        with get_test_image_file("img.png") as img_file:
-            with self.verify_action() as events:
-                check_add_realm_emoji(
-                    self.user_profile.realm, "my_emoji", author, img_file, "image/png"
-                )
+        with get_test_image_file("img.png") as img_file, self.verify_action() as events:
+            check_add_realm_emoji(
+                self.user_profile.realm, "my_emoji", author, img_file, "image/png"
+            )
 
         check_realm_emoji_update("events[0]", events[0])
 
@@ -3278,9 +3278,12 @@ class NormalActionsTest(BaseAction):
             "zerver.lib.export.do_export_realm",
             return_value=create_dummy_file("test-export.tar.gz"),
         ):
-            with stdout_suppressed(), self.assertLogs(level="INFO") as info_logs:
-                with self.verify_action(state_change_expected=True, num_events=3) as events:
-                    self.client_post("/json/export/realm")
+            with (
+                stdout_suppressed(),
+                self.assertLogs(level="INFO") as info_logs,
+                self.verify_action(state_change_expected=True, num_events=3) as events,
+            ):
+                self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in" in info_logs.output[0])
 
         # We get two realm_export events for this action, where the first
@@ -3328,9 +3331,11 @@ class NormalActionsTest(BaseAction):
             mock.patch("zerver.lib.export.do_export_realm", side_effect=Exception("Some failure")),
             self.assertLogs(level="ERROR") as error_log,
         ):
-            with stdout_suppressed():
-                with self.verify_action(state_change_expected=False, num_events=2) as events:
-                    self.client_post("/json/export/realm")
+            with (
+                stdout_suppressed(),
+                self.verify_action(state_change_expected=False, num_events=2) as events,
+            ):
+                self.client_post("/json/export/realm")
 
             # Log is of following format: "ERROR:root:Data export for zulip failed after 0.004499673843383789"
             # Where last floating number is time and will vary in each test hence the following assertion is
