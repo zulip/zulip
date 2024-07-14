@@ -1256,12 +1256,10 @@ class RealmImportExportTest(ExportFile):
             def custom_profile_field_values_for(
                 fields: Iterable[CustomProfileField],
             ) -> set[frozenset[str]]:
-                user_emails: set[frozenset[str]] = set()
-                for field in fields:
-                    values = CustomProfileFieldValue.objects.filter(field=field)
-                    for value in values:
-                        user_emails.add(frozenset(get_email_from_value(value)))
-                return user_emails
+                return {
+                    frozenset(get_email_from_value(value))
+                    for value in CustomProfileFieldValue.objects.filter(field__in=fields)
+                }
 
             field_names, field_hints = (set() for i in range(2))
             for field in fields:

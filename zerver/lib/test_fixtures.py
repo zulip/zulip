@@ -354,8 +354,7 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     for file in files:
         if round(time.time()) - os.path.getmtime(file) < expiry_time:
             with open(file) as f:
-                for line in f:
-                    databases_in_use.add(f"zulip_test_template_{line}".rstrip())
+                databases_in_use.update(f"zulip_test_template_{line}".rstrip() for line in f)
         else:
             # Any test-backend run older than expiry_time can be
             # cleaned up, both the database and the file listing its

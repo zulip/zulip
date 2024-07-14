@@ -156,10 +156,9 @@ def bulk_fetch_user_display_recipients(
     )
 
     # Find all user ids whose UserProfiles we will need to fetch:
-    user_ids_to_fetch: set[int] = set()
-
-    for ignore_recipient_id, ignore_recipient_type, user_id in personal_tuples:
-        user_ids_to_fetch.add(user_id)
+    user_ids_to_fetch = {
+        user_id for ignore_recipient_id, ignore_recipient_type, user_id in personal_tuples
+    }
 
     for recipient_id in direct_message_group_recipient_ids:
         direct_message_group_user_ids = huddle_recipient_id_to_user_ids[recipient_id]

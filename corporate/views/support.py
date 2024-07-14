@@ -585,37 +585,45 @@ def get_remote_servers_for_support(
     remote_servers_query = RemoteZulipServer.objects.order_by("id")
 
     if email_to_search:
-        remote_servers_set = set(remote_servers_query.filter(contact_email__iexact=email_to_search))
-        remote_server_billing_users = RemoteServerBillingUser.objects.filter(
-            email__iexact=email_to_search
-        ).select_related("remote_server")
-        for server_billing_user in remote_server_billing_users:
-            remote_servers_set.add(server_billing_user.remote_server)
-        remote_realm_billing_users = RemoteRealmBillingUser.objects.filter(
-            email__iexact=email_to_search
-        ).select_related("remote_realm__server")
-        for realm_billing_user in remote_realm_billing_users:
-            remote_servers_set.add(realm_billing_user.remote_realm.server)
+        remote_servers_set = {
+            *remote_servers_query.filter(contact_email__iexact=email_to_search),
+            *(
+                server_billing_user.remote_server
+                for server_billing_user in RemoteServerBillingUser.objects.filter(
+                    email__iexact=email_to_search
+                ).select_related("remote_server")
+            ),
+            *(
+                realm_billing_user.remote_realm.server
+                for realm_billing_user in RemoteRealmBillingUser.objects.filter(
+                    email__iexact=email_to_search
+                ).select_related("remote_realm__server")
+            ),
+        }
         return sorted(remote_servers_set, key=attrgetter("deactivated"))
 
     if uuid_to_search:
-        remote_servers_set = set(remote_servers_query.filter(uuid__iexact=uuid_to_search))
-        remote_realm_matches = RemoteRealm.objects.filter(
-            uuid__iexact=uuid_to_search
-        ).select_related("server")
-        for remote_realm in remote_realm_matches:
-            remote_servers_set.add(remote_realm.server)
+        remote_servers_set = {
+            *remote_servers_query.filter(uuid__iexact=uuid_to_search),
+            *(
+                remote_realm.server
+                for remote_realm in RemoteRealm.objects.filter(
+                    uuid__iexact=uuid_to_search
+                ).select_related("server")
+            ),
+        }
         return sorted(remote_servers_set, key=attrgetter("deactivated"))
 
     if hostname_to_search:
-        remote_servers_set = set(
-            remote_servers_query.filter(hostname__icontains=hostname_to_search)
-        )
-        remote_realm_matches = (
-            RemoteRealm.objects.filter(host__icontains=hostname_to_search)
-        ).select_related("server")
-        for remote_realm in remote_realm_matches:
-            remote_servers_set.add(remote_realm.server)
+        remote_servers_set = {
+            *remote_servers_query.filter(hostname__icontains=hostname_to_search),
+            *(
+                remote_realm.server
+                for remote_realm in (
+                    RemoteRealm.objects.filter(host__icontains=hostname_to_search)
+                ).select_related("server")
+            ),
+        }
         return sorted(remote_servers_set, key=attrgetter("deactivated"))
 
     return []
