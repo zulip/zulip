@@ -794,9 +794,6 @@ function set_up_dropdown_widget(
                 custom_dropdown_widget_callback(this.current_value);
             }
         },
-        tippy_props: {
-            placement: "bottom-start",
-        },
         default_id: realm[setting_name],
         unique_id_type,
         text_if_current_value_not_in_options,

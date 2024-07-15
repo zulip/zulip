@@ -600,7 +600,6 @@ export async function build_move_topic_to_stream_popover(
             $events_container: $("#move_topic_modal"),
             tippy_props: {
                 // Overlap dropdown search input with stream selection button.
-                placement: "bottom-start",
                 offset: [0, -30],
             },
         }).setup();

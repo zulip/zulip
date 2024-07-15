@@ -170,7 +170,6 @@ function create_role_filter_dropdown($events_container, widget_name) {
         item_click_callback: role_selected_handler,
         default_id: "0",
         tippy_props: {
-            placement: "bottom-start",
             offset: [0, 0],
         },
     }).setup();

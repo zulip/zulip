@@ -103,9 +103,6 @@ export function dropdown_setup() {
             new_stream_can_remove_subscribers_group_widget.render();
         },
         $events_container: $("#subscription_overlay"),
-        tippy_props: {
-            placement: "bottom-start",
-        },
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
             $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
