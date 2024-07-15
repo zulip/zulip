@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 // The list of repository names is duplicated here in order to provide
 // a clear type for Contributor objects.
@@ -70,17 +71,17 @@ const tab_name_to_repo_list: Record<TabName, RepositoryName[]> = {
 
 export type Contributor = {
     avatar: string;
-    email?: string;
-    github_username?: string;
-    name: string;
+    email?: string | undefined;
+    github_username?: string | undefined;
+    name?: string | undefined;
 } & {
     [K in RepositoryName]?: number;
 };
 type ContributorData = {
     avatar: string;
-    email?: string;
-    github_username?: string;
-    name: string;
+    email?: string | undefined;
+    github_username?: string | undefined;
+    name?: string | undefined;
     total_commits: number;
 };
 
@@ -123,6 +124,7 @@ function get_display_name(contributor: Contributor): string {
     if (contributor.github_username) {
         return "@" + contributor.github_username;
     }
+    assert(contributor.name !== undefined);
     return contributor.name;
 }
 
