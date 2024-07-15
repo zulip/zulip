@@ -798,6 +798,15 @@ export function process_hotkey(e, hotkey) {
         return true;
     }
 
+    if (event_name === "toggle_compose_preview" && $(".message_edit").is(":visible")) {
+        if ($(".compose-control-buttons-container .markdown_preview").is(":visible")) {
+            compose.edit_mode_preview();
+        } else {
+            compose.edit_mode_hide_preview();
+        }
+        return true;
+    }
+
     if (event_name === "toggle_compose_preview" && compose_state.composing()) {
         if ($("#compose .markdown_preview").is(":visible")) {
             compose.show_preview_area();

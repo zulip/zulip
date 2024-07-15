@@ -78,6 +78,40 @@ export function show_preview_area() {
     );
 }
 
+export function edit_mode_preview() {
+    const $row = $(".message_edit_form");
+    const $msg_edit_content = $row.find(".message_edit_content");
+    const content = $msg_edit_content.val();
+
+    // Disable unneeded compose_control_buttons as we don't
+    // need them in preview mode.
+    $row.addClass("preview_mode");
+    $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
+
+    $msg_edit_content.hide();
+    $row.find(".markdown_preview").hide();
+    $row.find(".undo_markdown_preview").show();
+    $row.find(".preview_message_area").show();
+
+    render_and_show_preview(
+        $row.find(".markdown_preview_spinner"),
+        $row.find(".preview_content"),
+        content,
+    );
+}
+
+export function edit_mode_hide_preview() {
+    const $row = $(".message_edit_form");
+    $row.removeClass("preview_mode");
+    $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
+
+    $row.find(".message_edit_content").show();
+    $row.find(".undo_markdown_preview").hide();
+    $row.find(".preview_message_area").hide();
+    $row.find(".preview_content").empty();
+    $row.find(".markdown_preview").show();
+}
+
 export function create_message_object(message_content = compose_state.message_content()) {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();
