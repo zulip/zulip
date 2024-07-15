@@ -10,10 +10,11 @@
     align-items: stretch;
 
     .new_message_button {
-        .button.small {
+        .button {
             /* Keep the new message button sized to match
                adjacent buttons. */
             font-size: inherit;
+            min-width: inherit;
             line-height: var(--line-height-compose-buttons);
             padding: 3px 10px;
         }
