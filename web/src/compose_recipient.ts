@@ -267,33 +267,6 @@ function get_options_for_recipient_widget(): Option[] {
     return options;
 }
 
-function compose_recipient_dropdown_on_show(dropdown: tippy.Instance): void {
-    // Offset to display dropdown above compose.
-    let top_offset = 5;
-    const window_height = window.innerHeight;
-    const search_box_and_padding_height = 50;
-    // pixels above compose box.
-    const recipient_input_top = $("#compose_select_recipient_widget_wrapper").get_offset_to_window()
-        .top;
-    const top_space = recipient_input_top - top_offset - search_box_and_padding_height;
-    // pixels below compose starting from top of compose box.
-    const bottom_space = window_height - recipient_input_top - search_box_and_padding_height;
-    // Show dropdown on top / bottom based on available space.
-    let placement: tippy.Placement = "top-start";
-    if (bottom_space > top_space) {
-        placement = "bottom-start";
-        top_offset = -30;
-    }
-    const offset: [number, number] = [-10, top_offset];
-    dropdown.setProps({placement, offset});
-    const height = Math.min(
-        dropdown_widget.DEFAULT_DROPDOWN_HEIGHT,
-        Math.max(top_space, bottom_space),
-    );
-    const $popper = $(dropdown.popper);
-    $popper.find(".dropdown-list-wrapper").css("max-height", height + "px");
-}
-
 export function open_compose_recipient_dropdown(): void {
     $("#compose_select_recipient_widget").trigger("click");
 }
@@ -330,11 +303,15 @@ export function initialize(): void {
         get_options: get_options_for_recipient_widget,
         item_click_callback,
         $events_container: $("body"),
-        on_show_callback: compose_recipient_dropdown_on_show,
         on_exit_with_escape_callback: focus_compose_recipient,
         // We want to focus on topic box if dropdown was closed via selecting an item.
         focus_target_on_hidden: false,
         on_hidden_callback,
+        dropdown_input_visible_selector: "#compose_select_recipient_widget_wrapper",
+        prefer_top_start_placement: true,
+        tippy_props: {
+            offset: [-10, 5],
+        },
     }).setup();
 
     // `input` isn't relevant for streams since it registers as a change only

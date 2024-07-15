@@ -228,9 +228,6 @@ function setup_dropdown(sub, slim_sub) {
             );
         },
         $events_container: $("#subscription_overlay .subscription_settings"),
-        tippy_props: {
-            placement: "bottom-start",
-        },
         default_id: sub.can_remove_subscribers_group,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
         on_mount_callback(dropdown) {
