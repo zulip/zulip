@@ -7,6 +7,7 @@ import * as compose_notifications from "./compose_notifications";
 import * as compose_ui from "./compose_ui";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
+import * as message_events_util from "./message_events_util";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
@@ -377,7 +378,7 @@ export function update_message_lists({old_id, new_id}) {
 }
 
 export function process_from_server(messages) {
-    const msgs_to_rerender = [];
+    const msgs_to_rerender_or_add_to_narrow = [];
     const non_echo_messages = [];
 
     for (const message of messages) {
@@ -424,17 +425,25 @@ export function process_from_server(messages) {
         client_message.is_me_message = message.is_me_message;
         client_message.submessages = message.submessages;
 
-        msgs_to_rerender.push(client_message);
+        msgs_to_rerender_or_add_to_narrow.push(client_message);
         waiting_for_ack.delete(local_id);
     }
 
-    if (msgs_to_rerender.length > 0) {
-        // In theory, we could just rerender messages where there were
-        // changes in either the rounded timestamp we display or the
-        // message content, but in practice, there's no harm to just
-        // doing it unconditionally.
+    if (msgs_to_rerender_or_add_to_narrow.length > 0) {
         for (const msg_list of message_lists.all_rendered_message_lists()) {
-            msg_list.view.rerender_messages(msgs_to_rerender);
+            if (!msg_list.data.filter.can_apply_locally()) {
+                message_events_util.maybe_add_narrowed_messages(
+                    msgs_to_rerender_or_add_to_narrow,
+                    msg_list,
+                    message_util.add_new_messages,
+                );
+            } else {
+                // In theory, we could just rerender messages where there were
+                // changes in either the rounded timestamp we display or the
+                // message content, but in practice, there's no harm to just
+                // doing it unconditionally.
+                msg_list.view.rerender_messages(msgs_to_rerender_or_add_to_narrow);
+            }
         }
     }
 
