@@ -304,8 +304,8 @@ export function decode_stream_topic_from_url(
             return null;
         }
         // This check is important as a malformed url
-        // may have `stream`, `topic` or `near:` in a wrong order
-        if (terms[0]?.operator !== "stream") {
+        // may have `stream` / `channel`, `topic` or `near:` in a wrong order
+        if (terms[0]?.operator !== "stream" && terms[0]?.operator !== "channel") {
             return null;
         }
         if (terms.length === 1) {
