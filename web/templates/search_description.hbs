@@ -12,7 +12,7 @@
         {{~!-- squash whitespace --~}}
     {{else if (eq this.type "prefix_for_operator")}}
         {{~!-- squash whitespace --~}}
-        {{this.prefix_for_operator}} {{this.operand}}
+        {{this.prefix_for_operator}} {{this.operand}}{{#if (or (eq this.operand "link") (eq this.operand "image") (eq this.operand "attachment") (eq this.operand "reaction"))}}s{{/if}}
         {{~!-- squash whitespace --~}}
     {{else if (eq this.type "user_pill")}}
         {{~!-- squash whitespace --~}}

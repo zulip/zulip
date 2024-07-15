@@ -720,25 +720,25 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
             search_string: "has:link",
-            description_html: "messages that contain links",
+            description_html: "messages with links",
             is_people: false,
             incompatible_patterns: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
-            description_html: "messages that contain images",
+            description_html: "messages with images",
             is_people: false,
             incompatible_patterns: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
-            description_html: "messages that contain attachments",
+            description_html: "messages with attachments",
             is_people: false,
             incompatible_patterns: [{operator: "has", operand: "attachment"}],
         },
         {
             search_string: "has:reaction",
-            description_html: "messages that contain reactions",
+            description_html: "messages with reactions",
             is_people: false,
             incompatible_patterns: [{operator: "has", operand: "reaction"}],
         },
