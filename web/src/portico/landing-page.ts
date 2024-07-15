@@ -1,17 +1,60 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import {page_params} from "../base_page_params";
 
+import type {UserOS} from "./tabbed-instructions";
 import {detect_user_os} from "./tabbed-instructions";
 import render_tabs from "./team";
 
-export function path_parts() {
+type VersionInfo = {
+    description: string;
+    app_type: "mobile" | "desktop";
+} & (
+    | {
+          alt: "Windows";
+          download_link: string;
+          install_guide: string;
+      }
+    | {
+          alt: "macOS";
+          download_link: string;
+          mac_arm64_link: string;
+          install_guide: string;
+      }
+    | {
+          alt: "Android";
+          download_link: string;
+          play_store_link: string;
+      }
+    | {
+          alt: "iOS";
+          app_store_link: string;
+      }
+    | {
+          alt: "Linux";
+          download_link: string;
+          install_guide: string;
+      }
+) &
+    (
+        | {
+              show_instructions: false;
+              download_instructions?: undefined;
+          }
+        | {
+              show_instructions: true;
+              download_instructions: string;
+          }
+    );
+
+export function path_parts(): string[] {
     return window.location.pathname.split("/").filter((chunk) => chunk !== "");
 }
 
-const apps_events = function () {
-    const info = {
+const apps_events: () => void = function () {
+    const info: Record<UserOS, VersionInfo> = {
         windows: {
             alt: "Windows",
             description:
@@ -65,23 +108,23 @@ const apps_events = function () {
         },
     };
 
-    let version;
+    let version: UserOS;
 
-    function get_version_from_path() {
-        let result;
+    function get_version_from_path(): UserOS {
+        let result: UserOS | undefined;
         const parts = path_parts();
-
-        for (const version of Object.keys(info)) {
+        let version: UserOS;
+        for (version in info) {
             if (parts.includes(version)) {
                 result = version;
             }
         }
 
-        result = result || detect_user_os();
+        result = result ?? detect_user_os();
         return result;
     }
 
-    const update_page = function () {
+    const update_page: () => void = function () {
         const $download_instructions = $(".download-instructions");
         const $third_party_apps = $("#third-party-apps");
         const $download_android_apk = $("#download-android-apk");
@@ -94,12 +137,20 @@ const apps_events = function () {
 
         $(".info .platform").text(version_info.alt);
         $(".info .description").html(version_info.description);
-        $desktop_download_link.attr("href", version_info.download_link);
-        $download_from_google_play_store.attr("href", version_info.play_store_link);
-        $download_from_apple_app_store.attr("href", version_info.app_store_link);
-        $download_android_apk.find("a").attr("href", version_info.download_link);
-        $download_mac_arm64.find("a").attr("href", version_info.mac_arm64_link);
-        $download_instructions.html(version_info.download_instructions);
+
+        if (version_info.alt === "Android") {
+            $download_from_google_play_store.attr("href", version_info.play_store_link);
+            $download_android_apk.find("a").attr("href", version_info.download_link);
+        } else if (version_info.alt === "iOS") {
+            $download_from_apple_app_store.attr("href", version_info.app_store_link);
+        } else {
+            $desktop_download_link.attr("href", version_info.download_link);
+            if (version_info.alt === "macOS") {
+                $download_mac_arm64.find("a").attr("href", version_info.mac_arm64_link);
+            }
+            assert(version_info.download_instructions);
+            $download_instructions.html(version_info.download_instructions);
+        }
 
         $download_instructions.toggle(version_info.show_instructions);
 
@@ -117,7 +168,7 @@ const apps_events = function () {
     update_page();
 };
 
-const events = function () {
+const events: () => void = function () {
     if (path_parts().includes("apps")) {
         apps_events();
     }
@@ -129,6 +180,7 @@ $(() => {
 
     if (window.location.pathname === "/team/") {
         assert(page_params.page_type === "team");
+        assert(page_params.contributors);
         const contributors = page_params.contributors;
         delete page_params.contributors;
         render_tabs(contributors);
@@ -161,7 +213,7 @@ $(() => {
         // Make sure that links coming from elsewhere scroll
         // to the comparison table
         if (target_hash.includes("plan-comparison")) {
-            document.querySelector(target_hash).scrollIntoView();
+            document.querySelector(target_hash)!.scrollIntoView();
         }
 
         const plans_columns_count = tab_to_show.slice(1) === "self-hosted" ? 4 : 3;
@@ -181,11 +233,11 @@ $(() => {
 // function; this file and help.js are never included on the same
 // page.
 $(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () {
-    window.location.hash = $(this).attr("id");
+    window.location.hash = $(this).attr("id")!;
 });
 
 $(document).on("click", ".pricing-tab", function () {
-    const id = $(this).attr("id");
+    const id = $(this).attr("id")!;
     const $pricing_wrapper = $(".portico-pricing");
     $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
     $pricing_wrapper.addClass(`showing-${id}`);
@@ -207,17 +259,19 @@ $(document).on("click", ".pricing-tab", function () {
         $(".subheader-filler").attr("colspan", plans_columns_count);
     }
 
-    window.history.pushState(null, null, `#${id}`);
+    window.history.pushState(null, "", `#${id}`);
 });
 
-$(document).on("click", ".comparison-tab", function () {
+$(document).on("click", ".comparison-tab", function (this: HTMLElement) {
     const plans_columns_counts = {
         "tab-cloud": 3,
         "tab-hosted": 4,
         "tab-all": 7,
     };
 
-    const tab_label = $(this)[0].dataset.label;
+    const tab_label = z
+        .enum(["tab-cloud", "tab-hosted", "tab-all"])
+        .parse($(this)[0]!.dataset.label);
     const plans_columns_count = plans_columns_counts[tab_label];
     const visible_plans_id = `showing-${tab_label}`;
 
@@ -237,7 +291,7 @@ $(document).on("click", ".comparison-tab", function () {
         // on subheaders of interest (those about to be sticky)
         let previous_entry_y = 0;
 
-        const isScrollingUp = () => {
+        const isScrollingUp: () => boolean = () => {
             let is_scrolling_up = true;
             if (window.scrollY > previous_y_position) {
                 is_scrolling_up = false;
@@ -250,6 +304,7 @@ $(document).on("click", ".comparison-tab", function () {
 
         const observer = new IntersectionObserver(
             ([entries]) => {
+                assert(entries !== undefined);
                 // We want to stop an infinite jiggle when a change in subheader
                 // padding erroneously triggers the observer at just the right spot.
                 // There may be a momentary jiggle, but it will resolve almost
