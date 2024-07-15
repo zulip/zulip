@@ -106,7 +106,7 @@ export function set_search_bar_contents(
     pill_widget: SearchPillWidget,
     set_search_bar_text: (text: string) => void,
 ): void {
-    pill_widget.clear();
+    pill_widget.clear(true);
     let partial_pill = "";
     const invalid_inputs = [];
     const search_operator_strings = [];
