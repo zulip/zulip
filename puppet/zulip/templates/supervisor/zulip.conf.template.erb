@@ -116,7 +116,7 @@ programs=zulip_events
 
 <% if @katex_server %>
 [program:zulip-katex]
-command=/usr/local/bin/secret-env-wrapper SHARED_SECRET=shared_secret /srv/zulip-node/bin/node /home/zulip/deployments/current/static/webpack-bundles/katex_server.js <%= @katex_server_port %>
+command=/usr/local/bin/secret-env-wrapper SHARED_SECRET=shared_secret /srv/zulip-node/bin/node /home/zulip/prod-static/webpack-bundles/katex_server.js <%= @katex_server_port %>
 environment=NODE_ENV=production
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
