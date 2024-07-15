@@ -51,6 +51,11 @@ log][commit-log] for an up-to-date list of all changes.
   been completely reworked.
 - Redesigned all popovers with a more modern visual style and improved
   accessibility for screen readers.
+- Added a new `with` narrow filter operator for implementing permanent
+  links to topics designed to handle topics being renamed or marked as
+  resolved. This operator is not used in 9.0, but likely will be used
+  by the topic-link Markdown feature starting with a 9.x maintenance
+  release.
 
 #### Full feature changelog
 
@@ -69,11 +74,20 @@ log][commit-log] for an up-to-date list of all changes.
   can now decide whether to receive a DM when an invited user joins
   the organization.
 - Redesigned the message edit history view as a modal.
-- Redesigned the TODO widget.
-- Improved compose typeahead sorting algorithms significantly.
+- Redesigned the TODO list widget.
+- Redesigned the Account Settings and Preferences sections of personal
+  settings.
+- All typeahead menus are now scrollable with up to 50 matches, making
+  it easier to browse options.
+- Improved compose typeahead sorting algorithms significantly. Compose
+  typeaheads now appear next to the cursor, not above the compose box.
 - Improved compose box design, including how overly long messages are
   indicated, how drafts are displayed, a cleaner way to expand the
   compose area, etc.
+- Links to topics pasted into the compose box outside a code fence are
+  now automatically converted into the typeahead syntax for topic
+  links for a cleaner compose experience. The original pasted URL is
+  available in the browser undo history if desired.
 - Added mark-as-unread option to topic popover menus.
 - Added warnings for several dangerous actions, like merging topics.
 - Added a filter widget to the left sidebar direct messages section,
@@ -118,6 +132,9 @@ log][commit-log] for an up-to-date list of all changes.
 - Improved the efficiency of Zulip's internal statistics system, both
   in terms of CPU and storage usage.
 - Improved tooltips to better clarify how drafts work.
+- Improved left sidebar channel menu to be divided between personal
+  and administrator actions, like the topic menu, and to link directly
+  to the personal tab if one doesn't have channel admin permissions.
 - The left sidebar now displays the current conversation even when it
   contains no messages.
 - Improved performance/scalability of the Zulip server, including more
@@ -152,7 +169,8 @@ log][commit-log] for an up-to-date list of all changes.
 - Removed the Gitter data import tool, since Gitter removed the data
   export API that enabled it.
 - Removed multiple queue workers, reducing memory usage.
-- Reimplemented image processing (avatars, logos, etc.) using libvips.
+- Reimplemented image processing (avatars, logos, custom emoji, etc.)
+  using libvips as preparation for a new image thumbnailing system.
 - Major API/internals changes towards supporting granting permissions
   to custom groups, not just the built-in roles. User-facing
   functionality is coming soon in a future release.
@@ -173,7 +191,15 @@ log][commit-log] for an up-to-date list of all changes.
   to give time to potentially reconfigure which channel to use. You can
   override the delay by running `./manage.py send_zulip_update_announcements --skip-delay`
   once you've done any necessary configuration updates.
-- Advertise LaTeX option.
+- The Zulip server now contains a KaTeX server worker, designed to
+  make bulk-rendering LaTeX efficient. It has minimal memory
+  footprint, but can be disabled using the `katex_server` [deployment
+  option](../production/system-configuration.md) on very low memory
+  systems that don't use math extensively.
+- This release contains some potentially slow database migrations for
+  installations with thousands of users, especially
+  `0544_copy_avatar_images`, which re-thumbnails every uploaded avatar
+  using Zulip's new image-processing pipeline.
 
 ## Zulip Server 8.x series
 
