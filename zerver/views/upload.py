@@ -17,6 +17,7 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseNotFound,
 )
+from django.http.request import MediaType
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.cache import patch_cache_control, patch_vary_headers
@@ -203,6 +204,41 @@ def preferred_accept(request: HttpRequest, served_types: list[str]) -> str | Non
     return None
 
 
+def closest_thumbnail_format(
+    requested_format: BaseThumbnailFormat,
+    accepts: list[MediaType],
+    rendered_formats: list[StoredThumbnailFormat],
+) -> StoredThumbnailFormat:
+    accepted_types = sorted(
+        accepts,
+        key=lambda e: float(e.params.get("q", "1.0")),
+        reverse=True,
+    )
+
+    def q_for(content_type: str) -> float:
+        for potential_type in accepted_types:
+            if potential_type.match(content_type):
+                return float(potential_type.params.get("q", "1.0"))
+        return 0.0
+
+    # Serve a "close" format -- preferring animated which
+    # matches, followed by the format they requested, or one
+    # their browser supports, in the size closest to what they
+    # requested, with the minimum bytes.
+    def grade_format(
+        possible_format: StoredThumbnailFormat,
+    ) -> tuple[bool, bool, float, int, int]:
+        return (
+            possible_format.animated != requested_format.animated,
+            possible_format.extension != requested_format.extension,
+            1.0 - q_for(possible_format.content_type),
+            abs(requested_format.max_width - possible_format.max_width),
+            possible_format.byte_size,
+        )
+
+    return sorted(rendered_formats, key=grade_format)[0]
+
+
 def serve_file(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
@@ -269,11 +305,23 @@ def serve_file(
         else:
             potential_output_formats = THUMBNAIL_OUTPUT_FORMATS
         if requested_format not in potential_output_formats:
-            if requested_format in rendered_formats:
+            if rendered_formats == []:
+                # We haven't rendered anything, and they requested
+                # something we don't support.
+                return serve_image_error(404, "images/errors/image-not-exist.png")
+            elif requested_format in rendered_formats:
                 # Not a _current_ format, but we did render it at the time, so fine to serve
                 pass
             else:
-                return serve_image_error(404, "images/errors/image-not-exist.png")
+                # Find something "close enough".  This will not be a
+                # common occurrence -- the client has out of date
+                # information about which formats are supported, and
+                # the thumbnails were generated with an even earlier
+                # set, or the client is just guessing a format and
+                # hoping.
+                requested_format = closest_thumbnail_format(
+                    requested_format, request.accepted_types, rendered_formats
+                )
         elif requested_format not in rendered_formats:
             # They requested a valid format, but one we've not
             # rendered yet.  Take a lock on the row, then render every
