@@ -312,6 +312,8 @@ export function set_up(settings_panel: SettingsPanel): void {
             },
         });
     });
+
+    update_information_density_settings_visibility($container);
 }
 
 export async function report_emojiset_change(settings_panel: SettingsPanel): Promise<void> {
@@ -386,6 +388,28 @@ export function update_page(property: UserSettingsProperty): void {
 
     const $input_elem = $container.find(`[name=${CSS.escape(property)}]`);
     settings_components.set_input_element_value($input_elem, value);
+}
+
+export function update_information_density_settings_visibility($container: JQuery): void {
+    if (page_params.development_environment) {
+        $container.find(".information-density-settings").show();
+        return;
+    }
+
+    if (user_settings.dense_mode) {
+        $container.find(".information-density-settings").hide();
+        return;
+    }
+
+    if (
+        user_settings.web_font_size_px === NON_COMPACT_MODE_FONT_SIZE_PX &&
+        user_settings.web_line_height_percent === NON_COMPACT_MODE_LINE_HEIGHT_PERCENT
+    ) {
+        $container.find(".information-density-settings").hide();
+        return;
+    }
+
+    $container.find(".information-density-settings").show();
 }
 
 export function initialize(): void {
