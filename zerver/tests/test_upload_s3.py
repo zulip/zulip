@@ -164,8 +164,10 @@ class S3Test(ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
         self.assertIn("uri", response_dict)
+        self.assertIn("url", response_dict)
         base = "/user_uploads/"
-        url = response_dict["uri"]
+        url = response_dict["url"]
+        self.assertEqual(response_dict["uri"], url)
         self.assertEqual(base, url[: len(base)])
 
         # In development, this is just a redirect

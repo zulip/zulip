@@ -8093,7 +8093,7 @@ paths:
       summary: Upload a file
       tags: ["messages"]
       description: |
-        Upload a single file and get the corresponding URI.
+        Upload a single file and get the corresponding URL.
 
         Initially, only you will be able to access the link. To share the
         uploaded file, you'll need to [send a message][send-message]
@@ -8140,13 +8140,25 @@ paths:
                       ignored_parameters_unsupported: {}
                       uri:
                         type: string
+                        deprecated: true
                         description: |
-                          The URI of the uploaded file.
+                          The URL of the uploaded file. Alias of `url`.
+
+                          **Changes**: Deprecated in Zulip 9.0 (feature level 272). The term
+                          "URI" is deprecated in [web standards](https://url.spec.whatwg.org/#goals).
+                      url:
+                        type: string
+                        description: |
+                          The URL of the uploaded file.
+
+                          **Changes**: New in Zulip 9.0 (feature level 272). Previously,
+                          this property was only available under the legacy `uri` name.
                     example:
                       {
                         "msg": "",
                         "result": "success",
                         "uri": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
+                        "url": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
                       }
   /user_uploads/{realm_id_str}/{filename}:
     get:

@@ -3231,7 +3231,9 @@ class NormalActionsTest(BaseAction):
 
             response_dict = self.assert_json_success(result)
             self.assertIn("uri", response_dict)
-            url = response_dict["uri"]
+            self.assertIn("url", response_dict)
+            url = response_dict["url"]
+            self.assertEqual(response_dict["uri"], url)
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
 

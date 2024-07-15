@@ -1416,7 +1416,7 @@ def upload_file(client: Client) -> None:
             "type": "stream",
             "to": "Denmark",
             "topic": "Castle",
-            "content": "Check out [this picture]({}) of my castle!".format(result["uri"]),
+            "content": "Check out [this picture]({}) of my castle!".format(result["url"]),
         }
     )
     # {code_example|end}

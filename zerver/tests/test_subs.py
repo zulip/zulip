@@ -1195,7 +1195,7 @@ class StreamAdminTest(ZulipTestCase):
         fp.name = "zulip.txt"
 
         result = self.client_post("/json/user_uploads", {"file": fp})
-        url = self.assert_json_success(result)["uri"]
+        url = self.assert_json_success(result)["url"]
 
         owner = self.example_user("desdemona")
         realm = owner.realm

@@ -319,5 +319,8 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         )
     check_upload_within_quota(user_profile.realm, file_size)
 
-    uri = upload_message_attachment_from_request(user_file, user_profile)
-    return json_success(request, data={"uri": uri})
+    url = upload_message_attachment_from_request(user_file, user_profile)
+
+    # TODO/compatibility: uri is a deprecated alias for url that can
+    # be removed once there are no longer clients relying on it.
+    return json_success(request, data={"uri": url, "url": url})
