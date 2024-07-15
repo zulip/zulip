@@ -34,7 +34,6 @@
       label=settings_label.dense_mode
       prefix=prefix}}
 
-    {{#if information_density_settings.render_group}}
     <div class="information-density-settings">
         <div class="title">{{t "Information density settings"}}</div>
         {{#each information_density_settings.settings.user_display_settings}}
@@ -46,5 +45,4 @@
               prefix=../prefix}}
         {{/each}}
     </div>
-    {{/if}}
 </div>

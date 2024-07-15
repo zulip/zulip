@@ -957,7 +957,17 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__dense_mode;
     user_settings.dense_mode = false;
+    settings_preferences.user_settings_panel = {
+        container: "#user-preferences",
+    };
     override(information_density, "set_base_typography_css_variables", noop);
+    override(
+        settings_preferences,
+        "update_information_density_settings_visibility",
+        ($container) => {
+            assert.equal($container, $("#user-preferences"));
+        },
+    );
     toggled = [];
     dispatch(event);
     assert_same(user_settings.dense_mode, true);
