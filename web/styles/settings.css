@@ -1840,10 +1840,13 @@ $option_title_width: 180px;
         }
     }
 
-    .user_row {
-        .user_name,
-        .email {
-            min-width: 8em;
+    #admin-user-list,
+    #admin-bot-list {
+        .user_row {
+            .user_name,
+            .email {
+                min-width: 8em;
+            }
         }
     }
 
@@ -1856,11 +1859,19 @@ $option_title_width: 180px;
 }
 
 @media (width < $sm_min) {
-    .user_row,
-    .settings-section {
-        .bot_type,
-        .last_active {
-            display: none;
+    #admin-user-list,
+    #admin-bot-list {
+        .user_row,
+        .table-sticky-headers {
+            .bot_type,
+            .last_active {
+                display: none;
+            }
+
+            .user_name,
+            .email {
+                min-width: 8em;
+            }
         }
     }
 
@@ -1902,13 +1913,6 @@ $option_title_width: 180px;
 
         .user-topic-stream {
             min-width: 6em;
-        }
-    }
-
-    .user_row {
-        .user_name,
-        .email {
-            min-width: 8em;
         }
     }
 
