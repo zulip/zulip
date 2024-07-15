@@ -527,3 +527,21 @@
 #invite_users_option_tabs_container {
     margin-bottom: 20px;
 }
+
+#send_later_options {
+    .send_later_list {
+        margin: 0;
+        list-style: none;
+
+        .send_later_option {
+            display: flex;
+            padding: 3px 15px;
+
+            &:focus,
+            &:hover {
+                text-decoration: none;
+                background-color: hsl(0deg 0% 0% / 20%);
+            }
+        }
+    }
+}
