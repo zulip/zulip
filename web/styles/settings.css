@@ -228,7 +228,7 @@ h3,
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
-.upload-file-name {
+#attachments-settings .upload-file-name {
     word-break: break-all;
 }
 
@@ -1826,7 +1826,7 @@ $option_title_width: 180px;
 }
 
 @media (width < 830px) and (width > $md_min) {
-    .upload-file-name {
+    #attachments-settings .upload-file-name {
         min-width: 10em;
     }
 
@@ -1891,7 +1891,7 @@ $option_title_width: 180px;
         width: 400px;
     }
 
-    .upload-file-name {
+    #attachments-settings .upload-file-name {
         min-width: 10em;
     }
 
