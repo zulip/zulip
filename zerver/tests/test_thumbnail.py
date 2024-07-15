@@ -8,6 +8,7 @@ from unittest.mock import patch
 import orjson
 import pyvips
 from django.conf import settings
+from django.http.request import MediaType
 from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -26,6 +27,7 @@ from zerver.lib.upload import (
     split_thumbnail_path,
 )
 from zerver.models import Attachment, ImageAttachment
+from zerver.views.upload import closest_thumbnail_format
 from zerver.worker.thumbnail import ensure_thumbnails
 
 
@@ -504,9 +506,16 @@ class TestThumbnailRetrieval(ZulipTestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.headers["Content-Type"], "image/gif")
 
+                # Format we don't have
+                response = self.client_get(f"/user_uploads/thumbnail/{path_id}/1x1.png")
+                self.assertEqual(response.status_code, 404)
+                self.assertEqual(response.headers["Content-Type"], "image/png")
+
                 # Exit the block, triggering the thumbnailing worker
 
-            thumbnail_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
+            thumbnail_response = self.client_get(
+                f"/user_uploads/thumbnail/{path_id}/{webp_still!s}"
+            )
             self.assertEqual(thumbnail_response.status_code, 200)
             self.assertEqual(thumbnail_response.headers["Content-Type"], "image/webp")
             self.assertLess(
@@ -524,11 +533,6 @@ class TestThumbnailRetrieval(ZulipTestCase):
 
             # Invalid thumbnail format
             response = self.client_get(f"/user_uploads/thumbnail/{path_id}/bogus")
-            self.assertEqual(response.status_code, 404)
-            self.assertEqual(response.headers["Content-Type"], "image/png")
-
-            # Format we don't have
-            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/1x1.png")
             self.assertEqual(response.status_code, 404)
             self.assertEqual(response.headers["Content-Type"], "image/png")
 
@@ -593,14 +597,126 @@ class TestThumbnailRetrieval(ZulipTestCase):
                 path_id = re.sub(r"/user_uploads/", "", json_response["url"])
                 # Exit the block, triggering the thumbnailing worker
 
-            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.headers["Content-Type"], "image/webp")
+            still_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
+            self.assertEqual(still_response.status_code, 200)
+            self.assertEqual(still_response.headers["Content-Type"], "image/webp")
 
-            response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_anim!s}")
-            self.assertEqual(response.status_code, 404)
-            self.assertEqual(response.headers["Content-Type"], "image/png")
+            # We can request -anim -- we didn't render it, but we the
+            # "closest we rendered" logic kicks in, and we get the
+            # still webp, rather than a 404
+            animated_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_anim!s}")
+            self.assertEqual(animated_response.status_code, 200)
+            self.assertEqual(animated_response.headers["Content-Type"], "image/webp")
+            # Double-check that we don't actually have the animated version, by comparing file sizes
+            self.assertEqual(
+                animated_response.headers["Content-Length"],
+                still_response.headers["Content-Length"],
+            )
 
             response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{jpeg_still!s}")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.headers["Content-Type"], "image/jpeg")
+
+    def test_closest_format(self) -> None:
+        self.login_user(self.example_user("hamlet"))
+
+        webp_anim = ThumbnailFormat("webp", 100, 75, animated=True)
+        webp_still = ThumbnailFormat("webp", 100, 75, animated=False)
+        tiny_webp_still = ThumbnailFormat("webp", 10, 10, animated=False)
+        gif_still = ThumbnailFormat("gif", 100, 75, animated=False)
+        with (
+            self.mock_formats([webp_anim, webp_still, tiny_webp_still, gif_still]),
+            self.captureOnCommitCallbacks(execute=True),
+            get_test_image_file("animated_img.gif") as image_file,
+        ):
+            json_response = self.assert_json_success(
+                self.client_post("/json/user_uploads", {"file": image_file})
+            )
+            path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+            # Exit the block, triggering the thumbnailing worker
+
+        image_attachment = ImageAttachment.objects.get(path_id=path_id)
+        rendered_formats = [
+            StoredThumbnailFormat(**data) for data in image_attachment.thumbnail_metadata
+        ]
+        accepts = [MediaType("image/webp"), MediaType("image/*"), MediaType("*/*;q=0.8")]
+
+        # Prefer to match -animated, even though we have a .gif
+        self.assertEqual(
+            str(
+                closest_thumbnail_format(
+                    ThumbnailFormat("gif", 100, 75, animated=True), accepts, rendered_formats
+                )
+            ),
+            "100x75-anim.webp",
+        )
+
+        # Match the extension, even if we're an exact match for a different size
+        self.assertEqual(
+            str(
+                closest_thumbnail_format(
+                    ThumbnailFormat("gif", 10, 10, animated=False), accepts, rendered_formats
+                )
+            ),
+            "100x75.gif",
+        )
+
+        # If they request an extension we don't do, then we look for the formats they prefer
+        self.assertEqual(
+            str(
+                closest_thumbnail_format(
+                    ThumbnailFormat("tif", 10, 10, animated=False), accepts, rendered_formats
+                )
+            ),
+            "10x10.webp",
+        )
+        self.assertEqual(
+            str(
+                closest_thumbnail_format(
+                    ThumbnailFormat("tif", 10, 10, animated=False),
+                    [MediaType("image/webp;q=0.9"), MediaType("image/gif")],
+                    rendered_formats,
+                )
+            ),
+            "100x75.gif",
+        )
+        self.assertEqual(
+            str(
+                closest_thumbnail_format(
+                    ThumbnailFormat("tif", 10, 10, animated=False),
+                    [MediaType("image/gif")],
+                    rendered_formats,
+                )
+            ),
+            "100x75.gif",
+        )
+
+        # Closest width
+        self.assertEqual(
+            str(
+                closest_thumbnail_format(
+                    ThumbnailFormat("webp", 20, 100, animated=False), accepts, rendered_formats
+                )
+            ),
+            "10x10.webp",
+        )
+        self.assertEqual(
+            str(
+                closest_thumbnail_format(
+                    ThumbnailFormat("webp", 80, 10, animated=False), accepts, rendered_formats
+                )
+            ),
+            "100x75.webp",
+        )
+
+        # Smallest filesize if they have no media preference
+        self.assertEqual(
+            str(
+                closest_thumbnail_format(
+                    ThumbnailFormat("tif", 100, 75, animated=False),
+                    [MediaType("image/gif"), MediaType("image/webp")],
+                    rendered_formats,
+                )
+            ),
+            "100x75.webp",
+        )
