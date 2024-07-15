@@ -128,6 +128,7 @@ class Command(ZulipBaseCommand):
                 subprocess.check_call(
                     [
                         "crudini",
+                        "--inplace",
                         "--set",
                         SECRETS_FILENAME,
                         "secrets",
