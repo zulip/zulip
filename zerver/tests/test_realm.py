@@ -2016,6 +2016,20 @@ class RealmAPITest(ZulipTestCase):
         self.assertEqual(realm_user_default.web_line_height_percent, 140)
         self.assertEqual(realm_user_default.dense_mode, False)
 
+        invalid_data = {"dense_mode": orjson.dumps(True).decode(), "web_font_size_px": 16}
+        result = self.client_patch("/json/realm/user_settings_defaults", invalid_data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_font_size_px' settings.",
+        )
+
+        invalid_data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
+        result = self.client_patch("/json/realm/user_settings_defaults", invalid_data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.",
+        )
+
     def test_invalid_default_notification_sound_value(self) -> None:
         result = self.client_patch(
             "/json/realm/user_settings_defaults", {"notification_sound": "invalid"}

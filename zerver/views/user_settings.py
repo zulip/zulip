@@ -380,6 +380,24 @@ def json_change_settings(
             # Note that check_change_full_name strips the passed name automatically
             check_change_full_name(user_profile, full_name, user_profile)
 
+    if (
+        dense_mode
+        and web_font_size_px is not None
+        and web_font_size_px != UserProfile.WEB_FONT_SIZE_PX_LEGACY
+    ):
+        raise JsonableError(
+            _("Incompatible values for 'dense_mode' and 'web_font_size_px' settings.")
+        )
+
+    if (
+        dense_mode
+        and web_line_height_percent is not None
+        and web_line_height_percent != UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY
+    ):
+        raise JsonableError(
+            _("Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.")
+        )
+
     # Loop over user_profile.property_types
     request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}
     for k, v in request_settings.items():
