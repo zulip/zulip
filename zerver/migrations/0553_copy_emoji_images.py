@@ -158,9 +158,11 @@ def thumbnail_local_emoji(apps: StateApps) -> None:
             try:
                 if os.path.exists(f"{base_path}/{new_file_name}.original"):
                     os.unlink(f"{base_path}/{new_file_name}.original")
-                os.link(
-                    f"{base_path}/{old_file_name}.original", f"{base_path}/{new_file_name}.original"
-                )
+                from_file = f"{base_path}/{old_file_name}.original"
+                if not os.path.exists(from_file) and os.path.exists(f"{base_path}/{old_file_name}"):
+                    # Imports currently don't write ".original" files, so check without that
+                    from_file = f"{base_path}/{old_file_name}"
+                os.link(from_file, f"{base_path}/{new_file_name}.original")
                 with open(f"{base_path}/{new_file_name}.original", "rb") as fh:
                     original_bytes = fh.read()
             except OSError as e:
@@ -226,10 +228,19 @@ def thumbnail_s3(apps: StateApps) -> None:
             try:
                 old_data = avatar_bucket.Object(f"{base_path}/{old_file_name}.original").get()
                 original_bytes = old_data["Body"].read()
-            except botocore.exceptions.ClientError as e:
-                raise SkipImageError(f"Failed to read original file: {e}")
+                content_type = old_data["ContentType"]
+            except botocore.exceptions.ClientError:
+                # Imports currently don't write ".original" files, so check without that
+                try:
+                    old_data = avatar_bucket.Object(f"{base_path}/{old_file_name}").get()
+                except botocore.exceptions.ClientError as e:
+                    raise SkipImageError(f"Failed to read .original file: {e}")
+                original_bytes = old_data["Body"].read()
+                # They also may have uploaded as "application/octet-stream", so guess the
+                # content-type from the filename.  If we can't guess, then we'll hit the
+                # SkipImageError case right below this.
+                content_type = guess_type(old_file_name)[0] or "application/octet-stream"
 
-            content_type = old_data["ContentType"]
             if content_type not in VALID_EMOJI_CONTENT_TYPE:
                 raise SkipImageError(f"Invalid content-type: {content_type}")
 
