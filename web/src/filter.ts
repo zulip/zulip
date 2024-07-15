@@ -665,7 +665,7 @@ export class Filter {
 
             // Note: We hack around using this in "describe" below.
             case "has":
-                return verb + "messages with one or more";
+                return verb + "messages with";
 
             case "id":
                 return verb + "message ID";

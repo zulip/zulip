@@ -1500,7 +1500,7 @@ test("describe", ({mock_template}) => {
         {operator: "channel", operand: "devel"},
         {operator: "has", operand: "image", negated: true},
     ];
-    string = "channel devel, exclude messages with one or more image";
+    string = "channel devel, exclude messages with images";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
@@ -1514,7 +1514,7 @@ test("describe", ({mock_template}) => {
         {operator: "has", operand: "image", negated: true},
         {operator: "channel", operand: "devel"},
     ];
-    string = "exclude messages with one or more image, channel devel";
+    string = "exclude messages with images, channel devel";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [];
