@@ -660,8 +660,6 @@
     }
 
     & .drafts-container .drafts-header,
-    .nav > li > a:focus,
-    .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
     .user-groups-container .user-groups-header,
     .overlay-messages-header,
@@ -717,10 +715,6 @@
         .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
-    }
-
-    .nav-list > li > a {
-        text-shadow: none;
     }
 
     #message-edit-history-overlay-container {
