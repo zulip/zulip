@@ -21,17 +21,6 @@
         margin: 5px 0;
     }
 
-    /* TODO: Clean this logic up after drop Bootstrap styling */
-    & ul.nav {
-        /* Override default padding of tippyjs */
-        margin: 0 -9px;
-
-        /* Override bootstrap defaults */
-        .nav-list > li > a {
-            padding: 3px 15px;
-        }
-    }
-
     &[data-placement^="top"] {
         > .tippy-arrow {
             &::before {
@@ -754,11 +743,6 @@ ul.popover-group-menu-member-list {
         /* By resetting to the default color from the `body`,
            we can ignore the colors applied from `tippy-box`. */
         color: var(--color-text-default);
-    }
-
-    & ul.nav {
-        /* TODO: Clean this logic up after drop Bootstrap styling */
-        margin: 0;
     }
 }
 
