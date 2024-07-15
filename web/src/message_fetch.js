@@ -606,7 +606,11 @@ export function initialize(finished_initial_fetch) {
     // which always contains the latest message, it makes sense for
     // Recent view to display the same data and be in sync.
     all_messages_data.set_add_messages_callback((messages, rows_order_changed) => {
-        recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
+        try {
+            recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
+        } catch (error) {
+            blueslip.error("Error in recent_view_ui.process_messages", undefined, error);
+        }
     });
 
     // TODO: Ideally we'd have loading indicators for Recent Conversations
