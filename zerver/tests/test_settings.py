@@ -527,6 +527,20 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assertEqual(hamlet.web_line_height_percent, 140)
         self.assertEqual(hamlet.dense_mode, False)
 
+        invalid_data = {"dense_mode": orjson.dumps(True).decode(), "web_font_size_px": 16}
+        result = self.client_patch("/json/settings", invalid_data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_font_size_px' settings.",
+        )
+
+        invalid_data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
+        result = self.client_patch("/json/settings", invalid_data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.",
+        )
+
 
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:
