@@ -12,8 +12,10 @@ import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as rendered_markdown from "./rendered_markdown";
 import * as scroll_util from "./scroll_util";
+import {current_user} from "./state_data";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -277,7 +279,11 @@ export function set_up_toggler(): void {
     });
     $(".informational-overlays .overlay-body").append($markdown_help);
 
-    const $search_operators = $(render_search_operator());
+    const $search_operators = $(
+        render_search_operator({
+            can_access_all_public_channels: !page_params.is_spectator && !current_user.is_guest,
+        }),
+    );
     $(".informational-overlays .overlay-body").append($search_operators);
 
     const $keyboard_shortcuts = $(render_keyboard_shortcut());

@@ -20,10 +20,17 @@
         {{/tr}}
         &nbsp;
         <span>
-            {{#tr}}
-            Consider <z-link>searching all public channels</z-link>.
-            {{#*inline "z-link"}}<a class="search-shared-history" href="">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
+            {{#if is_guest}}
+                {{#tr}}
+                    Consider <z-link>searching all public channels that you can view</z-link>.
+                    {{#*inline "z-link"}}<a class="search-shared-history" href="">{{> @partial-block}}</a>{{/inline}}
+                {{/tr}}
+            {{else}}
+                {{#tr}}
+                    Consider <z-link>searching all public channels</z-link>.
+                    {{#*inline "z-link"}}<a class="search-shared-history" href="">{{> @partial-block}}</a>{{/inline}}
+                {{/tr}}
+            {{/if}}
         </span>
     </p>
 </div>
