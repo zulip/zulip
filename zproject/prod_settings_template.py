@@ -734,25 +734,25 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## How long outgoing webhook requests time out after
 # OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 
-## Support for mobile push notifications.  Setting controls whether
-## push notifications will be forwarded through a Zulip push
-## notification bouncer server to the mobile apps.  See
-## https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
-## for information on how to sign up for and configure this.
-# PUSH_NOTIFICATION_BOUNCER_URL = "https://push.zulipchat.com"
+## Mobile push notifications require registering for the Zulip mobile
+## push notification service and configuring your server to use the
+## service here. For complete documentation, see:
+##
+##   https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
+##
+# ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
+
+## By default, a Zulip server that has registered for Zulip services
+## submits both basic metadata (required for billing/free plan
+## eligiblity) as well as aggregate usage statistics. You can disable
+## submitting usage statistics here.
+# ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
 
 ## Whether to redact the content of push notifications.  This is less
 ## usable, but avoids sending message content over the wire.  In the
 ## future, we're likely to replace this with an end-to-end push
 ## notification encryption feature.
 # PUSH_NOTIFICATION_REDACT_CONTENT = False
-
-## Whether to submit basic usage statistics to help the Zulip core team.  Details at
-##
-##   https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
-##
-## Defaults to True if and only if the Mobile Push Notifications Service is enabled.
-# SUBMIT_USAGE_STATISTICS = True
 
 ## Whether to lightly advertise sponsoring Zulip in the gear menu.
 # PROMOTE_SPONSORING_ZULIP = True

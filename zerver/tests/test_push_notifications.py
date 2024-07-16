@@ -83,10 +83,12 @@ from zerver.lib.remote_server import (
 from zerver.lib.response import json_response_from_error
 from zerver.lib.test_classes import BouncerTestCase, ZulipTestCase
 from zerver.lib.test_helpers import (
+    activate_push_notification_service,
     mock_queue_publish,
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     Message,
@@ -121,7 +123,7 @@ if settings.ZILENCER_ENABLED:
 
 
 class SendTestPushNotificationEndpointTest(BouncerTestCase):
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_send_test_push_notification_api_invalid_token(self) -> None:
         # What happens when the mobile device isn't registered with its server,
@@ -167,7 +169,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         error_response = json_response_from_error(InvalidRemotePushDeviceTokenError())
         responses.add(
             responses.POST,
-            f"{settings.PUSH_NOTIFICATION_BOUNCER_URL}/api/v1/remotes/push/test_notification",
+            f"{settings.ZULIP_SERVICES_URL}/api/v1/remotes/push/test_notification",
             body=error_response.content,
             status=error_response.status_code,
         )
@@ -293,7 +295,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         )
         self.assert_json_success(result)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_send_test_push_notification_api_with_bouncer_config(self) -> None:
         """
@@ -1104,9 +1106,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             )
 
         with (
-            mock.patch(
-                "zerver.lib.push_notifications.uses_notification_bouncer", return_value=True
-            ),
+            activate_push_notification_service(),
             mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as m,
         ):
             post_response = {
@@ -1131,7 +1131,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assertTrue(realm.push_notifications_enabled)
             self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_register_token_realm_uuid_belongs_to_different_server(self) -> None:
         self.add_mock_response()
@@ -1176,7 +1176,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         self.assert_length(RemotePushDeviceToken.objects.filter(token=token), 0)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_push_bouncer_api(self) -> None:
         """This is a variant of the below test_push_api, but using the full
@@ -1221,8 +1221,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result = self.client_delete(endpoint, {"token": "abcd1234"}, subdomain="zulip")
             self.assert_json_error(result, "Token does not exist")
 
-            assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-            URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/register"
+            assert settings.ZULIP_SERVICES_URL is not None
+            URL = settings.ZULIP_SERVICES_URL + "/api/v1/remotes/push/register"
             with responses.RequestsMock() as resp, self.assertLogs(level="ERROR") as error_log:
                 resp.add(responses.POST, URL, body=ConnectionError(), status=502)
                 with self.assertRaisesRegex(
@@ -1382,11 +1382,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         return super().setUp()
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_analytics_failure_api(self) -> None:
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        ANALYTICS_URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/analytics"
+        assert settings.ZULIP_SERVICES_URL is not None
+        ANALYTICS_URL = settings.ZULIP_SERVICES_URL + "/api/v1/remotes/server/analytics"
         ANALYTICS_STATUS_URL = ANALYTICS_URL + "/status"
 
         with (
@@ -1447,7 +1447,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             send_server_data_to_push_bouncer()
             self.assertTrue(
                 mock_warning.output[0].startswith(
-                    f"ERROR:zulip.analytics:Exception communicating with {settings.PUSH_NOTIFICATION_BOUNCER_URL}\nTraceback",
+                    f"ERROR:zulip.analytics:Exception communicating with {settings.ZULIP_SERVICES_URL}\nTraceback",
                 )
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
@@ -1511,14 +1511,14 @@ class AnalyticsBouncerTest(BouncerTestCase):
             self.assertTrue(resp.assert_call_count(ANALYTICS_URL, 1))
             self.assertPushNotificationsAre(False)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service(submit_usage_statistics=True)
     @responses.activate
     def test_analytics_api(self) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
         """
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        ANALYTICS_URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/analytics"
+        assert settings.ZULIP_SERVICES_URL is not None
+        ANALYTICS_URL = settings.ZULIP_SERVICES_URL + "/api/v1/remotes/server/analytics"
         ANALYTICS_STATUS_URL = ANALYTICS_URL + "/status"
         user = self.example_user("hamlet")
         end_time = self.TIME_ZERO
@@ -1620,13 +1620,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(InstallationCount.objects.count(), 2)
         self.assertEqual(RealmAuditLog.objects.filter(id__gt=audit_log_max_id).count(), 2)
 
-        with self.settings(SUBMIT_USAGE_STATISTICS=False):
-            # With this setting off, we don't send RealmCounts and InstallationCounts.
+        with self.settings(ANALYTICS_DATA_UPLOAD_LEVEL=AnalyticsDataUploadLevel.BILLING):
+            # With this setting, we don't send RealmCounts and InstallationCounts.
             send_server_data_to_push_bouncer()
         check_counts(2, 2, 0, 0, 1)
 
-        with self.settings(SUBMIT_USAGE_STATISTICS=True):
-            # With 'SUBMIT_USAGE_STATISTICS=True' but 'consider_usage_statistics=False',
+        with self.settings(ANALYTICS_DATA_UPLOAD_LEVEL=AnalyticsDataUploadLevel.ALL):
+            # With ALL data upload enabled, but 'consider_usage_statistics=False',
             # we don't send RealmCount and InstallationCounts.
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
         check_counts(3, 3, 0, 0, 1)
@@ -1837,8 +1837,15 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
             },
         )
+        with self.settings(ANALYTICS_DATA_UPLOAD_LEVEL=AnalyticsDataUploadLevel.BASIC):
+            # With the BASIC level, RealmAuditLog rows are not sent.
+            send_server_data_to_push_bouncer()
+        check_counts(10, 10, 3, 2, 7)
+
+        # Now, with ANALYTICS_DATA_UPLOAD_LEVEL back to the baseline for this test,
+        # the new RealmAuditLog event will be sent.
         send_server_data_to_push_bouncer()
-        check_counts(10, 10, 3, 2, 8)
+        check_counts(11, 11, 3, 2, 8)
 
         # Now create an InstallationCount with a property that's not supposed
         # to be tracked by the remote server - since the bouncer itself tracks
@@ -1858,7 +1865,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
         # The analytics endpoint call counts increase by 1, but the actual RemoteCounts remain unchanged,
         # since syncing the data failed.
-        check_counts(11, 11, 3, 2, 8)
+        check_counts(12, 12, 3, 2, 8)
         forbidden_installation_count.delete()
 
         (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
@@ -1899,7 +1906,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             ],
         )
         # Only the request counts go up -- all of the other rows' duplicates are dropped
-        check_counts(12, 12, 3, 2, 8)
+        check_counts(13, 13, 3, 2, 8)
 
         # Test that only valid org_type values are accepted - integers defined in OrgTypeEnum.
         realms_data = get_realms_info_for_push_bouncer()
@@ -1927,7 +1934,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             result, 'Invalid realms[0]["org_type"]: Value error, Not a valid org_type value'
         )
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service(submit_usage_statistics=True)
     @responses.activate
     def test_analytics_api_foreign_keys_to_remote_realm(self) -> None:
         self.add_mock_response()
@@ -2075,7 +2082,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         for remote_realm_audit_log in RemoteRealmAuditLog.objects.filter(realm_id=user.realm.id):
             self.assertEqual(remote_realm_audit_log.remote_realm, remote_realm)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service(submit_usage_statistics=True)
     @responses.activate
     def test_analytics_api_invalid(self) -> None:
         """This is a variant of the below test_push_api, but using the full
@@ -2098,7 +2105,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(m.output, ["WARNING:zulip.analytics:Invalid property invalid count stat"])
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_remote_realm_duplicate_uuid(self) -> None:
         """
@@ -2141,7 +2148,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
     # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
     # and don't send realmauditlog_rows. Make sure that continues to work.
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_old_two_table_format(self) -> None:
         self.add_mock_response()
@@ -2155,15 +2162,15 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 "version": '"2.0.6+git"',
             },
         )
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        ANALYTICS_URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/analytics"
+        assert settings.ZULIP_SERVICES_URL is not None
+        ANALYTICS_URL = settings.ZULIP_SERVICES_URL + "/api/v1/remotes/server/analytics"
         self.assertTrue(responses.assert_call_count(ANALYTICS_URL, 1))
         self.assertEqual(RemoteRealmCount.objects.count(), 1)
         self.assertEqual(RemoteInstallationCount.objects.count(), 0)
         self.assertEqual(RemoteRealmAuditLog.objects.count(), 0)
 
     # Make sure we aren't sending data we don't mean to, even if we don't store it.
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_only_sending_intended_realmauditlog_data(self) -> None:
         self.add_mock_response()
@@ -2209,7 +2216,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         ):
             send_server_data_to_push_bouncer()
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_realmauditlog_data_mapping(self) -> None:
         self.add_mock_response()
@@ -2236,7 +2243,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
     # This verifies that the bouncer is backwards-compatible with remote servers using
     # TextField to store extra_data.
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_realmauditlog_string_extra_data(self) -> None:
         self.add_mock_response()
@@ -2337,7 +2344,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             )
         self.assertIn("Malformed audit log data", m.output[0])
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_realm_properties_after_send_analytics(self) -> None:
         self.add_mock_response()
@@ -2647,7 +2654,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             ],
         )
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_deleted_realm(self) -> None:
         self.add_mock_response()
@@ -2886,15 +2893,15 @@ class HandlePushNotificationTest(PushNotificationTest):
     @override
     def request_callback(self, request: PreparedRequest) -> tuple[int, ResponseHeaders, bytes]:
         assert request.url is not None  # allow mypy to infer url is present.
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
+        assert settings.ZULIP_SERVICES_URL is not None
+        local_url = request.url.replace(settings.ZULIP_SERVICES_URL, "")
         assert isinstance(request.body, bytes)
         result = self.uuid_post(
             self.server_uuid, local_url, request.body, content_type="application/json"
         )
         return (result.status_code, result.headers, result.content)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_end_to_end(self) -> None:
         self.add_mock_response()
@@ -2988,7 +2995,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 ),
             )
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_end_to_end_failure_due_to_no_plan(self) -> None:
         self.add_mock_response()
@@ -3062,7 +3069,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             self.assertEqual(realm.push_notifications_enabled, True)
             self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_unregistered_client(self) -> None:
         self.add_mock_response()
@@ -3171,7 +3178,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             # Local registrations have also been deleted:
             self.assertEqual(PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     @responses.activate
     def test_connection_error(self) -> None:
         self.setup_apns_tokens()
@@ -3192,13 +3199,14 @@ class HandlePushNotificationTest(PushNotificationTest):
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/notify"
+        assert settings.ZULIP_SERVICES_URL is not None
+        URL = settings.ZULIP_SERVICES_URL + "/api/v1/remotes/push/notify"
         responses.add(responses.POST, URL, body=ConnectionError())
         with self.assertRaises(PushNotificationBouncerRetryLaterError):
             handle_push_notification(self.user_profile.id, missed_message)
 
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
+    @override_settings(ZULIP_SERVICE_PUSH_NOTIFICATIONS=False, ZULIP_SERVICES=set())
     def test_read_message(self, mock_push_notifications: mock.MagicMock) -> None:
         user_profile = self.example_user("hamlet")
         message = self.get_message(
@@ -3339,7 +3347,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with (
-            self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True),
+            activate_push_notification_service(),
             mock.patch(
                 "zerver.lib.push_notifications.get_message_payload_apns",
                 return_value={"apns": True},
@@ -3472,7 +3480,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
 
         with (
-            self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True),
+            activate_push_notification_service(),
             mock.patch("zerver.lib.push_notifications.send_notifications_to_bouncer") as mock_send,
         ):
             handle_remove_push_notification(user_profile.id, [message.id])
@@ -3951,7 +3959,7 @@ class TestAPNs(PushNotificationTest):
             notification_drop_log = (
                 "DEBUG:zerver.lib.push_notifications:"
                 "APNs: Dropping a notification because nothing configured.  "
-                "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE)."
+                "Set ZULIP_SERVICES_URL (or APNS_CERT_FILE)."
             )
 
             from zerver.lib.push_notifications import initialize_push_notifications
@@ -4733,13 +4741,13 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
         self.assertEqual(user.realm.push_notifications_enabled, False)
 
 
-@override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+@activate_push_notification_service()
 class TestSendToPushBouncer(ZulipTestCase):
     def add_mock_response(
         self, body: bytes = orjson.dumps({"msg": "error"}), status: int = 200
     ) -> None:
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/register"
+        assert settings.ZULIP_SERVICES_URL is not None
+        URL = settings.ZULIP_SERVICES_URL + "/api/v1/remotes/register"
         responses.add(responses.POST, URL, body=body, status=status)
 
     @responses.activate
@@ -4829,11 +4837,11 @@ class TestPushApi(BouncerTestCase):
 
             # Use push notification bouncer and try to remove non-existing tokens.
             with (
-                self.settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com"),
+                activate_push_notification_service(),
                 responses.RequestsMock() as resp,
             ):
-                assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-                URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/unregister"
+                assert settings.ZULIP_SERVICES_URL is not None
+                URL = settings.ZULIP_SERVICES_URL + "/api/v1/remotes/push/unregister"
                 resp.add_callback(responses.POST, URL, callback=self.request_callback)
                 result = self.client_delete(endpoint, {"token": "abcd1234"})
                 self.assert_json_error(result, "Token does not exist")
@@ -4867,7 +4875,7 @@ class TestPushApi(BouncerTestCase):
             self.assert_length(tokens, 1)
             self.assertEqual(tokens[0].token, token)
 
-        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com"):
+        with activate_push_notification_service():
             self.add_mock_response()
             # Enable push notification bouncer and add tokens.
             for endpoint, token, appid in bouncer_requests:
@@ -4908,7 +4916,7 @@ class TestPushApi(BouncerTestCase):
 
         # Use push notification bouncer and test removing device tokens.
         # Tokens will be removed both locally and remotely.
-        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com"):
+        with activate_push_notification_service():
             for endpoint, token, appid in bouncer_requests:
                 result = self.client_delete(endpoint, {"token": token})
                 self.assert_json_success(result)
@@ -4965,7 +4973,7 @@ class FCMSendTest(PushNotificationTest):
             send_android_push_notification_to_user(self.user_profile, {}, {})
             self.assertEqual(
                 "DEBUG:zerver.lib.push_notifications:"
-                "Skipping sending a FCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
+                "Skipping sending a FCM push notification since ZULIP_SERVICE_PUSH_NOTIFICATIONS "
                 "and ANDROID_FCM_CREDENTIALS_PATH are both unset",
                 logger.output[0],
             )

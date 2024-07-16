@@ -191,6 +191,29 @@ log][commit-log] for an up-to-date list of all changes.
   to give time to potentially reconfigure which channel to use. You can
   override the delay by running `./manage.py send_zulip_update_announcements --skip-delay`
   once you've done any necessary configuration updates.
+- We've reworked how Zulip's mobile push notifications service is
+  configured to be easier to understand, more extensible, and avoid
+  hardcoding URLs unnecessarily. The old settings names are fully
+  supported with identical behavior, so no action is required before
+  upgrading.
+
+  Once you've upgraded, while you're [updating your settings.py
+  documentation][update-settings-docs], we recommend updating
+  `/etc/zulip/settings.py` to use the modern settings names: Replacing
+  `PUSH_NOTIFICATIONS_BOUNCER_URL = "https://push.zulipchat.com"` with
+  `ZULIP_SERVICE_PUSH_NOTIFICATIONS = True` and renaming
+  `SUBMIT_USAGE_STATISTICS` to
+  `ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS`, if you have either of those
+  settings enabled. It's important not to set both the old and new
+  settings: The modern settings will be ignored if the legacy ones are
+  present.
+
+  The one minor functional change in this restructuring is that it is
+  now possible to configure sharing usage statistics with the Zulip
+  developers without attempting to send mobile push notifications via
+  the service, by setting `ZULIP_SERVICE_PUSH_NOTIFICATIONS = False`
+  and `ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS=True`.
+
 - The Zulip server now contains a KaTeX server worker, designed to
   make bulk-rendering LaTeX efficient. It has minimal memory
   footprint, but can be disabled using the `katex_server` [deployment

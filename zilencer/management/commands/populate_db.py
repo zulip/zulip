@@ -44,7 +44,7 @@ from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
-from zerver.lib.types import ProfileFieldData
+from zerver.lib.types import AnalyticsDataUploadLevel, ProfileFieldData
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -79,7 +79,10 @@ from zilencer.views import update_remote_realm_data_for_server
 
 # Disable the push notifications bouncer to avoid enqueuing updates in
 # maybe_enqueue_audit_log_upload during early setup.
-settings.PUSH_NOTIFICATION_BOUNCER_URL = None
+settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
+settings.ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
+settings.ZULIP_SERVICE_SECURITY_ALERTS = False
+settings.ANALYTICS_DATA_UPLOAD_LEVEL = AnalyticsDataUploadLevel.NONE
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python

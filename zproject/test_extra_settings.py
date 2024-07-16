@@ -4,6 +4,7 @@ import ldap
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
+from zerver.lib.types import AnalyticsDataUploadLevel
 from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEPLOY_ROOT, get_from_file_if_exists
@@ -201,8 +202,22 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
-PUSH_NOTIFICATION_BOUNCER_URL: str | None = None
 DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
+
+# Disable all Zulip services by default. Tests can activate them by
+# overriding settings explicitly when they want to enable something,
+# often using activate_push_notification_service.
+ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
+ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
+ZULIP_SERVICE_SECURITY_ALERTS = False
+
+# Hack: This should be computed in computed_settings, but the transmission
+# of test settings overrides is wonky. See test_settings for more details.
+ANALYTICS_DATA_UPLOAD_LEVEL = AnalyticsDataUploadLevel.NONE
+
+# The most common value used by tests. Set it as the default so that it doesn't
+# have to be repeated every time.
+ZULIP_SERVICES_URL = "https://push.zulip.org.example.com"
 
 # Logging the emails while running the tests adds them
 # to /emails page.

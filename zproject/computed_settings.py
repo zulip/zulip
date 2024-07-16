@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 from scripts.lib.zulip_tools import get_tornado_ports
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
+from zerver.lib.types import AnalyticsDataUploadLevel
 
 from .config import (
     DEPLOY_ROOT,
@@ -43,6 +44,7 @@ from .configured_settings import (
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
+    PUSH_NOTIFICATION_BOUNCER_URL,
     RATE_LIMITING_RULES,
     REALM_HOSTS,
     REGISTER_LINK_DISABLED,
@@ -61,9 +63,14 @@ from .configured_settings import (
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
     SOCIAL_AUTH_SUBDOMAIN,
     STATIC_URL,
+    SUBMIT_USAGE_STATISTICS,
     TORNADO_PORTS,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
+    ZULIP_SERVICE_PUSH_NOTIFICATIONS,
+    ZULIP_SERVICE_SECURITY_ALERTS,
+    ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS,
+    ZULIP_SERVICES_URL,
 )
 
 ########################################################################
@@ -89,6 +96,68 @@ SERVER_GENERATION = int(time.time())
 # Key to authenticate this server to zulip.org for push notifications, etc.
 ZULIP_ORG_KEY = get_secret("zulip_org_key")
 ZULIP_ORG_ID = get_secret("zulip_org_id")
+
+
+service_name_to_required_upload_level = {
+    "security_alerts": AnalyticsDataUploadLevel.BASIC,
+    "mobile_push": AnalyticsDataUploadLevel.BILLING,
+    "submit_usage_statistics": AnalyticsDataUploadLevel.ALL,
+}
+
+services: list[str] | None = None
+
+
+def services_append(service_name: str) -> None:
+    global services
+    if services is None:
+        services = []
+    services.append(service_name)
+
+
+if ZULIP_SERVICE_PUSH_NOTIFICATIONS:
+    services_append("mobile_push")
+    if ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS is None:
+        # This setting has special behavior where we want to activate
+        # it by default when push notifications are enabled - unless
+        # explicitly set otherwise in the config.
+        ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = True
+
+if ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS:
+    services_append("submit_usage_statistics")
+if ZULIP_SERVICE_SECURITY_ALERTS:
+    services_append("security_alerts")
+
+if services is None and PUSH_NOTIFICATION_BOUNCER_URL is not None:
+    # ZULIP_SERVICE_* are the new settings that control the services
+    # enabled by the server, which in turn dictate the level of data
+    # uploaded to ZULIP_SERVICES_URL.
+    # As some older servers, predating the transition to the ZULIP_SERVICE_*
+    # settings, may have upgraded without redoing this part of their config,
+    # we need this block to set this level correctly based on the
+    # legacy settings.
+
+    # This is a setting that some servers from before 9.0 may have configured
+    # instead of the new ZULIP_SERVICE_* settings.
+    # Translate it to a correct configuration.
+    ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
+    services_append("mobile_push")
+    ZULIP_SERVICES_URL = PUSH_NOTIFICATION_BOUNCER_URL
+    if SUBMIT_USAGE_STATISTICS:
+        ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = True
+        services_append("submit_usage_statistics")
+
+if services is not None and set(services).intersection(
+    {"submit_usage_statistics", "security_alerts", "mobile_push"}
+):
+    # None of these make sense enabled without ZULIP_SERVICES_URL.
+    assert (
+        ZULIP_SERVICES_URL is not None
+    ), "ZULIP_SERVICES_URL is required when any services are enabled."
+
+ANALYTICS_DATA_UPLOAD_LEVEL = max(
+    [service_name_to_required_upload_level[service] for service in (services or [])],
+    default=AnalyticsDataUploadLevel.NONE,
+)
 
 if DEBUG:
     INTERNAL_IPS = ("127.0.0.1",)

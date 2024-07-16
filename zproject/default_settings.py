@@ -218,9 +218,29 @@ NAME_CHANGES_DISABLED = False
 AVATAR_CHANGES_DISABLED = False
 PASSWORD_MIN_LENGTH = 6
 PASSWORD_MIN_GUESSES = 10000
-PUSH_NOTIFICATION_BOUNCER_URL: str | None = None
+
+ZULIP_SERVICES_URL = "https://push.zulipchat.com"
+ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
+
+# For this setting, we need to have None as the default value, so
+# that we can distinguish between the case of the setting not being
+# set at all and being disabled (set to False).
+# That's because unless the setting is explicitly configured, we want to
+# enable it in computed_settings when ZULIP_SERVICE_PUSH_NOTIFICATIONS
+# is enabled.
+ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS: bool | None = None
+ZULIP_SERVICE_SECURITY_ALERTS = False
+
 PUSH_NOTIFICATION_REDACT_CONTENT = False
+
+# Old setting kept around for backwards compatibility. Some old servers
+# may have it in their settings.py.
+PUSH_NOTIFICATION_BOUNCER_URL: str | None = None
+# Keep this default True, so that legacy deployments that configured PUSH_NOTIFICATION_BOUNCER_URL
+# without overriding SUBMIT_USAGE_STATISTICS get the original behavior. If a server configures
+# the modern ZULIP_SERVICES setting, all this will be ignored.
 SUBMIT_USAGE_STATISTICS = True
+
 PROMOTE_SPONSORING_ZULIP = True
 RATE_LIMITING = True
 RATE_LIMITING_AUTHENTICATE = True
