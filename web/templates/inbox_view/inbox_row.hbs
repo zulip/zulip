@@ -50,17 +50,17 @@
                         <span class="visibility-policy-indicator change_visibility_policy hidden-for-spectators{{#if (eq visibility_policy all_visibility_policies.INHERIT)}} inbox-row-visibility-policy-inherit{{/if}}"
                           data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" tabindex="0" data-col-index="{{ column_indexes.TOPIC_VISIBILITY }}">
                             {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
-                                <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic'}}"
+                                <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic.'}}"
                                   role="button" aria-haspopup="true" aria-label="{{t 'You follow this topic' }}"></i>
                             {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
-                                <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon" data-tippy-content="{{t 'You have unmuted this topic'}}"
+                                <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon" data-tippy-content="{{t 'You have unmuted this topic.'}}"
                                   role="button" aria-haspopup="true" aria-label="{{t 'You have unmuted this topic' }}"></i>
                             {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
-                                <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic'}}"
+                                <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic.'}}"
                                   role="button" aria-haspopup="true" aria-label="{{t 'You have muted this topic' }}"></i>
                             {{else if (eq visibility_policy all_visibility_policies.INHERIT)}}
-                                <i class="zulip-icon zulip-icon-inherit recipient_bar_icon" data-tippy-content="{{t 'Default'}}"
-                                  role="button" aria-haspopup="true" aria-label="{{t 'Default' }}"></i>
+                                <i class="zulip-icon zulip-icon-inherit recipient_bar_icon" data-tippy-content="{{t 'You will get default notifications for this topic.'}}"
+                                  role="button" aria-haspopup="true" aria-label="{{t 'You will get default notifications for this topic' }}"></i>
                             {{/if}}
                         </span>
                     {{/if}}
