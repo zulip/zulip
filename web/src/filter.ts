@@ -1571,7 +1571,11 @@ export class Filter {
 
     is_conversation_view(): boolean {
         const term_type = this.sorted_term_types();
-        if (_.isEqual(term_type, ["channel", "topic"]) || _.isEqual(term_type, ["dm"])) {
+        if (
+            _.isEqual(term_type, ["channel", "topic", "with"]) ||
+            _.isEqual(term_type, ["channel", "topic"]) ||
+            _.isEqual(term_type, ["dm"])
+        ) {
             return true;
         }
         return false;
