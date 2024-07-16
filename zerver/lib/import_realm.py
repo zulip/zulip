@@ -56,6 +56,7 @@ from zerver.models import (
     MutedUser,
     NamedUserGroup,
     OnboardingStep,
+    OnboardingUserMessage,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -148,6 +149,7 @@ ID_MAP: dict[str, dict[int, int]] = {
     "analytics_usercount": {},
     "realmuserdefault": {},
     "scheduledmessage": {},
+    "onboardingusermessage": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -1493,6 +1495,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     # Import zerver_message and zerver_usermessage
     import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
+
+    if "zerver_onboardingusermessage" in data:
+        fix_bitfield_keys(data, "zerver_onboardingusermessage", "flags")
+        re_map_foreign_keys(data, "zerver_onboardingusermessage", "realm", related_table="realm")
+        re_map_foreign_keys(
+            data, "zerver_onboardingusermessage", "message", related_table="message"
+        )
+        update_model_ids(OnboardingUserMessage, data, "onboardingusermessage")
+        bulk_import_model(data, OnboardingUserMessage)
 
     if "zerver_scheduledmessage" in data:
         fix_datetime_fields(data, "zerver_scheduledmessage")
