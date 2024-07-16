@@ -14,7 +14,7 @@
     {{#if is_admin}}
     <td>
         <span class="referred_by panel_user_list">
-            {{> ../user_display_only_pill display_value=referrer_name user_id=invited_by_user_id}}
+            {{> ../user_display_only_pill display_value=referrer_name user_id=invited_by_user_id is_active=true}}
         </span>
     </td>
     {{/if}}
