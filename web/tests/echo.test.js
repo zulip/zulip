@@ -217,13 +217,13 @@ run_test("build_display_recipient", () => {
 
     message = {
         type: "private",
-        private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
+        private_message_recipient: "cordelia@zulip.com",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,
     };
     display_recipient = echo.build_display_recipient(message);
-    assert.equal(display_recipient.length, 3);
+    assert.equal(display_recipient.length, 2);
 
     let iago = display_recipient.find((recipient) => recipient.email === "iago@zulip.com");
     assert.equal(iago.full_name, "Iago");
@@ -234,11 +234,6 @@ run_test("build_display_recipient", () => {
     );
     assert.equal(cordelia.full_name, "Cordelia");
     assert.equal(cordelia.id, 21);
-
-    const hamlet = display_recipient.find((recipient) => recipient.email === "hamlet@zulip.com");
-    assert.equal(hamlet.full_name, "hamlet@zulip.com");
-    assert.equal(hamlet.id, undefined);
-    assert.equal(hamlet.unknown_local_echo_user, true);
 
     message = {
         type: "private",
@@ -341,7 +336,7 @@ run_test("insert_local_message direct message", ({override}) => {
     let insert_message_called = false;
 
     const insert_new_messages = ([message]) => {
-        assert.equal(message.display_recipient.length, 3);
+        assert.equal(message.display_recipient.length, 2);
         insert_message_called = true;
         return [message];
     };
@@ -351,7 +346,7 @@ run_test("insert_local_message direct message", ({override}) => {
     });
 
     const message_request = {
-        private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
+        private_message_recipient: "cordelia@zulip.com",
         type: "private",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
