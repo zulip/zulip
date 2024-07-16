@@ -10,8 +10,10 @@ from zerver.lib.test_helpers import ratelimit_rule, read_test_image_file
 from zerver.lib.thumbnail import BadImageError, resize_emoji
 
 
-class ThumbnailTest(ZulipTestCase):
-    def test_thumbnail_redirect(self) -> None:
+class ThumbnailRedirectEndpointTest(ZulipTestCase):
+    """Tests for the legacy /thumbnail endpoint."""
+
+    def test_thumbnail_upload_redirect(self) -> None:
         self.login("hamlet")
         fp = StringIO("zulip!")
         fp.name = "zulip.jpeg"
@@ -35,6 +37,7 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(result.status_code, 403, result)
         self.assert_in_response("You are not authorized to view this file.", result)
 
+    def test_thumbnail_external_redirect(self) -> None:
         url = "https://www.google.com/images/srpr/logo4w.png"
         result = self.client_get("/thumbnail", {"url": url, "size": "full"})
         self.assertEqual(result.status_code, 302, result)
@@ -103,7 +106,7 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(response.status_code, 403)
 
 
-class EmojiTest(ZulipTestCase):
+class ThumbnailEmojiTest(ZulipTestCase):
     def animated_test(self, filename: str) -> None:
         animated_unequal_img_data = read_test_image_file(filename)
         original_image = pyvips.Image.new_from_buffer(animated_unequal_img_data, "n=-1")
