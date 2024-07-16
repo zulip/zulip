@@ -77,6 +77,12 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     return get_search_bar_text();
 }
 
+function focus_search_input_at_end(): void {
+    $("#search_query").trigger("focus");
+    // Move cursor to the end of the input text.
+    window.getSelection()!.modify("move", "forward", "line");
+}
+
 function narrow_to_search_contents_with_search_bar_open(): void {
     // We skip validation when we're dealing with partial pills
     // since we don't want to do the shake animation for e.g. "dm:"
@@ -215,7 +221,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                     set_search_bar_text,
                 );
                 narrow_to_search_contents_with_search_bar_open();
-                $search_query_box.trigger("focus");
+                focus_search_input_at_end();
             }
             return get_search_bar_text();
         },
@@ -381,7 +387,7 @@ export function initiate_search(): void {
     // or clicks on the search input instead, the selection goes away and
     // the user can add new search input to the existing pills.
     $(".search-input-and-pills").addClass("freshly-opened");
-    $("#search_query").trigger("focus");
+    focus_search_input_at_end();
 
     // Open the typeahead after opening the search bar, so that we don't
     // get a weird visual jump where the typeahead results are narrow
