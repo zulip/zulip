@@ -221,6 +221,16 @@ test("update_property", ({override}) => {
         assert.equal($checkbox.prop("checked"), true);
     }
 
+    // Test change in stream active status
+    {
+        let sidebar_updated_for_stream_active_status = false;
+        override(stream_list, "update_streams_sidebar", () => {
+            sidebar_updated_for_stream_active_status = true;
+        });
+        stream_events.update_property(stream_id, "is_recently_active", false);
+        assert.equal(sidebar_updated_for_stream_active_status, true);
+    }
+
     // Test stream privacy change event
     {
         const stub = make_stub();

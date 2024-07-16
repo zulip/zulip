@@ -7,9 +7,7 @@ const _ = require("lodash");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const stream_topic_history = zrequire("stream_topic_history");
 const stream_list_sort = zrequire("stream_list_sort");
 const settings_config = zrequire("settings_config");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -17,57 +15,54 @@ const {initialize_user_settings} = zrequire("user_settings");
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-function contains_sub(subs, sub) {
-    return subs.some((s) => s.name === sub.name);
-}
-
-const me = {
-    email: "me@zulip.com",
-    full_name: "Current User",
-    user_id: 100,
-};
-
 const scalene = {
     subscribed: true,
     name: "scalene",
     stream_id: 1,
     pin_to_top: true,
+    is_recently_active: true,
 };
 const fast_tortoise = {
     subscribed: true,
     name: "fast tortoise",
     stream_id: 2,
     pin_to_top: false,
+    is_recently_active: true,
 };
 const pneumonia = {
     subscribed: true,
     name: "pneumonia",
     stream_id: 3,
     pin_to_top: false,
+    is_recently_active: false,
 };
 const clarinet = {
     subscribed: true,
     name: "clarinet",
     stream_id: 4,
     pin_to_top: false,
+    is_recently_active: true,
 };
 const weaving = {
     subscribed: false,
     name: "weaving",
     stream_id: 5,
     pin_to_top: false,
+    is_recently_active: true,
 };
 const stream_hyphen_underscore_slash_colon = {
     subscribed: true,
     name: "stream-hyphen_underscore/slash:colon",
     stream_id: 6,
     pin_to_top: false,
+    is_recently_active: true,
 };
 const muted_active = {
     subscribed: true,
     name: "muted active",
     stream_id: 7,
     pin_to_top: false,
+    is_recently_active: true,
     is_muted: true,
 };
 const muted_pinned = {
@@ -75,6 +70,7 @@ const muted_pinned = {
     name: "muted pinned",
     stream_id: 8,
     pin_to_top: true,
+    is_recently_active: true,
     is_muted: true,
 };
 const archived = {
@@ -110,7 +106,7 @@ test("no_subscribed_streams", () => {
     assert.equal(stream_list_sort.first_stream_id(), undefined);
 });
 
-test("basics", ({override_rewire}) => {
+test("basics", () => {
     stream_data.add_sub(scalene);
     stream_data.add_sub(fast_tortoise);
     stream_data.add_sub(pneumonia);
@@ -120,8 +116,6 @@ test("basics", ({override_rewire}) => {
     stream_data.add_sub(muted_active);
     stream_data.add_sub(muted_pinned);
     stream_data.add_sub(archived);
-
-    override_rewire(stream_list_sort, "has_recent_activity", (sub) => sub.name !== "pneumonia");
 
     // Test sorting into categories/alphabetized
     let sorted = sort_groups("");
@@ -207,109 +201,14 @@ test("basics", ({override_rewire}) => {
     assert.deepEqual(sorted.dormant_streams, []);
 });
 
-test("has_recent_activity", ({override}) => {
-    people.init();
-    people.add_active_user(me);
-    people.initialize_current_user(me.user_id);
-
-    let sub;
-
-    override(
-        user_settings,
-        "demote_inactive_streams",
-        settings_config.demote_inactive_streams_values.automatic.code,
-    );
-
-    stream_list_sort.set_filter_out_inactives();
-
-    sub = {name: "pets", subscribed: false, stream_id: 111};
-    stream_data.add_sub(sub);
-
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    stream_data.subscribe_myself(sub);
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    assert.ok(contains_sub(stream_data.subscribed_subs(), sub));
-    assert.ok(!contains_sub(stream_data.unsubscribed_subs(), sub));
-
-    stream_data.unsubscribe_myself(sub);
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    sub.pin_to_top = true;
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-    sub.pin_to_top = false;
-
-    const opts = {
-        stream_id: 222,
-        message_id: 108,
-        topic_name: "topic2",
-    };
-    stream_topic_history.add_message(opts);
-
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    override(
-        user_settings,
-        "demote_inactive_streams",
-        settings_config.demote_inactive_streams_values.always.code,
-    );
-
-    stream_list_sort.set_filter_out_inactives();
-
-    sub = {name: "pets", subscribed: false, stream_id: 111};
-    stream_data.add_sub(sub);
-
-    assert.ok(!stream_list_sort.has_recent_activity(sub));
-
-    sub.pin_to_top = true;
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-    sub.pin_to_top = false;
-
-    stream_data.subscribe_myself(sub);
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    stream_data.unsubscribe_myself(sub);
-    assert.ok(!stream_list_sort.has_recent_activity(sub));
-
-    sub = {name: "lunch", subscribed: false, stream_id: 222};
-    stream_data.add_sub(sub);
-
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    stream_topic_history.add_message(opts);
-
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    override(
-        user_settings,
-        "demote_inactive_streams",
-        settings_config.demote_inactive_streams_values.never.code,
-    );
-
-    stream_list_sort.set_filter_out_inactives();
-
-    sub = {name: "pets", subscribed: false, stream_id: 111};
-    stream_data.add_sub(sub);
-
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    stream_data.subscribe_myself(sub);
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    stream_data.unsubscribe_myself(sub);
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    sub.pin_to_top = true;
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-
-    stream_topic_history.add_message(opts);
-
-    assert.ok(stream_list_sort.has_recent_activity(sub));
-});
-
 test("has_recent_activity_but_muted", () => {
-    const sub = {name: "cats", subscribed: true, stream_id: 111, is_muted: true};
+    const sub = {
+        name: "cats",
+        subscribed: true,
+        stream_id: 111,
+        is_muted: true,
+        is_recently_active: true,
+    };
     stream_data.add_sub(sub);
     assert.ok(stream_list_sort.has_recent_activity_but_muted(sub));
 });

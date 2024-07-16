@@ -45,11 +45,12 @@ function update_stream_setting(
         | "push_notifications"
         | "email_notifications"
         | "wildcard_mentions_notify"
-        | "pin_to_top",
+        | "pin_to_top"
+        | "is_recently_active",
 ): void {
     const $setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id.toString())}`);
     $setting_checkbox.prop("checked", value);
-    if (setting === "pin_to_top") {
+    if (setting === "pin_to_top" || setting === "is_recently_active") {
         assert(value !== null);
         sub[setting] = value;
         return;
@@ -146,6 +147,10 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         },
         can_remove_subscribers_group(value) {
             stream_settings_ui.update_can_remove_subscribers_group(sub, value);
+        },
+        is_recently_active(value) {
+            update_stream_setting(sub, value, "is_recently_active");
+            stream_list.update_streams_sidebar();
         },
     };
 

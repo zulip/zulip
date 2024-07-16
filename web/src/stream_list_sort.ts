@@ -2,7 +2,6 @@ import assert from "minimalistic-assert";
 
 import * as settings_config from "./settings_config.ts";
 import * as stream_data from "./stream_data.ts";
-import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {user_settings} from "./user_settings.ts";
@@ -58,26 +57,8 @@ export function is_filtering_inactives(): boolean {
     return filter_out_inactives;
 }
 
-export let has_recent_activity = (sub: StreamSubscription): boolean => {
-    if (!filter_out_inactives || sub.pin_to_top) {
-        // If users don't want to filter inactive streams
-        // to the bottom, we respect that setting and don't
-        // treat any streams as dormant.
-        //
-        // Currently this setting is automatically determined
-        // by the number of streams.  See the callers
-        // to set_filter_out_inactives.
-        return true;
-    }
-    return stream_topic_history.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
-};
-
-export function rewire_has_recent_activity(value: typeof has_recent_activity): void {
-    has_recent_activity = value;
-}
-
 export function has_recent_activity_but_muted(sub: StreamSubscription): boolean {
-    return has_recent_activity(sub) && sub.is_muted;
+    return sub.is_recently_active && sub.is_muted;
 }
 
 type StreamListSortResult = {
@@ -101,7 +82,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
     );
 
     function is_normal(sub: StreamSubscription): boolean {
-        return has_recent_activity(sub);
+        return sub.is_recently_active;
     }
 
     const pinned_streams = [];
