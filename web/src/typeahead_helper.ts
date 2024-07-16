@@ -18,7 +18,6 @@ import * as pygments_data from "./pygments_data";
 import * as recent_senders from "./recent_senders";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
-import * as stream_list_sort from "./stream_list_sort";
 import type {StreamPill, StreamPillData} from "./stream_pill";
 import type {StreamSubscription} from "./sub_store";
 import type {UserGroupPill, UserGroupPillData} from "./user_group_pill";
@@ -752,7 +751,7 @@ function activity_score(sub: StreamSubscription): number {
     if (sub.pin_to_top) {
         stream_score += 2;
     }
-    if (stream_list_sort.has_recent_activity(sub)) {
+    if (sub.is_recently_active) {
         stream_score += 1;
     }
     return stream_score;
