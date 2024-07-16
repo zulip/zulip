@@ -220,6 +220,13 @@
         margin-top: 4px;
     }
 
+    .zulip-icon-lock {
+        /* Override the margin-top set on the stream lock icon
+           at the top-level, since we don't need to pull up this
+           icon for the stream actions popover header.  */
+        margin: 0 !important;
+    }
+
     .colorpicker-container {
         display: none;
         margin-right: 10px;
