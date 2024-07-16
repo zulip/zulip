@@ -1,7 +1,6 @@
-import inspect
 import os
 from collections.abc import Callable, Mapping
-from typing import Any, get_origin
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -10,7 +9,7 @@ from django.urls import URLPattern
 from django.utils import regex_helper
 from pydantic import TypeAdapter
 
-from zerver.lib.request import _REQ, arguments_map
+from zerver.lib.request import arguments_map
 from zerver.lib.rest import rest_dispatch
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.typed_endpoint import parse_view_func_signature
@@ -307,21 +306,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
                 msg += f"\n + {undocumented_path}"
             raise AssertionError(msg)
 
-    def get_standardized_argument_type(self, t: Any) -> type | tuple[type, object]:
-        """Given a type from the typing module such as List[str] or Union[str, int],
-        convert it into a corresponding Python type. Unions are mapped to a canonical
-        choice among the options.
-        E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
-        needs to be mapped to list."""
-
-        origin = get_origin(t)
-
-        if origin is None:
-            # Then it's most likely one of the fundamental data types
-            # I.E. Not one of the data types from the "typing" module.
-            return t
-        raise AssertionError(f"Unknown origin {origin}")
-
     def render_openapi_type_exception(
         self,
         function: Callable[..., HttpResponse],
@@ -451,8 +435,8 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         OpenAPI data defines a different type than that actually accepted by the function.
         Otherwise, we print out the exact differences for convenient debugging and raise an
         AssertionError."""
-        # Iterate through the decorators to find the original function, wrapped
-        # by has_request_variables/typed_endpoint, so we can parse its
+        # Iterate through the decorators to find the original
+        # function, wrapped by typed_endpoint, so we can parse its
         # arguments.
         use_endpoint_decorator = False
         while (wrapped := getattr(function, "__wrapped__", None)) is not None:
@@ -462,41 +446,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 use_endpoint_decorator = True
             function = wrapped
 
-        if use_endpoint_decorator:
+        if len(openapi_parameters) > 0:
+            assert use_endpoint_decorator
             return self.validate_json_schema(function, openapi_parameters)
-
-        openapi_params: set[tuple[str, type | tuple[type, object]]] = set()
-        json_params: dict[str, type | tuple[type, object]] = {}
-        for openapi_parameter in openapi_parameters:
-            name = openapi_parameter.name
-            # This no longer happens in remaining has_request_variables endpoint.
-            assert not openapi_parameter.json_encoded
-            openapi_params.add((name, schema_type(openapi_parameter.value_schema)))
-
-        function_params: set[tuple[str, type | tuple[type, object]]] = set()
-
-        for pname, defval in inspect.signature(function).parameters.items():
-            defval = defval.default
-            if isinstance(defval, _REQ):
-                # TODO: The below inference logic in cases where
-                # there's a converter function declared is incorrect.
-                # Theoretically, we could restructure the converter
-                # function model so that we can check what type it
-                # excepts to be passed to make validation here
-                # possible.
-
-                vtype = self.get_standardized_argument_type(function.__annotations__[pname])
-                vname = defval.post_var_name
-                assert vname is not None
-                # This no longer happens following typed_endpoint migrations.
-                assert vname not in json_params
-                function_params.add((vname, vtype))
-
-        # After the above operations `json_params` should be empty.
-        assert len(json_params) == 0
-        diff = openapi_params - function_params
-        if diff:  # nocoverage
-            self.render_openapi_type_exception(function, openapi_params, function_params, diff)
 
     def check_openapi_arguments_for_view(
         self,
