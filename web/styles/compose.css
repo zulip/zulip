@@ -352,6 +352,7 @@
 #preview_message_area {
     margin-right: calc(var(--composebox-buttons-width) * -1);
     padding-right: var(--composebox-buttons-width);
+    color: var(--color-text-default);
 }
 
 .surround-formatting-buttons-row {
