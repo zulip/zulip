@@ -174,6 +174,7 @@ def thumbnail_local_emoji(apps: StateApps) -> None:
                     fh.write(animated)
 
                 if still is not None:
+                    os.makedirs(f"{base_path}/still", exist_ok=True)
                     filename_no_extension = os.path.splitext(new_file_name)[0]
                     with open(f"{base_path}/still/{filename_no_extension}.png", "wb") as fh:
                         fh.write(still)
