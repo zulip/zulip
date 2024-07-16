@@ -2,15 +2,15 @@ import functools
 import heapq
 import logging
 from collections import defaultdict
+from collections.abc import Collection, Iterator
 from datetime import datetime, timedelta, timezone
-from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Tuple
+from typing import Any, TypeAlias
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Exists, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from typing_extensions import TypeAlias
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.context_processors import common_context
@@ -38,14 +38,14 @@ log_to_file(logger, settings.DIGEST_LOG_PATH)
 DIGEST_CUTOFF = 5
 MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST = 4
 
-TopicKey: TypeAlias = Tuple[int, str]
+TopicKey: TypeAlias = tuple[int, str]
 
 
 class DigestTopic:
     def __init__(self, topic_key: TopicKey) -> None:
         self.topic_key = topic_key
-        self.human_senders: Set[str] = set()
-        self.sample_messages: List[Message] = []
+        self.human_senders: set[str] = set()
+        self.sample_messages: list[Message] = []
         self.num_human_messages = 0
 
     def stream_id(self) -> int:
@@ -66,7 +66,7 @@ class DigestTopic:
     def diversity(self) -> int:
         return len(self.human_senders)
 
-    def teaser_data(self, user: UserProfile, stream_id_map: Dict[int, Stream]) -> Dict[str, Any]:
+    def teaser_data(self, user: UserProfile, stream_id_map: dict[int, Stream]) -> dict[str, Any]:
         teaser_count = self.num_human_messages - len(self.sample_messages)
         first_few_messages = build_message_list(
             user=user,
@@ -88,7 +88,7 @@ class DigestTopic:
 
 # Changes to this should also be reflected in
 # zerver/worker/digest_emails.py:DigestWorker.consume()
-def queue_digest_user_ids(user_ids: List[int], cutoff: datetime) -> None:
+def queue_digest_user_ids(user_ids: list[int], cutoff: datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s")}
     queue_json_publish("digest_emails", event)
@@ -151,8 +151,8 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime) -> None:
         )
 
 
-last_realm_id: Optional[int] = None
-last_cutoff: Optional[float] = None
+last_realm_id: int | None = None
+last_cutoff: float | None = None
 
 
 def maybe_clear_recent_topics_cache(realm_id: int, cutoff: float) -> None:
@@ -175,7 +175,7 @@ def get_recent_topics(
     realm_id: int,
     stream_id: int,
     cutoff_date: datetime,
-) -> List[DigestTopic]:
+) -> list[DigestTopic]:
     # Gather information about topic conversations, then
     # classify by:
     #   * topic length
@@ -207,7 +207,7 @@ def get_recent_topics(
         )
     )
 
-    digest_topic_map: Dict[TopicKey, DigestTopic] = {}
+    digest_topic_map: dict[TopicKey, DigestTopic] = {}
     for message in messages:
         topic_key = (stream_id, message.topic_name())
 
@@ -222,9 +222,9 @@ def get_recent_topics(
 
 
 def get_hot_topics(
-    all_topics: List[DigestTopic],
-    stream_ids: Set[int],
-) -> List[DigestTopic]:
+    all_topics: list[DigestTopic],
+    stream_ids: set[int],
+) -> list[DigestTopic]:
     topics = [topic for topic in all_topics if topic.stream_id() in stream_ids]
 
     hot_topics = heapq.nlargest(2, topics, key=DigestTopic.diversity)
@@ -240,16 +240,16 @@ def get_hot_topics(
     return hot_topics
 
 
-def get_recently_created_streams(realm: Realm, threshold: datetime) -> List[Stream]:
+def get_recently_created_streams(realm: Realm, threshold: datetime) -> list[Stream]:
     fields = ["id", "name", "is_web_public", "invite_only"]
     return list(get_active_streams(realm).filter(date_created__gt=threshold).only(*fields))
 
 
 def gather_new_streams(
     realm: Realm,
-    recently_created_streams: List[Stream],  # streams only need id and name
+    recently_created_streams: list[Stream],  # streams only need id and name
     can_access_public: bool,
-) -> Tuple[int, Dict[str, List[str]]]:
+) -> tuple[int, dict[str, list[str]]]:
     if can_access_public:
         new_streams = [stream for stream in recently_created_streams if not stream.invite_only]
     else:
@@ -271,7 +271,7 @@ def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
     return bool(hot_conversations or new_streams)
 
 
-def get_user_stream_map(user_ids: List[int], cutoff_date: datetime) -> Dict[int, Set[int]]:
+def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int, set[int]]:
     """Skipping streams where the user's subscription status has changed
     when constructing digests is critical to ensure correctness for
     streams without shared history, guest users, and long-term idle
@@ -314,14 +314,14 @@ def get_user_stream_map(user_ids: List[int], cutoff_date: datetime) -> Dict[int,
     )
 
     # maps user_id -> {stream_id, stream_id, ...}
-    dct: Dict[int, Set[int]] = defaultdict(set)
+    dct: dict[int, set[int]] = defaultdict(set)
     for row in rows:
         dct[row["user_profile_id"]].add(row["recipient__type_id"])
 
     return dct
 
 
-def get_slim_stream_id_map(realm: Realm) -> Dict[int, Stream]:
+def get_slim_stream_id_map(realm: Realm) -> dict[int, Stream]:
     # "slim" because it only fetches the names of the stream objects,
     # suitable for passing into build_message_list.
     streams = get_active_streams(realm).only("id", "name")
@@ -330,7 +330,7 @@ def get_slim_stream_id_map(realm: Realm) -> Dict[int, Stream]:
 
 def bulk_get_digest_context(
     users: Collection[UserProfile] | QuerySet[UserProfile], cutoff: float
-) -> Iterator[Tuple[UserProfile, Dict[str, Any]]]:
+) -> Iterator[tuple[UserProfile, dict[str, Any]]]:
     # We expect a non-empty list of users all from the same realm.
     assert users
     realm = next(iter(users)).realm
@@ -380,14 +380,14 @@ def bulk_get_digest_context(
         yield user, context
 
 
-def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
+def get_digest_context(user: UserProfile, cutoff: float) -> dict[str, Any]:
     for ignored, context in bulk_get_digest_context([user], cutoff):
         return context
     raise AssertionError("Unreachable")
 
 
 @transaction.atomic
-def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
+def bulk_handle_digest_email(user_ids: list[int], cutoff: float) -> None:
     # We go directly to the database to get user objects,
     # since inactive users are likely to not be in the cache.
     users = (
@@ -418,7 +418,7 @@ def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
     bulk_write_realm_audit_logs(digest_users)
 
 
-def bulk_write_realm_audit_logs(users: List[UserProfile]) -> None:
+def bulk_write_realm_audit_logs(users: list[UserProfile]) -> None:
     if not users:
         return
 

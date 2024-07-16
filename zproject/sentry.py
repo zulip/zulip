@@ -1,5 +1,5 @@
 import os
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional
 
 import sentry_sdk
 from django.utils.translation import override as override_language
@@ -50,7 +50,7 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
     return event
 
 
-def traces_sampler(sampling_context: Dict[str, Any]) -> Union[float, bool]:
+def traces_sampler(sampling_context: dict[str, Any]) -> float | bool:
     from django.conf import settings
 
     queue = sampling_context.get("queue")
@@ -63,7 +63,7 @@ def traces_sampler(sampling_context: Dict[str, Any]) -> Union[float, bool]:
         return settings.SENTRY_TRACE_RATE
 
 
-def setup_sentry(dsn: Optional[str], environment: str) -> None:
+def setup_sentry(dsn: str | None, environment: str) -> None:
     from django.conf import settings
 
     if not dsn:

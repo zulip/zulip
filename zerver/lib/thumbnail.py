@@ -1,7 +1,7 @@
 import logging
 import os
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator, Optional, Tuple
 from urllib.parse import urljoin
 
 import pyvips
@@ -20,6 +20,45 @@ IMAGE_BOMB_TOTAL_PIXELS = 90000000
 
 # Reject emoji which, after resizing, have stills larger than this
 MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024  # 128 kb
+
+
+# These are the image content-types which the server supports parsing
+# and thumbnailing; these do not need to supported on all browsers,
+# since we will the serving thumbnailed versions of them.  Note that
+# this does not provide any *security*, since the content-type is
+# provided by the browser, and may not match the bytes they uploaded.
+#
+# This should be kept synced with the client-side image-picker in
+# web/upload_widget.ts.  Any additions below must be accompanied by
+# changes to the pyvips block below as well.
+THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
+    [
+        "image/avif",
+        "image/gif",
+        "image/heic",
+        "image/jpeg",
+        "image/png",
+        "image/tiff",
+        "image/webp",
+    ]
+)
+
+# This is what enforces security limitations on which formats are
+# parsed; we disable all loaders, then re-enable the ones we support
+# -- then explicitly disable any "untrusted" ones, in case libvips for
+# some reason marks one of the above formats as such (because they are
+# no longer fuzzed, for instance).
+#
+# Note that only libvips >= 8.13 (Uubntu 24.04 or later, Debian 12 or
+# later) supports this!  These are no-ops on earlier versions of libvips.
+pyvips.operation_block_set("VipsForeignLoad", True)
+pyvips.operation_block_set("VipsForeignLoadHeif", False)  # image/avif, image/heic
+pyvips.operation_block_set("VipsForeignLoadNsgif", False)  # image/gif
+pyvips.operation_block_set("VipsForeignLoadJpeg", False)  # image/jpeg
+pyvips.operation_block_set("VipsForeignLoadPng", False)  # image/png
+pyvips.operation_block_set("VipsForeignLoadTiff", False)  # image/tiff
+pyvips.operation_block_set("VipsForeignLoadWebp", False)  # image/webp
+pyvips.block_untrusted_set(True)
 
 
 class BadImageError(JsonableError):
@@ -60,7 +99,7 @@ def libvips_check_image(image_data: bytes) -> Iterator[pyvips.Image]:
         yield source_image
     except pyvips.Error as e:  # nocoverage
         logging.exception(e)
-        raise BadImageError(_("Bad image!"))
+        raise BadImageError(_("Image is corrupted or truncated"))
 
 
 def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
@@ -93,13 +132,11 @@ def resize_logo(image_data: bytes) -> bytes:
 
 def resize_emoji(
     image_data: bytes, emoji_file_name: str, size: int = DEFAULT_EMOJI_SIZE
-) -> Tuple[bytes, Optional[bytes]]:
-    if len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:
-        raise BadImageError(_("Image size exceeds limit."))
-
+) -> tuple[bytes, bytes | None]:
     # Square brackets are used for providing options to libvips' save
-    # operation; these should have been filtered out earlier, so we
-    # assert none are found here, for safety.
+    # operation; the extension on the filename comes from reversing
+    # the content-type, which removes most of the attacker control of
+    # this string, but assert it has no bracketed pieces for safety.
     write_file_ext = os.path.splitext(emoji_file_name)[1]
     assert "[" not in write_file_ext
 

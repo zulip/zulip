@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 import time
-from typing import Dict, Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 from django.http import HttpRequest, HttpResponse
 
@@ -65,7 +65,7 @@ def api_stripe_webhook(
     return json_success(request)
 
 
-def topic_and_body(payload: WildValue) -> Tuple[str, str]:
+def topic_and_body(payload: WildValue) -> tuple[str, str]:
     event_type = payload["type"].tame(
         check_string
     )  # invoice.created, customer.subscription.created, etc
@@ -318,7 +318,7 @@ def amount_string(amount: int, currency: str) -> str:
 
 
 def linkified_id(object_id: str, lower: bool = False) -> str:
-    names_and_urls: Dict[str, Tuple[str, Optional[str]]] = {
+    names_and_urls: dict[str, tuple[str, str | None]] = {
         # Core resources
         "ch": ("Charge", "charges"),
         "cus": ("Customer", "customers"),

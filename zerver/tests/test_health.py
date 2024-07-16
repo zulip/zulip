@@ -13,11 +13,13 @@ class HealthTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_database_failure(self) -> None:
-        with mock.patch(
-            "zerver.views.health.check_database",
-            side_effect=ServerNotReadyError("Cannot query postgresql"),
-        ), self.assertLogs(level="ERROR") as logs, self.assertRaisesRegex(
-            ServerNotReadyError, r"^Cannot query postgresql$"
+        with (
+            mock.patch(
+                "zerver.views.health.check_database",
+                side_effect=ServerNotReadyError("Cannot query postgresql"),
+            ),
+            self.assertLogs(level="ERROR") as logs,
+            self.assertRaisesRegex(ServerNotReadyError, r"^Cannot query postgresql$"),
         ):
             self.client_get("/health")
         self.assertIn(

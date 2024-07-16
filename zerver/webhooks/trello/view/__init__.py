@@ -1,6 +1,4 @@
 # Webhooks for external integrations.
-from typing import Optional, Tuple
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import return_success_on_head_request, webhook_view
@@ -35,7 +33,7 @@ def api_trello_webhook(
     return json_success(request)
 
 
-def get_topic_and_body(payload: WildValue, action_type: str) -> Optional[Tuple[str, str]]:
+def get_topic_and_body(payload: WildValue, action_type: str) -> tuple[str, str] | None:
     if action_type in SUPPORTED_CARD_ACTIONS:
         return process_card_action(payload, action_type)
     if action_type in IGNORED_CARD_ACTIONS:

@@ -1,10 +1,8 @@
-from typing import List, Set
-
 from zerver.lib.types import DefaultStreamDict
 from zerver.models import DefaultStream, Stream
 
 
-def get_slim_realm_default_streams(realm_id: int) -> List[Stream]:
+def get_slim_realm_default_streams(realm_id: int) -> list[Stream]:
     # We really want this query to be simple and just get "thin" Stream objects
     # in one round trip.
     #
@@ -18,11 +16,11 @@ def get_slim_realm_default_streams(realm_id: int) -> List[Stream]:
     return list(Stream.objects.filter(defaultstream__realm_id=realm_id))
 
 
-def get_default_stream_ids_for_realm(realm_id: int) -> Set[int]:
+def get_default_stream_ids_for_realm(realm_id: int) -> set[int]:
     return set(DefaultStream.objects.filter(realm_id=realm_id).values_list("stream_id", flat=True))
 
 
-def get_default_streams_for_realm_as_dicts(realm_id: int) -> List[DefaultStreamDict]:
+def get_default_streams_for_realm_as_dicts(realm_id: int) -> list[DefaultStreamDict]:
     """
     Return all the default streams for a realm using a list of dictionaries sorted
     by stream name.

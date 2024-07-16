@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import stripe
 from django.conf import settings
@@ -28,9 +29,9 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 def stripe_event_handler_decorator(
     func: Callable[[Any, Any], None],
-) -> Callable[[Union[stripe.checkout.Session, stripe.Invoice], Event], None]:
+) -> Callable[[stripe.checkout.Session | stripe.Invoice, Event], None]:
     def wrapper(
-        stripe_object: Union[stripe.checkout.Session, stripe.Invoice],
+        stripe_object: stripe.checkout.Session | stripe.Invoice,
         event: Event,
     ) -> None:
         event.status = Event.EVENT_HANDLER_STARTED
@@ -84,8 +85,8 @@ def stripe_event_handler_decorator(
 
 
 def get_billing_session_for_stripe_webhook(
-    customer: Customer, user_id: Optional[str]
-) -> Union[RealmBillingSession, RemoteRealmBillingSession, RemoteServerBillingSession]:
+    customer: Customer, user_id: str | None
+) -> RealmBillingSession | RemoteRealmBillingSession | RemoteServerBillingSession:
     if customer.remote_realm is not None:  # nocoverage
         return RemoteRealmBillingSession(customer.remote_realm)
     elif customer.remote_server is not None:  # nocoverage
@@ -111,7 +112,7 @@ def handle_checkout_session_completed_event(
         session.customer, stripe_session.metadata.get("user_id")
     )
     payment_method = stripe_setup_intent.payment_method
-    assert isinstance(payment_method, (str, type(None)))
+    assert isinstance(payment_method, (str, type(None)))  # noqa: UP038  # https://github.com/python/mypy/issues/17413
 
     if session.type in [
         Session.CARD_UPDATE_FROM_BILLING_PAGE,

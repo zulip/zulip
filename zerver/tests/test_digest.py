@@ -1,6 +1,5 @@
 import time
 from datetime import datetime, timedelta, timezone
-from typing import List, Set
 from unittest import mock
 
 import time_machine
@@ -115,9 +114,10 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         do_deactivate_user(hamlet, acting_user=None)
 
-        with mock.patch("zerver.lib.digest.enough_traffic", return_value=True), mock.patch(
-            "zerver.lib.digest.send_future_email"
-        ) as mock_send_email:
+        with (
+            mock.patch("zerver.lib.digest.enough_traffic", return_value=True),
+            mock.patch("zerver.lib.digest.send_future_email") as mock_send_email,
+        ):
             bulk_handle_digest_email(user_ids, 1)
 
         emailed_user_ids = [
@@ -241,9 +241,8 @@ class TestDigestEmailMessages(ZulipTestCase):
             digest_user_ids = [user.id for user in digest_users]
 
             get_recent_topics.cache_clear()
-            with self.assert_database_query_count(16):
-                with self.assert_memcached_count(0):
-                    bulk_handle_digest_email(digest_user_ids, cutoff)
+            with self.assert_database_query_count(16), self.assert_memcached_count(0):
+                bulk_handle_digest_email(digest_user_ids, cutoff)
 
         self.assert_length(digest_users, mock_send_future_email.call_count)
 
@@ -285,7 +284,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         scotland = get_stream("Scotland", realm)
         denmark = get_stream("Denmark", realm)
 
-        def user_streams(user: UserProfile) -> Set[Stream]:
+        def user_streams(user: UserProfile) -> set[Stream]:
             data = get_user_stream_map([user.id], one_hour_ago)
             return {Stream.objects.get(id=stream_id) for stream_id in data[user.id]}
 
@@ -331,7 +330,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(streams[othello.id], {scotland.id, denmark.id})
         self.assertEqual(streams[cordelia.id], {verona.id, scotland.id})
 
-    def active_human_users(self, realm: Realm) -> List[UserProfile]:
+    def active_human_users(self, realm: Realm) -> list[UserProfile]:
         users = list(
             UserProfile.objects.filter(
                 realm=realm,
@@ -441,9 +440,11 @@ class TestDigestEmailMessages(ZulipTestCase):
         tuesday = self.tuesday()
         cutoff = tuesday - timedelta(days=5)
 
-        with time_machine.travel(tuesday, tick=False):
-            with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
-                enqueue_emails(cutoff)
+        with (
+            time_machine.travel(tuesday, tick=False),
+            mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock,
+        ):
+            enqueue_emails(cutoff)
         queue_mock.assert_not_called()
 
     @override_settings(SEND_DIGEST_EMAILS=True)
@@ -453,9 +454,11 @@ class TestDigestEmailMessages(ZulipTestCase):
         not_tuesday = datetime(year=2016, month=1, day=6, tzinfo=timezone.utc)
         cutoff = not_tuesday - timedelta(days=5)
 
-        with time_machine.travel(not_tuesday, tick=False):
-            with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
-                enqueue_emails(cutoff)
+        with (
+            time_machine.travel(not_tuesday, tick=False),
+            mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock,
+        ):
+            enqueue_emails(cutoff)
         queue_mock.assert_not_called()
 
     @override_settings(SEND_DIGEST_EMAILS=True)
@@ -536,7 +539,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(stream_count, 0)
         self.assertEqual(stream_info["html"], [])
 
-    def simulate_stream_conversation(self, stream: str, senders: List[str]) -> List[int]:
+    def simulate_stream_conversation(self, stream: str, senders: list[str]) -> list[int]:
         message_ids = []  # List[int]
         for sender_name in senders:
             sender = self.example_user(sender_name)

@@ -1,6 +1,7 @@
 import math
+from collections.abc import Collection
 from dataclasses import dataclass
-from typing import Any, Collection, Dict, List, Optional, Set
+from typing import Any
 
 from zerver.lib.mention import MentionData
 from zerver.lib.user_groups import get_user_group_member_ids
@@ -57,19 +58,19 @@ class UserMessageNotificationsData:
         flags: Collection[str],
         private_message: bool,
         disable_external_notifications: bool,
-        online_push_user_ids: Set[int],
-        dm_mention_push_disabled_user_ids: Set[int],
-        dm_mention_email_disabled_user_ids: Set[int],
-        stream_push_user_ids: Set[int],
-        stream_email_user_ids: Set[int],
-        topic_wildcard_mention_user_ids: Set[int],
-        stream_wildcard_mention_user_ids: Set[int],
-        followed_topic_push_user_ids: Set[int],
-        followed_topic_email_user_ids: Set[int],
-        topic_wildcard_mention_in_followed_topic_user_ids: Set[int],
-        stream_wildcard_mention_in_followed_topic_user_ids: Set[int],
-        muted_sender_user_ids: Set[int],
-        all_bot_user_ids: Set[int],
+        online_push_user_ids: set[int],
+        dm_mention_push_disabled_user_ids: set[int],
+        dm_mention_email_disabled_user_ids: set[int],
+        stream_push_user_ids: set[int],
+        stream_email_user_ids: set[int],
+        topic_wildcard_mention_user_ids: set[int],
+        stream_wildcard_mention_user_ids: set[int],
+        followed_topic_push_user_ids: set[int],
+        followed_topic_email_user_ids: set[int],
+        topic_wildcard_mention_in_followed_topic_user_ids: set[int],
+        stream_wildcard_mention_in_followed_topic_user_ids: set[int],
+        muted_sender_user_ids: set[int],
+        all_bot_user_ids: set[int],
     ) -> "UserMessageNotificationsData":
         if user_id in all_bot_user_ids:
             # Don't send any notifications to bots
@@ -199,7 +200,7 @@ class UserMessageNotificationsData:
     def is_push_notifiable(self, acting_user_id: int, idle: bool) -> bool:
         return self.get_push_notification_trigger(acting_user_id, idle) is not None
 
-    def get_push_notification_trigger(self, acting_user_id: int, idle: bool) -> Optional[str]:
+    def get_push_notification_trigger(self, acting_user_id: int, idle: bool) -> str | None:
         if not idle and not self.online_push_enabled:
             return None
 
@@ -231,7 +232,7 @@ class UserMessageNotificationsData:
     def is_email_notifiable(self, acting_user_id: int, idle: bool) -> bool:
         return self.get_email_notification_trigger(acting_user_id, idle) is not None
 
-    def get_email_notification_trigger(self, acting_user_id: int, idle: bool) -> Optional[str]:
+    def get_email_notification_trigger(self, acting_user_id: int, idle: bool) -> str | None:
         if not idle:
             return None
 
@@ -264,7 +265,7 @@ class UserMessageNotificationsData:
 def user_allows_notifications_in_StreamTopic(
     stream_is_muted: bool,
     visibility_policy: int,
-    stream_specific_setting: Optional[bool],
+    stream_specific_setting: bool | None,
     global_setting: bool,
 ) -> bool:
     """
@@ -284,10 +285,10 @@ def user_allows_notifications_in_StreamTopic(
 
 
 def get_user_group_mentions_data(
-    mentioned_user_ids: Set[int], mentioned_user_group_ids: List[int], mention_data: MentionData
-) -> Dict[int, int]:
+    mentioned_user_ids: set[int], mentioned_user_group_ids: list[int], mention_data: MentionData
+) -> dict[int, int]:
     # Maps user_id -> mentioned user_group_id
-    mentioned_user_groups_map: Dict[int, int] = dict()
+    mentioned_user_groups_map: dict[int, int] = dict()
 
     # Add members of the mentioned user groups into `mentions_user_ids`.
     for group_id in mentioned_user_group_ids:
@@ -321,8 +322,8 @@ class MentionedUserGroup:
 
 
 def get_mentioned_user_group(
-    messages: List[Dict[str, Any]], user_profile: UserProfile
-) -> Optional[MentionedUserGroup]:
+    messages: list[dict[str, Any]], user_profile: UserProfile
+) -> MentionedUserGroup | None:
     """Returns the user group name to display in the email notification
     if user group(s) are mentioned.
 

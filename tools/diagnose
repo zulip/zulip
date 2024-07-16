@@ -4,7 +4,7 @@ import platform
 import shlex
 import subprocess
 import sys
-from typing import Callable, List
+from collections.abc import Callable
 
 TOOLS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
@@ -24,7 +24,7 @@ def run(check_func: Callable[[], bool]) -> None:
         sys.exit(1)
 
 
-def run_command(args: List[str]) -> None:
+def run_command(args: list[str]) -> None:
     print(shlex.join(args))
     subprocess.check_call(args)
 

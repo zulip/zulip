@@ -198,50 +198,50 @@ li.show-more-topics {
     }
 }
 
+#direct-messages-section-header {
+    grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
+    /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
+       value and the styles dependent on it so that this kind of
+       1990s layout shenanigans is made unnecessary. */
+    margin-left: -3px;
+    cursor: pointer;
+    white-space: nowrap;
+
+    #toggle-direct-messages-section-icon {
+        grid-area: starting-anchor-element;
+    }
+
+    .left-sidebar-title {
+        grid-area: row-content;
+    }
+
+    .heading-markers-and-controls {
+        grid-area: markers-and-controls;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+
+    #show-all-direct-messages {
+        width: var(--left-sidebar-header-icon-width);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+        text-decoration: none;
+        color: inherit;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
 .direct-messages-container {
     /* Properly offset all the grid rows
        in the DM section. */
     margin-right: 12px;
-
-    #direct-messages-section-header {
-        grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
-        grid-template-rows: var(--line-height-sidebar-row-prominent);
-        /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
-           value and the styles dependent on it so that this kind of
-           1990s layout shenanigans is made unnecessary. */
-        margin-left: -3px;
-        cursor: pointer;
-        white-space: nowrap;
-
-        #toggle-direct-messages-section-icon {
-            grid-area: starting-anchor-element;
-        }
-
-        .left-sidebar-title {
-            grid-area: row-content;
-        }
-
-        .heading-markers-and-controls {
-            grid-area: markers-and-controls;
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-
-        #show-all-direct-messages {
-            width: var(--left-sidebar-header-icon-width);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.7;
-            text-decoration: none;
-            color: inherit;
-
-            &:hover {
-                opacity: 1;
-            }
-        }
-    }
 
     & ul.dm-list {
         list-style-type: none;
@@ -313,7 +313,7 @@ li.show-more-topics {
 .active-direct-messages-section {
     background-color: var(--color-background-active-narrow-filter);
 
-    #direct-messages-section {
+    #direct-messages-section-header {
         border-radius: 4px 4px 0 0;
     }
 
@@ -421,6 +421,11 @@ ul.filters {
 
     .zulip-icon-follow {
         opacity: 0.6;
+
+        &:hover {
+            opacity: 1;
+            color: var(--color-left-sidebar-follow-icon-hover);
+        }
     }
 
     & li.muted_topic,
@@ -706,6 +711,7 @@ li.top_left_scheduled_messages {
 
 /* New .topic-box grid definitions here. */
 #views-label-container,
+.zoom-in #hide-more-direct-messages,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
@@ -855,6 +861,7 @@ li.top_left_scheduled_messages {
     .unread_count {
         margin: 1px 0 0 6px;
         border-color: var(--color-border-unread-counter-popover-menu);
+        width: max-content;
     }
 }
 
@@ -1124,6 +1131,13 @@ li.topic-list-item {
     }
 }
 
+/* Since direct-messages-sticky-header also has the `input-append`
+   class accompanying it. The display property of that class will
+   overwrite display: none if we don't have a more specific CSS
+   rule. It will also overwrite `display: none` even if `.zoom-out`
+   properties are declared after the `.input-append` properties since
+   the latter is more specific. */
+#direct-messages-sticky-header.zoom-out,
 .zoom-out {
     #topics_header {
         display: none;
@@ -1219,53 +1233,6 @@ li.topic-list-item {
            vertical centering. */
         line-height: 20px;
         white-space: nowrap;
-
-        .stream-list-filter {
-            /* Use the border-box model so flex
-               can do its thing despite whatever
-               padding and border we specify. */
-            box-sizing: border-box;
-            flex: 1 0 100%;
-            /* Match the input height exactly
-               with the row height for a perfect
-               fit and better vertical alignment. */
-            height: 28px;
-            /* Pad the entire clear-button area,
-               so that input text does not bleed
-               into there. */
-            padding-right: 30px;
-        }
-
-        .clear_search_button {
-            /* Use the border-box model so flex
-               can do its thing despite whatever
-               padding and border we specify. */
-            box-sizing: border-box;
-            /* Clear inherited positioning. */
-            position: static;
-            /* We're going to use flexbox, not
-               positioning, to get the clear button
-               over top of the input. This -30px
-               margin accomplishes that, in tandem
-               with the 30px width of this element,
-               which is shared with the ending
-               anchor element in left sidebar header
-               rows. */
-            width: 30px;
-            margin-left: -30px;
-            /* Flexbox respects z-index; this just
-               ensures the button remains over top
-               of the input. */
-            z-index: 1;
-            /* Make the button itself a flex container,
-               so we can perfectly center the X icon. */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* Flexbox will pull the element open
-               to make a generous clickable area. */
-            padding: 0;
-        }
     }
 
     &.hide_unread_counts {
@@ -1298,6 +1265,57 @@ li.topic-list-item {
                 display: none;
             }
         }
+    }
+}
+
+.stream_search_section,
+.direct-messages-search-section {
+    .stream-list-filter,
+    .direct-messages-list-filter {
+        /* Use the border-box model so flex
+           can do its thing despite whatever
+           padding and border we specify. */
+        box-sizing: border-box;
+        flex: 1 0 100%;
+        /* Match the input height exactly
+           with the row height for a perfect
+           fit and better vertical alignment. */
+        height: 28px;
+        /* Pad the entire clear-button area,
+           so that input text does not bleed
+           into there. */
+        padding-right: 30px;
+    }
+
+    .clear_search_button {
+        /* Use the border-box model so flex
+           can do its thing despite whatever
+           padding and border we specify. */
+        box-sizing: border-box;
+        /* Clear inherited positioning. */
+        position: static;
+        /* We're going to use flexbox, not
+           positioning, to get the clear button
+           over top of the input. This -30px
+           margin accomplishes that, in tandem
+           with the 30px width of this element,
+           which is shared with the ending
+           anchor element in left sidebar header
+           rows. */
+        width: 30px;
+        margin-left: -30px;
+        /* Flexbox respects z-index; this just
+           ensures the button remains over top
+           of the input. */
+        z-index: 1;
+        /* Make the button itself a flex container,
+           so we can perfectly center the X icon. */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Flexbox will pull the element open
+           to make a generous clickable area. */
+        padding: 0;
     }
 }
 
@@ -1391,30 +1409,29 @@ li.topic-list-item {
     }
 
     #hide-more-direct-messages {
-        display: block;
+        grid-template-columns: inherit;
+        grid-column: 1 / -1;
+        line-height: var(--line-height-sidebar-row);
         text-decoration: none;
         color: inherit;
         /* 12px at 14px/1em */
-        font-size: 0.8571em;
 
-        & span {
-            display: block;
-            /* TODO: Rewrite the show-more and show-less
-               buttons as grids alongside the left sidebar
-               header rewrites. The 12px left padding here
-               aligns the "back to channels" text with the
-               DIRECT MESSAGES heading above, which itself
-               is offset -3 px to the left, but reserves
-               15px for the arrow marker. 15px - 3px = 12px. */
-            padding: 2px 0 2px 12px;
+        .hide-more-direct-messages-text {
+            font-size: 0.8571em;
+            grid-area: row-content;
         }
 
         &:hover {
-            & span {
-                background-color: hsl(120deg 12.3% 71.4% / 38%);
-                border-radius: 4px;
-            }
+            background-color: hsl(120deg 12.3% 71.4% / 38%);
+            border-radius: 4px;
         }
+    }
+
+    .direct-messages-search-section {
+        display: flex;
+        grid-column: row-content / markers-and-controls;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
 
     .zoom-in-hide {

@@ -2,10 +2,11 @@ import itertools
 import logging
 import re
 import sys
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from io import SEEK_SET, TextIOWrapper
 from types import TracebackType
-from typing import IO, TYPE_CHECKING, Iterable, Iterator, List, Optional, Type
+from typing import IO, TYPE_CHECKING
 
 from typing_extensions import override
 
@@ -95,7 +96,7 @@ class WrappedIO(IO[bytes]):
         return self.stream.readline(limit)
 
     @override
-    def readlines(self, hint: int = -1) -> List[bytes]:
+    def readlines(self, hint: int = -1) -> list[bytes]:
         return self.stream.readlines(hint)
 
     @override
@@ -111,7 +112,7 @@ class WrappedIO(IO[bytes]):
         return self.stream.tell()
 
     @override
-    def truncate(self, size: Optional[int] = None) -> int:
+    def truncate(self, size: int | None = None) -> int:
         return self.truncate(size)
 
     @override
@@ -147,9 +148,9 @@ class WrappedIO(IO[bytes]):
     @override
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         self.stream.__exit__(exc_type, exc_value, traceback)
 

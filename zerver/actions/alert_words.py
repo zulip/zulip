@@ -1,4 +1,4 @@
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 from zerver.lib.alert_words import add_user_alert_words, remove_user_alert_words
 from zerver.models import UserProfile

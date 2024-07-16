@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
@@ -18,7 +16,7 @@ def api_bitbucket_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
 ) -> HttpResponse:
     repository = payload["repository"]
 

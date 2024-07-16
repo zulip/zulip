@@ -111,7 +111,7 @@ The format of this output is:
 - HTTP method
 - HTTP status code
 - Time to process
-- (Optional perf data details, e.g. database time/queries, memcached
+- (Optional perf data details, e.g., database time/queries, memcached
   time/queries, Django process startup time, Markdown processing time,
   etc.)
 - Endpoint/URL from zproject/urls.py
@@ -200,7 +200,7 @@ Blueslip supports several error levels:
   than returning execution to the caller.
 - `blueslip.error`: For logging of events that are definitely caused by a bug
   and thus sufficiently important to be reported, but where we can handle the
-  error without creating major user-facing problems (e.g. an exception when
+  error without creating major user-facing problems (e.g., an exception when
   handling a presence update).
 - `blueslip.warn`: For logging of events that are a problem but not important
   enough to log an error to Sentry in production. They are, however, highlighted
@@ -208,7 +208,7 @@ Blueslip supports several error levels:
   production.
 - `blueslip.log` (and `blueslip.info`): Logged to the JS console in development
   and also in the Sentry breadcrumb log in production. Useful for data that
-  might help discern what state the browser was in during an error (e.g. whether
+  might help discern what state the browser was in during an error (e.g., whether
   the user was in a narrow).
 - `blueslip.debug`: Similar to `blueslip.log`, but are not printed to
   the JS console in development.

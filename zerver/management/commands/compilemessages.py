@@ -3,7 +3,7 @@ import os
 import re
 import unicodedata
 from subprocess import CalledProcessError, check_output
-from typing import Any, Dict, List
+from typing import Any
 
 import orjson
 import polib
@@ -73,7 +73,7 @@ class Command(compilemessages.Command):
         except (KeyError, ValueError):
             raise Exception(f"Unknown language {locale}")
 
-    def get_locales(self) -> List[str]:
+    def get_locales(self) -> list[str]:
         output = check_output(["git", "ls-files", "locale"], text=True)
         tracked_files = output.split()
         regex = re.compile(r"locale/(\w+)/LC_MESSAGES/django.po")
@@ -89,7 +89,7 @@ class Command(compilemessages.Command):
         locale_path = f"{settings.DEPLOY_ROOT}/locale"
         output_path = f"{locale_path}/language_options.json"
 
-        data: Dict[str, List[Dict[str, Any]]] = {"languages": []}
+        data: dict[str, list[dict[str, Any]]] = {"languages": []}
 
         try:
             locales = self.get_locales()
@@ -117,7 +117,7 @@ class Command(compilemessages.Command):
                 # Not a locale.
                 continue
 
-            info: Dict[str, Any] = {}
+            info: dict[str, Any] = {}
             code = to_language(locale)
             percentage = self.get_translation_percentage(locale_path, locale)
             try:

@@ -1,5 +1,5 @@
 import threading
-from typing import Any, List, Optional
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -16,20 +16,21 @@ from zerver.models import NamedUserGroup, Realm, UserGroup, UserProfile
 from zerver.models.realms import get_realm
 from zerver.views.user_groups import update_subgroups_of_user_group
 
-BARRIER: Optional[threading.Barrier] = None
+BARRIER: threading.Barrier | None = None
 
 
 def dev_update_subgroups(
     request: HttpRequest,
     user_profile: UserProfile,
     user_group_id: int,
-) -> Optional[str]:
+) -> str | None:
     # The test is expected to set up the barrier before accessing this endpoint.
     assert BARRIER is not None
     try:
-        with transaction.atomic(), mock.patch(
-            "zerver.lib.user_groups.access_user_group_by_id"
-        ) as m:
+        with (
+            transaction.atomic(),
+            mock.patch("zerver.lib.user_groups.access_user_group_by_id") as m,
+        ):
 
             def wait_after_recursive_query(*args: Any, **kwargs: Any) -> UserGroup:
                 # When updating the subgroups, we access the supergroup group
@@ -63,7 +64,7 @@ def dev_update_subgroups(
 
 
 class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
-    created_user_groups: List[UserGroup] = []
+    created_user_groups: list[UserGroup] = []
     counter = 0
     CHAIN_LENGTH = 3
 
@@ -77,7 +78,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
 
         super().tearDown()
 
-    def create_user_group_chain(self, realm: Realm) -> List[NamedUserGroup]:
+    def create_user_group_chain(self, realm: Realm) -> list[NamedUserGroup]:
         """Build a user groups forming a chain through group-group memberships
         returning a list where each group is the supergroup of its subsequent group.
         """
@@ -101,11 +102,11 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
         class RacingThread(threading.Thread):
             def __init__(
                 self,
-                subgroup_ids: List[int],
+                subgroup_ids: list[int],
                 supergroup_id: int,
             ) -> None:
                 threading.Thread.__init__(self)
-                self.response: Optional[str] = None
+                self.response: str | None = None
                 self.subgroup_ids = subgroup_ids
                 self.supergroup_id = supergroup_id
 

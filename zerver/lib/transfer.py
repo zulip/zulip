@@ -3,17 +3,20 @@ import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import bmemcached
+import magic
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
-from zerver.lib.upload import upload_avatar_image, upload_emoji_image
+from zerver.lib.thumbnail import BadImageError
+from zerver.lib.upload import upload_emoji_image, write_avatar_images
 from zerver.lib.upload.s3 import S3UploadBackend, upload_image_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 
 s3backend = S3UploadBackend()
+mime_magic = magic.Magic(mime=True)
 
 
 def transfer_uploads_to_s3(processes: int) -> None:
@@ -30,7 +33,18 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
     file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path)
     try:
         with open(file_path + ".original", "rb") as f:
-            upload_avatar_image(f, user, backend=s3backend)
+            # We call write_avatar_images directly to walk around the
+            # content-type checking in upload_avatar_image.  We don't
+            # know the original file format, and we don't need to know
+            # it because we never serve them directly.
+            write_avatar_images(
+                user_avatar_path(user, future=False),
+                user,
+                f.read(),
+                content_type="application/octet-stream",
+                backend=s3backend,
+                future=False,
+            )
             logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
     except FileNotFoundError:
         pass
@@ -66,7 +80,7 @@ def _transfer_message_files_to_s3(attachment: Attachment) -> None:
                 guessed_type,
                 attachment.owner,
                 f.read(),
-                settings.S3_UPLOADS_STORAGE_CLASS,
+                storage_class=settings.S3_UPLOADS_STORAGE_CLASS,
             )
             logging.info("Uploaded message file in path %s", file_path)
     except FileNotFoundError:  # nocoverage
@@ -100,13 +114,23 @@ def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
     )
     assert settings.LOCAL_UPLOADS_DIR is not None
     assert settings.LOCAL_AVATARS_DIR is not None
+    content_type = guess_type(emoji_path)[0]
     emoji_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path) + ".original"
+    if content_type is None:  # nocoverage
+        # This should not be possible after zerver/migrations/0553_copy_emoji_images.py
+        logging.error("Emoji %d has no recognizable file extension", realm_emoji.id)
+        return
     try:
         with open(emoji_path, "rb") as f:
-            upload_emoji_image(f, realm_emoji.file_name, realm_emoji.author, backend=s3backend)
+            upload_emoji_image(
+                f, realm_emoji.file_name, realm_emoji.author, content_type, backend=s3backend
+            )
             logging.info("Uploaded emoji file in path %s", emoji_path)
     except FileNotFoundError:  # nocoverage
-        pass
+        logging.error("Emoji %d could not be loaded from local disk", realm_emoji.id)
+    except BadImageError as e:  # nocoverage
+        # This should not be possible after zerver/migrations/0553_copy_emoji_images.py
+        logging.error("Emoji %d is invalid: %s", realm_emoji.id, e)
 
 
 def transfer_emoji_to_s3(processes: int) -> None:

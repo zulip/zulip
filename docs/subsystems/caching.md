@@ -47,7 +47,7 @@ work.
 As a side note, the policy of using these accessor functions wherever
 possible is a good idea, regardless of caching, because the functions
 also generally take care of details you might not think about
-(e.g. case-insensitive matching of channel names or email addresses).
+(e.g., case-insensitive matching of channel names or email addresses).
 It's amazing how slightly tricky logic that's duplicated in several
 places invariably ends up buggy in some of those places, and in
 aggregate we call these accessor functions hundreds of times in
@@ -158,7 +158,7 @@ those keys from the cache (if present).
 Maintaining these flush functions requires some care (every time we
 add a new cache, we need to look through them), but overall it's a
 pretty simple algorithm: If the changed data appears in any form in a
-given cache key, that cache key needs to be cleared. E.g. the
+given cache key, that cache key needs to be cleared. E.g., the
 `active_user_ids_cache_key` cache for a realm needs to be flushed
 whenever a new user is created in that realm, or user is
 deactivated/reactivated, even though it's just a list of IDs and thus
@@ -231,7 +231,7 @@ them in loops (the same applies for database queries!). Instead, one
 should use a bulk query. We have a fancy function,
 `generate_bulk_cached_fetch`, which is super magical and handles this
 for us, with support for a bunch of fancy features like marshalling
-data before/after going into the cache (e.g. to compress `message`
+data before/after going into the cache (e.g., to compress `message`
 objects to minimize data transfer between Django and memcached).
 
 ## In-process caching in Django

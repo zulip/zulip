@@ -1,7 +1,7 @@
 import logging
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Set, Tuple, Type, cast
+from typing import Optional, cast
 
 import orjson
 import redis
@@ -20,7 +20,7 @@ from zerver.models import UserProfile
 # https://www.domaintools.com/resources/blog/rate-limiting-with-redis
 
 client = get_redis_client()
-rules: Dict[str, List[Tuple[int, int]]] = settings.RATE_LIMITING_RULES
+rules: dict[str, list[tuple[int, int]]] = settings.RATE_LIMITING_RULES
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +30,13 @@ class RateLimiterLockingError(Exception):
 
 
 class RateLimitedObject(ABC):
-    def __init__(self, backend: Optional["Type[RateLimiterBackend]"] = None) -> None:
+    def __init__(self, backend: Optional["type[RateLimiterBackend]"] = None) -> None:
         if backend is not None:
-            self.backend: Type[RateLimiterBackend] = backend
+            self.backend: type[RateLimiterBackend] = backend
         else:
             self.backend = RedisRateLimiterBackend
 
-    def rate_limit(self) -> Tuple[bool, float]:
+    def rate_limit(self) -> tuple[bool, float]:
         # Returns (ratelimited, secs_to_freedom)
         return self.backend.rate_limit_entity(
             self.key(), self.get_rules(), self.max_api_calls(), self.max_api_window()
@@ -84,14 +84,14 @@ class RateLimitedObject(ABC):
         """Returns the API time window for the highest limit"""
         return self.get_rules()[-1][0]
 
-    def api_calls_left(self) -> Tuple[int, float]:
+    def api_calls_left(self) -> tuple[int, float]:
         """Returns how many API calls in this range this client has, as well as when
         the rate-limit will be reset to 0"""
         max_window = self.max_api_window()
         max_calls = self.max_api_calls()
         return self.backend.get_api_calls_left(self.key(), max_window, max_calls)
 
-    def get_rules(self) -> List[Tuple[int, int]]:
+    def get_rules(self) -> list[tuple[int, int]]:
         """
         This is a simple wrapper meant to protect against having to deal with
         an empty list of rules, as it would require fiddling with that special case
@@ -106,7 +106,7 @@ class RateLimitedObject(ABC):
         pass
 
     @abstractmethod
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         pass
 
 
@@ -116,7 +116,7 @@ class RateLimitedUser(RateLimitedObject):
         self.rate_limits = user.rate_limits
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
-            backend: Optional[Type[RateLimiterBackend]] = TornadoInMemoryRateLimiterBackend
+            backend: type[RateLimiterBackend] | None = TornadoInMemoryRateLimiterBackend
         else:
             backend = None
         super().__init__(backend=backend)
@@ -126,10 +126,10 @@ class RateLimitedUser(RateLimitedObject):
         return f"{type(self).__name__}:{self.user_id}:{self.domain}"
 
     @override
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         # user.rate_limits are general limits, applicable to the domain 'api_by_user'
         if self.rate_limits != "" and self.domain == "api_by_user":
-            result: List[Tuple[int, int]] = []
+            result: list[tuple[int, int]] = []
             for limit in self.rate_limits.split(","):
                 (seconds, requests) = limit.split(":", 2)
                 result.append((int(seconds), int(requests)))
@@ -142,7 +142,7 @@ class RateLimitedIPAddr(RateLimitedObject):
         self.ip_addr = ip_addr
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
-            backend: Optional[Type[RateLimiterBackend]] = TornadoInMemoryRateLimiterBackend
+            backend: type[RateLimiterBackend] | None = TornadoInMemoryRateLimiterBackend
         else:
             backend = None
         super().__init__(backend=backend)
@@ -153,7 +153,7 @@ class RateLimitedIPAddr(RateLimitedObject):
         return f"{type(self).__name__}:<{self.ip_addr}>:{self.domain}"
 
     @override
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         return rules[self.domain]
 
 
@@ -177,14 +177,14 @@ class RateLimiterBackend(ABC):
     @abstractmethod
     def get_api_calls_left(
         cls, entity_key: str, range_seconds: int, max_calls: int
-    ) -> Tuple[int, float]:
+    ) -> tuple[int, float]:
         pass
 
     @classmethod
     @abstractmethod
     def rate_limit_entity(
-        cls, entity_key: str, rules: List[Tuple[int, int]], max_api_calls: int, max_api_window: int
-    ) -> Tuple[bool, float]:
+        cls, entity_key: str, rules: list[tuple[int, int]], max_api_calls: int, max_api_window: int
+    ) -> tuple[bool, float]:
         # Returns (ratelimited, secs_to_freedom)
         pass
 
@@ -192,15 +192,15 @@ class RateLimiterBackend(ABC):
 class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
     # reset_times[rule][key] is the time at which the event
     # request from the rate-limited key will be accepted.
-    reset_times: Dict[Tuple[int, int], Dict[str, float]] = {}
+    reset_times: dict[tuple[int, int], dict[str, float]] = {}
 
     # last_gc_time is the last time when the garbage was
     # collected from reset_times for rule (time_window, max_count).
-    last_gc_time: Dict[Tuple[int, int], float] = {}
+    last_gc_time: dict[tuple[int, int], float] = {}
 
     # timestamps_blocked_until[key] contains the timestamp
     # up to which the key has been blocked manually.
-    timestamps_blocked_until: Dict[str, float] = {}
+    timestamps_blocked_until: dict[str, float] = {}
 
     @classmethod
     def _garbage_collect_for_rule(cls, now: float, time_window: int, max_count: int) -> None:
@@ -222,7 +222,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
             del cls.reset_times[(time_window, max_count)]
 
     @classmethod
-    def need_to_limit(cls, entity_key: str, time_window: int, max_count: int) -> Tuple[bool, float]:
+    def need_to_limit(cls, entity_key: str, time_window: int, max_count: int) -> tuple[bool, float]:
         """
         Returns a tuple of `(rate_limited, time_till_free)`.
         For simplicity, we have loosened the semantics here from
@@ -258,7 +258,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
     @override
     def get_api_calls_left(
         cls, entity_key: str, range_seconds: int, max_calls: int
-    ) -> Tuple[int, float]:
+    ) -> tuple[int, float]:
         now = time.time()
         if (range_seconds, max_calls) in cls.reset_times and entity_key in cls.reset_times[
             (range_seconds, max_calls)
@@ -291,8 +291,8 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
     @classmethod
     @override
     def rate_limit_entity(
-        cls, entity_key: str, rules: List[Tuple[int, int]], max_api_calls: int, max_api_window: int
-    ) -> Tuple[bool, float]:
+        cls, entity_key: str, rules: list[tuple[int, int]], max_api_calls: int, max_api_window: int
+    ) -> tuple[bool, float]:
         now = time.time()
         if entity_key in cls.timestamps_blocked_until:
             # Check whether the key is manually blocked.
@@ -314,7 +314,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
 
 class RedisRateLimiterBackend(RateLimiterBackend):
     @classmethod
-    def get_keys(cls, entity_key: str) -> List[str]:
+    def get_keys(cls, entity_key: str) -> list[str]:
         return [
             f"{redis_utils.REDIS_KEY_PREFIX}ratelimit:{entity_key}:{keytype}"
             for keytype in ["list", "zset", "block"]
@@ -346,7 +346,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     @override
     def get_api_calls_left(
         cls, entity_key: str, range_seconds: int, max_calls: int
-    ) -> Tuple[int, float]:
+    ) -> tuple[int, float]:
         list_key, set_key, _ = cls.get_keys(entity_key)
         # Count the number of values in our sorted set
         # that are between now and the cutoff
@@ -363,7 +363,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             results = pipe.execute()
 
         count: int = results[0]
-        newest_call: Optional[bytes] = results[1]
+        newest_call: bytes | None = results[1]
 
         calls_left = max_calls - count
         if newest_call is not None:
@@ -374,7 +374,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         return calls_left, time_reset - now
 
     @classmethod
-    def is_ratelimited(cls, entity_key: str, rules: List[Tuple[int, int]]) -> Tuple[bool, float]:
+    def is_ratelimited(cls, entity_key: str, rules: list[tuple[int, int]]) -> tuple[bool, float]:
         """Returns a tuple of (rate_limited, time_till_free)"""
         assert rules
         list_key, set_key, blocking_key = cls.get_keys(entity_key)
@@ -390,7 +390,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             pipe.get(blocking_key)
             pipe.ttl(blocking_key)
 
-            rule_timestamps: List[Optional[bytes]] = pipe.execute()
+            rule_timestamps: list[bytes | None] = pipe.execute()
 
         # Check if there is a manual block on this API key
         blocking_ttl_b = rule_timestamps.pop()
@@ -405,7 +405,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             return True, blocking_ttl
 
         now = time.time()
-        for timestamp, (range_seconds, num_requests) in zip(rule_timestamps, rules):
+        for timestamp, (range_seconds, num_requests) in zip(rule_timestamps, rules, strict=False):
             # Check if the nth timestamp is newer than the associated rule. If so,
             # it means we've hit our limit for this rule
             if timestamp is None:
@@ -437,7 +437,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
                     # Get the last elem that we'll trim (so we can remove it from our sorted set)
                     last_val = cast(  # mypy doesn’t know the pipe is in immediate mode
-                        Optional[bytes], pipe.lindex(list_key, max_api_calls - 1)
+                        bytes | None, pipe.lindex(list_key, max_api_calls - 1)
                     )
 
                     # Restart buffered execution
@@ -477,8 +477,8 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     @classmethod
     @override
     def rate_limit_entity(
-        cls, entity_key: str, rules: List[Tuple[int, int]], max_api_calls: int, max_api_window: int
-    ) -> Tuple[bool, float]:
+        cls, entity_key: str, rules: list[tuple[int, int]], max_api_calls: int, max_api_window: int
+    ) -> tuple[bool, float]:
         ratelimited, time = cls.is_ratelimited(entity_key, rules)
 
         if not ratelimited:
@@ -515,7 +515,7 @@ class RateLimitedSpectatorAttachmentAccessByFile(RateLimitedObject):
         return f"{type(self).__name__}:{self.path_id}"
 
     @override
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         return settings.RATE_LIMITING_RULES["spectator_attachment_access_by_file"]
 
 
@@ -531,7 +531,7 @@ def is_local_addr(addr: str) -> bool:
 
 @cache_with_key(lambda: "tor_ip_addresses:", timeout=60 * 60)
 @circuit(failure_threshold=2, recovery_timeout=60 * 10)
-def get_tor_ips() -> Set[str]:
+def get_tor_ips() -> set[str]:
     if not settings.RATE_LIMIT_TOR_TOGETHER:
         return set()
 

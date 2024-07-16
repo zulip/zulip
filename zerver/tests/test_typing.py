@@ -1,7 +1,7 @@
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Huddle
+from zerver.models import DirectMessageGroup
 from zerver.models.recipients import get_direct_message_group_hash
 
 
@@ -176,9 +176,11 @@ class TypingHappyPathTestDirectMessages(ZulipTestCase):
             op="start",
         )
 
-        with self.assert_database_query_count(4):
-            with self.capture_send_event_calls(expected_num_events=1) as events:
-                result = self.api_post(sender, "/api/v1/typing", params)
+        with (
+            self.assert_database_query_count(4),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -203,23 +205,29 @@ class TypingHappyPathTestDirectMessages(ZulipTestCase):
         expected_recipient_ids = {user.id for user in expected_recipients}
 
         direct_message_group_hash = get_direct_message_group_hash(list(expected_recipient_ids))
-        self.assertFalse(Huddle.objects.filter(huddle_hash=direct_message_group_hash).exists())
+        self.assertFalse(
+            DirectMessageGroup.objects.filter(huddle_hash=direct_message_group_hash).exists()
+        )
 
         params = dict(
             to=orjson.dumps([user.id for user in recipient_users]).decode(),
             op="start",
         )
 
-        with self.assert_database_query_count(5):
-            with self.capture_send_event_calls(expected_num_events=1) as events:
-                result = self.api_post(sender, "/api/v1/typing", params)
+        with (
+            self.assert_database_query_count(5),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
 
         # We should not be adding new Direct Message groups
         # just because a user started typing in the compose
         # box.  Let's wait till they send an actual message.
-        self.assertFalse(Huddle.objects.filter(huddle_hash=direct_message_group_hash).exists())
+        self.assertFalse(
+            DirectMessageGroup.objects.filter(huddle_hash=direct_message_group_hash).exists()
+        )
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -402,9 +410,11 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             topic=topic_name,
         )
 
-        with self.assert_database_query_count(6):
-            with self.capture_send_event_calls(expected_num_events=1) as events:
-                result = self.api_post(sender, "/api/v1/typing", params)
+        with (
+            self.assert_database_query_count(6),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
 
@@ -433,9 +443,11 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             topic=topic_name,
         )
 
-        with self.assert_database_query_count(6):
-            with self.capture_send_event_calls(expected_num_events=1) as events:
-                result = self.api_post(sender, "/api/v1/typing", params)
+        with (
+            self.assert_database_query_count(6),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
 
@@ -466,9 +478,11 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             topic=topic_name,
         )
         with self.settings(MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS=5):
-            with self.assert_database_query_count(5):
-                with self.capture_send_event_calls(expected_num_events=0) as events:
-                    result = self.api_post(sender, "/api/v1/typing", params)
+            with (
+                self.assert_database_query_count(5),
+                self.capture_send_event_calls(expected_num_events=0) as events,
+            ):
+                result = self.api_post(sender, "/api/v1/typing", params)
             self.assert_json_success(result)
             self.assert_length(events, 0)
 
@@ -497,9 +511,11 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             topic=topic_name,
         )
 
-        with self.assert_database_query_count(6):
-            with self.capture_send_event_calls(expected_num_events=1) as events:
-                result = self.api_post(sender, "/api/v1/typing", params)
+        with (
+            self.assert_database_query_count(6),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
 

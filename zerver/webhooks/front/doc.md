@@ -32,11 +32,7 @@ to receive Front notifications without leaving Zulip!
 
 ![](/static/images/integrations/front/001.png)
 
-{% if all_event_types is defined %}
-
 {!event-filtering-additional-feature.md!}
-
-{% endif %}
 
 ### Related documentation
 

@@ -14,6 +14,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
+import * as message_util from "./message_util";
 import * as narrow_state from "./narrow_state";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -26,6 +27,7 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
 import type {UserOrMention} from "./typeahead_helper";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 let user_acknowledged_stream_wildcard = false;
@@ -108,6 +110,29 @@ export function needs_subscribe_warning(user_id: number, stream_id: number): boo
     }
 
     return true;
+}
+
+export function check_dm_permissions_and_get_error_string(user_ids_string: string): string {
+    if (!people.user_can_direct_message(user_ids_string)) {
+        if (user_groups.is_empty_group(realm.realm_direct_message_permission_group)) {
+            return $t({
+                defaultMessage: "Direct messages are disabled in this organization.",
+            });
+        }
+        return $t({
+            defaultMessage: "This conversation does not include any users who can authorize it.",
+        });
+    }
+    if (
+        message_util.get_direct_message_permission_hints(user_ids_string)
+            .is_known_empty_conversation &&
+        !people.user_can_initiate_direct_message_thread(user_ids_string)
+    ) {
+        return $t({
+            defaultMessage: "You are not allowed to start direct message conversations.",
+        });
+    }
+    return "";
 }
 
 function get_stream_id_for_textarea($textarea: JQuery<HTMLTextAreaElement>): number | undefined {
@@ -619,19 +644,8 @@ function validate_stream_message(scheduling_message: boolean): boolean {
 // for now)
 function validate_private_message(): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
+    const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
-
-    const user_ids_string = user_ids.join(",");
-
-    if (!people.user_can_direct_message(user_ids_string)) {
-        compose_banner.show_error_message(
-            $t({defaultMessage: "Direct messages are disabled in this organization."}),
-            compose_banner.CLASSNAMES.private_messages_disabled,
-            $banner_container,
-            $("#private_message_recipient"),
-        );
-        return false;
-    }
 
     if (compose_state.private_message_recipient().length === 0) {
         compose_banner.show_error_message(
@@ -644,6 +658,12 @@ function validate_private_message(): boolean {
     } else if (realm.realm_is_zephyr_mirror_realm) {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
         return true;
+    }
+
+    const direct_message_error_string = check_dm_permissions_and_get_error_string(user_ids_string);
+    if (direct_message_error_string) {
+        compose_banner.cannot_send_direct_message_error(direct_message_error_string);
+        return false;
     }
 
     const invalid_recipients = get_invalid_recipient_emails();

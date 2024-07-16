@@ -1,5 +1,5 @@
 import string
-from typing import Dict, List, Optional, Protocol
+from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
 
@@ -56,7 +56,7 @@ PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS_WITH_TITLE = """
 """.strip()
 
 
-def fixture_to_headers(fixture_name: str) -> Dict[str, str]:
+def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     if fixture_name == "diagnostics_ping":
         return {"HTTP_X_EVENT_KEY": "diagnostics:ping"}
     return {}
@@ -72,9 +72,9 @@ def get_user_name(payload: WildValue) -> str:
 
 def ping_handler(
     payload: WildValue,
-    branches: Optional[str],
-    include_title: Optional[str],
-) -> List[Dict[str, str]]:
+    branches: str | None,
+    include_title: str | None,
+) -> list[dict[str, str]]:
     if include_title:
         topic_name = include_title
     else:
@@ -86,9 +86,9 @@ def ping_handler(
 def repo_comment_handler(
     action: str,
     payload: WildValue,
-    branches: Optional[str],
-    include_title: Optional[str],
-) -> List[Dict[str, str]]:
+    branches: str | None,
+    include_title: str | None,
+) -> list[dict[str, str]]:
     repo_name = payload["repository"]["name"].tame(check_string)
     topic_name = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     sha = payload["commit"].tame(check_string)
@@ -111,9 +111,9 @@ def repo_comment_handler(
 
 def repo_forked_handler(
     payload: WildValue,
-    branches: Optional[str],
-    include_title: Optional[str],
-) -> List[Dict[str, str]]:
+    branches: str | None,
+    include_title: str | None,
+) -> list[dict[str, str]]:
     repo_name = payload["repository"]["origin"]["name"].tame(check_string)
     topic_name = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     body = BITBUCKET_FORK_BODY.format(
@@ -127,9 +127,9 @@ def repo_forked_handler(
 
 def repo_modified_handler(
     payload: WildValue,
-    branches: Optional[str],
-    include_title: Optional[str],
-) -> List[Dict[str, str]]:
+    branches: str | None,
+    include_title: str | None,
+) -> list[dict[str, str]]:
     topic_name_new = BITBUCKET_TOPIC_TEMPLATE.format(
         repository_name=payload["new"]["name"].tame(check_string)
     )
@@ -146,7 +146,7 @@ def repo_modified_handler(
     return [{"topic": topic_name_new, "body": body}]
 
 
-def repo_push_branch_data(payload: WildValue, change: WildValue) -> Dict[str, str]:
+def repo_push_branch_data(payload: WildValue, change: WildValue) -> dict[str, str]:
     event_type = change["type"].tame(check_string)
     repo_name = payload["repository"]["name"].tame(check_string)
     user_name = get_user_name(payload)
@@ -175,7 +175,7 @@ def repo_push_branch_data(payload: WildValue, change: WildValue) -> Dict[str, st
     return {"topic": topic_name, "body": body}
 
 
-def repo_push_tag_data(payload: WildValue, change: WildValue) -> Dict[str, str]:
+def repo_push_tag_data(payload: WildValue, change: WildValue) -> dict[str, str]:
     event_type = change["type"].tame(check_string)
     repo_name = payload["repository"]["name"].tame(check_string)
     tag_name = change["ref"]["displayId"].tame(check_string)
@@ -195,9 +195,9 @@ def repo_push_tag_data(payload: WildValue, change: WildValue) -> Dict[str, str]:
 
 def repo_push_handler(
     payload: WildValue,
-    branches: Optional[str],
-    include_title: Optional[str],
-) -> List[Dict[str, str]]:
+    branches: str | None,
+    include_title: str | None,
+) -> list[dict[str, str]]:
     data = []
     for change in payload["changes"]:
         event_target_type = change["ref"]["type"].tame(check_string)
@@ -216,7 +216,7 @@ def repo_push_handler(
     return data
 
 
-def get_assignees_string(pr: WildValue) -> Optional[str]:
+def get_assignees_string(pr: WildValue) -> str | None:
     reviewers = []
     for reviewer in pr["reviewers"]:
         name = reviewer["user"]["name"].tame(check_string)
@@ -235,7 +235,7 @@ def get_pr_topic(repo: str, type: str, id: int, title: str) -> str:
     return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(repo=repo, type=type, id=id, title=title)
 
 
-def get_simple_pr_body(payload: WildValue, action: str, include_title: Optional[str]) -> str:
+def get_simple_pr_body(payload: WildValue, action: str, include_title: str | None) -> str:
     pr = payload["pullRequest"]
     return get_pull_request_event_message(
         user_name=get_user_name(payload),
@@ -247,7 +247,7 @@ def get_simple_pr_body(payload: WildValue, action: str, include_title: Optional[
 
 
 def get_pr_opened_or_modified_body(
-    payload: WildValue, action: str, include_title: Optional[str]
+    payload: WildValue, action: str, include_title: str | None
 ) -> str:
     pr = payload["pullRequest"]
     description = pr.get("description").tame(check_none_or(check_string))
@@ -271,7 +271,7 @@ def get_pr_opened_or_modified_body(
     )
 
 
-def get_pr_merged_body(payload: WildValue, action: str, include_title: Optional[str]) -> str:
+def get_pr_merged_body(payload: WildValue, action: str, include_title: str | None) -> str:
     pr = payload["pullRequest"]
     return get_pull_request_event_message(
         user_name=get_user_name(payload),
@@ -284,7 +284,7 @@ def get_pr_merged_body(payload: WildValue, action: str, include_title: Optional[
     )
 
 
-def get_pr_needs_work_body(payload: WildValue, include_title: Optional[str]) -> str:
+def get_pr_needs_work_body(payload: WildValue, include_title: str | None) -> str:
     pr = payload["pullRequest"]
     if not include_title:
         return PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE.format(
@@ -300,7 +300,7 @@ def get_pr_needs_work_body(payload: WildValue, include_title: Optional[str]) -> 
     )
 
 
-def get_pr_reassigned_body(payload: WildValue, include_title: Optional[str]) -> str:
+def get_pr_reassigned_body(payload: WildValue, include_title: str | None) -> str:
     pr = payload["pullRequest"]
     assignees_string = get_assignees_string(pr)
     if not assignees_string:
@@ -338,9 +338,9 @@ def get_pr_reassigned_body(payload: WildValue, include_title: Optional[str]) -> 
 def pr_handler(
     action: str,
     payload: WildValue,
-    branches: Optional[str],
-    include_title: Optional[str],
-) -> List[Dict[str, str]]:
+    branches: str | None,
+    include_title: str | None,
+) -> list[dict[str, str]]:
     pr = payload["pullRequest"]
     topic_name = get_pr_topic(
         pr["toRef"]["repository"]["name"].tame(check_string),
@@ -365,9 +365,9 @@ def pr_handler(
 def pr_comment_handler(
     action: str,
     payload: WildValue,
-    branches: Optional[str],
-    include_title: Optional[str],
-) -> List[Dict[str, str]]:
+    branches: str | None,
+    include_title: str | None,
+) -> list[dict[str, str]]:
     pr = payload["pullRequest"]
     topic_name = get_pr_topic(
         pr["toRef"]["repository"]["name"].tame(check_string),
@@ -392,11 +392,11 @@ def pr_comment_handler(
 
 class EventHandler(Protocol):
     def __call__(
-        self, payload: WildValue, branches: Optional[str], include_title: Optional[str]
-    ) -> List[Dict[str, str]]: ...
+        self, payload: WildValue, branches: str | None, include_title: str | None
+    ) -> list[dict[str, str]]: ...
 
 
-EVENT_HANDLER_MAP: Dict[str, EventHandler] = {
+EVENT_HANDLER_MAP: dict[str, EventHandler] = {
     "diagnostics:ping": ping_handler,
     "repo:comment:added": partial(repo_comment_handler, "commented"),
     "repo:comment:edited": partial(repo_comment_handler, "edited their comment"),
@@ -428,10 +428,10 @@ def api_bitbucket3_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
-    eventkey: Optional[str]
+    eventkey: str | None
     if "eventKey" in payload:
         eventkey = payload["eventKey"].tame(check_string)
     else:

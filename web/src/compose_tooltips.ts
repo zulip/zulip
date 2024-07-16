@@ -10,6 +10,7 @@ import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import {$t} from "./i18n";
+import {pick_empty_narrow_banner} from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
 import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
@@ -47,11 +48,7 @@ export function initialize(): void {
             const button_type = $elem.attr("data-reply-button-type");
             switch (button_type) {
                 case "direct_disabled": {
-                    instance.setContent(
-                        parse_html(
-                            $("#compose_reply_direct_disabled_button_tooltip_template").html(),
-                        ),
-                    );
+                    instance.setContent(pick_empty_narrow_banner().title);
                     return;
                 }
                 case "selected_message": {

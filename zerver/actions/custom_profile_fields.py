@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List, Optional, Union
+from collections.abc import Iterable
 
 import orjson
 from django.db import transaction
@@ -49,7 +49,7 @@ def try_add_realm_custom_profile_field(
     name: str,
     field_type: int,
     hint: str = "",
-    field_data: Optional[ProfileFieldData] = None,
+    field_data: ProfileFieldData | None = None,
     display_in_profile_summary: bool = False,
     required: bool = False,
 ) -> CustomProfileField:
@@ -101,11 +101,11 @@ def remove_custom_profile_field_value_if_required(
 def try_update_realm_custom_profile_field(
     realm: Realm,
     field: CustomProfileField,
-    name: Optional[str] = None,
-    hint: Optional[str] = None,
-    field_data: Optional[ProfileFieldData] = None,
-    display_in_profile_summary: Optional[bool] = None,
-    required: Optional[bool] = None,
+    name: str | None = None,
+    hint: str | None = None,
+    field_data: ProfileFieldData | None = None,
+    display_in_profile_summary: bool | None = None,
+    required: bool | None = None,
 ) -> None:
     if name is not None:
         field.name = name
@@ -146,7 +146,7 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: Iterable[int]) 
 
 
 def notify_user_update_custom_profile_data(
-    user_profile: UserProfile, field: Dict[str, Union[int, str, List[int], None]]
+    user_profile: UserProfile, field: dict[str, int | str | list[int] | None]
 ) -> None:
     data = dict(id=field["id"], value=field["value"])
 
@@ -159,7 +159,7 @@ def notify_user_update_custom_profile_data(
 
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
-    data: List[ProfileDataElementUpdateDict],
+    data: list[ProfileDataElementUpdateDict],
 ) -> None:
     with transaction.atomic():
         for custom_profile_field in data:

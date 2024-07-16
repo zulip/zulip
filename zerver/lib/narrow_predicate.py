@@ -1,4 +1,5 @@
-from typing import Any, Collection, Dict, List, Protocol
+from collections.abc import Collection
+from typing import Any, Protocol
 
 from django.utils.translation import gettext as _
 
@@ -7,9 +8,9 @@ from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, get_topic_from_message_info
 
 # "stream" is a legacy alias for "channel"
-channel_operators: List[str] = ["channel", "stream"]
+channel_operators: list[str] = ["channel", "stream"]
 # "streams" is a legacy alias for "channels"
-channels_operators: List[str] = ["channels", "streams"]
+channels_operators: list[str] = ["channels", "streams"]
 
 
 def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
@@ -26,7 +27,7 @@ def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
 
 
 class NarrowPredicate(Protocol):
-    def __call__(self, *, message: Dict[str, Any], flags: List[str]) -> bool: ...
+    def __call__(self, *, message: dict[str, Any], flags: list[str]) -> bool: ...
 
 
 def build_narrow_predicate(
@@ -36,7 +37,7 @@ def build_narrow_predicate(
     NarrowLibraryTest."""
     check_narrow_for_events(narrow)
 
-    def narrow_predicate(*, message: Dict[str, Any], flags: List[str]) -> bool:
+    def narrow_predicate(*, message: dict[str, Any], flags: list[str]) -> bool:
         def satisfies_operator(*, operator: str, operand: str) -> bool:
             if operator in channel_operators:
                 if message["type"] != "stream":

@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import orjson
 from django.conf import settings
@@ -51,7 +51,7 @@ approach shown above.
             parser, help="Specify which realm/subdomain to connect to; default is zulip"
         )
 
-    def parse_headers(self, custom_headers: Union[None, str]) -> Union[None, Dict[str, str]]:
+    def parse_headers(self, custom_headers: None | str) -> None | dict[str, str]:
         if not custom_headers:
             return {}
         try:
@@ -64,7 +64,7 @@ approach shown above.
         return standardize_headers(custom_headers_dict)
 
     @override
-    def handle(self, *args: Any, **options: Optional[str]) -> None:
+    def handle(self, *args: Any, **options: str | None) -> None:
         if options["fixture"] is None or options["url"] is None:
             self.print_help("./manage.py", "send_webhook_fixture_message")
             raise CommandError

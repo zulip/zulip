@@ -2,7 +2,6 @@ import base64
 import binascii
 import os
 from datetime import timedelta
-from typing import List, Optional, Union
 from urllib.parse import quote, urlsplit
 
 from django.conf import settings
@@ -49,7 +48,7 @@ def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bo
         response.headers["Content-Disposition"] = content_disposition
 
 
-def internal_nginx_redirect(internal_path: str, content_type: Optional[str] = None) -> HttpResponse:
+def internal_nginx_redirect(internal_path: str, content_type: str | None = None) -> HttpResponse:
     # The following headers from this initial response are
     # _preserved_, if present, and sent unmodified to the client;
     # all other headers are overridden by the redirected URL:
@@ -84,7 +83,7 @@ def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -
         return redirect(url)
 
     # We over-escape the path, to work around it being impossible to
-    # get the _unescaped_ new internal request URI in nginx.
+    # get the _unescaped_ new internal request URL in nginx.
     parsed_url = urlsplit(url)
     assert parsed_url.hostname is not None
     assert parsed_url.path is not None
@@ -142,7 +141,7 @@ def serve_local(
 
 def serve_file_download_backend(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     realm_id_str: str,
     filename: str,
 ) -> HttpResponseBase:
@@ -153,7 +152,7 @@ def serve_file_download_backend(
 
 def serve_file_backend(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     realm_id_str: str,
     filename: str,
 ) -> HttpResponseBase:
@@ -171,7 +170,7 @@ def serve_file_url_backend(
     return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
 
 
-def preferred_accept(request: HttpRequest, served_types: List[str]) -> Optional[str]:
+def preferred_accept(request: HttpRequest, served_types: list[str]) -> str | None:
     # Returns the first of the served_types which the browser will
     # accept, based on the browser's stated quality preferences.
     # Returns None if none of the served_types are accepted by the
@@ -190,7 +189,7 @@ def preferred_accept(request: HttpRequest, served_types: List[str]) -> Optional[
 
 def serve_file(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     realm_id_str: str,
     filename: str,
     url_only: bool = False,
@@ -245,7 +244,7 @@ def generate_unauthed_file_access_url(path_id: str) -> str:
     return reverse("file_unauthed_from_token", args=[token, filename])
 
 
-def get_file_path_id_from_token(token: str) -> Optional[str]:
+def get_file_path_id_from_token(token: str) -> str | None:
     signer = TimestampSigner(salt=USER_UPLOADS_ACCESS_TOKEN_SALT)
     try:
         signed_data = base64.b16decode(token).decode()
@@ -286,8 +285,6 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
         # backend; however, there is no reason to not serve the
         # redirect to S3 where the content lives.
         url = get_public_upload_root_url() + path
-        if request.GET.urlencode():
-            url += "?" + request.GET.urlencode()
         return redirect(url, permanent=True)
 
     local_path = os.path.join(settings.LOCAL_AVATARS_DIR, path)
@@ -300,10 +297,7 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
     else:
         response = internal_nginx_redirect(quote(f"/internal/local/user_avatars/{path}"))
 
-    # We do _not_ mark the contents as immutable for caching purposes,
-    # since the path for avatar images is hashed only by their user-id
-    # and a salt, and as such are reused when a user's avatar is
-    # updated.
+    patch_cache_control(response, max_age=31536000, public=True, immutable=True)
     return response
 
 
@@ -325,5 +319,8 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         )
     check_upload_within_quota(user_profile.realm, file_size)
 
-    uri = upload_message_attachment_from_request(user_file, user_profile, file_size)
-    return json_success(request, data={"uri": uri})
+    url = upload_message_attachment_from_request(user_file, user_profile)
+
+    # TODO/compatibility: uri is a deprecated alias for url that can
+    # be removed once there are no longer clients relying on it.
+    return json_success(request, data={"uri": url, "url": url})

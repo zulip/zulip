@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Dict, Optional, Tuple, Union
 
 import orjson
 
@@ -42,8 +41,8 @@ class MessageMoveStreamTest(ZulipTestCase):
         old_stream: str,
         new_stream: str,
         topic_name: str,
-        language: Optional[str] = None,
-    ) -> Tuple[UserProfile, Stream, Stream, int, int]:
+        language: str | None = None,
+    ) -> tuple[UserProfile, Stream, Stream, int, int]:
         user_profile = self.example_user(user_email)
         if language is not None:
             user_profile.default_language = language
@@ -119,15 +118,15 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
         message = Message.objects.get(id=id1)
-        message.date_sent = message.date_sent - timedelta(days=10)
+        message.date_sent -= timedelta(days=10)
         message.save()
 
         message = Message.objects.get(id=id2)
-        message.date_sent = message.date_sent - timedelta(days=8)
+        message.date_sent -= timedelta(days=8)
         message.save()
 
         message = Message.objects.get(id=id3)
-        message.date_sent = message.date_sent - timedelta(days=5)
+        message.date_sent -= timedelta(days=5)
         message.save()
 
         verona = get_stream("Verona", user_profile.realm)
@@ -136,10 +135,10 @@ class MessageMoveStreamTest(ZulipTestCase):
         old_stream = denmark
 
         def test_moving_all_topic_messages(
-            new_topic_name: Optional[str] = None, new_stream: Optional[Stream] = None
+            new_topic_name: str | None = None, new_stream: Stream | None = None
         ) -> None:
             self.login("hamlet")
-            params_dict: Dict[str, Union[str, int]] = {
+            params_dict: dict[str, str | int] = {
                 "propagate_mode": "change_all",
                 "send_notification_to_new_thread": "false",
             }
@@ -913,7 +912,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             old_stream: Stream,
             new_stream: Stream,
             *,
-            expect_error_message: Optional[str] = None,
+            expect_error_message: str | None = None,
         ) -> None:
             self.login_user(user)
             result = self.client_patch(
@@ -941,7 +940,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         # non-admin and non-moderator users cannot move messages sent > 1 week ago
         # including sender of the message.
         message = Message.objects.get(id=msg_id)
-        message.date_sent = message.date_sent - timedelta(seconds=604900)
+        message.date_sent -= timedelta(seconds=604900)
         message.save()
         check_move_message_to_stream(
             cordelia,
@@ -976,7 +975,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             acting_user=None,
         )
 
-        def check_move_message_to_stream(role: int, error_msg: Optional[str] = None) -> None:
+        def check_move_message_to_stream(role: int, error_msg: str | None = None) -> None:
             do_change_user_role(user_profile, role, acting_user=None)
 
             result = self.client_patch(
@@ -1193,8 +1192,8 @@ class MessageMoveStreamTest(ZulipTestCase):
             *,
             has_user_message: bool,
             has_access: bool,
-            stream: Optional[Stream] = None,
-            is_subscribed: Optional[bool] = None,
+            stream: Stream | None = None,
+            is_subscribed: bool | None = None,
         ) -> None:
             self.assertEqual(
                 UserMessage.objects.filter(
@@ -1441,13 +1440,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, new_stream, new_topic_name)
-        self.assert_length(messages, 5)
+        self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
-            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
-        )
-        self.assertEqual(
-            messages[4].content,
             f"This topic was moved here from #**{first_stream.name}>test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
@@ -1464,13 +1459,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, new_stream, new_topic_name)
-        self.assert_length(messages, 7)
+        self.assert_length(messages, 5)
         self.assertEqual(
-            messages[5].content,
-            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
-        )
-        self.assertEqual(
-            messages[6].content,
+            messages[4].content,
             f"This topic was moved here from #**{second_stream.name}>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 

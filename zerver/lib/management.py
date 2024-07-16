@@ -5,7 +5,7 @@ import sys
 from argparse import ArgumentParser, BooleanOptionalAction, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
 from functools import reduce, wraps
-from typing import Any, Dict, Optional, Protocol
+from typing import Any, Protocol
 
 from django.conf import settings
 from django.core import validators
@@ -70,7 +70,7 @@ def abort_unless_locked(handle_func: HandleMethod) -> HandleMethod:
 class CreateUserParameters:
     email: str
     full_name: str
-    password: Optional[str]
+    password: str | None
 
 
 class ZulipBaseCommand(BaseCommand):
@@ -97,7 +97,7 @@ class ZulipBaseCommand(BaseCommand):
         super().execute(*args, **options)
 
     def add_realm_args(
-        self, parser: ArgumentParser, *, required: bool = False, help: Optional[str] = None
+        self, parser: ArgumentParser, *, required: bool = False, help: str | None = None
     ) -> None:
         if help is None:
             help = """The numeric or string ID (subdomain) of the Zulip organization to modify.
@@ -140,7 +140,7 @@ server via `ps -ef` or reading bash history. Prefer
 
         parser.add_argument("-a", "--all-users", action="store_true", help=all_users_help)
 
-    def get_realm(self, options: Dict[str, Any]) -> Optional[Realm]:
+    def get_realm(self, options: dict[str, Any]) -> Realm | None:
         val = options["realm_id"]
         if val is None:
             return None
@@ -159,9 +159,9 @@ server via `ps -ef` or reading bash history. Prefer
 
     def get_users(
         self,
-        options: Dict[str, Any],
-        realm: Optional[Realm],
-        is_bot: Optional[bool] = None,
+        options: dict[str, Any],
+        realm: Realm | None,
+        is_bot: bool | None = None,
         include_deactivated: bool = False,
     ) -> QuerySet[UserProfile]:
         if "all_users" in options:
@@ -205,7 +205,7 @@ server via `ps -ef` or reading bash history. Prefer
         # Return the single query, for ease of composing.
         return user_profiles
 
-    def get_user(self, email: str, realm: Optional[Realm]) -> UserProfile:
+    def get_user(self, email: str, realm: Realm | None) -> UserProfile:
         # If a realm is specified, try to find the user there, and
         # throw an error if they don't exist.
         if realm is not None:
@@ -237,7 +237,7 @@ server via `ps -ef` or reading bash history. Prefer
         """Returns a Zulip Client object to be used for things done in management commands"""
         return get_client("ZulipServer")
 
-    def get_create_user_params(self, options: Dict[str, Any]) -> CreateUserParameters:  # nocoverage
+    def get_create_user_params(self, options: dict[str, Any]) -> CreateUserParameters:  # nocoverage
         """
         Parses parameters for user creation defined in add_create_user_args.
         """
@@ -258,7 +258,7 @@ server via `ps -ef` or reading bash history. Prefer
 
         if options["password_file"] is not None:
             with open(options["password_file"]) as f:
-                password: Optional[str] = f.read().strip()
+                password: str | None = f.read().strip()
         elif options["password"] is not None:
             logging.warning(
                 "Passing password on the command line is insecure; prefer --password-file."

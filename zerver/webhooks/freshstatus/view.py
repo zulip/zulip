@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import dateutil.parser
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -108,7 +106,7 @@ def api_freshstatus_webhook(
     return json_success(request)
 
 
-def get_services_content(services_data: List[Dict[str, str]]) -> str:
+def get_services_content(services_data: list[dict[str, str]]) -> str:
     services_content = ""
     for service in services_data[:FRESHSTATUS_SERVICES_LIMIT]:
         services_content += FRESHSTATUS_SERVICES_ROW_TEMPLATE.format(

@@ -54,14 +54,14 @@ unlikely to ever need to interact with that realm.)
 Unless you are
 [hosting multiple organizations on your Zulip server](multiple-organizations.md),
 your single Zulip organization on the root domain will have the empty
-string (`''`) as its `string_id`. So you can run e.g.:
+string (`''`) as its `string_id`. So you can run, for example:
 
 ```console
 zulip@zulip:~$ /home/zulip/deployments/current/manage.py show_admins -r ''
 ```
 
 Otherwise, the `string_id` will correspond to the organization's
-subdomain. E.g. on `it.zulip.example.com`, use
+subdomain. E.g., on `it.zulip.example.com`, use
 `/home/zulip/deployments/current/manage.py show_admins -r it`.
 
 ## manage.py shell

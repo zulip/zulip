@@ -1,4 +1,3 @@
-from typing import Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -6,8 +5,8 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 
 from zerver.lib.avatar_hash import (
     gravatar_hash,
+    user_avatar_base_path_from_ids,
     user_avatar_content_hash,
-    user_avatar_path_from_ids,
 )
 from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE
 from zerver.lib.upload import get_avatar_url
@@ -17,7 +16,7 @@ from zerver.models import UserProfile
 
 def avatar_url(
     user_profile: UserProfile, medium: bool = False, client_gravatar: bool = False
-) -> Optional[str]:
+) -> str | None:
     return get_avatar_field(
         user_id=user_profile.id,
         realm_id=user_profile.realm_id,
@@ -37,7 +36,7 @@ def get_avatar_field(
     avatar_version: int,
     medium: bool,
     client_gravatar: bool,
-) -> Optional[str]:
+) -> str | None:
     """
     Most of the parameters to this function map to fields
     by the same name in UserProfile (avatar_source, realm_id,
@@ -55,28 +54,28 @@ def get_avatar_field(
             computing them on the server (mostly to save bandwidth).
     """
 
-    if client_gravatar:
-        """
-        If our client knows how to calculate gravatar hashes, we
-        will return None and let the client compute the gravatar
-        url.
-        """
-        if settings.ENABLE_GRAVATAR and avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
-            return None
+    """
+    If our client knows how to calculate gravatar hashes, we
+    will return None and let the client compute the gravatar
+    url.
+    """
+    if (
+        client_gravatar
+        and settings.ENABLE_GRAVATAR
+        and avatar_source == UserProfile.AVATAR_FROM_GRAVATAR
+    ):
+        return None
 
     """
     If we get this far, we'll compute an avatar URL that may be
     either user-uploaded or a gravatar, and then we'll add version
     info to try to avoid stale caches.
     """
-    url = _get_unversioned_avatar_url(
-        user_profile_id=user_id,
-        avatar_source=avatar_source,
-        realm_id=realm_id,
-        email=email,
-        medium=medium,
-    )
-    return append_url_query_string(url, f"version={avatar_version:d}")
+    if avatar_source == "U":
+        hash_key = user_avatar_base_path_from_ids(user_id, avatar_version, realm_id)
+        return get_avatar_url(hash_key, medium=medium)
+
+    return get_gravatar_url(email=email, avatar_version=avatar_version, medium=medium)
 
 
 def get_gravatar_url(email: str, avatar_version: int, medium: bool = False) -> str:
@@ -93,20 +92,6 @@ def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
         return settings.DEFAULT_AVATAR_URI
     else:
         return staticfiles_storage.url("images/default-avatar.png")
-
-
-def _get_unversioned_avatar_url(
-    user_profile_id: int,
-    avatar_source: str,
-    realm_id: int,
-    email: Optional[str] = None,
-    medium: bool = False,
-) -> str:
-    if avatar_source == "U":
-        hash_key = user_avatar_path_from_ids(user_profile_id, realm_id)
-        return get_avatar_url(hash_key, medium=medium)
-    assert email is not None
-    return _get_unversioned_gravatar_url(email, medium)
 
 
 def absolute_avatar_url(user_profile: UserProfile) -> str:

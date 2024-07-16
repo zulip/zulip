@@ -9,8 +9,10 @@ import type {ListWidget as ListWidgetType} from "./list_widget";
 import * as people from "./people";
 import {current_user} from "./state_data";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data";
+import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_sort from "./user_sort";
 
+let pill_widget: CombinedPillContainer;
 let all_users_list_widget: ListWidgetType<number, people.User>;
 
 export function get_principals(): number[] {
@@ -27,8 +29,7 @@ function add_user_ids(user_ids: number[]): void {
 }
 
 function add_all_users(): void {
-    const user_ids = stream_create_subscribers_data.get_all_user_ids();
-    add_user_ids(user_ids);
+    add_subscribers_pill.append_user_group_from_name("role:everyone", pill_widget!);
 }
 
 function soft_remove_user_id(user_id: number): void {
@@ -46,10 +47,14 @@ function sync_user_ids(user_ids: number[]): void {
     redraw_subscriber_list();
 }
 
-function build_pill_widget({$parent_container}: {$parent_container: JQuery}): void {
+function build_pill_widget({
+    $parent_container,
+}: {
+    $parent_container: JQuery;
+}): CombinedPillContainer {
     const $pill_container = $parent_container.find(".pill-container");
     const get_potential_subscribers = stream_create_subscribers_data.get_potential_subscribers;
-    add_subscribers_pill.create_without_add_button({
+    return add_subscribers_pill.create_without_add_button({
         $pill_container,
         get_potential_subscribers,
         onPillCreateAction: add_user_ids,
@@ -90,7 +95,7 @@ export function build_widgets(): void {
 
     const $simplebar_container = $add_people_container.find(".subscriber_list_container");
 
-    build_pill_widget({$parent_container: $add_people_container});
+    pill_widget = build_pill_widget({$parent_container: $add_people_container});
 
     stream_create_subscribers_data.initialize_with_current_user();
     const current_user_id = current_user.user_id;

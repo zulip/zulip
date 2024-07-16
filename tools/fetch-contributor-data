@@ -11,7 +11,6 @@ import os
 import sys
 import unicodedata
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Union
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.setup_path import setup_path
@@ -42,29 +41,29 @@ args = parser.parse_args()
 
 class ContributorsJSON(TypedDict):
     date: str
-    contributors: List[Dict[str, Union[int, str]]]
+    contributors: list[dict[str, int | str]]
 
 
 class Contributor(TypedDict):
-    avatar_url: Optional[str]
+    avatar_url: str | None
     contributions: int
-    login: Optional[str]
-    email: Optional[str]
-    name: Optional[str]
+    login: str | None
+    email: str | None
+    name: str | None
 
 
 logger = logging.getLogger("zulip.fetch_contributors_json")
 
 
-def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
-    contributors: List[Contributor] = []
+def fetch_contributors(repo_name: str, max_retries: int) -> list[Contributor]:
+    contributors: list[Contributor] = []
     page_index = 1
 
     api_link = f"https://api.github.com/repos/zulip/{repo_name}/contributors"
     api_data = {"anon": "1"}
     certificates = os.environ.get("CUSTOM_CA_CERTIFICATES")
 
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     personal_access_token = get_secret("github_personal_access_token")
     if personal_access_token is not None:
         headers = {"Authorization": f"token {personal_access_token}"}
@@ -134,7 +133,7 @@ def update_contributor_data_file() -> None:
     ]
 
     data: ContributorsJSON = dict(date=str(datetime.now(tz=timezone.utc).date()), contributors=[])
-    contributor_username_to_data: Dict[str, Dict[str, Union[str, int]]] = {}
+    contributor_username_to_data: dict[str, dict[str, str | int]] = {}
 
     for repo_name in repo_names:
         contributors = fetch_contributors(repo_name, args.max_retries)

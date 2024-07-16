@@ -1,6 +1,6 @@
-from typing import Any, Optional
-
 import zoneinfo
+from typing import Any
+
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
@@ -17,7 +17,7 @@ from zerver.models import UserProfile
 JUST_CREATED_THRESHOLD = 60
 
 
-def get_device_browser(user_agent: str) -> Optional[str]:
+def get_device_browser(user_agent: str) -> str | None:
     user_agent = user_agent.lower()
     if "zulip" in user_agent:
         return "Zulip"
@@ -39,7 +39,7 @@ def get_device_browser(user_agent: str) -> Optional[str]:
         return None
 
 
-def get_device_os(user_agent: str) -> Optional[str]:
+def get_device_os(user_agent: str) -> str | None:
     user_agent = user_agent.lower()
     if "windows" in user_agent:
         return "Windows"
@@ -115,7 +115,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
 
 @receiver(user_logged_out)
 def clear_zoom_token_on_logout(
-    sender: object, *, user: Optional[UserProfile], **kwargs: object
+    sender: object, *, user: UserProfile | None, **kwargs: object
 ) -> None:
     # Loaded lazily so django.setup() succeeds before static asset generation
     from zerver.actions.video_calls import do_set_zoom_token

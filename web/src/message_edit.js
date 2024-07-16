@@ -850,7 +850,6 @@ export function try_save_inline_topic_edit($row) {
             html_body: render_confirm_merge_topics_with_rename({
                 topic_name: new_topic,
             }),
-            focus_submit_on_open: false,
             on_click: () => do_save_inline_topic_edit($row, message, new_topic),
         });
     } else {

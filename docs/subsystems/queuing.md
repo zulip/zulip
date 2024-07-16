@@ -5,11 +5,11 @@ used for a variety of purposes:
 
 - Asynchronously doing expensive operations like sending email
   notifications which can take seconds per email and thus would
-  otherwise time out when 100s are triggered at once (E.g. inviting a
+  otherwise time out when 100s are triggered at once (e.g., inviting a
   lot of new users to a realm).
 
 - Asynchronously doing non-time-critical somewhat expensive operations
-  like updating analytics tables (e.g. UserActivityInternal) which
+  like updating analytics tables (e.g., UserActivityInternal) which
   don't have any immediate runtime effect.
 
 - Communicating events to push to clients (browsers, etc.) from the
@@ -40,7 +40,8 @@ To add a new queue processor:
   processor. This suffices to test your queue worker in the Zulip development
   environment (`tools/run-dev` will automatically restart the queue processors
   and start running your new queue processor code). You can also run a single
-  queue processor manually using e.g. `./manage.py process_queue --queue=user_activity`.
+  queue processor manually using, for example,
+  `./manage.py process_queue --queue=user_activity`.
 
 - So that supervisord will know to run the queue processor in
   production, you will need to add to the `queues` variable in

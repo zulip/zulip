@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
@@ -7,16 +5,16 @@ from django.utils.translation import gettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.attachments import validate_attachment_request
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.thumbnail import generate_thumbnail_url
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import Realm, UserProfile
 
 
 def validate_thumbnail_request(
     realm: Realm,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     path: str,
-) -> Optional[bool]:
+) -> bool | None:
     # path here does not have a leading / as it is parsed from request hitting the
     # thumbnail endpoint (defined in urls.py) that way.
     if path.startswith("user_uploads/"):
@@ -27,12 +25,13 @@ def validate_thumbnail_request(
     return True
 
 
-@has_request_variables
+@typed_endpoint
 def backend_serve_thumbnail(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
-    url: str = REQ(),
-    size_requested: str = REQ("size"),
+    maybe_user_profile: UserProfile | AnonymousUser,
+    *,
+    url: str,
+    size: str,
 ) -> HttpResponse:
     if not maybe_user_profile.is_authenticated:
         realm = get_valid_realm_from_request(request)

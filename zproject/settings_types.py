@@ -1,11 +1,11 @@
-from typing import List, Optional, TypedDict
+from typing import TypedDict
 
 
 class JwtAuthKey(TypedDict):
     key: str
     # See https://pyjwt.readthedocs.io/en/latest/algorithms.html for a list
     # of supported algorithms.
-    algorithms: List[str]
+    algorithms: list[str]
 
 
 class SAMLIdPConfigDict(TypedDict, total=False):
@@ -22,8 +22,8 @@ class SAMLIdPConfigDict(TypedDict, total=False):
     auto_signup: bool
     display_name: str
     display_icon: str
-    limit_to_subdomains: List[str]
-    extra_attrs: List[str]
+    limit_to_subdomains: list[str]
+    extra_attrs: list[str]
     x509cert: str
     x509cert_path: str
 
@@ -31,9 +31,9 @@ class SAMLIdPConfigDict(TypedDict, total=False):
 class OIDCIdPConfigDict(TypedDict, total=False):
     oidc_url: str
     display_name: str
-    display_icon: Optional[str]
+    display_icon: str | None
     client_id: str
-    secret: Optional[str]
+    secret: str | None
     auto_signup: bool
 
 

@@ -1,4 +1,6 @@
+import {$t_html} from "./i18n";
 import type {InputPillContainer, InputPillItem} from "./input_pill";
+import * as people from "./people";
 import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 import type {UserGroup} from "./user_groups";
 import * as user_groups from "./user_groups";
@@ -17,7 +19,11 @@ export type UserGroupPillData = UserGroup & {
 };
 
 function display_pill(group: UserGroup): string {
-    return `${group.name}: ${group.members.size} users`;
+    const group_members = get_group_members(group);
+    return $t_html(
+        {defaultMessage: "{group_name}: {group_size, plural, one {# user} other {# users}}"},
+        {group_name: user_groups.get_display_group_name(group), group_size: group_members.length},
+    );
 }
 
 export function create_item_from_group_name(
@@ -47,18 +53,24 @@ export function get_group_name_from_item(item: InputPillItem<UserGroupPill>): st
 }
 
 export function get_user_ids(pill_widget: UserGroupPillWidget | CombinedPillContainer): number[] {
-    let user_ids = pill_widget
-        .items()
-        .flatMap((item) =>
-            item.type === "user_group"
-                ? [...user_groups.get_user_group_from_id(item.group_id).members]
-                : [],
-        );
+    let user_ids: number[] = [];
+    for (const user_group_item of pill_widget.items()) {
+        if (user_group_item.type === "user_group") {
+            const user_group = user_groups.get_user_group_from_id(user_group_item.group_id);
+            const group_members = get_group_members(user_group);
+            user_ids.push(...group_members);
+        }
+    }
+
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
 
-    user_ids = user_ids.filter(Boolean);
     return user_ids;
+}
+
+function get_group_members(user_group: UserGroup): number[] {
+    const user_ids = [...user_groups.get_recursive_group_members(user_group)];
+    return user_ids.filter((user_id) => people.is_person_active(user_id));
 }
 
 export function append_user_group(group: UserGroup, pill_widget: CombinedPillContainer): void {

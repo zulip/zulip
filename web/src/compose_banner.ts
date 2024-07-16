@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
@@ -24,6 +25,7 @@ const MESSAGE_SENT_CLASSNAMES = {
     message_scheduled_success_compose_banner: "message_scheduled_success_compose_banner",
     automatic_new_visibility_policy: "automatic_new_visibility_policy",
     jump_to_sent_message_conversation: "jump_to_sent_message_conversation",
+    narrow_to_recipient: "narrow_to_recipient",
 };
 // Technically, unmute_topic_notification is a message sent banner, but
 // it has distinct behavior / look - it has an associated action button,
@@ -47,7 +49,7 @@ export const CLASSNAMES = {
     stream_does_not_exist: "stream_does_not_exist",
     missing_stream: "missing_stream",
     no_post_permissions: "no_post_permissions",
-    private_messages_disabled: "private_messages_disabled",
+    cannot_send_direct_message: "cannot_send_direct_message",
     missing_private_message_recipient: "missing_private_message_recipient",
     invalid_recipient: "invalid_recipient",
     invalid_recipients: "invalid_recipients",
@@ -180,6 +182,21 @@ export function show_error_message(
     if ($bad_input !== undefined) {
         $bad_input.trigger("focus").trigger("select");
     }
+}
+
+export function cannot_send_direct_message_error(error_message: string): void {
+    // Remove any existing banners with this warning.
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.cannot_send_direct_message)}`).remove();
+
+    const new_row_html = render_cannot_send_direct_message_error({
+        banner_type: ERROR,
+        error_message,
+        classname: CLASSNAMES.cannot_send_direct_message,
+    });
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+    hide_compose_spinner();
+
+    $("#private_message_recipient").trigger("focus").trigger("select");
 }
 
 export function show_stream_does_not_exist_error(stream_name: string): void {

@@ -5,6 +5,7 @@ from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.users import do_change_user_role
+from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
@@ -17,7 +18,11 @@ class RealmEmojiTest(ZulipTestCase):
     def create_test_emoji(self, name: str, author: UserProfile) -> RealmEmoji:
         with get_test_image_file("img.png") as img_file:
             realm_emoji = check_add_realm_emoji(
-                realm=author.realm, name=name, author=author, image_file=img_file
+                realm=author.realm,
+                name=name,
+                author=author,
+                image_file=img_file,
+                content_type="image/png",
             )
             if realm_emoji is None:
                 raise Exception("Error creating test emoji.")  # nocoverage
@@ -108,7 +113,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_realm_emoji_repr(self) -> None:
         realm_emoji = RealmEmoji.objects.get(name="green_tick")
-        file_name = str(realm_emoji.id) + ".png"
+        file_name = get_emoji_file_name("image/png", realm_emoji.id)
         self.assertEqual(
             repr(realm_emoji),
             f"<RealmEmoji: zulip: {realm_emoji.id} green_tick False {file_name}>",
@@ -310,10 +315,15 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_emoji_upload_file_size_error(self) -> None:
         self.login("iago")
-        with get_test_image_file("img.png") as fp:
-            with self.settings(MAX_EMOJI_FILE_SIZE_MIB=0):
-                result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
+        with get_test_image_file("img.png") as fp, self.settings(MAX_EMOJI_FILE_SIZE_MIB=0):
+            result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
+
+    def test_emoji_upload_file_format_error(self) -> None:
+        self.login("iago")
+        with get_test_image_file("img.tif") as fp:
+            result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
+        self.assert_json_error(result, "Invalid image format")
 
     def test_upload_already_existed_emoji(self) -> None:
         self.login("iago")
@@ -344,12 +354,14 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_failed_file_upload(self) -> None:
         self.login("iago")
-        with mock.patch(
-            "zerver.lib.upload.local.write_local_file", side_effect=BadImageError(msg="Broken")
+        with (
+            mock.patch(
+                "zerver.lib.upload.local.write_local_file", side_effect=BadImageError(msg="Broken")
+            ),
+            get_test_image_file("img.png") as fp1,
         ):
-            with get_test_image_file("img.png") as fp1:
-                emoji_data = {"f1": fp1}
-                result = self.client_post("/json/realm/emoji/my_emoji", info=emoji_data)
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/my_emoji", info=emoji_data)
         self.assert_json_error(result, "Broken")
 
     def test_check_admin_realm_emoji(self) -> None:
@@ -395,7 +407,11 @@ class RealmEmojiTest(ZulipTestCase):
             # check in upload_emoji, we need to make this request via
             # that helper rather than via the API.
             check_add_realm_emoji(
-                realm=emoji_author.realm, name=emoji_name, author=emoji_author, image_file=img_file
+                realm=emoji_author.realm,
+                name=emoji_name,
+                author=emoji_author,
+                image_file=img_file,
+                content_type="image/png",
             )
             with self.assertRaises(JsonableError):
                 check_add_realm_emoji(
@@ -403,4 +419,5 @@ class RealmEmojiTest(ZulipTestCase):
                     name=emoji_name,
                     author=emoji_author,
                     image_file=img_file,
+                    content_type="image/png",
                 )

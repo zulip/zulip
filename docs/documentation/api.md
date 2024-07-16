@@ -354,7 +354,7 @@ it? There's several major benefits to this system:
   pre-substituted for the user.
 - We're able to share implementation language and visual styling with
   our Help Center, which is especially useful for the extensive
-  non-REST API documentation pages (e.g. our bot framework).
+  non-REST API documentation pages (e.g., our bot framework).
 
 Using the standard OpenAPI format gives us flexibility, though; if we
 later choose to migrate to third-party tools, we don't need to redo
@@ -393,7 +393,7 @@ documentation for the REST API endpoint for uploading a file,
 There are no parameters for this endpoint, and only one return value
 specific to this endpoint, `uri`, which is the URL of the uploaded file.
 If we comment out that return value and example from the existing API
-documentation in `zerver/openapi/zulip.yaml`, e.g.:
+documentation in `zerver/openapi/zulip.yaml`, for example:
 
 ```yaml
   /user_uploads:

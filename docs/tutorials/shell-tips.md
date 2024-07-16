@@ -19,7 +19,7 @@ Linux/macOS environments (Unix shells). You can also use a tool, for example
 
 When searching Google, or Zulip's docs, you'll find commands that begin
 with a dollar sign `$` or a dollar sign preceded by some text
-(e.g. `(venv)john@laptop:~$`).
+(e.g., `(venv)john@laptop:~$`).
 
 This is called the **prompt**, and it's only an indicator that the shell is
 awaiting new orders. The prompt can contain useful information, let's look
@@ -168,7 +168,7 @@ the shell provides two different separators:
 
 Sometimes you end up with a very long command, that is hard to read and may
 be unclear. This is a problem, especially if you want to share that command,
-e.g. in a documentation file.
+e.g., in a documentation file.
 
 In those cases, you can use a backslash at the end of each line, to inform the
 shell "wait, there's more on the next line".
@@ -328,7 +328,7 @@ There are many more commands in the shell, besides the ones explained in this
 file.
 [Here](https://www.git-tower.com/blog/command-line-cheat-sheet/) you can find
 a simple yet useful cheatsheet, created by Tower, that could help you
-understand and remember what other common commands do (e.g. `ls`).
+understand and remember what other common commands do (e.g., `ls`).
 
 ## Git
 

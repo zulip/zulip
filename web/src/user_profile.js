@@ -163,9 +163,6 @@ function render_user_profile_subscribe_widget() {
         get_options: get_user_unsub_streams,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
-        tippy_props: {
-            placement: "bottom-start",
-        },
     };
     user_profile_subscribe_widget =
         user_profile_subscribe_widget || new dropdown_widget.DropdownWidget(opts);
@@ -654,7 +651,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
                 avatar_widget.clear();
                 hide_button_spinner($submit_btn);
                 original_values = get_current_values($("#bot-edit-form"));
-                toggle_submit_button($("#edit-user-form"));
+                toggle_submit_button($("#bot-edit-form"));
                 ui_report.success(
                     $t_html({defaultMessage: "Saved"}),
                     $("#user-profile-modal .save-success"),
@@ -703,9 +700,6 @@ export function show_edit_bot_info_modal(user_id, $container) {
             get_options,
             item_click_callback,
             $events_container: $("#bot-edit-form"),
-            tippy_props: {
-                placement: "bottom-start",
-            },
             default_id: owner_id,
             unique_id_type: dropdown_widget.DataTypes.NUMBER,
         });

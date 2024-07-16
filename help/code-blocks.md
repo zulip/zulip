@@ -106,7 +106,7 @@ blocks, which will be used whenever the code block has no tag.
 
 
 When a default language is configured, one can use ````text` to display code
-blocks without any syntax highlighting (E.g. to paste an error message).
+blocks without any syntax highlighting (e.g., to paste an error message).
 
 ## Code playgrounds
 

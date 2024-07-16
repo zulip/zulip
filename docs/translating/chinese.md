@@ -30,7 +30,7 @@ Message 可直译为“消息”、“信息”等，两者皆可，这里统一
 
 - Stream - **频道**
 
-There were several other optional translations, e.g. "群组(Group)", "
+There were several other optional translations, e.g., "群组(Group)", "
 主题(Subject)", and "栏目(Column)". The "频道(Channel)" is in use now,
 which is inspired by the chat "Channel" in the game Ingress. Since
 "Stream" can be "Created/Deleted" or "Subscribed/Unsubscribed",
@@ -96,7 +96,7 @@ The perfect tense subscribed/unsubscribed is translated as "已订阅/已
    scope of ...". The two words share the common meanings.
 
 2. "筛选" is a common computer phrase and has been well
-   accepted by public, e.g. the "Filter(筛选)" feature in Microsoft
+   accepted by public, e.g., the "Filter(筛选)" feature in Microsoft
    Excel.
 
 In addition, in the searching context "Narrow to ..." is not

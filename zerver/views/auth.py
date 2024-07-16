@@ -1,7 +1,8 @@
 import logging
 import secrets
+from collections.abc import Callable, Mapping
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Concatenate, TypeAlias, cast
 from urllib.parse import urlencode, urljoin
 
 import jwt
@@ -25,7 +26,7 @@ from django.views.decorators.http import require_safe
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
-from typing_extensions import Concatenate, ParamSpec, TypeAlias
+from typing_extensions import ParamSpec
 
 from confirmation.models import (
     Confirmation,
@@ -102,7 +103,7 @@ if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
 
 ParamT = ParamSpec("ParamT")
-ExtraContext: TypeAlias = Optional[Dict[str, Any]]
+ExtraContext: TypeAlias = dict[str, Any] | None
 
 EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS = 3600
 
@@ -120,11 +121,11 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
 
 def create_preregistration_user(
     email: str,
-    realm: Optional[Realm],
+    realm: Realm | None,
     password_required: bool = True,
-    full_name: Optional[str] = None,
+    full_name: str | None = None,
     full_name_validated: bool = False,
-    multiuse_invite: Optional[MultiuseInvite] = None,
+    multiuse_invite: MultiuseInvite | None = None,
 ) -> PreregistrationUser:
     return PreregistrationUser.objects.create(
         email=email,
@@ -156,12 +157,12 @@ def maybe_send_to_registration(
     request: HttpRequest,
     email: str,
     full_name: str = "",
-    mobile_flow_otp: Optional[str] = None,
-    desktop_flow_otp: Optional[str] = None,
+    mobile_flow_otp: str | None = None,
+    desktop_flow_otp: str | None = None,
     is_signup: bool = False,
     multiuse_object_key: str = "",
     full_name_validated: bool = False,
-    params_to_store_in_authenticated_session: Optional[Dict[str, str]] = None,
+    params_to_store_in_authenticated_session: dict[str, str] | None = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
@@ -213,11 +214,11 @@ def maybe_send_to_registration(
     try:
         # TODO: This should use get_realm_from_request, but a bunch of tests
         # rely on mocking get_subdomain here, so they'll need to be tweaked first.
-        realm: Optional[Realm] = get_realm(get_subdomain(request))
+        realm: Realm | None = get_realm(get_subdomain(request))
     except Realm.DoesNotExist:
         realm = None
 
-    multiuse_obj: Optional[MultiuseInvite] = None
+    multiuse_obj: MultiuseInvite | None = None
     from_multiuse_invite = False
     if multiuse_object_key:
         from_multiuse_invite = True
@@ -323,7 +324,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     # We have verified the user controls an email address, but
     # there's no associated Zulip user account.  Consider sending
     # the request to registration.
-    kwargs: Dict[str, Any] = dict(result.data_dict)
+    kwargs: dict[str, Any] = dict(result.data_dict)
     # maybe_send_to_registration doesn't take these arguments, so delete them.
 
     # These are the kwargs taken by maybe_send_to_registration. Remove anything
@@ -409,7 +410,7 @@ def finish_desktop_flow(
     request: HttpRequest,
     user_profile: UserProfile,
     otp: str,
-    params_to_store_in_authenticated_session: Optional[Dict[str, str]] = None,
+    params_to_store_in_authenticated_session: dict[str, str] | None = None,
 ) -> HttpResponse:
     """
     The desktop otp flow returns to the app (through the clipboard)
@@ -441,7 +442,7 @@ def finish_desktop_flow(
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
     # For the mobile OAuth flow, we send the API key and other
-    # necessary details in a redirect to a zulip:// URI scheme.
+    # necessary details in a redirect to a zulip:// URL scheme.
     api_key = get_api_key(user_profile)
     response = create_response_for_otp_flow(
         api_key, otp, user_profile, encrypted_key_field_name="otp_encrypted_api_key"
@@ -469,7 +470,7 @@ def create_response_for_otp_flow(
 ) -> HttpResponse:
     realm_url = user_profile.realm.url
 
-    # Check if the mobile URI is overridden in settings, if so, replace it
+    # Check if the mobile URL is overridden in settings, if so, replace it
     # This block should only apply to the mobile flow, so we if add others, this
     # needs to be conditional.
     if realm_url in settings.REALM_MOBILE_REMAP_URIS:
@@ -492,13 +493,13 @@ def create_response_for_otp_flow(
 @has_request_variables
 def remote_user_sso(
     request: HttpRequest,
-    mobile_flow_otp: Optional[str] = REQ(default=None),
-    desktop_flow_otp: Optional[str] = REQ(default=None),
+    mobile_flow_otp: str | None = REQ(default=None),
+    desktop_flow_otp: str | None = REQ(default=None),
     next: str = REQ(default="/"),
 ) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
-        realm: Optional[Realm] = get_realm(subdomain)
+        realm: Realm | None = get_realm(subdomain)
     except Realm.DoesNotExist:
         realm = None
 
@@ -546,7 +547,7 @@ def remote_user_sso(
 @has_request_variables
 def get_email_and_realm_from_jwt_authentication_request(
     request: HttpRequest, json_web_token: str
-) -> Tuple[str, Realm]:
+) -> tuple[str, Realm]:
     realm = get_realm_from_request(request)
     if realm is None:
         raise InvalidSubdomainError
@@ -599,10 +600,10 @@ def oauth_redirect_to_root(
     sso_type: str,
     is_signup: bool = False,
     extra_url_params: Mapping[str, str] = {},
-    next: Optional[str] = REQ(default=None),
+    next: str | None = REQ(default=None),
     multiuse_object_key: str = REQ(default=""),
-    mobile_flow_otp: Optional[str] = REQ(default=None),
-    desktop_flow_otp: Optional[str] = REQ(default=None),
+    mobile_flow_otp: str | None = REQ(default=None),
+    desktop_flow_otp: str | None = REQ(default=None),
 ) -> HttpResponse:
     main_site_url = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":
@@ -668,10 +669,10 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
 def start_social_login(
     request: HttpRequest,
     backend: str,
-    extra_arg: Optional[str] = None,
+    extra_arg: str | None = None,
 ) -> HttpResponse:
     backend_url = reverse("social:begin", args=[backend])
-    extra_url_params: Dict[str, str] = {}
+    extra_url_params: dict[str, str] = {}
     if backend == "saml":
         if not SAMLAuthBackend.check_config():
             return config_error(request, "saml")
@@ -704,10 +705,10 @@ def start_social_login(
 def start_social_signup(
     request: HttpRequest,
     backend: str,
-    extra_arg: Optional[str] = None,
+    extra_arg: str | None = None,
 ) -> HttpResponse:
     backend_url = reverse("social:begin", args=[backend])
-    extra_url_params: Dict[str, str] = {}
+    extra_url_params: dict[str, str] = {}
     if backend == "saml":
         if not SAMLAuthBackend.check_config():
             return config_error(request, "saml")
@@ -754,8 +755,8 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
 def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     token = result.store_data()
     realm = get_realm(result.data_dict["subdomain"])
-    subdomain_login_uri = realm.url + reverse(log_into_subdomain, args=[token])
-    return redirect(subdomain_login_uri)
+    subdomain_login_url = realm.url + reverse(log_into_subdomain, args=[token])
+    return redirect(subdomain_login_url)
 
 
 def redirect_to_misconfigured_ldap_notice(request: HttpRequest, error_type: int) -> HttpResponse:
@@ -780,7 +781,7 @@ def redirect_to_deactivation_notice() -> HttpResponse:
     return HttpResponseRedirect(reverse(show_deactivation_notice))
 
 
-def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
+def update_login_page_context(request: HttpRequest, context: dict[str, Any]) -> None:
     for key in ("email", "already_registered"):
         if key in request.GET:
             context[key] = request.GET[key]
@@ -809,7 +810,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         self.extra_context = extra_context
         super().__init__(*args, **kwargs)
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         if self.extra_context is not None:
             context.update(self.extra_context)
@@ -823,7 +824,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         )
         return context
 
-    def done(self, form_list: List[Form], **kwargs: Any) -> HttpResponse:
+    def done(self, form_list: list[Form], **kwargs: Any) -> HttpResponse:
         """
         Log in the user and redirect to the desired page.
 
@@ -985,7 +986,7 @@ def process_api_key_fetch_authenticate_result(
     return api_key
 
 
-def get_api_key_fetch_authenticate_failure(return_data: Dict[str, bool]) -> JsonableError:
+def get_api_key_fetch_authenticate_failure(return_data: dict[str, bool]) -> JsonableError:
     if return_data.get("inactive_user"):
         return UserDeactivatedError()
     if return_data.get("inactive_realm"):
@@ -1010,7 +1011,7 @@ def jwt_fetch_api_key(
 ) -> HttpResponse:
     remote_email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
 
-    return_data: Dict[str, bool] = {}
+    return_data: dict[str, bool] = {}
 
     user_profile = authenticate(
         username=remote_email, realm=realm, return_data=return_data, use_dummy_backend=True
@@ -1022,7 +1023,7 @@ def jwt_fetch_api_key(
 
     api_key = process_api_key_fetch_authenticate_result(request, user_profile)
 
-    result: Dict[str, Any] = {
+    result: dict[str, Any] = {
         "api_key": api_key,
         "email": user_profile.delivery_email,
     }
@@ -1047,7 +1048,7 @@ def jwt_fetch_api_key(
 def api_fetch_api_key(
     request: HttpRequest, username: str = REQ(), password: str = REQ()
 ) -> HttpResponse:
-    return_data: Dict[str, bool] = {}
+    return_data: dict[str, bool] = {}
 
     realm = get_realm_from_request(request)
     if realm is None:
@@ -1073,7 +1074,7 @@ def api_fetch_api_key(
     )
 
 
-def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
+def get_auth_backends_data(request: HttpRequest) -> dict[str, Any]:
     """Returns which authentication methods are enabled on the server"""
     subdomain = get_subdomain(request)
     try:

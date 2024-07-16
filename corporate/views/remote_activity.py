@@ -226,7 +226,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             row.append(user_counts.guest_user_count)
 
     # Format column data and add total row
-    for i, col in enumerate(cols):
+    for i in range(len(cols)):
         if i == LAST_AUDIT_LOG_DATE:
             fix_rows(rows, i, format_optional_datetime)
         if i in [MOBILE_USER_COUNT, MOBILE_PUSH_COUNT]:

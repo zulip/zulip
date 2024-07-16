@@ -1,6 +1,5 @@
 import os
 from contextlib import suppress
-from typing import Optional
 from urllib.parse import urlencode
 
 import orjson
@@ -27,7 +26,7 @@ ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 
 
 @typed_endpoint
-def email_page(request: HttpRequest, *, forward_address: Optional[str] = None) -> HttpResponse:
+def email_page(request: HttpRequest, *, forward_address: str | None = None) -> HttpResponse:
     if request.method == "POST":
         assert forward_address is not None
         set_forward_address(forward_address)

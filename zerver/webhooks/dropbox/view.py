@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
@@ -16,7 +14,7 @@ def api_dropbox_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    challenge: Optional[str] = None,
+    challenge: str | None = None,
 ) -> HttpResponse:
     if request.method == "POST":
         topic_name = "Dropbox"

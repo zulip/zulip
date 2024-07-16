@@ -7,10 +7,9 @@ value should always be in bold; otherwise the subject of US/task
 should be in bold.
 """
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import TypeAlias
 
 from django.http import HttpRequest, HttpResponse
-from typing_extensions import TypeAlias
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
@@ -19,8 +18,8 @@ from zerver.lib.validator import WildValue, check_bool, check_none_or, check_str
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-EventType: TypeAlias = Dict[str, Union[str, Dict[str, Optional[Union[str, bool]]]]]
-ReturnType: TypeAlias = Tuple[WildValue, WildValue]
+EventType: TypeAlias = dict[str, str | dict[str, str | bool | None]]
+ReturnType: TypeAlias = tuple[WildValue, WildValue]
 
 
 @webhook_view("Taiga")
@@ -204,10 +203,10 @@ def parse_create_or_delete(
     }
 
 
-def parse_change_event(change_type: str, message: WildValue) -> Optional[EventType]:
+def parse_change_event(change_type: str, message: WildValue) -> EventType | None:
     """Parses change event."""
     evt: EventType = {}
-    values: Dict[str, Optional[Union[str, bool]]] = {
+    values: dict[str, str | bool | None] = {
         "user": get_owner_name(message),
         "user_link": get_owner_link(message),
         "subject": get_subject(message),
@@ -301,9 +300,9 @@ def parse_webhook_test(
 
 def parse_message(
     message: WildValue,
-) -> List[EventType]:
+) -> list[EventType]:
     """Parses the payload by delegating to specialized functions."""
-    events: List[EventType] = []
+    events: list[EventType] = []
     if message["action"].tame(check_string) in ["create", "delete"]:
         events.append(parse_create_or_delete(message))
     elif message["action"].tame(check_string) == "change":

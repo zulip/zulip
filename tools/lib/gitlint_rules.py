@@ -1,5 +1,3 @@
-from typing import List
-
 from gitlint.git import GitCommit
 from gitlint.rules import CommitMessageTitle, LineRule, RuleViolation
 
@@ -87,7 +85,7 @@ class ImperativeMood(LineRule):
         '("{word}" -> "{imperative}"): "{title}"'
     )
 
-    def validate(self, line: str, commit: GitCommit) -> List[RuleViolation]:
+    def validate(self, line: str, commit: GitCommit) -> list[RuleViolation]:
         violations = []
 
         # Ignore the section tag (ie `<section tag>: <message body>.`)

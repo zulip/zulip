@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 import requests
 from pyoembed import PyOembedException, oEmbed
@@ -7,7 +6,7 @@ from pyoembed import PyOembedException, oEmbed
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
 
-def get_oembed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> Optional[UrlEmbedData]:
+def get_oembed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> UrlEmbedData | None:
     try:
         data = oEmbed(url, maxwidth=maxwidth, maxheight=maxheight)
     except (PyOembedException, json.decoder.JSONDecodeError, requests.exceptions.ConnectionError):

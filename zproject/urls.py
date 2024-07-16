@@ -1,5 +1,4 @@
 import os
-from typing import List, Union
 
 from django.conf import settings
 from django.conf.urls import include
@@ -632,7 +631,7 @@ i18n_urls = [
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
-urls: List[Union[URLPattern, URLResolver]] = list(i18n_urls)
+urls: list[URLPattern | URLResolver] = list(i18n_urls)
 
 # Include the dual-use patterns twice
 urls += [

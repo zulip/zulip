@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as input_pill from "./input_pill";
 import * as keydown_util from "./keydown_util";
 import type {User} from "./people";
@@ -5,6 +6,7 @@ import * as pill_typeahead from "./pill_typeahead";
 import * as stream_pill from "./stream_pill";
 import type {CombinedPill, CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
+import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 
 function create_item_from_text(
@@ -130,6 +132,21 @@ export function create_without_add_button({
     set_up_pill_typeahead({pill_widget, $pill_container, get_users});
 
     return pill_widget;
+}
+
+export function append_user_group_from_name(
+    user_group_name: string,
+    pill_widget: CombinedPillContainer,
+): void {
+    const user_group = user_groups.get_user_group_from_name(user_group_name);
+    if (user_group === undefined) {
+        // This shouldn't happen, but we'll give a warning for now if it
+        // does.
+        blueslip.error("User group with the given name does not exist.");
+        return;
+    }
+
+    user_group_pill.append_user_group(user_group, pill_widget);
 }
 
 function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {

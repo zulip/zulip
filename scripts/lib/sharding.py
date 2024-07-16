@@ -5,7 +5,6 @@ import json
 import os
 import subprocess
 import sys
-from typing import Dict, List, Tuple, Union
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -34,9 +33,10 @@ def write_updated_configs() -> None:
     expected_ports = list(range(9800, ports[-1] + 1))
     assert ports == expected_ports, f"ports ({ports}) must be contiguous, starting with 9800"
 
-    with open("/etc/zulip/nginx_sharding_map.conf.tmp", "w") as nginx_sharding_conf_f, open(
-        "/etc/zulip/sharding.json.tmp", "w"
-    ) as sharding_json_f:
+    with (
+        open("/etc/zulip/nginx_sharding_map.conf.tmp", "w") as nginx_sharding_conf_f,
+        open("/etc/zulip/sharding.json.tmp", "w") as sharding_json_f,
+    ):
         if len(ports) == 1:
             nginx_sharding_conf_f.write('map "" $tornado_server {\n')
             nginx_sharding_conf_f.write("    default http://tornado;\n")
@@ -46,8 +46,8 @@ def write_updated_configs() -> None:
 
         nginx_sharding_conf_f.write("map $host $tornado_server {\n")
         nginx_sharding_conf_f.write("    default http://tornado9800;\n")
-        shard_map: Dict[str, Union[int, List[int]]] = {}
-        shard_regexes: List[Tuple[str, Union[int, List[int]]]] = []
+        shard_map: dict[str, int | list[int]] = {}
+        shard_regexes: list[tuple[str, int | list[int]]] = []
         external_host = subprocess.check_output(
             [os.path.join(BASE_DIR, "scripts/get-django-setting"), "EXTERNAL_HOST"],
             text=True,
@@ -94,7 +94,7 @@ full_real_paths = [f"{config_file_path}/{filename}" for filename in base_files]
 full_new_paths = [f"{filename}.tmp" for filename in full_real_paths]
 try:
     write_updated_configs()
-    for old, new in zip(full_real_paths, full_new_paths):
+    for old, new in zip(full_real_paths, full_new_paths, strict=False):
         if not filecmp.cmp(old, new):
             # There are changes; leave .tmp files and exit 0
             if "SUPPRESS_SHARDING_NOTICE" not in os.environ:

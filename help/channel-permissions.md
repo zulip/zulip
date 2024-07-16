@@ -53,7 +53,7 @@ administrator can access private channel messages:
 * Owners and administrators can change the ownership of a bot. If a
   bot is subscribed to a private channel, then an administrator can get
   access to that channel by taking control of the bot, though the
-  access will be limited to what the bot can do. (E.g. incoming
+  access will be limited to what the bot can do. (e.g., incoming
   webhook bots cannot read messages.)
 
 ## Detailed permissions

@@ -1,7 +1,8 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
 import time
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 import orjson
 from django.conf import settings
@@ -35,14 +36,14 @@ class NoopWorker(QueueProcessingWorker):
         self,
         threaded: bool = False,
         disable_timeout: bool = False,
-        worker_num: Optional[int] = None,
+        worker_num: int | None = None,
         max_consume: int = 1000,
         slow_queries: Sequence[int] = [],
     ) -> None:
         super().__init__(threaded, disable_timeout, worker_num)
         self.consumed = 0
         self.max_consume = max_consume
-        self.slow_queries: Set[int] = set(slow_queries)
+        self.slow_queries: set[int] = set(slow_queries)
 
     @override
     def consume(self, event: Mapping[str, Any]) -> None:
@@ -71,10 +72,10 @@ class BatchNoopWorker(LoopQueueProcessingWorker):
         super().__init__(threaded, disable_timeout)
         self.consumed = 0
         self.max_consume = max_consume
-        self.slow_queries: Set[int] = set(slow_queries)
+        self.slow_queries: set[int] = set(slow_queries)
 
     @override
-    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+    def consume_batch(self, events: list[dict[str, Any]]) -> None:
         event_numbers = set(range(self.consumed + 1, self.consumed + 1 + len(events)))
         found_slow = self.slow_queries & event_numbers
         if found_slow:

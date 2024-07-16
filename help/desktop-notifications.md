@@ -67,6 +67,10 @@ and [mentions](/help/mention-a-user-or-group), or to include messages in
 
 ## Testing desktop notifications
 
+!!! warn ""
+
+    This does not make an unread count badge appear.
+
 {start_tabs}
 
 {tab|desktop-web}

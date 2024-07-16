@@ -1,6 +1,6 @@
 from email.headerregistry import Address
 from enum import IntEnum
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypedDict, Union
+from typing import TYPE_CHECKING, Optional, TypedDict
 from uuid import uuid4
 
 import django.contrib.auth
@@ -37,10 +37,10 @@ SECONDS_PER_DAY = 86400
 # these values cannot change in a running production system, but do
 # regularly change within unit tests; we address the latter by calling
 # clear_supported_auth_backends_cache in our standard tearDown code.
-supported_backends: Optional[List["BaseBackend"]] = None
+supported_backends: list["BaseBackend"] | None = None
 
 
-def supported_auth_backends() -> List["BaseBackend"]:
+def supported_auth_backends() -> list["BaseBackend"]:
     global supported_backends
     # Caching temporarily disabled for debugging
     supported_backends = django.contrib.auth.get_backends()
@@ -96,7 +96,7 @@ class OrgTypeDict(TypedDict):
     id: int
     hidden: bool
     display_order: int
-    onboarding_zulip_guide_url: Optional[str]
+    onboarding_zulip_guide_url: str | None
 
 
 class CommonPolicyEnum(IntEnum):
@@ -155,11 +155,6 @@ class MoveMessagesBetweenStreamsPolicyEnum(IntEnum):
     FULL_MEMBERS_ONLY = 3
     MODERATORS_ONLY = 4
     NOBODY = 6
-
-
-class PrivateMessagePolicyEnum(IntEnum):
-    UNLIMITED = 1
-    DISABLED = 2
 
 
 class WildcardMentionPolicyEnum(IntEnum):
@@ -332,6 +327,18 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup of which at least one member must be included as sender
+    # or recipient in all personal and group direct messages.
+    direct_message_initiator_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
+    # UserGroup whose members must be included as sender or recipient in all
+    # direct messages.
+    direct_message_permission_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # on_delete field here is set to RESTRICT because we don't want to allow
     # deleting a user group in case it is referenced by this setting.
     # We are not using PROTECT since we want to allow deletion of user groups
@@ -351,11 +358,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     user_group_edit_policy = models.PositiveSmallIntegerField(default=CommonPolicyEnum.MEMBERS_ONLY)
-
-    private_message_policy = models.PositiveSmallIntegerField(
-        default=PrivateMessagePolicyEnum.UNLIMITED
-    )
-    PRIVATE_MESSAGE_POLICY_TYPES = [field.value for field in PrivateMessagePolicyEnum]
 
     # Global policy for who is allowed to use wildcard mentions in
     # streams with a large number of subscribers.  Anyone can use
@@ -437,7 +439,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     first_visible_message_id = models.IntegerField(default=0)
 
     # Valid org types
-    ORG_TYPES: Dict[str, OrgTypeDict] = {
+    ORG_TYPES: dict[str, OrgTypeDict] = {
         "unspecified": {
             "name": "Unspecified",
             "id": OrgTypeEnum.Unspecified.value,
@@ -531,7 +533,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         },
     }
 
-    ORG_TYPE_IDS: List[int] = [t["id"] for t in ORG_TYPES.values()]
+    ORG_TYPE_IDS: list[int] = [t["id"] for t in ORG_TYPES.values()]
 
     org_type = models.PositiveSmallIntegerField(
         default=ORG_TYPES["unspecified"]["id"],
@@ -638,7 +640,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     enable_guest_user_indicator = models.BooleanField(default=True)
 
     # Define the types of the various automatically managed properties
-    property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
+    property_types: dict[str, type | tuple[type, ...]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
         allow_message_editing=bool,
@@ -675,7 +677,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         move_messages_between_streams_policy=int,
         name=str,
         name_changes_disabled=bool,
-        private_message_policy=int,
         push_notifications_enabled=bool,
         require_unique_names=bool,
         send_welcome_emails=bool,
@@ -686,7 +687,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         wildcard_mention_policy=int,
     )
 
-    REALM_PERMISSION_GROUP_SETTINGS: Dict[str, GroupPermissionSetting] = dict(
+    REALM_PERMISSION_GROUP_SETTINGS: dict[str, GroupPermissionSetting] = dict(
         create_multiuse_invite_group=GroupPermissionSetting(
             require_system_group=True,
             allow_internet_group=False,
@@ -724,11 +725,31 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             default_group_name=SystemGroups.MEMBERS,
             id_field_name="can_create_private_channel_group_id",
         ),
+        direct_message_initiator_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="direct_message_initiator_group_id",
+        ),
+        direct_message_permission_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="direct_message_permission_group_id",
+        ),
     )
 
     REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
         "can_create_private_channel_group",
         "can_create_public_channel_group",
+        "direct_message_initiator_group",
+        "direct_message_permission_group",
     ]
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -772,7 +793,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     def __str__(self) -> str:
         return f"{self.string_id} {self.id}"
 
-    def get_giphy_rating_options(self) -> Dict[str, Dict[str, object]]:
+    def get_giphy_rating_options(self) -> dict[str, dict[str, object]]:
         """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
         of the lazily evaluated `name` field without modifying the original."""
         return {
@@ -780,7 +801,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
         }
 
-    def authentication_methods_dict(self) -> Dict[str, bool]:
+    def authentication_methods_dict(self) -> dict[str, bool]:
         """Returns the mapping from authentication flags to their status,
         showing only those authentication flags that are supported on
         the current server (i.e. if EmailAuthBackend is not configured
@@ -789,7 +810,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         # dependency.
         from zproject.backends import AUTH_BACKEND_NAME_MAP
 
-        ret: Dict[str, bool] = {}
+        ret: dict[str, bool] = {}
         supported_backends = [type(backend) for backend in supported_auth_backends()]
 
         for backend_name, backend_class in AUTH_BACKEND_NAME_MAP.items():
@@ -899,11 +920,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         return self._max_invites
 
     @max_invites.setter
-    def max_invites(self, value: Optional[int]) -> None:
+    def max_invites(self, value: int | None) -> None:
         self._max_invites = value
 
     @property
-    def upload_quota_gb(self) -> Optional[int]:
+    def upload_quota_gb(self) -> int | None:
         # See upload_quota_bytes; don't interpret upload_quota_gb directly.
 
         if self.custom_upload_quota_gb is not None:
@@ -930,7 +951,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         else:
             raise AssertionError("Invalid plan type")
 
-    def upload_quota_bytes(self) -> Optional[int]:
+    def upload_quota_bytes(self) -> int | None:
         if self.upload_quota_gb is None:
             return None
         # We describe the quota to users in "GB" or "gigabytes", but actually apply
@@ -1092,17 +1113,21 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_create_public_channel_group__named_user_group",
         "can_create_private_channel_group",
         "can_create_private_channel_group__named_user_group",
+        "direct_message_initiator_group",
+        "direct_message_initiator_group__named_user_group",
+        "direct_message_permission_group",
+        "direct_message_permission_group__named_user_group",
     ).get(id=realm_id)
 
 
-def require_unique_names(realm: Optional[Realm]) -> bool:
+def require_unique_names(realm: Realm | None) -> bool:
     if realm is None:
         # realm is None when a new realm is being created.
         return False
     return realm.require_unique_names
 
 
-def name_changes_disabled(realm: Optional[Realm]) -> bool:
+def name_changes_disabled(realm: Realm | None) -> bool:
     if realm is None:
         return settings.NAME_CHANGES_DISABLED
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
@@ -1123,7 +1148,7 @@ def get_org_type_display_name(org_type: int) -> str:
 def get_corresponding_policy_value_for_group_setting(
     realm: Realm,
     group_setting_name: str,
-    valid_policy_enums: List[int],
+    valid_policy_enums: list[int],
 ) -> int:
     setting_group = getattr(realm, group_setting_name)
     if (
@@ -1171,7 +1196,7 @@ class RealmDomainDict(TypedDict):
     allow_subdomains: bool
 
 
-def get_realm_domains(realm: Realm) -> List[RealmDomainDict]:
+def get_realm_domains(realm: Realm) -> list[RealmDomainDict]:
     return list(realm.realmdomain_set.values("domain", "allow_subdomains"))
 
 

@@ -8,7 +8,7 @@ If you do modify Zulip and then report an issue you see in your
 modified version of Zulip, please be responsible about communicating
 that fact:
 
-- Ideally, you'd reproduce the issue in an unmodified version (e.g. in
+- Ideally, you'd reproduce the issue in an unmodified version (e.g., in
   [the Zulip development community](https://zulip.com/development-community/) or on
   [zulip.com](https://zulip.com)).
 - Where that is difficult or you think it's very unlikely your changes
@@ -159,7 +159,7 @@ responsive in debugging any problems caused by a patch we asked
 you to apply.
 
 Also, consider asking whether a small fix that is important to you can
-be added to the current stable release branch (E.g. `2.1.x`). In
+be added to the current stable release branch (e.g., `2.1.x`). In
 addition to scheduling that change for Zulip's next bug fix release,
 we support changes in stable release branches as though they were
 released.
@@ -190,8 +190,8 @@ upgrade to Zulip `main` using [upgrade-zulip-from-git][]. Before
 upgrading to `main`, make sure you understand:
 
 - In Zulip's version numbering scheme, `main` will always be "newer"
-  than the latest maintenance release (E.g. `3.1` or `2.1.6`) and
-  "older" than the next major release (E.g. `3.0` or `4.0`).
+  than the latest maintenance release (e.g., `3.1` or `2.1.6`) and
+  "older" than the next major release (e.g., `3.0` or `4.0`).
 - The `main` branch is under very active development; dozens of new
   changes are integrated into it on most days. The `main` branch
   can have thousands of changes not present in the latest release (all

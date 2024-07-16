@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 
 @dataclass
@@ -8,18 +7,18 @@ class URLRedirect:
     new_url: str
 
 
-API_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
+API_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     # Add URL redirects for REST API documentation here:
     URLRedirect("/api/delete-stream", "/api/archive-stream"),
 ]
 
-POLICY_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
+POLICY_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     # Add URL redirects for policy documentation here:
     URLRedirect("/privacy/", "/policies/privacy"),
     URLRedirect("/terms/", "/policies/terms"),
 ]
 
-HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
+HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     # Add URL redirects for help center documentation here:
     URLRedirect("/help/pm-mention-alert-notifications", "/help/dm-mention-alert-notifications"),
     URLRedirect("/help/restrict-private-messages", "/help/restrict-direct-messages"),

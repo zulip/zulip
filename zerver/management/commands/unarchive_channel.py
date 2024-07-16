@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Any, Optional
+from typing import Any
 
 from django.core.management.base import CommandError
 from typing_extensions import override
@@ -33,7 +33,7 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser, required=True)
 
     @override
-    def handle(self, *args: Any, **options: Optional[str]) -> None:
+    def handle(self, *args: Any, **options: str | None) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

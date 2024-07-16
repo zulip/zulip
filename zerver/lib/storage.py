@@ -25,7 +25,7 @@ else:
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
     @override
     def hashed_name(
-        self, name: str, content: Optional["File[bytes]"] = None, filename: Optional[str] = None
+        self, name: str, content: Optional["File[bytes]"] = None, filename: str | None = None
     ) -> str:
         ext = os.path.splitext(name)[1]
         if name.startswith("webpack-bundles"):

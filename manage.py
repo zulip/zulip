@@ -3,7 +3,6 @@ import configparser
 import os
 import sys
 from collections import defaultdict
-from typing import Dict, List, Optional
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
@@ -18,7 +17,7 @@ from typing_extensions import override
 from scripts.lib.zulip_tools import assert_not_running_as_root
 
 
-def get_filtered_commands() -> Dict[str, str]:
+def get_filtered_commands() -> dict[str, str]:
     """Because Zulip uses management commands in production, `manage.py
     help` is a form of documentation for users. Here we exclude from
     that documentation built-in commands that are not constructive for
@@ -110,7 +109,7 @@ class FilteredManagementUtility(ManagementUtility):
         return "\n".join(usage)
 
 
-def execute_from_command_line(argv: Optional[List[str]] = None) -> None:
+def execute_from_command_line(argv: list[str] | None = None) -> None:
     """Run a FilteredManagementUtility."""
     utility = FilteredManagementUtility(argv)
     utility.execute()

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 import orjson
 
@@ -13,7 +13,7 @@ from zerver.models import UserProfile, UserStatus
 from zerver.models.clients import get_client
 
 
-def user_status_info(user: UserProfile, acting_user: Optional[UserProfile] = None) -> UserInfoDict:
+def user_status_info(user: UserProfile, acting_user: UserProfile | None = None) -> UserInfoDict:
     if acting_user is None:
         acting_user = user
     user_dict = get_all_users_status_dict(user.realm, acting_user)
@@ -178,7 +178,7 @@ class UserStatusTest(ZulipTestCase):
         )
 
     def update_status_and_assert_event(
-        self, payload: Dict[str, Any], expected_event: Dict[str, Any], num_events: int = 1
+        self, payload: dict[str, Any], expected_event: dict[str, Any], num_events: int = 1
     ) -> None:
         with self.capture_send_event_calls(expected_num_events=num_events) as events:
             result = self.client_post("/json/users/me/status", payload)
@@ -192,7 +192,7 @@ class UserStatusTest(ZulipTestCase):
         self.login_user(hamlet)
 
         # Try to omit parameter--this should be an error.
-        payload: Dict[str, Any] = {}
+        payload: dict[str, Any] = {}
         result = self.client_post("/json/users/me/status", payload)
         self.assert_json_error(result, "Client did not pass any new values.")
 

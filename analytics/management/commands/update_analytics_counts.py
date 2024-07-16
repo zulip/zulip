@@ -2,7 +2,7 @@ import hashlib
 import time
 from argparse import ArgumentParser
 from datetime import timezone
-from typing import Any, Dict
+from typing import Any
 
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
@@ -43,7 +43,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         self.run_update_analytics_counts(options)
 
-    def run_update_analytics_counts(self, options: Dict[str, Any]) -> None:
+    def run_update_analytics_counts(self, options: dict[str, Any]) -> None:
         # installation_epoch relies on there being at least one realm; we
         # shouldn't run the analytics code if that condition isn't satisfied
         if not Realm.objects.exists():

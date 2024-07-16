@@ -5,8 +5,9 @@
 # based on Zulip's OpenAPI definitions, as well as test setup and
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 from django.utils.timezone import now as timezone_now
 
@@ -25,19 +26,19 @@ from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 from zerver.openapi.openapi import Parameter
 
-GENERATOR_FUNCTIONS: Dict[str, Callable[[], Dict[str, object]]] = {}
-REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()
-CALLED_GENERATOR_FUNCTIONS: Set[str] = set()
+GENERATOR_FUNCTIONS: dict[str, Callable[[], dict[str, object]]] = {}
+REGISTERED_GENERATOR_FUNCTIONS: set[str] = set()
+CALLED_GENERATOR_FUNCTIONS: set[str] = set()
 # This is a List rather than just a string in order to make it easier
 # to write to it from another module.
-AUTHENTICATION_LINE: List[str] = [""]
+AUTHENTICATION_LINE: list[str] = [""]
 
 helpers = ZulipTestCase()
 
 
 def openapi_param_value_generator(
-    endpoints: List[str],
-) -> Callable[[Callable[[], Dict[str, object]]], Callable[[], Dict[str, object]]]:
+    endpoints: list[str],
+) -> Callable[[Callable[[], dict[str, object]]], Callable[[], dict[str, object]]]:
     """This decorator is used to register OpenAPI param value generator functions
     with endpoints. Example usage:
 
@@ -45,9 +46,9 @@ def openapi_param_value_generator(
     def ...
     """
 
-    def wrapper(generator_func: Callable[[], Dict[str, object]]) -> Callable[[], Dict[str, object]]:
+    def wrapper(generator_func: Callable[[], dict[str, object]]) -> Callable[[], dict[str, object]]:
         @wraps(generator_func)
-        def _record_calls_wrapper() -> Dict[str, object]:
+        def _record_calls_wrapper() -> dict[str, object]:
             CALLED_GENERATOR_FUNCTIONS.add(generator_func.__name__)
             return generator_func()
 
@@ -72,13 +73,13 @@ def assert_all_helper_functions_called() -> None:
 
 def patch_openapi_example_values(
     entry: str,
-    parameters: List[Parameter],
-    request_body: Optional[Dict[str, Any]] = None,
-) -> Tuple[List[Parameter], Optional[Dict[str, object]]]:
+    parameters: list[Parameter],
+    request_body: dict[str, Any] | None = None,
+) -> tuple[list[Parameter], dict[str, object] | None]:
     if entry not in GENERATOR_FUNCTIONS:
         return parameters, request_body
     func = GENERATOR_FUNCTIONS[entry]
-    realm_example_values: Dict[str, object] = func()
+    realm_example_values: dict[str, object] = func()
 
     for parameter in parameters:
         if parameter.name in realm_example_values:
@@ -93,7 +94,7 @@ def patch_openapi_example_values(
 
 
 @openapi_param_value_generator(["/fetch_api_key:post"])
-def fetch_api_key() -> Dict[str, object]:
+def fetch_api_key() -> dict[str, object]:
     email = helpers.example_email("iago")
     password = initial_password(email)
 
@@ -111,7 +112,7 @@ def fetch_api_key() -> Dict[str, object]:
         "/messages/{message_id}:delete",
     ]
 )
-def iago_message_id() -> Dict[str, object]:
+def iago_message_id() -> dict[str, object]:
     iago = helpers.example_user("iago")
     helpers.subscribe(iago, "Denmark")
     return {
@@ -120,7 +121,7 @@ def iago_message_id() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/messages/{message_id}/reactions:delete"])
-def add_emoji_to_message() -> Dict[str, object]:
+def add_emoji_to_message() -> dict[str, object]:
     user_profile = helpers.example_user("iago")
 
     # The message ID here is hardcoded based on the corresponding value
@@ -137,7 +138,7 @@ def add_emoji_to_message() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/messages/flags:post"])
-def update_flags_message_ids() -> Dict[str, object]:
+def update_flags_message_ids() -> dict[str, object]:
     stream_name = "Venice"
     helpers.subscribe(helpers.example_user("iago"), stream_name)
 
@@ -150,14 +151,14 @@ def update_flags_message_ids() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/mark_stream_as_read:post", "/users/me/{stream_id}/topics:get"])
-def get_venice_stream_id() -> Dict[str, object]:
+def get_venice_stream_id() -> dict[str, object]:
     return {
         "stream_id": helpers.get_stream_id("Venice"),
     }
 
 
 @openapi_param_value_generator(["/streams/{stream_id}:patch"])
-def update_stream() -> Dict[str, object]:
+def update_stream() -> dict[str, object]:
     stream = helpers.subscribe(helpers.example_user("iago"), "temp_stream 1")
     return {
         "stream_id": stream.id,
@@ -165,7 +166,7 @@ def update_stream() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/streams/{stream_id}:delete"])
-def create_temp_stream_and_get_id() -> Dict[str, object]:
+def create_temp_stream_and_get_id() -> dict[str, object]:
     stream = helpers.subscribe(helpers.example_user("iago"), "temp_stream 2")
     return {
         "stream_id": stream.id,
@@ -173,7 +174,7 @@ def create_temp_stream_and_get_id() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/mark_topic_as_read:post"])
-def get_denmark_stream_id_and_topic() -> Dict[str, object]:
+def get_denmark_stream_id_and_topic() -> dict[str, object]:
     stream_name = "Denmark"
     topic_name = "Tivoli Gardens"
 
@@ -187,7 +188,7 @@ def get_denmark_stream_id_and_topic() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/users/me/subscriptions/properties:post"])
-def update_subscription_data() -> Dict[str, object]:
+def update_subscription_data() -> dict[str, object]:
     profile = helpers.example_user("iago")
     helpers.subscribe(profile, "Verona")
     helpers.subscribe(profile, "social")
@@ -200,7 +201,7 @@ def update_subscription_data() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/users/me/subscriptions:delete"])
-def delete_subscription_data() -> Dict[str, object]:
+def delete_subscription_data() -> dict[str, object]:
     iago = helpers.example_user("iago")
     zoe = helpers.example_user("ZOE")
     helpers.subscribe(iago, "Verona")
@@ -211,7 +212,7 @@ def delete_subscription_data() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/events:get"])
-def get_events() -> Dict[str, object]:
+def get_events() -> dict[str, object]:
     profile = helpers.example_user("iago")
     helpers.subscribe(profile, "Verona")
     client = Client.objects.create(name="curl-test-client-1")
@@ -226,7 +227,7 @@ def get_events() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/events:delete"])
-def delete_event_queue() -> Dict[str, object]:
+def delete_event_queue() -> dict[str, object]:
     profile = helpers.example_user("iago")
     client = Client.objects.create(name="curl-test-client-2")
     response = do_events_register(profile, profile.realm, client, event_types=["message"])
@@ -237,7 +238,7 @@ def delete_event_queue() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/users/{user_id_or_email}/presence:get"])
-def get_user_presence() -> Dict[str, object]:
+def get_user_presence() -> dict[str, object]:
     iago = helpers.example_user("iago")
     client = Client.objects.create(name="curl-test-client-3")
     update_user_presence(iago, client, timezone_now(), UserPresence.LEGACY_STATUS_ACTIVE_INT, False)
@@ -245,14 +246,14 @@ def get_user_presence() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/users:post"])
-def create_user() -> Dict[str, object]:
+def create_user() -> dict[str, object]:
     return {
         "email": helpers.nonreg_email("test"),
     }
 
 
 @openapi_param_value_generator(["/user_groups/create:post"])
-def create_user_group_data() -> Dict[str, object]:
+def create_user_group_data() -> dict[str, object]:
     return {
         "members": [helpers.example_user("hamlet").id, helpers.example_user("othello").id],
     }
@@ -261,7 +262,7 @@ def create_user_group_data() -> Dict[str, object]:
 @openapi_param_value_generator(
     ["/user_groups/{user_group_id}:patch", "/user_groups/{user_group_id}:delete"]
 )
-def get_temp_user_group_id() -> Dict[str, object]:
+def get_temp_user_group_id() -> dict[str, object]:
     user_group, _ = NamedUserGroup.objects.get_or_create(
         name="temp",
         realm=get_realm("zulip"),
@@ -274,7 +275,7 @@ def get_temp_user_group_id() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/realm/filters/{filter_id}:delete"])
-def remove_realm_filters() -> Dict[str, object]:
+def remove_realm_filters() -> dict[str, object]:
     filter_id = do_add_linkifier(
         get_realm("zulip"),
         "#(?P<id>[0-9]{2,8})",
@@ -287,14 +288,14 @@ def remove_realm_filters() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/realm/emoji/{emoji_name}:post", "/user_uploads:post"])
-def upload_custom_emoji() -> Dict[str, object]:
+def upload_custom_emoji() -> dict[str, object]:
     return {
         "filename": "zerver/tests/images/animated_img.gif",
     }
 
 
 @openapi_param_value_generator(["/realm/playgrounds:post"])
-def add_realm_playground() -> Dict[str, object]:
+def add_realm_playground() -> dict[str, object]:
     return {
         "name": "Python2 playground",
         "pygments_language": "Python2",
@@ -303,7 +304,7 @@ def add_realm_playground() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/realm/playgrounds/{playground_id}:delete"])
-def remove_realm_playground() -> Dict[str, object]:
+def remove_realm_playground() -> dict[str, object]:
     playground_id = check_add_realm_playground(
         get_realm("zulip"),
         acting_user=None,
@@ -317,7 +318,7 @@ def remove_realm_playground() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/users/{user_id}:delete"])
-def deactivate_user() -> Dict[str, object]:
+def deactivate_user() -> dict[str, object]:
     user_profile = do_create_user(
         email="testuser@zulip.com",
         password=None,
@@ -329,7 +330,7 @@ def deactivate_user() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/users/me:delete"])
-def deactivate_own_user() -> Dict[str, object]:
+def deactivate_own_user() -> dict[str, object]:
     test_user_email = "delete-test@zulip.com"
     deactivate_test_user = do_create_user(
         test_user_email,
@@ -348,11 +349,9 @@ def deactivate_own_user() -> Dict[str, object]:
 
 
 @openapi_param_value_generator(["/attachments/{attachment_id}:delete"])
-def remove_attachment() -> Dict[str, object]:
+def remove_attachment() -> dict[str, object]:
     user_profile = helpers.example_user("iago")
-    url = upload_message_attachment(
-        "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-    )
+    url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
     attachment_id = url.replace("/user_uploads/", "").split("/")[0]
 
     return {"attachment_id": attachment_id}

@@ -1,8 +1,8 @@
 # https://zulip.readthedocs.io/en/latest/subsystems/email.html#testing-in-a-real-email-client
 import configparser
 import logging
+from collections.abc import MutableSequence, Sequence
 from email.message import Message
-from typing import MutableSequence, Sequence, Union
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -37,7 +37,7 @@ class EmailLogBackEnd(EmailBackend):
     @staticmethod
     def log_email(email: EmailMessage) -> None:
         """Used in development to record sent emails in a nice HTML log"""
-        html_message: Union[bytes, EmailMessage, Message, str] = "Missing HTML message"
+        html_message: bytes | EmailMessage | Message | str = "Missing HTML message"
         assert isinstance(email, EmailMultiAlternatives)
         if len(email.alternatives) > 0:
             html_message = email.alternatives[0][0]

@@ -1,5 +1,7 @@
 import re
-from typing import Any, Callable, Match, Optional
+from collections.abc import Callable
+from re import Match
+from typing import Any
 from urllib.parse import urljoin
 
 import magic
@@ -40,7 +42,7 @@ class PreviewSession(OutgoingSession):
         super().__init__(role="preview", timeout=TIMEOUT, headers=HEADERS)
 
 
-def is_link(url: str) -> Optional[Match[str]]:
+def is_link(url: str) -> Match[str] | None:
     return link_regex.match(smart_str(url))
 
 
@@ -82,9 +84,7 @@ def catch_network_errors(func: Callable[..., Any]) -> Callable[..., Any]:
 
 @catch_network_errors
 @cache_with_key(preview_url_cache_key)
-def get_link_embed_data(
-    url: str, maxwidth: int = 640, maxheight: int = 480
-) -> Optional[UrlEmbedData]:
+def get_link_embed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> UrlEmbedData | None:
     if not is_link(url):
         return None
 

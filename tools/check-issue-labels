@@ -4,7 +4,7 @@ import configparser
 import os
 import re
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import requests
 
@@ -27,7 +27,7 @@ def get_config() -> configparser.ConfigParser:
     return config
 
 
-def area_labeled(issue: Dict[str, Any]) -> bool:
+def area_labeled(issue: dict[str, Any]) -> bool:
     for label in issue["labels"]:
         label_name = str(label["name"])
         if "area:" in label_name:
@@ -35,11 +35,11 @@ def area_labeled(issue: Dict[str, Any]) -> bool:
     return False
 
 
-def is_issue(item: Dict[str, Any]) -> bool:
+def is_issue(item: dict[str, Any]) -> bool:
     return "issues" in item["html_url"]
 
 
-def get_next_page_url(link_header: str) -> Optional[str]:
+def get_next_page_url(link_header: str) -> str | None:
     matches = re.findall(r"\<(\S+)\>; rel=\"next\"", link_header)
     try:
         return matches[0]
@@ -63,8 +63,8 @@ def check_issue_labels() -> None:
             )
             sys.exit(1)
 
-    next_page_url: Optional[str] = "https://api.github.com/repos/zulip/zulip/issues"
-    unlabeled_issue_urls: List[str] = []
+    next_page_url: str | None = "https://api.github.com/repos/zulip/zulip/issues"
+    unlabeled_issue_urls: list[str] = []
     while next_page_url:
         try:
             if args.force:

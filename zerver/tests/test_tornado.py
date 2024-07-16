@@ -1,7 +1,8 @@
 import asyncio
 import socket
+from collections.abc import Awaitable, Callable
 from functools import wraps
-from typing import Any, Awaitable, Callable, Dict, Optional, TypeVar
+from typing import Any, TypeVar
 from unittest import TestResult, mock
 from urllib.parse import urlencode
 
@@ -51,7 +52,7 @@ class TornadoWebTestCase(ZulipTestCase):
         self.http_client = AsyncHTTPClient()
         signals.request_started.disconnect(close_old_connections)
         signals.request_finished.disconnect(close_old_connections)
-        self.session_cookie: Optional[Dict[str, str]] = None
+        self.session_cookie: dict[str, str] | None = None
 
     @async_to_sync_decorator
     @override
@@ -61,7 +62,7 @@ class TornadoWebTestCase(ZulipTestCase):
         super().tearDown()
 
     @override
-    def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:
+    def run(self, result: TestResult | None = None) -> TestResult | None:
         return async_to_sync(
             sync_to_async(super().run, thread_sensitive=False), force_new_loop=True
         )(result)
@@ -85,10 +86,10 @@ class TornadoWebTestCase(ZulipTestCase):
             "Cookie": f"{session_cookie}={session_key}",
         }
 
-    def get_session_cookie(self) -> Dict[str, str]:
+    def get_session_cookie(self) -> dict[str, str]:
         return {} if self.session_cookie is None else self.session_cookie
 
-    def add_session_cookie(self, kwargs: Dict[str, Any]) -> None:
+    def add_session_cookie(self, kwargs: dict[str, Any]) -> None:
         # TODO: Currently only allows session cookie
         headers = kwargs.get("headers", {})
         headers.update(self.get_session_cookie())
@@ -130,7 +131,7 @@ class EventsTestCase(TornadoWebTestCase):
             )
             process_event(event, users)
 
-        def wrapped_fetch_events(**query: Any) -> Dict[str, Any]:
+        def wrapped_fetch_events(**query: Any) -> dict[str, Any]:
             ret = event_queue.fetch_events(**query)
             asyncio.get_running_loop().call_soon(process_events)
             return ret

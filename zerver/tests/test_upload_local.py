@@ -30,9 +30,7 @@ from zerver.models.users import get_system_bot
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
     def test_upload_message_attachment(self) -> None:
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
@@ -47,9 +45,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_save_attachment_contents(self) -> None:
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         path_id = re.sub(r"/user_uploads/", "", url)
         output = BytesIO()
@@ -68,7 +64,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(user_profile.realm, internal_realm)
 
         url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile, zulip_realm
+            "dummy.txt", "text/plain", b"zulip!", user_profile, zulip_realm
         )
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
@@ -80,7 +76,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": fp})
 
         response_dict = self.assert_json_success(result)
-        path_id = re.sub(r"/user_uploads/", "", response_dict["uri"])
+        self.assertEqual(response_dict["uri"], response_dict["url"])
+        path_id = re.sub(r"/user_uploads/", "", response_dict["url"])
 
         assert settings.LOCAL_FILES_DIR is not None
         file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
@@ -96,9 +93,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 1005):
-            url = upload_message_attachment(
-                "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-            )
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
             path_id = re.sub(r"/user_uploads/", "", url)
@@ -180,7 +175,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         file_name = "emoji.png"
 
         with get_test_image_file("img.png") as image_file:
-            upload_emoji_image(image_file, file_name, user_profile)
+            upload_emoji_image(image_file, file_name, user_profile, "image/png")
         url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
@@ -192,7 +187,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         file_name = "emoji.gif"
         with get_test_image_file("animated_img.gif") as image_file:
-            upload_emoji_image(image_file, file_name, user_profile)
+            upload_emoji_image(image_file, file_name, user_profile, "image/png")
         url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
         still_url = zerver.lib.upload.upload_backend.get_emoji_url(
             file_name, user_profile.realm_id, still=True
@@ -217,7 +212,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         file_name = "emoji.png"
 
         with get_test_image_file("img.png") as image_file:
-            upload_emoji_image(image_file, file_name, user_profile)
+            upload_emoji_image(image_file, file_name, user_profile, "image/png")
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,

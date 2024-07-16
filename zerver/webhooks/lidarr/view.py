@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
@@ -40,7 +38,7 @@ LIDARR_TRACKS_LIMIT = 20
 ALL_EVENT_TYPES = ["Test", "Grab", "Rename", "Retag", "Download"]
 
 
-def get_tracks_content(tracks_data: List[Dict[str, str]]) -> str:
+def get_tracks_content(tracks_data: list[dict[str, str]]) -> str:
     tracks_content = ""
     for track in tracks_data[:LIDARR_TRACKS_LIMIT]:
         tracks_content += LIDARR_TRACKS_ROW_TEMPLATE.format(track_title=track.get("title"))

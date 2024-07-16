@@ -17,6 +17,9 @@ section by:
 - [Configuring](/help/manage-inactive-channels) whether inactive channels are
   sorted at the bottom.
 
+You can also [configure](#configure-where-channel-links-in-the-left-sidebar-go)
+where clicking on channel links in the left sidebar takes you.
+
 ## Adjust what information is shown
 
 There are many ways you can adjust the left sidebar to help you focus on the
@@ -38,7 +41,7 @@ information you need in the moment.
 
 {end_tabs}
 
-### Show all direct message conversations
+### Show more direct message conversations
 
 {start_tabs}
 
@@ -78,11 +81,16 @@ information you need in the moment.
 
 {end_tabs}
 
+## Configure where channel links in the left sidebar go
+
+{!configure-channel-links.md!}
+
 ## Related articles
 * [Reading strategies](/help/reading-strategies)
 * [Configuring unread message counters](/help/configure-unread-message-counters)
 * [Inbox](/help/inbox)
 * [Recent conversations](/help/recent-conversations)
 * [Combined feed](/help/combined-feed)
+* [Channel feed](/help/channel-feed)
 * [View your mentions](/help/view-your-mentions)
 * [Star a message](/help/star-a-message)

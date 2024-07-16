@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 from unittest import mock
 
 from django.db import IntegrityError
@@ -20,7 +20,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         user = self.example_user("hamlet")
         sender = user
 
-        recipients: List[str] = []
+        recipients: list[str] = []
 
         recipient_type_name = "private"
         client = get_client("banned_mirror")

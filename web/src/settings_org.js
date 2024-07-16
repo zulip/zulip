@@ -95,9 +95,6 @@ export function get_organization_settings_options() {
     options.common_policy_values = settings_components.get_sorted_options_list(
         settings_config.common_policy_values,
     );
-    options.private_message_policy_values = settings_components.get_sorted_options_list(
-        settings_config.private_message_policy_values,
-    );
     options.wildcard_mention_policy_values = settings_components.get_sorted_options_list(
         settings_config.wildcard_mention_policy_values,
     );
@@ -129,7 +126,6 @@ const simple_dropdown_properties = [
     "realm_create_web_public_stream_policy",
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
-    "realm_private_message_policy",
     "realm_add_custom_emoji_policy",
     "realm_invite_to_realm_policy",
     "realm_wildcard_mention_policy",
@@ -373,6 +369,14 @@ function set_create_web_public_stream_dropdown_visibility() {
     );
 }
 
+export function check_disable_direct_message_initiator_group_dropdown(current_value) {
+    if (user_groups.is_empty_group(current_value)) {
+        $("#realm_direct_message_initiator_group_widget").prop("disabled", true);
+    } else {
+        $("#realm_direct_message_initiator_group_widget").prop("disabled", false);
+    }
+}
+
 export function populate_realm_domains_label(realm_domains) {
     if (!meta.loaded) {
         return;
@@ -472,6 +476,11 @@ function update_dependent_subsettings(property_name) {
         case "realm_enable_spectator_access":
             set_create_web_public_stream_dropdown_visibility();
             break;
+        case "realm_direct_message_permission_group":
+            check_disable_direct_message_initiator_group_dropdown(
+                realm.realm_direct_message_permission_group,
+            );
+            break;
     }
 }
 
@@ -491,6 +500,8 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
         case "realm_create_multiuse_invite_group":
+        case "realm_direct_message_initiator_group":
+        case "realm_direct_message_permission_group":
         case "realm_can_access_all_users_group":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
@@ -744,7 +755,12 @@ export function set_up() {
     maybe_disable_widgets();
 }
 
-function set_up_dropdown_widget(setting_name, setting_options, setting_type) {
+function set_up_dropdown_widget(
+    setting_name,
+    setting_options,
+    setting_type,
+    custom_dropdown_widget_callback,
+) {
     const $save_discard_widget_container = $(`#id_${CSS.escape(setting_name)}`).closest(
         ".settings-subsection-parent",
     );
@@ -774,9 +790,9 @@ function set_up_dropdown_widget(setting_name, setting_options, setting_type) {
             settings_components.save_discard_realm_settings_widget_status_handler(
                 $save_discard_widget_container,
             );
-        },
-        tippy_props: {
-            placement: "bottom-start",
+            if (custom_dropdown_widget_callback !== undefined) {
+                custom_dropdown_widget_callback(this.current_value);
+            }
         },
         default_id: realm[setting_name],
         unique_id_type,
@@ -784,6 +800,7 @@ function set_up_dropdown_widget(setting_name, setting_options, setting_type) {
         on_mount_callback(dropdown) {
             if (setting_type === "group") {
                 $(dropdown.popper).css("min-width", "300px");
+                $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
             }
         },
     });
@@ -799,7 +816,17 @@ export function set_up_dropdown_widget_for_realm_group_settings() {
     for (const setting_name of realm_group_permission_settings) {
         const get_setting_options = () =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(setting_name, "realm");
-        set_up_dropdown_widget("realm_" + setting_name, get_setting_options, "group");
+        let dropdown_list_item_click_callback;
+        if (setting_name === "direct_message_permission_group") {
+            dropdown_list_item_click_callback =
+                check_disable_direct_message_initiator_group_dropdown;
+        }
+        set_up_dropdown_widget(
+            "realm_" + setting_name,
+            get_setting_options,
+            "group",
+            dropdown_list_item_click_callback,
+        );
     }
 }
 

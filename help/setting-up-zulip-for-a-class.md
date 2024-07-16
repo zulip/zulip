@@ -65,7 +65,7 @@ ensure you can always move from our hosting to yours (and back).
   [back up][back-up-zulip], and [maintain][maintain-zulip] a self-hosted
   Zulip installation.
 * Retain full control over your data. If cloud hosting is not an
-  option due to stringent data and privacy requirements (e.g. in the
+  option due to stringent data and privacy requirements (e.g., in the
   European Union), self-hosting is the option for you.
 * Customize Zulip for all your needs.
 
@@ -82,12 +82,12 @@ There are a few ways to set up Zulip, and different ones may be convenient for y
   you will probably find it easiest to just add your class to
   it. Advantages:
     - Students and staff can use a single Zulip account for all classes.
-    - You can create department-wide channels, e.g. for announcing talks or other events.
+    - You can create department-wide channels, e.g., for announcing talks or other events.
     - You don’t need to set up a separate server if you’re self-hosting Zulip.
 
 * You can **set up a separate Zulip organization for each class**
   you’re teaching. Advantages:
-    - This makes it simple to manage permissions. e.g. if you want to
+    - This makes it simple to manage permissions, e.g., if you want to
       make sure TAs from one class cannot moderate discussion from a
       different class.
     - Students can’t see who is in channels for other classes.
@@ -98,7 +98,7 @@ There are a few ways to set up Zulip, and different ones may be convenient for y
 * You can **use a single Zulip organization for several classes**
   you’re teaching, perhaps re-purposing a Zulip organization from a
   prior term. Advantages:
-    - Information from your classes is all in one place, e.g. if you
+    - Information from your classes is all in one place, e.g., if you
       want to re-post a response to a question that was also asked
       last time you taught the class.
 
@@ -131,7 +131,7 @@ A few settings to highlight:
 
 * If your class uses code repositories, [set up
   linkifiers](/help/add-a-custom-linkifier) to make it easy to link to
-  issues (e.g. just by typing #1234 for issue 1234).
+  issues (e.g., just by typing #1234 for issue 1234).
 
 * [Add custom emoji](/help/custom-emoji) that your class will enjoy.
 
@@ -234,10 +234,10 @@ For most classes, the following channels are recommended:
   ([administrators and moderators](/help/roles-and-permissions)) are
   allowed to post.
 - **#staff (private)**: For discussions among course staff.
-- **#general**: For random topics, e.g. students forming study groups.
-- A channel for each **lecture** or **unit**, e.g. “Lecture 1: Course
+- **#general**: For random topics, e.g., students forming study groups.
+- A channel for each **lecture** or **unit**, e.g., “Lecture 1: Course
   intro” or “Unit 3: Sorting algorithms”.
-- A channel for each **section**/**tutorial group** (e.g. “Section 1”)
+- A channel for each **section**/**tutorial group** (e.g., “Section 1”)
 
 
 !!! tip ""
@@ -251,7 +251,7 @@ A few notes:
 - Small classes may need just one discussion channel for all lectures.
 - If you are [using a single Zulip organization][separate-orgs] for
   more than one class, all channel names should be prefixed with the
-  name of the class, e.g. “CS101 > Lecture 1: Course intro”.
+  name of the class, e.g., “CS101 > Lecture 1: Course intro”.
 
 [separate-orgs]: /help/setting-up-zulip-for-a-class#do-i-need-a-separate-zulip-organization-for-each-class
 
@@ -292,7 +292,7 @@ to [Getting started with Zulip][getting-started] and the guide to
 
     If you create new channels later on, you can add users
     [by group][create-user-groups] or copy membership from another
-    channel (e.g. from Lecture 5 to Lecture 6).
+    channel (e.g., from Lecture 5 to Lecture 6).
 
 [create-user-groups]: /help/setting-up-zulip-for-a-class#create-user-groups
 
@@ -329,12 +329,13 @@ product.
 If you plan to use the same Zulip organization in future terms (either
 for your own classes or for your department), you will likely want to:
 
-- Rename all channels to indicate the class and term in which they were used, e.g.:
+- Rename all channels to indicate the class and term in which they were used, for
+  example:
     - **#announcements** → **#FA21 - CS101 - announcements**
     - **#CS101 > Lecture 1: Course intro** → **#FA21 - CS101 > Lecture 1: Course
       intro**
 - If you do *not* want students from future classes to see messages
-  from the prior term (e.g. because you posted homework solutions),
+  from the prior term (e.g., because you posted homework solutions),
   [make all the channels from the class private][make-private]. You’ll
   be able to find and reuse content yourself, and [invite course
   staff][add-to-channel] to these private channels as needed.

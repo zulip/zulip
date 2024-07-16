@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from collections.abc import Callable
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -12,7 +12,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-def get_message_data(payload: WildValue) -> Tuple[str, str, str, str]:
+def get_message_data(payload: WildValue) -> tuple[str, str, str, str]:
     link = "https://app.frontapp.com/open/" + payload["target"]["data"]["id"].tame(check_string)
     outbox = payload["conversation"]["recipient"]["handle"].tame(check_string)
     inbox = payload["source"]["data"][0]["address"].tame(check_string)

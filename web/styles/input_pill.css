@@ -35,7 +35,12 @@
         .pill-image {
             height: var(--length-input-pill-image);
             width: var(--length-input-pill-image);
+            min-width: var(--length-input-pill-image);
             border-radius: 4px 0 0 4px;
+        }
+
+        .zulip-icon {
+            padding-right: 2px;
         }
 
         .pill-label {

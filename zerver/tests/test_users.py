@@ -1,6 +1,7 @@
+from collections.abc import Iterable
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
+from typing import Any, TypeVar
 from unittest import mock
 
 import orjson
@@ -91,7 +92,7 @@ K = TypeVar("K")
 V = TypeVar("V")
 
 
-def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
+def find_dict(lst: Iterable[dict[K, V]], k: K, v: V) -> dict[K, V]:
     for dct in lst:
         if dct[k] == v:
             return dct
@@ -460,6 +461,14 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
+    def test_invalid_role(self) -> None:
+        self.login("iago")
+        req = dict(role=1000)
+        result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
+        self.assert_json_error(
+            result, "Invalid role: Value error, Not in the list of possible values"
+        )
+
     def test_admin_cannot_set_full_name_with_invalid_characters(self) -> None:
         new_name = "Opheli*"
         self.login("iago")
@@ -797,7 +806,7 @@ class PermissionTest(ZulipTestCase):
         empty_profile_data = []
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            value: Union[str, None, List[Any]] = ""
+            value: str | None | list[Any] = ""
             if field.field_type == CustomProfileField.USER:
                 value = []
             empty_profile_data.append(
@@ -908,17 +917,19 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(81):
-            with self.assert_memcached_count(19):
-                with self.capture_send_event_calls(expected_num_events=10) as events:
-                    fred = do_create_user(
-                        email="fred@zulip.com",
-                        password="password",
-                        realm=realm,
-                        full_name="Fred Flintstone",
-                        prereg_user=prereg_user,
-                        acting_user=None,
-                    )
+        with (
+            self.assert_database_query_count(84),
+            self.assert_memcached_count(19),
+            self.capture_send_event_calls(expected_num_events=10) as events,
+        ):
+            fred = do_create_user(
+                email="fred@zulip.com",
+                password="password",
+                realm=realm,
+                full_name="Fred Flintstone",
+                prereg_user=prereg_user,
+                acting_user=None,
+            )
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
@@ -1158,12 +1169,18 @@ class UserProfileTest(ZulipTestCase):
         othello = self.example_user("othello")
         bot = self.example_user("default_bot")
 
-        # Invalid user ID
+        # Invalid user IDs
         invalid_uid: object = 1000
+        another_invalid_uid: object = 1001
         with self.assertRaisesRegex(ValidationError, r"User IDs is not a list"):
             check_valid_user_ids(realm.id, invalid_uid)
-        with self.assertRaisesRegex(ValidationError, rf"Invalid user ID: {invalid_uid}"):
+        with self.assertRaisesRegex(ValidationError, rf"Invalid user IDs: {invalid_uid}"):
             check_valid_user_ids(realm.id, [invalid_uid])
+
+        with self.assertRaisesRegex(
+            ValidationError, rf"Invalid user IDs: {invalid_uid}, {another_invalid_uid}"
+        ):
+            check_valid_user_ids(realm.id, [invalid_uid, another_invalid_uid])
 
         invalid_uid = "abc"
         with self.assertRaisesRegex(ValidationError, r"User IDs\[0\] is not an integer"):
@@ -1174,7 +1191,7 @@ class UserProfileTest(ZulipTestCase):
             check_valid_user_ids(realm.id, [invalid_uid])
 
         # User is in different realm
-        with self.assertRaisesRegex(ValidationError, rf"Invalid user ID: {hamlet.id}"):
+        with self.assertRaisesRegex(ValidationError, rf"Invalid user IDs: {hamlet.id}"):
             check_valid_user_ids(get_realm("zephyr").id, [hamlet.id])
 
         # User is not active
@@ -1226,7 +1243,7 @@ class UserProfileTest(ZulipTestCase):
     def test_get_accounts_for_email(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        def check_account_present_in_accounts(user: UserProfile, accounts: List[Account]) -> None:
+        def check_account_present_in_accounts(user: UserProfile, accounts: list[Account]) -> None:
             for account in accounts:
                 realm = user.realm
                 if (
@@ -1310,7 +1327,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Upload cordelia's avatar
         with get_test_image_file("img.png") as image_file:
-            upload_avatar_image(image_file, cordelia)
+            upload_avatar_image(image_file, cordelia, future=False)
 
         OnboardingStep.objects.filter(user=cordelia).delete()
         OnboardingStep.objects.filter(user=iago).delete()
@@ -1419,7 +1436,7 @@ class UserProfileTest(ZulipTestCase):
             get_user_by_id_in_realm_including_cross_realm(hamlet.id, None)
 
     def test_cross_realm_dicts(self) -> None:
-        def user_row(email: str) -> Dict[str, object]:
+        def user_row(email: str) -> dict[str, object]:
             user = UserProfile.objects.get(email=email)
             avatar_url = get_avatar_field(
                 user_id=user.id,
@@ -2365,7 +2382,7 @@ class BulkUsersTest(ZulipTestCase):
 
         hamlet = self.example_user("hamlet")
 
-        def get_hamlet_avatar(client_gravatar: bool) -> Optional[str]:
+        def get_hamlet_avatar(client_gravatar: bool) -> str | None:
             data = dict(client_gravatar=orjson.dumps(client_gravatar).decode())
             result = self.client_get("/json/users", data)
             rows = self.assert_json_success(result)["members"]
@@ -2397,9 +2414,8 @@ class GetProfileTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         email = self.example_user("hamlet").email
-        with self.assert_database_query_count(1):
-            with simulated_empty_cache() as cache_queries:
-                user_profile = get_user(email, realm)
+        with self.assert_database_query_count(1), simulated_empty_cache() as cache_queries:
+            user_profile = get_user(email, realm)
 
         self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, email)

@@ -2,10 +2,11 @@ import base64
 import email.policy
 import os
 import subprocess
+from collections.abc import Callable, Mapping
 from email import message_from_string
 from email.headerregistry import Address
 from email.message import EmailMessage, MIMEPart
-from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -52,7 +53,7 @@ logger_name = "zerver.lib.email_mirror"
 class TestEncodeDecode(ZulipTestCase):
     def _assert_options(
         self,
-        options: Dict[str, bool],
+        options: dict[str, bool],
         show_sender: bool = False,
         include_footer: bool = False,
         include_quotes: bool = False,
@@ -601,7 +602,6 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             process_message(incoming_valid_message)
             upload_message_attachment.assert_called_with(
                 "image.png",
-                len(image_bytes),
                 "image/png",
                 image_bytes,
                 get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
@@ -728,7 +728,6 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             process_message(incoming_valid_message)
             upload_message_attachment.assert_called_with(
                 utf8_filename,
-                len(image_bytes),
                 "image/png",
                 image_bytes,
                 get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
@@ -775,7 +774,6 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             process_message(incoming_valid_message)
             upload_message_attachment.assert_called_with(
                 "image.png",
-                len(image_bytes),
                 "image/png",
                 image_bytes,
                 get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
@@ -1374,6 +1372,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         self.assertFalse(is_forwarded("subject"))
         self.assertFalse(is_forwarded("RE: FWD: hi"))
+        self.assertFalse(is_forwarded("AW: FWD: hi"))
 
     def test_reply_is_extracted_from_plain(self) -> None:
         # build dummy messages for stream
@@ -1529,7 +1528,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         def check_queue_json_publish(
             queue_name: str,
             event: Mapping[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             self.assertEqual(queue_name, "email_mirror")
             self.assertEqual(event, {"rcpt_to": to_address, "msg_base64": msg_base64})
@@ -1609,7 +1608,7 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestStreamEmailMessages body")
-        incoming_valid_message["Subject"] = "Re: Fwd: Re: Test"
+        incoming_valid_message["Subject"] = "Re: Fwd: Re: AW: Test"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")

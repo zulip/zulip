@@ -97,7 +97,7 @@ export function update_view_on_deactivate(user_id) {
     $button.addClass("btn-warning reactivate");
     $button.removeClass("deactivate btn-danger");
     $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
-    $row.removeClass("reactivated_user");
+    $row.removeClass("active-user");
     $row.addClass("deactivated_user");
 
     should_redraw_active_users_list = true;
@@ -116,7 +116,7 @@ export function update_view_on_reactivate(user_id) {
     $button.removeClass("btn-warning reactivate");
     $button.empty().append($("<i>").addClass(["fa", "fa-user-times"]).attr("aria-hidden", "true"));
     $row.removeClass("deactivated_user");
-    $row.addClass("reactivated_user");
+    $row.addClass("active-user");
 
     should_redraw_active_users_list = true;
     should_redraw_deactivated_users_list = true;
@@ -170,7 +170,6 @@ function create_role_filter_dropdown($events_container, widget_name) {
         item_click_callback: role_selected_handler,
         default_id: "0",
         tippy_props: {
-            placement: "bottom-start",
             offset: [0, 0],
         },
     }).setup();
@@ -276,12 +275,11 @@ function human_info(person) {
     info.cannot_deactivate = info.is_current_user || (person.is_owner && !current_user.is_owner);
     info.display_email = person.delivery_email;
 
-    if (info.is_active) {
-        // TODO: We might just want to show this
-        // for deactivated users, too, even though
-        // it might usually just be undefined.
-        info.last_active_date = get_last_active(person);
-    }
+    // TODO: This is not shown in deactivated users table and it is
+    // controlled by `display_last_active_column` We might just want
+    // to show this for deactivated users, too, even though it might
+    // usually just be undefined.
+    info.last_active_date = get_last_active(person);
 
     return info;
 }
@@ -336,6 +334,7 @@ section.active.create_table = (active_users) => {
         get_item: people.get_by_user_id,
         modifier_html(item) {
             const info = human_info(item);
+            info.display_last_active_column = true;
             return render_admin_user_list(info);
         },
         filter: {
@@ -370,6 +369,7 @@ section.deactivated.create_table = (deactivated_users) => {
             get_item: people.get_by_user_id,
             modifier_html(item) {
                 const info = human_info(item);
+                info.display_last_active_column = false;
                 return render_admin_user_list(info);
             },
             filter: {

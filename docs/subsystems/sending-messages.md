@@ -22,7 +22,7 @@ There are 3 related structures:
   IDs go in what order.
 - A `message_list` is built on top of `message_list_data` and
   additionally contains the data for a visible-to-the-user message list
-  (E.g. where trailing bookends should appear, a selected message,
+  (e.g., where trailing bookends should appear, a selected message,
   etc.).
 - A `message_list_view` is built on top of `message_list` and
   additionally contains rendering details like a window of up to 400
@@ -37,7 +37,7 @@ and narrowing).
 The compose box does a lot of fancy things that are out of scope for
 this article. But it also does a decent amount of client-side
 validation before sending a message off to the server, especially
-around mentions (E.g. checking the channel name is a valid channel,
+around mentions (e.g., checking the channel name is a valid channel,
 displaying a warning about the number of recipients before a user can
 use `@**all**` or mention a user who is not subscribed to the current
 channel, etc.).
@@ -62,12 +62,12 @@ This section details the ways in which it is different:
     [queue](queuing.md) to actually send the message.
     See `maybe_enqueue_notifications` and `zerver/lib/notification_data.py` for
     this part of the logic.
-  - Splicing user-dependent data (E.g. `flags` such as when the user
+  - Splicing user-dependent data (e.g., `flags` such as when the user
     was `mentioned`) into the events.
   - Handling the [local echo details](#local-echo).
   - Handling certain client configuration options that affect
-    messages. E.g. determining whether to send the
-    plaintext/Markdown raw content or the rendered HTML (e.g. the
+    messages. E.g., determining whether to send the
+    plaintext/Markdown raw content or the rendered HTML (e.g., the
     `apply_markdown` and `client_gravatar` features in our
     [events API docs](https://zulip.com/api/register-queue)).
 - Following our standard naming convention, input validation is done
@@ -94,7 +94,7 @@ This section details the ways in which it is different:
     step adds a lot of complexity, because the events system cannot
     make queries to the database directly.
   - Trigger any other deferred work caused by the current message,
-    e.g. [outgoing webhooks](https://zulip.com/api/outgoing-webhooks)
+    e.g., [outgoing webhooks](https://zulip.com/api/outgoing-webhooks)
     or embedded bots.
   - Every query is designed to be a bulk query; we carefully
     unit-test this system for how many database and memcached queries
@@ -146,7 +146,7 @@ messages.
   is passed two special parameters that clients not implementing local
   echo don't use: `queue_id` and `local_id`. The `queue_id` is the ID
   of the client's event queue; here, it is used just as a unique
-  identifier for the specific client (e.g. a browser tab) that sent
+  identifier for the specific client (e.g., a browser tab) that sent
   the message. And the `local_id` is, by the construction above, a
   unique value within that namespace identifying the message.
 - The `do_send_messages` backend code path includes the `queue_id` and

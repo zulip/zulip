@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from email.errors import HeaderParseError
 from email.headerregistry import Address
-from typing import Callable, Dict, Optional, Set, Tuple
 
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -97,7 +97,7 @@ def email_allowed_for_realm(email: str, realm: Realm) -> None:
 def validate_email_is_valid(
     email: str,
     validate_email_allowed_in_realm: Callable[[str], None],
-) -> Optional[str]:
+) -> str | None:
     try:
         validators.validate_email(email)
     except ValidationError:
@@ -121,9 +121,9 @@ def email_reserved_for_system_bots_error(email: str) -> str:
 
 def get_existing_user_errors(
     target_realm: Realm,
-    emails: Set[str],
+    emails: set[str],
     verbose: bool = False,
-) -> Dict[str, Tuple[str, bool]]:
+) -> dict[str, tuple[str, bool]]:
     """
     We use this function even for a list of one emails.
 
@@ -132,7 +132,7 @@ def get_existing_user_errors(
     to cross-realm bots and mirror dummies too.
     """
 
-    errors: Dict[str, Tuple[str, bool]] = {}
+    errors: dict[str, tuple[str, bool]] = {}
 
     users = get_users_by_delivery_email(emails, target_realm).only(
         "delivery_email",

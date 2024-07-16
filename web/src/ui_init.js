@@ -420,13 +420,12 @@ export function initialize_everything(state_data) {
        density is so fundamental, we initialize that first, however. */
     initialize_user_settings(state_data.user_settings);
     sidebar_ui.restore_sidebar_toggle_status();
+    i18n.initialize({language_list: page_params.language_list});
+    timerender.initialize();
     information_density.initialize();
     if (page_params.is_spectator) {
         theme.initialize_theme_for_spectator();
     }
-
-    i18n.initialize({language_list: page_params.language_list});
-    timerender.initialize();
     widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
@@ -548,7 +547,6 @@ export function initialize_everything(state_data) {
                 ],
                 {trigger},
             );
-            activity_ui.build_user_sidebar();
         },
     });
     stream_list_sort.initialize();
@@ -569,7 +567,10 @@ export function initialize_everything(state_data) {
     user_status.initialize(state_data.user_status);
     compose_recipient.initialize();
     compose_pm_pill.initialize({
-        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        on_pill_create_or_remove() {
+            compose_recipient.update_placeholder_text();
+            compose_recipient.check_posting_policy_for_compose_box();
+        },
     });
     compose_closed_ui.initialize();
     compose_reply.initialize();

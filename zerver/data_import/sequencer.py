@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 
 """
 This module helps you set up a bunch
@@ -30,7 +31,7 @@ def sequencer() -> Callable[[str], int]:
     NEXT_ID = sequencer()
     message_id = NEXT_ID('message')
     """
-    seq_dict: Dict[str, Callable[[], int]] = {}
+    seq_dict: dict[str, Callable[[], int]] = {}
 
     def next_one(name: str) -> int:
         if name not in seq_dict:
@@ -64,7 +65,7 @@ def is_int(key: Any) -> bool:
 
 class IdMapper:
     def __init__(self) -> None:
-        self.map: Dict[Any, int] = {}
+        self.map: dict[Any, int] = {}
         self.cnt = 0
 
     def has(self, their_id: Any) -> bool:

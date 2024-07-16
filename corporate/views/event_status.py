@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -29,8 +28,8 @@ def event_status(
     request: HttpRequest,
     user: UserProfile,
     *,
-    stripe_session_id: Optional[str] = None,
-    stripe_invoice_id: Optional[str] = None,
+    stripe_session_id: str | None = None,
+    stripe_invoice_id: str | None = None,
 ) -> HttpResponse:
     event_status_request = EventStatusRequest(
         stripe_session_id=stripe_session_id, stripe_invoice_id=stripe_invoice_id
@@ -46,8 +45,8 @@ def remote_realm_event_status(
     request: HttpRequest,
     billing_session: RemoteRealmBillingSession,
     *,
-    stripe_session_id: Optional[str] = None,
-    stripe_invoice_id: Optional[str] = None,
+    stripe_session_id: str | None = None,
+    stripe_invoice_id: str | None = None,
 ) -> HttpResponse:
     event_status_request = EventStatusRequest(
         stripe_session_id=stripe_session_id, stripe_invoice_id=stripe_invoice_id
@@ -62,8 +61,8 @@ def remote_server_event_status(
     request: HttpRequest,
     billing_session: RemoteServerBillingSession,
     *,
-    stripe_session_id: Optional[str] = None,
-    stripe_invoice_id: Optional[str] = None,
+    stripe_session_id: str | None = None,
+    stripe_invoice_id: str | None = None,
 ) -> HttpResponse:  # nocoverage
     event_status_request = EventStatusRequest(
         stripe_session_id=stripe_session_id, stripe_invoice_id=stripe_invoice_id

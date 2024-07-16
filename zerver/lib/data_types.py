@@ -9,9 +9,10 @@ the level of detail we desire or do comparison with OpenAPI types
 easily with the native Python type system.
 """
 
+from collections.abc import Callable, Sequence
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
@@ -32,13 +33,13 @@ class DictType:
 
     def __init__(
         self,
-        required_keys: Sequence[Tuple[str, Any]],
-        optional_keys: Sequence[Tuple[str, Any]] = [],
+        required_keys: Sequence[tuple[str, Any]],
+        optional_keys: Sequence[tuple[str, Any]] = [],
     ) -> None:
         self.required_keys = required_keys
         self.optional_keys = optional_keys
 
-    def check_data(self, var_name: str, val: Dict[str, Any]) -> None:
+    def check_data(self, var_name: str, val: dict[str, Any]) -> None:
         if not isinstance(val, dict):
             raise AssertionError(f"{var_name} is not a dict")
 
@@ -79,7 +80,7 @@ class EnumType:
 
     valid_vals: Sequence[Any]
 
-    def check_data(self, var_name: str, val: Dict[str, Any]) -> None:
+    def check_data(self, var_name: str, val: dict[str, Any]) -> None:
         if val not in self.valid_vals:
             raise AssertionError(f"{var_name} is not in {self.valid_vals}")
 
@@ -97,7 +98,7 @@ class Equals:
         if self.expected_value is None:
             self.equalsNone = True
 
-    def check_data(self, var_name: str, val: Dict[str, Any]) -> None:
+    def check_data(self, var_name: str, val: dict[str, Any]) -> None:
         if val != self.expected_value:
             raise AssertionError(f"{var_name} should be equal to {self.expected_value}")
 
@@ -111,8 +112,8 @@ class NumberType:
     """A Union[float, int]; needed to align with the `number` type in
     OpenAPI, because isinstance(4, float) == False"""
 
-    def check_data(self, var_name: str, val: Optional[Any]) -> None:
-        if isinstance(val, (int, float)):
+    def check_data(self, var_name: str, val: Any | None) -> None:
+        if isinstance(val, int | float):
             return
         raise AssertionError(f"{var_name} is not a number")
 
@@ -123,11 +124,11 @@ class NumberType:
 class ListType:
     """List with every object having the declared sub_type."""
 
-    def __init__(self, sub_type: Any, length: Optional[int] = None) -> None:
+    def __init__(self, sub_type: Any, length: int | None = None) -> None:
         self.sub_type = sub_type
         self.length = length
 
-    def check_data(self, var_name: str, val: List[Any]) -> None:
+    def check_data(self, var_name: str, val: list[Any]) -> None:
         if not isinstance(val, list):
             raise AssertionError(f"{var_name} is not a list")
 
@@ -146,7 +147,7 @@ class StringDictType:
 
     value_type: Any
 
-    def check_data(self, var_name: str, val: Dict[Any, Any]) -> None:
+    def check_data(self, var_name: str, val: dict[Any, Any]) -> None:
         if not isinstance(val, dict):
             raise AssertionError(f"{var_name} is not a dictionary")
 
@@ -165,7 +166,7 @@ class StringDictType:
 class OptionalType:
     sub_type: Any
 
-    def check_data(self, var_name: str, val: Optional[Any]) -> None:
+    def check_data(self, var_name: str, val: Any | None) -> None:
         if val is None:
             return
         check_data(self.sub_type, var_name, val)
@@ -184,7 +185,7 @@ class TupleType:
     sub_types: Sequence[Any]
 
     def check_data(self, var_name: str, val: Any) -> None:
-        if not isinstance(val, (list, tuple)):
+        if not isinstance(val, list | tuple):
             raise AssertionError(f"{var_name} is not a list/tuple")
 
         if len(val) != len(self.sub_types):
@@ -240,8 +241,8 @@ class UrlType:
 
 
 def event_dict_type(
-    required_keys: Sequence[Tuple[str, Any]],
-    optional_keys: Sequence[Tuple[str, Any]] = [],
+    required_keys: Sequence[tuple[str, Any]],
+    optional_keys: Sequence[tuple[str, Any]] = [],
 ) -> DictType:
     """
     This is just a tiny wrapper on DictType, but it provides
@@ -267,8 +268,8 @@ def event_dict_type(
 
 def make_checker(
     data_type: DictType,
-) -> Callable[[str, Dict[str, object]], None]:
-    def f(var_name: str, event: Dict[str, Any]) -> None:
+) -> Callable[[str, dict[str, object]], None]:
+    def f(var_name: str, event: dict[str, Any]) -> None:
         check_data(data_type, var_name, event)
 
     return f

@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict
+from typing import Any
 from unittest import mock
 
 import requests
@@ -130,7 +130,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(wide_message_dict["sender_realm_id"], othello.realm_id)
 
     def test_process_success(self) -> None:
-        response: Dict[str, Any] = dict(response_not_required=True)
+        response: dict[str, Any] = dict(response_not_required=True)
         success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 
@@ -240,7 +240,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertTrue(mock_fail_with_message.called)
 
     def test_process_success(self) -> None:
-        response: Dict[str, Any] = dict(response_not_required=True)
+        response: dict[str, Any] = dict(response_not_required=True)
         success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 

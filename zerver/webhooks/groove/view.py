@@ -1,5 +1,5 @@
 # Webhooks for external integrations.
-from typing import Callable, Dict, Optional
+from collections.abc import Callable
 
 from django.http import HttpRequest, HttpResponse
 
@@ -45,7 +45,7 @@ def ticket_started_body(payload: WildValue) -> str:
     )
 
 
-def ticket_assigned_body(payload: WildValue) -> Optional[str]:
+def ticket_assigned_body(payload: WildValue) -> str | None:
     state = payload["state"].tame(check_string)
     kwargs = {
         "state": "open" if state == "opened" else state,
@@ -90,7 +90,7 @@ def replied_body(actor: str, action: str, payload: WildValue) -> str:
     return body
 
 
-EVENTS_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Optional[str]]] = {
+EVENTS_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str | None]] = {
     "ticket_started": ticket_started_body,
     "ticket_assigned": ticket_assigned_body,
     "agent_replied": partial(replied_body, "agent", "replied to"),

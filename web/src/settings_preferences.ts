@@ -193,8 +193,6 @@ export function set_up(settings_panel: SettingsPanel): void {
     const settings_object = settings_panel.settings_object;
     const for_realm_settings = settings_panel.for_realm_settings;
 
-    $container.find(".advanced-settings-status").hide();
-
     // Select current values for enum/select type fields. For boolean
     // fields, the current value is set automatically in the template.
     $container
@@ -208,6 +206,9 @@ export function set_up(settings_panel: SettingsPanel): void {
     $container
         .find(".setting_web_mark_read_on_scroll_policy")
         .val(settings_object.web_mark_read_on_scroll_policy);
+    $container
+        .find(".setting_web_channel_default_view")
+        .val(settings_object.web_channel_default_view);
     $container
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
@@ -275,7 +276,7 @@ export function set_up(settings_panel: SettingsPanel): void {
         if (current_user_list_style === data.user_list_style) {
             return;
         }
-        const $spinner = $container.find(".advanced-settings-status").expectOne();
+        const $spinner = $container.find(".information-settings-status").expectOne();
         loading.make_indicator($spinner, {text: settings_ui.strings.saving});
 
         void channel.patch({
@@ -289,7 +290,7 @@ export function set_up(settings_panel: SettingsPanel): void {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    $container.find(".advanced-settings-status").expectOne(),
+                    $container.find(".information-settings-status").expectOne(),
                 );
             },
         });
@@ -325,7 +326,7 @@ export function report_user_list_style_change(settings_panel: SettingsPanel): vo
     // causes the actual sprite sheet to change.  The current
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
-    const $spinner = $(settings_panel.container).find(".advanced-settings-status");
+    const $spinner = $(settings_panel.container).find(".information-settings-status");
     if ($spinner.length) {
         loading.destroy_indicator($spinner);
         ui_report.success(

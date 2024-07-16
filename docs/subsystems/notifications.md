@@ -28,7 +28,7 @@ as follows:
 
 - `do_send_messages` is the synchronous message-sending code path,
   and passing the following data in its `send_event` call:
-  - Data about the message's content (E.g. mentions, wildcard
+  - Data about the message's content (e.g., mentions, wildcard
     mentions, and alert words) and encodes it into the `UserMessage`
     table's `flags` structure, which is in turn passed into
     `send_event` for each user receiving the message.
@@ -72,8 +72,8 @@ as follows:
     `receiver_is_off_zulip` returns `True`, which checks whether the user has any
     current events system clients registered to receive `message`
     events. This check is done immediately (handling soft disconnects,
-    where E.g. the user closes their last Zulip tab and we get the
-    `DELETE /events/{queue_id}` request).
+    for example, where the user closes their last Zulip tab and we get
+    the `DELETE /events/{queue_id}` request).
   - The `receiver_is_off_zulip` check is effectively repeated when
     event queues are garbage-collected (in `missedmessage_hook`) by
     looking for whether the queue being garbage-collected was the only
@@ -89,7 +89,7 @@ as follows:
     notifications in cases like a mention added during message
     editing.
   - The notification sending logic for message edits
-    inside Tornado has extensive automated test suites; e.g.
+    inside Tornado has extensive automated test suites; e.g.,
     `test_message_edit_notifications.py` covers all the cases around
     editing a message to add/remove a mention.
   - We may in the future want to add some sort of system for letting

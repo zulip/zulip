@@ -3,8 +3,9 @@ import os
 import random
 import secrets
 import shutil
+from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, Literal, Optional, Tuple
+from typing import IO, Any, BinaryIO, Literal
 
 from django.conf import settings
 from typing_extensions import override
@@ -80,11 +81,9 @@ class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_attachment(
         self,
         path_id: str,
-        uploaded_file_size: int,
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Realm,
     ) -> None:
         write_local_file("files", path_id, file_data)
 
@@ -97,7 +96,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return delete_local_file("files", path_id)
 
     @override
-    def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
+    def all_message_attachments(self) -> Iterator[tuple[str, datetime]]:
         assert settings.LOCAL_UPLOADS_DIR is not None
         for dirname, _, files in os.walk(settings.LOCAL_UPLOADS_DIR + "/files"):
             for f in files:
@@ -112,7 +111,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return "/user_avatars/" + self.get_avatar_path(hash_key, medium)
 
     @override
-    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
         image_data = read_local_file("avatars", file_path + ".original")
         content_type = guess_type(file_path)[0]
         return image_data, content_type or "application/octet-stream"
@@ -124,7 +123,8 @@ class LocalUploadBackend(ZulipUploadBackend):
         *,
         user_profile: UserProfile,
         image_data: bytes,
-        content_type: Optional[str],
+        content_type: str | None,
+        future: bool = True,
     ) -> None:
         write_local_file("avatars", file_path, image_data)
 
@@ -139,7 +139,9 @@ class LocalUploadBackend(ZulipUploadBackend):
         return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
 
     @override
-    def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
+    def upload_realm_icon_image(
+        self, icon_file: IO[bytes], user_profile: UserProfile, content_type: str
+    ) -> None:
         upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         image_data = icon_file.read()
         write_local_file("avatars", os.path.join(upload_path, "icon.original"), image_data)
@@ -157,7 +159,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def upload_realm_logo_image(
-        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
+        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
     ) -> None:
         upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         if night:
@@ -192,7 +194,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def upload_single_emoji_image(
-        self, path: str, content_type: Optional[str], user_profile: UserProfile, image_data: bytes
+        self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
         write_local_file("avatars", path, image_data)
 
@@ -206,7 +208,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         self,
         realm: Realm,
         tarball_path: str,
-        percent_callback: Optional[Callable[[Any], None]] = None,
+        percent_callback: Callable[[Any], None] | None = None,
     ) -> str:
         path = os.path.join(
             "exports",
@@ -221,7 +223,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return public_url
 
     @override
-    def delete_export_tarball(self, export_path: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> str | None:
         # Get the last element of a list in the form ['user_avatars', '<file_path>']
         assert export_path.startswith("/")
         file_path = export_path[1:].split("/", 1)[-1]

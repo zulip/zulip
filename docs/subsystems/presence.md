@@ -13,7 +13,7 @@ scalability problems for a team chat tool like Zulip.
 There's a lot of performance-related details in the backend and
 network protocol design that we won't get into here. The focus of
 this is what one needs to know to correctly implement a Zulip client's
-presence implementation (e.g. web app, mobile app, terminal client, or
+presence implementation (e.g., web app, mobile app, terminal client, or
 other tool that's intended to represent whether a user is online and
 using Zulip).
 
@@ -36,7 +36,7 @@ about that data structure:
 - It's really important that the timestamp is the last time we heard
   from the client. A client can only interpret the status to display
   about another user by doing a simple computation using the (status,
-  timestamp) pair. E.g. a user who last used Zulip 1 week ago will
+  timestamp) pair. E.g., a user who last used Zulip 1 week ago will
   have a timestamp of 1 week ago and a status of "active". Why?
   Because this correctly handles the race conditions. For example, if
   the threshold for displaying a user as "offline" was 5 minutes
@@ -50,7 +50,3 @@ about that data structure:
 - The `status_from_timestamp` function in `web/src/presence.js` is
   useful sample code; the `OFFLINE_THRESHOLD_SECS` check is critical
   to correct output.
-- We provide the data for e.g. whether the user was online on their
-  desktop or the mobile app, but for a basic client, you will likely
-  only want to parse the "aggregated" key, which shows the summary
-  answer for "is this user online".

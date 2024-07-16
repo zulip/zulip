@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
@@ -12,7 +10,7 @@ from zerver.tornado.django_api import send_event_on_commit
 
 @transaction.atomic(durable=True)
 def do_add_realm_domain(
-    realm: Realm, domain: str, allow_subdomains: bool, *, acting_user: Optional[UserProfile]
+    realm: Realm, domain: str, allow_subdomains: bool, *, acting_user: UserProfile | None
 ) -> RealmDomain:
     realm_domain = RealmDomain.objects.create(
         realm=realm, domain=domain, allow_subdomains=allow_subdomains
@@ -44,7 +42,7 @@ def do_add_realm_domain(
 
 @transaction.atomic(durable=True)
 def do_change_realm_domain(
-    realm_domain: RealmDomain, allow_subdomains: bool, *, acting_user: Optional[UserProfile]
+    realm_domain: RealmDomain, allow_subdomains: bool, *, acting_user: UserProfile | None
 ) -> None:
     realm_domain.allow_subdomains = allow_subdomains
     realm_domain.save(update_fields=["allow_subdomains"])
@@ -75,9 +73,7 @@ def do_change_realm_domain(
 
 
 @transaction.atomic(durable=True)
-def do_remove_realm_domain(
-    realm_domain: RealmDomain, *, acting_user: Optional[UserProfile]
-) -> None:
+def do_remove_realm_domain(realm_domain: RealmDomain, *, acting_user: UserProfile | None) -> None:
     realm = realm_domain.realm
     domain = realm_domain.domain
     realm_domain.delete()

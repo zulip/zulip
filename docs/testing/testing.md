@@ -40,7 +40,7 @@ typically involve running subsets of the tests with commands like these:
 ```
 
 The commands above will all run in just a few seconds. Many more
-useful options are discussed in each tool's documentation (e.g.
+useful options are discussed in each tool's documentation (e.g.,
 `./tools/test-backend --help`).
 
 ## Major test suites
@@ -117,7 +117,7 @@ reasons:
 
 As a result, Zulip's major test suites should never access the
 Internet directly. Since code in Zulip does need to access the
-Internet (e.g. to access various third-party APIs), this means that
+Internet (e.g., to access various third-party APIs), this means that
 the Zulip tests use mocking to basically hardcode (for the purposes of
 the test) what responses should be used for any outgoing Internet
 requests that Zulip would make in the code path being tested.
