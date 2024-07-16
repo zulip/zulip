@@ -104,7 +104,7 @@ class DemoRequestForm(forms.Form):
     role = forms.CharField(max_length=MAX_INPUT_LENGTH)
     organization_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
     organization_type = forms.CharField()
-    organization_website = forms.URLField(required=True)
+    organization_website = forms.URLField(required=True, assume_scheme="https")
     expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
     message = forms.CharField(widget=forms.Textarea)
 
