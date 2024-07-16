@@ -298,20 +298,19 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
 
             if (e.key === "Escape" && $search_query_box.is(":focus")) {
                 exit_search({keep_search_narrow_open: false});
-            } else if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
+            } else if (
+                keydown_util.is_enter_event(e) &&
+                $search_query_box.is(":focus") &&
+                !typeahead_was_open_on_enter
+            ) {
                 // If the typeahead was just open, the Enter event was selecting an item
-                // from the typeahead. When that's the case, we don't want to exit the
-                // search bar since the user might have more terms to add still. But we
-                // do trigger a search to update the message feed to match the current
-                // set of terms in the search bar.
-                if (typeahead_was_open_on_enter) {
-                    narrow_to_search_contents_with_search_bar_open();
-                } else {
-                    if (!validate_text_terms()) {
-                        return;
-                    }
-                    narrow_or_search_for_term({on_narrow_search});
+                // from the typeahead. When that's the case, we don't want to call
+                // narrow_or_search_for_term which exits the search bar, since the user
+                // might have more terms to add still.
+                if (!validate_text_terms()) {
+                    return;
                 }
+                narrow_or_search_for_term({on_narrow_search});
             }
         });
 
