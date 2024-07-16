@@ -690,7 +690,9 @@ class UpgradePageContext(TypedDict):
 
 
 class SponsorshipRequestForm(forms.Form):
-    website = forms.URLField(max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH, required=False)
+    website = forms.URLField(
+        max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH, required=False, assume_scheme="https"
+    )
     organization_type = forms.IntegerField()
     description = forms.CharField(widget=forms.Textarea)
     expected_total_users = forms.CharField(widget=forms.Textarea)
