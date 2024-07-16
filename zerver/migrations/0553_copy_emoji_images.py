@@ -182,7 +182,11 @@ def thumbnail_local_emoji(apps: StateApps) -> None:
             emoji.save(update_fields=["file_name"])
         except SkipImageError as e:
             logging.warning(
-                "Failed to re-thumbnail %s/emoji/images/%s: %s", emoji.realm_id, emoji.file_name, e
+                "Failed to re-thumbnail emoji id %d with %s/emoji/images/%s: %s",
+                emoji.id,
+                emoji.realm_id,
+                emoji.file_name,
+                e,
             )
             new_file_name = get_emoji_file_name("image/png", emoji.id)
             try:
@@ -272,7 +276,11 @@ def thumbnail_s3(apps: StateApps) -> None:
             emoji.save(update_fields=["file_name"])
         except SkipImageError as e:
             logging.warning(
-                "Failed to re-thumbnail %s/emoji/images/%s: %s", emoji.realm_id, emoji.file_name, e
+                "Failed to re-thumbnail emoji id %d with %s/emoji/images/%s: %s",
+                emoji.id,
+                emoji.realm_id,
+                emoji.file_name,
+                e,
             )
             new_file_name = get_emoji_file_name("image/png", emoji.id)
             try:
