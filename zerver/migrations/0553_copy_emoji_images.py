@@ -226,13 +226,15 @@ def thumbnail_s3(apps: StateApps) -> None:
         old_file_name = emoji.file_name
         try:
             base_path = os.path.join(str(emoji.realm_id), "emoji/images")
+            copy_from_path = f"{base_path}/{old_file_name}.original"
             try:
-                old_data = avatar_bucket.Object(f"{base_path}/{old_file_name}.original").get()
+                old_data = avatar_bucket.Object(copy_from_path).get()
                 original_bytes = old_data["Body"].read()
                 content_type = old_data["ContentType"]
             except botocore.exceptions.ClientError:
                 # Imports currently don't write ".original" files, so check without that
                 try:
+                    copy_from_path = f"{base_path}/{old_file_name}"
                     old_data = avatar_bucket.Object(f"{base_path}/{old_file_name}").get()
                 except botocore.exceptions.ClientError as e:
                     raise SkipImageError(f"Failed to read .original file: {e}")
@@ -258,7 +260,7 @@ def thumbnail_s3(apps: StateApps) -> None:
 
             print(f"{base_path}/{old_file_name} -> {base_path}/{new_file_name}")
             avatar_bucket.Object(f"{base_path}/{new_file_name}.original").copy_from(
-                CopySource=f"{settings.S3_AVATAR_BUCKET}/{base_path}/{old_file_name}.original",
+                CopySource=f"{settings.S3_AVATAR_BUCKET}/{copy_from_path}",
                 MetadataDirective="REPLACE",
                 Metadata=metadata,
                 ContentType=content_type,
