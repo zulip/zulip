@@ -1383,7 +1383,10 @@ li.topic-list-item {
 .zoom-in {
     .narrow-filter > .bottom_left_row {
         position: sticky;
-        top: calc(var(--left-sidebar-sections-vertical-gutter) + 20px);
+        top: calc(
+            var(--left-sidebar-sections-vertical-gutter) +
+                var(--line-height-sidebar-row-prominent)
+        );
         z-index: 2;
         padding-bottom: 1px;
         background-color: var(--color-background);
