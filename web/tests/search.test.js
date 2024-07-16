@@ -245,6 +245,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             _setup(terms);
             input_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
+            $(".navbar-search.expanded").length = 1;
             assert.equal(opts.updater("ver"), "ver");
             assert.ok(!input_pill_displayed);
 

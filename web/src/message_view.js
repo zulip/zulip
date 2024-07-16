@@ -1297,9 +1297,8 @@ function handle_post_view_change(msg_list, opts) {
     }
     compose_closed_ui.update_reply_recipient_label();
 
-    if (!opts.prevent_message_header_render) {
-        message_view_header.render_title_area();
-    }
+    message_view_header.render_title_area();
+
     narrow_title.update_narrow_title(filter);
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);

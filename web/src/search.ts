@@ -35,7 +35,6 @@ function get_search_bar_text(): string {
 // TODO/typescript: Add the rest of the options when converting narrow.js to typescript.
 type NarrowSearchOptions = {
     trigger: string;
-    prevent_message_header_render?: boolean;
 };
 
 type OnNarrowSearch = (terms: NarrowTerm[], options: NarrowSearchOptions) => void;
@@ -102,7 +101,18 @@ function narrow_to_search_contents_with_search_bar_open(): void {
         .join(" ")
         .trim();
     const terms = Filter.parse(search_query);
-    on_narrow_search(terms, {trigger: "search", prevent_message_header_render: true});
+    on_narrow_search(terms, {trigger: "search"});
+
+    // We want to keep the search bar open here, not show the
+    // message header. But here we'll let the message header
+    // get rendered first, so that it's up to date with the
+    // new narrow, and then reopen search if it got closed.
+    if ($(".navbar-search.expanded").length === 0) {
+        open_search_bar_and_close_narrow_description();
+        focus_search_input_at_end();
+        search_typeahead.lookup(false);
+        search_input_has_changed = true;
+    }
 }
 
 // When a pill is added, or when text input is changed, we set
