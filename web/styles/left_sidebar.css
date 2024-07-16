@@ -91,15 +91,6 @@ li.show-more-topics {
 
             &.topic-list li {
                 padding: 0;
-
-                &.filter-topics {
-                    padding-bottom: 0;
-                    position: sticky;
-                    top: calc(
-                        var(--left-sidebar-sections-vertical-gutter) + 43px
-                    );
-                    z-index: 2;
-                }
             }
         }
     }
