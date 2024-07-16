@@ -138,6 +138,23 @@ person.
             find_a_dm_conversation_help_url="/help/direct-messages#find-a-direct-message-conversation",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=7,
+        message="""
+**Web and desktop updates**
+- To make reading more comfortable, Zulip has been redesigned with a larger font
+size and line spacing. If you prefer to see more content at once, [enable
+compact mode]({settings_preferences_url}) to go back to the previous design.
+- The main search has been redesigned with pills for [search
+filters]({search_help_url}), making it easier to use.
+- Pasted [channel and topic URLs]({link_help_url}) are now automatically
+converted into nicely formatted links.
+""".format(
+            settings_preferences_url="/#settings/preferences",
+            search_help_url="/help/search-for-messages",
+            link_help_url="/help/link-to-a-message-or-conversation",
+        ),
+    ),
 ]
 
 
