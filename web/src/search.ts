@@ -434,12 +434,7 @@ function exit_search(opts: {keep_search_narrow_open: boolean}): void {
 }
 
 export function open_search_bar_and_close_narrow_description(): void {
-    // Preserve user input if they've already started typing, but
-    // otherwise fill the input field with the text terms for
-    // the current narrow.
-    if (get_search_bar_text() === "") {
-        reset_searchbox();
-    }
+    reset_searchbox();
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
     popovers.hide_all();
