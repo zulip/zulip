@@ -419,7 +419,6 @@ if DEVELOPMENT:
     # PRODUCTION.  Saves a bunch of time.
     PASSWORD_HASHERS = [
         "django.contrib.auth.hashers.MD5PasswordHasher",
-        "django.contrib.auth.hashers.SHA1PasswordHasher",
         "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     ]
     # Also we auto-generate passwords for the default users which you
