@@ -305,6 +305,14 @@ def json_change_settings(
     ),
     web_navigate_to_sent_message: bool | None = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
+    # UserProfile object is being refetched here to make sure that we
+    # do not use stale object from cache which can happen when a
+    # previous request tried updating multiple settings in a single
+    # request.
+    #
+    # TODO: Change the cache flushing strategy to make sure cache
+    # does not contain stale objects.
+    user_profile = UserProfile.objects.get(id=user_profile.id)
     if (
         default_language is not None
         or notification_sound is not None

@@ -177,7 +177,14 @@ def update_realm(
         Json[int] | None, ApiParamConfig("can_access_all_users_group")
     ] = None,
 ) -> HttpResponse:
-    realm = user_profile.realm
+    # Realm object is being refetched here to make sure that we
+    # do not use stale object from cache which can happen when a
+    # previous request tried updating multiple settings in a single
+    # request.
+    #
+    # TODO: Change the cache flushing strategy to make sure cache
+    # does not contain stale objects.
+    realm = Realm.objects.get(id=user_profile.realm_id)
 
     # Additional validation/error checking beyond types go here, so
     # the entire request can succeed or fail atomically.
