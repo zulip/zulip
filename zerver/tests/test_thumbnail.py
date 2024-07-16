@@ -12,7 +12,12 @@ from django.http.request import MediaType
 from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule, read_test_image_file
+from zerver.lib.test_helpers import (
+    consume_response,
+    get_test_image_file,
+    ratelimit_rule,
+    read_test_image_file,
+)
 from zerver.lib.thumbnail import (
     BadImageError,
     BaseThumbnailFormat,
@@ -503,11 +508,13 @@ class TestThumbnailRetrieval(ZulipTestCase):
                 response = self.client_get(f"/user_uploads/{path_id}")
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.headers["Content-Type"], "image/gif")
+                consume_response(response)
 
                 # Format we don't have
                 response = self.client_get(f"/user_uploads/thumbnail/{path_id}/1x1.png")
                 self.assertEqual(response.status_code, 404)
                 self.assertEqual(response.headers["Content-Type"], "image/png")
+                consume_response(response)
 
                 # Exit the block, triggering the thumbnailing worker
 
@@ -520,6 +527,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
                 int(thumbnail_response.headers["Content-Length"]),
                 int(response.headers["Content-Length"]),
             )
+            consume_response(thumbnail_response)
 
             animated_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_anim!s}")
             self.assertEqual(animated_response.status_code, 200)
@@ -528,11 +536,13 @@ class TestThumbnailRetrieval(ZulipTestCase):
                 int(thumbnail_response.headers["Content-Length"]),
                 int(animated_response.headers["Content-Length"]),
             )
+            consume_response(animated_response)
 
             # Invalid thumbnail format
             response = self.client_get(f"/user_uploads/thumbnail/{path_id}/bogus")
             self.assertEqual(response.status_code, 404)
             self.assertEqual(response.headers["Content-Type"], "image/png")
+            consume_response(response)
 
             # path_id for a non-image
             with (
@@ -546,15 +556,18 @@ class TestThumbnailRetrieval(ZulipTestCase):
             response = self.client_get(f"/user_uploads/thumbnail/{text_path_id}/{webp_still!s}")
             self.assertEqual(response.status_code, 404)
             self.assertEqual(response.headers["Content-Type"], "image/png")
+            consume_response(response)
 
         # Shrink the list of formats, and check that we can still get
         # the thumbnails that were generated at the time
         with self.mock_formats([webp_still]):
             response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
             self.assertEqual(response.status_code, 200)
+            consume_response(response)
 
             response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_anim!s}")
             self.assertEqual(response.status_code, 200)
+            consume_response(response)
 
         # Grow the format list, and check that fetching that new
         # format generates all of the missing formats
@@ -569,6 +582,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
             small_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{jpeg_still!s}")
             self.assertEqual(small_response.status_code, 200)
             self.assertEqual(small_response.headers["Content-Type"], "image/jpeg")
+            consume_response(small_response)
             # This made two thumbnails
             self.assertEqual(thumb_mock.call_count, 2)
 
@@ -576,6 +590,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
             big_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{big_jpeg_still!s}")
             self.assertEqual(big_response.status_code, 200)
             self.assertEqual(big_response.headers["Content-Type"], "image/jpeg")
+            consume_response(big_response)
             thumb_mock.assert_not_called()
 
             self.assertLess(
@@ -598,6 +613,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
             still_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
             self.assertEqual(still_response.status_code, 200)
             self.assertEqual(still_response.headers["Content-Type"], "image/webp")
+            consume_response(still_response)
 
             # We can request -anim -- we didn't render it, but we the
             # "closest we rendered" logic kicks in, and we get the
@@ -605,6 +621,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
             animated_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_anim!s}")
             self.assertEqual(animated_response.status_code, 200)
             self.assertEqual(animated_response.headers["Content-Type"], "image/webp")
+            consume_response(animated_response)
             # Double-check that we don't actually have the animated version, by comparing file sizes
             self.assertEqual(
                 animated_response.headers["Content-Length"],
@@ -614,6 +631,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
             response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{jpeg_still!s}")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.headers["Content-Type"], "image/jpeg")
+            consume_response(response)
 
     def test_closest_format(self) -> None:
         self.login_user(self.example_user("hamlet"))
