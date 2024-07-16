@@ -666,6 +666,17 @@ export function show(raw_terms, opts) {
                             // filter.try_adjusting_for_moved_with_target, and
                             // should update the URL hash accordingly.
                             update_hash_to_match_filter(filter, "retarget topic location");
+                            // Since filter is updated, we need to handle various things
+                            // like updating the message view header title, unread banner
+                            // based on the updated filter.
+                            handle_post_message_list_change(
+                                id_info,
+                                message_lists.current,
+                                opts,
+                                select_immediately,
+                                select_opts,
+                                then_select_offset,
+                            );
                             filter.narrow_requires_hash_change = false;
                         }
                         if (!select_immediately) {
