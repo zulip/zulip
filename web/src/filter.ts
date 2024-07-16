@@ -1486,7 +1486,9 @@ export class Filter {
     }
 
     sorted_term_types(): string[] {
-        if (this._sorted_term_types === undefined) {
+        // We need to rebuild the sorted_term_types if at all our narrow
+        // is updated (through `with` operator).
+        if (this._sorted_term_types === undefined || this.narrow_requires_hash_change) {
             this._sorted_term_types = this._build_sorted_term_types();
         }
         return this._sorted_term_types;
