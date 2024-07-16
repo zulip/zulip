@@ -11,7 +11,7 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import type {User} from "./people";
-import type {NarrowTerm} from "./state_data";
+import {type NarrowTerm, current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -625,10 +625,16 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     if (last.operator === "search" && common.phrase_match(last.operand, "streams")) {
         search_string = "streams:public";
     }
+    let description_html;
+    if (page_params.is_spectator || current_user.is_guest) {
+        description_html = "All public channels that you can view";
+    } else {
+        description_html = "All public channels";
+    }
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
             search_string,
-            description_html: "All public channels in organization",
+            description_html,
             is_people: false,
             incompatible_patterns: [
                 {operator: "is", operand: "dm"},
