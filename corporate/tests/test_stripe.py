@@ -21,7 +21,6 @@ import stripe
 import time_machine
 from django.conf import settings
 from django.core import signing
-from django.test import override_settings
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
@@ -90,6 +89,7 @@ from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_rea
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile
@@ -6579,7 +6579,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
             )
 
 
-@override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+@activate_push_notification_service()
 class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
     @override
     def setUp(self) -> None:
@@ -8308,7 +8308,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             self.assertEqual(invoice_item1[key], value)
 
 
-@override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+@activate_push_notification_service()
 class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
     @override
     def setUp(self) -> None:

@@ -42,6 +42,7 @@ from zerver.lib.realm_description import get_realm_rendered_description, get_rea
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.upload import delete_message_attachments, upload_message_attachment
 from zerver.models import (
     Attachment,
@@ -1370,7 +1371,7 @@ class RealmTest(ZulipTestCase):
         ]
         self.assertEqual(sorted(user_group_names), sorted(expected_system_group_names))
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     def test_do_create_realm_notify_bouncer(self) -> None:
         dummy_send_realms_only_response = {
             "result": "success",
