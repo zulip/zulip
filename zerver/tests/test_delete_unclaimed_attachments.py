@@ -28,10 +28,10 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         self.login_user(uploader)
 
         with time_machine.travel(when, tick=False):
-            file_obj = get_test_image_file(filename)
-            response = self.assert_json_success(
-                self.client_post("/json/user_uploads", {"file": file_obj})
-            )
+            with get_test_image_file(filename) as file_obj:
+                response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": file_obj})
+                )
             path_id = re.sub(r"/user_uploads/", "", response["url"])
             return Attachment.objects.get(path_id=path_id)
 
