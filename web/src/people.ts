@@ -1526,10 +1526,6 @@ export function extract_people_from_message(message: MessageWithBooleans): void 
 
     // Add new people involved in this message to the people list
     for (const person of involved_people) {
-        if (person.unknown_local_echo_user) {
-            continue;
-        }
-
         const user_id = person.id;
 
         if (people_by_user_id_dict.has(user_id)) {
@@ -1605,10 +1601,6 @@ export function maybe_incr_recipient_count(
     // Track the number of direct messages we've sent to this person
     // to improve autocomplete
     for (const recip of message.display_recipient) {
-        if (recip.unknown_local_echo_user) {
-            continue;
-        }
-
         const user_id = recip.id;
         incr_recipient_count(user_id);
     }
