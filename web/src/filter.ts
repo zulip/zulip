@@ -535,6 +535,7 @@ export class Filter {
                 return ["home", "all"].includes(term.operand);
             case "id":
             case "near":
+            case "with":
                 return Number.isInteger(Number(term.operand));
             case "channel":
             case "stream":
