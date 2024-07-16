@@ -514,7 +514,7 @@ def re_map_foreign_keys(
     """
 
     # See comments in bulk_import_user_message_data.
-    assert "usermessage" not in related_table
+    assert related_table != "usermessage"
 
     re_map_foreign_keys_internal(
         data[table],
@@ -692,7 +692,7 @@ def update_model_ids(model: Any, data: TableData, related_table: TableName) -> N
     # Important: remapping usermessage rows is
     # not only unnecessary, it's expensive and can cause
     # memory errors. We don't even use ids from ID_MAP.
-    assert "usermessage" not in table
+    assert table != "usermessage"
 
     old_id_list = current_table_ids(data, table)
     allocated_id_list = allocate_ids(model, len(data[table]))
