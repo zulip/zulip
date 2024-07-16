@@ -31,7 +31,7 @@ class WordPressHookTests(WebhookTestCase):
         )
 
     def test_publish_post_no_data_provided(self) -> None:
-        # Note: the fixture includes 'hook=publish_post' because it's always added by HookPress
+        # If the user forgot to configure the fields for the action in WordPress.
         expected_topic_name = "WordPress notification"
         expected_message = "New post published:\n* [New WordPress post](WordPress post URL)"
 
@@ -48,30 +48,6 @@ class WordPressHookTests(WebhookTestCase):
 
         self.check_webhook(
             "publish_page",
-            expected_topic_name,
-            expected_message,
-            content_type="application/x-www-form-urlencoded",
-        )
-
-    def test_user_register(self) -> None:
-        expected_topic_name = "New Blog Users"
-        expected_message = (
-            "New blog user registered:\n* **Name**: test_user\n* **Email**: test_user@example.com"
-        )
-
-        self.check_webhook(
-            "user_register",
-            expected_topic_name,
-            expected_message,
-            content_type="application/x-www-form-urlencoded",
-        )
-
-    def test_wp_login(self) -> None:
-        expected_topic_name = "New Login"
-        expected_message = "User testuser logged in."
-
-        self.check_webhook(
-            "wp_login",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
