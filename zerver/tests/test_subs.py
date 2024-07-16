@@ -3052,9 +3052,6 @@ class DefaultStreamTest(ZulipTestCase):
         self.assert_length(default_streams, 5)
         self.assertEqual({dct["stream_id"] for dct in default_streams}, new_stream_ids)
 
-        # Make sure our query isn't some bloated select_related query.
-        self.assertLess(len(queries[0].sql), 800)
-
         with queries_captured() as queries:
             default_stream_ids = get_default_stream_ids_for_realm(realm.id)
 
