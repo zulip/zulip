@@ -401,7 +401,8 @@ select.settings_select {
 
 .user_role,
 .profile_field_type,
-.bot_type {
+.bot_type,
+.last_active {
     word-break: normal;
 }
 
