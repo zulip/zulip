@@ -412,7 +412,7 @@ test("basics", () => {
     assert.ok(filter.includes_full_stream_history());
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
-    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view());
     assert.ok(filter.can_bucket_by("channel", "topic", "with"));
     assert.ok(!filter.is_conversation_view_with_near());
 
