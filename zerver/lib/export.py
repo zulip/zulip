@@ -47,6 +47,7 @@ from zerver.models import (
     MutedUser,
     NamedUserGroup,
     OnboardingStep,
+    OnboardingUserMessage,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -769,6 +770,13 @@ def get_realm_config() -> Config:
         include_rows="realm_id__in",
     )
 
+    Config(
+        table="zerver_onboardingusermessage",
+        model=OnboardingUserMessage,
+        virtual_parent=realm_config,
+        custom_fetch=custom_fetch_onboarding_usermessage,
+    )
+
     user_profile_config = Config(
         custom_tables=[
             "zerver_userprofile",
@@ -1195,6 +1203,18 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
     rows = make_raw(realmauditlog_objects)
 
     response["zerver_realmauditlog"] = rows
+
+
+def custom_fetch_onboarding_usermessage(response: TableData, context: Context) -> None:
+    realm = context["realm"]
+    response["zerver_onboardingusermessage"] = []
+
+    onboarding_usermessage_query = OnboardingUserMessage.objects.filter(realm=realm)
+    for onboarding_usermessage in onboarding_usermessage_query:
+        onboarding_usermessage_obj = model_to_dict(onboarding_usermessage)
+        onboarding_usermessage_obj["flags_mask"] = onboarding_usermessage.flags.mask
+        del onboarding_usermessage_obj["flags"]
+        response["zerver_onboardingusermessage"].append(onboarding_usermessage_obj)
 
 
 def fetch_usermessages(
