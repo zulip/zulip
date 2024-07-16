@@ -251,6 +251,14 @@ def initialize_worker_path(worker_id: int) -> None:
     settings.LOCAL_AVATARS_DIR = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
     settings.LOCAL_FILES_DIR = os.path.join(settings.LOCAL_UPLOADS_DIR, "files")
 
+    # Perform the import of upload_backend now, because the backend is
+    # chosen at import time; this prevents @use_s3_backend from
+    # effectively caching the backend
+    from zerver.lib.upload import upload_backend
+    from zerver.lib.upload.local import LocalUploadBackend
+
+    assert isinstance(upload_backend, LocalUploadBackend)
+
 
 class Runner(DiscoverRunner):
     parallel_test_suite = ParallelTestSuite
