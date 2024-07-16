@@ -109,10 +109,14 @@ def clear_database() -> None:
     # and; we only need to flush memcached if we're populating a
     # database that would be used with it (i.e. zproject.dev_settings).
     if default_cache["BACKEND"] == "zerver.lib.singleton_bmemcached.SingletonBMemcached":
-        bmemcached.Client(
+        memcached_client = bmemcached.Client(
             (default_cache["LOCATION"],),
             **default_cache["OPTIONS"],
-        ).flush_all()
+        )
+        try:
+            memcached_client.flush_all()
+        finally:
+            memcached_client.disconnect_all()
 
     model: Any = None  # Hack because mypy doesn't know these are model classes
 
