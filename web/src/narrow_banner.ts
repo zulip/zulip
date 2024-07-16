@@ -72,6 +72,8 @@ function retrieve_search_query_data(): SearchData {
     const search_string_result: SearchData = {
         query_words: [],
         has_stop_word: false,
+        query_words_shortened: [],
+        size: 0,
     };
 
     // Add in stream:foo and topic:bar if present
@@ -100,6 +102,31 @@ function retrieve_search_query_data(): SearchData {
                 is_stop_word: false,
             });
         }
+    }
+
+    for (const query_word_entry of search_string_result.query_words) {
+        if (search_string_result.size + query_word_entry.query_word.length <= 50) {
+            search_string_result.query_words_shortened.push(query_word_entry);
+        } else {
+            const aux_query_word = query_word_entry.query_word.slice(
+                0,
+                50 - search_string_result.size,
+            );
+            search_string_result.query_words_shortened.push({
+                query_word: aux_query_word,
+                is_stop_word: query_word_entry.is_stop_word,
+            });
+            search_string_result.size += query_word_entry.query_word.length;
+            break;
+        }
+        search_string_result.size += query_word_entry.query_word.length;
+    }
+
+    if (search_string_result.size > 50) {
+        search_string_result.query_words_shortened.push({
+            query_word: "...",
+            is_stop_word: false,
+        });
     }
 
     return search_string_result;
