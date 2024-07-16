@@ -354,7 +354,7 @@ class NarrowBuilder:
                 # If the initial query doesn't use `zerver_usermessage`
                 check_col = literal_column("zerver_message.id", Integer)
             exists_cond = (
-                select([1])
+                select(1)
                 .select_from(table("zerver_reaction"))
                 .where(check_col == literal_column("zerver_reaction.message_id", Integer))
                 .exists()
