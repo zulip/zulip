@@ -51,41 +51,44 @@ important optimization when fetching messages in certain cases (e.g.,
 when [adding the `read` flag to a user's personal
 messages](/api/update-message-flags-for-narrow)).
 
-**Changes**: In Zulip 9.0 (feature level 271), narrows gained support
-for a new `with` operator for linking to topics.
+## Changes
 
-In Zulip 9.0 (feature level 265), support was added for a
-new `is:followed` filter, matching messages in topics that the current
-user is [following](/help/follow-a-topic).
+* In Zulip 9.0 (feature level 271), narrows gained support
+  for a new `with` operator for linking to topics.
 
-In Zulip 9.0 (feature level 250), support was added for
-two filters related to stream messages: `channel` and `channels`. The
-`channel` operator is an alias for the `stream` operator. The `channels`
-operator is an alias for the `streams` operator. Both `channel` and
-`channels` return the same exact results as `stream` and `streams`
-respectively.
+* In Zulip 9.0 (feature level 265), support was added for a new
+  `is:followed` filter, matching messages in topics that the current
+  user is [following](/help/follow-a-topic).
 
-In Zulip 9.0 (feature level 249), support was added for a new filter,
-`has:reaction`, which returns messages that have at least one [emoji
-reaction](/help/emoji-reactions).
+* In Zulip 9.0 (feature level 250), support was added for two filters
+  related to stream messages: `channel` and `channels`. The `channel`
+  operator is an alias for the `stream` operator. The `channels`
+  operator is an alias for the `streams` operator. Both `channel` and
+  `channels` return the same exact results as `stream` and `streams`
+  respectively.
 
-In Zulip 7.0 (feature level 177), support was added
-for three filters related to direct messages: `is:dm`, `dm` and
-`dm-including`. The `dm` operator replaced and deprecated the
-`pm-with` operator. The `is:dm` filter replaced and deprecated
-the `is:private` filter. The `dm-including` operator replaced and
-deprecated the `group-pm-with` operator.
+* In Zulip 9.0 (feature level 249), support was added for a new filter,
+  `has:reaction`, which returns messages that have at least one [emoji
+  reaction](/help/emoji-reactions).
 
-The `dm-including` and `group-pm-with` operators return slightly
-different results. For example, `dm-including:1234` returns all
-direct messages (1-on-1 and group) that include the current user
-and the user with the unique user ID of `1234`. On the other hand,
-`group-pm-with:1234` returned only group direct messages that included
-the current user and the user with the unique user ID of `1234`.
+* In Zulip 7.0 (feature level 177), support was added for three filters
+  related to direct messages: `is:dm`, `dm` and `dm-including`. The
+  `dm` operator replaced and deprecated the `pm-with` operator. The
+  `is:dm` filter replaced and deprecated the `is:private` filter. The
+  `dm-including` operator replaced and deprecated the `group-pm-with`
+  operator.
 
-Both `dm` and `is:dm` are aliases of `pm-with` and `is:private`
-respectively, and return the same exact results that the deprecated
-filters did.
+    * The `dm-including` and `group-pm-with` operators return slightly
+      different results. For example, `dm-including:1234` returns all
+      direct messages (1-on-1 and group) that include the current user
+      and the user with the unique user ID of `1234`. On the other hand,
+      `group-pm-with:1234` returned only group direct messages that
+      included the current user and the user with the unique user ID of
+      `1234`.
+
+    * Both `dm` and `is:dm` are aliases of `pm-with` and `is:private`
+      respectively, and return the same exact results that the
+      deprecated filters did.
 
 ## Narrows that use IDs
 

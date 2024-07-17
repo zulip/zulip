@@ -37,7 +37,7 @@ format used by the Zulip server that they are interacting with.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added support for a new [search/narrow filter](/api/construct-narrow),
+  Added support for a new [search/narrow filter](/api/construct-narrow#changes),
   `with`, which returns messages in the same channel and topic as that
   of the operand of filter, with the first unread message as anchor.
 
@@ -99,7 +99,7 @@ format used by the Zulip server that they are interacting with.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added a new [search/narrow filter](/api/construct-narrow),
+  Added a new [search/narrow filter](/api/construct-narrow#changes),
   `is:followed`, matching messages in topics that the current user is
   [following](/help/follow-a-topic).
 
@@ -248,7 +248,7 @@ format used by the Zulip server that they are interacting with.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added support for two [search/narrow filters](/api/construct-narrow)
+  Added support for two [search/narrow filters](/api/construct-narrow#changes)
   related to stream messages: `channel` and `channels`. The `channel`
   operator is an alias for the `stream` operator. The `channels`
   operator is an alias for the `streams` operator.
@@ -259,7 +259,7 @@ format used by the Zulip server that they are interacting with.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added support for a new [search/narrow filter](/api/construct-narrow),
+  Added support for a new [search/narrow filter](/api/construct-narrow#changes),
   `has:reaction`, which returns messages with at least one [emoji
   reaction](/help/emoji-reactions).
 
@@ -775,8 +775,8 @@ No changes; feature level used for Zulip 8.0 release.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  For [search/narrow filters](/api/construct-narrow) with the `id`
-  operator, added support for encoding the message ID operand as either
+  For [search/narrow filters](/api/construct-narrow#message-ids) with the
+  `id` operator, added support for encoding the message ID operand as either
   a string or an integer. Previously, only string encoding was supported.
 
 **Feature level 193**
@@ -911,7 +911,7 @@ No changes; feature level used for Zulip 7.0 release.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added support for three [search/narrow filters](/api/construct-narrow)
+  Added support for three [search/narrow filters](/api/construct-narrow#changes)
   related to direct messages: `is:dm`, `dm` and `dm-including`.
   The `dm` operator replaces and deprecates the `pm-with` operator.
   The `is:dm` filter replaces and deprecates the `is:private` filter.
@@ -2383,7 +2383,7 @@ No changes; feature level used for Zulip 3.0 release.
 * [`POST /register`](/api/register-queue): Added
   `realm_default_external_accounts` to endpoint response.
 * [`GET /messages`](/api/get-messages): Added support for
-  [search/narrow options](/api/construct-narrow) that use stream/user
+  [search/narrow options](/api/construct-narrow#changes) that use stream/user
   IDs to specify a message's sender, its stream, and/or its recipient(s).
 * [`GET /users`](/api/get-users): Added `include_custom_profile_fields`
   to request custom profile field data.
