@@ -187,7 +187,7 @@ def maybe_send_resolve_topic_notifications(
     # For that reason, we apply a short grace period during which
     # such an undo action will just delete the previous notification
     # message instead.
-    if maybe_delete_previous_resolve_topic_notification(stream, new_topic_name):
+    if maybe_delete_previous_resolve_topic_notification(user_profile, stream, new_topic_name):
         return None, True
 
     # Compute the users who either sent or reacted to messages that
@@ -222,7 +222,9 @@ def maybe_send_resolve_topic_notifications(
     return resolved_topic_message_id, False
 
 
-def maybe_delete_previous_resolve_topic_notification(stream: Stream, topic: str) -> bool:
+def maybe_delete_previous_resolve_topic_notification(
+    user_profile: UserProfile, stream: Stream, topic: str
+) -> bool:
     assert stream.recipient_id is not None
     last_message = messages_for_topic(stream.realm_id, stream.recipient_id, topic).last()
 
@@ -238,7 +240,7 @@ def maybe_delete_previous_resolve_topic_notification(stream: Stream, topic: str)
     if time_difference > settings.RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS:
         return False
 
-    do_delete_messages(stream.realm, [last_message])
+    do_delete_messages(stream.realm, [last_message], acting_user=user_profile)
     return True
 
 

@@ -151,7 +151,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
 
         # Delete that message; this moves it to ArchivedAttachment but leaves the file on disk
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])
+        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)], acting_user=None)
         self.assert_exists(
             attachment, has_file=True, has_attachment=False, has_archived_attachment=True
         )
@@ -190,7 +190,9 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
         # Delete the second message; this leaves an Attachment and an
         # ArchivedAttachment, both associated with a message
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=first_message_id)])
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=first_message_id)], acting_user=None
+        )
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
         )
@@ -220,7 +222,9 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         # Deleting the other message now leaves just an ArchivedAttachment
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=second_message_id)])
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=second_message_id)], acting_user=None
+        )
         self.assert_exists(
             attachment, has_file=True, has_attachment=False, has_archived_attachment=True
         )
@@ -298,7 +302,9 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # Deleting the sent message leaves us with an Attachment
         # attached to the scheduled message, and an archived
         # attachment with an archived message
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=sent_message_id)])
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=sent_message_id)], acting_user=None
+        )
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
         )
@@ -361,7 +367,9 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
         # Delete the message and then unschedule the scheduled message
         # before expiring the ArchivedMessages.
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=sent_message_id)])
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=sent_message_id)], acting_user=None
+        )
         delete_scheduled_message(hamlet, scheduled_message_id)
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
@@ -425,7 +433,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
 
         # Delete and purge the message, leaving both the ArchivedAttachments dangling
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])
+        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)], acting_user=None)
         with self.settings(ARCHIVED_DATA_VACUUMING_DELAY_DAYS=0):
             clean_archived_data()
 

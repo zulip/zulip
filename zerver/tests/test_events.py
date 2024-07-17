@@ -3117,7 +3117,7 @@ class NormalActionsTest(BaseAction):
         msg_id_2 = self.send_stream_message(hamlet, "Verona")
         messages = [Message.objects.get(id=msg_id), Message.objects.get(id=msg_id_2)]
         with self.verify_action(state_change_expected=True) as events:
-            do_delete_messages(self.user_profile.realm, messages)
+            do_delete_messages(self.user_profile.realm, messages, acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3138,7 +3138,7 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(
             state_change_expected=True, bulk_message_deletion=False, num_events=2
         ) as events:
-            do_delete_messages(self.user_profile.realm, messages)
+            do_delete_messages(self.user_profile.realm, messages, acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3154,7 +3154,7 @@ class NormalActionsTest(BaseAction):
         msg_id_2 = self.send_stream_message(hamlet, "test_stream1")
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True, num_events=2) as events:
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
 
         check_stream_update("events[0]", events[0])
         self.assertEqual(events[0]["property"], "first_message_id")
@@ -3176,7 +3176,7 @@ class NormalActionsTest(BaseAction):
         )
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True) as events:
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3193,7 +3193,7 @@ class NormalActionsTest(BaseAction):
         )
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True, bulk_message_deletion=False) as events:
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3210,13 +3210,13 @@ class NormalActionsTest(BaseAction):
         msg_id = self.send_stream_message(user_profile, "Verona")
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True):
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
     def test_do_delete_message_with_no_messages(self) -> None:
         with self.verify_action(num_events=0, state_change_expected=False) as events:
-            do_delete_messages(self.user_profile.realm, [])
+            do_delete_messages(self.user_profile.realm, [], acting_user=None)
         self.assertEqual(events, [])
 
     def test_add_attachment(self) -> None:

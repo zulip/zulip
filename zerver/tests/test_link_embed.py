@@ -496,7 +496,7 @@ class PreviewTestCase(ZulipTestCase):
             event = patched.call_args[0][1]
 
         msg = Message.objects.select_related("sender").get(id=msg_id)
-        do_delete_messages(msg.realm, [msg])
+        do_delete_messages(msg.realm, [msg], acting_user=None)
 
         # We do still fetch the URL, as we don't want to incur the
         # cost of locking the row while we do the HTTP fetches.

@@ -1733,7 +1733,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
 
         message = Message.objects.get(id=message_id)
-        do_delete_messages(admin_user.realm, [message])
+        do_delete_messages(admin_user.realm, [message], acting_user=None)
 
         assert stream.recipient_id is not None
         changed_messages = messages_for_topic(stream.realm_id, stream.recipient_id, original_topic)
