@@ -1207,6 +1207,19 @@ input[type="checkbox"] {
                 opacity: 1;
             }
         }
+
+        .settings-forgot-password {
+            /* Make the link itself a flex container,
+               so we can perfectly center the text
+               in relation to the input box. */
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+            /* Make the bottom margin same as `.modal_password_input`
+               for proper centering, if the margin changes there,
+               it should also change here and vice versa. */
+            margin-bottom: 10px;
+        }
     }
 }
 
