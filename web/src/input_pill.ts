@@ -61,7 +61,7 @@ type InputPillStore<T> = {
     create_item_from_text: InputPillCreateOptions<T>["create_item_from_text"];
     get_text_from_item: InputPillCreateOptions<T>["get_text_from_item"];
     onPillCreate?: () => void;
-    onPillRemove?: (pill: InputPill<T>) => void;
+    onPillRemove?: (pill: InputPill<T>, trigger: RemovePillTrigger) => void;
     createPillonPaste?: () => void;
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
@@ -88,7 +88,7 @@ export type InputPillContainer<T> = {
     getByElement: (element: HTMLElement) => InputPill<T> | undefined;
     items: () => InputPillItem<T>[];
     onPillCreate: (callback: () => void) => void;
-    onPillRemove: (callback: (pill: InputPill<T>) => void) => void;
+    onPillRemove: (callback: (pill: InputPill<T>, trigger: RemovePillTrigger) => void) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
     clear: (quiet?: boolean) => void;
@@ -97,6 +97,8 @@ export type InputPillContainer<T> = {
     is_pending: () => boolean;
     _get_pills_for_testing: () => InputPill<T>[];
 };
+
+export type RemovePillTrigger = "close" | "backspace" | "clear";
 
 export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T> {
     // a stateful object of this `pill_container` instance.
@@ -260,14 +262,14 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         // from the DOM, removes it from the array and returns it.
         // this would generally be used for DOM-provoked actions, such as a user
         // clicking on a pill to remove it.
-        removePill(element: HTMLElement) {
+        removePill(element: HTMLElement, trigger: RemovePillTrigger) {
             const idx = store.pills.findIndex((pill) => pill.$element[0] === element);
 
             if (idx !== -1) {
                 store.pills[idx]!.$element.remove();
                 const pill = store.pills.splice(idx, 1);
                 if (store.onPillRemove !== undefined) {
-                    store.onPillRemove(pill[0]!);
+                    store.onPillRemove(pill[0]!, trigger);
                 }
 
                 // This is needed to run the "change" event handler registered in
@@ -285,7 +287,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         // TODO: This function is only used for the search input supporting multiple user
         // pills within an individual top-level pill. Ideally, we'd encapsulate it in a
         // subclass used only for search so that this code can be part of search_pill.ts.
-        removeUserPill(user_container: HTMLElement, user_id: number) {
+        removeUserPill(user_container: HTMLElement, user_id: number, trigger: RemovePillTrigger) {
             // First get the outer pill that contains the user pills.
             let container_idx: number | undefined;
             for (let x = 0; x < store.pills.length; x += 1) {
@@ -303,7 +305,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             // If there's only one user in this pill, delete the whole pill.
             if (user_pill_container.users.length === 1) {
                 assert(user_pill_container.users[0]!.user_id === user_id);
-                this.removePill(user_container);
+                this.removePill(user_container, trigger);
                 return;
             }
 
@@ -340,20 +342,20 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         // If quiet is a truthy value, the event handler associated with the
         // pill will not be evaluated. This is useful when using clear to reset
         // the pills.
-        removeLastPill(quiet?: boolean) {
+        removeLastPill(trigger: RemovePillTrigger, quiet?: boolean) {
             const pill = store.pills.pop();
 
             if (pill) {
                 pill.$element.remove();
                 if (!quiet && store.onPillRemove !== undefined) {
-                    store.onPillRemove(pill);
+                    store.onPillRemove(pill, trigger);
                 }
             }
         },
 
-        removeAllPills(quiet?: boolean) {
+        removeAllPills(trigger: RemovePillTrigger, quiet?: boolean) {
             while (store.pills.length > 0) {
-                this.removeLastPill(quiet);
+                this.removeLastPill(trigger, quiet);
             }
 
             this.clear(store.$input[0]!);
@@ -446,7 +448,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     (selection?.anchorOffset === 0 && selection?.toString()?.length === 0))
             ) {
                 e.preventDefault();
-                funcs.removeLastPill();
+                funcs.removeLastPill("backspace");
 
                 return;
             }
@@ -494,7 +496,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     break;
                 case "Backspace": {
                     const $next = $pill.next();
-                    funcs.removePill($pill[0]!);
+                    funcs.removePill($pill[0]!, "backspace");
                     $next.trigger("focus");
                     // the "Backspace" key in Firefox will go back a page if you do
                     // not prevent it.
@@ -539,11 +541,15 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 // TODO: Figure out how to move this code into search_pill.ts.
                 const user_id = $(this).closest(".pill").attr("data-user-id");
                 assert(user_id !== undefined);
-                funcs.removeUserPill($user_pill_container[0]!, Number.parseInt(user_id, 10));
+                funcs.removeUserPill(
+                    $user_pill_container[0]!,
+                    Number.parseInt(user_id, 10),
+                    "close",
+                );
             } else {
                 e.stopPropagation();
                 const $pill = $(this).closest(".pill");
-                funcs.removePill($pill[0]!);
+                funcs.removePill($pill[0]!, "close");
             }
             // Since removing a pill moves the $input, typeahead needs to refresh
             // to appear at the correct position.
@@ -591,7 +597,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         },
 
         clear(quiet?: boolean) {
-            funcs.removeAllPills.bind(funcs)(quiet);
+            funcs.removeAllPills.bind(funcs)("clear", quiet);
         },
         clear_text: funcs.clear_text.bind(funcs),
         is_pending: funcs.is_pending.bind(funcs),
