@@ -6266,7 +6266,8 @@ paths:
             subscribed to appropriate channels or use a shared history
             search narrow with this endpoint.
 
-            **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
+            **Changes**: See [changes section](/api/construct-narrow#changes)
+            of search/narrow filter documentation.
           content:
             application/json:
               schema:
@@ -7129,7 +7130,8 @@ paths:
                     optimization. Including that filter takes advantage of the fact that
                     the server has a database index for unread messages.
 
-                    **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
+                    **Changes**: See [changes section](/api/construct-narrow#changes)
+                    of search/narrow filter documentation.
                   type: array
                   items:
                     oneOf:
@@ -7550,7 +7552,8 @@ paths:
             A structure defining the narrow to check against. See how to
             [construct a narrow](/api/construct-narrow).
 
-            **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
+            **Changes**: See [changes section](/api/construct-narrow#changes)
+            of search/narrow filter documentation.
           content:
             application/json:
               schema:
@@ -22673,7 +22676,8 @@ components:
         See the `all_public_streams` parameter for how to process all
         public channel messages in an organization.
 
-        **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
+        **Changes**: See [changes section](/api/construct-narrow#changes)
+        of search/narrow filter documentation.
       type: array
       items:
         type: array
