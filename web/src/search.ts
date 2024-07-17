@@ -6,6 +6,7 @@ import render_search_list_item from "../templates/search_list_item.hbs";
 import {Typeahead} from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import {Filter} from "./filter";
+import type {RemovePillTrigger} from "./input_pill";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
@@ -141,9 +142,15 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 
     search_pill_widget = search_pill.create_pills($pill_container);
-    search_pill_widget.onPillRemove(() => {
-        $(".search-input-and-pills").removeClass("freshly-opened");
-        search_input_has_changed = true;
+    search_pill_widget.onPillRemove((_pill, trigger: RemovePillTrigger) => {
+        // We delete every pill when the user backspaces in a freshly
+        // opened search.
+        if (trigger === "backspace") {
+            on_search_contents_changed();
+        } else {
+            $(".search-input-and-pills").removeClass("freshly-opened");
+            search_input_has_changed = true;
+        }
         narrow_to_search_contents_with_search_bar_open();
     });
 
