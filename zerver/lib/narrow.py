@@ -878,13 +878,38 @@ def get_channel_from_narrow_access_unchecked(
     return None
 
 
+# This function verifies if the current narrow has the necessary
+# terms to point to a channel or a direct message conversation.
+def can_narrow_define_conversation(narrow: list[NarrowParameter]) -> bool:
+    contains_channel_term = False
+    contains_topic_term = False
+
+    for term in narrow:
+        if term.operator in ["dm", "pm-with"]:
+            return True
+
+        elif term.operator in ["stream", "channel"]:
+            contains_channel_term = True
+
+        elif term.operator == "topic":
+            contains_topic_term = True
+
+        if contains_channel_term and contains_topic_term:
+            return True
+
+    return False
+
+
 # This function implements the core logic of the `with` operator,
 # which is designed to support permanent links to a topic that
 # robustly function if the topic is moved.
 #
 # The with operator accepts a message ID as an operand. If the
 # message ID does not exist or is otherwise not accessible to the
-# current user, then it has no effect.
+# current user, then if the remaining narrow terms can point to
+# a conversation then the narrow corresponding to it is returned.
+# If the remaining terms can not point to a particular conversation,
+# then a BadNarrowOperatorError is raised.
 #
 # Otherwise, the narrow terms are mutated to remove any
 # channel/topic/dm operators, replacing them with the appropriate
@@ -898,6 +923,7 @@ def update_narrow_terms_containing_with_operator(
         return narrow
 
     with_operator_terms = list(filter(lambda term: term.operator == "with", narrow))
+    can_user_access_target_message = True
 
     if len(with_operator_terms) > 1:
         raise InvalidOperatorCombinationError(_("Duplicate 'with' operators."))
@@ -916,12 +942,22 @@ def update_narrow_terms_containing_with_operator(
         try:
             message = access_message(maybe_user_profile, message_id)
         except JsonableError:
-            return narrow
+            can_user_access_target_message = False
     else:
         try:
             message = access_web_public_message(realm, message_id)
         except MissingAuthenticationError:
+            can_user_access_target_message = False
+
+    # If the user can not access the target message we fall back to the
+    # conversation specified by those other operators if they're enough
+    # to specify a single conversation.
+    # Else, we raise a BadNarrowOperatorError.
+    if not can_user_access_target_message:
+        if can_narrow_define_conversation(narrow):
             return narrow
+        else:
+            raise BadNarrowOperatorError(_("Invalid 'with' operator"))
 
     # TODO: It would be better if the legacy names here are canonicalized
     # while building a NarrowParameter.
