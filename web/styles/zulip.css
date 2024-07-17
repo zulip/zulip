@@ -1266,54 +1266,6 @@ div.focused-message-list {
     font-size: 0;
 }
 
-.typeahead.dropdown-menu {
-    a strong.typeahead-strong-section {
-        white-space: pre;
-        /* Present as flexbox to better control
-           icon alignment and spacing, when icons
-           are shown. */
-        display: flex;
-        align-items: baseline;
-        /* Approximate space as preserved in
-           typeahead lines, e.g., between the channel
-           name and its description. */
-        gap: 0.25ch;
-    }
-
-    .active {
-        .unsubscribed_icon {
-            visibility: visible;
-            float: right;
-            margin-top: 5px;
-            color: hsl(96deg 7% 73%);
-        }
-    }
-
-    .unsubscribed_icon {
-        visibility: hidden;
-        font-size: 0.8em;
-    }
-}
-
-.typeahead-image {
-    display: inline-block;
-    height: 21px;
-    width: 21px;
-    border-radius: 4px;
-
-    /* For FontAwesome icons and zulip icons used in place of images for some users. */
-    font-size: 19px;
-    text-align: center;
-
-    &.zulip-icon-triple-users {
-        font-size: 19px;
-    }
-
-    &.no-presence-circle {
-        margin-left: 14px;
-    }
-}
-
 nav {
     .column-left {
         text-align: left;
@@ -2220,15 +2172,6 @@ body:not(.hide-left-sidebar) {
     .zulip-icon-star {
         position: relative;
         top: 2px;
-    }
-}
-
-.typeahead-option-label {
-    display: flex !important;
-    justify-content: space-between;
-
-    > strong {
-        margin-right: 14px;
     }
 }
 
