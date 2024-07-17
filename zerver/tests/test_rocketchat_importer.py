@@ -96,7 +96,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        user_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
 
         process_users(
             user_id_to_user_map=user_id_to_user_map,
@@ -242,7 +242,7 @@ class RocketChatImporter(ZulipTestCase):
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
 
         realm_id = 3
-        stream_id_mapper = IdMapper()
+        stream_id_mapper = IdMapper[str]()
 
         room_id_to_room_map: dict[str, dict[str, Any]] = {}
         team_id_to_team_map: dict[str, dict[str, Any]] = {}
@@ -316,8 +316,8 @@ class RocketChatImporter(ZulipTestCase):
 
         user_handler = UserHandler()
         subscriber_handler = SubscriberHandler()
-        user_id_mapper = IdMapper()
-        stream_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
+        stream_id_mapper = IdMapper[str]()
 
         user_id_to_user_map = map_user_id_to_user(rocketchat_data["user"])
 
@@ -423,8 +423,8 @@ class RocketChatImporter(ZulipTestCase):
 
         user_handler = UserHandler()
         subscriber_handler = SubscriberHandler()
-        user_id_mapper = IdMapper()
-        huddle_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
+        huddle_id_mapper = IdMapper[str]()
 
         user_id_to_user_map = map_user_id_to_user(rocketchat_data["user"])
 
@@ -525,9 +525,9 @@ class RocketChatImporter(ZulipTestCase):
 
         user_handler = UserHandler()
         subscriber_handler = SubscriberHandler()
-        user_id_mapper = IdMapper()
-        stream_id_mapper = IdMapper()
-        huddle_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
+        stream_id_mapper = IdMapper[str]()
+        huddle_id_mapper = IdMapper[str]()
 
         user_id_to_user_map = map_user_id_to_user(rocketchat_data["user"])
 
@@ -823,7 +823,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        user_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
 
         process_users(
             user_id_to_user_map=user_id_to_user_map,

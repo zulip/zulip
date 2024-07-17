@@ -84,7 +84,7 @@ class MatterMostImporter(ZulipTestCase):
         )
 
     def test_process_user(self) -> None:
-        user_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
         username_to_user = create_username_to_user_mapping(mattermost_data["user"])
@@ -131,7 +131,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["timezone"], "UTC")
 
     def test_process_guest_user(self) -> None:
-        user_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
         fixture_file_name = self.fixture_file_name("guestExport.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
         username_to_user = create_username_to_user_mapping(mattermost_data["user"])
@@ -162,7 +162,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["role"], UserProfile.ROLE_MEMBER)
 
     def test_convert_user_data(self) -> None:
-        user_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
         realm_id = 3
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
@@ -211,8 +211,8 @@ class MatterMostImporter(ZulipTestCase):
 
         user_handler = UserHandler()
         subscriber_handler = SubscriberHandler()
-        stream_id_mapper = IdMapper()
-        user_id_mapper = IdMapper()
+        stream_id_mapper = IdMapper[str]()
+        user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
 
         convert_user_data(
@@ -346,8 +346,8 @@ class MatterMostImporter(ZulipTestCase):
 
         user_handler = UserHandler()
         subscriber_handler = SubscriberHandler()
-        huddle_id_mapper = IdMapper()
-        user_id_mapper = IdMapper()
+        huddle_id_mapper = IdMapper[str]()
+        user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
 
         convert_user_data(
@@ -432,7 +432,7 @@ class MatterMostImporter(ZulipTestCase):
         reset_mirror_dummy_users(username_to_user)
 
         user_handler = UserHandler()
-        user_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
 
         convert_user_data(
@@ -479,7 +479,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertTrue(filecmp.cmp(attachment_path, attachment_out_path))
 
     def test_get_mentioned_user_ids(self) -> None:
-        user_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
         harry_id = user_id_mapper.get("harry")
 
         raw_message = {
@@ -615,7 +615,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(zerver_realmemoji[1]["name"], "tick")
         tick_emoji_code = zerver_realmemoji[1]["id"]
 
-        user_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
         harry_id = user_id_mapper.get("harry")
         ron_id = user_id_mapper.get("ron")
 

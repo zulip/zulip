@@ -57,7 +57,7 @@ def process_users(
     realm_id: int,
     domain_name: str,
     user_handler: UserHandler,
-    user_id_mapper: IdMapper,
+    user_id_mapper: IdMapper[str],
 ) -> None:
     realm_owners: list[int] = []
     bots: list[int] = []
@@ -158,7 +158,7 @@ def get_stream_name(rc_channel: dict[str, Any]) -> str:
 def convert_channel_data(
     room_id_to_room_map: dict[str, dict[str, Any]],
     team_id_to_team_map: dict[str, dict[str, Any]],
-    stream_id_mapper: IdMapper,
+    stream_id_mapper: IdMapper[str],
     realm_id: int,
 ) -> list[ZerverFieldsT]:
     streams = []
@@ -205,8 +205,8 @@ def convert_stream_subscription_data(
     user_id_to_user_map: dict[str, dict[str, Any]],
     dsc_id_to_dsc_map: dict[str, dict[str, Any]],
     zerver_stream: list[ZerverFieldsT],
-    stream_id_mapper: IdMapper,
-    user_id_mapper: IdMapper,
+    stream_id_mapper: IdMapper[str],
+    user_id_mapper: IdMapper[str],
     subscriber_handler: SubscriberHandler,
 ) -> None:
     stream_members_map: dict[int, set[int]] = {}
@@ -240,8 +240,8 @@ def convert_stream_subscription_data(
 
 def convert_direct_message_group_data(
     huddle_id_to_huddle_map: dict[str, dict[str, Any]],
-    huddle_id_mapper: IdMapper,
-    user_id_mapper: IdMapper,
+    huddle_id_mapper: IdMapper[str],
+    user_id_mapper: IdMapper[str],
     subscriber_handler: SubscriberHandler,
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group: list[ZerverFieldsT] = []
@@ -582,7 +582,7 @@ def process_raw_message_batch(
 def get_topic_name(
     message: dict[str, Any],
     dsc_id_to_dsc_map: dict[str, dict[str, Any]],
-    thread_id_mapper: IdMapper,
+    thread_id_mapper: IdMapper[str],
     is_pm_data: bool = False,
 ) -> str:
     if is_pm_data:
@@ -609,14 +609,14 @@ def process_messages(
     subscriber_map: dict[int, set[int]],
     is_pm_data: bool,
     username_to_user_id_map: dict[str, str],
-    user_id_mapper: IdMapper,
+    user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
     user_id_to_recipient_id: dict[int, int],
-    stream_id_mapper: IdMapper,
+    stream_id_mapper: IdMapper[str],
     stream_id_to_recipient_id: dict[int, int],
-    huddle_id_mapper: IdMapper,
+    huddle_id_mapper: IdMapper[str],
     huddle_id_to_recipient_id: dict[int, int],
-    thread_id_mapper: IdMapper,
+    thread_id_mapper: IdMapper[str],
     room_id_to_room_map: dict[str, dict[str, Any]],
     dsc_id_to_dsc_map: dict[str, dict[str, Any]],
     direct_id_to_direct_map: dict[str, dict[str, Any]],
@@ -1074,10 +1074,10 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
 
     user_handler = UserHandler()
     subscriber_handler = SubscriberHandler()
-    user_id_mapper = IdMapper()
-    stream_id_mapper = IdMapper()
-    huddle_id_mapper = IdMapper()
-    thread_id_mapper = IdMapper()
+    user_id_mapper = IdMapper[str]()
+    stream_id_mapper = IdMapper[str]()
+    huddle_id_mapper = IdMapper[str]()
+    thread_id_mapper = IdMapper[str]()
 
     process_users(
         user_id_to_user_map=user_id_to_user_map,
