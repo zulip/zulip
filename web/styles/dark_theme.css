@@ -649,7 +649,7 @@
     }
 
     #recent_view_table {
-        .fa-envelope,
+        .zulip-icon-user,
         .fa-group {
             opacity: 0.7;
         }
