@@ -54,15 +54,6 @@ import of the file.
 NEXT_ID = sequencer()
 
 
-def is_int(key: Any) -> bool:
-    try:
-        n = int(key)
-    except ValueError:
-        return False
-
-    return n <= 999999999
-
-
 class IdMapper:
     def __init__(self) -> None:
         self.map: dict[Any, int] = {}
@@ -75,13 +66,7 @@ class IdMapper:
         if their_id in self.map:
             return self.map[their_id]
 
-        if is_int(their_id):
-            our_id = int(their_id)
-            if self.cnt > 0:
-                raise Exception("mixed key styles")
-        else:
-            self.cnt += 1
-            our_id = self.cnt
-
+        self.cnt += 1
+        our_id = self.cnt
         self.map[their_id] = our_id
         return our_id
