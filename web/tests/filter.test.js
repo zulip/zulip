@@ -2058,7 +2058,7 @@ test("navbar_helpers", () => {
         {
             terms: is_dm,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: "translated: Direct message feed",
             redirect_url_with_search: "/#narrow/is/dm",
         },
@@ -2139,7 +2139,7 @@ test("navbar_helpers", () => {
         {
             terms: dm,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([joe.full_name]),
             redirect_url_with_search:
                 "/#narrow/dm/" + joe.user_id + "-" + parseOneAddress(joe.email).local,
@@ -2147,14 +2147,14 @@ test("navbar_helpers", () => {
         {
             terms: dm_group,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([joe.full_name, steve.full_name]),
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + steve.user_id + "-group",
         },
         {
             terms: dm_with_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: "translated: alice (guest)",
             redirect_url_with_search:
                 "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
@@ -2162,14 +2162,14 @@ test("navbar_helpers", () => {
         {
             terms: dm_group_including_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: "translated: alice (guest) and joe",
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },
         {
             terms: dm_group_including_missing_person,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([
                 joe.full_name,
                 steve.full_name,
@@ -2210,7 +2210,7 @@ test("navbar_helpers", () => {
         {
             terms: dm_near,
             is_common_narrow: false,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([joe.full_name]),
             redirect_url_with_search: "#",
         },
@@ -2290,7 +2290,7 @@ test("navbar_helpers", () => {
         {
             terms: dm_with_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([alice.full_name]),
             redirect_url_with_search:
                 "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
@@ -2298,7 +2298,7 @@ test("navbar_helpers", () => {
         {
             terms: dm_group_including_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([alice.full_name, joe.full_name]),
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },
