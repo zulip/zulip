@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 274**
+
+* [`GET /events`](/api/get-events): `delete_message` events are now
+  always sent to the user who deletes the message, even if the message
+  was in a channel that the user was not subscribed to.
+
 **Feature level 273**
 
 * [`POST /register`](/api/register-queue): Added `server_thumbnail_formats`

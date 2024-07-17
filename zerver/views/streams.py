@@ -938,7 +938,7 @@ def delete_in_topic(
             )
             if not messages_to_delete:
                 break
-            do_delete_messages(user_profile.realm, messages_to_delete)
+            do_delete_messages(user_profile.realm, messages_to_delete, acting_user=user_profile)
 
     return json_success(request, data={"complete": True})
 

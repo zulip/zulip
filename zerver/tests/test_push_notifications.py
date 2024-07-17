@@ -3263,7 +3263,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         # Now, delete the message the normal way
-        do_delete_messages(user_profile.realm, [message])
+        do_delete_messages(user_profile.realm, [message], acting_user=None)
 
         # This mock.patch() should be assertNoLogs once that feature
         # is added to Python.

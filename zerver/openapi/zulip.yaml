@@ -2071,13 +2071,25 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent when a message has been deleted.
-                                Sent to all users who received the message.
+
+                                Sent to all users who currently are subscribed to the
+                                messages' recipient. May also be sent to additional users
+                                who had access to it, including, in particular, an
+                                administrator user deleting messages in a stream that they
+                                are not subscribed to.
+
+                                This means that clients can assume that they will always
+                                receive an event of this type for deletions that the
+                                client itself initiated.
 
                                 This event is also sent when the user loses access to a message,
                                 such as when it is [moved to a channel][message-move-channel] that
                                 the user does not [have permission to access][channel-access].
 
-                                **Changes**: Before Zulip 5.0 (feature level 77), events
+                                **Changes**: Before Zulip 9.0 (feature level 274), this
+                                event was only sent to subscribers of the message's recipient.
+
+                                Before Zulip 5.0 (feature level 77), events
                                 for direct messages contained additional `sender_id` and
                                 `recipient_id` fields.
 
