@@ -18,6 +18,11 @@
         min-width: 0;
 
         height: var(--height-input-pill);
+        /* Make sure the `height` property
+           is the authoritative source of an
+           input pill's height, without being
+           affected by borders, etc. */
+        box-sizing: border-box;
         margin: 0;
 
         color: inherit;
@@ -35,7 +40,6 @@
         .pill-image {
             height: var(--length-input-pill-image);
             width: var(--length-input-pill-image);
-            min-width: var(--length-input-pill-image);
             border-radius: 4px 0 0 4px;
         }
 

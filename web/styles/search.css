@@ -175,13 +175,6 @@
     .search-input {
         /* Avoid massive inheritance chain on font-size. */
         font-size: var(--base-font-size-px);
-        /* override height-input-pill from default input pills to account for pill border */
-        line-height: calc(
-            var(--height-input-pill) + var(--vertical-spacing-input-pill)
-        );
-        min-height: calc(
-            var(--height-input-pill) + var(--vertical-spacing-input-pill)
-        );
         /* override bootstrap padding for input[type="text"] */
         padding: 0;
         border: none;
@@ -252,7 +245,11 @@
             }
 
             .pill {
-                height: var(--height-input-pill);
+                /* Reduce user pill height by 2px to
+                   preserve an apparent border around
+                   them even under `box-sizing: border-box`
+                   in the area. */
+                height: calc(var(--height-input-pill) - 2px);
                 border: none;
                 border-radius: 3px;
                 max-width: none;
@@ -357,7 +354,7 @@
 
         .pill-image {
             /* Add line-height equal to height to mimic baseline alignment. */
-            line-height: var(--length-input-pill-image);
+            line-height: var(--height-input-pill);
             align-self: center;
         }
     }

@@ -420,9 +420,13 @@
     --recent-topics-filters-height: 50px;
 
     /* Pill dimensions. */
-    /* 1.4286em is 20px at 14px/1em */
-    --height-input-pill: 1.4286em;
-    --length-input-pill-image: var(--height-input-pill);
+    /* 1.5714em is 22px (border-inclusive) at 14px/1em */
+    --height-input-pill: 1.5714em;
+    /* Reduce user pill image lengths by 2px to
+       preserve an apparent border around
+       them, and a square aspect-ratio, even under
+       `box-sizing: border-box` in the area. */
+    --length-input-pill-image: calc(var(--height-input-pill) - 2px);
     --vertical-spacing-input-pill: 2px;
     --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
     --horizontal-spacing-input-pill: 6px;
