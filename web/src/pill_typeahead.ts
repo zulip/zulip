@@ -85,11 +85,11 @@ export function set_up_stream(
         $element: $input,
         type: "contenteditable",
     };
-    opts.help_on_empty_strings ||= false;
+    opts.help_on_empty_strings ??= false;
     new Typeahead(bootstrap_typeahead_input, {
         items: 12,
         dropup: true,
-        helpOnEmptyStrings: true,
+        helpOnEmptyStrings: opts.help_on_empty_strings,
         source(_query: string): StreamPillData[] {
             return stream_pill.typeahead_source(pills, opts.invite_streams);
         },
