@@ -256,7 +256,8 @@
                    in the area. */
                 height: calc(var(--height-input-pill) - 2px);
                 border: none;
-                border-radius: 3px;
+                /* Match border radius to image */
+                border-radius: 4px;
                 max-width: none;
                 display: grid;
                 grid-template-columns: auto 1fr auto;
