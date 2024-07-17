@@ -53,8 +53,9 @@ messages](/api/update-message-flags-for-narrow)).
 
 ## Changes
 
-* In Zulip 9.0 (feature level 271), narrows gained support
-  for a new `with` operator for linking to topics.
+* In Zulip 9.0 (feature level 271), support was added for a new filter
+  operator, `with`, which uses a [message ID](#message-ids) for its
+  operand, and is designed for creating permanent links to topics.
 
 * In Zulip 9.0 (feature level 265), support was added for a new
   `is:followed` filter, matching messages in topics that the current
@@ -94,20 +95,23 @@ messages](/api/update-message-flags-for-narrow)).
 
 ### Message IDs
 
-The `with` operator is designed to be used in links that should follow
-a topic across being moved. Its operand is a message ID.
+The `near`, `id` and `with` operators use message IDs for their
+operands. The `near` and `id` operators are documented in the help
+center [here](/help/search-for-messages#search-by-message-id).
 
-The `near` and `id` operators, documented in the help center,
-also use message IDs for their operands.
+The `with` operator is designed to be used for permanent links to topics,
+which means they should continue to work when the topic is
+[moved](/help/move-content-to-another-topic) or
+[resolved](/help/resolve-a-topic). If the message with the specified ID
+exists, and can be accessed by the user, then it will return messages
+with the `channel`/`topic`/`dm` operators corresponding to the current
+conversation containing that message, and replacing any such filters
+included in the narrow.
 
-* `with:12345`: Search for the conversation (stream/topic pair) which
-  contains the message with ID `12345`. If such a message exists, and
-  can be accessed by the user, then the search will be treated as having
-  the `channel`/`topic`/`dm` operators corresponding to the
-  conversation containing that message, replacing any such operators
-  in the original request.
+* `with:12345`: Search for the conversation that contains the message
+  with ID `12345`.
 * `near:12345`: Search messages around the message with ID `12345`.
-* `id:12345`: Search for only message with ID `12345`.
+* `id:12345`: Search for only the message with ID `12345`.
 
 The message ID operand for the `with` and `id` operators may be encoded
 as either a number or a string. The message ID operand for the `near`

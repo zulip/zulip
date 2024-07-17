@@ -43,9 +43,11 @@ format used by the Zulip server that they are interacting with.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added support for a new [search/narrow filter](/api/construct-narrow#changes),
-  `with`, which returns messages in the same channel and topic as that
-  of the operand of filter, with the first unread message as anchor.
+  Added support for a new [search/narrow filter](/api/construct-narrow#changes)
+  operator, `with`, which uses a message ID for its operand. It returns
+  messages in the same conversation as the message with the specified
+  ID, and is designed to be used for creating permanent links to topics
+  that continue to work when a topic is moved or resolved.
 
 **Feature level 270**
 
