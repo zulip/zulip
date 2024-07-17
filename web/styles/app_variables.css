@@ -185,10 +185,6 @@
     --search-box-height: 28px;
     --search-box-width: 150px;
 
-    @media (height < $short_navbar_cutoff_height) {
-        --search-box-height: var(--header-height);
-    }
-
     @media (width < $md_min) {
         --search-box-width: 40px;
     }
