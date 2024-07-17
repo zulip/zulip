@@ -1402,32 +1402,6 @@ textarea.new_message_textarea {
     }
 }
 
-.typeahead.dropdown-menu {
-    .typeahead-menu {
-        list-style: none;
-        margin: 4px 0;
-        max-height: min(248px, 95vh);
-        overflow-y: auto;
-
-        .simplebar-content {
-            min-width: max-content;
-        }
-    }
-
-    .typeahead-header {
-        margin: 0;
-        padding: 4px 10px;
-        border-top: 1px solid hsl(0deg 0% 0% / 20%);
-        display: flex;
-        align-items: center;
-    }
-
-    #typeahead-header-text {
-        color: var(--color-dropdown-item);
-        font-size: 12px;
-    }
-}
-
 /* Class for send-area buttons, such as
    Drafts and the send-adjacent vdots */
 .send-control-button {
