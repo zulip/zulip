@@ -2800,9 +2800,14 @@ class GetOldMessagesTest(ZulipTestCase):
         self.make_stream("dev team", invite_only=True, history_public_to_subscribers=False)
         self.subscribe(iago, "dev team")
 
+        self.make_stream("public")
+        self.subscribe(hamlet, "public")
+
         # Test `with` operator effective when targeting a topic with
         # message which can be accessed by the user.
         msg_id = self.send_stream_message(iago, "dev team", topic_name="test")
+        msg_id_2 = self.send_stream_message(hamlet, "public", topic_name="test")
+        dm_msg_id = self.send_personal_message(hamlet, iago, "direct message")
 
         narrow = [
             dict(operator="channel", operand="dev team"),
@@ -2823,7 +2828,10 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Test `with` operator ineffective when targeting a topic with
         # message that can not be accessed by the user.
+        #
         # Since !history_public_to_subscribers, hamlet cannot view.
+        # Hence, it falls back to the narrow without the `with`
+        # operator since it can alone define a conversation.
         self.subscribe(hamlet, "dev team")
         self.login("hamlet")
 
@@ -2835,22 +2843,59 @@ class GetOldMessagesTest(ZulipTestCase):
         results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assert_length(results["messages"], 0)
 
-        # Same result with topic specified incorrectly
+        narrow = [
+            dict(operator="channel", operand="public"),
+            dict(operator="topic", operand="test"),
+            dict(operator="with", operand=msg_id),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assert_length(results["messages"], 1)
+        self.assertEqual(results["messages"][0]["id"], msg_id_2)
+
+        # Since `dm` operator alone can also define conversation,
+        # narrow falls back to `dm` since hamlet can't access
+        # msg_id.
+        narrow = [
+            dict(operator="dm", operand=iago.email),
+            dict(operator="with", operand=msg_id),
+        ]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assert_length(results["messages"], 1)
+        self.assertEqual(results["messages"][0]["id"], dm_msg_id)
+
+        # However, if the narrow can not define conversation,
+        # and the target message is not accessible to user,
+        # then BadNarrowOperatorError is raised.
+        #
+        # narrow can't define conversation due to missing topic term.
         narrow = [
             dict(operator="channel", operand="dev team"),
-            dict(operator="topic", operand="wrong_guess"),
             dict(operator="with", operand=msg_id),
         ]
-        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
-        self.assert_length(results["messages"], 0)
+        post_params = {
+            "anchor": msg_id,
+            "num_before": 0,
+            "num_after": 5,
+            "narrow": orjson.dumps(narrow).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, "Invalid narrow operator: Invalid 'with' operator")
 
-        # If just with is specified, we get messages a la combined feed,
-        # but not the target message.
+        # narrow can't define conversation due to missing channel term.
+        narrow = [
+            dict(operator="topic", operand="test"),
+            dict(operator="with", operand=msg_id),
+        ]
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, "Invalid narrow operator: Invalid 'with' operator")
+
+        # narrow can't define conversation due to missing channel-topic
+        # terms or dm terms.
         narrow = [
             dict(operator="with", operand=msg_id),
         ]
-        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
-        self.assertNotIn(msg_id, [message["id"] for message in results["messages"]])
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, "Invalid narrow operator: Invalid 'with' operator")
 
         # Test `with` operator is effective when targeting personal
         # messages with message id, and returns messages of that narrow.
@@ -2867,7 +2912,7 @@ class GetOldMessagesTest(ZulipTestCase):
         results = self.get_and_check_messages(dict(narrow=orjson.dumps(with_narrow).decode()))
         self.assertNotIn(msg_id, [message["id"] for message in results["messages"]])
 
-        # Now switch to a user how does have access.
+        # Now switch to a user who does have access.
         self.login("iago")
         with_narrow = [
             # Important: We pass the wrong conversation.
