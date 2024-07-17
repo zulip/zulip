@@ -3,8 +3,8 @@ from typing import Any
 
 from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.thumbnail import StoredThumbnailFormat
-from zerver.lib.upload import claim_attachment, delete_message_attachments, get_image_thumbnail_path
+from zerver.lib.thumbnail import StoredThumbnailFormat, get_image_thumbnail_path
+from zerver.lib.upload import claim_attachment, delete_message_attachments
 from zerver.models import (
     Attachment,
     ImageAttachment,
