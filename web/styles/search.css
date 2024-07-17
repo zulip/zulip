@@ -157,6 +157,10 @@
             color: var(--color-text-search-hover);
         }
 
+        .typeahead-menu .simplebar-content {
+            min-width: unset;
+        }
+
         .typeahead-menu .simplebar-content > li > a {
             max-width: none;
         }
