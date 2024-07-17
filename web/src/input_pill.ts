@@ -12,6 +12,7 @@ import * as keydown_util from "./keydown_util";
 import type {SearchUserPill} from "./search_pill";
 import type {StreamSubscription} from "./sub_store";
 import * as ui_util from "./ui_util";
+import * as util from "./util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
@@ -189,6 +190,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 if (item.type === "search") {
                     display_value = display_value.replaceAll("+", " ");
                     display_value = display_value.replace(":", ": ");
+                    display_value = util.robust_url_decode(display_value).trim();
                 }
 
                 const opts: InputPillRenderingDetails = {
