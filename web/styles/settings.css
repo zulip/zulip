@@ -1169,6 +1169,11 @@ input[type="checkbox"] {
         .password-input-row {
             display: flex;
             margin-bottom: 10px;
+            /* This helps us in making sure that the
+               password_visibility_toggle does not look
+               misaligned in small screens where that component
+               increases in height on small screens. */
+            max-height: 2em;
 
             .modal_password_input {
                 /* The usual width of input is 206px, but we reduce
