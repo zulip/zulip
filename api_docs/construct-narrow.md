@@ -106,14 +106,21 @@ number or a string.
 The `id` operator returns the message with the specified ID if it exists,
 and if it can be accessed by the user.
 
-The `with` operator is designed to be used for permanent links to topics,
-which means they should continue to work when the topic is
+The `with` operator is designed to be used for permanent links to
+topics, which means they should continue to work when the topic is
 [moved](/help/move-content-to-another-topic) or
-[resolved](/help/resolve-a-topic). If the message with the specified ID
-exists, and can be accessed by the user, then it will return messages
-with the `channel`/`topic`/`dm` operators corresponding to the current
-conversation containing that message, and replacing any such filters
-included in the narrow.
+[resolved](/help/resolve-a-topic). If the message with the specified
+ID exists, and can be accessed by the user, then it will return
+messages with the `channel`/`topic`/`dm` operators corresponding to
+the current conversation containing that message, replacing any such
+operators included in the original narrow query.
+
+If no such message exists, or the message ID represents a message that
+is inaccessible to the user, this operator will be ignored (rather
+than throwing an error) if the remaining operators uniquely identify a
+conversation (i.e., they contain `channel` and `topic` terms or `dm`
+term). This behavior is intended to provide the best possible
+experience for links to private channels with protected history.
 
 The [help center](/help/search-for-messages#search-by-message-id) also
 documents the `near` operator for searching for messages by ID, but
