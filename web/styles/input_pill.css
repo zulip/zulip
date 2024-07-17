@@ -253,7 +253,7 @@
         > .pill-label {
             > .pill-value {
                 padding: 0 5px;
-                max-width: none;
+                max-width: 200px;
             }
 
             > .my_user_status {
