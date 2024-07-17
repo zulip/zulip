@@ -1223,7 +1223,7 @@ export class Filter {
                 zulip_icon = "hashtag";
                 break;
             case "is-dm":
-                icon = "envelope";
+                zulip_icon = "user";
                 break;
             case "is-starred":
                 zulip_icon = "star-filled";
@@ -1232,7 +1232,7 @@ export class Filter {
                 zulip_icon = "at-sign";
                 break;
             case "dm":
-                icon = "envelope";
+                zulip_icon = "user";
                 break;
             case "is-resolved":
                 icon = "check";
