@@ -231,21 +231,11 @@ def convert_channel_data(
     return streams
 
 
-def generate_direct_message_group_name(direct_message_group_members: list[str]) -> str:
-    # Simple hash function to generate a unique hash key for the
-    # members of a direct_message_group.  Needs to be consistent
-    # only within the lifetime of export tool run, as it doesn't
-    # appear in the output.
-    import hashlib
-
-    return hashlib.md5("".join(sorted(direct_message_group_members)).encode()).hexdigest()
-
-
 def convert_direct_message_group_data(
     direct_message_group_data: list[ZerverFieldsT],
     user_data_map: dict[str, dict[str, Any]],
     subscriber_handler: SubscriberHandler,
-    huddle_id_mapper: IdMapper[str],
+    huddle_id_mapper: IdMapper[frozenset[str]],
     user_id_mapper: IdMapper[str],
     realm_id: int,
     team_name: str,
@@ -253,10 +243,8 @@ def convert_direct_message_group_data(
     zerver_direct_message_group = []
     for direct_message_group in direct_message_group_data:
         if len(direct_message_group["members"]) > 2:
-            direct_message_group_name = generate_direct_message_group_name(
-                direct_message_group["members"]
-            )
-            direct_message_group_id = huddle_id_mapper.get(direct_message_group_name)
+            direct_message_group_members = frozenset(direct_message_group["members"])
+            direct_message_group_id = huddle_id_mapper.get(direct_message_group_members)
             direct_message_group_dict = build_direct_message_group(direct_message_group_id)
             direct_message_group_user_ids = {
                 user_id_mapper.get(username) for username in direct_message_group["members"]
@@ -409,7 +397,7 @@ def process_raw_message_batch(
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
     get_recipient_id_from_channel_name: Callable[[str], int],
-    get_recipient_id_from_direct_message_group_name: Callable[[str], int],
+    get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
     get_recipient_id_from_username: Callable[[str], int],
     is_pm_data: bool,
     output_dir: str,
@@ -459,9 +447,9 @@ def process_raw_message_batch(
         sender_user_id = raw_message["sender_id"]
         if "channel_name" in raw_message:
             recipient_id = get_recipient_id_from_channel_name(raw_message["channel_name"])
-        elif "huddle_name" in raw_message:
-            recipient_id = get_recipient_id_from_direct_message_group_name(
-                raw_message["huddle_name"]
+        elif "direct_message_group_members" in raw_message:
+            recipient_id = get_recipient_id_from_direct_message_group_members(
+                raw_message["direct_message_group_members"]
             )
         elif "pm_members" in raw_message:
             members = raw_message["pm_members"]
@@ -472,7 +460,9 @@ def process_raw_message_batch(
             else:
                 recipient_id = get_recipient_id_from_username(members[0])
         else:
-            raise AssertionError("raw_message without channel_name, huddle_name or pm_members key")
+            raise AssertionError(
+                "raw_message without channel_name, direct_message_group_members or pm_members key"
+            )
 
         rendered_content = None
 
@@ -545,7 +535,7 @@ def process_posts(
     realm_id: int,
     post_data: list[dict[str, Any]],
     get_recipient_id_from_channel_name: Callable[[str], int],
-    get_recipient_id_from_direct_message_group_name: Callable[[str], int],
+    get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
     get_recipient_id_from_username: Callable[[str], int],
     subscriber_map: dict[int, set[int]],
     output_dir: str,
@@ -600,7 +590,7 @@ def process_posts(
             # as direct_channels in Slack and hence the name channel_members.
             channel_members = post_dict["channel_members"]
             if len(channel_members) > 2:
-                message_dict["huddle_name"] = generate_direct_message_group_name(channel_members)
+                message_dict["direct_message_group_members"] = frozenset(channel_members)
             elif len(channel_members) == 2:
                 message_dict["pm_members"] = channel_members
         else:
@@ -633,7 +623,7 @@ def process_posts(
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
             get_recipient_id_from_channel_name=get_recipient_id_from_channel_name,
-            get_recipient_id_from_direct_message_group_name=get_recipient_id_from_direct_message_group_name,
+            get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
             get_recipient_id_from_username=get_recipient_id_from_username,
             is_pm_data=is_pm_data,
             output_dir=output_dir,
@@ -663,7 +653,7 @@ def write_message_data(
     output_dir: str,
     masking_content: bool,
     stream_id_mapper: IdMapper[str],
-    huddle_id_mapper: IdMapper[str],
+    huddle_id_mapper: IdMapper[frozenset[str]],
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
     zerver_realmemoji: list[dict[str, Any]],
@@ -688,8 +678,10 @@ def write_message_data(
         receiver_id = stream_id_mapper.get(channel_name)
         return stream_id_to_recipient_id[receiver_id]
 
-    def get_recipient_id_from_direct_message_group_name(direct_message_group_name: str) -> int:
-        receiver_id = huddle_id_mapper.get(direct_message_group_name)
+    def get_recipient_id_from_direct_message_group_members(
+        direct_message_group_members: frozenset[str],
+    ) -> int:
+        receiver_id = huddle_id_mapper.get(direct_message_group_members)
         return huddle_id_to_recipient_id[receiver_id]
 
     def get_recipient_id_from_username(username: str) -> int:
@@ -711,7 +703,7 @@ def write_message_data(
             realm_id=realm_id,
             post_data=post_data[post_type],
             get_recipient_id_from_channel_name=get_recipient_id_from_channel_name,
-            get_recipient_id_from_direct_message_group_name=get_recipient_id_from_direct_message_group_name,
+            get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
             get_recipient_id_from_username=get_recipient_id_from_username,
             subscriber_map=subscriber_map,
             output_dir=output_dir,
@@ -900,7 +892,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         subscriber_handler = SubscriberHandler()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
-        huddle_id_mapper = IdMapper[str]()
+        huddle_id_mapper = IdMapper[frozenset[str]]()
 
         print("Generating data for", team_name)
         realm = make_realm(realm_id, team)
