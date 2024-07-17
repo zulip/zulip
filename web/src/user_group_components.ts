@@ -45,13 +45,11 @@ export function setup_permissions_dropdown(
             }
         },
         $events_container: $("#groups_overlay .group-permissions"),
-        tippy_props: {
-            placement: "bottom-start",
-        },
         default_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
+            $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
         },
     });
     if (for_group_creation) {

@@ -1,8 +1,7 @@
-from typing import Dict, List
+from typing import Annotated
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
-from typing_extensions import Annotated
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
@@ -18,7 +17,7 @@ BODY = "The `{contract_title}` document {actions}."
 
 def get_message_body(payload: WildValue) -> str:
     contract_title = payload["signature_request"]["title"].tame(check_string)
-    recipients: Dict[str, List[str]] = {}
+    recipients: dict[str, list[str]] = {}
     signatures = payload["signature_request"]["signatures"]
 
     for signature in signatures:
@@ -45,7 +44,7 @@ def get_message_body(payload: WildValue) -> str:
     return BODY.format(contract_title=contract_title, actions=recipients_text).strip()
 
 
-def get_recipients_text(recipients: List[str]) -> str:
+def get_recipients_text(recipients: list[str]) -> str:
     recipients_text = ""
     if len(recipients) == 1:
         recipients_text = "{}".format(*recipients)

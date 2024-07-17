@@ -1,4 +1,5 @@
-from typing import Iterable, List, TypedDict
+from collections.abc import Iterable
+from typing import TypedDict
 
 from zerver.lib import retention
 from zerver.lib.retention import move_messages_to_archive
@@ -9,14 +10,14 @@ from zerver.tornado.django_api import send_event_on_commit
 
 class DeleteMessagesEvent(TypedDict, total=False):
     type: str
-    message_ids: List[int]
+    message_ids: list[int]
     message_type: str
     topic: str
     stream_id: int
 
 
 def check_update_first_message_id(
-    realm: Realm, stream: Stream, message_ids: List[int], users_to_notify: Iterable[int]
+    realm: Realm, stream: Stream, message_ids: list[int], users_to_notify: Iterable[int]
 ) -> None:
     # This will not update the `first_message_id` of streams where the
     # first message was deleted prior to the implementation of this function.
@@ -44,7 +45,9 @@ def check_update_first_message_id(
     send_event_on_commit(realm, stream_event, users_to_notify)
 
 
-def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
+def do_delete_messages(
+    realm: Realm, messages: Iterable[Message], *, acting_user: UserProfile | None
+) -> None:
     # messages in delete_message event belong to the same topic
     # or is a single direct message, as any other behaviour is not possible with
     # the current callers to this method.
@@ -60,12 +63,12 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
 
     sample_message = messages[0]
     message_type = "stream"
-    users_to_notify = []
+    users_to_notify = set()
     if not sample_message.is_stream_message():
         assert len(messages) == 1
         message_type = "private"
         ums = UserMessage.objects.filter(message_id__in=message_ids)
-        users_to_notify = [um.user_profile_id for um in ums]
+        users_to_notify = set(ums.values_list("user_profile_id", flat=True))
         archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
 
     if message_type == "stream":
@@ -77,8 +80,12 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         )
         # We exclude long-term idle users, since they by definition have no active clients.
         subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-        users_to_notify = list(subscriptions.values_list("user_profile_id", flat=True))
+        users_to_notify = set(subscriptions.values_list("user_profile_id", flat=True))
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
+
+    if acting_user is not None:
+        # Always send event to the user who deleted the message.
+        users_to_notify.add(acting_user.id)
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
     if message_type == "stream":

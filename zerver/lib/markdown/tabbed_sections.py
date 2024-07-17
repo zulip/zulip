@@ -1,5 +1,6 @@
 import re
-from typing import Any, Dict, List, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any
 
 import markdown
 from markdown.extensions import Extension
@@ -138,7 +139,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
         super().__init__(md)
 
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         tab_section = self.parse_tabs(lines)
         while tab_section:
             if "tabs" in tab_section:
@@ -163,7 +164,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
             tab_section = self.parse_tabs(lines)
         return lines
 
-    def generate_content_blocks(self, tab_section: Dict[str, Any], lines: List[str]) -> str:
+    def generate_content_blocks(self, tab_section: dict[str, Any], lines: list[str]) -> str:
         tab_content_blocks = []
         for index, tab in enumerate(tab_section["tabs"]):
             start_index = tab["start"] + 1
@@ -186,7 +187,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
             tab_content_blocks.append(tab_content_block)
         return "\n".join(tab_content_blocks)
 
-    def generate_nav_bar(self, tab_section: Dict[str, Any]) -> str:
+    def generate_nav_bar(self, tab_section: dict[str, Any]) -> str:
         li_elements = []
         for tab in tab_section["tabs"]:
             tab_key = tab.get("tab_key")
@@ -201,8 +202,8 @@ class TabbedSectionsPreprocessor(Preprocessor):
 
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))
 
-    def parse_tabs(self, lines: List[str]) -> Optional[Dict[str, Any]]:
-        block: Dict[str, Any] = {}
+    def parse_tabs(self, lines: list[str]) -> dict[str, Any] | None:
+        block: dict[str, Any] = {}
         for index, line in enumerate(lines):
             start_match = START_TABBED_SECTION_REGEX.search(line)
             if start_match:

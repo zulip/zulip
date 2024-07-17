@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from .config import get_secret
 
@@ -148,7 +148,7 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 ## The install process requires EmailAuthBackend (the default) to be
 ## enabled.  If you want to disable it, do so after creating the
 ## initial realm and user.
-AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
+AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     "zproject.backends.EmailAuthBackend",  # Email and password; just requires SMTP setup
     # "zproject.backends.GoogleAuthBackend",  # Google auth, setup below
     # "zproject.backends.GitHubAuthBackend",  # GitHub auth, setup below
@@ -375,7 +375,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ##     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#openid-connect
 ##
 
-SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, Any] = {
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, Any] = {
     ## This field (example: "idp_name") may appear in URLs during
     ## authentication, but is otherwise not user-visible.
     "idp_name": {
@@ -421,7 +421,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
         "url": "{}{}".format("https://", EXTERNAL_HOST),
     },
 }
-SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
+SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
     ## The fields are explained in detail here:
     ##     https://python-social-auth.readthedocs.io/en/latest/backends/saml.html
     "idp_name": {
@@ -479,7 +479,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
 
 # More complete documentation of the configurable security settings
 # are available in the "security" part of https://github.com/onelogin/python3-saml#settings.
-SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {
+SOCIAL_AUTH_SAML_SECURITY_CONFIG: dict[str, Any] = {
     ## If you've set up the optional private and public server keys,
     ## set this to True to enable signing of SAMLRequests using the
     ## private key.

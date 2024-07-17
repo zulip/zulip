@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence, Union
+from collections.abc import Sequence
 
 from django.conf import settings
 from django.db import transaction
@@ -58,7 +58,7 @@ def add_user_group(
     name: str,
     members: Json[Sequence[int]],
     description: str,
-    can_mention_group: Optional[Json[Union[int, AnonymousSettingGroupDict]]] = None,
+    can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     name = check_user_group_name(name)
@@ -107,9 +107,9 @@ def edit_user_group(
     user_profile: UserProfile,
     *,
     user_group_id: PathOnly[int],
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-    can_mention_group: Optional[Json[GroupSettingChangeRequest]] = None,
+    name: str | None = None,
+    description: str | None = None,
+    can_mention_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     if name is None and description is None and can_mention_group is None:
         raise JsonableError(_("No new data supplied"))
@@ -205,7 +205,7 @@ def update_user_group_backend(
 
 def notify_for_user_group_subscription_changes(
     acting_user: UserProfile,
-    recipient_users: List[UserProfile],
+    recipient_users: list[UserProfile],
     user_group: NamedUserGroup,
     *,
     send_subscription_message: bool = False,

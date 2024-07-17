@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from django.db import models
 from typing_extensions import override
@@ -24,7 +24,7 @@ class Draft(models.Model):
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.id} / {self.last_edit_time}"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         to, recipient_type_str = get_recipient_ids(self.recipient, self.user_profile_id)
         return {
             "id": self.id,

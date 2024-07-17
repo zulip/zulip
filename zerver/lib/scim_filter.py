@@ -1,5 +1,3 @@
-from typing import List, Optional, Tuple
-
 from django.http import HttpRequest
 from django_scim.filters import UserFilterQuery
 
@@ -28,7 +26,7 @@ class ZulipUserFilterQuery(UserFilterQuery):
     # attr_map describes which table.column the given SCIM2 User
     # attributes refer to.
     attr_map = {
-        # attr, sub attr, uri
+        # attr, sub attr, url
         ("userName", None, None): "zerver_userprofile.delivery_email",
         # We can only reasonably support filtering by name.formatted
         # as UserProfile.full_name is its equivalent. We don't store
@@ -45,7 +43,7 @@ class ZulipUserFilterQuery(UserFilterQuery):
     joins = ("INNER JOIN zerver_realm ON zerver_realm.id = realm_id",)
 
     @classmethod
-    def get_extras(cls, q: str, request: Optional[HttpRequest] = None) -> Tuple[str, List[object]]:
+    def get_extras(cls, q: str, request: HttpRequest | None = None) -> tuple[str, list[object]]:
         """
         Return extra SQL and params to be attached to end of current Query's
         SQL and params. The return format matches the format that should be used

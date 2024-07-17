@@ -1,12 +1,11 @@
 import logging
-from typing import Any, Dict, Literal, Optional
+from typing import Annotated, Any, Literal
 
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from pydantic import AfterValidator, Json
-from typing_extensions import Annotated
 
 from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
@@ -55,7 +54,7 @@ def billing_page(
 
     billing_session = RealmBillingSession(user=user, realm=user.realm)
 
-    context: Dict[str, Any] = {
+    context: dict[str, Any] = {
         "admin_access": user.has_billing_access,
         "has_active_plan": False,
         "org_name": billing_session.org_name(),
@@ -101,7 +100,7 @@ def remote_realm_billing_page(
     success_message: str = "",
 ) -> HttpResponse:
     realm_uuid = billing_session.remote_realm.uuid
-    context: Dict[str, Any] = {
+    context: dict[str, Any] = {
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
@@ -161,7 +160,7 @@ def remote_server_billing_page(
     *,
     success_message: str = "",
 ) -> HttpResponse:
-    context: Dict[str, Any] = {
+    context: dict[str, Any] = {
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
@@ -239,14 +238,13 @@ def update_plan(
     request: HttpRequest,
     user: UserProfile,
     *,
-    status: Optional[
-        Annotated[
-            Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
-        ]
-    ] = None,
-    licenses: Optional[Json[int]] = None,
-    licenses_at_next_renewal: Optional[Json[int]] = None,
-    schedule: Optional[Json[int]] = None,
+    status: Annotated[
+        Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
+    ]
+    | None = None,
+    licenses: Json[int] | None = None,
+    licenses_at_next_renewal: Json[int] | None = None,
+    schedule: Json[int] | None = None,
 ) -> HttpResponse:
     update_plan_request = UpdatePlanRequest(
         status=status,
@@ -266,14 +264,13 @@ def update_plan_for_remote_realm(
     request: HttpRequest,
     billing_session: RemoteRealmBillingSession,
     *,
-    status: Optional[
-        Annotated[
-            Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
-        ]
-    ] = None,
-    licenses: Optional[Json[int]] = None,
-    licenses_at_next_renewal: Optional[Json[int]] = None,
-    schedule: Optional[Json[int]] = None,
+    status: Annotated[
+        Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
+    ]
+    | None = None,
+    licenses: Json[int] | None = None,
+    licenses_at_next_renewal: Json[int] | None = None,
+    schedule: Json[int] | None = None,
 ) -> HttpResponse:
     update_plan_request = UpdatePlanRequest(
         status=status,
@@ -292,14 +289,13 @@ def update_plan_for_remote_server(
     request: HttpRequest,
     billing_session: RemoteServerBillingSession,
     *,
-    status: Optional[
-        Annotated[
-            Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
-        ]
-    ] = None,
-    licenses: Optional[Json[int]] = None,
-    licenses_at_next_renewal: Optional[Json[int]] = None,
-    schedule: Optional[Json[int]] = None,
+    status: Annotated[
+        Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
+    ]
+    | None = None,
+    licenses: Json[int] | None = None,
+    licenses_at_next_renewal: Json[int] | None = None,
+    schedule: Json[int] | None = None,
 ) -> HttpResponse:
     update_plan_request = UpdatePlanRequest(
         status=status,

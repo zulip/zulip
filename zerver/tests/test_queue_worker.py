@@ -3,9 +3,10 @@ import os
 import signal
 import time
 from collections import defaultdict
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager, suppress
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
+from typing import Any, TypeAlias
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -13,7 +14,7 @@ import time_machine
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.test import override_settings
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -37,24 +38,24 @@ from zerver.worker.missedmessage_emails import MissedMessageWorker
 from zerver.worker.missedmessage_mobile_notifications import PushNotificationsWorker
 from zerver.worker.user_activity import UserActivityWorker
 
-Event: TypeAlias = Dict[str, Any]
+Event: TypeAlias = dict[str, Any]
 
 
 class FakeClient:
     def __init__(self, prefetch: int = 0) -> None:
-        self.queues: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+        self.queues: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
-    def enqueue(self, queue_name: str, data: Dict[str, Any]) -> None:
+    def enqueue(self, queue_name: str, data: dict[str, Any]) -> None:
         self.queues[queue_name].append(data)
 
     def start_json_consumer(
         self,
         queue_name: str,
-        callback: Callable[[List[Dict[str, Any]]], None],
+        callback: Callable[[list[dict[str, Any]]], None],
         batch_size: int = 1,
-        timeout: Optional[int] = None,
+        timeout: int | None = None,
     ) -> None:
-        chunk: List[Dict[str, Any]] = []
+        chunk: list[dict[str, Any]] = []
         queue = self.queues[queue_name]
         while queue:
             chunk.append(queue.pop(0))
@@ -279,16 +280,16 @@ class WorkerTest(ZulipTestCase):
         def check_row(
             row: ScheduledMessageNotificationEmail,
             scheduled_timestamp: datetime,
-            mentioned_user_group_id: Optional[int],
+            mentioned_user_group_id: int | None,
         ) -> None:
             self.assertEqual(row.trigger, NotificationTriggers.DIRECT_MESSAGE)
             self.assertEqual(row.scheduled_timestamp, scheduled_timestamp)
             self.assertEqual(row.mentioned_user_group_id, mentioned_user_group_id)
 
-        def advance() -> Optional[float]:
+        def advance() -> float | None:
             mmw.stopping = False
 
-            def inner(check: Callable[[], bool], timeout: Optional[float]) -> bool:
+            def inner(check: Callable[[], bool], timeout: float | None) -> bool:
                 # The check should never pass, since we've just (with
                 # the lock) ascertained above the cv.wait that its
                 # conditions are not met.
@@ -311,9 +312,10 @@ class WorkerTest(ZulipTestCase):
 
         # Enqueues the events to the internal queue, as if from RabbitMQ
         time_zero = datetime(2021, 1, 1, tzinfo=timezone.utc)
-        with time_machine.travel(time_zero, tick=False), patch.object(
-            mmw.cv, "notify"
-        ) as notify_mock:
+        with (
+            time_machine.travel(time_zero, tick=False),
+            patch.object(mmw.cv, "notify") as notify_mock,
+        ):
             for event in events:
                 mmw.consume_single_event(event)
         # All of these notify, because has_timeout is still false in
@@ -350,9 +352,10 @@ class WorkerTest(ZulipTestCase):
         # `expected_scheduled_timestamp` as the earlier events.
 
         few_moments_later = time_zero + timedelta(seconds=3)
-        with time_machine.travel(few_moments_later, tick=False), patch.object(
-            mmw.cv, "notify"
-        ) as notify_mock:
+        with (
+            time_machine.travel(few_moments_later, tick=False),
+            patch.object(mmw.cv, "notify") as notify_mock,
+        ):
             mmw.consume_single_event(bonus_event_hamlet)
         self.assertEqual(notify_mock.call_count, 0)
 
@@ -374,13 +377,16 @@ class WorkerTest(ZulipTestCase):
 
         # If called after `expected_scheduled_timestamp`, it should process all emails.
         one_minute_overdue = expected_scheduled_timestamp + timedelta(seconds=60)
-        with time_machine.travel(one_minute_overdue, tick=True):
-            with send_mock as sm, self.assertLogs(level="INFO") as info_logs:
-                has_timeout = advance()
-                self.assertTrue(has_timeout)
-                self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
-                has_timeout = advance()
-                self.assertFalse(has_timeout)
+        with (
+            time_machine.travel(one_minute_overdue, tick=True),
+            send_mock as sm,
+            self.assertLogs(level="INFO") as info_logs,
+        ):
+            has_timeout = advance()
+            self.assertTrue(has_timeout)
+            self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
+            has_timeout = advance()
+            self.assertFalse(has_timeout)
 
         self.assertEqual(
             [
@@ -423,12 +429,14 @@ class WorkerTest(ZulipTestCase):
         # details, but the summary is that IntegrityErrors due to database constraints are raised at
         # the end of the test, not inside the `try` block. So, we have the code inside the `try` block
         # raise `IntegrityError` by mocking.
-        with patch(
-            "zerver.models.ScheduledMessageNotificationEmail.objects.create",
-            side_effect=IntegrityError,
-        ), self.assertLogs(level="DEBUG") as debug_logs, patch.object(
-            mmw.cv, "notify"
-        ) as notify_mock:
+        with (
+            patch(
+                "zerver.models.ScheduledMessageNotificationEmail.objects.create",
+                side_effect=IntegrityError,
+            ),
+            self.assertLogs(level="DEBUG") as debug_logs,
+            patch.object(mmw.cv, "notify") as notify_mock,
+        ):
             mmw.consume_single_event(hamlet_event1)
             self.assertEqual(notify_mock.call_count, 0)
             self.assertIn(
@@ -440,9 +448,10 @@ class WorkerTest(ZulipTestCase):
         # throws an exception.  First, enqueue the messages, and get
         # them to create database rows:
         time_zero = datetime(2021, 1, 1, tzinfo=timezone.utc)
-        with time_machine.travel(time_zero, tick=False), patch.object(
-            mmw.cv, "notify"
-        ) as notify_mock:
+        with (
+            time_machine.travel(time_zero, tick=False),
+            patch.object(mmw.cv, "notify") as notify_mock,
+        ):
             mmw.consume_single_event(hamlet_event1)
             mmw.consume_single_event(hamlet_event2)
             mmw.consume_single_event(othello_event)
@@ -457,9 +466,11 @@ class WorkerTest(ZulipTestCase):
                 raise RuntimeError
 
         one_minute_overdue = expected_scheduled_timestamp + timedelta(seconds=60)
-        with time_machine.travel(one_minute_overdue, tick=False), self.assertLogs(
-            level="ERROR"
-        ) as error_logs, send_mock as sm:
+        with (
+            time_machine.travel(one_minute_overdue, tick=False),
+            self.assertLogs(level="ERROR") as error_logs,
+            send_mock as sm,
+        ):
             sm.side_effect = fail_some
             has_timeout = advance()
             self.assertTrue(has_timeout)
@@ -482,14 +493,14 @@ class WorkerTest(ZulipTestCase):
         fake_client = FakeClient()
 
         def fake_publish(
-            queue_name: str, event: Dict[str, Any], processor: Callable[[Any], None]
+            queue_name: str, event: dict[str, Any], processor: Callable[[Any], None]
         ) -> None:
             fake_client.enqueue(queue_name, event)
 
-        def generate_new_message_notification() -> Dict[str, Any]:
+        def generate_new_message_notification() -> dict[str, Any]:
             return build_offline_notification(1, 1)
 
-        def generate_remove_notification() -> Dict[str, Any]:
+        def generate_remove_notification() -> dict[str, Any]:
             return {
                 "type": "remove",
                 "user_profile_id": 1,
@@ -499,12 +510,16 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(fake_client):
             worker = PushNotificationsWorker()
             worker.setup()
-            with patch(
-                "zerver.worker.missedmessage_mobile_notifications.handle_push_notification"
-            ) as mock_handle_new, patch(
-                "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification"
-            ) as mock_handle_remove, patch(
-                "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
+            with (
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_push_notification"
+                ) as mock_handle_new,
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification"
+                ) as mock_handle_remove,
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
+                ),
             ):
                 event_new = generate_new_message_notification()
                 event_remove = generate_remove_notification()
@@ -517,25 +532,32 @@ class WorkerTest(ZulipTestCase):
                     event_remove["user_profile_id"], event_remove["message_ids"]
                 )
 
-            with patch(
-                "zerver.worker.missedmessage_mobile_notifications.handle_push_notification",
-                side_effect=PushNotificationBouncerRetryLaterError("test"),
-            ) as mock_handle_new, patch(
-                "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification",
-                side_effect=PushNotificationBouncerRetryLaterError("test"),
-            ) as mock_handle_remove, patch(
-                "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
+            with (
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_push_notification",
+                    side_effect=PushNotificationBouncerRetryLaterError("test"),
+                ) as mock_handle_new,
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification",
+                    side_effect=PushNotificationBouncerRetryLaterError("test"),
+                ) as mock_handle_remove,
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
+                ),
             ):
                 event_new = generate_new_message_notification()
                 event_remove = generate_remove_notification()
                 fake_client.enqueue("missedmessage_mobile_notifications", event_new)
                 fake_client.enqueue("missedmessage_mobile_notifications", event_remove)
 
-                with mock_queue_publish(
-                    "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
-                ), self.assertLogs(
-                    "zerver.worker.missedmessage_mobile_notifications", "WARNING"
-                ) as warn_logs:
+                with (
+                    mock_queue_publish(
+                        "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
+                    ),
+                    self.assertLogs(
+                        "zerver.worker.missedmessage_mobile_notifications", "WARNING"
+                    ) as warn_logs,
+                ):
                     worker.start()
                     self.assertEqual(mock_handle_new.call_count, 1 + MAX_REQUEST_RETRIES)
                     self.assertEqual(mock_handle_remove.call_count, 1 + MAX_REQUEST_RETRIES)
@@ -587,9 +609,10 @@ class WorkerTest(ZulipTestCase):
         for element in data:
             fake_client.enqueue("email_mirror", element)
 
-        with simulated_queue_client(fake_client), self.assertLogs(
-            "zerver.worker.email_mirror", level="WARNING"
-        ) as warn_logs:
+        with (
+            simulated_queue_client(fake_client),
+            self.assertLogs("zerver.worker.email_mirror", level="WARNING") as warn_logs,
+        ):
             start_time = time.time()
             with patch("time.time", return_value=start_time):
                 worker = MirrorWorker()
@@ -623,20 +646,22 @@ class WorkerTest(ZulipTestCase):
                 self.assertEqual(mock_mirror_email.call_count, 4)
 
                 # If RateLimiterLockingError is thrown, we rate-limit the new message:
-                with patch(
-                    "zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit",
-                    side_effect=RateLimiterLockingError,
+                with (
+                    patch(
+                        "zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit",
+                        side_effect=RateLimiterLockingError,
+                    ),
+                    self.assertLogs("zerver.lib.rate_limiter", "WARNING") as mock_warn,
                 ):
-                    with self.assertLogs("zerver.lib.rate_limiter", "WARNING") as mock_warn:
-                        fake_client.enqueue("email_mirror", data[0])
-                        worker.start()
-                        self.assertEqual(mock_mirror_email.call_count, 4)
-                        self.assertEqual(
-                            mock_warn.output,
-                            [
-                                "WARNING:zerver.lib.rate_limiter:Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip"
-                            ],
-                        )
+                    fake_client.enqueue("email_mirror", data[0])
+                    worker.start()
+                    self.assertEqual(mock_mirror_email.call_count, 4)
+                    self.assertEqual(
+                        mock_warn.output,
+                        [
+                            "WARNING:zerver.lib.rate_limiter:Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip"
+                        ],
+                    )
         self.assertEqual(
             warn_logs.output,
             [
@@ -660,18 +685,18 @@ class WorkerTest(ZulipTestCase):
         fake_client.enqueue("email_senders", data)
 
         def fake_publish(
-            queue_name: str, event: Dict[str, Any], processor: Optional[Callable[[Any], None]]
+            queue_name: str, event: dict[str, Any], processor: Callable[[Any], None] | None
         ) -> None:
             fake_client.enqueue(queue_name, event)
 
         with simulated_queue_client(fake_client):
             worker = EmailSendingWorker()
             worker.setup()
-            with patch(
-                "zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError
-            ), mock_queue_publish(
-                "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
-            ), self.assertLogs(level="ERROR") as m:
+            with (
+                patch("zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError),
+                mock_queue_publish("zerver.lib.queue.queue_json_publish", side_effect=fake_publish),
+                self.assertLogs(level="ERROR") as m,
+            ):
                 worker.start()
                 self.assertIn("failed due to exception EmailNotDeliveredError", m.output[0])
 
@@ -719,7 +744,7 @@ class WorkerTest(ZulipTestCase):
         @base_worker.assign_queue("unreliable_loopworker", is_test_queue=True)
         class UnreliableLoopWorker(base_worker.LoopQueueProcessingWorker):
             @override
-            def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+            def consume_batch(self, events: list[dict[str, Any]]) -> None:
                 for event in events:
                     if event["type"] == "unexpected behaviour":
                         raise Exception("Worker task not performing as expected!")

@@ -19,12 +19,11 @@ import * as dropdown_widget from "./dropdown_widget";
 import type {Option} from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import * as settings_config from "./settings_config";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 type MessageType = "stream" | "private";
@@ -116,12 +115,7 @@ export function update_on_recipient_change(): void {
 export function get_posting_policy_error_message(): string {
     if (compose_state.selected_recipient_id === "direct") {
         const recipients = compose_pm_pill.get_user_ids_string();
-        if (!people.user_can_direct_message(recipients)) {
-            return $t({
-                defaultMessage: "You are not allowed to send direct messages in this organization.",
-            });
-        }
-        return "";
+        return compose_validate.check_dm_permissions_and_get_error_string(recipients);
     }
 
     if (!isNumber(compose_state.selected_recipient_id)) {
@@ -146,11 +140,13 @@ export function check_posting_policy_for_compose_box(): void {
     }
 
     let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    if (compose_state.selected_recipient_id === "direct") {
-        banner_classname = compose_banner.CLASSNAMES.private_messages_disabled;
-    }
     compose_validate.set_recipient_disallowed(true);
-    compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
+    if (compose_state.selected_recipient_id === "direct") {
+        banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
+        compose_banner.cannot_send_direct_message_error(banner_text);
+    } else {
+        compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
+    }
 }
 
 function switch_message_type(message_type: MessageType): void {
@@ -263,42 +259,12 @@ function get_options_for_recipient_widget(): Option[] {
         name: $t({defaultMessage: "Direct message"}),
     };
 
-    if (
-        realm.realm_private_message_policy ===
-        settings_config.private_message_policy_values.by_anyone.code
-    ) {
+    if (!user_groups.is_empty_group(realm.realm_direct_message_permission_group)) {
         options.unshift(direct_messages_option);
     } else {
         options.push(direct_messages_option);
     }
     return options;
-}
-
-function compose_recipient_dropdown_on_show(dropdown: tippy.Instance): void {
-    // Offset to display dropdown above compose.
-    let top_offset = 5;
-    const window_height = window.innerHeight;
-    const search_box_and_padding_height = 50;
-    // pixels above compose box.
-    const recipient_input_top = $("#compose_select_recipient_widget_wrapper").get_offset_to_window()
-        .top;
-    const top_space = recipient_input_top - top_offset - search_box_and_padding_height;
-    // pixels below compose starting from top of compose box.
-    const bottom_space = window_height - recipient_input_top - search_box_and_padding_height;
-    // Show dropdown on top / bottom based on available space.
-    let placement: tippy.Placement = "top-start";
-    if (bottom_space > top_space) {
-        placement = "bottom-start";
-        top_offset = -30;
-    }
-    const offset: [number, number] = [-10, top_offset];
-    dropdown.setProps({placement, offset});
-    const height = Math.min(
-        dropdown_widget.DEFAULT_DROPDOWN_HEIGHT,
-        Math.max(top_space, bottom_space),
-    );
-    const $popper = $(dropdown.popper);
-    $popper.find(".dropdown-list-wrapper").css("max-height", height + "px");
 }
 
 export function open_compose_recipient_dropdown(): void {
@@ -337,11 +303,15 @@ export function initialize(): void {
         get_options: get_options_for_recipient_widget,
         item_click_callback,
         $events_container: $("body"),
-        on_show_callback: compose_recipient_dropdown_on_show,
         on_exit_with_escape_callback: focus_compose_recipient,
         // We want to focus on topic box if dropdown was closed via selecting an item.
         focus_target_on_hidden: false,
         on_hidden_callback,
+        dropdown_input_visible_selector: "#compose_select_recipient_widget_wrapper",
+        prefer_top_start_placement: true,
+        tippy_props: {
+            offset: [-10, 5],
+        },
     }).setup();
 
     // `input` isn't relevant for streams since it registers as a change only

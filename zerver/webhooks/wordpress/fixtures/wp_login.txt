@@ -1,1 +1,0 @@
-stream=wordpress&user_login=testuser&hook=wp_login&topic=New%20Login

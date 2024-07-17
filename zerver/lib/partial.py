@@ -1,10 +1,13 @@
 # Workaround for missing functools.partial support in mypy
 # (https://github.com/python/mypy/issues/1484).
 
-from typing import TYPE_CHECKING, Callable, TypeVar, overload
+from collections.abc import Callable
+from typing import TYPE_CHECKING, TypeVar, overload
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec
+    from typing import Concatenate
+
+    from typing_extensions import ParamSpec
 
     P = ParamSpec("P")
     T1 = TypeVar("T1")

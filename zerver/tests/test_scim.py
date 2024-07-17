@@ -1,6 +1,7 @@
 import copy
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Dict, Iterator, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 from unittest import mock
 
 import orjson
@@ -31,7 +32,7 @@ class SCIMTestCase(ZulipTestCase):
     def scim_headers(self) -> SCIMHeadersDict:
         return {"HTTP_AUTHORIZATION": f"Bearer {settings.SCIM_CONFIG['zulip']['bearer_token']}"}
 
-    def generate_user_schema(self, user_profile: UserProfile) -> Dict[str, Any]:
+    def generate_user_schema(self, user_profile: UserProfile) -> dict[str, Any]:
         return {
             "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
             "id": user_profile.id,
@@ -99,11 +100,13 @@ class TestExceptionDetailsNotRevealedToClient(SCIMTestCase):
         Verify that, unlike in default django-scim2 behavior, details of an exception
         are not revealed in the HttpResponse.
         """
-        with mock.patch(
-            "zerver.lib.scim.ZulipSCIMUser.to_dict", side_effect=Exception("test exception")
-        ), self.assertLogs("django_scim.views", "ERROR") as mock_scim_logger, self.assertLogs(
-            "django.request", "ERROR"
-        ) as mock_request_logger:
+        with (
+            mock.patch(
+                "zerver.lib.scim.ZulipSCIMUser.to_dict", side_effect=Exception("test exception")
+            ),
+            self.assertLogs("django_scim.views", "ERROR") as mock_scim_logger,
+            self.assertLogs("django.request", "ERROR") as mock_request_logger,
+        ):
             result = self.client_get("/scim/v2/Users", {}, **self.scim_headers())
             # Only a generic error message is returned:
             self.assertEqual(

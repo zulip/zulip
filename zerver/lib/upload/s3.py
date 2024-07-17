@@ -1,8 +1,9 @@
 import logging
 import os
 import secrets
+from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Dict, Iterator, List, Literal, Optional, Tuple
+from typing import IO, Any, BinaryIO, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import boto3
@@ -12,7 +13,6 @@ from django.conf import settings
 from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import override
 
-from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import resize_avatar, resize_logo
 from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile
@@ -63,8 +63,8 @@ def get_bucket(bucket_name: str, authed: bool = True) -> Bucket:
 def upload_image_to_s3(
     bucket: Bucket,
     file_name: str,
-    content_type: Optional[str],
-    user_profile: UserProfile,
+    content_type: str | None,
+    user_profile: UserProfile | None,
     contents: bytes,
     *,
     storage_class: Literal[
@@ -75,19 +75,19 @@ def upload_image_to_s3(
         "STANDARD",
         "STANDARD_IA",
     ] = "STANDARD",
-    cache_control: Optional[str] = None,
-    extra_metadata: Optional[Dict[str, str]] = None,
+    cache_control: str | None = None,
+    extra_metadata: dict[str, str] | None = None,
 ) -> None:
     key = bucket.Object(file_name)
-    metadata = {
-        "user_profile_id": str(user_profile.id),
-        "realm_id": str(user_profile.realm_id),
-    }
+    metadata: dict[str, str] = {}
+    if user_profile:
+        metadata["user_profile_id"] = str(user_profile.id)
+        metadata["realm_id"] = str(user_profile.realm_id)
     if extra_metadata is not None:
         metadata.update(extra_metadata)
 
     extras = {}
-    if content_type is None:
+    if content_type is None:  # nocoverage
         content_type = ""
     if content_type not in INLINE_MIME_TYPES:
         extras["ContentDisposition"] = "attachment"
@@ -213,7 +213,7 @@ class S3UploadBackend(ZulipUploadBackend):
         path_id: str,
         content_type: str,
         file_data: bytes,
-        user_profile: UserProfile,
+        user_profile: UserProfile | None,
     ) -> None:
         upload_image_to_s3(
             self.uploads_bucket,
@@ -234,13 +234,15 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.delete_file_from_s3(path_id, self.uploads_bucket)
 
     @override
-    def delete_message_attachments(self, path_ids: List[str]) -> None:
+    def delete_message_attachments(self, path_ids: list[str]) -> None:
         self.uploads_bucket.delete_objects(
             Delete={"Objects": [{"Key": path_id} for path_id in path_ids]}
         )
 
     @override
-    def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
+    def all_message_attachments(
+        self, include_thumbnails: bool = False
+    ) -> Iterator[tuple[str, datetime]]:
         client = self.uploads_bucket.meta.client
         paginator = client.get_paginator("list_objects_v2")
         page_iterator = paginator.paginate(Bucket=self.uploads_bucket.name)
@@ -248,6 +250,8 @@ class S3UploadBackend(ZulipUploadBackend):
         for page in page_iterator:
             if page["KeyCount"] > 0:
                 for item in page["Contents"]:
+                    if not include_thumbnails and item["Key"].startswith("thumbnail/"):
+                        continue
                     yield (
                         item["Key"],
                         item["LastModified"],
@@ -258,7 +262,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.get_public_upload_url(self.get_avatar_path(hash_key, medium))
 
     @override
-    def get_avatar_contents(self, file_path: str) -> Tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
         key = self.avatar_bucket.Object(file_path + ".original")
         image_data = key.get()["Body"].read()
         content_type = key.content_type
@@ -271,7 +275,7 @@ class S3UploadBackend(ZulipUploadBackend):
         *,
         user_profile: UserProfile,
         image_data: bytes,
-        content_type: Optional[str],
+        content_type: str | None,
         future: bool = True,
     ) -> None:
         extra_metadata = {"avatar_version": str(user_profile.avatar_version + (1 if future else 0))}
@@ -297,8 +301,9 @@ class S3UploadBackend(ZulipUploadBackend):
         return public_url + f"?version={version}"
 
     @override
-    def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
-        content_type = guess_type(icon_file.name)[0]
+    def upload_realm_icon_image(
+        self, icon_file: IO[bytes], user_profile: UserProfile, content_type: str
+    ) -> None:
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), "icon")
 
         image_data = icon_file.read()
@@ -332,9 +337,8 @@ class S3UploadBackend(ZulipUploadBackend):
 
     @override
     def upload_realm_logo_image(
-        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
+        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
     ) -> None:
-        content_type = guess_type(logo_file.name)[0]
         if night:
             basename = "night_logo"
         else:
@@ -377,7 +381,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
     @override
     def upload_single_emoji_image(
-        self, path: str, content_type: Optional[str], user_profile: UserProfile, image_data: bytes
+        self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
         upload_image_to_s3(
             self.avatar_bucket,
@@ -385,6 +389,7 @@ class S3UploadBackend(ZulipUploadBackend):
             content_type,
             user_profile,
             image_data,
+            cache_control="public, max-age=31536000, immutable",
         )
 
     @override
@@ -395,9 +400,9 @@ class S3UploadBackend(ZulipUploadBackend):
     @override
     def upload_export_tarball(
         self,
-        realm: Optional[Realm],
+        realm: Realm | None,
         tarball_path: str,
-        percent_callback: Optional[Callable[[Any], None]] = None,
+        percent_callback: Callable[[Any], None] | None = None,
     ) -> str:
         # We use the avatar bucket, because it's world-readable.
         key = self.avatar_bucket.Object(
@@ -413,7 +418,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return public_url
 
     @override
-    def delete_export_tarball(self, export_path: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> str | None:
         assert export_path.startswith("/")
         path_id = export_path[1:]
         if self.delete_file_from_s3(path_id, self.avatar_bucket):

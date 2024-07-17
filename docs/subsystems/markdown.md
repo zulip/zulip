@@ -146,9 +146,9 @@ At a backend code level, these are controlled by the `message_realm`
 object and other arguments passed into `do_convert` (`sent_by_bot`,
 `translate_emoticons`, `mention_data`, etc.). Because
 Python-Markdown doesn't support directly passing arguments into the
-Markdown processor, our logic attaches these data to the Markdown
-processor object via e.g., `_md_engine.zulip_db_data`, and then
-individual Markdown rules can access the data from there.
+Markdown processor, our logic attaches the data to the Markdown
+processor object via, for example, `_md_engine.zulip_db_data`, and
+then individual Markdown rules can access the data from there.
 
 For non-message contexts (e.g., an organization's profile (aka the
 thing on the right-hand side of the login page), channel descriptions,

@@ -1,7 +1,7 @@
 import secrets
 from collections import defaultdict
 from email.headerregistry import Address
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from django.conf import settings
 from django.db import transaction
@@ -56,7 +56,7 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import RealmBillingSession
 
 
-def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
+def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
     if user_profile.realm.is_zephyr_mirror_realm:
         raise AssertionError("Deleting zephyr mirror users is not supported")
 
@@ -318,7 +318,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
 
 
 def do_deactivate_user(
-    user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile, _cascade: bool = True, *, acting_user: UserProfile | None
 ) -> None:
     if not user_profile.is_active:
         return
@@ -379,7 +379,7 @@ def do_deactivate_user(
 
 
 def send_stream_events_for_role_update(
-    user_profile: UserProfile, old_accessible_streams: List[Stream]
+    user_profile: UserProfile, old_accessible_streams: list[Stream]
 ) -> None:
     current_accessible_streams = get_streams_for_user(
         user_profile,
@@ -433,7 +433,7 @@ def send_stream_events_for_role_update(
 
 @transaction.atomic(savepoint=False)
 def do_change_user_role(
-    user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile, value: int, *, acting_user: UserProfile | None
 ) -> None:
     # We want to both (a) take a lock on the UserProfile row, and (b)
     # modify the passed-in UserProfile object, so that callers see the
@@ -563,7 +563,7 @@ def do_update_outgoing_webhook_service(
     )
 
 
-def do_update_bot_config_data(bot_profile: UserProfile, config_data: Dict[str, str]) -> None:
+def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
     updated_config_data = get_bot_config(bot_profile)
@@ -581,7 +581,7 @@ def do_update_bot_config_data(bot_profile: UserProfile, config_data: Dict[str, s
     )
 
 
-def get_service_dicts_for_bot(user_profile_id: int) -> List[Dict[str, Any]]:
+def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:
     user_profile = get_user_profile_by_id(user_profile_id)
     services = get_bot_services(user_profile_id)
     if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
@@ -609,10 +609,10 @@ def get_service_dicts_for_bot(user_profile_id: int) -> List[Dict[str, Any]]:
 
 
 def get_service_dicts_for_bots(
-    bot_dicts: List[Dict[str, Any]], realm: Realm
-) -> Dict[int, List[Dict[str, Any]]]:
+    bot_dicts: list[dict[str, Any]], realm: Realm
+) -> dict[int, list[dict[str, Any]]]:
     bot_profile_ids = [bot_dict["id"] for bot_dict in bot_dicts]
-    bot_services_by_uid: Dict[int, List[Service]] = defaultdict(list)
+    bot_services_by_uid: dict[int, list[Service]] = defaultdict(list)
     for service in Service.objects.filter(user_profile_id__in=bot_profile_ids):
         bot_services_by_uid[service.user_profile_id].append(service)
 
@@ -621,12 +621,12 @@ def get_service_dicts_for_bots(
     ]
     embedded_bot_configs = get_bot_configs(embedded_bot_ids)
 
-    service_dicts_by_uid: Dict[int, List[Dict[str, Any]]] = {}
+    service_dicts_by_uid: dict[int, list[dict[str, Any]]] = {}
     for bot_dict in bot_dicts:
         bot_profile_id = bot_dict["id"]
         bot_type = bot_dict["bot_type"]
         services = bot_services_by_uid[bot_profile_id]
-        service_dicts: List[Dict[str, Any]] = []
+        service_dicts: list[dict[str, Any]] = []
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
             service_dicts = [
                 {
@@ -650,7 +650,7 @@ def get_service_dicts_for_bots(
 
 def get_owned_bot_dicts(
     user_profile: UserProfile, include_all_realm_bots_if_admin: bool = True
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
         result = get_bot_dicts_in_realm(user_profile.realm)
     else:

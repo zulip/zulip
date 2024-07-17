@@ -329,7 +329,8 @@ product.
 If you plan to use the same Zulip organization in future terms (either
 for your own classes or for your department), you will likely want to:
 
-- Rename all channels to indicate the class and term in which they were used, e.g.,:
+- Rename all channels to indicate the class and term in which they were used, for
+  example:
     - **#announcements** → **#FA21 - CS101 - announcements**
     - **#CS101 > Lecture 1: Course intro** → **#FA21 - CS101 > Lecture 1: Course
       intro**

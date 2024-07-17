@@ -13,7 +13,18 @@ export type UploadFunction = (
 
 const default_max_file_size = 5;
 
-const supported_types = ["image/jpeg", "image/png", "image/gif", "image/tiff"];
+// These formats do not need to be universally understood by clients; they are all
+// converted, server-side, currently to PNGs.  This list should be kept in sync with
+// the THUMBNAIL_ACCEPT_IMAGE_TYPES in zerver/lib/thumbnail.py
+const supported_types = [
+    "image/avif",
+    "image/gif",
+    "image/heic",
+    "image/jpeg",
+    "image/png",
+    "image/tiff",
+    "image/webp",
+];
 
 function is_image_format(file: File): boolean {
     const type = file.type;

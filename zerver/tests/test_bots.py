@@ -1,6 +1,6 @@
 import filecmp
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -25,7 +25,7 @@ from zerver.models.users import get_user, is_cross_realm_bot_email
 
 
 # A test validator
-def _check_string(var_name: str, val: str) -> Optional[str]:
+def _check_string(var_name: str, val: str) -> str | None:
     if val.startswith("_"):
         return f'{var_name} starts with a "_" and is hence invalid.'
     return None
@@ -52,7 +52,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         response_dict = self.assert_json_success(result)
         self.assert_length(response_dict["bots"], count)
 
-    def create_bot(self, **extras: Any) -> Dict[str, Any]:
+    def create_bot(self, **extras: Any) -> dict[str, Any]:
         bot_info = {
             "full_name": "The Bot of Hamlet",
             "short_name": "hambot",
@@ -718,7 +718,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
         self.assert_json_error(result, "Insufficient permission")
 
-    def get_bot(self) -> Dict[str, Any]:
+    def get_bot(self) -> dict[str, Any]:
         result = self.client_get("/json/bots")
         return self.assert_json_success(result)["bots"][0]
 
@@ -1005,7 +1005,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         othello = self.example_user("othello")
 
-        bot_info: Dict[str, object] = {
+        bot_info: dict[str, object] = {
             "full_name": "The Bot of Hamlet",
             "short_name": "hambot",
         }
@@ -1098,7 +1098,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.create_bot()
         self.assert_num_bots_equal(1)
 
-        bot_info: Dict[str, object] = {
+        bot_info: dict[str, object] = {
             "full_name": "Another Bot of Hamlet",
             "short_name": "hamelbot",
         }

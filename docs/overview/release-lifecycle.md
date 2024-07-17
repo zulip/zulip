@@ -143,8 +143,8 @@ The nag will appear only to organization administrators starting a
 month before the deadline; after that, it will appear for all users on
 the server.
 
-You can adjust the deadline for your installation by setting e.g.,
-`SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 21` in
+You can adjust the deadline for your installation by setting, for
+example, `SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 21` in
 `/etc/zulip/settings.py` and then [restarting the server](../production/settings.md).
 
 ### Operating system support

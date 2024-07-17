@@ -1,5 +1,4 @@
 import os
-from typing import List, Union
 
 from django.conf import settings
 from django.conf.urls import include
@@ -632,7 +631,7 @@ i18n_urls = [
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
-urls: List[Union[URLPattern, URLResolver]] = list(i18n_urls)
+urls: list[URLPattern | URLResolver] = list(i18n_urls)
 
 # Include the dual-use patterns twice
 urls += [
@@ -657,6 +656,10 @@ urls += [
     rest_path(
         "user_uploads/download/<realm_id_str>/<path:filename>",
         GET=(serve_file_download_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
+    rest_path(
+        "user_uploads/thumbnail/<realm_id_str>/<path:filename>/<str:thumbnail_format>",
+        GET=(serve_file_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     rest_path(
         "user_uploads/<realm_id_str>/<path:filename>",

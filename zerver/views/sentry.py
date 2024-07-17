@@ -1,6 +1,5 @@
 import logging
 from contextlib import suppress
-from typing import Type
 from urllib.parse import urlsplit
 
 import orjson
@@ -100,8 +99,8 @@ def sentry_tunnel(
 # Smokescreen as a CONNECT proxy, so failures from Smokescreen
 # failing to connect at the TCP level will report as
 # ProxyErrors.
-def open_circuit_for(exc_type: Type[Exception], exc_value: Exception) -> bool:
-    if issubclass(exc_type, (ProxyError, Timeout)):
+def open_circuit_for(exc_type: type[Exception], exc_value: Exception) -> bool:
+    if issubclass(exc_type, ProxyError | Timeout):
         return True
     if isinstance(exc_value, HTTPError):
         response = exc_value.response

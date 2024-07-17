@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from typing_extensions import override
 
@@ -67,7 +67,7 @@ From image editing program:
             realm, [stream], list(UserProfile.objects.filter(realm=realm)), acting_user=None
         )
 
-        staged_messages: List[Dict[str, Any]] = [
+        staged_messages: list[dict[str, Any]] = [
             {
                 "sender": starr,
                 "content": "Hey @**Bel Fisher**, check out Zulip's Markdown formatting! "

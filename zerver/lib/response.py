@@ -1,4 +1,5 @@
-from typing import Any, Dict, Iterator, List, Mapping, Optional
+from collections.abc import Iterator, Mapping
+from typing import Any
 
 import orjson
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
@@ -10,7 +11,7 @@ from zerver.lib.exceptions import JsonableError, UnauthorizedError
 class MutableJsonResponse(HttpResponse):
     def __init__(
         self,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         *,
         content_type: str,
         status: int,
@@ -23,7 +24,7 @@ class MutableJsonResponse(HttpResponse):
         self._data = data
         self._needs_serialization = True
 
-    def get_data(self) -> Dict[str, Any]:
+    def get_data(self) -> dict[str, Any]:
         """Get data for this MutableJsonResponse. Calling this method
         after the response's content has already been serialized
         will mean the next time the response's content is accessed
@@ -76,14 +77,14 @@ class MutableJsonResponse(HttpResponse):
 
 
 def json_unauthorized(
-    message: Optional[str] = None, www_authenticate: Optional[str] = None
+    message: str | None = None, www_authenticate: str | None = None
 ) -> HttpResponse:
     return json_response_from_error(
         UnauthorizedError(msg=message, www_authenticate=www_authenticate)
     )
 
 
-def json_method_not_allowed(methods: List[str]) -> HttpResponseNotAllowed:
+def json_method_not_allowed(methods: list[str]) -> HttpResponseNotAllowed:
     resp = HttpResponseNotAllowed(methods)
     resp.content = orjson.dumps(
         {"result": "error", "msg": "Method Not Allowed", "allowed_methods": methods}

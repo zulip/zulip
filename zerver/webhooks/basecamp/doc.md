@@ -25,11 +25,7 @@ Receive notifications about Basecamp events in Zulip!
 
 ![](/static/images/integrations/basecamp/001.png)
 
-{% if all_event_types is defined %}
-
 {!event-filtering-additional-feature.md!}
-
-{% endif %}
 
 ### Related documentation
 

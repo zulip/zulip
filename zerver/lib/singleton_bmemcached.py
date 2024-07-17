@@ -1,6 +1,6 @@
 import pickle
 from functools import lru_cache
-from typing import Any, Dict
+from typing import Any
 
 from django_bmemcached.memcached import BMemcached
 
@@ -10,7 +10,7 @@ def _get_bmemcached(location: str, params: bytes) -> BMemcached:
     return BMemcached(location, pickle.loads(params))  # noqa: S301
 
 
-def SingletonBMemcached(location: str, params: Dict[str, Any]) -> BMemcached:
+def SingletonBMemcached(location: str, params: dict[str, Any]) -> BMemcached:
     # Django instantiates the cache backend per-task to guard against
     # thread safety issues, but BMemcached is already thread-safe and
     # does its own per-thread pooling, so make sure we instantiate only

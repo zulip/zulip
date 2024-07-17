@@ -1,7 +1,7 @@
 import functools
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Match, Optional, Set, Tuple
+from re import Match
 
 from django.conf import settings
 from django.db.models import Q
@@ -34,8 +34,8 @@ class FullNameInfo:
 
 @dataclass
 class UserFilter:
-    id: Optional[int]
-    full_name: Optional[str]
+    id: int | None
+    full_name: str | None
 
     def Q(self) -> Q:
         if self.full_name is not None and self.id is not None:
@@ -50,14 +50,14 @@ class UserFilter:
 
 @dataclass
 class MentionText:
-    text: Optional[str]
+    text: str | None
     is_topic_wildcard: bool
     is_stream_wildcard: bool
 
 
 @dataclass
 class PossibleMentions:
-    mention_texts: Set[str]
+    mention_texts: set[str]
     message_has_topic_wildcards: bool
     message_has_stream_wildcards: bool
 
@@ -72,14 +72,14 @@ class MentionBackend:
 
     def __init__(self, realm_id: int) -> None:
         self.realm_id = realm_id
-        self.user_cache: Dict[Tuple[int, str], FullNameInfo] = {}
-        self.stream_cache: Dict[str, int] = {}
+        self.user_cache: dict[tuple[int, str], FullNameInfo] = {}
+        self.stream_cache: dict[str, int] = {}
 
     def get_full_name_info_list(
-        self, user_filters: List[UserFilter], message_sender: Optional[UserProfile]
-    ) -> List[FullNameInfo]:
-        result: List[FullNameInfo] = []
-        unseen_user_filters: List[UserFilter] = []
+        self, user_filters: list[UserFilter], message_sender: UserProfile | None
+    ) -> list[FullNameInfo]:
+        result: list[FullNameInfo] = []
+        unseen_user_filters: list[UserFilter] = []
 
         # Try to get messages from the user_cache first.
         # This loop populates two lists:
@@ -136,12 +136,12 @@ class MentionBackend:
 
         return result
 
-    def get_stream_name_map(self, stream_names: Set[str]) -> Dict[str, int]:
+    def get_stream_name_map(self, stream_names: set[str]) -> dict[str, int]:
         if not stream_names:
             return {}
 
-        result: Dict[str, int] = {}
-        unseen_stream_names: List[str] = []
+        result: dict[str, int] = {}
+        unseen_stream_names: list[str] = []
 
         for stream_name in stream_names:
             if stream_name in self.stream_cache:
@@ -210,13 +210,13 @@ def possible_mentions(content: str) -> PossibleMentions:
     )
 
 
-def possible_user_group_mentions(content: str) -> Set[str]:
+def possible_user_group_mentions(content: str) -> set[str]:
     return {m.group("match") for m in USER_GROUP_MENTIONS_RE.finditer(content)}
 
 
 def get_possible_mentions_info(
-    mention_backend: MentionBackend, mention_texts: Set[str], message_sender: Optional[UserProfile]
-) -> List[FullNameInfo]:
+    mention_backend: MentionBackend, mention_texts: set[str], message_sender: UserProfile | None
+) -> list[FullNameInfo]:
     if not mention_texts:
         return []
 
@@ -244,7 +244,7 @@ def get_possible_mentions_info(
 
 class MentionData:
     def __init__(
-        self, mention_backend: MentionBackend, content: str, message_sender: Optional[UserProfile]
+        self, mention_backend: MentionBackend, content: str, message_sender: UserProfile | None
     ) -> None:
         self.mention_backend = mention_backend
         realm_id = mention_backend.realm_id
@@ -265,8 +265,8 @@ class MentionData:
         return self.has_topic_wildcards
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
-        self.user_group_name_info: Dict[str, NamedUserGroup] = {}
-        self.user_group_members: Dict[int, List[int]] = {}
+        self.user_group_name_info: dict[str, NamedUserGroup] = {}
+        self.user_group_members: dict[int, list[int]] = {}
         user_group_names = possible_user_group_mentions(content)
         if user_group_names:
             for group in NamedUserGroup.objects.filter(
@@ -275,16 +275,16 @@ class MentionData:
                 self.user_group_name_info[group.name.lower()] = group
                 self.user_group_members[group.id] = [m.id for m in group.direct_members.all()]
 
-    def get_user_by_name(self, name: str) -> Optional[FullNameInfo]:
+    def get_user_by_name(self, name: str) -> FullNameInfo | None:
         # warning: get_user_by_name is not dependable if two
         # users of the same full name are mentioned. Use
         # get_user_by_id where possible.
         return self.full_name_info.get(name.lower(), None)
 
-    def get_user_by_id(self, id: int) -> Optional[FullNameInfo]:
+    def get_user_by_id(self, id: int) -> FullNameInfo | None:
         return self.user_id_info.get(id, None)
 
-    def get_user_ids(self) -> Set[int]:
+    def get_user_ids(self) -> set[int]:
         """
         Returns the user IDs that might have been mentioned by this
         content.  Note that because this data structure has not parsed
@@ -293,13 +293,13 @@ class MentionData:
         """
         return set(self.user_id_info.keys())
 
-    def get_user_group(self, name: str) -> Optional[NamedUserGroup]:
+    def get_user_group(self, name: str) -> NamedUserGroup | None:
         return self.user_group_name_info.get(name.lower(), None)
 
-    def get_group_members(self, user_group_id: int) -> List[int]:
+    def get_group_members(self, user_group_id: int) -> list[int]:
         return self.user_group_members.get(user_group_id, [])
 
-    def get_stream_name_map(self, stream_names: Set[str]) -> Dict[str, int]:
+    def get_stream_name_map(self, stream_names: set[str]) -> dict[str, int]:
         return self.mention_backend.get_stream_name_map(stream_names)
 
 

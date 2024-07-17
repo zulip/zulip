@@ -22,8 +22,12 @@ let private_messages_collapsed = false;
 // This keeps track of if we're zoomed in or not.
 let zoomed = false;
 
+export function is_zoomed_in(): boolean {
+    return zoomed;
+}
+
 function get_private_messages_section_header(): JQuery {
-    return $(".direct-messages-container #direct-messages-section #direct-messages-section-header");
+    return $("#direct-messages-section-header");
 }
 
 export function set_count(count: number): void {
@@ -39,8 +43,10 @@ export function close(): void {
 }
 
 export function _build_direct_messages_list(): vdom.Tag<PMNode> {
-    const conversations = pm_list_data.get_conversations();
-    const pm_list_info = pm_list_data.get_list_info(zoomed);
+    const $filter = $<HTMLInputElement>(".direct-messages-list-filter").expectOne();
+    const search_term = $filter.val()!;
+    const conversations = pm_list_data.get_conversations(search_term);
+    const pm_list_info = pm_list_data.get_list_info(zoomed, search_term);
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
     const more_conversations_unread_count = pm_list_info.more_conversations_unread_count;
 
@@ -55,6 +61,12 @@ export function _build_direct_messages_list(): vdom.Tag<PMNode> {
         );
     }
     const dom_ast = pm_list_dom.pm_ul(pm_list_nodes);
+
+    if (search_term === "") {
+        $("#clear-direct-messages-search-button").hide();
+    } else {
+        $("#clear-direct-messages-search-button").show();
+    }
     return dom_ast;
 }
 
@@ -197,15 +209,31 @@ function zoom_in(): void {
     $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
     $("#streams_list").hide();
     $(".left-sidebar .right-sidebar-items").hide();
+
+    const $filter = $(".direct-messages-list-filter").expectOne();
+    $filter.trigger("focus");
 }
 
 function zoom_out(): void {
     zoomed = false;
-    update_private_messages();
+    clear_search(true); // force rerender if the search is empty.
     $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();
 }
+
+export function clear_search(force_rerender = false): void {
+    const $filter = $(".direct-messages-list-filter").expectOne();
+    if ($filter.val() !== "") {
+        $filter.val("");
+        update_private_messages();
+    } else if (force_rerender) {
+        update_private_messages();
+    }
+    $filter.trigger("blur");
+}
+
+const throttled_update_private_message = _.throttle(update_private_messages, 50);
 
 export function initialize(): void {
     $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
@@ -220,5 +248,19 @@ export function initialize(): void {
         e.preventDefault();
 
         zoom_out();
+    });
+
+    $(".direct-messages-container").on("input", ".direct-messages-list-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        throttled_update_private_message();
+    });
+
+    $(".direct-messages-container").on("click", "#clear-direct-messages-search-button", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        clear_search();
     });
 }

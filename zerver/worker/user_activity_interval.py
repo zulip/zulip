@@ -1,6 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from typing_extensions import override
 

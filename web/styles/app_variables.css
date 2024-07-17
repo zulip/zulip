@@ -1,4 +1,167 @@
 :root {
+    /* Zulip color palette */
+    /* stylelint-disable color-no-hex */
+    /* grey */
+    --grey-0: #f7f8fc;
+    --grey-50: #f2f3f7;
+    --grey-100: #e9ebf2;
+    --grey-150: #dfe1e8;
+    --grey-200: #cbcdd6;
+    --grey-250: #bbbdc8;
+    --grey-300: #aaadba;
+    --grey-350: #9ea1ae;
+    --grey-400: #9194a3;
+    --grey-450: #858897;
+    --grey-500: #767988;
+    --grey-550: #626573;
+    --grey-600: #535663;
+    --grey-650: #444754;
+    --grey-700: #393c49;
+    --grey-750: #2d303c;
+    --grey-800: #242631;
+    --grey-850: #181a25;
+    --grey-900: #11131e;
+    --grey-950: #0a0c17;
+    --grey-1000: #070812;
+
+    /* purple */
+    --purple-0: #f3f2fd;
+    --purple-50: #ededfc;
+    --purple-100: #e5e5fc;
+    --purple-150: #dbdaff;
+    --purple-200: #c9c7fd;
+    --purple-250: #b8b4ff;
+    --purple-300: #aba5fd;
+    --purple-350: #9e94fd;
+    --purple-400: #9283fd;
+    --purple-450: #8a70fc;
+    --purple-500: #7f63ee;
+    --purple-550: #7153dc;
+    --purple-600: #5f3cc5;
+    --purple-650: #522ab4;
+    --purple-700: #4615a3;
+    --purple-750: #370386;
+    --purple-800: #2c0070;
+    --purple-850: #200154;
+    --purple-900: #13013a;
+    --purple-950: #0d002c;
+    --purple-1000: #070020;
+
+    /* violet */
+    --violet-0: #f1f3fe;
+    --violet-50: #eceefc;
+    --violet-100: #e3e6fd;
+    --violet-150: #d8dcfc;
+    --violet-200: #c3c9fe;
+    --violet-250: #b1b7fe;
+    --violet-300: #a3a9fc;
+    --violet-350: #9398fd;
+    --violet-400: #8688fd;
+    --violet-450: #7977fe;
+    --violet-500: #6e69f3;
+    --violet-550: #6159e1;
+    --violet-600: #4f42c9;
+    --violet-650: #4331b8;
+    --violet-700: #381da7;
+    --violet-750: #2b0e8a;
+    --violet-800: #230773;
+    --violet-850: #180557;
+    --violet-900: #0e033c;
+    --violet-950: #08012e;
+    --violet-1000: #050121;
+
+    /* blue */
+    --blue-0: #eff3fe;
+    --blue-50: #e5edfe;
+    --blue-100: #dae5fd;
+    --blue-150: #cbdbfd;
+    --blue-200: #b4cafd;
+    --blue-250: #97b6fe;
+    --blue-300: #84a8fd;
+    --blue-350: #7199fe;
+    --blue-400: #5f8bfc;
+    --blue-450: #4d7bfd;
+    --blue-500: #406ef6;
+    --blue-550: #325ce3;
+    --blue-600: #2145cb;
+    --blue-650: #1633b9;
+    --blue-700: #0f23ac;
+    --blue-750: #0a089b;
+    --blue-800: #06037c;
+    --blue-850: #03025c;
+    --blue-900: #020145;
+    --blue-950: #010034;
+    --blue-1000: #010024;
+
+    /* green */
+    --green-0: #ebffee;
+    --green-50: #d0fed8;
+    --green-100: #b4ffc3;
+    --green-150: #a3f9b5;
+    --green-200: #82e89a;
+    --green-250: #6bd586;
+    --green-300: #57c273;
+    --green-350: #41ae61;
+    --green-400: #2f9f52;
+    --green-450: #158f44;
+    --green-500: #07833c;
+    --green-550: #087736;
+    --green-600: #09672e;
+    --green-650: #035926;
+    --green-700: #054f22;
+    --green-750: #05401b;
+    --green-800: #013112;
+    --green-850: #03260e;
+    --green-900: #001d07;
+    --green-950: #011505;
+    --green-1000: #010d03;
+
+    /* orange */
+    --orange-0: #fef4e3;
+    --orange-50: #ffeccd;
+    --orange-100: #ffda9b;
+    --orange-150: #fecb6f;
+    --orange-200: #febe3d;
+    --orange-250: #f8b325;
+    --orange-300: #eba002;
+    --orange-350: #db920d;
+    --orange-400: #c8850d;
+    --orange-450: #ba7401;
+    --orange-500: #a96a05;
+    --orange-550: #9c5c00;
+    --orange-600: #88520c;
+    --orange-650: #764607;
+    --orange-700: #623b0c;
+    --orange-750: #4f2e06;
+    --orange-800: #3f2404;
+    --orange-850: #321c04;
+    --orange-900: #291602;
+    --orange-950: #200f01;
+    --orange-1000: #180c03;
+
+    /* red */
+    --red-0: #fcf3f2;
+    --red-50: #ffe4e0;
+    --red-100: #ffd4cd;
+    --red-150: #ffbfb5;
+    --red-200: #fea497;
+    --red-250: #ff8b7c;
+    --red-300: #fd7465;
+    --red-350: #fd5f50;
+    --red-400: #f34c3e;
+    --red-450: #e1392e;
+    --red-500: #d22720;
+    --red-550: #c0070a;
+    --red-600: #ac0508;
+    --red-650: #960708;
+    --red-700: #7c0203;
+    --red-750: #650102;
+    --red-800: #4f0001;
+    --red-850: #400101;
+    --red-900: #330201;
+    --red-950: #280100;
+    --red-1000: #1a0200;
+
     color-scheme: light;
 
     /*
@@ -101,7 +264,9 @@
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
     --message-actions-popover-min-width: 230px;
+    --user-group-info-popover-min-width: 16.4285em; /* 230px / 14px em */
     --topic-actions-popover-min-width: 200px;
+    --user-card-popover-min-width: 200px;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
@@ -202,7 +367,14 @@
     flex item. 2.1786em is 30.5px at 14px/1em.
     */
     --compose-recipient-box-min-height: 2.1786em;
-    --compose-formatting-buttons-row-height: 28px;
+    /* 28px at 14px/1em */
+    /* Note that this variable can only be used in contexts where
+       the font-size doesn't deviate from the base font-size;
+       that excludes contexts like .compose_control_button, which
+       uses font-sizing to adjust the size of the icon. Related
+       values have been noted in comments with this variable name,
+       to make their coordination a little less painful. */
+    --compose-formatting-buttons-row-height: 2em;
 
     /*
     Width of the area where the compose box buttons are placed, "inside"
@@ -506,6 +678,19 @@
     --color-tab-picker-icon: hsl(200deg 100% 40%);
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
+    --color-copy-btn: color-mix(in srgb, var(--grey-600) 70%, transparent);
+    --color-copy-btn-hover: var(--green-600);
+    --color-copy-btn-bg-hover: color-mix(
+        in srgb,
+        var(--green-600) 8%,
+        transparent
+    );
+    --color-copy-btn-active: var(--green-500);
+    --color-copy-btn-bg-active: color-mix(
+        in srgb,
+        var(--green-500) 12%,
+        transparent
+    );
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 0% / 10%);
@@ -560,6 +745,7 @@
     --color-background-exit-hover-deactivated-user-pill: hsl(
         4deg 75% 53% / 15%
     );
+    --color-background-user-pill: hsla(0deg 0% 100% / 85%);
 
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
@@ -889,6 +1075,19 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
+    --color-copy-btn: color-mix(in srgb, var(--grey-300) 70%, transparent);
+    --color-copy-btn-hover: var(--green-300);
+    --color-copy-btn-bg-hover: color-mix(
+        in srgb,
+        var(--green-600) 8%,
+        transparent
+    );
+    --color-copy-btn-active: var(--green-300);
+    --color-copy-btn-bg-active: color-mix(
+        in srgb,
+        var(--green-400) 17%,
+        transparent
+    );
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 100% / 15%);
@@ -942,6 +1141,7 @@
     --color-focus-outline-deactivated-user-pill: hsl(0deg 0% 100% / 70%);
     --color-close-deactivated-user-pill: hsl(7deg 100% 74%);
     --color-background-exit-hover-deactivated-user-pill: hsl(0deg 0% 100% / 7%);
+    --color-background-user-pill: hsl(0deg 0% 0% / 40%);
 
     /* Inbox view */
     --color-background-inbox: var(--color-background);

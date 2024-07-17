@@ -1,10 +1,10 @@
-from typing import Dict, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from typing_extensions import TypeAlias
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.compatibility import is_pronouns_field_type_supported
@@ -17,9 +17,7 @@ from zerver.lib.validator import check_bool, check_dict, check_int, check_list, 
 from zerver.models import Stream, UserProfile
 
 
-def _default_all_public_streams(
-    user_profile: UserProfile, all_public_streams: Optional[bool]
-) -> bool:
+def _default_all_public_streams(user_profile: UserProfile, all_public_streams: bool | None) -> bool:
     if all_public_streams is not None:
         return all_public_streams
     else:
@@ -29,7 +27,7 @@ def _default_all_public_streams(
 def _default_narrow(
     user_profile: UserProfile, narrow: Sequence[Sequence[str]]
 ) -> Sequence[Sequence[str]]:
-    default_stream: Optional[Stream] = user_profile.default_events_register_stream
+    default_stream: Stream | None = user_profile.default_events_register_stream
     if not narrow and default_stream is not None:
         narrow = [["stream", default_stream.name]]
     return narrow
@@ -41,15 +39,15 @@ NarrowT: TypeAlias = Sequence[Sequence[str]]
 @has_request_variables
 def events_register_backend(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     apply_markdown: bool = REQ(default=False, json_validator=check_bool),
-    client_gravatar_raw: Optional[bool] = REQ(
+    client_gravatar_raw: bool | None = REQ(
         "client_gravatar", default=None, json_validator=check_bool
     ),
     slim_presence: bool = REQ(default=False, json_validator=check_bool),
-    all_public_streams: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    all_public_streams: bool | None = REQ(default=None, json_validator=check_bool),
     include_subscribers: bool = REQ(default=False, json_validator=check_bool),
-    client_capabilities: Optional[Dict[str, bool]] = REQ(
+    client_capabilities: dict[str, bool] | None = REQ(
         json_validator=check_dict(
             [
                 # This field was accidentally made required when it was added in v2.0.0-781;
@@ -70,10 +68,8 @@ def events_register_backend(
         ),
         default=None,
     ),
-    event_types: Optional[Sequence[str]] = REQ(
-        json_validator=check_list(check_string), default=None
-    ),
-    fetch_event_types: Optional[Sequence[str]] = REQ(
+    event_types: Sequence[str] | None = REQ(json_validator=check_list(check_string), default=None),
+    fetch_event_types: Sequence[str] | None = REQ(
         json_validator=check_list(check_string), default=None
     ),
     narrow: NarrowT = REQ(

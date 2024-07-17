@@ -1,5 +1,6 @@
 import re
-from typing import Any, Callable, Dict, Tuple
+from collections.abc import Callable
+from typing import Any
 
 from django.conf import settings
 from django.utils.text import slugify
@@ -7,8 +8,8 @@ from django.utils.text import slugify
 from zerver.models import Stream
 
 
-def default_option_handler_factory(address_option: str) -> Callable[[Dict[str, Any]], None]:
-    def option_setter(options_dict: Dict[str, Any]) -> None:
+def default_option_handler_factory(address_option: str) -> Callable[[dict[str, Any]], None]:
+    def option_setter(options_dict: dict[str, Any]) -> None:
         options_dict[address_option.replace("-", "_")] = True
 
     return option_setter
@@ -79,7 +80,7 @@ def encode_email_address_helper(name: str, email_token: str, show_sender: bool =
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
 
-def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
+def decode_email_address(email: str) -> tuple[str, dict[str, bool]]:
     # Perform the reverse of encode_email_address. Returns a tuple of
     # (email_token, options)
     msg_string = get_email_gateway_message_string_from_address(email)
@@ -96,7 +97,7 @@ def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
     msg_string = msg_string.replace(".", "+")
 
     parts = msg_string.split("+")
-    options: Dict[str, bool] = {}
+    options: dict[str, bool] = {}
     for part in parts:
         if part in optional_address_tokens:
             optional_address_tokens[part](options)

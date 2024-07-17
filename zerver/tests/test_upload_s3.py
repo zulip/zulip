@@ -21,9 +21,11 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import (
     DEFAULT_AVATAR_SIZE,
-    DEFAULT_EMOJI_SIZE,
     MEDIUM_AVATAR_SIZE,
+    THUMBNAIL_OUTPUT_FORMATS,
+    BadImageError,
     resize_avatar,
+    resize_emoji,
 )
 from zerver.lib.upload import (
     all_message_attachments,
@@ -146,7 +148,23 @@ class S3Test(ZulipTestCase):
         for n in range(1, 5):
             url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
             path_ids.append(re.sub(r"/user_uploads/", "", url))
+
+        # Put an image in, which gets thumbnailed
+        with self.captureOnCommitCallbacks(execute=True):
+            url = upload_message_attachment(
+                "img.png", "image/png", read_test_image_file("img.png"), user_profile
+            )
+            image_path_id = re.sub(r"/user_uploads/", "", url)
+            path_ids.append(image_path_id)
+
         found_paths = [r[0] for r in all_message_attachments()]
+        self.assertEqual(sorted(found_paths), sorted(path_ids))
+
+        found_paths = [r[0] for r in all_message_attachments(include_thumbnails=True)]
+        for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS:
+            if thumbnail_format.animated:
+                continue
+            path_ids.append(f"thumbnail/{image_path_id}/{thumbnail_format!s}")
         self.assertEqual(sorted(found_paths), sorted(path_ids))
 
     @use_s3_backend
@@ -163,8 +181,10 @@ class S3Test(ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
         self.assertIn("uri", response_dict)
+        self.assertIn("url", response_dict)
         base = "/user_uploads/"
-        url = response_dict["uri"]
+        url = response_dict["url"]
+        self.assertEqual(response_dict["uri"], url)
         self.assertEqual(base, url[: len(base)])
 
         # In development, this is just a redirect
@@ -402,7 +422,9 @@ class S3Test(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.upload_realm_icon_image(image_file, user_profile)
+            zerver.lib.upload.upload_backend.upload_realm_icon_image(
+                image_file, user_profile, content_type="image/png"
+            )
 
         original_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.original")
         original_key = bucket.Object(original_path_id)
@@ -421,7 +443,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         with get_test_image_file("img.png") as image_file:
             zerver.lib.upload.upload_backend.upload_realm_logo_image(
-                image_file, user_profile, night
+                image_file, user_profile, night, "image/png"
             )
 
         original_path_id = os.path.join(
@@ -474,21 +496,55 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        emoji_name = "emoji.png"
-        with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_emoji_image(image_file, emoji_name, user_profile)
+        emoji_name = "animated_img.gif"
+        with get_test_image_file(emoji_name) as image_file:
+            zerver.lib.upload.upload_emoji_image(image_file, emoji_name, user_profile, "image/gif")
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_name,
         )
         original_key = bucket.Object(emoji_path + ".original")
-        self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
+        self.assertEqual(read_test_image_file(emoji_name), original_key.get()["Body"].read())
 
-        resized_data = bucket.Object(emoji_path).get()["Body"].read()
-        resized_image = pyvips.Image.new_from_buffer(resized_data, "")
-        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.height)
-        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.width)
+        self.assertEqual(os.path.splitext(emoji_path)[1], ".gif")
+        bucket_data = bucket.Object(emoji_path).get()
+        self.assertEqual(bucket_data["ContentType"], "image/gif")
+        resized_image = pyvips.Image.new_from_buffer(bucket_data["Body"].read(), "")
+        self.assertEqual(resized_image.get("vips-loader"), "gifload_buffer")
+
+        still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_filename_without_extension=os.path.splitext(emoji_name)[0],
+        )
+        self.assertEqual(os.path.splitext(still_path)[1], ".png")
+        bucket_data = bucket.Object(still_path).get()
+        self.assertEqual(bucket_data["ContentType"], "image/png")
+        still_image = pyvips.Image.new_from_buffer(bucket_data["Body"].read(), "")
+        self.assertEqual(still_image.get("vips-loader"), "pngload_buffer")
+
+    @use_s3_backend
+    def test_upload_emoji_non_image(self) -> None:
+        create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        emoji_name = "emoji.png"
+        with get_test_image_file("text.txt") as image_file:
+            with patch("zerver.lib.upload.resize_emoji", side_effect=resize_emoji) as resize_mock:
+                with self.assertRaises(BadImageError):
+                    # We trust the content-type and fail when we try to load the image
+                    zerver.lib.upload.upload_emoji_image(
+                        image_file, emoji_name, user_profile, "image/png"
+                    )
+                resize_mock.assert_called_once()
+
+            with patch("zerver.lib.upload.resize_emoji", side_effect=resize_emoji) as resize_mock:
+                with self.assertRaises(BadImageError):
+                    # We trust the content-type and abort before trying to load
+                    zerver.lib.upload.upload_emoji_image(
+                        image_file, emoji_name, user_profile, "text/plain"
+                    )
+                resize_mock.assert_not_called()
 
     @use_s3_backend
     def test_tarball_upload_and_deletion(self) -> None:

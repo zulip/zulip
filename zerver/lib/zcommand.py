@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from django.utils.translation import gettext as _
 
@@ -7,7 +7,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile
 
 
-def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
+def process_zcommands(content: str, user_profile: UserProfile) -> dict[str, Any]:
     def change_mode_setting(
         setting_name: str, switch_command: str, setting: str, setting_value: int
     ) -> str:

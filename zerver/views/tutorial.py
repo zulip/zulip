@@ -1,5 +1,6 @@
+from typing import Literal
+
 from django.http import HttpRequest, HttpResponse
-from typing_extensions import Literal
 
 from zerver.decorator import human_users_only
 from zerver.lib.response import json_success

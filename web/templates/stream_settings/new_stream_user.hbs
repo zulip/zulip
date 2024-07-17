@@ -1,9 +1,9 @@
 <tr>
     <td class="panel_user_list">
-        {{> ../user_display_only_pill display_value=full_name strikethrough=soft_removed}}
+        {{> ../user_display_only_pill display_value=full_name strikethrough=soft_removed is_active=true}}
     </td>
     {{#if email}}
-        <td class="subscriber-email {{#if soft_removed}} strikethrough {{/if}}">{{email}}</td>
+        <td class="subscriber-email settings-email-column {{#if soft_removed}} strikethrough {{/if}}">{{email}}</td>
     {{else}}
         <td class="hidden-subscriber-email {{#if soft_removed}} strikethrough {{/if}}">{{t "(hidden)"}}</td>
     {{/if}}

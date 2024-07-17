@@ -279,10 +279,10 @@ rules:
           def $F(..., invalid_param: typing.Optional[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
             ...
       - pattern-not: |
-          def $F(..., $A: typing_extensions.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
+          def $F(..., $A: typing.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
             ...
       - pattern-not: |
-          def $F(..., $A: typing_extensions.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>] = ..., ...) -> ...:
+          def $F(..., $A: typing.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>] = ..., ...) -> ...:
             ...
       - pattern-either:
           - pattern: |

@@ -390,10 +390,13 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
         # and verify the log messages. That can be achieved with assertLogs()
         # as you'll see below. Read more about assertLogs() at:
         # https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertLogs
-        with self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"), self.settings(
-            DEVELOPMENT_LOG_EMAILS=True
-        ), self.assertLogs(level="INFO") as logger, mock.patch(
-            "zproject.email_backends.EmailLogBackEnd._do_send_messages", lambda *args: 1
+        with (
+            self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"),
+            self.settings(DEVELOPMENT_LOG_EMAILS=True),
+            self.assertLogs(level="INFO") as logger,
+            mock.patch(
+                "zproject.email_backends.EmailLogBackEnd._do_send_messages", lambda *args: 1
+            ),
         ):
             # Parts of this endpoint use transactions, and use
             # transaction.on_commit to run code when the transaction

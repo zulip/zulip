@@ -1,0 +1,178 @@
+/* CSS for Bootstrap typeahead */
+
+.dropdown-menu {
+    display: none;
+    min-width: 160px;
+    list-style: none;
+}
+
+.open > .dropdown-menu {
+    display: block;
+}
+
+.typeahead {
+    z-index: 1051;
+}
+
+.typeahead.dropdown-menu .typeahead-menu .simplebar-content {
+    min-width: max-content;
+
+    & > li {
+        word-break: break-word;
+
+        & > a {
+            display: flex;
+            padding: 3px 10px;
+            gap: 5px;
+            font-weight: normal;
+            /* We want to keep this `max-width` less than 320px. */
+            max-width: 292px;
+            line-height: 1.43; /* 20px / 14px */
+            color: var(--color-dropdown-item);
+            white-space: nowrap;
+
+            @media (width >= $ml_min) {
+                /* Scale up with font size on larger widths. */
+                /* 292px / 14px */
+                max-width: 20.86em;
+            }
+
+            /* hidden text just to maintain line height for a blank option */
+            strong:empty {
+                &::after {
+                    content: ".";
+                    visibility: hidden;
+                }
+            }
+
+            &:hover,
+            &:focus {
+                text-decoration: none;
+                outline: 0;
+            }
+
+            /* styles defined for user_circle here only deal with positioning of user_presence_circle
+            in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
+            Most of the style rules related to color, gradient etc. which are generally common throughout
+            the app are defined in user_circles.css and are not overridden here. */
+            .user_circle {
+                width: var(--length-user-status-circle);
+                height: var(--length-user-status-circle);
+                position: relative;
+                left: -2px;
+                flex-shrink: 0;
+                align-self: center;
+            }
+
+            .typeahead-text-container {
+                display: flex;
+                align-self: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                gap: 3px;
+            }
+        }
+    }
+
+    .active > a {
+        &,
+        &:hover,
+        &:focus {
+            color: var(--color-active-dropdown-item);
+            background-color: var(--background-color-active-typeahead-item);
+        }
+    }
+
+    .autocomplete_secondary {
+        align-self: end;
+        opacity: 0.8;
+        font-size: 85%;
+        flex: 1 1 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        top: -1px;
+    }
+
+    .active .autocomplete_secondary {
+        opacity: 1;
+    }
+}
+
+.typeahead.dropdown-menu {
+    .typeahead-menu {
+        list-style: none;
+        margin: 4px 0;
+        max-height: min(248px, 95vh);
+        overflow-y: auto;
+    }
+
+    .typeahead-header {
+        margin: 0;
+        padding: 4px 10px;
+        border-top: 1px solid hsl(0deg 0% 0% / 20%);
+        display: flex;
+        align-items: center;
+    }
+
+    #typeahead-header-text {
+        color: var(--color-dropdown-item);
+        font-size: 12px;
+    }
+
+    a strong.typeahead-strong-section {
+        white-space: pre;
+        /* Present as flexbox to better control
+           icon alignment and spacing, when icons
+           are shown. */
+        display: flex;
+        align-items: baseline;
+        /* Approximate space as preserved in
+           typeahead lines, e.g., between the channel
+           name and its description. */
+        gap: 0.25ch;
+    }
+
+    .active {
+        .unsubscribed_icon {
+            visibility: visible;
+            float: right;
+            margin-top: 5px;
+            color: hsl(96deg 7% 73%);
+        }
+    }
+
+    .unsubscribed_icon {
+        visibility: hidden;
+        font-size: 0.8em;
+    }
+}
+
+.typeahead-option-label {
+    display: flex !important;
+    justify-content: space-between;
+
+    > strong {
+        margin-right: 14px;
+    }
+}
+
+.typeahead-image {
+    display: inline-block;
+    height: 21px;
+    width: 21px;
+    border-radius: 4px;
+
+    /* For FontAwesome icons and zulip icons used in place of images for some users. */
+    font-size: 19px;
+    text-align: center;
+
+    &.zulip-icon-triple-users {
+        font-size: 19px;
+    }
+
+    &.no-presence-circle {
+        margin-left: 14px;
+    }
+}

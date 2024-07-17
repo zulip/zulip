@@ -30,6 +30,7 @@ people.add_active_user(alice);
 
 function set_filter(terms) {
     const filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
     message_lists.set_current({
         data: {
             filter,
@@ -64,6 +65,7 @@ run_test("get_unread_ids", () => {
         id: 101,
         type: "stream",
         stream_id: sub.stream_id,
+        display_recipient: sub.name,
         topic: "my topic",
         unread: true,
         mentioned: true,
@@ -74,11 +76,23 @@ run_test("get_unread_ids", () => {
         id: 102,
         type: "private",
         unread: true,
-        display_recipient: [{id: alice.user_id}],
+        display_recipient: [{id: alice.user_id, email: alice.email}],
+    };
+
+    const other_topic_message = {
+        id: 103,
+        type: "stream",
+        stream_id: sub.stream_id,
+        display_recipient: sub.name,
+        topic: "another topic",
+        unread: true,
+        mentioned: false,
+        mentioned_me_directly: false,
     };
 
     message_store.update_message_cache(stream_msg);
     message_store.update_message_cache(private_msg);
+    message_store.update_message_cache(other_topic_message);
 
     stream_data.add_sub(sub);
 
@@ -201,6 +215,41 @@ run_test("get_unread_ids", () => {
     assert_unread_info({
         flavor: "cannot_compute",
     });
+
+    // For a search using `with` operator, our candidate ids
+    // will be the messages present in the channel/topic
+    // containing the message for which the `with` operand
+    // is id to.
+    //
+    // Here we use an empty topic for the operators, and show that
+    // adding the with operator causes us to see unreads in the
+    // destination topic.
+    unread.process_loaded_messages([other_topic_message]);
+    terms = [
+        {operator: "channel", operand: sub.name},
+        {operator: "topic", operand: "another topic"},
+    ];
+    set_filter(terms);
+    unread_ids = candidate_ids();
+    assert.deepEqual(unread_ids, [other_topic_message.id]);
+
+    terms = [
+        {operator: "channel", operand: sub.name},
+        {operator: "topic", operand: "another topic"},
+        {operator: "with", operand: stream_msg.id},
+    ];
+    set_filter(terms);
+    unread_ids = candidate_ids();
+    assert.deepEqual(unread_ids, [stream_msg.id]);
+
+    terms = [
+        {operator: "channel", operand: sub.name},
+        {operator: "topic", operand: "another topic"},
+        {operator: "with", operand: private_msg.id},
+    ];
+    set_filter(terms);
+    unread_ids = candidate_ids();
+    assert.deepEqual(unread_ids, [private_msg.id]);
 
     message_lists.set_current(undefined);
     blueslip.expect("error", "unexpected call to get_first_unread_info");

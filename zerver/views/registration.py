@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Iterable
 from contextlib import suppress
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any
 from urllib.parse import urlencode, urljoin
 
 import orjson
@@ -120,7 +121,7 @@ if settings.BILLING_ENABLED:
 
 @has_request_variables
 def get_prereg_key_and_redirect(
-    request: HttpRequest, confirmation_key: str, full_name: Optional[str] = REQ(default=None)
+    request: HttpRequest, confirmation_key: str, full_name: str | None = REQ(default=None)
 ) -> HttpResponse:
     """
     The purpose of this little endpoint is primarily to take a GET
@@ -159,7 +160,7 @@ def get_prereg_key_and_redirect(
 
 def check_prereg_key(
     request: HttpRequest, confirmation_key: str
-) -> Tuple[Union[PreregistrationUser, PreregistrationRealm], bool]:
+) -> tuple[PreregistrationUser | PreregistrationRealm, bool]:
     """
     Checks if the Confirmation key is valid, returning the PreregistrationUser or
     PreregistrationRealm object in case of success and raising an appropriate
@@ -174,7 +175,7 @@ def check_prereg_key(
     prereg_object = get_object_from_key(
         confirmation_key, confirmation_types, mark_object_used=False
     )
-    assert isinstance(prereg_object, (PreregistrationRealm, PreregistrationUser))
+    assert isinstance(prereg_object, PreregistrationRealm | PreregistrationUser)
 
     confirmation_obj = prereg_object.confirmation.get()
     realm_creation = confirmation_obj.type == Confirmation.REALM_CREATION
@@ -193,7 +194,7 @@ def check_prereg_key(
     return prereg_object, realm_creation
 
 
-def get_selected_realm_type_name(prereg_realm: Optional[PreregistrationRealm]) -> Optional[str]:
+def get_selected_realm_type_name(prereg_realm: PreregistrationRealm | None) -> str | None:
     if prereg_realm is None:
         # We show the selected realm type only when creating new realm.
         return None
@@ -202,8 +203,8 @@ def get_selected_realm_type_name(prereg_realm: Optional[PreregistrationRealm]) -
 
 
 def get_selected_realm_default_language_name(
-    prereg_realm: Optional[PreregistrationRealm],
-) -> Optional[str]:
+    prereg_realm: PreregistrationRealm | None,
+) -> str | None:
     if prereg_realm is None:
         # We show the selected realm language only when creating new realm.
         return None
@@ -227,12 +228,12 @@ def registration_helper(
     request: HttpRequest,
     key: str = REQ(default=""),
     timezone: str = REQ(default="", converter=to_timezone_or_empty),
-    from_confirmation: Optional[str] = REQ(default=None),
-    form_full_name: Optional[str] = REQ("full_name", default=None),
-    source_realm_id: Optional[int] = REQ(
+    from_confirmation: str | None = REQ(default=None),
+    form_full_name: str | None = REQ("full_name", default=None),
+    source_realm_id: int | None = REQ(
         default=None, converter=to_converted_or_fallback(to_non_negative_int, None)
     ),
-    form_is_demo_organization: Optional[str] = REQ("is_demo_organization", default=None),
+    form_is_demo_organization: str | None = REQ("is_demo_organization", default=None),
 ) -> HttpResponse:
     try:
         prereg_object, realm_creation = check_prereg_key(request, key)
@@ -521,22 +522,20 @@ def registration_helper(
         if source_realm_id is not None:
             # Non-integer realm_id values like "string" are treated
             # like the "Do not import" value of "".
-            source_profile: Optional[UserProfile] = get_source_profile(email, source_realm_id)
+            source_profile: UserProfile | None = get_source_profile(email, source_realm_id)
         else:
             source_profile = None
 
         if not realm_creation:
             try:
-                existing_user_profile: Optional[UserProfile] = get_user_by_delivery_email(
-                    email, realm
-                )
+                existing_user_profile: UserProfile | None = get_user_by_delivery_email(email, realm)
             except UserProfile.DoesNotExist:
                 existing_user_profile = None
         else:
             existing_user_profile = None
 
-        user_profile: Optional[UserProfile] = None
-        return_data: Dict[str, bool] = {}
+        user_profile: UserProfile | None = None
+        return_data: dict[str, bool] = {}
         if ldap_auth_enabled(realm):
             # If the user was authenticated using an external SSO
             # mechanism like Google or GitHub auth, then authentication
@@ -764,11 +763,11 @@ def prepare_activation_url(
     email: str,
     session: SessionBase,
     *,
-    realm: Optional[Realm],
-    streams: Optional[Iterable[Stream]] = None,
-    invited_as: Optional[int] = None,
-    include_realm_default_subscriptions: Optional[bool] = None,
-    multiuse_invite: Optional[MultiuseInvite] = None,
+    realm: Realm | None,
+    streams: Iterable[Stream] | None = None,
+    invited_as: int | None = None,
+    include_realm_default_subscriptions: bool | None = None,
+    multiuse_invite: MultiuseInvite | None = None,
 ) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
@@ -818,10 +817,10 @@ def send_confirm_registration_email(
     email: str,
     activation_url: str,
     *,
-    realm: Optional[Realm] = None,
-    realm_subdomain: Optional[str] = None,
-    realm_type: Optional[int] = None,
-    request: Optional[HttpRequest] = None,
+    realm: Realm | None = None,
+    realm_subdomain: str | None = None,
+    realm_type: int | None = None,
+    request: HttpRequest | None = None,
 ) -> None:
     org_url = ""
     org_type = ""
@@ -856,7 +855,7 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
 
 
 @add_google_analytics
-def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> HttpResponse:
+def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpResponse:
     try:
         key_record = validate_key(creation_key)
     except RealmCreationKey.InvalidError:
@@ -1010,7 +1009,7 @@ def new_realm_send_confirm(
 def accounts_home(
     request: HttpRequest,
     multiuse_object_key: str = "",
-    multiuse_object: Optional[MultiuseInvite] = None,
+    multiuse_object: MultiuseInvite | None = None,
 ) -> HttpResponse:
     try:
         realm = get_realm(get_subdomain(request))
@@ -1096,7 +1095,7 @@ def accounts_home(
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     realm = get_realm_from_request(request)
-    multiuse_object: Optional[MultiuseInvite] = None
+    multiuse_object: MultiuseInvite | None = None
     try:
         confirmation_obj = get_object_from_key(
             confirmation_key, [Confirmation.MULTIUSE_INVITE], mark_object_used=False
@@ -1118,7 +1117,7 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
 def find_account(request: HttpRequest) -> HttpResponse:
     url = reverse("find_account")
     form = FindMyTeamForm()
-    emails: List[str] = []
+    emails: list[str] = []
     if request.method == "POST":
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
@@ -1152,8 +1151,8 @@ def find_account(request: HttpRequest) -> HttpResponse:
             # one outgoing email per provided email address, with each
             # email listing all of the accounts that email address has
             # with the current Zulip server.
-            emails_account_found: Set[str] = set()
-            context: Dict[str, Dict[str, Any]] = {}
+            emails_account_found: set[str] = set()
+            context: dict[str, dict[str, Any]] = {}
             for user in user_profiles:
                 key = user.delivery_email.lower()
                 context.setdefault(key, {})
@@ -1192,7 +1191,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 )
 
             emails_lower_with_account = {email.lower() for email in emails_account_found}
-            emails_without_account: Set[str] = {
+            emails_without_account: set[str] = {
                 email for email in emails if email.lower() not in emails_lower_with_account
             }
             if emails_without_account:

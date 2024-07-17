@@ -3,6 +3,8 @@ import $ from "jquery";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_recipient from "./compose_recipient";
 import * as direct_message_group_data from "./direct_message_group_data";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
@@ -78,6 +80,9 @@ function process_result(data, opts) {
 
     if (messages.length !== 0) {
         if (opts.msg_list) {
+            if (opts.validate_filter_topic_post_fetch) {
+                opts.msg_list.data.filter.try_adjusting_for_moved_with_target(messages[0]);
+            }
             // Since this adds messages to the MessageList and renders MessageListView,
             // we don't need to call it if msg_list was not defined by the caller.
             message_util.add_old_messages(messages, opts.msg_list);
@@ -106,6 +111,8 @@ function process_result(data, opts) {
             // Even after loading more messages, we have
             // no messages to display in this narrow.
             narrow_banner.show_empty_narrow_message();
+            compose_closed_ui.update_buttons_for_private();
+            compose_recipient.check_posting_policy_for_compose_box();
         }
 
         if (opts.num_before > 0 && !has_found_oldest) {
@@ -390,6 +397,7 @@ export function load_messages_for_narrow(opts) {
         num_after: consts.narrow_after,
         msg_list: opts.msg_list,
         cont: opts.cont,
+        validate_filter_topic_post_fetch: opts.validate_filter_topic_post_fetch,
     });
 }
 
@@ -598,7 +606,11 @@ export function initialize(finished_initial_fetch) {
     // which always contains the latest message, it makes sense for
     // Recent view to display the same data and be in sync.
     all_messages_data.set_add_messages_callback((messages, rows_order_changed) => {
-        recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
+        try {
+            recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
+        } catch (error) {
+            blueslip.error("Error in recent_view_ui.process_messages", undefined, error);
+        }
     });
 
     // TODO: Ideally we'd have loading indicators for Recent Conversations

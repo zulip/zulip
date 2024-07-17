@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import responses
@@ -50,7 +50,7 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
     def execute_remote_billing_authentication_flow(
         self,
         user: UserProfile,
-        next_page: Optional[str] = None,
+        next_page: str | None = None,
         expect_tos: bool = True,
         confirm_tos: bool = True,
         first_time_login: bool = True,
@@ -283,9 +283,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
     def test_self_hosted_config_error_page(self) -> None:
         self.login("desdemona")
 
-        with self.settings(
-            CORPORATE_ENABLED=False, PUSH_NOTIFICATION_BOUNCER_URL=None
-        ), self.assertLogs("django.request"):
+        with (
+            self.settings(CORPORATE_ENABLED=False, PUSH_NOTIFICATION_BOUNCER_URL=None),
+            self.assertLogs("django.request"),
+        ):
             result = self.client_get("/self-hosted-billing/not-configured/")
             self.assertEqual(result.status_code, 500)
             self.assert_in_response(
@@ -559,12 +560,15 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         )
 
         # Try the case where the identity dict is simultaneously expired.
-        with time_machine.travel(
-            now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
-            tick=False,
+        with (
+            time_machine.travel(
+                now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
+                tick=False,
+            ),
+            self.assertLogs("django.request", "ERROR") as m,
+            self.assertRaises(AssertionError),
         ):
-            with self.assertLogs("django.request", "ERROR") as m, self.assertRaises(AssertionError):
-                self.client_get(final_url, subdomain="selfhosting")
+            self.client_get(final_url, subdomain="selfhosting")
         # The django.request log should be a traceback, mentioning the relevant
         # exceptions that occurred.
         self.assertIn(
@@ -703,9 +707,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Now click the second confirmation link. The RemoteRealmBillingUser entry
         # stays the same, since it's already been created, and the user is redirected
         # normally further through the flow, while we log this event.
-        with time_machine.travel(now + timedelta(seconds=1), tick=False), self.assertLogs(
-            "corporate.stripe", "INFO"
-        ) as mock_logger:
+        with (
+            time_machine.travel(now + timedelta(seconds=1), tick=False),
+            self.assertLogs("corporate.stripe", "INFO") as mock_logger,
+        ):
             result = self.client_get(second_confirmation_url, subdomain="selfhosting")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].startswith("/remote-billing-login/"))
@@ -1195,7 +1200,7 @@ class RemoteServerTestCase(BouncerTestCase):
         self,
         email: str,
         full_name: str,
-        next_page: Optional[str] = None,
+        next_page: str | None = None,
         expect_tos: bool = True,
         confirm_tos: bool = True,
         return_without_clicking_confirmation_link: bool = False,

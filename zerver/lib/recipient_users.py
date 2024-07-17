@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence
+from collections.abc import Sequence
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -14,7 +14,7 @@ from zerver.models.users import is_cross_realm_bot_email
 def get_recipient_from_user_profiles(
     recipient_profiles: Sequence[UserProfile],
     forwarded_mirror_message: bool,
-    forwarder_user_profile: Optional[UserProfile],
+    forwarder_user_profile: UserProfile | None,
     sender: UserProfile,
     create: bool = True,
 ) -> Recipient:
@@ -72,7 +72,7 @@ def get_recipient_from_user_profiles(
 def validate_recipient_user_profiles(
     user_profiles: Sequence[UserProfile], sender: UserProfile, allow_deactivated: bool = False
 ) -> Sequence[UserProfile]:
-    recipient_profiles_map: Dict[int, UserProfile] = {}
+    recipient_profiles_map: dict[int, UserProfile] = {}
 
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same realm.
@@ -102,7 +102,7 @@ def validate_recipient_user_profiles(
 def recipient_for_user_profiles(
     user_profiles: Sequence[UserProfile],
     forwarded_mirror_message: bool,
-    forwarder_user_profile: Optional[UserProfile],
+    forwarder_user_profile: UserProfile | None,
     sender: UserProfile,
     *,
     allow_deactivated: bool = False,

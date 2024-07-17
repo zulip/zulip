@@ -3,7 +3,7 @@
 import logging
 import os
 from functools import lru_cache
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import orjson
 from django.conf import settings
@@ -16,7 +16,7 @@ from zerver.models import Realm
 
 
 @lru_cache(None)
-def get_language_list() -> List[Dict[str, Any]]:
+def get_language_list() -> list[dict[str, Any]]:
     path = os.path.join(settings.DEPLOY_ROOT, "locale", "language_name_map.json")
     with open(path, "rb") as reader:
         languages = orjson.loads(reader.read())
@@ -32,13 +32,13 @@ def get_language_name(code: str) -> str:
     return "Unknown"
 
 
-def get_available_language_codes() -> List[str]:
+def get_available_language_codes() -> list[str]:
     language_list = get_language_list()
     codes = [language["code"] for language in language_list]
     return codes
 
 
-def get_language_translation_data(language: str) -> Dict[str, str]:
+def get_language_translation_data(language: str) -> dict[str, str]:
     if language == "en":
         return {}
     locale = translation.to_locale(language)
@@ -52,7 +52,7 @@ def get_language_translation_data(language: str) -> Dict[str, str]:
 
 
 def get_and_set_request_language(
-    request: HttpRequest, user_configured_language: str, testing_url_language: Optional[str] = None
+    request: HttpRequest, user_configured_language: str, testing_url_language: str | None = None
 ) -> str:
     # We pick a language for the user as follows:
     # * First priority is the language in the URL, for debugging.
@@ -71,7 +71,7 @@ def get_and_set_request_language(
     return request_language
 
 
-def get_browser_language_code(request: HttpRequest) -> Optional[str]:
+def get_browser_language_code(request: HttpRequest) -> str | None:
     accept_lang_header = request.headers.get("Accept-Language")
     if accept_lang_header is None:
         return None
@@ -85,7 +85,7 @@ def get_browser_language_code(request: HttpRequest) -> Optional[str]:
     return None
 
 
-def get_default_language_for_new_user(realm: Realm, *, request: Optional[HttpRequest]) -> str:
+def get_default_language_for_new_user(realm: Realm, *, request: HttpRequest | None) -> str:
     if request is None:
         # Users created via the API or LDAP will not have a
         # browser/request associated with them, and should just use

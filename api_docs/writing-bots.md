@@ -41,8 +41,8 @@ On this page you'll find:
 1. Run the command provided in the final output of the `provision` process to
    enter the new virtualenv. The command will be of the form `source .../activate`.
 
-1. You should now see the name of your virtualenv preceding your prompt e.g.,
-   `(zulip-api-py3-venv)`.
+1. You should now see the name of your virtualenv preceding your prompt (e.g.,
+   `(zulip-api-py3-venv)`).
 
 !!! tip ""
 

@@ -1,5 +1,4 @@
 import unicodedata
-from typing import Optional
 
 from django.utils.translation import gettext as _
 
@@ -27,7 +26,7 @@ def is_character_printable(char: str) -> bool:
     return True
 
 
-def check_string_is_printable(var: str) -> Optional[int]:
+def check_string_is_printable(var: str) -> int | None:
     # Return position (1-indexed!) of the character which is not
     # printable, None if no such character is present.
     for i, char in enumerate(var):

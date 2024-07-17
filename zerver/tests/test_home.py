@@ -1,6 +1,6 @@
 import calendar
 from datetime import timedelta, timezone
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 from urllib.parse import urlsplit
 
@@ -142,6 +142,8 @@ class HomeTest(ZulipTestCase):
         "realm_description",
         "realm_digest_emails_enabled",
         "realm_digest_weekday",
+        "realm_direct_message_initiator_group",
+        "realm_direct_message_permission_group",
         "realm_disallow_disposable_email_addresses",
         "realm_domains",
         "realm_edit_topic_policy",
@@ -187,7 +189,6 @@ class HomeTest(ZulipTestCase):
         "realm_plan_type",
         "realm_playgrounds",
         "realm_presence_disabled",
-        "realm_private_message_policy",
         "realm_push_notifications_enabled",
         "realm_push_notifications_enabled_end_timestamp",
         "realm_require_unique_names",
@@ -218,6 +219,7 @@ class HomeTest(ZulipTestCase):
         "server_presence_offline_threshold_seconds",
         "server_presence_ping_interval_seconds",
         "server_supported_permission_settings",
+        "server_thumbnail_formats",
         "server_timestamp",
         "server_typing_started_expiry_period_milliseconds",
         "server_typing_started_wait_period_milliseconds",
@@ -260,10 +262,12 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        with self.assert_database_query_count(54):
-            with patch("zerver.lib.cache.cache_set") as cache_mock:
-                result = self._get_home_page(stream="Denmark")
-                self.check_rendered_logged_in_app(result)
+        with (
+            self.assert_database_query_count(54),
+            patch("zerver.lib.cache.cache_set") as cache_mock,
+        ):
+            result = self._get_home_page(stream="Denmark")
+            self.check_rendered_logged_in_app(result)
         self.assertEqual(
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
@@ -311,10 +315,9 @@ class HomeTest(ZulipTestCase):
         self.login("hamlet")
 
         # Verify succeeds once logged-in
-        with queries_captured():
-            with patch("zerver.lib.cache.cache_set"):
-                result = self._get_home_page(stream="Denmark")
-                self.check_rendered_logged_in_app(result)
+        with queries_captured(), patch("zerver.lib.cache.cache_set"):
+            result = self._get_home_page(stream="Denmark")
+            self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
         self.assertCountEqual(page_params, self.expected_page_params_keys)
@@ -496,7 +499,7 @@ class HomeTest(ZulipTestCase):
             )
 
     def test_sentry_keys(self) -> None:
-        def sentry_params() -> Dict[str, Any] | None:
+        def sentry_params() -> dict[str, Any] | None:
             result = self._get_home_page()
             self.assertEqual(result.status_code, 200)
             return self._get_sentry_params(result)
@@ -564,11 +567,13 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        with self.assert_database_query_count(54):
-            with patch("zerver.lib.cache.cache_set") as cache_mock:
-                result = self._get_home_page()
-                self.check_rendered_logged_in_app(result)
-                self.assert_length(cache_mock.call_args_list, 7)
+        with (
+            self.assert_database_query_count(54),
+            patch("zerver.lib.cache.cache_set") as cache_mock,
+        ):
+            result = self._get_home_page()
+            self.check_rendered_logged_in_app(result)
+            self.assert_length(cache_mock.call_args_list, 7)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -603,8 +608,9 @@ class HomeTest(ZulipTestCase):
         self.assertIn("test_stream_7", html)
 
     def _get_home_page(self, **kwargs: Any) -> "TestHttpResponse":
-        with patch("zerver.lib.events.request_event_queue", return_value=42), patch(
-            "zerver.lib.events.get_user_events", return_value=[]
+        with (
+            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/", dict(**kwargs))
         return result
@@ -662,9 +668,10 @@ class HomeTest(ZulipTestCase):
         user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
         user.save()
 
-        with self.settings(
-            FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE="corporate/hello.html"
-        ), self.settings(TERMS_OF_SERVICE_VERSION="99.99"):
+        with (
+            self.settings(FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE="corporate/hello.html"),
+            self.settings(TERMS_OF_SERVICE_VERSION="99.99"),
+        ):
             result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
@@ -1377,8 +1384,9 @@ class HomeTest(ZulipTestCase):
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
-        with patch("zerver.lib.events.request_event_queue", return_value=42), patch(
-            "zerver.lib.events.get_user_events", return_value=[]
+        with (
+            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/de/")
         page_params = self._get_page_params(result)

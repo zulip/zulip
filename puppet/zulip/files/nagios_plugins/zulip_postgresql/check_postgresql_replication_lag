@@ -11,7 +11,6 @@ import configparser
 import re
 import subprocess
 import sys
-from typing import Dict, List
 
 
 def get_config(
@@ -44,7 +43,7 @@ def report(state: str, msg: str) -> None:
     MAXSTATE = max(MAXSTATE, states[state])
 
 
-def run_sql_query(query: str) -> List[List[str]]:
+def run_sql_query(query: str) -> list[list[str]]:
     command = [
         "psql",
         "-t",  # Omit header line
@@ -130,7 +129,7 @@ else:
             report("CRITICAL", f"replica {client_addr} is in state {state}, not streaming")
 
         sent_offset = loc_to_abs_offset(sent_lsn)
-        lag: Dict[str, int] = {}
+        lag: dict[str, int] = {}
         lag["write"] = sent_offset - loc_to_abs_offset(write_lsn)
         lag["flush"] = sent_offset - loc_to_abs_offset(flush_lsn)
         lag["replay"] = sent_offset - loc_to_abs_offset(replay_lsn)

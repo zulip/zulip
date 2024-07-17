@@ -3,12 +3,15 @@
     height: var(--header-height);
 
     .navbar-search {
-        margin: 5.5px 0;
+        margin: 3.5px 0;
         border-radius: 5px;
         position: absolute;
+        overflow: hidden;
     }
 
     .search_icon {
+        grid-area: search-icon;
+        align-self: center;
         text-decoration: none;
         padding: 0 7px;
         font-size: 17px;
@@ -29,6 +32,7 @@
     }
 
     .search_close_button {
+        grid-area: search-close;
         width: 28px;
         height: 100%;
         background: none;
@@ -38,11 +42,6 @@
         border-radius: 4px;
         /* Leave room for the focus outline. */
         margin-right: 1px;
-
-        &:focus {
-            /* Reduce height to leave 1px on top and bottom for the outline. */
-            height: calc(100% - 2px);
-        }
 
         &:not(:focus-visible) {
             outline: none;
@@ -57,8 +56,19 @@
         }
     }
 
-    .zulip-icon-close {
-        font-size: 13px;
+    .search-input-and-pills {
+        grid-area: search-pills;
+        display: flex;
+        padding: 0;
+        flex-wrap: wrap;
+        gap: 2px;
+        align-self: center;
+    }
+
+    .search-input-and-pills.freshly-opened {
+        > .pill {
+            border-color: var(--focus-outline-input-pill);
+        }
     }
 
     .navbar-search:not(.expanded) {
@@ -75,9 +85,7 @@
         .search-input {
             border-radius: 5px;
             color: var(--color-text-search);
-
             box-shadow: none;
-            cursor: pointer;
         }
 
         &:hover {
@@ -113,6 +121,10 @@
             0 4px 20px var(--color-search-shadow-wide),
             0 1px 5px var(--color-search-shadow-tight);
 
+        .search-input {
+            cursor: text;
+        }
+
         @media (width < $md_min) {
             /* 3px chosen so that the cursor clicks the search button
                and close button from the same position. */
@@ -144,6 +156,14 @@
             background-image: none;
             color: var(--color-text-search-hover);
         }
+
+        .typeahead-menu .simplebar-content {
+            min-width: unset;
+        }
+
+        .typeahead-menu .simplebar-content > li > a {
+            max-width: none;
+        }
     }
 
     .input-append {
@@ -155,6 +175,13 @@
     .search-input {
         /* Avoid massive inheritance chain on font-size. */
         font-size: var(--base-font-size-px);
+        /* override height-input-pill from default input pills to account for pill border */
+        line-height: calc(
+            var(--height-input-pill) + var(--vertical-spacing-input-pill)
+        );
+        min-height: calc(
+            var(--height-input-pill) + var(--vertical-spacing-input-pill)
+        );
         /* override bootstrap padding for input[type="text"] */
         padding: 0;
         border: none;
@@ -162,9 +189,6 @@
         border-radius: 0;
         font-family: "Source Sans 3 VF", sans-serif;
         font-weight: 400;
-        height: var(--search-box-height);
-        /* override bootstrap min-height for input[type="text"] */
-        min-height: var(--search-box-height);
         background: transparent;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -173,17 +197,77 @@
 
         color: var(--color-text-search);
 
-        &::placeholder {
+        display: flex;
+        align-items: center;
+
+        &:empty::before {
+            content: attr(data-placeholder-text);
             color: var(--color-text-search-placeholder);
         }
     }
 
     #searchbox-input-container {
-        display: flex;
-        align-items: center;
-        /* override .input-append style from app_components.js */
+        display: grid;
+        /* The next two styles override .input-append style from app_components.js */
         letter-spacing: normal;
-        height: var(--search-box-height);
+        font-size: 100%;
+        /* Override style for .pill-container that isn't relevant for search. */
+        border: none;
+        grid-template:
+            "search-icon search-pills search-close" var(--search-box-height)
+            ". search-pills ." auto / auto minmax(0, 1fr) 28px;
+        align-items: start;
+        cursor: pointer;
+
+        /* Override styles for .pill-container that aren't relevant for search. */
+        .pill {
+            margin: 0;
+            min-width: unset;
+        }
+
+        &:not(.focused) {
+            max-height: var(--search-box-height);
+            overflow: hidden;
+
+            .search-input-and-pills {
+                flex-wrap: nowrap;
+                overflow: hidden;
+            }
+        }
+
+        &.focused .user-pill-container {
+            flex-flow: row wrap;
+            height: unset;
+        }
+
+        .user-pill-container {
+            gap: 5px;
+
+            > .pill-label {
+                min-width: fit-content;
+                white-space: nowrap;
+                width: fit-content;
+                /* Replaced by the 5px gap. */
+                margin-right: 0;
+            }
+
+            .pill {
+                height: var(--height-input-pill);
+                border: none;
+                border-radius: 3px;
+                max-width: none;
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+
+                &:not(.deactivated-pill) {
+                    background-color: var(--color-background-user-pill);
+                }
+            }
+        }
+    }
+
+    .pill-label {
+        min-width: 30px;
     }
 
     @media (width >= $md_min) {
@@ -239,10 +323,14 @@
         }
     }
 
-    .typeahead-menu li a {
-        padding: 3px 30px;
+    .typeahead-menu .simplebar-content > li > a {
+        padding: 3px 40px;
         /* Override white-space: nowrap from zulip.css */
         white-space: normal;
+
+        .search_list_item {
+            max-width: 100%;
+        }
 
         .search_list_item .pill-container {
             margin-left: 5px;
@@ -250,6 +338,7 @@
             border: none;
             cursor: pointer;
             padding: 0;
+            max-width: 100%;
         }
 
         .pill {
@@ -268,7 +357,7 @@
 
         .pill-image {
             /* Add line-height equal to height to mimic baseline alignment. */
-            line-height: 20px;
+            line-height: var(--length-input-pill-image);
             align-self: center;
         }
     }

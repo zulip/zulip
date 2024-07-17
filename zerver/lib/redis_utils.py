@@ -1,7 +1,8 @@
 import os
 import re
 import secrets
-from typing import Any, Dict, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any
 
 import orjson
 import redis
@@ -40,7 +41,7 @@ def put_dict_in_redis(
     data_to_store: Mapping[str, Any],
     expiration_seconds: int,
     token_length: int = 64,
-    token: Optional[str] = None,
+    token: str | None = None,
 ) -> str:
     key_length = len(key_format) - len("{token}") + token_length
     if key_length > MAX_KEY_LENGTH:
@@ -62,7 +63,7 @@ def get_dict_from_redis(
     redis_client: "redis.StrictRedis[bytes]",
     key_format: str,
     key: str,
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     # This function requires inputting the intended key_format to validate
     # that the key fits it, as an additionally security measure. This protects
     # against bugs where a caller requests a key based on user input and doesn't

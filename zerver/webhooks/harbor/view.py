@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from typing import Optional
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
@@ -22,7 +21,7 @@ IGNORED_EVENTS = [
 ]
 
 
-def guess_zulip_user_from_harbor(harbor_username: str, realm: Realm) -> Optional[UserProfile]:
+def guess_zulip_user_from_harbor(harbor_username: str, realm: Realm) -> UserProfile | None:
     try:
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,

@@ -537,6 +537,22 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
         $other_users_appended = $element;
     });
 
+    $.create("[data-presence-indicator-user-id]", {
+        children: [
+            {
+                to_$() {
+                    return {
+                        attr: () => 1,
+                        removeClass() {
+                            return this;
+                        },
+                        addClass: noop,
+                    };
+                },
+            },
+        ],
+    });
+
     add_sub_and_set_as_current_narrow(rome_sub);
 
     buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
@@ -553,7 +569,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     assert.ok($other_users_appended.selector.includes("user_circle_green"));
 });
 
-test("insert_alice_then_fred", ({override, mock_template}) => {
+test("insert_alice_then_fred", ({override, override_rewire, mock_template}) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
 
     let $other_users_appended;
@@ -561,6 +577,7 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
         $other_users_appended = $element;
     });
     override(padded_widget, "update_padding", noop);
+    override_rewire(activity_ui, "update_presence_indicators", noop);
 
     activity_ui.redraw_user(alice.user_id);
     assert.ok($other_users_appended.selector.includes('data-user-id="1"'));
@@ -573,6 +590,7 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
 
 test("insert_fred_then_alice_then_rename, both as users matching view", ({
     override,
+    override_rewire,
     mock_template,
 }) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
@@ -585,6 +603,7 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
         $users_matching_view_appended = $element;
     });
     override(padded_widget, "update_padding", noop);
+    override_rewire(activity_ui, "update_presence_indicators", noop);
     buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
     buddy_list_add_user_matching_view(fred.user_id, $fred_stub);
 
@@ -626,7 +645,11 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
     people.add_active_user(fred);
 });
 
-test("insert_fred_then_alice_then_rename, both as other users", ({override, mock_template}) => {
+test("insert_fred_then_alice_then_rename, both as other users", ({
+    override,
+    override_rewire,
+    mock_template,
+}) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
 
     add_sub_and_set_as_current_narrow(rome_sub);
@@ -637,6 +660,7 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override, mock
         $other_users_appended = $element;
     });
     override(padded_widget, "update_padding", noop);
+    override_rewire(activity_ui, "update_presence_indicators", noop);
 
     buddy_list_add_other_user(alice.user_id, $alice_stub);
     buddy_list_add_other_user(fred.user_id, $fred_stub);
@@ -701,8 +725,9 @@ test("redraw_muted_user", () => {
     assert.equal($("#buddy-list-users-matching-view").html(), "never-been-set");
 });
 
-test("update_presence_info", ({override}) => {
+test("update_presence_info", ({override, override_rewire}) => {
     override(pm_list, "update_private_messages", noop);
+    override_rewire(activity_ui, "update_presence_indicators", noop);
 
     realm.realm_presence_disabled = false;
     realm.server_presence_ping_interval_seconds = 60;
@@ -753,10 +778,11 @@ test("update_presence_info", ({override}) => {
     assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 
-test("initialize", ({override, mock_template}) => {
+test("initialize", ({override, override_rewire, mock_template}) => {
     override(pm_list, "update_private_messages", noop);
     override(watchdog, "check_for_unsuspend", noop);
     override(buddy_list, "fill_screen_with_content", noop);
+    override_rewire(activity_ui, "update_presence_indicators", noop);
 
     let payload;
     override(channel, "post", (arg) => {

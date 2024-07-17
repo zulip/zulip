@@ -1,5 +1,4 @@
 import re
-from typing import Dict
 
 # Warning: If you change this parsing, please test using
 #   zerver/tests/test_decorators.py
@@ -13,7 +12,7 @@ pattern = re.compile(
 )
 
 
-def parse_user_agent(user_agent: str) -> Dict[str, str]:
+def parse_user_agent(user_agent: str) -> dict[str, str]:
     match = pattern.match(user_agent)
     assert match is not None
     return match.groupdict()

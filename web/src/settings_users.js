@@ -97,7 +97,7 @@ export function update_view_on_deactivate(user_id) {
     $button.addClass("btn-warning reactivate");
     $button.removeClass("deactivate btn-danger");
     $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
-    $row.removeClass("reactivated_user");
+    $row.removeClass("active-user");
     $row.addClass("deactivated_user");
 
     should_redraw_active_users_list = true;
@@ -116,7 +116,7 @@ export function update_view_on_reactivate(user_id) {
     $button.removeClass("btn-warning reactivate");
     $button.empty().append($("<i>").addClass(["fa", "fa-user-times"]).attr("aria-hidden", "true"));
     $row.removeClass("deactivated_user");
-    $row.addClass("reactivated_user");
+    $row.addClass("active-user");
 
     should_redraw_active_users_list = true;
     should_redraw_deactivated_users_list = true;
@@ -170,7 +170,6 @@ function create_role_filter_dropdown($events_container, widget_name) {
         item_click_callback: role_selected_handler,
         default_id: "0",
         tippy_props: {
-            placement: "bottom-start",
             offset: [0, 0],
         },
     }).setup();
@@ -230,6 +229,7 @@ function bot_info(bot_user_id) {
     info.full_name = bot_user.full_name;
     info.bot_owner_id = owner_id;
     info.user_role_text = people.get_user_type(bot_user_id);
+    info.img_src = people.small_avatar_url_for_person(bot_user);
 
     // Convert bot type id to string for viewing to the users.
     info.bot_type = settings_data.bot_type_id_to_string(bot_user.bot_type);
@@ -248,6 +248,11 @@ function bot_info(bot_user_id) {
 
     // It's always safe to show the real email addresses for bot users
     info.display_email = bot_user.email;
+
+    if (owner_id) {
+        info.is_bot_owner_active = people.is_person_active(owner_id);
+        info.owner_img_src = people.small_avatar_url_for_person(people.get_by_user_id(owner_id));
+    }
 
     return info;
 }
@@ -275,13 +280,13 @@ function human_info(person) {
     info.is_current_user = people.is_my_user_id(person.user_id);
     info.cannot_deactivate = info.is_current_user || (person.is_owner && !current_user.is_owner);
     info.display_email = person.delivery_email;
+    info.img_src = people.small_avatar_url_for_person(person);
 
-    if (info.is_active) {
-        // TODO: We might just want to show this
-        // for deactivated users, too, even though
-        // it might usually just be undefined.
-        info.last_active_date = get_last_active(person);
-    }
+    // TODO: This is not shown in deactivated users table and it is
+    // controlled by `display_last_active_column` We might just want
+    // to show this for deactivated users, too, even though it might
+    // usually just be undefined.
+    info.last_active_date = get_last_active(person);
 
     return info;
 }
@@ -336,6 +341,7 @@ section.active.create_table = (active_users) => {
         get_item: people.get_by_user_id,
         modifier_html(item) {
             const info = human_info(item);
+            info.display_last_active_column = true;
             return render_admin_user_list(info);
         },
         filter: {
@@ -370,6 +376,7 @@ section.deactivated.create_table = (deactivated_users) => {
             get_item: people.get_by_user_id,
             modifier_html(item) {
                 const info = human_info(item);
+                info.display_last_active_column = false;
                 return render_admin_user_list(info);
             },
             filter: {
@@ -414,7 +421,7 @@ export function update_user_data(user_id, new_data) {
 
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
-        $user_row.find(".user_name .view_user_profile").text(new_data.full_name);
+        $user_row.find(".pill-container .view_user_profile .pill-value").text(new_data.full_name);
     }
 
     if (new_data.role !== undefined) {

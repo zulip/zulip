@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Sequence, Set
+from collections.abc import Sequence
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -27,7 +27,7 @@ from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfi
 # Because mypy fails to correctly infer the type of the validator, we want this constant
 # to be Optional[int] to avoid a mypy error when using it as the default value.
 # https://github.com/python/mypy/issues/13234
-INVITATION_LINK_VALIDITY_MINUTES: Optional[int] = 24 * 60 * settings.INVITATION_LINK_VALIDITY_DAYS
+INVITATION_LINK_VALIDITY_MINUTES: int | None = 24 * 60 * settings.INVITATION_LINK_VALIDITY_DAYS
 
 
 def check_role_based_permissions(
@@ -49,7 +49,7 @@ def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     invitee_emails_raw: str = REQ("invitee_emails"),
-    invite_expires_in_minutes: Optional[int] = REQ(
+    invite_expires_in_minutes: int | None = REQ(
         json_validator=check_none_or(check_int), default=INVITATION_LINK_VALIDITY_MINUTES
     ),
     invite_as: int = REQ(
@@ -61,7 +61,7 @@ def invite_users_backend(
     notify_referrer_on_join: bool = REQ(
         "notify_referrer_on_join", json_validator=check_bool, default=True
     ),
-    stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
+    stream_ids: list[int] = REQ(json_validator=check_list(check_int)),
     include_realm_default_subscriptions: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
@@ -83,7 +83,7 @@ def invite_users_backend(
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
-    streams: List[Stream] = []
+    streams: list[Stream] = []
     for stream_id in stream_ids:
         try:
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
@@ -122,7 +122,7 @@ def invite_users_backend(
     return json_success(request)
 
 
-def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
+def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
     invitee_emails_list = set(re.split(r"[,\n]", invitee_emails_raw))
     invitee_emails = set()
     for email in invitee_emails_list:
@@ -209,7 +209,7 @@ def resend_user_invite_email(
 def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    invite_expires_in_minutes: Optional[int] = REQ(
+    invite_expires_in_minutes: int | None = REQ(
         json_validator=check_none_or(check_int), default=INVITATION_LINK_VALIDITY_MINUTES
     ),
     invite_as: int = REQ(

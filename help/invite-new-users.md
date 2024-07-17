@@ -31,11 +31,12 @@ permission to invite users.
 
 {!invite-users.md!}
 
-1. Click **Send an email**.
-
 1. Enter a list of email addresses.
 
-1. Select when the invitation will expire.
+1. Toggle **Send me a direct message when my invitation is accepted**,
+   to receive a notification when an invitation is accepted.
+
+1. Select when the invitations will expire.
 
 1. Select what [role](/help/roles-and-permissions) the users will join as.
 
@@ -44,9 +45,12 @@ permission to invite users.
 1. Click **Invite**.
 
 !!! warn ""
-    **Note**: As an anti-spam measure, the number of email invites you can send in a day is
-    limited on the Zulip Cloud Free plan. [Contact support](/help/contact-support)
-    if you hit the limit and want to invite more users.
+    **Note**: As an anti-spam measure, the number of email invitations
+    you can send in a day is limited on the Zulip Cloud Free plan. If
+    you hit the limit and need to invite more users, consider creating an
+    [invitation link](#create-a-reusable-invitation-link) and sharing it
+    with your users directly, or [contact support](/help/contact-support)
+    to ask for a higher limit.
 
 {end_tabs}
 
@@ -62,7 +66,7 @@ permission to invite users.
 
 {!invite-users.md!}
 
-1. Click **Generate invite link**.
+1. Select **Invitation link**.
 
 1. Select when the invitation will expire.
 
@@ -70,7 +74,7 @@ permission to invite users.
 
 1. Configure which channels they will be added to.
 
-1. Click **Generate invite link**.
+1. Click **Create link**.
 
 1. Copy the link, and send it to anyone you'd like to invite.
 
@@ -85,6 +89,8 @@ for invitations for the organization owners role.
 {start_tabs}
 
 {settings_tab|invitations}
+
+1. Select the **Invitations** tab.
 
 1. From there, you can view pending invitations, **Revoke** email
    invitations and invitation links, or **Resend** email invitations.

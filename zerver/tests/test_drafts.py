@@ -1,6 +1,6 @@
 import time
 from copy import deepcopy
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import orjson
 
@@ -11,8 +11,8 @@ from zerver.models import Draft
 class DraftCreationTests(ZulipTestCase):
     def create_and_check_drafts_for_success(
         self,
-        draft_dicts: List[Dict[str, Any]],
-        expected_draft_dicts: Optional[List[Dict[str, Any]]] = None,
+        draft_dicts: list[dict[str, Any]],
+        expected_draft_dicts: list[dict[str, Any]] | None = None,
     ) -> None:
         hamlet = self.example_user("hamlet")
 
@@ -32,7 +32,7 @@ class DraftCreationTests(ZulipTestCase):
         self.assertEqual(new_draft_dicts, expected_draft_dicts)
 
     def create_and_check_drafts_for_error(
-        self, draft_dicts: List[Dict[str, Any]], expected_message: str
+        self, draft_dicts: list[dict[str, Any]], expected_message: str
     ) -> None:
         hamlet = self.example_user("hamlet")
 
@@ -566,7 +566,7 @@ class DraftFetchTest(ZulipTestCase):
         self.assertEqual(data["count"], 3)
 
         first_draft_id = Draft.objects.filter(user_profile=hamlet).order_by("id")[0].id
-        expected_draft_contents: List[Dict[str, object]] = [
+        expected_draft_contents: list[dict[str, object]] = [
             {"id": first_draft_id + i, **draft_dicts[i]} for i in range(3)
         ]
 

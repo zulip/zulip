@@ -51,9 +51,12 @@ class ZephyrTest(ZulipTestCase):
             result = post("zephyr", cred=cred)
         self.assert_json_error(result, "Invalid Kerberos cache")
 
-        with ccache_mock(return_value=b"1234"), ssh_mock(
-            side_effect=subprocess.CalledProcessError(1, [])
-        ), mirror_mock(), self.assertLogs(level="ERROR") as log:
+        with (
+            ccache_mock(return_value=b"1234"),
+            ssh_mock(side_effect=subprocess.CalledProcessError(1, [])),
+            mirror_mock(),
+            self.assertLogs(level="ERROR") as log,
+        ):
             result = post("zephyr", cred=cred)
 
         self.assert_json_error(result, "We were unable to set up mirroring for you")
@@ -87,9 +90,12 @@ class ZephyrTest(ZulipTestCase):
             )
 
         cred = dict(cname=dict(nameString=["kerberos_alter_ego"]))
-        with ccache_mock(
-            return_value=b"1234"
-        ), mirror_mock(), ssh_mock() as ssh, kerberos_alter_egos_mock():
+        with (
+            ccache_mock(return_value=b"1234"),
+            mirror_mock(),
+            ssh_mock() as ssh,
+            kerberos_alter_egos_mock(),
+        ):
             result = post("zephyr", cred=cred)
 
         self.assert_json_success(result)

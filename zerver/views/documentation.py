@@ -2,8 +2,9 @@ import os
 import random
 import re
 from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
@@ -37,11 +38,11 @@ from zerver.openapi.openapi import get_endpoint_from_operationid, get_openapi_su
 class DocumentationArticle:
     article_path: str
     article_http_status: int
-    endpoint_path: Optional[str]
-    endpoint_method: Optional[str]
+    endpoint_path: str | None
+    endpoint_method: str | None
 
 
-def add_api_url_context(context: Dict[str, Any], request: HttpRequest) -> None:
+def add_api_url_context(context: dict[str, Any], request: HttpRequest) -> None:
     context.update(zulip_default_context(request))
 
     subdomain = get_subdomain(request)
@@ -67,7 +68,7 @@ def add_api_url_context(context: Dict[str, Any], request: HttpRequest) -> None:
 
 class ApiURLView(TemplateView):
     @override
-    def get_context_data(self, **kwargs: Any) -> Dict[str, str]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, str]:
         context = super().get_context_data(**kwargs)
         add_api_url_context(context, self.request)
         return context
@@ -85,10 +86,10 @@ class MarkdownDirectoryView(ApiURLView):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._post_render_callbacks: List[Callable[[HttpResponse], Optional[HttpResponse]]] = []
+        self._post_render_callbacks: list[Callable[[HttpResponse], HttpResponse | None]] = []
 
     def add_post_render_callback(
-        self, callback: Callable[[HttpResponse], Optional[HttpResponse]]
+        self, callback: Callable[[HttpResponse], HttpResponse | None]
     ) -> None:
         self._post_render_callbacks.append(callback)
 
@@ -162,9 +163,9 @@ class MarkdownDirectoryView(ApiURLView):
         )
 
     @override
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         article = kwargs["article"]
-        context: Dict[str, Any] = super().get_context_data()
+        context: dict[str, Any] = super().get_context_data()
 
         documentation_article = self.get_path(article)
         context["article"] = documentation_article.article_path
@@ -252,7 +253,7 @@ class MarkdownDirectoryView(ApiURLView):
             self.add_post_render_callback(update_description)
 
         # An "article" might require the api_url_context to be rendered
-        api_url_context: Dict[str, Any] = {}
+        api_url_context: dict[str, Any] = {}
         add_api_url_context(api_url_context, self.request)
         api_url_context["run_content_validators"] = True
         context["api_url_context"] = api_url_context
@@ -313,7 +314,7 @@ class MarkdownDirectoryView(ApiURLView):
         return result
 
 
-def add_integrations_context(context: Dict[str, Any]) -> None:
+def add_integrations_context(context: dict[str, Any]) -> None:
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
     alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
     enabled_integrations_count = sum(v.is_enabled() for v in INTEGRATIONS.values())
@@ -325,7 +326,7 @@ def add_integrations_context(context: Dict[str, Any]) -> None:
     context["integrations_count_display"] = integrations_count_display
 
 
-def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRequest) -> None:
+def add_integrations_open_graph_context(context: dict[str, Any], request: HttpRequest) -> None:
     path_name = request.path.rstrip("/").split("/")[-1]
     description = (
         "Zulip comes with over a hundred native integrations out of the box, "
@@ -355,8 +356,8 @@ class IntegrationView(ApiURLView):
     template_name = "zerver/integrations/index.html"
 
     @override
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context: Dict[str, Any] = super().get_context_data(**kwargs)
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context: dict[str, Any] = super().get_context_data(**kwargs)
         add_integrations_context(context)
         add_integrations_open_graph_context(context, self.request)
         add_google_analytics_context(context)
@@ -374,7 +375,7 @@ def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) ->
     except KeyError:
         return HttpResponseNotFound()
 
-    context: Dict[str, Any] = {}
+    context: dict[str, Any] = {}
     add_api_url_context(context, request)
 
     context["integration_name"] = integration.name

@@ -735,13 +735,14 @@ div.overlay {
         }
     }
 
-    & thead th:not(.actions) {
-        min-width: 100px;
-    }
-
     & thead th {
         color: inherit;
         background-color: hsl(0deg 0% 100%);
+        word-break: normal;
+
+        &[data-sort] {
+            padding-right: 0.88em;
+        }
 
         &.active::after,
         &[data-sort]:hover::after {
@@ -946,6 +947,16 @@ div.overlay {
     margin-top: -0.2188em !important;
 }
 
+.dropdown-list-container
+    .dropdown-list
+    .dropdown-list-item-common-styles
+    .zulip-icon-lock {
+    /* We do not need to pull up lock icons in dropdowns
+       so we reset their margin-top to the original value
+       for a dropdown's .zulip-icon */
+    margin-top: 2px !important;
+}
+
 /* This includes css needed to display messages in an overlay. */
 .overlay-messages-container {
     position: relative;
@@ -1117,6 +1128,7 @@ div.overlay {
     &:disabled {
         cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
+        opacity: 0.7;
     }
 }
 
@@ -1174,7 +1186,8 @@ div.overlay {
     min-width: max-content;
     padding: 1px;
     background-color: var(--color-background-tab-picker-container);
-    font-size: 16px;
+    /* 16px at 15px/1em */
+    font-size: 1.0666em;
 
     input[type="radio"] {
         display: none;

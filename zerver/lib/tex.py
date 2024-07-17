@@ -1,7 +1,7 @@
 import logging
 import os
 import subprocess
-from typing import Any, Optional
+from typing import Any
 
 import lxml.html
 import requests
@@ -19,7 +19,7 @@ class KatexSession(OutgoingSession):
         super().__init__(role="katex", timeout=0.5, **kwargs)
 
 
-def render_tex(tex: str, is_inline: bool = True) -> Optional[str]:
+def render_tex(tex: str, is_inline: bool = True) -> str | None:
     r"""Render a TeX string into HTML using KaTeX
 
     Returns the HTML string, or None if there was some error in the TeX syntax

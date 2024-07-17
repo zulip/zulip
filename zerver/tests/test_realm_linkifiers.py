@@ -1,5 +1,4 @@
 import re
-from typing import List
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -275,7 +274,7 @@ class RealmFilterTest(ZulipTestCase):
         iago = self.example_user("iago")
         self.login("iago")
 
-        def assert_linkifier_audit_logs(expected_id_order: List[int]) -> None:
+        def assert_linkifier_audit_logs(expected_id_order: list[int]) -> None:
             """Check if the audit log created orders the linkifiers correctly"""
             extra_data = (
                 RealmAuditLog.objects.filter(
@@ -289,7 +288,7 @@ class RealmFilterTest(ZulipTestCase):
             ]
             self.assertListEqual(expected_id_order, audit_logged_ids)
 
-        def assert_linkifier_order(expected_id_order: List[int]) -> None:
+        def assert_linkifier_order(expected_id_order: list[int]) -> None:
             """Verify that the realm audit log created matches the expected ordering"""
             result = self.client_get("/json/realm/linkifiers")
             actual_id_order = [
@@ -297,7 +296,7 @@ class RealmFilterTest(ZulipTestCase):
             ]
             self.assertListEqual(expected_id_order, actual_id_order)
 
-        def reorder_verify_succeed(expected_id_order: List[int]) -> None:
+        def reorder_verify_succeed(expected_id_order: list[int]) -> None:
             """Send a reorder request and verify that it succeeds"""
             result = self.client_patch(
                 "/json/realm/linkifiers",

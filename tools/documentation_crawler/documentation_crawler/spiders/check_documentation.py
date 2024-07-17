@@ -1,11 +1,10 @@
 import os
 import pathlib
-from typing import List
 
 from .common.spiders import BaseDocumentationSpider
 
 
-def get_start_url() -> List[str]:
+def get_start_url() -> list[str]:
     # Get index.html file as start URL and convert it to file URI
     dir_path = os.path.dirname(os.path.realpath(__file__))
     start_file = os.path.join(

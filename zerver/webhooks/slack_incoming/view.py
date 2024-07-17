@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import re
 from itertools import zip_longest
-from typing import List, Literal, TypedDict, cast
+from typing import Literal, TypedDict, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -60,7 +60,7 @@ def api_slack_incoming_webhook(
     if user_specified_topic is None:
         user_specified_topic = "(no topic)"
 
-    pieces: List[str] = []
+    pieces: list[str] = []
     if payload.get("blocks"):
         pieces += map(render_block, payload["blocks"])
 

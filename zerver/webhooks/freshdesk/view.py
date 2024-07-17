@@ -1,7 +1,5 @@
 """Webhooks for external integrations."""
 
-from typing import List
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
@@ -60,7 +58,7 @@ def property_name(property: str, index: int) -> str:
     return name
 
 
-def parse_freshdesk_event(event_string: str) -> List[str]:
+def parse_freshdesk_event(event_string: str) -> list[str]:
     """These are always of the form "{ticket_action:created}" or
     "{status:{from:4,to:6}}". Note the lack of string quoting: this isn't
     valid JSON so we have to parse it ourselves.
@@ -82,7 +80,7 @@ def parse_freshdesk_event(event_string: str) -> List[str]:
         ]
 
 
-def format_freshdesk_note_message(ticket: WildValue, event_info: List[str]) -> str:
+def format_freshdesk_note_message(ticket: WildValue, event_info: list[str]) -> str:
     """There are public (visible to customers) and private note types."""
     note_type = event_info[1]
     content = NOTE_TEMPLATE.format(
@@ -96,7 +94,7 @@ def format_freshdesk_note_message(ticket: WildValue, event_info: List[str]) -> s
     return content
 
 
-def format_freshdesk_property_change_message(ticket: WildValue, event_info: List[str]) -> str:
+def format_freshdesk_property_change_message(ticket: WildValue, event_info: list[str]) -> str:
     """Freshdesk will only tell us the first event to match our webhook
     configuration, so if we change multiple properties, we only get the before
     and after data for the first one.

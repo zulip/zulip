@@ -11,7 +11,7 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
 
-const settings_config = zrequire("settings_config");
+const user_groups = zrequire("user_groups");
 
 set_global("document", {
     querySelector() {},
@@ -114,6 +114,23 @@ const social = {
     subscribed: true,
 };
 stream_data.add_sub(social);
+
+const nobody = {
+    name: "role:nobody",
+    id: 1,
+    members: new Set([]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+const everyone = {
+    name: "role:everyone",
+    id: 2,
+    members: new Set([30]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
+user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
 function test_ui(label, f) {
     // TODO: initialize data more aggressively.
@@ -462,6 +479,8 @@ test_ui("finish", ({override, override_rewire}) => {
         compose_state.set_message_type("private");
         override(compose_pm_pill, "get_emails", () => "bob@example.com");
         override(compose_pm_pill, "get_user_ids", () => []);
+        override(realm, "realm_direct_message_permission_group", nobody.id);
+        override(realm, "realm_direct_message_initiator_group", everyone.id);
 
         let compose_finished_event_checked = false;
         $(document).on("compose_finished.zulip", () => {
@@ -777,6 +796,12 @@ test_ui("on_events", ({override, override_rewire}) => {
         };
 
         override_rewire(compose_recipient, "update_placeholder_text", noop);
+        override(narrow_state, "narrowed_by_reply", () => true);
+        override(
+            compose_notifications,
+            "maybe_show_one_time_non_interleaved_view_messages_fading_banner",
+            noop,
+        );
 
         handler(event);
 
@@ -817,11 +842,8 @@ test_ui("create_message_object", ({override, override_rewire}) => {
 
 test_ui("DM policy disabled", ({override, override_rewire}) => {
     // Disable dms in the organisation
-    override(
-        realm,
-        "realm_private_message_policy",
-        settings_config.private_message_policy_values.disabled.code,
-    );
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
     let reply_disabled = false;
     override_rewire(compose_closed_ui, "update_reply_button_state", (disabled = false) => {
         reply_disabled = disabled;
@@ -839,6 +861,8 @@ test_ui("DM policy disabled", ({override, override_rewire}) => {
 test_ui("narrow_button_titles", ({override}) => {
     override(narrow_state, "pm_ids_string", () => "31");
     override(narrow_state, "is_message_feed_visible", () => true);
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
     compose_closed_ui.update_buttons_for_private();
     assert.equal(
         $("#new_conversation_button").text(),

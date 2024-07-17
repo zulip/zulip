@@ -112,7 +112,7 @@ if (DEVELOPMENT) {
     $(window).on("error", (event: JQuery.TriggeredEvent) => {
         const {originalEvent} = event;
         if (originalEvent instanceof ErrorEvent) {
-            void display_stacktrace(originalEvent.error);
+            void display_stacktrace(originalEvent.error, originalEvent.message);
         }
     });
     $(window).on("unhandledrejection", (event: JQuery.TriggeredEvent) => {

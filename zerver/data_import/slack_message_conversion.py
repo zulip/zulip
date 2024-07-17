@@ -1,12 +1,10 @@
 import re
-from typing import Any, Dict, List, Optional, Tuple
-
-from typing_extensions import TypeAlias
+from typing import Any, TypeAlias
 
 # stubs
-ZerverFieldsT: TypeAlias = Dict[str, Any]
-SlackToZulipUserIDT: TypeAlias = Dict[str, int]
-AddedChannelsT: TypeAlias = Dict[str, Tuple[str, int]]
+ZerverFieldsT: TypeAlias = dict[str, Any]
+SlackToZulipUserIDT: TypeAlias = dict[str, int]
+AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
 
 # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
 LINK_REGEX = r"""
@@ -71,10 +69,10 @@ def get_user_full_name(user: ZerverFieldsT) -> str:
 # Markdown mapping
 def convert_to_zulip_markdown(
     text: str,
-    users: List[ZerverFieldsT],
+    users: list[ZerverFieldsT],
     added_channels: AddedChannelsT,
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
-) -> Tuple[str, List[int], bool]:
+) -> tuple[str, list[int], bool]:
     mentioned_users_id = []
     text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
     text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
@@ -117,8 +115,8 @@ def convert_to_zulip_markdown(
 
 
 def get_user_mentions(
-    token: str, users: List[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
-) -> Tuple[str, Optional[int]]:
+    token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
+) -> tuple[str, int | None]:
     slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
     assert slack_usermention_match is not None
     short_name = slack_usermention_match.group(4)
@@ -156,7 +154,7 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     return text
 
 
-def convert_link_format(text: str) -> Tuple[str, bool]:
+def convert_link_format(text: str) -> tuple[str, bool]:
     """
     1. Converts '<https://foo.com>' to 'https://foo.com'
     2. Converts '<https://foo.com|foo>' to 'https://foo.com|foo'
@@ -169,7 +167,7 @@ def convert_link_format(text: str) -> Tuple[str, bool]:
     return text, has_link
 
 
-def convert_mailto_format(text: str) -> Tuple[str, bool]:
+def convert_mailto_format(text: str) -> tuple[str, bool]:
     """
     1. Converts '<mailto:foo@foo.com>' to 'mailto:foo@foo.com'
     2. Converts '<mailto:foo@foo.com|foo@foo.com>' to 'mailto:foo@foo.com'

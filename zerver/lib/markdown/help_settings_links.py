@@ -1,5 +1,6 @@
 import re
-from typing import Any, List, Match
+from re import Match
+from typing import Any
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -68,6 +69,11 @@ link_mapping = {
         "Users",
         "/#organization/users/deactivated",
     ],
+    "invitations": [
+        "Organization settings",
+        "Users",
+        "/#organization/users/invitations",
+    ],
     "bot-list-admin": [
         "Organization settings",
         "Bots",
@@ -92,11 +98,6 @@ link_mapping = {
         "Organization settings",
         "Custom profile fields",
         "/#organization/profile-field-settings",
-    ],
-    "invitations": [
-        "Organization settings",
-        "Invitations",
-        "/#organization/users/invitations",
     ],
     "data-exports-admin": [
         "Organization settings",
@@ -148,7 +149,7 @@ def set_relative_settings_links(value: bool) -> None:
 
 class Setting(Preprocessor):
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         done = False
         while not done:
             for line in lines:

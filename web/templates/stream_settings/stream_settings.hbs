@@ -39,7 +39,7 @@
                   invite_only=invite_only
                   is_web_public=is_web_public }}
                 <div class="stream-name">
-                    <span class="sub-stream-name" title="{{name}}">{{name}}</span>
+                    <span class="sub-stream-name" data-tippy-content="{{name}}">{{name}}</span>
                 </div>
                 <div class="stream_change_property_info alert-notification"></div>
                 <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
@@ -84,7 +84,8 @@
                               user_id=creator.user_id
                               img_src=creator.avatar_url
                               display_value=creator.full_name
-                              is_current_user=is_creator }}
+                              is_current_user=is_creator
+                              is_active=creator.is_active }}
                         {{/inline}}
                         {{#*inline "z-stream-date-created"}}{{date_created_string}}{{/inline}}
                     {{/tr}}

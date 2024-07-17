@@ -1,7 +1,7 @@
 """Webhooks for external integrations."""
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import orjson
 from defusedxml.ElementTree import fromstring as xml_fromstring
@@ -16,10 +16,10 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str, str]:
+def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> tuple[str, str, str]:
     payload = xml_fromstring(request.body)
 
-    def get_text(attrs: List[str]) -> str:
+    def get_text(attrs: list[str]) -> str:
         start = payload
         try:
             for attr in attrs:
@@ -87,7 +87,7 @@ ALL_EVENT_TYPES = [
 ]
 
 
-def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str, str]:
+def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> tuple[str, str, str]:
     payload = orjson.loads(request.body)
 
     event_type = payload["kind"]
@@ -110,7 +110,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
     content = ""
     topic_name = f"#{story_id}: {story_name}"
 
-    def extract_comment(change: Dict[str, Any]) -> Optional[str]:
+    def extract_comment(change: dict[str, Any]) -> str | None:
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None

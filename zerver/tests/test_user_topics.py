@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any
 
 import orjson
 import time_machine
@@ -95,7 +95,7 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
 
-        payloads: List[Dict[str, object]] = [
+        payloads: list[dict[str, object]] = [
             {"stream": stream.name, "topic": "Verona3", "op": "add"},
             {"stream_id": stream.id, "topic": "Verona3", "op": "add"},
         ]
@@ -146,7 +146,7 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
         stream = get_stream("Verona", realm)
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
-        payloads: List[Dict[str, object]] = [
+        payloads: list[dict[str, object]] = [
             {"stream": stream.name, "topic": "vERONA3", "op": "remove"},
             {"stream_id": stream.id, "topic": "vEroNA3", "op": "remove"},
         ]
@@ -213,7 +213,7 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
         stream = get_stream("Verona", realm)
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
-        data: Dict[str, Any] = {"stream": "BOGUS", "topic": "Verona3", "op": "remove"}
+        data: dict[str, Any] = {"stream": "BOGUS", "topic": "Verona3", "op": "remove"}
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic is not muted")
 
@@ -338,10 +338,12 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
-                result = self.api_post(user, url, data)
-                self.assert_json_success(result)
+        with (
+            self.capture_send_event_calls(expected_num_events=2) as events,
+            time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False),
+        ):
+            result = self.api_post(user, url, data)
+            self.assert_json_success(result)
 
         self.assertTrue(
             topic_has_visibility_policy(
@@ -349,7 +351,7 @@ class MutedTopicsTests(ZulipTestCase):
             )
         )
         # Verify if events are sent properly
-        user_topic_event: Dict[str, Any] = {
+        user_topic_event: dict[str, Any] = {
             "type": "user_topic",
             "stream_id": stream.id,
             "topic_name": "Verona3",
@@ -404,10 +406,12 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_mute_removed = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
-                result = self.api_post(user, url, data)
-                self.assert_json_success(result)
+        with (
+            self.capture_send_event_calls(expected_num_events=2) as events,
+            time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False),
+        ):
+            result = self.api_post(user, url, data)
+            self.assert_json_success(result)
 
         self.assertFalse(
             topic_has_visibility_policy(
@@ -415,7 +419,7 @@ class MutedTopicsTests(ZulipTestCase):
             )
         )
         # Verify if events are sent properly
-        user_topic_event: Dict[str, Any] = {
+        user_topic_event: dict[str, Any] = {
             "type": "user_topic",
             "stream_id": stream.id,
             "topic_name": data["topic"],
@@ -553,10 +557,12 @@ class UnmutedTopicsTests(ZulipTestCase):
 
         mock_date_unmuted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
-                result = self.api_post(user, url, data)
-                self.assert_json_success(result)
+        with (
+            self.capture_send_event_calls(expected_num_events=2) as events,
+            time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False),
+        ):
+            result = self.api_post(user, url, data)
+            self.assert_json_success(result)
 
         self.assertTrue(
             topic_has_visibility_policy(
@@ -564,7 +570,7 @@ class UnmutedTopicsTests(ZulipTestCase):
             )
         )
         # Verify if events are sent properly
-        user_topic_event: Dict[str, Any] = {
+        user_topic_event: dict[str, Any] = {
             "type": "user_topic",
             "stream_id": stream.id,
             "topic_name": "Verona3",
@@ -619,10 +625,12 @@ class UnmutedTopicsTests(ZulipTestCase):
 
         mock_date_unmute_removed = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
-                result = self.api_post(user, url, data)
-                self.assert_json_success(result)
+        with (
+            self.capture_send_event_calls(expected_num_events=2) as events,
+            time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False),
+        ):
+            result = self.api_post(user, url, data)
+            self.assert_json_success(result)
 
         self.assertFalse(
             topic_has_visibility_policy(
@@ -630,7 +638,7 @@ class UnmutedTopicsTests(ZulipTestCase):
             )
         )
         # Verify if events are sent properly
-        user_topic_event: Dict[str, Any] = {
+        user_topic_event: dict[str, Any] = {
             "type": "user_topic",
             "stream_id": stream.id,
             "topic_name": data["topic"],
@@ -678,6 +686,26 @@ class UnmutedTopicsTests(ZulipTestCase):
 
         result = self.api_post(user, url, data)
         self.assert_json_error(result, "Invalid channel ID")
+
+
+class UserTopicsTests(ZulipTestCase):
+    def test_invalid_visibility_policy(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        stream = get_stream("Verona", user.realm)
+
+        url = "/api/v1/user_topics"
+        data = {
+            "stream_id": stream.id,
+            "topic": "Verona3",
+            "visibility_policy": 999,
+        }
+
+        result = self.api_post(user, url, data)
+        self.assert_json_error(
+            result, "Invalid visibility_policy: Value error, Not in the list of possible values"
+        )
 
 
 class AutomaticallyFollowTopicsTests(ZulipTestCase):
@@ -1042,7 +1070,7 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
         # Aaron participates in the poll. DON'T automatically follow the topic.
         message = self.get_last_message()
 
-        def participate_in_poll(user: UserProfile, data: Dict[str, object]) -> None:
+        def participate_in_poll(user: UserProfile, data: dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             payload = dict(
                 message_id=message.id,
@@ -1104,7 +1132,7 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
         # Aaron edits the todo list. DON'T automatically follow the topic.
         message = self.get_last_message()
 
-        def edit_todo_list(user: UserProfile, data: Dict[str, object]) -> None:
+        def edit_todo_list(user: UserProfile, data: dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             payload = dict(
                 message_id=message.id,
@@ -1413,7 +1441,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # Aaron participates in the poll. DON'T automatically unmute the topic.
         message = self.get_last_message()
 
-        def participate_in_poll(user: UserProfile, data: Dict[str, object]) -> None:
+        def participate_in_poll(user: UserProfile, data: dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             payload = dict(
                 message_id=message.id,
@@ -1480,7 +1508,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # Aaron edits the todo list. DON'T automatically unmute the topic.
         message = self.get_last_message()
 
-        def edit_todo_list(user: UserProfile, data: Dict[str, object]) -> None:
+        def edit_todo_list(user: UserProfile, data: dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             payload = dict(
                 message_id=message.id,

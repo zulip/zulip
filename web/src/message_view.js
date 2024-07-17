@@ -10,6 +10,7 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
@@ -87,7 +88,19 @@ export function changehash(newhash, trigger) {
         return;
     }
     message_viewport.stop_auto_scrolling();
-    browser_history.set_hash(newhash);
+
+    if (trigger === "retarget topic location") {
+        // It is important to use `replaceState` rather than `replace`
+        // here for the `back` button to work; we don't want to use
+        // any metadata potentially stored by
+        // update_current_history_state_data associated with an old
+        // URL for the target conversation, and conceptually we want
+        // to replace the inaccurate/old URL for the conversation with
+        // the current/corrected value.
+        window.history.replaceState(null, "", newhash);
+    } else {
+        browser_history.set_hash(newhash);
+    }
 }
 
 export function update_hash_to_match_filter(filter, trigger) {
@@ -132,12 +145,14 @@ function create_and_update_message_list(filter, id_info, opts) {
         });
 
         // Populate the message list if we can apply our filter locally (i.e.
-        // with no backend help) and we have the message we want to select.
+        // with no server help) and we have the message we want to select.
         // Also update id_info accordingly.
-        maybe_add_local_messages({
-            id_info,
-            msg_data,
-        });
+        if (!filter.requires_adjustment_for_moved_with_target) {
+            maybe_add_local_messages({
+                id_info,
+                msg_data,
+            });
+        }
 
         if (!id_info.local_select_id) {
             // If we're not actually ready to select an ID, we need to
@@ -303,9 +318,10 @@ export function show(raw_terms, opts) {
 
     // No operators is an alias for the Combined Feed view.
     if (raw_terms.length === 0) {
-        raw_terms = [{operator: "is", operand: "home"}];
+        raw_terms = [{operator: "in", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
+    filter.try_adjusting_for_moved_with_target();
 
     if (try_rendering_locally_for_same_narrow(filter, opts)) {
         return;
@@ -642,7 +658,18 @@ export function show(raw_terms, opts) {
                 }
                 message_fetch.load_messages_for_narrow({
                     anchor,
+                    validate_filter_topic_post_fetch:
+                        filter.requires_adjustment_for_moved_with_target,
                     cont() {
+                        if (
+                            !filter.requires_adjustment_for_moved_with_target &&
+                            filter.has_operator("with")
+                        ) {
+                            // We've already adjusted our filter via
+                            // filter.try_adjusting_for_moved_with_target, and
+                            // should update the URL hash accordingly.
+                            update_hash_to_match_filter(filter, "retarget topic location");
+                        }
                         if (!select_immediately) {
                             render_message_list_with_selected_message({
                                 id_info,
@@ -1251,6 +1278,13 @@ export function to_compose_target() {
 
 function handle_post_view_change(msg_list, opts) {
     const filter = msg_list.data.filter;
+
+    if (narrow_state.narrowed_by_reply()) {
+        compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
+    } else {
+        compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+    }
+
     scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
 
@@ -1264,6 +1298,7 @@ function handle_post_view_change(msg_list, opts) {
     compose_closed_ui.update_reply_recipient_label();
 
     message_view_header.render_title_area();
+
     narrow_title.update_narrow_title(filter);
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);

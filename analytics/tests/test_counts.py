@@ -1,6 +1,7 @@
+from collections.abc import Iterator
 from contextlib import AbstractContextManager, ExitStack, contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
+from typing import Any
 from unittest import mock
 
 import time_machine
@@ -111,7 +112,7 @@ class AnalyticsTestCase(ZulipTestCase):
         # used to generate unique names in self.create_*
         self.name_counter = 100
         # used as defaults in self.assert_table_count
-        self.current_property: Optional[str] = None
+        self.current_property: str | None = None
 
         # Delete RemoteRealm registrations to have a clean slate - the relevant
         # tests want to construct this from scratch.
@@ -132,7 +133,7 @@ class AnalyticsTestCase(ZulipTestCase):
             kwargs[key] = kwargs.get(key, value)
         kwargs["delivery_email"] = kwargs["email"]
         with time_machine.travel(kwargs["date_joined"], tick=False):
-            pass_kwargs: Dict[str, Any] = {}
+            pass_kwargs: dict[str, Any] = {}
             if kwargs["is_bot"]:
                 pass_kwargs["bot_type"] = UserProfile.DEFAULT_BOT
                 pass_kwargs["bot_owner"] = None
@@ -158,7 +159,7 @@ class AnalyticsTestCase(ZulipTestCase):
                 )
             return user
 
-    def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
+    def create_stream_with_recipient(self, **kwargs: Any) -> tuple[Stream, Recipient]:
         self.name_counter += 1
         defaults = {
             "name": f"stream name {self.name_counter}",
@@ -174,7 +175,7 @@ class AnalyticsTestCase(ZulipTestCase):
         stream.save(update_fields=["recipient"])
         return stream, recipient
 
-    def create_huddle_with_recipient(self, **kwargs: Any) -> Tuple[DirectMessageGroup, Recipient]:
+    def create_huddle_with_recipient(self, **kwargs: Any) -> tuple[DirectMessageGroup, Recipient]:
         self.name_counter += 1
         defaults = {"huddle_hash": f"hash{self.name_counter}"}
         for key, value in defaults.items():
@@ -224,12 +225,12 @@ class AnalyticsTestCase(ZulipTestCase):
     # kwargs should only ever be a UserProfile or Stream.
     def assert_table_count(
         self,
-        table: Type[BaseCount],
+        table: type[BaseCount],
         value: int,
-        property: Optional[str] = None,
-        subgroup: Optional[str] = None,
+        property: str | None = None,
+        subgroup: str | None = None,
         end_time: datetime = TIME_ZERO,
-        realm: Optional[Realm] = None,
+        realm: Realm | None = None,
         **kwargs: models.Model,
     ) -> None:
         if property is None:
@@ -246,7 +247,7 @@ class AnalyticsTestCase(ZulipTestCase):
         self.assertEqual(queryset.values_list("value", flat=True)[0], value)
 
     def assertTableState(
-        self, table: Type[BaseCount], arg_keys: List[str], arg_values: List[List[object]]
+        self, table: type[BaseCount], arg_keys: list[str], arg_values: list[list[object]]
     ) -> None:
         """Assert that the state of a *Count table is what it should be.
 
@@ -276,7 +277,7 @@ class AnalyticsTestCase(ZulipTestCase):
             "value": 1,
         }
         for values in arg_values:
-            kwargs: Dict[str, Any] = {}
+            kwargs: dict[str, Any] = {}
             for i in range(len(values)):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
@@ -336,7 +337,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertEqual(InstallationCount.objects.filter(property=stat.property).count(), 1)
 
         # clean stat, with update
-        current_time = current_time + self.HOUR
+        current_time += self.HOUR
         stat = self.make_dummy_count_stat("test stat")
         process_count_stat(stat, current_time)
         self.assertFillStateEquals(stat, current_time)
@@ -1431,12 +1432,16 @@ class TestLoggingCountStats(AnalyticsTestCase):
             "gcm_options": gcm_options,
         }
         now = timezone_now()
-        with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-            return_value=10,
-        ), self.assertLogs("zilencer.views", level="INFO"):
+        with (
+            time_machine.travel(now, tick=False),
+            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
+            mock.patch(
+                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1490,12 +1495,16 @@ class TestLoggingCountStats(AnalyticsTestCase):
             "apns_payload": apns_payload,
             "gcm_options": gcm_options,
         }
-        with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-            return_value=10,
-        ), self.assertLogs("zilencer.views", level="INFO"):
+        with (
+            time_machine.travel(now, tick=False),
+            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
+            mock.patch(
+                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1548,12 +1557,16 @@ class TestLoggingCountStats(AnalyticsTestCase):
             realm_date_created=realm.date_created,
         )
 
-        with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-            return_value=10,
-        ), self.assertLogs("zilencer.views", level="INFO"):
+        with (
+            time_machine.travel(now, tick=False),
+            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1619,7 +1632,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         def invite_context(
             too_many_recent_realm_invites: bool = False, failure: bool = False
         ) -> Iterator[None]:
-            managers: List[AbstractContextManager[Any]] = [
+            managers: list[AbstractContextManager[Any]] = [
                 mock.patch(
                     "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
                 ),
@@ -1812,7 +1825,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.current_property = self.stat.property
 
     def add_event(
-        self, event_type: int, days_offset: float, user: Optional[UserProfile] = None
+        self, event_type: int, days_offset: float, user: UserProfile | None = None
     ) -> None:
         hours_offset = int(24 * days_offset)
         if user is None:
@@ -1984,7 +1997,7 @@ class TestRealmActiveHumans(AnalyticsTestCase):
         self.stat = COUNT_STATS["realm_active_humans::day"]
         self.current_property = self.stat.property
 
-    def mark_15day_active(self, user: UserProfile, end_time: Optional[datetime] = None) -> None:
+    def mark_15day_active(self, user: UserProfile, end_time: datetime | None = None) -> None:
         if end_time is None:
             end_time = self.TIME_ZERO
         UserCount.objects.create(

@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Count
@@ -25,7 +23,7 @@ def missing_any_realm_internal_bots() -> bool:
         for bot in settings.REALM_INTERNAL_BOTS
     ]
     realm_count = Realm.objects.count()
-    return UserProfile.objects.filter(email__in=bot_emails).values("email").annotate(
+    return UserProfile.objects.filter(email__in=bot_emails).values("email").alias(
         count=Count("id")
     ).filter(count=realm_count).count() != len(bot_emails)
 
@@ -53,11 +51,11 @@ def send_initial_direct_message(user: UserProfile) -> int:
     with override_language(user.default_language):
         if education_organization:
             getting_started_string = _("""
-If you are new to Zulip, check out our [Using Zulip for a class guide]({getting_started_url})!
+To learn more, check out our [Using Zulip for a class guide]({getting_started_url})!
 """).format(getting_started_url="/help/using-zulip-for-a-class")
         else:
             getting_started_string = _("""
-If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!
+To learn more, check out our [Getting started guide]({getting_started_url})!
 """).format(getting_started_url="/help/getting-started-with-zulip")
 
         organization_setup_string = ""
@@ -80,21 +78,25 @@ Note that this is a [demo organization]({demo_organization_help_url}) and
 will be **automatically deleted** in 30 days.
 """).format(demo_organization_help_url="/help/demo-organizations")
 
+        inform_about_tracked_onboarding_messages_text = ""
+        if OnboardingUserMessage.objects.filter(realm_id=user.realm_id).exists():
+            inform_about_tracked_onboarding_messages_text = _("""
+I've kicked off some conversations to help you get started. You can find
+them in your [Inbox](/#inbox).
+""")
+
         content = _("""
-Hello, and welcome to Zulip!👋 This is a direct message from me, Welcome Bot.
+Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
 
 {getting_started_text} {organization_setup_text}
 
 {demo_organization_text}
 
-I can also help you get set up! Just click anywhere on this message or press `r` to reply.
-
-Here are a few messages I understand: {bot_commands}
 """).format(
+            inform_about_tracked_onboarding_messages_text=inform_about_tracked_onboarding_messages_text,
             getting_started_text=getting_started_string,
             organization_setup_text=organization_setup_string,
             demo_organization_text=demo_organization_warning_string,
-            bot_commands=bot_commands(),
         )
 
     message_id = internal_send_private_message(
@@ -139,24 +141,29 @@ and edit your [profile information](/help/edit-your-profile).
 """)
     elif human_response_lower == "theme":
         return _("""
-Go to [Preferences](#settings/preferences) to [switch between the light and dark themes](/help/dark-theme),
-[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set),
-[change your language](/help/change-your-language), and make other tweaks
-to your Zulip experience.
+You can switch between [light and dark theme](/help/dark-theme), [pick your
+favorite emoji set](/help/emoji-and-emoticons#change-your-emoji-set), [change
+your language](/help/change-your-language), and otherwise customize your Zulip
+experience in your [Preferences](#settings/preferences).
 """)
     elif human_response_lower in ["stream", "streams", "channel", "channels"]:
         return _("""
-In Zulip, channels [determine who gets a message]({help_link}).
+Channels organize conversations based on who needs to see them. For example,
+it's common to have a channel for each team in an organization.
 
 [Browse and subscribe to channels]({settings_link}).
 """).format(help_link="/help/introduction-to-channels", settings_link="#channels/all")
     elif human_response_lower in ["topic", "topics"]:
         return _("""
-In Zulip, topics [tell you what a message is about](/help/introduction-to-topics).
-They are light-weight subjects, very similar to the subject line of an email.
+[Topics](/help/introduction-to-topics) summarize what each conversation in Zulip
+is about. You can read Zulip one topic at a time, seeing each message in
+context, no matter how many other conversations are going on.
 
-Check out [Recent conversations](#recent) to see what's happening!
-You can return to this conversation by clicking "Direct messages" in the upper left.
+When you start a conversation, label it with a new topic. For a good topic name,
+think about finishing the sentence: “Hey, can we chat about…?”
+
+Check out [Recent conversations](#recent) for a list of topics that are being
+discussed.
 """)
     elif human_response_lower in ["keyboard", "shortcuts", "keyboard shortcuts"]:
         return _("""
@@ -167,12 +174,11 @@ Press `?` any time to see a [cheat sheet](#keyboard-shortcuts).
 """)
     elif human_response_lower in ["formatting", "message formatting"]:
         return _("""
-Zulip uses [Markdown](/help/format-your-message-using-markdown),
-an intuitive format for **bold**, *italics*, bulleted lists, and more.
-Click [here](#message-formatting) for a cheat sheet.
+You can **format** *your* `message` using the handy formatting buttons, or by
+typing your formatting with Markdown.
 
-Check out our [messaging tips](/help/messaging-tips) to learn
-about emoji reactions, code blocks and much more!
+Check out the [cheat sheet](#message-formatting) to learn about spoilers, global
+times, and more.
 """)
     elif human_response_lower in ["help", "?"]:
         return _("""
@@ -183,8 +189,8 @@ or browse the [Help center](/help/) to learn more!
 """).format(bot_commands=bot_commands(no_help_command=True))
     else:
         return _("""
-I’m sorry, I did not understand your message. Please try
-one of the following commands: {bot_commands}
+You can chat with me as much as you like! To
+get help, try one of the following messages: {bot_commands}
 """).format(bot_commands=bot_commands())
 
 
@@ -193,7 +199,25 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     to welcome-bot, trigger the welcome-bot reply."""
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.realm.id)
     human_response_lower = send_request.message.content.lower()
+    human_user_recipient_id = send_request.message.sender.recipient_id
+    assert human_user_recipient_id is not None
     content = select_welcome_bot_response(human_response_lower)
+    realm_id = send_request.realm.id
+    commands = bot_commands()
+    if (
+        commands in content
+        and Message.objects.filter(
+            realm_id=realm_id,
+            sender_id=welcome_bot.id,
+            recipient_id=human_user_recipient_id,
+            content__icontains=commands,
+        ).exists()
+        # Uses index 'zerver_message_realm_sender_recipient'
+    ):
+        # If the bot has already sent bot commands to this user and
+        # if the bot does not understand the current message sent by this user then
+        # do not send any message
+        return
 
     internal_send_private_message(
         welcome_bot,
@@ -281,13 +305,16 @@ For a good topic name, think about finishing the sentence: “Hey, can we chat a
 ```spoiler Want to see some examples?
 
 ````python
+
 print("code blocks")
+
 ````
 
 - bulleted
 - lists
 
 Link to a conversation: #**{zulip_discussion_channel_name}>{topic_name}**
+
 ```
 """)
     ).format(
@@ -303,7 +330,7 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
 :point_right: Click on this message to start a new message in the same conversation.
 """)
 
-    welcome_messages: List[Dict[str, str]] = []
+    welcome_messages: list[dict[str, str]] = []
 
     # Messages added to the "welcome messages" list last will be most
     # visible to users, since welcome messages will likely be browsed

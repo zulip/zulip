@@ -379,10 +379,16 @@ h4.user_group_setting_subsection_title {
         border-right: 1px solid hsl(0deg 0% 87%);
 
         .list-toggler-container {
+            align-items: center;
             padding: 6px 8px;
             border-bottom: 1px solid hsl(0deg 0% 87%);
             display: flex;
             justify-content: space-between;
+
+            #add_new_subscription {
+                position: relative;
+                top: -2px;
+            }
         }
     }
 
@@ -698,6 +704,11 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
+    .tab-switcher {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
     #user-group-creation,
     #stream-creation {
         overflow: auto;
@@ -810,7 +821,8 @@ h4.user_group_setting_subsection_title {
         .tab-container {
             .ind-tab {
                 padding: 3px 4px;
-                width: 80px;
+                min-width: 80px;
+                width: auto;
             }
         }
 
@@ -1061,6 +1073,7 @@ div.settings-radio-input-parent {
         margin-bottom: 20px;
         min-width: 325px;
         max-width: 100%;
+        width: auto;
         height: 30px;
     }
 
@@ -1071,6 +1084,12 @@ div.settings-radio-input-parent {
         .inline {
             display: inline;
         }
+    }
+}
+
+#stream-advanced-configurations {
+    .dropdown-widget-button {
+        color: hsl(0deg 0% 33%);
     }
 }
 
@@ -1249,7 +1268,8 @@ div.settings-radio-input-parent {
 
             .tab-container {
                 .ind-tab {
-                    width: 85px;
+                    min-width: 85px;
+                    width: auto;
                 }
             }
         }

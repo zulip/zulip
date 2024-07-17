@@ -1,13 +1,15 @@
 import re
+from typing import Annotated
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import AfterValidator
 
 from zerver.actions.realm_playgrounds import check_add_realm_playground, do_remove_realm_playground
 from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.validator import check_capped_string
 from zerver.models import Realm, RealmPlayground, UserProfile
 
@@ -34,13 +36,16 @@ def access_playground_by_id(realm: Realm, playground_id: int) -> RealmPlayground
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def add_realm_playground(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: str = REQ(),
-    url_template: str = REQ(),
-    pygments_language: str = REQ(str_validator=check_pygments_language),
+    *,
+    name: str,
+    url_template: str,
+    pygments_language: Annotated[
+        str, AfterValidator(lambda x: check_pygments_language("pygments_language", x))
+    ],
 ) -> HttpResponse:
     playground_id = check_add_realm_playground(
         realm=user_profile.realm,
@@ -53,9 +58,9 @@ def add_realm_playground(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def delete_realm_playground(
-    request: HttpRequest, user_profile: UserProfile, playground_id: int
+    request: HttpRequest, user_profile: UserProfile, *, playground_id: PathOnly[int]
 ) -> HttpResponse:
     realm_playground = access_playground_by_id(user_profile.realm, playground_id)
     do_remove_realm_playground(user_profile.realm, realm_playground, acting_user=user_profile)

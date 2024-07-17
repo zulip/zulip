@@ -1,7 +1,8 @@
 import re
 import time
+from collections.abc import Sequence
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Union
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote, quote_plus, urlencode, urlsplit
 
@@ -926,7 +927,7 @@ class LoginTest(ZulipTestCase):
 
     def test_login_bad_password(self) -> None:
         user = self.example_user("hamlet")
-        password: Optional[str] = "wrongpassword"
+        password: str | None = "wrongpassword"
         result = self.login_with_return(user.delivery_email, password=password)
         self.assert_in_success_response([user.delivery_email], result)
         self.assert_logged_in_user_id(None)
@@ -966,17 +967,20 @@ class LoginTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         password = "a_password_of_22_chars"
 
-        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.SHA1PasswordHasher",)):
+        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",)):
             user_profile.set_password(password)
             user_profile.save()
 
-        with self.settings(
-            PASSWORD_HASHERS=(
-                "django.contrib.auth.hashers.MD5PasswordHasher",
-                "django.contrib.auth.hashers.SHA1PasswordHasher",
+        with (
+            self.settings(
+                PASSWORD_HASHERS=(
+                    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+                    "django.contrib.auth.hashers.MD5PasswordHasher",
+                ),
+                PASSWORD_MIN_LENGTH=30,
             ),
-            PASSWORD_MIN_LENGTH=30,
-        ), self.assertLogs("zulip.auth.email", level="INFO"):
+            self.assertLogs("zulip.auth.email", level="INFO"),
+        ):
             result = self.login_with_return(self.example_email("hamlet"), password)
             self.assertEqual(result.status_code, 200)
             self.assert_in_response(
@@ -1046,9 +1050,12 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(93), self.assert_memcached_count(14):
-            with self.captureOnCommitCallbacks(execute=True):
-                self.register(self.nonreg_email("test"), "test")
+        with (
+            self.assert_database_query_count(94),
+            self.assert_memcached_count(14),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            self.register(self.nonreg_email("test"), "test")
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -1731,8 +1738,9 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         # Make sure the correct Welcome Bot direct message is sent.
+        realm = get_realm(string_id)
         welcome_msg = Message.objects.filter(
-            realm_id=get_realm(string_id).id,
+            realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
             recipient__type=Recipient.PERSONAL,
         ).latest("id")
@@ -1743,6 +1751,22 @@ class RealmCreationTest(ZulipTestCase):
         self.assertIn("Getting started guide", welcome_msg.content)
         self.assertNotIn("Using Zulip for a class guide", welcome_msg.content)
         self.assertNotIn("demo organization", welcome_msg.content)
+
+        # Organization has tracked onboarding messages.
+        self.assertTrue(OnboardingUserMessage.objects.filter(realm_id=realm.id).exists())
+        self.assertIn("I've kicked off some conversations", welcome_msg.content)
+
+        # Verify that Organization without 'OnboardingUserMessage' records
+        # doesn't include "I've kicked off..." text in welcome_msg content.
+        OnboardingUserMessage.objects.filter(realm_id=realm.id).delete()
+        do_create_user("hamlet", "password", realm, "hamlet", acting_user=None)
+        welcome_msg = Message.objects.filter(
+            realm_id=realm.id,
+            sender__email="welcome-bot@zulip.com",
+            recipient__type=Recipient.PERSONAL,
+        ).latest("id")
+        self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertNotIn("I've kicked off some conversations", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
@@ -2211,10 +2235,10 @@ class UserSignUpTest(ZulipTestCase):
         self,
         *,
         email: str = "newguy@zulip.com",
-        password: Optional[str] = "newpassword",
+        password: str | None = "newpassword",
         full_name: str = "New user's name",
-        realm: Optional[Realm] = None,
-        subdomain: Optional[str] = None,
+        realm: Realm | None = None,
+        subdomain: str | None = None,
     ) -> Union[UserProfile, "TestHttpResponse"]:
         """Common test function for signup tests.  It is a goal to use this
         common function for all signup tests to avoid code duplication; doing
@@ -2223,7 +2247,7 @@ class UserSignUpTest(ZulipTestCase):
         if realm is None:  # nocoverage
             realm = get_realm("zulip")
 
-        client_kwargs: Dict[str, Any] = {}
+        client_kwargs: dict[str, Any] = {}
         if subdomain:
             client_kwargs["subdomain"] = subdomain
 
@@ -2925,21 +2949,23 @@ class UserSignUpTest(ZulipTestCase):
             return_data = kwargs.get("return_data", {})
             return_data["invalid_subdomain"] = True
 
-        with patch("zerver.views.registration.authenticate", side_effect=invalid_subdomain):
-            with self.assertLogs(level="ERROR") as m:
-                result = self.client_post(
-                    "/accounts/register/",
-                    {
-                        "password": password,
-                        "full_name": "New User",
-                        "key": find_key_by_email(email),
-                        "terms": True,
-                    },
-                )
-                self.assertEqual(
-                    m.output,
-                    ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
-                )
+        with (
+            patch("zerver.views.registration.authenticate", side_effect=invalid_subdomain),
+            self.assertLogs(level="ERROR") as m,
+        ):
+            result = self.client_post(
+                "/accounts/register/",
+                {
+                    "password": password,
+                    "full_name": "New User",
+                    "key": find_key_by_email(email),
+                    "terms": True,
+                },
+            )
+            self.assertEqual(
+                m.output,
+                ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
+            )
         self.assertEqual(result.status_code, 302)
 
     def test_signup_using_invalid_subdomain_preserves_state_of_form(self) -> None:
@@ -3287,13 +3313,15 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
 
-        with self.settings(
-            POPULATE_PROFILE_VIA_LDAP=True,
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-        ), self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs, self.assertLogs(
-            level="WARNING"
-        ) as root_logs:
+        with (
+            self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN="zulip.com",
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            ),
+            self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs,
+            self.assertLogs(level="WARNING") as root_logs,
+        ):
             # Click confirmation link
             result = self.submit_reg_form_for_user(
                 email,
@@ -3519,9 +3547,12 @@ class UserSignUpTest(ZulipTestCase):
 
         self.change_ldap_user_attr("newuser_with_email", "mail", "thisisnotavalidemail")
 
-        with self.settings(
-            LDAP_EMAIL_ATTR="mail",
-        ), self.assertLogs("zulip.auth.ldap", "WARNING") as mock_log:
+        with (
+            self.settings(
+                LDAP_EMAIL_ATTR="mail",
+            ),
+            self.assertLogs("zulip.auth.ldap", "WARNING") as mock_log,
+        ):
             original_user_count = UserProfile.objects.count()
             self.login_with_return(username, password, HTTP_HOST=subdomain + ".testserver")
             # Verify that the process failed as intended - no UserProfile is created.
@@ -3670,11 +3701,14 @@ class UserSignUpTest(ZulipTestCase):
 
         # If the user's email is not in the LDAP directory, but fits LDAP_APPEND_DOMAIN,
         # we refuse to create the account.
-        with self.settings(
-            POPULATE_PROFILE_VIA_LDAP=True,
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-        ), self.assertLogs("zulip.ldap", "DEBUG") as debug_log:
+        with (
+            self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN="zulip.com",
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            ),
+            self.assertLogs("zulip.ldap", "DEBUG") as debug_log,
+        ):
             result = self.submit_reg_form_for_user(
                 email,
                 password,
@@ -4081,9 +4115,10 @@ class UserSignUpTest(ZulipTestCase):
         # (this is an invalid state, so it's a bug we got here):
         change_user_is_active(user_profile, True)
 
-        with self.assertRaisesRegex(
-            AssertionError, "Mirror dummy user is already active!"
-        ), self.assertLogs("django.request", "ERROR") as error_log:
+        with (
+            self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"),
+            self.assertLogs("django.request", "ERROR") as error_log,
+        ):
             result = self.submit_reg_form_for_user(
                 email,
                 password,
@@ -4135,9 +4170,10 @@ class UserSignUpTest(ZulipTestCase):
         user_profile.save()
         change_user_is_active(user_profile, True)
 
-        with self.assertRaisesRegex(
-            AssertionError, "Mirror dummy user is already active!"
-        ), self.assertLogs("django.request", "ERROR") as error_log:
+        with (
+            self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"),
+            self.assertLogs("django.request", "ERROR") as error_log,
+        ):
             self.client_post("/register/", {"email": email}, subdomain="zephyr")
         self.assertTrue(
             "ERROR:django.request:Internal Server Error: /register/" in error_log.output[0]

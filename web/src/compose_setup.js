@@ -8,6 +8,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_send_menu_popover from "./compose_send_menu_popover";
 import * as compose_state from "./compose_state";
@@ -317,6 +318,30 @@ export function initialize() {
         },
     );
 
+    const non_interleaved_view_messages_fading_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.non_interleaved_view_messages_fading)}`;
+    $("body").on(
+        "click",
+        `${non_interleaved_view_messages_fading_banner_selector} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            $(event.target)
+                .parents(`${non_interleaved_view_messages_fading_banner_selector}`)
+                .remove();
+            onboarding_steps.post_onboarding_step_as_read("non_interleaved_view_messages_fading");
+        },
+    );
+
+    const interleaved_view_messages_fading_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.interleaved_view_messages_fading)}`;
+    $("body").on(
+        "click",
+        `${interleaved_view_messages_fading_banner_selector} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            $(event.target).parents(`${interleaved_view_messages_fading_banner_selector}`).remove();
+            onboarding_steps.post_onboarding_step_as_read("interleaved_view_messages_fading");
+        },
+    );
+
     for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         const classname_selector = `.${CSS.escape(classname)}`;
         $("body").on("click", `${classname_selector} .main-view-banner-close-button`, (event) => {
@@ -478,6 +503,11 @@ export function initialize() {
 
     $("textarea#compose-textarea").on("focus", () => {
         compose_recipient.update_placeholder_text();
+        if (narrow_state.narrowed_by_reply()) {
+            compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
+        } else {
+            compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+        }
     });
 
     $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {

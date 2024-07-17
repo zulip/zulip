@@ -2,7 +2,6 @@ import configparser
 import importlib
 import os
 from collections import defaultdict
-from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.db.models import F, Sum
@@ -15,24 +14,24 @@ class ConfigError(Exception):
     pass
 
 
-def get_bot_config(bot_profile: UserProfile) -> Dict[str, str]:
+def get_bot_config(bot_profile: UserProfile) -> dict[str, str]:
     entries = BotConfigData.objects.filter(bot_profile=bot_profile)
     if not entries:
         raise ConfigError("No config data available.")
     return {entry.key: entry.value for entry in entries}
 
 
-def get_bot_configs(bot_profile_ids: List[int]) -> Dict[int, Dict[str, str]]:
+def get_bot_configs(bot_profile_ids: list[int]) -> dict[int, dict[str, str]]:
     if not bot_profile_ids:
         return {}
     entries = BotConfigData.objects.filter(bot_profile_id__in=bot_profile_ids)
-    entries_by_uid: Dict[int, Dict[str, str]] = defaultdict(dict)
+    entries_by_uid: dict[int, dict[str, str]] = defaultdict(dict)
     for entry in entries:
         entries_by_uid[entry.bot_profile_id].update({entry.key: entry.value})
     return entries_by_uid
 
 
-def get_bot_config_size(bot_profile: UserProfile, key: Optional[str] = None) -> int:
+def get_bot_config_size(bot_profile: UserProfile, key: str | None = None) -> int:
     if key is None:
         return (
             BotConfigData.objects.filter(bot_profile=bot_profile)
@@ -66,7 +65,7 @@ def set_bot_config(bot_profile: UserProfile, key: str, value: str) -> None:
         obj.save()
 
 
-def load_bot_config_template(bot: str) -> Dict[str, str]:
+def load_bot_config_template(bot: str) -> dict[str, str]:
     bot_module_name = f"zulip_bots.bots.{bot}"
     bot_module = importlib.import_module(bot_module_name)
     assert bot_module.__file__ is not None

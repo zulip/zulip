@@ -1,5 +1,3 @@
-from typing import List, Optional, Tuple
-
 from django.conf import settings
 from django.db.models import F, Sum
 from django.db.models.functions import Length
@@ -18,7 +16,7 @@ def get_bot_storage(bot_profile: UserProfile, key: str) -> str:
         raise StateError("Key does not exist.")
 
 
-def get_bot_storage_size(bot_profile: UserProfile, key: Optional[str] = None) -> int:
+def get_bot_storage_size(bot_profile: UserProfile, key: str | None = None) -> int:
     if key is None:
         return (
             BotStorageData.objects.filter(bot_profile=bot_profile)
@@ -35,7 +33,7 @@ def get_bot_storage_size(bot_profile: UserProfile, key: Optional[str] = None) ->
             return 0
 
 
-def set_bot_storage(bot_profile: UserProfile, entries: List[Tuple[str, str]]) -> None:
+def set_bot_storage(bot_profile: UserProfile, entries: list[tuple[str, str]]) -> None:
     storage_size_limit = settings.USER_STATE_SIZE_LIMIT
     storage_size_difference = 0
     for key, value in entries:
@@ -54,7 +52,7 @@ def set_bot_storage(bot_profile: UserProfile, entries: List[Tuple[str, str]]) ->
             )
 
 
-def remove_bot_storage(bot_profile: UserProfile, keys: List[str]) -> None:
+def remove_bot_storage(bot_profile: UserProfile, keys: list[str]) -> None:
     queryset = BotStorageData.objects.filter(bot_profile=bot_profile, key__in=keys)
     if len(queryset) < len(keys):
         raise StateError("Key does not exist.")
@@ -65,7 +63,7 @@ def is_key_in_bot_storage(bot_profile: UserProfile, key: str) -> bool:
     return BotStorageData.objects.filter(bot_profile=bot_profile, key=key).exists()
 
 
-def get_keys_in_bot_storage(bot_profile: UserProfile) -> List[str]:
+def get_keys_in_bot_storage(bot_profile: UserProfile) -> list[str]:
     return list(
         BotStorageData.objects.filter(bot_profile=bot_profile).values_list("key", flat=True)
     )

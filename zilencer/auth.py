@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Concatenate
 
 import sentry_sdk
 from django.conf import settings
@@ -11,7 +12,7 @@ from django.utils.crypto import constant_time_compare
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
-from typing_extensions import Concatenate, ParamSpec, override
+from typing_extensions import ParamSpec, override
 
 from zerver.decorator import get_basic_credentials, process_client
 from zerver.lib.exceptions import (

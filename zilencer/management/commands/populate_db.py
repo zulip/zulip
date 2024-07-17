@@ -2,8 +2,9 @@ import itertools
 import os
 import random
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Mapping, Sequence, Tuple
+from typing import Any
 
 import bmemcached
 import orjson
@@ -108,10 +109,14 @@ def clear_database() -> None:
     # and; we only need to flush memcached if we're populating a
     # database that would be used with it (i.e. zproject.dev_settings).
     if default_cache["BACKEND"] == "zerver.lib.singleton_bmemcached.SingletonBMemcached":
-        bmemcached.Client(
+        memcached_client = bmemcached.Client(
             (default_cache["LOCATION"],),
             **default_cache["OPTIONS"],
-        ).flush_all()
+        )
+        try:
+            memcached_client.flush_all()
+        finally:
+            memcached_client.disconnect_all()
 
     model: Any = None  # Hack because mypy doesn't know these are model classes
 
@@ -139,7 +144,7 @@ def clear_database() -> None:
     post_delete.connect(flush_alert_word, sender=AlertWord)
 
 
-def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
+def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) -> None:
     subscriptions_to_add = []
     event_time = timezone_now()
     all_subscription_logs = []
@@ -191,7 +196,7 @@ def create_alert_words(realm_id: int) -> None:
         "study",
     ]
 
-    recs: List[AlertWord] = []
+    recs: list[AlertWord] = []
     for user_id in user_ids:
         random.shuffle(alert_words)
         recs.extend(
@@ -636,7 +641,7 @@ class Command(ZulipBaseCommand):
                 zulip_discussion_channel_name,
                 zulip_sandbox_channel_name,
             ]
-            stream_dict: Dict[str, Dict[str, Any]] = {
+            stream_dict: dict[str, dict[str, Any]] = {
                 "Denmark": {"description": "A Scandinavian country"},
                 "Scotland": {"description": "Located in the United Kingdom", "creator": iago},
                 "Venice": {"description": "A northeastern Italian city", "creator": polonius},
@@ -649,7 +654,7 @@ class Command(ZulipBaseCommand):
             }
 
             bulk_create_streams(zulip_realm, stream_dict)
-            recipient_streams: List[int] = [
+            recipient_streams: list[int] = [
                 Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list
             ]
 
@@ -660,7 +665,7 @@ class Command(ZulipBaseCommand):
             # subscriptions to make sure test data is consistent
             # across platforms.
 
-            subscriptions_list: List[Tuple[UserProfile, Recipient]] = []
+            subscriptions_list: list[tuple[UserProfile, Recipient]] = []
             profiles: Sequence[UserProfile] = list(
                 UserProfile.objects.select_related("realm").filter(is_bot=False).order_by("email")
             )
@@ -720,9 +725,9 @@ class Command(ZulipBaseCommand):
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
                         subscriptions_list.append((profile, r))
 
-            subscriptions_to_add: List[Subscription] = []
+            subscriptions_to_add: list[Subscription] = []
             event_time = timezone_now()
-            all_subscription_logs: List[RealmAuditLog] = []
+            all_subscription_logs: list[RealmAuditLog] = []
 
             i = 0
             for profile, recipient in subscriptions_list:
@@ -873,7 +878,7 @@ class Command(ZulipBaseCommand):
             ]
 
         # Extract a list of all users
-        user_profiles: List[UserProfile] = list(
+        user_profiles: list[UserProfile] = list(
             UserProfile.objects.filter(is_bot=False, realm=zulip_realm)
         )
 
@@ -913,7 +918,9 @@ class Command(ZulipBaseCommand):
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         with open(IMAGE_FILE_PATH, "rb") as fp:
-            check_add_realm_emoji(zulip_realm, "green_tick", iago, File(fp, name="checkbox.png"))
+            check_add_realm_emoji(
+                zulip_realm, "green_tick", iago, File(fp, name="checkbox.png"), "image/png"
+            )
 
         if not options["test_suite"]:
             # Populate users with some bar data
@@ -1001,7 +1008,7 @@ class Command(ZulipBaseCommand):
                 # to imitate emoji insertions in stream names
                 raw_emojis = ["😎", "😂", "🐱‍👤"]
 
-                zulip_stream_dict: Dict[str, Dict[str, Any]] = {
+                zulip_stream_dict: dict[str, dict[str, Any]] = {
                     "devel": {"description": "For developing"},
                     # ビデオゲーム - VideoGames (japanese)
                     "ビデオゲーム": {
@@ -1096,7 +1103,7 @@ class Command(ZulipBaseCommand):
                 call_command("populate_analytics_db")
 
         threads = options["threads"]
-        jobs: List[Tuple[int, List[List[int]], Dict[str, Any], int]] = []
+        jobs: list[tuple[int, list[list[int]], dict[str, Any], int]] = []
         for i in range(threads):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
@@ -1145,7 +1152,7 @@ def mark_all_messages_as_read() -> None:
     )
 
 
-recipient_hash: Dict[int, Recipient] = {}
+recipient_hash: dict[int, Recipient] = {}
 
 
 def get_recipient_by_id(rid: int) -> Recipient:
@@ -1162,7 +1169,7 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple messages per subject
 # - both single and multi-line content
 def generate_and_send_messages(
-    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int],
+    data: tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int],
 ) -> int:
     realm = get_realm("zulip")
     (tot_messages, personals_pairs, options, random_seed) = data
@@ -1179,15 +1186,15 @@ def generate_and_send_messages(
     # messages to its streams - and they might also have no subscribers, which would break
     # our message generation mechanism below.
     stream_ids = Stream.objects.filter(realm=realm).values_list("id", flat=True)
-    recipient_streams: List[int] = [
+    recipient_streams: list[int] = [
         recipient.id
         for recipient in Recipient.objects.filter(type=Recipient.STREAM, type_id__in=stream_ids)
     ]
-    recipient_huddles: List[int] = [
+    recipient_huddles: list[int] = [
         h.id for h in Recipient.objects.filter(type=Recipient.DIRECT_MESSAGE_GROUP)
     ]
 
-    huddle_members: Dict[int, List[int]] = {}
+    huddle_members: dict[int, list[int]] = {}
     for h in recipient_huddles:
         huddle_members[h] = [s.user_profile.id for s in Subscription.objects.filter(recipient_id=h)]
 
@@ -1208,10 +1215,10 @@ def generate_and_send_messages(
     message_batch_size = options["batch_size"]
     num_messages = 0
     random_max = 1000000
-    recipients: Dict[int, Tuple[int, int, Dict[str, Any]]] = {}
-    messages: List[Message] = []
+    recipients: dict[int, tuple[int, int, dict[str, Any]]] = {}
+    messages: list[Message] = []
     while num_messages < tot_messages:
-        saved_data: Dict[str, Any] = {}
+        saved_data: dict[str, Any] = {}
         message = Message(realm=realm)
         message.sending_client = get_client("populate_db")
 
@@ -1283,7 +1290,7 @@ def generate_and_send_messages(
     return tot_messages
 
 
-def send_messages(messages: List[Message]) -> None:
+def send_messages(messages: list[Message]) -> None:
     # We disable USING_RABBITMQ here, so that deferred work is
     # executed in do_send_message_messages, rather than being
     # queued.  This is important, because otherwise, if run-dev
@@ -1296,12 +1303,12 @@ def send_messages(messages: List[Message]) -> None:
     settings.USING_RABBITMQ = True
 
 
-def get_message_to_users(message_ids: List[int]) -> Dict[int, List[int]]:
+def get_message_to_users(message_ids: list[int]) -> dict[int, list[int]]:
     rows = UserMessage.objects.filter(
         message_id__in=message_ids,
     ).values("message_id", "user_profile_id")
 
-    result: Dict[int, List[int]] = defaultdict(list)
+    result: dict[int, list[int]] = defaultdict(list)
 
     for row in rows:
         result[row["message_id"]].append(row["user_profile_id"])
@@ -1309,8 +1316,8 @@ def get_message_to_users(message_ids: List[int]) -> Dict[int, List[int]]:
     return result
 
 
-def bulk_create_reactions(all_messages: List[Message]) -> None:
-    reactions: List[Reaction] = []
+def bulk_create_reactions(all_messages: list[Message]) -> None:
+    reactions: list[Reaction] = []
 
     num_messages = int(0.2 * len(all_messages))
     messages = random.sample(all_messages, num_messages)

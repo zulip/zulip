@@ -1,7 +1,7 @@
 {{#with attachment}}
 <tr class="uploaded_file_row" id="{{name}}" data-attachment-id="{{id}}">
     <td>
-        <a type="submit" href="/user_uploads/{{path_id}}" target="_blank" rel="noopener noreferrer" title="{{t 'View file' }}">
+        <a type="submit" class="tippy-zulip-delayed-tooltip" href="/user_uploads/{{path_id}}" target="_blank" rel="noopener noreferrer" data-tippy-content="{{t 'View file' }}">
             {{ name }}
         </a>
     </td>

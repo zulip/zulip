@@ -1,7 +1,6 @@
 import calendar
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -39,7 +38,7 @@ class UserPermissionInfo:
     show_webathena: bool
 
 
-def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[float]:
+def get_furthest_read_time(user_profile: UserProfile | None) -> float | None:
     if user_profile is None:
         return time.time()
 
@@ -50,8 +49,8 @@ def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[floa
     return calendar.timegm(user_activity.last_visit.utctimetuple())
 
 
-def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
-    bot_types: List[Dict[str, object]] = []
+def get_bot_types(user_profile: UserProfile | None) -> list[dict[str, object]]:
+    bot_types: list[dict[str, object]] = []
     if user_profile is None:
         return bot_types
 
@@ -75,7 +74,7 @@ def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
     return realm.plan_type in [Realm.PLAN_TYPE_STANDARD_FREE, Realm.PLAN_TYPE_SELF_HOSTED]
 
 
-def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
+def get_billing_info(user_profile: UserProfile | None) -> BillingInfo:
     # See https://zulip.com/help/roles-and-permissions for clarity.
     show_billing = False
     show_plans = False
@@ -114,7 +113,7 @@ def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
     )
 
 
-def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermissionInfo:
+def get_user_permission_info(user_profile: UserProfile | None) -> UserPermissionInfo:
     if user_profile is not None:
         return UserPermissionInfo(
             color_scheme=user_profile.color_scheme,
@@ -135,14 +134,14 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
 
 def build_page_params_for_home_page_load(
     request: HttpRequest,
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     realm: Realm,
     insecure_desktop_app: bool,
-    narrow: List[NarrowTerm],
-    narrow_stream: Optional[Stream],
-    narrow_topic_name: Optional[str],
+    narrow: list[NarrowTerm],
+    narrow_stream: Stream | None,
+    narrow_topic_name: str | None,
     needs_tutorial: bool,
-) -> Tuple[int, Dict[str, object]]:
+) -> tuple[int, dict[str, object]]:
     """
     This function computes page_params for when we load the home page.
 
@@ -200,7 +199,7 @@ def build_page_params_for_home_page_load(
     # These end up in a JavaScript Object named 'page_params'.
     #
     # Sync this with home_params_schema in base_page_params.ts.
-    page_params: Dict[str, object] = dict(
+    page_params: dict[str, object] = dict(
         page_type="home",
         ## Server settings.
         test_suite=settings.TEST_SUITE,

@@ -12,6 +12,7 @@ import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
+import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
@@ -212,6 +213,8 @@ export function dispatch_normal_event(event) {
                 description: noop,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,
+                direct_message_initiator_group: noop,
+                direct_message_permission_group: noop,
                 email_changes_disabled: settings_account.update_email_change_display,
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
@@ -229,7 +232,6 @@ export function dispatch_normal_event(event) {
                 name_changes_disabled: settings_account.update_name_change_display,
                 new_stream_announcements_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
-                private_message_policy: compose_recipient.check_posting_policy_for_compose_box,
                 push_notifications_enabled: noop,
                 require_unique_names: noop,
                 send_welcome_emails: noop,
@@ -294,6 +296,17 @@ export function dispatch_normal_event(event) {
                                     key === "can_create_private_channel_group"
                                 ) {
                                     stream_settings_ui.update_stream_privacy_choices(key);
+                                }
+
+                                if (
+                                    key === "direct_message_initiator_group" ||
+                                    key === "direct_message_permission_group"
+                                ) {
+                                    settings_org.check_disable_direct_message_initiator_group_dropdown(
+                                        realm.realm_direct_message_permission_group,
+                                    );
+                                    compose_closed_ui.update_buttons_for_private();
+                                    compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
                                 if (key === "edit_topic_policy") {
@@ -446,6 +459,17 @@ export function dispatch_normal_event(event) {
                 audible_notifications.update_notification_sound_source(
                     $("audio#realm-default-notification-sound-audio"),
                     realm_user_settings_defaults,
+                );
+            }
+
+            if (
+                ["dense_mode", "web_font_size_px", "web_line_height_percent"].includes(
+                    event.property,
+                )
+            ) {
+                /* istanbul ignore next */
+                settings_preferences.update_information_density_settings_visibility(
+                    $(settings_realm_user_settings_defaults.realm_default_settings_panel.container),
                 );
             }
             break;
@@ -704,6 +728,7 @@ export function dispatch_normal_event(event) {
                 "demote_inactive_streams",
                 "dense_mode",
                 "web_mark_read_on_scroll_policy",
+                "web_channel_default_view",
                 "emojiset",
                 "web_escape_navigates_to_home_view",
                 "fluid_layout_width",
@@ -719,6 +744,7 @@ export function dispatch_normal_event(event) {
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
                 "send_read_receipts",
+                "web_navigate_to_sent_message",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -778,6 +804,9 @@ export function dispatch_normal_event(event) {
                 $("body").toggleClass("more-dense-mode");
                 information_density.set_base_typography_css_variables();
                 information_density.calculate_timestamp_widths();
+                settings_preferences.update_information_density_settings_visibility(
+                    $(settings_preferences.user_settings_panel.container),
+                );
             }
             if (
                 event.property === "web_font_size_px" ||
@@ -785,6 +814,9 @@ export function dispatch_normal_event(event) {
             ) {
                 information_density.set_base_typography_css_variables();
                 information_density.calculate_timestamp_widths();
+                settings_preferences.update_information_density_settings_visibility(
+                    $(settings_preferences.user_settings_panel.container),
+                );
             }
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();

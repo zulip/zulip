@@ -1,5 +1,5 @@
 import logging
-from typing import Literal, Optional, Tuple, TypedDict, Union, cast
+from typing import Literal, TypedDict, cast
 
 from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
@@ -33,11 +33,11 @@ class RemoteBillingIdentityDict(TypedDict):
     remote_server_uuid: str
     remote_realm_uuid: str
 
-    remote_billing_user_id: Optional[int]
+    remote_billing_user_id: int | None
     authenticated_at: int
     uri_scheme: Literal["http://", "https://"]
 
-    next_page: Optional[str]
+    next_page: str | None
 
 
 class LegacyServerIdentityDict(TypedDict):
@@ -45,7 +45,7 @@ class LegacyServerIdentityDict(TypedDict):
     # to add more information as appropriate.
     remote_server_uuid: str
 
-    remote_billing_user_id: Optional[int]
+    remote_billing_user_id: int | None
     authenticated_at: int
 
 
@@ -53,9 +53,9 @@ class RemoteBillingIdentityExpiredError(Exception):
     def __init__(
         self,
         *,
-        realm_uuid: Optional[str] = None,
-        server_uuid: Optional[str] = None,
-        uri_scheme: Optional[Literal["http://", "https://"]] = None,
+        realm_uuid: str | None = None,
+        server_uuid: str | None = None,
+        uri_scheme: Literal["http://", "https://"] | None = None,
     ) -> None:
         self.realm_uuid = realm_uuid
         self.server_uuid = server_uuid
@@ -65,9 +65,9 @@ class RemoteBillingIdentityExpiredError(Exception):
 def get_identity_dict_from_session(
     request: HttpRequest,
     *,
-    realm_uuid: Optional[str],
-    server_uuid: Optional[str],
-) -> Optional[Union[RemoteBillingIdentityDict, LegacyServerIdentityDict]]:
+    realm_uuid: str | None,
+    server_uuid: str | None,
+) -> RemoteBillingIdentityDict | LegacyServerIdentityDict | None:
     if not (realm_uuid or server_uuid):
         return None
 
@@ -101,12 +101,12 @@ def get_identity_dict_from_session(
 
 def get_remote_realm_and_user_from_session(
     request: HttpRequest,
-    realm_uuid: Optional[str],
-) -> Tuple[RemoteRealm, RemoteRealmBillingUser]:
+    realm_uuid: str | None,
+) -> tuple[RemoteRealm, RemoteRealmBillingUser]:
     # Cannot use isinstance with TypeDicts, to make mypy know
     # which of the TypedDicts in the Union this is - so just cast it.
     identity_dict = cast(
-        Optional[RemoteBillingIdentityDict],
+        RemoteBillingIdentityDict | None,
         get_identity_dict_from_session(request, realm_uuid=realm_uuid, server_uuid=None),
     )
 
@@ -151,8 +151,8 @@ def get_remote_realm_and_user_from_session(
 def get_remote_server_and_user_from_session(
     request: HttpRequest,
     server_uuid: str,
-) -> Tuple[RemoteZulipServer, Optional[RemoteServerBillingUser]]:
-    identity_dict: Optional[LegacyServerIdentityDict] = get_identity_dict_from_session(
+) -> tuple[RemoteZulipServer, RemoteServerBillingUser | None]:
+    identity_dict: LegacyServerIdentityDict | None = get_identity_dict_from_session(
         request, realm_uuid=None, server_uuid=server_uuid
     )
 

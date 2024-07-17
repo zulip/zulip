@@ -74,8 +74,8 @@ export function toggle_user_group_info_popover(
     popover_menus.toggle_popover_menu(
         element,
         {
+            theme: "popover-menu",
             placement: "right",
-            arrow: false,
             popperOptions: {
                 modifiers: [
                     {
@@ -92,14 +92,15 @@ export function toggle_user_group_info_popover(
                     message_lists.current.select_id(message_id);
                 }
                 user_group_popover_instance = instance;
-                const $popover = $(instance.popper);
-                $popover.addClass("user-group-popover-root");
                 const args = {
-                    group_name: group.name,
+                    group_name: user_groups.get_display_group_name(group),
                     group_description: group.description,
-                    members: sort_group_members(fetch_group_members([...group.members])),
+                    members: sort_group_members(
+                        fetch_group_members([...user_groups.get_recursive_group_members(group)]),
+                    ),
                     group_edit_url: hash_util.group_edit_url(group, "general"),
                     is_guest: current_user.is_guest,
+                    is_system_group: group.is_system_group,
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
             },

@@ -10,6 +10,7 @@ import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
+import * as message_util from "./message_util";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as recent_view_data from "./recent_view_data";
@@ -224,6 +225,14 @@ export function try_deliver_locally(message_request, insert_new_messages) {
     // view; this is useful to ensure it will be visible in other
     // views that we might navigate to before we get a response from
     // the server.
+    if (
+        message_request.to_user_ids &&
+        !people.user_can_initiate_direct_message_thread(message_request.to_user_ids) &&
+        !message_util.get_direct_message_permission_hints(message_request.to_user_ids)
+            .is_local_echo_safe
+    ) {
+        return undefined;
+    }
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return undefined;
     }

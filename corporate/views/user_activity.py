@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
@@ -43,7 +43,7 @@ def get_user_activity(request: HttpRequest, user_profile_id: int) -> HttpRespons
         "Last visit (UTC)",
     ]
 
-    def row(record: UserActivity) -> List[Any]:
+    def row(record: UserActivity) -> list[Any]:
         return [
             record.query,
             record.client.name,

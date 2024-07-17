@@ -8,7 +8,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from typing import List
 
 import orjson
 
@@ -20,14 +19,13 @@ CACHE_FILE = os.path.join(CACHE_DIR, "requirements_hashes")
 
 
 def print_diff(path_file1: str, path_file2: str) -> None:
-    with open(path_file1) as file1:
-        with open(path_file2) as file2:
-            diff = difflib.unified_diff(
-                file1.readlines(),
-                file2.readlines(),
-                fromfile=path_file1,
-                tofile=path_file2,
-            )
+    with open(path_file1) as file1, open(path_file2) as file2:
+        diff = difflib.unified_diff(
+            file1.readlines(),
+            file2.readlines(),
+            fromfile=path_file1,
+            tofile=path_file2,
+        )
     sys.stdout.writelines(diff)
 
 
@@ -74,13 +72,13 @@ def maybe_set_up_cache() -> None:
             fp.write(orjson.dumps([]))
 
 
-def load_cache() -> List[str]:
+def load_cache() -> list[str]:
     with open(CACHE_FILE, "rb") as fp:
         hash_list = orjson.loads(fp.read())
     return hash_list
 
 
-def update_cache(hash_list: List[str]) -> None:
+def update_cache(hash_list: list[str]) -> None:
     # We store last 100 hash entries. Aggressive caching is
     # not a problem as it is cheap to do.
     if len(hash_list) > 100:

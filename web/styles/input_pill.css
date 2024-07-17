@@ -35,7 +35,12 @@
         .pill-image {
             height: var(--length-input-pill-image);
             width: var(--length-input-pill-image);
+            min-width: var(--length-input-pill-image);
             border-radius: 4px 0 0 4px;
+        }
+
+        .zulip-icon {
+            padding-right: 2px;
         }
 
         .pill-label {
@@ -200,6 +205,13 @@
 .panel_user_list > .pill-container,
 .stream_creator_details > .display_only_pill {
     background-color: hsl(0deg 0% 0% / 7%);
+    gap: 2px;
+    flex-wrap: nowrap;
+
+    &.inline_with_text_pill > .pill-deactivated {
+        font-size: 0.9em;
+        padding-right: 2px;
+    }
 
     &:hover {
         color: inherit;

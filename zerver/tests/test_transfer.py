@@ -88,7 +88,9 @@ class TransferUploadsToS3Test(ZulipTestCase):
         emoji_name = "emoji.png"
 
         with get_test_image_file("img.png") as image_file:
-            emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
+            emoji = check_add_realm_emoji(
+                othello.realm, emoji_name, othello, image_file, "image/png"
+            )
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=othello.realm_id,
@@ -112,7 +114,9 @@ class TransferUploadsToS3Test(ZulipTestCase):
         emoji_name = "emoji2.png"
 
         with get_test_image_file("animated_img.gif") as image_file:
-            emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
+            emoji = check_add_realm_emoji(
+                othello.realm, emoji_name, othello, image_file, "image/gif"
+            )
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=othello.realm_id,

@@ -1,8 +1,9 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
 import time
+from collections.abc import Mapping
 from types import FrameType
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any
 
 from django.db import transaction
 from typing_extensions import override
@@ -25,7 +26,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
     @override
     def consume(self, event: Mapping[str, Any]) -> None:
-        url_embed_data: Dict[str, Optional[UrlEmbedData]] = {}
+        url_embed_data: dict[str, UrlEmbedData | None] = {}
         for url in event["urls"]:
             start_time = time.time()
             url_embed_data[url] = url_preview.get_link_embed_data(url)
@@ -59,7 +60,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
     @override
     def timer_expired(
-        self, limit: int, events: List[Dict[str, Any]], signal: int, frame: Optional[FrameType]
+        self, limit: int, events: list[dict[str, Any]], signal: int, frame: FrameType | None
     ) -> None:
         assert len(events) == 1
         event = events[0]

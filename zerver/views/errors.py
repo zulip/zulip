@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -9,8 +7,8 @@ def config_error(
     request: HttpRequest,
     error_name: str,
     *,
-    go_back_to_url: Optional[str] = None,
-    go_back_to_url_name: Optional[str] = None,
+    go_back_to_url: str | None = None,
+    go_back_to_url_name: str | None = None,
 ) -> HttpResponse:
     assert "/" not in error_name
     context = {

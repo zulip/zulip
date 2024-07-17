@@ -141,6 +141,7 @@ class zulip::app_frontend_base {
     'missedmessage_emails',
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',
+    'thumbnail',
     'user_activity',
     'user_activity_interval',
     'user_presence',
@@ -167,7 +168,7 @@ class zulip::app_frontend_base {
     include zulip::smokescreen
   }
 
-  $katex_server = zulipconf('application_server', 'katex_server', false)
+  $katex_server = zulipconf('application_server', 'katex_server', true)
   $katex_server_port = zulipconf('application_server', 'katex_server_port', '9700')
 
   if $proxy_host != '' and $proxy_port != '' {

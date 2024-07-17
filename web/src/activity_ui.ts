@@ -59,6 +59,17 @@ export function clear_for_testing(): void {
     user_filter = undefined;
 }
 
+export function update_presence_indicators(): void {
+    $("[data-presence-indicator-user-id]").each(function () {
+        const user_id = Number.parseInt($(this).attr("data-presence-indicator-user-id") ?? "", 10);
+        assert(!Number.isNaN(user_id));
+        const user_circle_class = buddy_data.get_user_circle_class(user_id);
+        $(this)
+            .removeClass("user_circle_empty user_circle_green user_circle_idle")
+            .addClass(user_circle_class);
+    });
+}
+
 export function redraw_user(user_id: number): void {
     if (realm.realm_presence_disabled) {
         return;
@@ -76,6 +87,7 @@ export function redraw_user(user_id: number): void {
         user_id,
         item: info,
     });
+    update_presence_indicators();
 }
 
 export function check_should_redraw_new_user(user_id: number): boolean {
@@ -178,6 +190,7 @@ export function redraw(): void {
     assert(user_cursor !== undefined);
     user_cursor.redraw();
     pm_list.update_private_messages();
+    update_presence_indicators();
 }
 
 export function reset_users(): void {

@@ -6,6 +6,7 @@ import * as typeahead from "../shared/src/typeahead";
 import type {EmojiSuggestion} from "../shared/src/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
+import {MAX_ITEMS} from "./bootstrap_typeahead";
 import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
 import type {LanguageSuggestion, SlashCommandSuggestion} from "./composebox_typeahead";
@@ -416,7 +417,7 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     current_stream_id,
     current_topic,
     groups = [],
-    max_num_items = 20,
+    max_num_items = MAX_ITEMS,
 }: {
     users: UserType[];
     query: string;

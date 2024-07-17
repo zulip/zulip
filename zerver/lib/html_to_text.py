@@ -1,4 +1,4 @@
-from typing import Mapping, Union
+from collections.abc import Mapping
 
 from bs4 import BeautifulSoup
 from django.utils.html import escape
@@ -6,7 +6,7 @@ from django.utils.html import escape
 from zerver.lib.cache import cache_with_key, open_graph_description_cache_key
 
 
-def html_to_text(content: Union[str, bytes], tags: Mapping[str, str] = {"p": " | "}) -> str:
+def html_to_text(content: str | bytes, tags: Mapping[str, str] = {"p": " | "}) -> str:
     bs = BeautifulSoup(content, features="lxml")
     # Skip any admonition (warning) blocks, since they're
     # usually something about users needing to be an

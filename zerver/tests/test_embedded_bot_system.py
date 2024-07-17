@@ -72,18 +72,20 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
 
     def test_embedded_bot_quit_exception(self) -> None:
         assert self.bot_profile is not None
-        with patch(
-            "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message",
-            side_effect=EmbeddedBotQuitError("I'm quitting!"),
+        with (
+            patch(
+                "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message",
+                side_effect=EmbeddedBotQuitError("I'm quitting!"),
+            ),
+            self.assertLogs(level="WARNING") as m,
         ):
-            with self.assertLogs(level="WARNING") as m:
-                self.send_stream_message(
-                    self.user_profile,
-                    "Denmark",
-                    content=f"@**{self.bot_profile.full_name}** foo",
-                    topic_name="bar",
-                )
-                self.assertEqual(m.output, ["WARNING:root:I'm quitting!"])
+            self.send_stream_message(
+                self.user_profile,
+                "Denmark",
+                content=f"@**{self.bot_profile.full_name}** foo",
+                topic_name="bar",
+            )
+            self.assertEqual(m.output, ["WARNING:root:I'm quitting!"])
 
 
 class TestEmbeddedBotFailures(ZulipTestCase):

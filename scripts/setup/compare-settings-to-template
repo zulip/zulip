@@ -4,7 +4,6 @@ import difflib
 import os
 import re
 import sys
-from typing import Optional
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -25,7 +24,7 @@ import requests
 
 print("Fetching old versions of setting templates from Github...")
 templ = {}
-url: Optional[str] = "https://api.github.com/repos/zulip/zulip/tags?per_page=100"
+url: str | None = "https://api.github.com/repos/zulip/zulip/tags?per_page=100"
 
 while url is not None:
     resp = requests.get(url)

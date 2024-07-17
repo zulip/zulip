@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from collections.abc import Callable
 
 from django.http import HttpRequest, HttpResponse
 
@@ -17,8 +17,8 @@ from zerver.models import UserProfile
 # The events for this integration contain the ":" character, which is not appropriate in a
 # filename and requires us to deviate from the common `get_http_headers_from_filename` method
 # from zerver.lib.webhooks.common.
-def get_custom_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict[str, str]]:
-    def fixture_to_headers(filename: str) -> Dict[str, str]:
+def get_custom_http_headers_from_filename(http_header_key: str) -> Callable[[str], dict[str, str]]:
+    def fixture_to_headers(filename: str) -> dict[str, str]:
         event_type = filename.replace("_", ":")
         return {http_header_key: event_type}
 
@@ -28,7 +28,7 @@ def get_custom_http_headers_from_filename(http_header_key: str) -> Callable[[str
 fixture_to_headers = get_custom_http_headers_from_filename("HTTP_X_PATREON_EVENT")
 
 
-def get_members_create_body(payload: WildValue) -> Optional[str]:
+def get_members_create_body(payload: WildValue) -> str | None:
     last_charge_status = get_last_charge_status(payload)
     patron_status = get_patron_status(payload)
     # null values indicate the member has never pledged
@@ -40,7 +40,7 @@ def get_members_create_body(payload: WildValue) -> Optional[str]:
     return None
 
 
-def get_members_update_body(payload: WildValue) -> Optional[str]:
+def get_members_update_body(payload: WildValue) -> str | None:
     last_charge_status = get_last_charge_status(payload)
     patron_status = get_patron_status(payload)
     if last_charge_status in ("Paid", None) and patron_status in ("active_patron", "former_patron"):
@@ -52,7 +52,7 @@ def get_members_update_body(payload: WildValue) -> Optional[str]:
     return None
 
 
-def get_members_delete_body(payload: WildValue) -> Optional[str]:
+def get_members_delete_body(payload: WildValue) -> str | None:
     last_charge_status = get_last_charge_status(payload)
     patron_status = get_patron_status(payload)
     # null value indicates the member has never pledged
@@ -64,7 +64,7 @@ def get_members_delete_body(payload: WildValue) -> Optional[str]:
     return None
 
 
-def get_members_pledge_create_body(payload: WildValue) -> Optional[str]:
+def get_members_pledge_create_body(payload: WildValue) -> str | None:
     last_charge_status = get_last_charge_status(payload)
     pledge_amount = get_pledge_amount(payload)
     # The only successful charge status is "Paid". null if not yet charged.
@@ -79,7 +79,7 @@ def get_members_pledge_create_body(payload: WildValue) -> Optional[str]:
     return None
 
 
-def get_members_pledge_update_body(payload: WildValue) -> Optional[str]:
+def get_members_pledge_update_body(payload: WildValue) -> str | None:
     last_charge_status = get_last_charge_status(payload)
     pledge_amount = get_pledge_amount(payload)
     # The only successful charge status is "Paid". null if not yet charged.
@@ -93,7 +93,7 @@ def get_members_pledge_update_body(payload: WildValue) -> Optional[str]:
     return None
 
 
-def get_members_pledge_delete_body(payload: WildValue) -> Optional[str]:
+def get_members_pledge_delete_body(payload: WildValue) -> str | None:
     last_charge_status = get_last_charge_status(payload)
     if last_charge_status in ("Paid", "Deleted", None):
         template = "{user_name}'s pledge has been cancelled. :cross_mark:\nTotal number of patrons: {patron_count}"
@@ -104,11 +104,11 @@ def get_members_pledge_delete_body(payload: WildValue) -> Optional[str]:
     return None
 
 
-def get_last_charge_status(payload: WildValue) -> Optional[str]:
+def get_last_charge_status(payload: WildValue) -> str | None:
     return payload["data"]["attributes"]["last_charge_status"].tame(check_none_or(check_string))
 
 
-def get_patron_status(payload: WildValue) -> Optional[str]:
+def get_patron_status(payload: WildValue) -> str | None:
     return payload["data"]["attributes"]["patron_status"].tame(check_none_or(check_string))
 
 
@@ -128,7 +128,7 @@ def get_pay_per_name(payload: WildValue) -> str:
     return payload["included"][0]["attributes"]["pay_per_name"].tame(check_string)
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Optional[str]]] = {
+EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str | None]] = {
     "members:create": get_members_create_body,
     "members:update": get_members_update_body,
     "members:delete": get_members_delete_body,
@@ -178,7 +178,7 @@ def api_patreon_webhook(
 def get_zulip_event_name(
     header_event: str,
     payload: WildValue,
-) -> Optional[str]:
+) -> str | None:
     """
     Usually, we return an event name that is a key in EVENT_FUNCTION_MAPPER.
     We return None for an event that we know we don't want to handle.

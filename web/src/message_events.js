@@ -56,10 +56,14 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
             }
 
             let new_messages = [];
+            const elsewhere_messages = [];
+
             for (const elem of messages) {
                 if (Object.hasOwn(data.messages, elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
+                } else {
+                    elsewhere_messages.push(elem);
                 }
             }
 
@@ -77,6 +81,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 
             callback(new_messages, msg_list);
             unread_ops.process_visible();
+            compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error(xhr) {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
@@ -173,9 +178,11 @@ export function update_messages(events) {
     const messages_to_rerender = [];
     let any_topic_edited = false;
     let changed_narrow = false;
+    let refreshed_current_narrow = false;
     let changed_compose = false;
     let any_message_content_edited = false;
     let any_stream_changed = false;
+    let local_cache_missing_messages = false;
 
     for (const event of events) {
         const anchor_message = message_store.get(event.message_id);
@@ -285,6 +292,11 @@ export function update_messages(events) {
                 const message = message_store.get(message_id);
                 if (message !== undefined) {
                     event_messages.push(message);
+                } else {
+                    // If we don't have the message locally, we need to
+                    // refresh the current narrow after the update to fetch
+                    // the updated messages.
+                    local_cache_missing_messages = true;
                 }
             }
             // The event.message_ids received from the server are not in sorted order.
@@ -429,6 +441,33 @@ export function update_messages(events) {
                 }
             }
 
+            // If a message was moved to the current narrow and we don't have
+            // the message cached, we need to refresh the narrow to display the message.
+            if (!changed_narrow && local_cache_missing_messages && current_filter) {
+                let moved_message_stream = old_stream_name;
+                let moved_message_topic = orig_topic;
+                if (stream_changed) {
+                    moved_message_stream = sub_store.get(new_stream_id).name;
+                }
+
+                if (topic_edited) {
+                    moved_message_topic = new_topic;
+                }
+
+                if (
+                    current_filter.can_newly_match_moved_messages(
+                        moved_message_stream,
+                        moved_message_topic,
+                    )
+                ) {
+                    refreshed_current_narrow = true;
+                    message_view.show(current_filter.terms(), {
+                        then_select_id: current_selected_id,
+                        trigger: "stream/topic change",
+                    });
+                }
+            }
+
             // Ensure messages that are no longer part of this
             // narrow are deleted and messages that are now part
             // of this narrow are added to the message_list.
@@ -439,7 +478,7 @@ export function update_messages(events) {
             // this should be a loop over all valid message_list_data
             // objects, without the rerender (which will naturally
             // happen in the following code).
-            if (!changed_narrow && current_filter) {
+            if (!changed_narrow && !refreshed_current_narrow && current_filter) {
                 let message_ids_to_remove = [];
                 if (current_filter.can_apply_locally()) {
                     const predicate = current_filter.predicate();
@@ -539,7 +578,7 @@ export function update_messages(events) {
         // large organizations.
 
         for (const list of message_lists.all_rendered_message_lists()) {
-            if (changed_narrow && list === message_lists.current) {
+            if ((changed_narrow || refreshed_current_narrow) && list === message_lists.current) {
                 // Avoid updating current message list if user switched to a different narrow and
                 // we don't want to preserver the rendered state for the current one.
                 continue;

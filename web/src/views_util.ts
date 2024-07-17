@@ -23,7 +23,6 @@ export const FILTERS = {
 };
 
 const TIPPY_PROPS: Partial<tippy.Props> = {
-    placement: "bottom-start",
     offset: [0, 2],
 };
 

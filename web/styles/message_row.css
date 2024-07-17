@@ -560,7 +560,7 @@
     /* Setting resize as none hides the bottom right diagonal box
        (which even has a background color of its own!). */
     resize: none !important;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     background-color: hsl(0deg 0% 100%);
     border-radius: 3px;
     vertical-align: middle;

@@ -157,7 +157,6 @@ function build_message_view_header(filter: Filter | undefined): void {
     // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
         search.open_search_bar_and_close_narrow_description();
-        search.set_search_bar_text(narrow_state.search_string());
     } else {
         const context = get_message_view_header_context(filter);
         append_and_display_title_area(context);

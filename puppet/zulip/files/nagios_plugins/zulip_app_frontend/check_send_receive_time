@@ -13,7 +13,7 @@ import random
 import sys
 import time
 import traceback
-from typing import Any, Dict, List, Literal, NoReturn, Optional
+from typing import Any, Literal, NoReturn
 
 sys.path.append(".")
 sys.path.append("/home/zulip/deployments/current")
@@ -50,21 +50,21 @@ options = parser.parse_args()
 
 def report(
     state: Literal["ok", "warning", "critical", "unknown"],
-    timestamp: Optional[float] = None,
-    msg: Optional[str] = None,
+    timestamp: float | None = None,
+    msg: str | None = None,
 ) -> NoReturn:
     if msg is None:
         msg = f"send time was {timestamp}"
     sys.exit(atomic_nagios_write("check_send_receive_state", state, msg))
 
 
-def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
+def send_zulip(sender: zulip.Client, message: dict[str, Any]) -> None:
     result = sender.send_message(message)
     if result["result"] != "success":
         report("critical", msg=f"Error sending Zulip, args were: {message}, {result}")
 
 
-def get_zulips() -> List[Dict[str, Any]]:
+def get_zulips() -> list[dict[str, Any]]:
     global last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
     if "error" in res.get("result", {}):
@@ -128,7 +128,7 @@ send_zulip(
     },
 )
 
-msg_content: List[str] = []
+msg_content: list[str] = []
 
 while msg_to_send not in msg_content:
     messages = get_zulips()

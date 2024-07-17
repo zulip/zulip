@@ -27,11 +27,7 @@ CircleCI with GitHub, BitBucket and GitLab.
 ![](/static/images/integrations/circleci/001.png)
 ![](/static/images/integrations/circleci/002.png)
 
-{% if all_event_types is defined %}
-
 {!event-filtering-additional-feature.md!}
-
-{% endif %}
 
 ### Related documentation
 
