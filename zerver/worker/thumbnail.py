@@ -9,8 +9,8 @@ from django.db import transaction
 from typing_extensions import override
 
 from zerver.lib.mime_types import guess_type
-from zerver.lib.thumbnail import StoredThumbnailFormat, missing_thumbnails
-from zerver.lib.upload import get_image_thumbnail_path, save_attachment_contents, upload_backend
+from zerver.lib.thumbnail import StoredThumbnailFormat, get_image_thumbnail_path, missing_thumbnails
+from zerver.lib.upload import save_attachment_contents, upload_backend
 from zerver.models import ImageAttachment
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
