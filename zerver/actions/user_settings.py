@@ -472,6 +472,8 @@ def do_change_user_setting(
         assert isinstance(setting_value, str)
         event["language_name"] = get_language_name(setting_value)
 
+    transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
+
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     if setting_name in {"web_font_size_px", "web_line_height_percent"}:
@@ -544,8 +546,6 @@ def do_change_user_setting(
 
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
-
-        transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
 
         send_user_email_update_event(user_profile)
         notify_avatar_url_change(user_profile)
