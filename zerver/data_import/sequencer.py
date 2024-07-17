@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Any
+from typing import Generic, TypeVar
 
 """
 This module helps you set up a bunch
@@ -11,6 +11,8 @@ you're dealing with a big singleton, but
 for data imports that's usually easy to
 manage.
 """
+
+T = TypeVar("T")
 
 
 def _seq() -> Callable[[], int]:
@@ -54,15 +56,15 @@ import of the file.
 NEXT_ID = sequencer()
 
 
-class IdMapper:
+class IdMapper(Generic[T]):
     def __init__(self) -> None:
-        self.map: dict[Any, int] = {}
+        self.map: dict[T, int] = {}
         self.cnt = 0
 
-    def has(self, their_id: Any) -> bool:
+    def has(self, their_id: T) -> bool:
         return their_id in self.map
 
-    def get(self, their_id: Any) -> int:
+    def get(self, their_id: T) -> int:
         if their_id in self.map:
             return self.map[their_id]
 

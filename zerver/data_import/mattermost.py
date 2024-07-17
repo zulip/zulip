@@ -62,7 +62,7 @@ def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
 
 
 def process_user(
-    user_dict: dict[str, Any], realm_id: int, team_name: str, user_id_mapper: IdMapper
+    user_dict: dict[str, Any], realm_id: int, team_name: str, user_id_mapper: IdMapper[str]
 ) -> ZerverFieldsT:
     def is_team_admin(user_dict: dict[str, Any]) -> bool:
         if user_dict["teams"] is None:
@@ -127,7 +127,7 @@ def process_user(
 
 def convert_user_data(
     user_handler: UserHandler,
-    user_id_mapper: IdMapper,
+    user_id_mapper: IdMapper[str],
     user_data_map: dict[str, dict[str, Any]],
     realm_id: int,
     team_name: str,
@@ -147,8 +147,8 @@ def convert_channel_data(
     channel_data: list[ZerverFieldsT],
     user_data_map: dict[str, dict[str, Any]],
     subscriber_handler: SubscriberHandler,
-    stream_id_mapper: IdMapper,
-    user_id_mapper: IdMapper,
+    stream_id_mapper: IdMapper[str],
+    user_id_mapper: IdMapper[str],
     realm_id: int,
     team_name: str,
 ) -> list[ZerverFieldsT]:
@@ -245,8 +245,8 @@ def convert_direct_message_group_data(
     direct_message_group_data: list[ZerverFieldsT],
     user_data_map: dict[str, dict[str, Any]],
     subscriber_handler: SubscriberHandler,
-    huddle_id_mapper: IdMapper,
-    user_id_mapper: IdMapper,
+    huddle_id_mapper: IdMapper[str],
+    user_id_mapper: IdMapper[str],
     realm_id: int,
     team_name: str,
 ) -> list[ZerverFieldsT]:
@@ -274,7 +274,7 @@ def build_reactions(
     total_reactions: list[ZerverFieldsT],
     reactions: list[ZerverFieldsT],
     message_id: int,
-    user_id_mapper: IdMapper,
+    user_id_mapper: IdMapper[str],
     zerver_realmemoji: list[ZerverFieldsT],
 ) -> None:
     realmemoji = {}
@@ -314,7 +314,7 @@ def build_reactions(
         total_reactions.append(reaction_dict)
 
 
-def get_mentioned_user_ids(raw_message: dict[str, Any], user_id_mapper: IdMapper) -> set[int]:
+def get_mentioned_user_ids(raw_message: dict[str, Any], user_id_mapper: IdMapper[str]) -> set[int]:
     user_ids = set()
     content = raw_message["content"]
 
@@ -406,7 +406,7 @@ def process_raw_message_batch(
     realm_id: int,
     raw_messages: list[dict[str, Any]],
     subscriber_map: dict[int, set[int]],
-    user_id_mapper: IdMapper,
+    user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
     get_recipient_id_from_receiver_name: Callable[[str, int], int],
     is_pm_data: bool,
@@ -549,7 +549,7 @@ def process_posts(
     output_dir: str,
     is_pm_data: bool,
     masking_content: bool,
-    user_id_mapper: IdMapper,
+    user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
@@ -658,9 +658,9 @@ def write_message_data(
     subscriber_map: dict[int, set[int]],
     output_dir: str,
     masking_content: bool,
-    stream_id_mapper: IdMapper,
-    huddle_id_mapper: IdMapper,
-    user_id_mapper: IdMapper,
+    stream_id_mapper: IdMapper[str],
+    huddle_id_mapper: IdMapper[str],
+    user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
@@ -894,9 +894,9 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
 
         user_handler = UserHandler()
         subscriber_handler = SubscriberHandler()
-        user_id_mapper = IdMapper()
-        stream_id_mapper = IdMapper()
-        huddle_id_mapper = IdMapper()
+        user_id_mapper = IdMapper[str]()
+        stream_id_mapper = IdMapper[str]()
+        huddle_id_mapper = IdMapper[str]()
 
         print("Generating data for", team_name)
         realm = make_realm(realm_id, team)
