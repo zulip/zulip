@@ -1,4 +1,3 @@
-import hashlib
 import logging
 import os
 import random
@@ -886,23 +885,6 @@ def map_receiver_id_to_recipient_id(
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
 
-# This is inspired by get_direct_message_group_hash
-# from zerver/models/recipients.py. It expects strings
-# identifying Rocket.Chat users, like `LdBZ7kPxtKESyHPEe`,
-# not integer IDs.
-#
-# Its purpose is to be a stable map usable for deduplication/merging
-# of Rocket.Chat threads involving the same set of people. Thus, its
-# only important property is that if two sets of users S and T are
-# equal and thus will have the same actual direct message group hash
-# once imported, that get_string_direct_message_group_hash(S) =
-# get_string_direct_message_group_hash(T).
-def get_string_direct_message_group_hash(id_list: list[str]) -> str:
-    id_list = sorted(set(id_list))
-    hash_key = ",".join(str(x) for x in id_list)
-    return hashlib.sha1(hash_key.encode()).hexdigest()
-
-
 def categorize_channels_and_map_with_id(
     channel_data: list[dict[str, Any]],
     room_id_to_room_map: dict[str, dict[str, Any]],
@@ -912,18 +894,14 @@ def categorize_channels_and_map_with_id(
     huddle_id_to_huddle_map: dict[str, dict[str, Any]],
     livechat_id_to_livechat_map: dict[str, dict[str, Any]],
 ) -> None:
-    direct_message_group_hashed_channels: dict[str, Any] = {}
+    direct_message_group_hashed_channels: dict[frozenset[str], Any] = {}
     for channel in channel_data:
         if channel.get("prid"):
             dsc_id_to_dsc_map[channel["_id"]] = channel
         elif channel["t"] == "d":
             if len(channel["uids"]) > 2:
-                direct_message_group_hash = get_string_direct_message_group_hash(channel["uids"])
-                logging.info(
-                    "Huddle channel found. UIDs: %s -> hash %s",
-                    channel["uids"],
-                    direct_message_group_hash,
-                )
+                direct_message_group_members = frozenset(channel["uids"])
+                logging.info("Huddle channel found. UIDs: %r", channel["uids"])
 
                 if channel["msgs"] == 0:  # nocoverage
                     # Rocket.Chat exports in the wild sometimes
@@ -935,15 +913,15 @@ def categorize_channels_and_map_with_id(
                     # value in Zulip's data model.
                     logging.debug("Skipping direct message group with 0 messages: %s", channel)
                 elif (
-                    direct_message_group_hash in direct_message_group_hashed_channels
+                    direct_message_group_members in direct_message_group_hashed_channels
                 ):  # nocoverage
                     logging.info(
-                        "Mapping direct message group hash %s to existing channel: %s",
-                        direct_message_group_hash,
-                        direct_message_group_hashed_channels[direct_message_group_hash],
+                        "Mapping direct message group %r to existing channel: %s",
+                        direct_message_group_members,
+                        direct_message_group_hashed_channels[direct_message_group_members],
                     )
                     huddle_id_to_huddle_map[channel["_id"]] = direct_message_group_hashed_channels[
-                        direct_message_group_hash
+                        direct_message_group_members
                     ]
 
                     # Ideally, we'd merge the duplicate direct message
@@ -961,7 +939,7 @@ def categorize_channels_and_map_with_id(
                     )
                 else:
                     huddle_id_to_huddle_map[channel["_id"]] = channel
-                    direct_message_group_hashed_channels[direct_message_group_hash] = channel
+                    direct_message_group_hashed_channels[direct_message_group_members] = channel
             else:
                 direct_id_to_direct_map[channel["_id"]] = channel
         elif channel["t"] == "l":
