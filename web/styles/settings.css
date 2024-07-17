@@ -1156,19 +1156,52 @@ input[type="checkbox"] {
 
 #api_key_form,
 #change_password_modal {
-    .password-div {
-        position: relative;
+    .settings-password-div {
+        display: flex;
+        flex-wrap: wrap;
 
-        & input[type="text"] {
-            margin-bottom: 10px;
+        .modal-field-label {
+            /* Keep the label to its own
+               line in the wrapping flexbox. */
+            flex: 0 0 100%;
+        }
+
+        .modal_password_input {
+            /* The usual width of input is 206px, but we reduce
+               it by 30px to make way for the padding. */
+            width: 176px;
+            padding-right: 30px;
         }
 
         .password_visibility_toggle {
-            position: absolute;
-            left: 194px;
-            top: 32px;
-            width: 14px;
+            /* We're going to use flexbox, not
+               positioning, to get the clear button
+               over top of the input. This -2em
+               margin accomplishes that, in tandem
+               with the 2em width of this element,
+               which is shared with the ending
+               anchor element in left sidebar header
+               rows. We're using em instead of pixels
+               so the whitespace between the input box
+               and the icon doesn't decrease when the
+               icon's font-size increases when switching
+               from 14px info density to 16px info density
+               mode. */
+            width: 2em;
+            margin-left: -2em;
+
+            /* Make the button itself a flex container,
+               so we can perfectly center the X icon. */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
             opacity: 0.6;
+
+            /* Make the bottom margin same as `.modal_password_input`
+               for proper centering, if the margin changes there,
+               it should also change here and vice versa. */
+            margin-bottom: 10px;
 
             &:hover {
                 opacity: 1;
