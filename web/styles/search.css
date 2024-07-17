@@ -216,6 +216,12 @@
         &.pill-container {
             /* Maintain only a column gap. */
             gap: 0 5px;
+
+            @media (height < $short_navbar_cutoff_height) {
+                /* Lose the luxury of padding in short navbar settings. */
+                padding-top: 0;
+                padding-bottom: 0;
+            }
         }
 
         .pill {
@@ -230,6 +236,10 @@
             .search-input-and-pills {
                 flex-wrap: nowrap;
                 overflow: hidden;
+
+                @media (height < $short_navbar_cutoff_height) {
+                    line-height: var(--base-line-height-unitless);
+                }
             }
         }
 
@@ -297,19 +307,15 @@
         #searchbox_form:not(.expanded) {
             margin: 0;
             /* Now that the header is shorter, the search box will take up the whole
-               height (which looks weird), so add 2px of space above and below it.
-               The extra pixel is to account for the header's bottom border (box shadow). */
-            margin-top: 2px;
-            height: calc(var(--header-height) - 5px);
-
-            #searchbox-input-container {
-                height: calc(var(--search-box-height) - 5px);
-            }
+               height (which looks weird), so add 1px of space above and below it
+               by manipulating the margin and the height. */
+            margin-top: 1px;
+            height: calc(var(--header-height) - 3px);
         }
 
         /* It looks fine to fill the navbar when the typeahead is open. */
         #searchbox_form.expanded {
-            margin-top: 0;
+            margin-top: 1px;
         }
     }
 
