@@ -890,7 +890,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(
             info_log.output,
             [
-                "INFO:root:Huddle channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z'] -> hash 752a5854d2b6eec337fe81f0066a5dd72c3f0639",
+                "INFO:root:Huddle channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
                 "INFO:root:Starting to process custom emoji",
                 "INFO:root:Done processing emoji",
                 "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
