@@ -488,7 +488,7 @@ export class Typeahead<ItemType extends string | object> {
         this.query =
             this.input_element.type === "contenteditable"
                 ? this.input_element.$element.text()
-                : this.input_element.$element.val() ?? "";
+                : (this.input_element.$element.val() ?? "");
 
         if (
             (!this.helpOnEmptyStrings || hideOnEmpty) &&

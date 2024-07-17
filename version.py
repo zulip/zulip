@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 273  # Last bumped for server_thumbnail_formats
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (285, 1)  # bumped 2024-07-12 for adding textarea-caret
+PROVISION_VERSION = (286, 0)  # bumped 2024-07-16 for upgrading JavaScript dependencies

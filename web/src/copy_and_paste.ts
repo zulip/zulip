@@ -357,7 +357,7 @@ function image_to_zulip_markdown(
     const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
     const title = deduplicate_newlines(node.getAttribute("title") ?? "");
     // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") ?? "";
+    return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
 function within_single_element(html_fragment: HTMLElement): boolean {
@@ -565,7 +565,7 @@ export function paste_handler_converter(paste_html: string): string {
 
             const className = codeElement.getAttribute("class") ?? "";
             const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? ""
+                ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
                 : (className.match(/language-(\S+)/) ?? [null, ""])[1];
 
             assert(options.fence !== undefined);
