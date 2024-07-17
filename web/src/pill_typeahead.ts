@@ -77,6 +77,7 @@ export function set_up_stream(
     pills: StreamPillWidget,
     opts: {
         help_on_empty_strings?: boolean;
+        hide_on_empty_after_backspace?: boolean;
         invite_streams?: boolean;
         update_func?: () => void;
     },
@@ -86,10 +87,12 @@ export function set_up_stream(
         type: "contenteditable",
     };
     opts.help_on_empty_strings ??= false;
+    opts.hide_on_empty_after_backspace ??= false;
     new Typeahead(bootstrap_typeahead_input, {
         items: 12,
         dropup: true,
         helpOnEmptyStrings: opts.help_on_empty_strings,
+        hideOnEmptyAfterBackspace: opts.hide_on_empty_after_backspace,
         source(_query: string): StreamPillData[] {
             return stream_pill.typeahead_source(pills, opts.invite_streams);
         },
