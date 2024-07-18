@@ -254,6 +254,15 @@ export function set_up(settings_panel: SettingsPanel): void {
                     : NON_COMPACT_MODE_LINE_HEIGHT_PERCENT;
             }
 
+            if (
+                ((setting === "web_font_size_px" && setting_value !== LEGACY_FONT_SIZE_PX) ||
+                    (setting === "web_line_height_percent" &&
+                        setting_value !== LEGACY_LINE_HEIGHT_PERCENT)) &&
+                user_settings.dense_mode
+            ) {
+                data.dense_mode = false;
+            }
+
             const $status_element = $input_elem
                 .closest(".subsection-parent")
                 .find(".alert-notification");
