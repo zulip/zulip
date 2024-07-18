@@ -1,7 +1,12 @@
 import $ from "jquery";
 
 import * as audible_notifications from "./audible_notifications";
+import {
+    NON_COMPACT_MODE_FONT_SIZE_PX,
+    NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
+} from "./information_density";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
@@ -61,6 +66,25 @@ export function set_up() {
             notification_sound: sound,
         });
     });
+
+    if (!page_params.development_environment) {
+        $("#realm_dense_mode").on("change", (e) => {
+            const val = $(e.target).prop("checked");
+            if (val) {
+                $container.find(".information-density-settings").hide();
+                return;
+            }
+
+            if (
+                !realm_user_settings_defaults.dense_mode &&
+                (realm_user_settings_defaults.web_font_size_px !== NON_COMPACT_MODE_FONT_SIZE_PX ||
+                    realm_user_settings_defaults.web_line_height_percent !==
+                        NON_COMPACT_MODE_LINE_HEIGHT_PERCENT)
+            ) {
+                $container.find(".information-density-settings").show();
+            }
+        });
+    }
 
     settings_notifications.set_up(realm_default_settings_panel);
 
