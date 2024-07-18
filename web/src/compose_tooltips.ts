@@ -248,3 +248,11 @@ export function initialize(): void {
         },
     });
 }
+
+export function hide_compose_control_button_tooltips($row: JQuery): void {
+    $row.find(
+        ".compose_control_button[data-tooltip-template-id], .compose_control_button[data-tippy-content], .compose_control_button_container",
+    ).each(function (this: tippy.ReferenceElement) {
+        this._tippy?.hide();
+    });
+}
