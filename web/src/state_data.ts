@@ -282,6 +282,7 @@ const realm_schema = z.object({
         }),
     ),
     realm_default_language: z.string(),
+    realm_delete_other_message_policy: z.number(),
     realm_delete_own_message_policy: z.number(),
     realm_description: z.string(),
     realm_digest_emails_enabled: NOT_TYPED_YET,
