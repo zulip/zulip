@@ -60,7 +60,7 @@ from zerver.lib.mention import (
     topic_wildcards,
 )
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipVerboseEqualTestCase
 from zerver.lib.tex import render_tex
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
@@ -82,7 +82,7 @@ class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
         return "**" + s.strip("\n") + "**"
 
 
-class FencedBlockPreprocessorTest(ZulipTestCase):
+class FencedBlockPreprocessorTest(ZulipVerboseEqualTestCase):
     def test_simple_quoting(self) -> None:
         processor = FencedBlockPreprocessor(Markdown())
         markdown_input = [
@@ -207,7 +207,7 @@ def markdown_convert_wrapper(content: str) -> str:
     ).rendered_content
 
 
-class MarkdownMiscTest(ZulipTestCase):
+class MarkdownMiscTest(ZulipVerboseEqualTestCase):
     def test_diffs_work_as_expected(self) -> None:
         str1 = "<p>The quick brown fox jumps over the lazy dog.  Animal stories are fun, yeah</p>"
         str2 = "<p>The fast fox jumps over the lazy dogs and cats.  Animal stories are fun</p>"
@@ -373,7 +373,7 @@ class MarkdownMiscTest(ZulipTestCase):
             self.assertEqual(render_tex("foo"), "<i>html</i>")
 
 
-class MarkdownListPreprocessorTest(ZulipTestCase):
+class MarkdownListPreprocessorTest(ZulipVerboseEqualTestCase):
     # We test that the preprocessor inserts blank lines at correct places.
     # We use <> to indicate that we need to insert a blank line here.
     def split_message(self, msg: str) -> tuple[list[str], list[str]]:
@@ -463,19 +463,7 @@ Outside. Should convert:<>
         self.assertEqual(preprocessor.run(original), expected)
 
 
-class MarkdownTest(ZulipTestCase):
-    @override
-    def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
-        if isinstance(first, str) and isinstance(second, str):
-            if first != second:
-                raise AssertionError(
-                    "Actual and expected outputs do not match; showing diff.\n"
-                    + diff_strings(first, second)
-                    + msg
-                )
-        else:
-            super().assertEqual(first, second)
-
+class MarkdownTest(ZulipVerboseEqualTestCase):
     def load_markdown_tests(self) -> tuple[dict[str, Any], list[list[str]]]:
         test_fixtures = {}
         with open(
@@ -578,7 +566,6 @@ class MarkdownTest(ZulipTestCase):
         )
         clear_web_link_regex_for_testing()
 
-
         try:
             with self.settings(ENABLE_FILE_LINKS=True):
                 realm = do_create_realm(string_id="file_links_enabled", name="File links enabled")
@@ -588,7 +575,6 @@ class MarkdownTest(ZulipTestCase):
                 )
         finally:
             clear_web_link_regex_for_testing()
-
 
     def test_inline_bitcoin(self) -> None:
         msg = "To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin"
@@ -3252,7 +3238,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(converted, dedent(expected_output))
 
 
-class MarkdownApiTests(ZulipTestCase):
+class MarkdownApiTests(ZulipVerboseEqualTestCase):
     def test_render_message_api(self) -> None:
         content = "That is a **bold** statement"
         result = self.api_post(
@@ -3282,7 +3268,7 @@ class MarkdownApiTests(ZulipTestCase):
         )
 
 
-class MarkdownErrorTests(ZulipTestCase):
+class MarkdownErrorTests(ZulipVerboseEqualTestCase):
     def test_markdown_error_handling(self) -> None:
         with self.simulated_markdown_failure(), self.assertRaises(MarkdownRenderingError):
             markdown_convert_wrapper("")
@@ -3348,7 +3334,7 @@ class MarkdownErrorTests(ZulipTestCase):
         self.assertEqual(result, expected)
 
 
-class MarkdownEmojiTest(ZulipTestCase):
+class MarkdownEmojiTest(ZulipVerboseEqualTestCase):
     def test_all_emoji_match_regex(self) -> None:
         non_matching_emoji = [
             emoji

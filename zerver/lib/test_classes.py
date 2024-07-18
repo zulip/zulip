@@ -49,6 +49,7 @@ from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscript
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
@@ -2159,6 +2160,20 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
                     read_by_sender=read_by_sender,
                 )
         return message_id
+
+
+class ZulipVerboseEqualTestCase(ZulipTestCase):
+    @override
+    def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
+        if isinstance(first, str) and isinstance(second, str):
+            if first != second:
+                raise AssertionError(
+                    "Actual and expected outputs do not match; showing diff.\n"
+                    + diff_strings(first, second)
+                    + msg
+                )
+        else:
+            super().assertEqual(first, second)
 
 
 def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
