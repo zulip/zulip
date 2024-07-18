@@ -89,12 +89,7 @@ export function initialize(): void {
         onShow(instance) {
             const $elem = $(instance.reference);
             const conversation_type = $elem.attr("data-conversation-type");
-            if (conversation_type === "direct") {
-                instance.setContent(
-                    parse_html($("#new_direct_message_button_tooltip_template").html()),
-                );
-                return undefined;
-            } else if (conversation_type === "stream") {
+            if (conversation_type === "stream") {
                 instance.setContent(
                     parse_html($("#new_topic_message_button_tooltip_template").html()),
                 );
