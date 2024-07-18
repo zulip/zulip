@@ -1,4 +1,3 @@
-import copy
 import os
 import re
 from html import escape
@@ -646,7 +645,6 @@ class MarkdownTest(ZulipTestCase):
             f"""<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="{get_camo_url("https://i.ytimg.com/vi/nOJgD4fcZhI/default.jpg")}"></a></div>""",
         )
 
-    @override_settings(INLINE_URL_EMBED_PREVIEW=False)
     def test_inline_vimeo(self) -> None:
         msg = "Check out the debate: https://vimeo.com/246979354"
         converted = markdown_convert_wrapper(msg)
@@ -922,38 +920,28 @@ class MarkdownTest(ZulipTestCase):
         ret = image_preview_enabled(message, no_previews=True)
         self.assertFalse(ret)
 
-    @override_settings(INLINE_URL_EMBED_PREVIEW=False)
     def test_url_embed_preview_enabled(self) -> None:
         sender_user_profile = self.example_user("othello")
-        message = copy.deepcopy(
-            Message(
+        realm = sender_user_profile.realm
+        realm.inline_url_embed_preview = True  # off by default
+        realm.save(update_fields=["inline_url_embed_preview"])
+
+        self.assertFalse(url_embed_preview_enabled())
+
+        with override_settings(INLINE_URL_EMBED_PREVIEW=True):
+            self.assertTrue(url_embed_preview_enabled())
+
+            self.assertFalse(image_preview_enabled(no_previews=True))
+
+            message = Message(
                 sender=sender_user_profile,
                 sending_client=get_client("test"),
                 realm=sender_user_profile.realm,
             )
-        )
-        realm = message.get_realm()
-        realm.inline_url_embed_preview = True  # off by default
-        realm.save(update_fields=["inline_url_embed_preview"])
+            self.assertTrue(url_embed_preview_enabled(message, realm))
+            self.assertTrue(url_embed_preview_enabled(message))
 
-        ret = url_embed_preview_enabled()
-        self.assertFalse(ret)
-
-        settings.INLINE_URL_EMBED_PREVIEW = True
-
-        ret = url_embed_preview_enabled()
-        self.assertTrue(ret)
-
-        ret = image_preview_enabled(no_previews=True)
-        self.assertFalse(ret)
-
-        ret = url_embed_preview_enabled(message, realm)
-        self.assertTrue(ret)
-        ret = url_embed_preview_enabled(message)
-        self.assertTrue(ret)
-
-        ret = url_embed_preview_enabled(message, no_previews=True)
-        self.assertFalse(ret)
+            self.assertFalse(url_embed_preview_enabled(message, no_previews=True))
 
     def test_inline_dropbox(self) -> None:
         msg = "Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG"
