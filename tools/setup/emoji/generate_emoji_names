@@ -214,7 +214,7 @@ def main() -> None:
         f.write("}\n")
 
     print(
-        "\n\nDone! You should run the linter to format emoji_names.py with `./tools/lint --fix -m --only black`"
+        "\n\nDone! You should run the linter to format emoji_names.py with `./tools/lint --fix -m --only ruff-format`"
     )
 
 
