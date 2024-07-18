@@ -27,12 +27,6 @@ See your Travis CI build notifications in Zulip!
 
 {!event-filtering-additional-feature.md!}
 
-### Configuration options
-
-- By default, pull request events are ignored since most people don't
-  want notifications for new pushes to pull requests. To enable
-  notifications for pull request builds, you can append
-  `&ignore_pull_requests=false` to the end of the generated URL.
 
 ### Related documentation
 
