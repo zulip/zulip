@@ -476,20 +476,6 @@ def do_change_user_setting(
 
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
-    if setting_name in {"web_font_size_px", "web_line_height_percent"}:
-        if (
-            user_profile.web_font_size_px != UserProfile.WEB_FONT_SIZE_PX_LEGACY
-            or user_profile.web_line_height_percent != UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY
-        ):
-            expected_dense_mode = False
-        else:
-            expected_dense_mode = True
-
-        if user_profile.dense_mode != expected_dense_mode:
-            do_change_user_setting(
-                user_profile, "dense_mode", expected_dense_mode, acting_user=acting_user
-            )
-
     if setting_name in UserProfile.notification_settings_legacy:
         # This legacy event format is for backwards-compatibility with
         # clients that don't support the new user_settings event type.
