@@ -45,7 +45,8 @@ Get Zulip notifications from your Trello boards!
 
     !!! tip ""
 
-        `Ctrl+s` or `Cmd+s` on that page should work in most browsers.
+        <kbd>Ctrl</kbd> + <kbd>s</kbd> or <kbd>Cmd</kbd> + <kbd>s</kbd>
+        on that page should work in most browsers.
 
 1. Run the `zulip-trello` script in a terminal, after replacing the all
    caps arguments with the values collected above and the generated URL
