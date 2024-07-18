@@ -214,6 +214,9 @@
 
         /* Override styles for .pill-container that aren't relevant for search. */
         &.pill-container {
+            /* Pill container should display the same background
+               color as the search typeahead. */
+            background-color: var(--color-background-search);
             /* Maintain only a column gap. */
             gap: 0 5px;
 
