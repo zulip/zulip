@@ -40,6 +40,16 @@ type NarrowSearchOptions = {
 
 type OnNarrowSearch = (terms: NarrowTerm[], options: NarrowSearchOptions) => void;
 
+function full_search_query_in_text(): string {
+    assert(search_pill_widget !== null);
+    return [
+        search_pill.get_current_search_string_for_widget(search_pill_widget),
+        get_search_bar_text(),
+    ]
+        .join(" ")
+        .trim();
+}
+
 function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): string {
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
@@ -48,13 +58,7 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
         return get_search_bar_text();
     }
 
-    assert(search_pill_widget !== null);
-    const search_query = [
-        search_pill.get_current_search_string_for_widget(search_pill_widget),
-        get_search_bar_text(),
-    ]
-        .join(" ")
-        .trim();
+    const search_query = full_search_query_in_text();
     if (search_query === "") {
         exit_search({keep_search_narrow_open: true});
         return "";
@@ -63,6 +67,7 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     // Reset the search bar to display as many pills as possible for `terms`.
     // We do this in case some of these terms haven't been pillified yet
     // because convert_to_pill_on_enter is false.
+    assert(search_pill_widget !== null);
     search_pill_widget.clear(true);
     search_pill.set_search_bar_contents(terms, search_pill_widget, set_search_bar_text);
     on_narrow_search(terms, {trigger: "search"});
@@ -94,13 +99,7 @@ function narrow_to_search_contents_with_search_bar_open(): void {
     if (!validate_text_terms()) {
         return;
     }
-    assert(search_pill_widget !== null);
-    const search_query = [
-        search_pill.get_current_search_string_for_widget(search_pill_widget),
-        get_search_bar_text(),
-    ]
-        .join(" ")
-        .trim();
+    const search_query = full_search_query_in_text();
     const terms = Filter.parse(search_query);
     on_narrow_search(terms, {trigger: "search"});
 
