@@ -52,7 +52,7 @@ from zerver.lib.validator import (
     check_string_in,
     check_timezone,
 )
-from zerver.models import EmailChangeStatus, UserProfile
+from zerver.models import EmailChangeStatus, RealmUserDefault, UserBaseSettings, UserProfile
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
@@ -190,6 +190,34 @@ def check_settings_values(
                 seconds=email_notifications_batching_period_seconds
             )
         )
+
+
+def check_information_density_setting_values(
+    setting_object: UserProfile | RealmUserDefault,
+    dense_mode: bool | None,
+    web_font_size_px: int | None,
+    web_line_height_percent: int | None,
+) -> None:
+    dense_mode = dense_mode if dense_mode is not None else setting_object.dense_mode
+    web_font_size_px = (
+        web_font_size_px if web_font_size_px is not None else setting_object.web_font_size_px
+    )
+    web_line_height_percent = (
+        web_line_height_percent
+        if web_line_height_percent is not None
+        else setting_object.web_line_height_percent
+    )
+
+    if dense_mode:
+        if web_font_size_px != UserBaseSettings.WEB_FONT_SIZE_PX_LEGACY:
+            raise JsonableError(
+                _("Incompatible values for 'dense_mode' and 'web_font_size_px' settings.")
+            )
+
+        if web_line_height_percent != UserBaseSettings.WEB_LINE_HEIGHT_PERCENT_LEGACY:
+            raise JsonableError(
+                _("Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.")
+            )
 
 
 @human_users_only
@@ -389,21 +417,12 @@ def json_change_settings(
             check_change_full_name(user_profile, full_name, user_profile)
 
     if (
-        dense_mode
-        and web_font_size_px is not None
-        and web_font_size_px != UserProfile.WEB_FONT_SIZE_PX_LEGACY
+        dense_mode is not None
+        or web_font_size_px is not None
+        or web_line_height_percent is not None
     ):
-        raise JsonableError(
-            _("Incompatible values for 'dense_mode' and 'web_font_size_px' settings.")
-        )
-
-    if (
-        dense_mode
-        and web_line_height_percent is not None
-        and web_line_height_percent != UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY
-    ):
-        raise JsonableError(
-            _("Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.")
+        check_information_density_setting_values(
+            user_profile, dense_mode, web_font_size_px, web_line_height_percent
         )
 
     # Loop over user_profile.property_types
