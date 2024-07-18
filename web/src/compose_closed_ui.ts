@@ -152,6 +152,18 @@ export function initialize(): void {
         });
     });
 
+    $("body").on("click", ".compose_mobile_button", () => {
+        // Remove the channel and topic context, since on mobile widths,
+        // the "+" button should open the compose box with the channel
+        // picker open (even if the user is in a topic or channel view).
+        compose_actions.start({
+            message_type: "stream",
+            stream_id: undefined,
+            topic: "",
+            keep_composebox_empty: true,
+        });
+    });
+
     $("body").on("click", ".compose_new_direct_message_button", () => {
         compose_actions.start({
             message_type: "private",
