@@ -702,3 +702,16 @@ class SystemGroupRequiredError(JsonableError):
     @override
     def msg_format() -> str:
         return _("'{setting_name}' must be a system user group.")
+
+
+class IncompatibleParameterValuesError(JsonableError):
+    data_fields = ["first_parameter", "second_parameter"]
+
+    def __init__(self, first_parameter: str, second_parameter: str) -> None:
+        self.first_parameter = first_parameter
+        self.second_parameter = second_parameter
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Incompatible values for '{first_parameter}' and '{second_parameter}'.")

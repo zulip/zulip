@@ -2010,7 +2010,7 @@ class RealmAPITest(ZulipTestCase):
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
-            "Incompatible values for 'dense_mode' and 'web_font_size_px' settings.",
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
         )
 
         data = {"web_font_size_px": 16, "dense_mode": orjson.dumps(False).decode()}
@@ -2048,7 +2048,7 @@ class RealmAPITest(ZulipTestCase):
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
-            "Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.",
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
         )
 
         data = {"web_line_height_percent": 140, "dense_mode": orjson.dumps(False).decode()}
@@ -2079,14 +2079,14 @@ class RealmAPITest(ZulipTestCase):
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
-            "Incompatible values for 'dense_mode' and 'web_font_size_px' settings.",
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
         )
 
         data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
-            "Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.",
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
         )
 
         data = {
