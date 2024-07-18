@@ -102,9 +102,10 @@ log][commit-log] for an up-to-date list of all changes.
   messages without disabling them entirely.
 - Added support for requiring unique names in an organization.
 - Added support for marking a custom profile field as required.
-- Added controls whether users should be subscribed to the
-  organization's default channels in invitations and the SCIM
-  integration.
+- Added setting to disable adding new guest users to any initial streams
+  when their accounts are provisioned via SCIM.
+- Fixed user creation to add the user to the streams that are default
+  at the time of user creation, rather than at the time of invitation.
 - Added a confirmation notice when moving a single message, linking to
   its new location.
 - Redesigned the channel creation interface to be more intuitive.
