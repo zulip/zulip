@@ -39,11 +39,10 @@ def api_travis_webhook(
     user_profile: UserProfile,
     *,
     message: Annotated[Json[TravisPayload], ApiParamConfig("payload")],
-    ignore_pull_requests: Json[bool] = True,
 ) -> HttpResponse:
     event = message.type
     message_status = message.status_message
-    if ignore_pull_requests and message.type == "pull_request":
+    if message.type == "pull_request":
         return json_success(request)
 
     if message_status in GOOD_STATUSES:
