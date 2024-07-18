@@ -612,14 +612,14 @@
       "expected_output": "<p><span aria-label=\"eye in speech bubble\" class=\"emoji emoji-1f441-200d-1f5e8\" role=\"img\" title=\"eye in speech bubble\">:eye_in_speech_bubble:</span> <span aria-label=\"hash\" class=\"emoji emoji-0023-20e3\" role=\"img\" title=\"hash\">:hash:</span></p>"
     },
     {
-      "name": "unrecognized_emoji_sequence_one",
-      "input": "pheonix bird from 15.1: 🐦‍🔥",
-      "expected_output": "<p>pheonix bird from 15.1: 🐦‍🔥</p>"
+      "name": "emoji_sequence_three",
+      "input": "phoenix bird from 15.1: 🐦‍🔥",
+      "expected_output": "<p>phoenix bird from 15.1: <span aria-label=\"phoenix\" class=\"emoji emoji-1f426-200d-1f525\" role=\"img\" title=\"phoenix\">:phoenix:</span></p>"
     },
     {
-      "name": "unrecognized_emoji_sequence_two",
+      "name": "emoji_sequence_four",
       "input": "lime from 15.1: 🍋‍🟩",
-      "expected_output": "<p>lime from 15.1: 🍋‍🟩</p>"
+      "expected_output": "<p>lime from 15.1: <span aria-label=\"lime\" class=\"emoji emoji-1f34b-200d-1f7e9\" role=\"img\" title=\"lime\">:lime:</span></p>"
     },
     {
       "name": "unrecognized_emoji_sequence_three",

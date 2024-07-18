@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 274  # Last bumped for `delete_message` event.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (286, 1)  # bumped 2024-07-16 for upgrading Node.js
+PROVISION_VERSION = (287, 0)  # bumped 2024-07-17 to rebuild emoji_names
