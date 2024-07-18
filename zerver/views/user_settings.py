@@ -37,7 +37,12 @@ from zerver.lib.email_validation import (
     validate_email_is_valid,
     validate_email_not_already_in_realm,
 )
-from zerver.lib.exceptions import JsonableError, RateLimitedError, UserDeactivatedError
+from zerver.lib.exceptions import (
+    IncompatibleParameterValuesError,
+    JsonableError,
+    RateLimitedError,
+    UserDeactivatedError,
+)
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
@@ -210,14 +215,10 @@ def check_information_density_setting_values(
 
     if dense_mode:
         if web_font_size_px != UserBaseSettings.WEB_FONT_SIZE_PX_COMPACT:
-            raise JsonableError(
-                _("Incompatible values for 'dense_mode' and 'web_font_size_px' settings.")
-            )
+            raise IncompatibleParameterValuesError("dense_mode", "web_font_size_px")
 
         if web_line_height_percent != UserBaseSettings.WEB_LINE_HEIGHT_PERCENT_COMPACT:
-            raise JsonableError(
-                _("Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.")
-            )
+            raise IncompatibleParameterValuesError("dense_mode", "web_line_height_percent")
 
 
 @human_users_only
