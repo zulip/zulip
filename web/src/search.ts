@@ -115,22 +115,6 @@ function narrow_to_search_contents_with_search_bar_open(): void {
     }
 }
 
-// When a pill is added, or when text input is changed, we set
-// `search_input_has_changed` to `false`. We also remove the
-// `freshly-opened` styling on the search pills (which is added in
-// `initiate_search` but not every time we open the search bar) after
-// the first input change.
-function on_search_contents_changed(): void {
-    assert(search_pill_widget !== null);
-    if (!search_input_has_changed && $(".search-input-and-pills").hasClass("freshly-opened")) {
-        const search_text = get_search_bar_text();
-        search_pill_widget.clear(true);
-        set_search_bar_text(search_text);
-        $(".search-input-and-pills").removeClass("freshly-opened");
-    }
-    search_input_has_changed = true;
-}
-
 function validate_text_terms(): boolean {
     const text_terms = Filter.parse(get_search_bar_text());
     // The shake animation will show if there is any invalid term in the,
@@ -157,15 +141,8 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 
     search_pill_widget = search_pill.create_pills($pill_container);
-    search_pill_widget.onPillRemove((_pill, trigger: RemovePillTrigger) => {
-        // We delete every pill when the user backspaces in a freshly
-        // opened search.
-        if (trigger === "backspace") {
-            on_search_contents_changed();
-        } else {
-            $(".search-input-and-pills").removeClass("freshly-opened");
-            search_input_has_changed = true;
-        }
+    search_pill_widget.onPillRemove(() => {
+        search_input_has_changed = true;
     });
 
     $search_query_box.on("change", () => {
@@ -186,7 +163,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     search_typeahead = new Typeahead(bootstrap_typeahead_input, {
         source(query: string): string[] {
             if (query !== "") {
-                on_search_contents_changed();
+                search_input_has_changed = true;
             }
             assert(search_pill_widget !== null);
             const query_from_pills =
@@ -225,7 +202,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         },
         updater(search_string: string): string {
             if (search_string) {
-                on_search_contents_changed();
+                search_input_has_changed = true;
                 // Reset the search box and add the pills based on the selected
                 // search suggestion.
                 assert(search_pill_widget !== null);
@@ -300,10 +277,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             } else {
                 typeahead_was_open_on_enter = false;
             }
-
-            if (e.key === "ArrowRight") {
-                $(".search-input-and-pills").removeClass("freshly-opened");
-            }
         })
         .on("keyup", (e: JQuery.KeyUpEvent): void => {
             if (is_using_input_method) {
@@ -337,10 +310,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         // shortcuts.
         if ($("#searchbox .navbar-search.expanded").length === 0) {
             initiate_search();
-        } else if (!search_input_has_changed) {
-            // Clicking is a way to remove the freshly opened marker,
-            // similar to clearing text selection.
-            $(".search-input-and-pills").removeClass("freshly-opened");
         }
     });
 
@@ -361,7 +330,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         if (get_search_bar_text() === "") {
             $("#search_query").empty();
         }
-        on_search_contents_changed();
+        search_input_has_changed = true;
     });
 
     // register searchbar click handler
@@ -393,14 +362,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
 
 export function initiate_search(): void {
     open_search_bar_and_close_narrow_description();
-    // Sometimes a user opens the search bar and wants to start typing
-    // a fresh query, not add new pills onto the existing query. We handle
-    // this situation by adding a `freshly-opened` class that displays the
-    // pills in their "focused" state, indicating that if the user starts
-    // typing then the pills will go away. If the user presses right arrow
-    // or clicks on the search input instead, the selection goes away and
-    // the user can add new search input to the existing pills.
-    $(".search-input-and-pills").addClass("freshly-opened");
     focus_search_input_at_end();
 
     // Open the typeahead after opening the search bar, so that we don't
@@ -456,7 +417,6 @@ export function close_search_bar_and_open_narrow_description(): void {
     }
 
     $(".navbar-search").removeClass("expanded");
-    $(".search-input-and-pills").removeClass("freshly-opened");
     $("#message_view_header").removeClass("hidden");
 
     if ($("#search_query").is(":focus")) {
