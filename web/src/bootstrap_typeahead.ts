@@ -707,6 +707,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keyup(e: JQuery.KeyUpEvent): void {
+        this.mouse_moved_since_typeahead = false;
         // NOTE: Ideally we can ignore meta keyup calls here but
         // it's better to just trigger the lookup call to update the list in case
         // it did modify the query. For example, `Command + delete` on Mac
