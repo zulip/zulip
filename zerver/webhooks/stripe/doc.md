@@ -2,6 +2,17 @@
 
 Get Zulip notifications for Stripe events!
 
+{% if 'http:' in external_url_scheme %}
+
+!!! tip ""
+
+    Stripe will only send webhook payloads over HTTPS, but your Zulip
+    server is configured to only accept HTTP. To use the Stripe
+    webhook with this Zulip server, you will need to use a tunneling
+    service like ngrok or Ultrahook.
+
+{% endif %}
+
 {start_tabs}
 
 1. {!create-channel.md!}
@@ -21,14 +32,6 @@ Get Zulip notifications for Stripe events!
    organization. Set the pattern to `(?P<id>cus_[0-9a-zA-Z]+)` and the URL
    template to `https://dashboard.stripe.com/customers/{id}`. This step
    creates links to Stripe customers in Zulip messages and topics.
-
-{% if 'http:' in external_url_scheme %}
-
-!!! tip ""
-
-    Note that Stripe will only accept HTTPS webhooks!
-
-{% endif %}
 
 {end_tabs}
 
