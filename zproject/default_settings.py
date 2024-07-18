@@ -189,6 +189,8 @@ BOT_CONFIG_SIZE_LIMIT = 10000
 
 # External service configuration
 CAMO_URI = ""
+KATEX_SERVER = get_config("application_server", "katex_server", True)
+KATEX_SERVER_PORT = get_config("application_server", "katex_server_port", "9700")
 MEMCACHED_LOCATION = "127.0.0.1:11211"
 MEMCACHED_USERNAME = None if get_secret("memcached_password") is None else "zulip@localhost"
 RABBITMQ_HOST = "127.0.0.1"

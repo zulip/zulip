@@ -79,6 +79,7 @@ STAFF_SUBDOMAIN = "zulip"
 EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
 # Disable Camo in development
 CAMO_URI = ""
+KATEX_SERVER = False
 
 TORNADO_PORTS = [9993]
 
