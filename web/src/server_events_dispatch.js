@@ -461,17 +461,6 @@ export function dispatch_normal_event(event) {
                     realm_user_settings_defaults,
                 );
             }
-
-            if (
-                ["dense_mode", "web_font_size_px", "web_line_height_percent"].includes(
-                    event.property,
-                )
-            ) {
-                /* istanbul ignore next */
-                settings_preferences.update_information_density_settings_visibility(
-                    $(settings_realm_user_settings_defaults.realm_default_settings_panel.container),
-                );
-            }
             break;
         }
 
@@ -804,9 +793,6 @@ export function dispatch_normal_event(event) {
                 $("body").toggleClass("more-dense-mode");
                 information_density.set_base_typography_css_variables();
                 information_density.calculate_timestamp_widths();
-                settings_preferences.update_information_density_settings_visibility(
-                    $(settings_preferences.user_settings_panel.container),
-                );
             }
             if (
                 event.property === "web_font_size_px" ||
@@ -814,9 +800,6 @@ export function dispatch_normal_event(event) {
             ) {
                 information_density.set_base_typography_css_variables();
                 information_density.calculate_timestamp_widths();
-                settings_preferences.update_information_density_settings_visibility(
-                    $(settings_preferences.user_settings_panel.container),
-                );
             }
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();
