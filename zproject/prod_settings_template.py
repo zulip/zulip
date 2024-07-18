@@ -734,8 +734,8 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## How long outgoing webhook requests time out after
 # OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 
-## Mobile push notifications require registering for the Zulip mobile
-## push notification service and configuring your server to use the
+## Mobile push notifications require registering for the Zulip Mobile
+## Push Notification Service and configuring your server to use the
 ## service here. For complete documentation, see:
 ##
 ##   https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
@@ -743,9 +743,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
 
 ## By default, a Zulip server that has registered for Zulip services
-## submits both basic metadata (required for billing/free plan
-## eligiblity) as well as aggregate usage statistics. You can disable
-## submitting usage statistics here.
+## submits both basic metadata (required for billing and for determining
+## free plan eligibility), as well as aggregate usage statistics. You
+## can disable submitting usage statistics here.
 # ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
 
 ## Whether to redact the content of push notifications.  This is less
