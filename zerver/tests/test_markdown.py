@@ -463,7 +463,7 @@ Outside. Should convert:<>
         self.assertEqual(preprocessor.run(original), expected)
 
 
-class MarkdownTest(ZulipVerboseEqualTestCase):
+class MarkdownFixtureTest(ZulipVerboseEqualTestCase):
     def load_markdown_tests(self) -> tuple[dict[str, Any], list[list[str]]]:
         test_fixtures = {}
         with open(
@@ -554,6 +554,84 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
             converted = markdown_convert_wrapper(inline_url)
             self.assertEqual(match, converted)
 
+
+class MarkdownLinkTest(ZulipVerboseEqualTestCase):
+    def test_url_to_a(self) -> None:
+        url = "javascript://example.com/invalidURL"
+        converted = url_to_a(db_data=None, url=url, text=url)
+        self.assertEqual(
+            converted,
+            "javascript://example.com/invalidURL",
+        )
+
+    def test_normal_link(self) -> None:
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user("othello")
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = "http://example.com/#settings/"
+
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            '<p><a href="http://example.com/#settings/">http://example.com/#settings/</a></p>',
+        )
+
+    def test_relative_link(self) -> None:
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user("othello")
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        msg = "http://zulip.testserver/#narrow/stream/999-hello"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            '<p><a href="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>',
+        )
+
+        msg = f"http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            f'<p><a href="user_uploads/{realm.id}/ff/file.txt">http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt</a></p>',
+        )
+
+        msg = "http://zulip.testserver/not:relative"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            '<p><a href="http://zulip.testserver/not:relative">http://zulip.testserver/not:relative</a></p>',
+        )
+
+    def test_relative_link_streams_page(self) -> None:
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user("othello")
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = "http://zulip.testserver/#channels/all"
+
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            '<p><a href="#channels/all">http://zulip.testserver/#channels/all</a></p>',
+        )
+
+    def test_md_relative_link(self) -> None:
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user("othello")
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        msg = "[hello](http://zulip.testserver/#narrow/stream/999-hello)"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            '<p><a href="#narrow/stream/999-hello">hello</a></p>',
+        )
+
+        msg = f"[hello](http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt)"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            f'<p><a href="user_uploads/{realm.id}/ff/file.txt">hello</a></p>',
+        )
+
+        msg = "[hello](http://zulip.testserver/not:relative)"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            '<p><a href="http://zulip.testserver/not:relative">hello</a></p>',
+        )
+
     def test_inline_file(self) -> None:
         msg = "Check out this file file:///Volumes/myserver/Users/Shared/pi.py"
 
@@ -584,6 +662,8 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
             '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>',
         )
 
+
+class MarkdownEmbedsTest(ZulipVerboseEqualTestCase):
     def test_inline_youtube(self) -> None:
         msg = "Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE"
         converted = markdown_convert_wrapper(msg)
@@ -1085,6 +1165,8 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
         ):
             fetch_tweet_data("287977969287315459")
 
+
+class MarkdownEmojiTest(ZulipVerboseEqualTestCase):
     def test_content_has_emoji(self) -> None:
         self.assertFalse(content_has_emoji_syntax("boring"))
         self.assertFalse(content_has_emoji_syntax("hello: world"))
@@ -1164,6 +1246,20 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
         converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, unicode_converted)
 
+    def test_all_emoji_match_regex(self) -> None:
+        non_matching_emoji = [
+            emoji
+            for codepoint in codepoint_to_name
+            if not POSSIBLE_EMOJI_RE.fullmatch(emoji := hex_codepoint_to_emoji(codepoint))
+        ]
+        self.assertEqual(
+            non_matching_emoji,
+            # unqualified numbers in boxes shouldn't be converted to emoji images, so this is fine
+            ["#⃣", "*⃣", "0⃣", "1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣"],
+        )
+
+
+class MarkdownLinkifierTest(ZulipVerboseEqualTestCase):
     def test_links_in_topic_name(self) -> None:
         realm = get_realm("zulip")
         msg = Message(sender=self.example_user("othello"), realm=realm)
@@ -1712,6 +1808,8 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
                 [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
             )
 
+
+class MarkdownAlertTest(ZulipVerboseEqualTestCase):
     def test_alert_words(self) -> None:
         user_profile = self.example_user("othello")
         do_add_alert_words(user_profile, ["ALERTWORD", "scaryword"])
@@ -1963,6 +2061,8 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
         # Only hamlet has alert-word 'issue124' present in the message content
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
+
+class MarkdownCodeBlockTest(ZulipVerboseEqualTestCase):
     def test_default_code_block_language(self) -> None:
         realm = get_realm("zulip")
         self.assertEqual(realm.default_code_block_language, "")
@@ -2019,6 +2119,35 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertFalse(with_language == without_language)
 
+    def test_disabled_code_block_processor(self) -> None:
+        msg = (
+            "Hello,\n\n"
+            "    I am writing this message to test something. I am writing this message to test"
+            " something."
+        )
+        converted = markdown_convert_wrapper(msg)
+        expected_output = (
+            "<p>Hello,</p>\n"
+            '<div class="codehilite"><pre><span></span><code>I am writing this message to test'
+            " something. I am writing this message to test something.\n"
+            "</code></pre></div>"
+        )
+        self.assertEqual(converted, expected_output)
+
+        realm = do_create_realm(
+            string_id="code_block_processor_test", name="code_block_processor_test"
+        )
+        maybe_update_markdown_engines(realm.id, True)
+        rendering_result = markdown_convert(msg, message_realm=realm, email_gateway=True)
+        expected_output = (
+            "<p>Hello,</p>\n"
+            "<p>I am writing this message to test something. I am writing this message to test"
+            " something.</p>"
+        )
+        self.assertEqual(rendering_result.rendered_content, expected_output)
+
+
+class MarkdownMentionTest(ZulipVerboseEqualTestCase):
     def test_mention_topic_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(
@@ -2847,6 +2976,8 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
         self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
         self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
 
+
+class MarkdownStreamMentionTests(ZulipVerboseEqualTestCase):
     def test_stream_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
@@ -3059,6 +3190,8 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
             "</div>",
         )
 
+
+class MarkdownMITTest(ZulipVerboseEqualTestCase):
     def test_mit_rendering(self) -> None:
         """Test the Markdown configs for the MIT Zephyr mirroring system;
         verifies almost all inline patterns are disabled, but
@@ -3085,109 +3218,8 @@ class MarkdownTest(ZulipVerboseEqualTestCase):
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
         )
 
-    def test_url_to_a(self) -> None:
-        url = "javascript://example.com/invalidURL"
-        converted = url_to_a(db_data=None, url=url, text=url)
-        self.assertEqual(
-            converted,
-            "javascript://example.com/invalidURL",
-        )
 
-    def test_disabled_code_block_processor(self) -> None:
-        msg = (
-            "Hello,\n\n"
-            "    I am writing this message to test something. I am writing this message to test"
-            " something."
-        )
-        converted = markdown_convert_wrapper(msg)
-        expected_output = (
-            "<p>Hello,</p>\n"
-            '<div class="codehilite"><pre><span></span><code>I am writing this message to test'
-            " something. I am writing this message to test something.\n"
-            "</code></pre></div>"
-        )
-        self.assertEqual(converted, expected_output)
-
-        realm = do_create_realm(
-            string_id="code_block_processor_test", name="code_block_processor_test"
-        )
-        maybe_update_markdown_engines(realm.id, True)
-        rendering_result = markdown_convert(msg, message_realm=realm, email_gateway=True)
-        expected_output = (
-            "<p>Hello,</p>\n"
-            "<p>I am writing this message to test something. I am writing this message to test"
-            " something.</p>"
-        )
-        self.assertEqual(rendering_result.rendered_content, expected_output)
-
-    def test_normal_link(self) -> None:
-        realm = get_realm("zulip")
-        sender_user_profile = self.example_user("othello")
-        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "http://example.com/#settings/"
-
-        self.assertEqual(
-            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="http://example.com/#settings/">http://example.com/#settings/</a></p>',
-        )
-
-    def test_relative_link(self) -> None:
-        realm = get_realm("zulip")
-        sender_user_profile = self.example_user("othello")
-        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-
-        msg = "http://zulip.testserver/#narrow/stream/999-hello"
-        self.assertEqual(
-            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>',
-        )
-
-        msg = f"http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt"
-        self.assertEqual(
-            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            f'<p><a href="user_uploads/{realm.id}/ff/file.txt">http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt</a></p>',
-        )
-
-        msg = "http://zulip.testserver/not:relative"
-        self.assertEqual(
-            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="http://zulip.testserver/not:relative">http://zulip.testserver/not:relative</a></p>',
-        )
-
-    def test_relative_link_streams_page(self) -> None:
-        realm = get_realm("zulip")
-        sender_user_profile = self.example_user("othello")
-        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "http://zulip.testserver/#channels/all"
-
-        self.assertEqual(
-            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#channels/all">http://zulip.testserver/#channels/all</a></p>',
-        )
-
-    def test_md_relative_link(self) -> None:
-        realm = get_realm("zulip")
-        sender_user_profile = self.example_user("othello")
-        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-
-        msg = "[hello](http://zulip.testserver/#narrow/stream/999-hello)"
-        self.assertEqual(
-            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#narrow/stream/999-hello">hello</a></p>',
-        )
-
-        msg = f"[hello](http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt)"
-        self.assertEqual(
-            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            f'<p><a href="user_uploads/{realm.id}/ff/file.txt">hello</a></p>',
-        )
-
-        msg = "[hello](http://zulip.testserver/not:relative)"
-        self.assertEqual(
-            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="http://zulip.testserver/not:relative">hello</a></p>',
-        )
-
+class MarkdownHTMLTest(ZulipVerboseEqualTestCase):
     def test_html_entity_conversion(self) -> None:
         msg = """\
             Test raw: Hello, &copy;
@@ -3332,17 +3364,3 @@ class MarkdownErrorTests(ZulipVerboseEqualTestCase):
 
         result = processor.run(markdown_input)
         self.assertEqual(result, expected)
-
-
-class MarkdownEmojiTest(ZulipVerboseEqualTestCase):
-    def test_all_emoji_match_regex(self) -> None:
-        non_matching_emoji = [
-            emoji
-            for codepoint in codepoint_to_name
-            if not POSSIBLE_EMOJI_RE.fullmatch(emoji := hex_codepoint_to_emoji(codepoint))
-        ]
-        self.assertEqual(
-            non_matching_emoji,
-            # unqualified numbers in boxes shouldn't be converted to emoji images, so this is fine
-            ["#⃣", "*⃣", "0⃣", "1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣"],
-        )
