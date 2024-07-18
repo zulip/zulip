@@ -218,7 +218,12 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_toggling_boolean_user_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""
         boolean_settings = (
-            s for s in UserProfile.property_types if UserProfile.property_types[s] is bool
+            s
+            for s in UserProfile.property_types
+            if UserProfile.property_types[s] is bool
+            # Dense mode can't be toggled without changing other settings too.
+            # This setting is tested in test_changing_information_density_settings.
+            and s not in ["dense_mode"]
         )
         for user_setting in boolean_settings:
             self.check_for_toggle_param_patch("/json/settings", user_setting)
@@ -503,7 +508,10 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_changing_information_density_settings(self) -> None:
         hamlet = self.example_user("hamlet")
-        self.assertEqual(hamlet.dense_mode, True)
+        hamlet.dense_mode = True
+        hamlet.web_font_size_px = 14
+        hamlet.web_line_height_percent = 122
+        hamlet.save()
         self.login("hamlet")
 
         data: dict[str, str | int] = {"web_font_size_px": 16}

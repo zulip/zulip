@@ -209,12 +209,12 @@ def check_information_density_setting_values(
     )
 
     if dense_mode:
-        if web_font_size_px != UserBaseSettings.WEB_FONT_SIZE_PX_LEGACY:
+        if web_font_size_px != UserBaseSettings.WEB_FONT_SIZE_PX_COMPACT:
             raise JsonableError(
                 _("Incompatible values for 'dense_mode' and 'web_font_size_px' settings.")
             )
 
-        if web_line_height_percent != UserBaseSettings.WEB_LINE_HEIGHT_PERCENT_LEGACY:
+        if web_line_height_percent != UserBaseSettings.WEB_LINE_HEIGHT_PERCENT_COMPACT:
             raise JsonableError(
                 _("Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.")
             )
