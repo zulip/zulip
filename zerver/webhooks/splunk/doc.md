@@ -12,9 +12,8 @@ See your Splunk Search alerts in Zulip!
 
     !!! tip ""
 
-        If you do not specify a topic, the name of the search is used,
-        and will truncated if it exceeds the character limit for Zulip
-        topics.
+        If you do not specify a topic, the name of the search will be used
+        as the topic (truncated if it's too long).
 
 1. In the Splunk search app, execute the search you'd like to be
    notified about. Click on **Save As** in the top-right corner,
