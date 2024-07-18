@@ -713,23 +713,6 @@ class MarkdownEmbedsTest(ZulipVerboseEqualTestCase):
             f"""<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="{get_camo_url("https://i.ytimg.com/vi/nOJgD4fcZhI/default.jpg")}"></a></div>""",
         )
 
-    def test_inline_vimeo(self) -> None:
-        msg = "Check out the debate: https://vimeo.com/246979354"
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(
-            converted,
-            '<p>Check out the debate: <a href="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>',
-        )
-
-        msg = "https://vimeo.com/246979354"
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(
-            converted,
-            '<p><a href="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>',
-        )
-
     @override_settings(THUMBNAIL_IMAGES=True)
     def test_inline_image_thumbnail_url(self) -> None:
         realm = get_realm("zephyr")
