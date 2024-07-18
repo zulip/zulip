@@ -260,9 +260,15 @@ DEFAULT_RATE_LIMITING_RULES = {
     ],
     # Limits total number of unauthenticated API requests (primarily
     # used by the public access option). Since these are
-    # unauthenticated requests, each IP address is a separate bucket.
+    # unauthenticated requests, each IPv4 address is a separate bucket.
+    # For IPv6, one bucket is used for each IPv6/64 and another (larger one) for each IPv6/48.
     "api_by_ip": [
+        # can be IPv6/64, IPv4 or tor-exit-node.
+        # 100 requests per minute.
         (60, 100),
+    ],
+    "api_by_ipv6/48": [
+        # To do, but definitely should be larger than api_by_ip.
     ],
     # Limits total requests to the Mobile Push Notifications Service
     # by each individual Zulip server that is using the service. This
@@ -309,6 +315,7 @@ DEFAULT_RATE_LIMITING_RULES = {
     # sending of an email, restricting the number per IP address. This
     # is a general anti-spam measure.
     "sends_email_by_ip": [
+        # 5 emails per day.
         (86400, 5),
     ],
     # Limits access to uploaded files, in web-public contexts, done by

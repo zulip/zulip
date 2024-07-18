@@ -200,18 +200,26 @@ class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
 
     def test_used_in_tornado(self) -> None:
         user_profile = self.example_user("hamlet")
-        ip_addr = "192.168.0.123"
+        ipv4_addr = "192.168.0.123"
+        ipv6_addr = "2002:DB8::21f:5bff:febf:ce22:1111"
+
         with self.settings(RUNNING_INSIDE_TORNADO=True):
             user_obj = RateLimitedUser(user_profile, domain="api_by_user")
-            ip_obj = RateLimitedIPAddr(ip_addr, domain="api_by_ip")
+            ipv4_obj = RateLimitedIPAddr(ipv4_addr, domain="api_by_ip")
+            ipv6_obj = RateLimitedIPAddr(ipv6_addr, domain="api_by_ip")
+
         self.assertEqual(user_obj.backend, TornadoInMemoryRateLimiterBackend)
-        self.assertEqual(ip_obj.backend, TornadoInMemoryRateLimiterBackend)
+        self.assertEqual(ipv4_obj.backend, TornadoInMemoryRateLimiterBackend)
+        self.assertEqual(ipv6_obj.backend, TornadoInMemoryRateLimiterBackend)
 
         with self.settings(RUNNING_INSIDE_TORNADO=True):
             user_obj = RateLimitedUser(user_profile, domain="some_domain")
-            ip_obj = RateLimitedIPAddr(ip_addr, domain="some_domain")
+            ipv4_obj = RateLimitedIPAddr(ipv4_addr, domain="some_domain")
+            ipv6_obj = RateLimitedIPAddr(ipv6_addr, domain="some_domain")
+
         self.assertEqual(user_obj.backend, RedisRateLimiterBackend)
-        self.assertEqual(ip_obj.backend, RedisRateLimiterBackend)
+        self.assertEqual(ipv4_obj.backend, RedisRateLimiterBackend)
+        self.assertEqual(ipv6_obj.backend, RedisRateLimiterBackend)
 
     def test_block_access(self) -> None:
         obj = self.create_object("test", [(2, 5)])
@@ -248,6 +256,19 @@ class RateLimitedObjectsTest(ZulipTestCase):
     def test_empty_rules_edge_case(self) -> None:
         obj = RateLimitedTestObject("test", rules=[], backend=RedisRateLimiterBackend)
         self.assertEqual(obj.get_rules(), [(1, 9999)])
+
+    def test_ip_bucket_key(self) -> None:
+        ipv6_addr = "2001:db8:4a2b:21fe::4"
+        ipv4_addr = "192.168.0.123"
+        domain = "api_by_ip"
+
+        ipv4_bucket_key = RateLimitedIPAddr(ipv4_addr, domain=domain).key()
+        ipv6_64_bucket_key = RateLimitedIPAddr(ipv6_addr, domain=domain, ipv6_prefix=64).key()
+        ipv6_48_bucket_key = RateLimitedIPAddr(ipv6_addr, domain=domain, ipv6_prefix=48).key()
+
+        self.assertEqual(ipv4_bucket_key, f"RateLimitedIPAddr:<{ipv4_addr}>:{domain}")
+        self.assertEqual(ipv6_64_bucket_key, f"RateLimitedIPAddr:<20010db84a2b21fe>:{domain}")
+        self.assertEqual(ipv6_48_bucket_key, f"RateLimitedIPAddr:<20010db84a2b>:{domain}")
 
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
