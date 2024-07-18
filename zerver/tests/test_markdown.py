@@ -33,7 +33,7 @@ from zerver.lib.markdown import (
     InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
-    clear_state_for_testing,
+    clear_web_link_regex_for_testing,
     content_has_emoji_syntax,
     fetch_tweet_data,
     get_tweet_id,
@@ -465,11 +465,6 @@ Outside. Should convert:<>
 
 class MarkdownTest(ZulipTestCase):
     @override
-    def setUp(self) -> None:
-        super().setUp()
-        clear_state_for_testing()
-
-    @override
     def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
         if isinstance(first, str) and isinstance(second, str):
             if first != second:
@@ -573,20 +568,27 @@ class MarkdownTest(ZulipTestCase):
 
     def test_inline_file(self) -> None:
         msg = "Check out this file file:///Volumes/myserver/Users/Shared/pi.py"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>',
-        )
 
-        clear_state_for_testing()
-        with self.settings(ENABLE_FILE_LINKS=False):
-            realm = do_create_realm(string_id="file_links_test", name="file_links_test")
-            maybe_update_markdown_engines(realm.id, False)
-            self.assertEqual(
-                markdown_convert(msg, message_realm=realm).rendered_content,
-                "<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>",
-            )
+        # Make separate realms because the markdown engines cache the
+        # linkifiers on them, including if ENABLE_FILE_LINKS was used
+        realm = do_create_realm(string_id="file_links_disabled", name="File links disabled")
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm).rendered_content,
+            "<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>",
+        )
+        clear_web_link_regex_for_testing()
+
+
+        try:
+            with self.settings(ENABLE_FILE_LINKS=True):
+                realm = do_create_realm(string_id="file_links_enabled", name="File links enabled")
+                self.assertEqual(
+                    markdown_convert(msg, message_realm=realm).rendered_content,
+                    '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>',
+                )
+        finally:
+            clear_web_link_regex_for_testing()
+
 
     def test_inline_bitcoin(self) -> None:
         msg = "To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin"

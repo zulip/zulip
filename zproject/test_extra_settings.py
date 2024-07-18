@@ -131,9 +131,6 @@ if not PUPPETEER_TESTS:
     set_loglevel("zerver.worker", "WARNING")
     set_loglevel("stripe", "WARNING")
 
-# Enable file:/// hyperlink support by default in tests
-ENABLE_FILE_LINKS = True
-
 # This is set dynamically in `zerver/lib/test_runner.py`.
 # Allow setting LOCAL_UPLOADS_DIR in the environment so that the
 # frontend/API tests in test_server.py can control this.
