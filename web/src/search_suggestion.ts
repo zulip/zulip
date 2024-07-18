@@ -842,13 +842,51 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
     return search_strings.join(" ");
 }
 
+function suggestions_for_current_filter(): SuggestionLine[] {
+    if (narrow_state.stream_name() && narrow_state.topic() !== "") {
+        return [
+            get_default_suggestion_line([
+                {
+                    operator: "channel",
+                    operand: narrow_state.stream_name()!,
+                },
+            ]),
+            get_default_suggestion_line(narrow_state.search_terms()),
+        ];
+    }
+    if (narrow_state.pm_emails_string()) {
+        return [
+            get_default_suggestion_line([
+                {
+                    operator: "is",
+                    operand: "dm",
+                },
+            ]),
+            get_default_suggestion_line(narrow_state.search_terms()),
+        ];
+    }
+    return [get_default_suggestion_line(narrow_state.search_terms())];
+}
+
 class Attacher {
     result: SuggestionLine[] = [];
     prev = new Set<string>();
     base: SuggestionLine;
+    add_current_filter: boolean;
 
-    constructor(base: SuggestionLine) {
+    constructor(base: SuggestionLine, search_query_is_empty: boolean, add_current_filter: boolean) {
         this.base = base;
+        this.add_current_filter = add_current_filter;
+        // Sometimes we add suggestions with the current filter in case
+        // the user wants to search within the current filter. For an empty
+        // search query, we put the current filter suggestions at the start
+        // of the list.
+        if (search_query_is_empty && this.add_current_filter) {
+            this.add_current_filter = false;
+            for (const current_filter_line of suggestions_for_current_filter()) {
+                this.push(current_filter_line);
+            }
+        }
     }
 
     push(suggestion_line: SuggestionLine): void {
@@ -926,7 +964,11 @@ class Attacher {
     }
 }
 
-export function get_search_result(query_from_pills: string, query_from_text: string): Suggestion[] {
+export function get_search_result(
+    query_from_pills: string,
+    query_from_text: string,
+    add_current_filter = false,
+): Suggestion[] {
     let suggestion_line: SuggestionLine;
 
     // search_terms correspond to the terms for the query in the input.
@@ -971,7 +1013,7 @@ export function get_search_result(query_from_pills: string, query_from_text: str
 
     const base_terms = [...pill_search_terms, ...text_search_terms.slice(0, -1)];
     const base = get_default_suggestion_line(base_terms);
-    const attacher = new Attacher(base);
+    const attacher = new Attacher(base, all_search_terms.length === 0, add_current_filter);
 
     // Display the default first, unless it has invalid terms.
     if (last.operator === "search") {
@@ -1055,11 +1097,12 @@ export function get_search_result(query_from_pills: string, query_from_text: str
 export function get_suggestions(
     query_from_pills: string,
     query_from_text: string,
+    add_current_filter = false,
 ): {
     strings: string[];
     lookup_table: Map<string, Suggestion>;
 } {
-    const result = get_search_result(query_from_pills, query_from_text);
+    const result = get_search_result(query_from_pills, query_from_text, add_current_filter);
     return finalize_search_result(result);
 }
 
