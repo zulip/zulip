@@ -6,7 +6,6 @@ import render_search_list_item from "../templates/search_list_item.hbs";
 import {Typeahead} from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import {Filter} from "./filter";
-import type {RemovePillTrigger} from "./input_pill";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
@@ -168,7 +167,13 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             assert(search_pill_widget !== null);
             const query_from_pills =
                 search_pill.get_current_search_string_for_widget(search_pill_widget);
-            const suggestions = search_suggestion.get_suggestions(query_from_pills, query);
+            const add_current_filter =
+                query_from_pills === "" && narrow_state.filter() !== undefined;
+            const suggestions = search_suggestion.get_suggestions(
+                query_from_pills,
+                query,
+                add_current_filter,
+            );
             // Update our global search_map hash
             search_map = suggestions.lookup_table;
             return suggestions.strings;
@@ -361,7 +366,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
 }
 
 export function initiate_search(): void {
-    open_search_bar_and_close_narrow_description();
+    open_search_bar_and_close_narrow_description(true);
     focus_search_input_at_end();
 
     // Open the typeahead after opening the search bar, so that we don't
@@ -372,15 +377,17 @@ export function initiate_search(): void {
 
 // we rely entirely on this function to ensure
 // the searchbar has the right text/pills.
-function reset_searchbox(): void {
+function reset_searchbox(clear = false): void {
     assert(search_pill_widget !== null);
     search_pill_widget.clear(true);
     search_input_has_changed = false;
-    search_pill.set_search_bar_contents(
-        narrow_state.search_terms(),
-        search_pill_widget,
-        set_search_bar_text,
-    );
+    if (!clear) {
+        search_pill.set_search_bar_contents(
+            narrow_state.search_terms(),
+            search_pill_widget,
+            set_search_bar_text,
+        );
+    }
 }
 
 function exit_search(opts: {keep_search_narrow_open: boolean}): void {
@@ -399,8 +406,8 @@ function exit_search(opts: {keep_search_narrow_open: boolean}): void {
     $(".app").trigger("focus");
 }
 
-export function open_search_bar_and_close_narrow_description(): void {
-    reset_searchbox();
+export function open_search_bar_and_close_narrow_description(clear = false): void {
+    reset_searchbox(clear);
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
     popovers.hide_all();
