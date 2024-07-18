@@ -3,13 +3,11 @@
 This page contains the release history for the Zulip server. See also the
 [Zulip release lifecycle](../overview/release-lifecycle.md).
 
-## Zulip 9.x series
+## Zulip Server 9.x series
 
-### 9.0 -- unreleased
+### Zulip Server 9.0-beta1
 
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of all changes.
+_Released 2024-07-18_
 
 #### Highlights
 
@@ -21,6 +19,9 @@ log][commit-log] for an up-to-date list of all changes.
   exactly the same, and bots do not need to be updated.
 - The All messages view has been renamed to Combined feed, and
   its internals have been reworked, fixing many subtle bugs.
+- To make reading more comfortable, Zulip has been redesigned with a
+  larger font size and line spacing. The previous configuration is
+  available via the "Compact mode" setting.
 - The main message feed search feature has been redesigned with
   user-friendly pills for search operators.
 - When you paste content into the compose box, Zulip will now do its
@@ -49,10 +50,10 @@ log][commit-log] for an up-to-date list of all changes.
   desktop app.
 - Zulip's new-user and new-organization onboarding experiences have
   been completely reworked.
-- Redesigned all popovers with a more modern visual style and improved
-  accessibility for screen readers.
-- Added a new `with` narrow filter operator for implementing permanent
-  links to topics designed to handle topics being renamed or marked as
+- Redesigned all popovers with a more modern visual style, better
+  icons, and improved accessibility for screen readers.
+- Added a new `with` narrow parameter for implementing permanent links
+  to topics designed to handle topics being renamed or marked as
   resolved. This operator is not used in 9.0, but likely will be used
   by the topic-link Markdown feature starting with a 9.x maintenance
   release.
@@ -133,6 +134,7 @@ log][commit-log] for an up-to-date list of all changes.
 - Improved the efficiency of Zulip's internal statistics system, both
   in terms of CPU and storage usage.
 - Improved tooltips to better clarify how drafts work.
+- Improved the mobile web compose area experience.
 - Improved left sidebar channel menu to be divided between personal
   and administrator actions, like the topic menu, and to link directly
   to the personal tab if one doesn't have channel admin permissions.
@@ -161,7 +163,7 @@ log][commit-log] for an up-to-date list of all changes.
   the recent conversations view.
 - Fixed several bugs involving uploading files while editing messages.
 - Fixed dozens of subtle layout bugs in the web app.
-- Fixed several live-update bugs when moving messages.
+- Fixed several live-update bugs when moving or deleting messages.
 - Fixed several bugs impacting the public access experience.
 - Fixed several bugs involving the compose box, its banners, and tooltips.
 - Fixed several race condition bugs affecting the server and web app.
