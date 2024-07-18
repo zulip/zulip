@@ -18,8 +18,10 @@ import {
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import * as settings_components from "./settings_components";
 import type {GenericUserSettings} from "./settings_config";
+import type {RequestOpts} from "./settings_ui";
 import * as settings_ui from "./settings_ui";
 import {realm} from "./state_data";
 import * as ui_report from "./ui_report";
@@ -53,6 +55,7 @@ export function set_default_language_name(name: string | undefined): void {
 function change_display_setting(
     data: Record<string, string | boolean | number>,
     $status_el: JQuery,
+    success_continuation?: (response_data: unknown) => void,
     success_msg_html?: string,
     sticky?: boolean,
 ): void {
@@ -60,10 +63,14 @@ function change_display_setting(
     const display_message_html = status_is_sticky
         ? $status_el.attr("data-sticky_msg_html")
         : success_msg_html;
-    const opts = {
+    const opts: RequestOpts = {
         success_msg_html: display_message_html,
         sticky: status_is_sticky || sticky,
     };
+
+    if (success_continuation !== undefined) {
+        opts.success_continuation = success_continuation;
+    }
 
     if (sticky && success_msg_html) {
         $status_el.attr("data-is_sticky", "true");
@@ -141,6 +148,7 @@ function user_default_language_modal_post_render(): void {
             change_display_setting(
                 data,
                 $("#settings_content").find(".general-settings-status"),
+                undefined,
                 $t_html(
                     {
                         defaultMessage:
@@ -226,6 +234,8 @@ export function set_up(settings_panel: SettingsPanel): void {
         .find(".setting_web_stream_unreads_count_display_policy")
         .val(settings_object.web_stream_unreads_count_display_policy);
 
+    update_information_density_settings_visibility($container, settings_object, {});
+
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
         // settings_org.js handlers, so we can return early here.
@@ -263,10 +273,20 @@ export function set_up(settings_panel: SettingsPanel): void {
                 data.dense_mode = false;
             }
 
+            let success_continuation;
+            if (["dense_mode", "web_font_size_px", "web_line_height_percent"].includes(setting)) {
+                success_continuation = () => {
+                    update_information_density_settings_visibility(
+                        $container,
+                        settings_object,
+                        data,
+                    );
+                };
+            }
             const $status_element = $input_elem
                 .closest(".subsection-parent")
                 .find(".alert-notification");
-            change_display_setting(data, $status_element);
+            change_display_setting(data, $status_element, success_continuation);
         },
     );
 
@@ -321,8 +341,6 @@ export function set_up(settings_panel: SettingsPanel): void {
             },
         });
     });
-
-    update_information_density_settings_visibility($container);
 }
 
 export async function report_emojiset_change(settings_panel: SettingsPanel): Promise<void> {
@@ -399,20 +417,29 @@ export function update_page(property: UserSettingsProperty): void {
     settings_components.set_input_element_value($input_elem, value);
 }
 
-export function update_information_density_settings_visibility($container: JQuery): void {
+export function update_information_density_settings_visibility(
+    $container: JQuery,
+    settings_object: UserSettings | RealmDefaultSettings,
+    request_data: Record<string, boolean | number | string>,
+): void {
     if (page_params.development_environment) {
         $container.find(".information-density-settings").show();
         return;
     }
 
-    if (user_settings.dense_mode) {
+    const dense_mode = request_data.dense_mode ?? settings_object.dense_mode;
+    const web_font_size_px = request_data.web_font_size_px ?? settings_object.web_font_size_px;
+    const web_line_height_percent =
+        request_data.web_line_height_percent ?? settings_object.web_line_height_percent;
+
+    if (dense_mode) {
         $container.find(".information-density-settings").hide();
         return;
     }
 
     if (
-        user_settings.web_font_size_px === NON_COMPACT_MODE_FONT_SIZE_PX &&
-        user_settings.web_line_height_percent === NON_COMPACT_MODE_LINE_HEIGHT_PERCENT
+        web_font_size_px === NON_COMPACT_MODE_FONT_SIZE_PX &&
+        web_line_height_percent === NON_COMPACT_MODE_LINE_HEIGHT_PERCENT
     ) {
         $container.find(".information-density-settings").hide();
         return;
