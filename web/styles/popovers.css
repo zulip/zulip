@@ -326,7 +326,8 @@ ul.popover-group-menu-member-list {
     }
 }
 
-.popover-group-menu-member {
+.popover-group-menu-member,
+.popover-group-menu-placeholder {
     display: flex;
     align-items: center;
     padding: 0 10px;
@@ -339,7 +340,8 @@ ul.popover-group-menu-member-list {
 }
 
 .popover-group-menu-description,
-.popover-group-menu-member-name {
+.popover-group-menu-member-name,
+.popover-group-menu-placeholder {
     color: var(--color-text-popover-menu);
 }
 
