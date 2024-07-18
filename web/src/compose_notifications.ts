@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
+import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_jump_to_sent_message_conversation_banner from "../templates/compose_banner/jump_to_sent_message_conversation_banner.hbs";
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
@@ -16,6 +17,7 @@ import * as narrow_state from "./narrow_state";
 import * as onboarding_steps from "./onboarding_steps";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 
 export function notify_unmute(muted_narrow: string, stream_id: number, topic_name: string): void {
@@ -118,9 +120,13 @@ export function get_muted_narrow(message: Message): string | undefined {
     return undefined;
 }
 
-export function is_local_mix(message: Message): boolean {
+export function should_jump_to_sent_message_conversation(message: Message): boolean {
+    if (!user_settings.web_navigate_to_sent_message) {
+        return false;
+    }
+
     if (message_lists.current === undefined) {
-        // For non-message list views like Inbox, the message is not visible after sending it.
+        // Non-message list views like Inbox.
         return true;
     }
 
@@ -138,6 +144,37 @@ export function is_local_mix(message: Message): boolean {
     }
 
     return true;
+}
+
+function should_show_narrow_to_recipient_banner(message: Message): boolean {
+    if (user_settings.web_navigate_to_sent_message) {
+        return false;
+    }
+
+    if (message_lists.current === undefined) {
+        // Non-message list views like Inbox.
+        return false;
+    }
+
+    const $row = message_lists.current.get_row(message.id);
+    if ($row.length > 0) {
+        // Our message is in the current message list.
+        return false;
+    }
+
+    // offscreen because it is outside narrow
+    // we can only look for these on non-search (can_apply_locally) messages
+    // see also: notify_messages_outside_current_search
+    const current_filter = narrow_state.filter();
+    if (
+        current_filter &&
+        current_filter.can_apply_locally() &&
+        !current_filter.predicate()(message)
+    ) {
+        return true;
+    }
+
+    return false;
 }
 
 export function notify_local_mixes(
@@ -173,11 +210,12 @@ export function notify_local_mixes(
             continue;
         }
 
-        const local_mix = is_local_mix(message);
+        const jump_to_sent_message_conversation = should_jump_to_sent_message_conversation(message);
+        const show_narrow_to_recipient_banner = should_show_narrow_to_recipient_banner(message);
 
         const link_msg_id = message.id;
 
-        if (!local_mix) {
+        if (!jump_to_sent_message_conversation && !show_narrow_to_recipient_banner) {
             if (need_user_to_scroll) {
                 const banner_text = $t({defaultMessage: "Sent!"});
                 const link_text = $t({defaultMessage: "Scroll down to view your message."});
@@ -194,6 +232,24 @@ export function notify_local_mixes(
 
             // This is the HAPPY PATH--for most messages we do nothing
             // other than maybe sending the above message.
+            continue;
+        }
+
+        if (show_narrow_to_recipient_banner) {
+            const banner_text = $t({
+                defaultMessage: "Sent! Your message is outside your current view.",
+            });
+            const link_text = $t(
+                {defaultMessage: "Go to {message_recipient}"},
+                {message_recipient: get_message_header(message)},
+            );
+            notify_above_composebox(
+                banner_text,
+                compose_banner.CLASSNAMES.narrow_to_recipient,
+                get_above_composebox_narrow_url(message),
+                link_msg_id,
+                link_text,
+            );
             continue;
         }
 
@@ -225,6 +281,91 @@ function get_above_composebox_narrow_url(message: Message): string {
         above_composebox_narrow_url = message.pm_with_url;
     }
     return above_composebox_narrow_url;
+}
+
+// for callback when we have to check with the server if a message should be in
+// the message_lists.current (!can_apply_locally; a.k.a. "a search").
+export function notify_messages_outside_current_search(messages: Message[]): void {
+    for (const message of messages) {
+        if (!people.is_current_user(message.sender_email)) {
+            continue;
+        }
+        const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
+        const link_text = $t(
+            {defaultMessage: "Narrow to {message_recipient}"},
+            {message_recipient: get_message_header(message)},
+        );
+        notify_above_composebox(
+            $t({defaultMessage: "Sent! Your message is outside your current view."}),
+            compose_banner.CLASSNAMES.narrow_to_recipient,
+            above_composebox_narrow_url,
+            message.id,
+            link_text,
+        );
+    }
+}
+
+export function maybe_show_one_time_non_interleaved_view_messages_fading_banner(): void {
+    // Remove message fading banners if exists. Helps in live-updating banner.
+    compose_banner.clear_non_interleaved_view_messages_fading_banner();
+    compose_banner.clear_interleaved_view_messages_fading_banner();
+
+    if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("non_interleaved_view_messages_fading")) {
+        return;
+    }
+
+    // Wait to display the banner the first time until there's actually fading.
+    const faded_messages_exist = $(".focused-message-list .recipient_row").hasClass("message-fade");
+    if (!faded_messages_exist) {
+        return;
+    }
+
+    const context = {
+        banner_type: compose_banner.INFO,
+        classname: compose_banner.CLASSNAMES.non_interleaved_view_messages_fading,
+        banner_text: $t({
+            defaultMessage:
+                "Messages in your view are faded to remind you that you are viewing a different conversation from the one you are composing to.",
+        }),
+        button_text: $t({defaultMessage: "Got it"}),
+        hide_close_button: true,
+    };
+    const new_row_html = render_compose_banner(context);
+
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+}
+
+export function maybe_show_one_time_interleaved_view_messages_fading_banner(): void {
+    // Remove message fading banners if exists. Helps in live-updating banner.
+    compose_banner.clear_non_interleaved_view_messages_fading_banner();
+    compose_banner.clear_interleaved_view_messages_fading_banner();
+
+    if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("interleaved_view_messages_fading")) {
+        return;
+    }
+
+    // Wait to display the banner the first time until there's actually fading.
+    const faded_messages_exist = $(".focused-message-list .recipient_row").hasClass("message-fade");
+    if (!faded_messages_exist) {
+        return;
+    }
+
+    // TODO: Introduce two variants of the banner_text depending on whether
+    // sending a message to the current recipient would appear in the view you're in.
+    // See: https://github.com/zulip/zulip/pull/29634#issuecomment-2073274029
+    const context = {
+        banner_type: compose_banner.INFO,
+        classname: compose_banner.CLASSNAMES.interleaved_view_messages_fading,
+        banner_text: $t({
+            defaultMessage:
+                "To make it easier to tell where your message will be sent, messages in conversations you are not composing to are faded.",
+        }),
+        button_text: $t({defaultMessage: "Got it"}),
+        hide_close_button: true,
+    };
+    const new_row_html = render_compose_banner(context);
+
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
 }
 
 export function reify_message_id(opts: {old_id: number; new_id: number}): void {

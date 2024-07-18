@@ -25,7 +25,9 @@ from zerver.models.messages import ArchivedSubMessage as ArchivedSubMessage
 from zerver.models.messages import ArchivedUserMessage as ArchivedUserMessage
 from zerver.models.messages import ArchiveTransaction as ArchiveTransaction
 from zerver.models.messages import Attachment as Attachment
+from zerver.models.messages import ImageAttachment as ImageAttachment
 from zerver.models.messages import Message as Message
+from zerver.models.messages import OnboardingUserMessage as OnboardingUserMessage
 from zerver.models.messages import Reaction as Reaction
 from zerver.models.messages import SubMessage as SubMessage
 from zerver.models.messages import UserMessage as UserMessage
@@ -47,7 +49,7 @@ from zerver.models.realm_playgrounds import RealmPlayground as RealmPlayground
 from zerver.models.realms import Realm as Realm
 from zerver.models.realms import RealmAuthenticationMethod as RealmAuthenticationMethod
 from zerver.models.realms import RealmDomain as RealmDomain
-from zerver.models.recipients import Huddle as Huddle
+from zerver.models.recipients import DirectMessageGroup as DirectMessageGroup
 from zerver.models.recipients import Recipient as Recipient
 from zerver.models.scheduled_jobs import AbstractScheduledJob as AbstractScheduledJob
 from zerver.models.scheduled_jobs import MissedMessageEmailAddress as MissedMessageEmailAddress

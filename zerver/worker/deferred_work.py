@@ -2,7 +2,7 @@
 import logging
 import tempfile
 import time
-from typing import Any, Dict
+from typing import Any
 from urllib.parse import urlsplit
 
 from django.conf import settings
@@ -46,7 +46,7 @@ class DeferredWorker(QueueProcessingWorker):
     MAX_CONSUME_SECONDS = None
 
     @override
-    def consume(self, event: Dict[str, Any]) -> None:
+    def consume(self, event: dict[str, Any]) -> None:
         start = time.time()
         if event["type"] == "mark_stream_messages_as_read":
             user_profile = get_user_profile_by_id(event["user_profile_id"])
@@ -117,7 +117,7 @@ class DeferredWorker(QueueProcessingWorker):
                 clear_push_device_tokens(event["user_profile_id"])
             except PushNotificationBouncerRetryLaterError:
 
-                def failure_processor(event: Dict[str, Any]) -> None:
+                def failure_processor(event: dict[str, Any]) -> None:
                     logger.warning(
                         "Maximum retries exceeded for trigger:%s event:clear_push_device_tokens",
                         event["user_profile_id"],

@@ -6,6 +6,7 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
@@ -15,6 +16,7 @@ import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
+import * as message_util from "./message_util";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -22,9 +24,7 @@ import * as people from "./people";
 import * as popovers from "./popovers";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
-import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
-import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 
 // Opts sent to `compose_actions.start`.
@@ -175,6 +175,13 @@ export function complete_starting_tasks(opts: ComposeActionsOpts): void {
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
+    // We explicitly call this function here apart from compose_setup.js
+    // as this helps to show banner when responding in an interleaved view.
+    // While responding, the compose box opens before fading resulting in
+    // the function call in compose_setup.js not displaying banner.
+    if (!narrow_state.narrowed_by_reply()) {
+        compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+    }
 }
 
 export function maybe_scroll_up_selected_message(opts: ComposeActionsStartOpts): void {
@@ -408,6 +415,8 @@ export function cancel(): void {
     hide_box();
     clear_box();
     compose_banner.clear_message_sent_banners();
+    compose_banner.clear_non_interleaved_view_messages_fading_banner();
+    compose_banner.clear_interleaved_view_messages_fading_banner();
     call_hooks(compose_cancel_hooks);
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
@@ -530,26 +539,21 @@ export function on_narrow(opts: NarrowActivateOpts): void {
             }
             return;
         }
-        // Do not open compose box if organization has disabled sending
-        // direct messages and recipient is not a bot.
+        // Do not open compose box if sender is not allowed to send direct message.
+        const recipient_ids_string = people.emails_strings_to_user_ids_string(
+            opts.private_message_recipient,
+        );
+
         if (
-            realm.realm_private_message_policy ===
-                settings_config.private_message_policy_values.disabled.code &&
-            opts.private_message_recipient
+            recipient_ids_string &&
+            !message_util.user_can_send_direct_message(recipient_ids_string)
         ) {
-            const emails = opts.private_message_recipient.split(",");
-            if (
-                emails.length !== 1 ||
-                emails[0] === undefined ||
-                !people.get_by_email(emails[0])!.is_bot
-            ) {
-                // If we are navigating between direct message conversations,
-                // we want the compose box to close for non-bot users.
-                if (compose_state.composing()) {
-                    cancel();
-                }
-                return;
+            // If we are navigating between direct message conversation,
+            // we want the compose box to close for non-bot users.
+            if (compose_state.composing()) {
+                cancel();
             }
+            return;
         }
 
         // Open the compose box, passing the option to skip attempting

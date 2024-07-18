@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
@@ -24,8 +23,8 @@ def api_transifex_webhook(
     resource: str,
     language: str,
     event: str,
-    translated: Optional[Json[int]] = None,
-    reviewed: Optional[Json[int]] = None,
+    translated: Json[int] | None = None,
+    reviewed: Json[int] | None = None,
 ) -> HttpResponse:
     topic_name = f"{project} in {language}"
     if event == "translation_completed":

@@ -12,7 +12,10 @@
     .tippy-box:not([data-theme]) {
         background: hsl(0deg 0% 20%);
         border-radius: 5px;
-        min-height: 25px;
+        /* 14px at 14px/1em */
+        font-size: var(--base-font-size-px);
+        /* 25px at 14px/1em */
+        min-height: 1.7857em;
         box-sizing: border-box;
 
         .tippy-content {
@@ -20,8 +23,13 @@
             display: flex;
             align-items: center;
             padding: 5px 10px;
-            font-size: 14px;
-            line-height: 20px;
+            /* 14px at 14px/1em */
+            font-size: var(--base-font-size-px);
+            /* 20px at 14px/1em */
+            line-height: 1.4286em;
+            /* Don't inherit font-weight when
+               a Tippy attaches to a parent */
+            font-weight: normal;
             color: hsl(0deg 0% 100%);
         }
 
@@ -34,7 +42,8 @@
         }
 
         .tooltip-inner-content {
-            line-height: 17px;
+            /* 17px at 14px/1em */
+            line-height: 1.2143em;
         }
 
         &[data-placement^="top"] > .tippy-arrow::before {

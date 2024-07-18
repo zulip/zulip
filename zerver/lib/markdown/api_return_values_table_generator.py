@@ -2,8 +2,9 @@ import copy
 import json
 import re
 from collections import OrderedDict
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any
 
 import markdown
 from markdown.extensions import Extension
@@ -50,9 +51,9 @@ TABLE_LINK_TEMPLATE = """
 class EventData:
     type: str
     description: str
-    properties: Dict[str, Any]
+    properties: dict[str, Any]
     example: str
-    op_type: Optional[str] = None
+    op_type: str | None = None
 
 
 class MarkdownReturnValuesTableGenerator(Extension):
@@ -70,7 +71,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         super().__init__(md)
 
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         done = False
         while not done:
             for line in lines:
@@ -105,7 +106,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         return lines
 
     def render_desc(
-        self, description: str, spacing: int, data_type: str, return_value: Optional[str] = None
+        self, description: str, spacing: int, data_type: str, return_value: str | None = None
     ) -> str:
         description = description.replace("\n", "\n" + ((spacing + 4) * " "))
         if return_value is None:
@@ -147,7 +148,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             + description
         )
 
-    def render_oneof_block(self, object_schema: Dict[str, Any], spacing: int) -> List[str]:
+    def render_oneof_block(self, object_schema: dict[str, Any], spacing: int) -> list[str]:
         ans = []
         block_spacing = spacing
         for element in object_schema["oneOf"]:
@@ -180,7 +181,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                     )
         return ans
 
-    def render_table(self, return_values: Dict[str, Any], spacing: int) -> List[str]:
+    def render_table(self, return_values: dict[str, Any], spacing: int) -> list[str]:
         IGNORE = ["result", "msg", "ignored_parameters_unsupported"]
         ans = []
         for return_value in return_values:
@@ -259,8 +260,8 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                     )
         return ans
 
-    def generate_event_strings(self, event_data: EventData) -> List[str]:
-        event_strings: List[str] = []
+    def generate_event_strings(self, event_data: EventData) -> list[str]:
+        event_strings: list[str] = []
         if event_data.op_type is None:
             event_strings.append(
                 EVENT_HEADER_TEMPLATE.format(id=event_data.type, event=event_data.type)
@@ -282,8 +283,8 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         event_strings.append("<hr>")
         return event_strings
 
-    def generate_events_table(self, events_by_type: OrderedDict[str, List[str]]) -> List[str]:
-        event_links: List[str] = []
+    def generate_events_table(self, events_by_type: OrderedDict[str, list[str]]) -> list[str]:
+        event_links: list[str] = []
         for event_type, event_ops in events_by_type.items():
             if not event_ops:
                 event_links.append(TABLE_LINK_TEMPLATE.format(link_name=event_type, url=event_type))
@@ -298,14 +299,14 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 )
         return [EVENTS_TABLE_TEMPLATE.format(events_list="\n".join(event_links))]
 
-    def render_events(self, events_dict: Dict[str, Any]) -> List[str]:
-        events: List[str] = []
-        events_for_table: OrderedDict[str, List[str]] = OrderedDict()
+    def render_events(self, events_dict: dict[str, Any]) -> list[str]:
+        events: list[str] = []
+        events_for_table: OrderedDict[str, list[str]] = OrderedDict()
         for event in events_dict["oneOf"]:
             # The op property doesn't have a description, so it must be removed
             # before any calls to self.render_table, which expects a description.
-            op: Optional[Dict[str, Any]] = event["properties"].pop("op", None)
-            op_type: Optional[str] = None
+            op: dict[str, Any] | None = event["properties"].pop("op", None)
+            op_type: str | None = None
             if op is not None:
                 op_type = op["enum"][0]
             event_data = EventData(

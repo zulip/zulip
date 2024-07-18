@@ -17,7 +17,7 @@
     <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>
 {{/if}}
 {{!-- Separate container to ensure overflowing text remains in this container. --}}
-<div class="typeahead-text-container">
+<div class="typeahead-text-container{{#if has_secondary_html}} has_secondary_html{{/if}}">
     <strong class="typeahead-strong-section">
         {{~#if stream~}}
             {{~> inline_decorated_stream_name stream=stream ~}}
@@ -34,13 +34,15 @@
     {{~#if has_status}}
     {{> status_emoji status_emoji_info}}
     {{~/if}}
-    {{~#if has_secondary}}
-    <small class="autocomplete_secondary">
+    {{~#if has_secondary_html}}
+    <span class="autocomplete_secondary rendered_markdown single-line-rendered-markdown">{{rendered_markdown secondary_html}}</span>
+    {{~else if has_secondary}}
+    <span class="autocomplete_secondary">
         {{~ secondary ~}}
-    </small>
-    {{#if is_unsubscribed}}
-    <span class="fa fa-exclamation-triangle unsubscribed_icon"
-      title="{{t 'You are not currently subscribed to this channel.' }}"></span>
-    {{/if}}
+    </span>
     {{~/if}}
 </div>
+{{#if is_unsubscribed}}
+    <span class="fa fa-exclamation-triangle unsubscribed_icon"
+      title="{{t 'You are not currently subscribed to this channel.' }}"></span>
+{{/if}}

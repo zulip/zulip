@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 from unittest import mock
 
 from zerver.actions.submessage import do_add_submessage
@@ -18,7 +18,7 @@ class TestBasics(ZulipTestCase):
             stream_name=stream_name,
         )
 
-        def get_raw_rows() -> List[Dict[str, Any]]:
+        def get_raw_rows() -> list[dict[str, Any]]:
             query = SubMessage.get_raw_db_rows([message_id])
             rows = list(query)
             return rows
@@ -194,12 +194,14 @@ class TestBasics(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         message_id = self.send_stream_message(hamlet, "Denmark")
 
-        with self.capture_send_event_calls(expected_num_events=1):
-            with mock.patch("zerver.tornado.django_api.queue_json_publish") as m:
-                m.side_effect = AssertionError(
-                    "Events should be sent only after the transaction commits."
-                )
-                do_add_submessage(hamlet.realm, hamlet.id, message_id, "whatever", "whatever")
+        with (
+            self.capture_send_event_calls(expected_num_events=1),
+            mock.patch("zerver.tornado.django_api.queue_json_publish") as m,
+        ):
+            m.side_effect = AssertionError(
+                "Events should be sent only after the transaction commits."
+            )
+            do_add_submessage(hamlet.realm, hamlet.id, message_id, "whatever", "whatever")
 
     def test_fetch_message_containing_submessages(self) -> None:
         cordelia = self.example_user("cordelia")

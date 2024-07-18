@@ -1,6 +1,5 @@
 # Webhooks for teamcity integration
 import logging
-from typing import Optional
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
@@ -28,7 +27,7 @@ need further help!
 """
 
 
-def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Optional[UserProfile]:
+def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> UserProfile | None:
     try:
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
@@ -43,7 +42,7 @@ def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Opti
         return None
 
 
-def get_teamcity_property_value(property_list: WildValue, name: str) -> Optional[str]:
+def get_teamcity_property_value(property_list: WildValue, name: str) -> str | None:
     for property in property_list:
         if property["name"].tame(check_string) == name:
             return property["value"].tame(check_string)

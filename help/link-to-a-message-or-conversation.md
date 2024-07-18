@@ -24,6 +24,12 @@ The easiest way to link to a channel or topic is:
 1. Choose the desired topic from the auto-complete menu. The link will be
    automatically formatted for you.
 
+!!! tip ""
+
+    When you paste a topic or channel link into Zulip, it is automatically
+    formatted for you. You can paste as plain text if you prefer with
+    <kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
+
 {end_tabs}
 
 Alternatively, it is possible to manually format channel and topic links:
@@ -98,14 +104,9 @@ message](/help/quote-and-reply).
 
 {tab|desktop-web}
 
-1. Right-click on a channel in the left sidebar.
+{!channel-actions.md!}
 
-1. Click **Copy Link**.
-
-!!! tip ""
-
-    If using Zulip in a browser, you can also click on a channel in the
-    left sidebar, and copy the URL from your browser's address bar.
+1. Click **Copy link to channel**.
 
 {tab|mobile}
 

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -137,7 +137,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             user_profile: UserProfile,
             message: Message,
             topic_name: str,
-            users_to_be_notified: List[Dict[str, Any]],
+            users_to_be_notified: list[dict[str, Any]],
         ) -> None:
             do_update_message(
                 user_profile=user_profile,
@@ -156,7 +156,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             mock_send_event.assert_called_with(mock.ANY, mock.ANY, users_to_be_notified)
 
         # Returns the users that need to be notified when a message topic is changed
-        def notify(user_id: int) -> Dict[str, Any]:
+        def notify(user_id: int) -> dict[str, Any]:
             um = UserMessage.objects.get(message=message_id)
             if um.user_profile_id == user_id:
                 return {
@@ -249,8 +249,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         # users that need to be notified by send_event in the case of change-topic-name operation.
-        users_to_be_notified_via_muted_topics_event: List[int] = []
-        users_to_be_notified_via_user_topic_event: List[int] = []
+        users_to_be_notified_via_muted_topics_event: list[int] = []
+        users_to_be_notified_via_user_topic_event: list[int] = []
         for user_topic in get_users_with_user_topic_visibility_policy(stream.id, "Topic1"):
             # We are appending the same data twice because 'user_topic' event notifies
             # the user during delete and create operation.
@@ -280,8 +280,8 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         # Extract the send_event call where event type is 'user_topic' or 'muted_topics.
         # Here we assert that the expected users are notified properly.
-        users_notified_via_muted_topics_event: List[int] = []
-        users_notified_via_user_topic_event: List[int] = []
+        users_notified_via_muted_topics_event: list[int] = []
+        users_notified_via_user_topic_event: list[int] = []
         for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
@@ -516,8 +516,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(othello, topics, UserTopic.VisibilityPolicy.UNMUTED)
 
         # users that need to be notified by send_event in the case of change-topic-name operation.
-        users_to_be_notified_via_muted_topics_event: List[int] = []
-        users_to_be_notified_via_user_topic_event: List[int] = []
+        users_to_be_notified_via_muted_topics_event: list[int] = []
+        users_to_be_notified_via_user_topic_event: list[int] = []
         for user_topic in get_users_with_user_topic_visibility_policy(stream.id, "Topic1"):
             # We are appending the same data twice because 'user_topic' event notifies
             # the user during delete and create operation.
@@ -542,8 +542,8 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         # Extract the send_event call where event type is 'user_topic' or 'muted_topics.
         # Here we assert that the expected users are notified properly.
-        users_notified_via_muted_topics_event: List[int] = []
-        users_notified_via_user_topic_event: List[int] = []
+        users_notified_via_muted_topics_event: list[int] = []
+        users_notified_via_user_topic_event: list[int] = []
         for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
@@ -1125,19 +1125,19 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.send_stream_message(hamlet, "privatestream", topic_name="topic1")
 
         message = Message.objects.get(id=id1)
-        message.date_sent = message.date_sent - timedelta(days=10)
+        message.date_sent -= timedelta(days=10)
         message.save()
 
         message = Message.objects.get(id=id2)
-        message.date_sent = message.date_sent - timedelta(days=9)
+        message.date_sent -= timedelta(days=9)
         message.save()
 
         message = Message.objects.get(id=id3)
-        message.date_sent = message.date_sent - timedelta(days=8)
+        message.date_sent -= timedelta(days=8)
         message.save()
 
         message = Message.objects.get(id=id4)
-        message.date_sent = message.date_sent - timedelta(days=6)
+        message.date_sent -= timedelta(days=6)
         message.save()
 
         self.login("hamlet")
@@ -1456,13 +1456,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, stream, new_topic_name)
-        self.assert_length(messages, 4)
+        self.assert_length(messages, 3)
         self.assertEqual(
             messages[2].content,
-            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
-        )
-        self.assertEqual(
-            messages[3].content,
             f"This topic was moved here from #**public stream>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
@@ -1477,13 +1473,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, stream, new_resolved_topic_name)
-        self.assert_length(messages, 6)
+        self.assert_length(messages, 4)
         self.assertEqual(
-            messages[4].content,
-            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
-        )
-        self.assertEqual(
-            messages[5].content,
+            messages[3].content,
             f"This topic was moved here from #**public stream>{new_topic_name}** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
@@ -1741,7 +1733,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
 
         message = Message.objects.get(id=message_id)
-        do_delete_messages(admin_user.realm, [message])
+        do_delete_messages(admin_user.realm, [message], acting_user=None)
 
         assert stream.recipient_id is not None
         changed_messages = messages_for_topic(stream.realm_id, stream.recipient_id, original_topic)
@@ -1752,6 +1744,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             old_topic_name=original_topic,
             new_topic_name=resolve_topic,
             changed_messages=changed_messages,
+            pre_truncation_new_topic_name=resolve_topic,
         )
 
         topic_messages = get_topic_messages(admin_user, stream, resolve_topic)

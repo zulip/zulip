@@ -1,11 +1,9 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
-import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
@@ -15,14 +13,14 @@ import * as components from "./components";
 import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
-import * as dialog_widget from "./dialog_widget";
 import * as hash_parser from "./hash_parser";
 import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
+import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
+import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
@@ -150,7 +148,10 @@ export function update_stream_privacy(slim_sub, values) {
 
     // Update UI elements
     update_left_panel_row(sub);
-    message_lists.current?.update_trailing_bookend();
+    if (narrow_state.stream_sub()?.stream_id === sub.stream_id) {
+        // Rerender message list if we are narrowed to the stream.
+        message_lists.current?.rerender();
+    }
     stream_ui_updates.update_setting_element(sub, "stream_privacy");
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
@@ -234,9 +235,13 @@ export function add_sub_to_table(sub) {
         // stream was just created in this browser window; it's a hack
         // to work around the server_events code flow not having a
         // good way to associate with this request because the stream
-        // ID isn't known yet.  These are appended to the top of the
-        // list, so they are more visible.
+        // ID isn't known to the client yet. These are appended to the
+        // top of the list, so they are more visible.
         stream_ui_updates.row_for_stream_id(sub.stream_id).trigger("click");
+
+        // This banner is for administrators creating a channel that
+        // they are themselves not initial subscribers to; other users
+        // will be immediately navigated to the channel view.
         const context = {
             banner_type: compose_banner.SUCCESS,
             classname: "stream_creation_confirmation",
@@ -246,31 +251,8 @@ export function add_sub_to_table(sub) {
         $("#stream_settings .stream-creation-confirmation-banner").html(
             render_stream_creation_confirmation_banner(context),
         );
-        stream_create.reset_created_stream();
-        // goto topic `stream events` of the newly created stream
-        browser_history.go_to_location(hash_util.by_stream_url(sub.stream_id));
-        if (stream_create.should_show_first_stream_created_modal()) {
-            stream_create.set_first_stream_created_modal_shown();
-            show_first_stream_created_modal(sub);
-        }
     }
     update_empty_left_panel_message();
-}
-function show_first_stream_created_modal(stream) {
-    dialog_widget.launch({
-        html_heading: $t_html(
-            {defaultMessage: "Channel <b><z-stream></z-stream></b> created!"},
-            {
-                "z-stream": () => render_inline_decorated_stream_name({stream}),
-            },
-        ),
-        html_body: render_first_stream_created_modal({stream}),
-        id: "first_stream_created_modal",
-        on_click() {},
-        html_submit_button: $t({defaultMessage: "Continue"}),
-        close_on_submit: true,
-        single_footer_button: true,
-    });
 }
 
 export function remove_stream(stream_id) {

@@ -54,7 +54,7 @@ rules:
 
   - id: dont-import-models-in-migrations
     patterns:
-      - pattern-not: from zerver.lib.mime_types import guess_type
+      - pattern-not: from zerver.lib.mime_types import $X
       - pattern-not: from zerver.lib.redis_utils import get_redis_client
       - pattern-not: from zerver.lib.utils import generate_api_key
       - pattern-not: from zerver.models.linkifiers import filter_pattern_validator
@@ -279,10 +279,10 @@ rules:
           def $F(..., invalid_param: typing.Optional[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
             ...
       - pattern-not: |
-          def $F(..., $A: typing_extensions.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
+          def $F(..., $A: typing.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>], ...) -> ...:
             ...
       - pattern-not: |
-          def $F(..., $A: typing_extensions.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>] = ..., ...) -> ...:
+          def $F(..., $A: typing.Annotated[<...  zerver.lib.typed_endpoint.ApiParamConfig(...) ...>] = ..., ...) -> ...:
             ...
       - pattern-either:
           - pattern: |

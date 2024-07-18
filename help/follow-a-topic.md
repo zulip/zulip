@@ -61,6 +61,36 @@ You can use followed topics for a variety of workflows:
 
 {end_tabs}
 
+## Search for messages in followed topics
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Click the **search** (<i class="search_icon zulip-icon
+   zulip-icon-search"></i>) icon in the top bar to open the search box.
+
+1. Type `is:followed`, or start typing and select **Followed topics** from the
+   typeahead.
+
+1. _(optional)_ Enter additional search terms or
+   [filters](/help/search-for-messages).
+
+1. Press <kbd>Enter</kbd>.
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
+    keyboard shortcut to start searching messages.
+
+{end_tabs}
+
+!!! tip ""
+
+    To get a feed of unread messages in all the topics you follow, search for
+    `is:followed is:unread`.
+
+
 ## Configure notifications for followed topics
 
 You can configure custom notifications for followed topics. You can also

@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from django.db import models
 from django.db.models import CASCADE
 
@@ -46,7 +44,7 @@ class Service(models.Model):
         SLACK,
     ]
     # N.B. If we used Django's choice=... we would get this for free (kinda)
-    _interfaces: Dict[int, str] = {
+    _interfaces: dict[int, str] = {
         GENERIC: GENERIC_INTERFACE,
         SLACK: SLACK_INTERFACE,
     }
@@ -56,7 +54,7 @@ class Service(models.Model):
         return self._interfaces[self.interface]
 
 
-def get_bot_services(user_profile_id: int) -> List[Service]:
+def get_bot_services(user_profile_id: int) -> list[Service]:
     return list(Service.objects.filter(user_profile_id=user_profile_id))
 
 

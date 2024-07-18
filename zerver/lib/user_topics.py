@@ -1,7 +1,8 @@
 import logging
 from collections import defaultdict
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Tuple, TypedDict
+from typing import TypedDict
 
 from django.db import connection, transaction
 from django.db.models import QuerySet
@@ -21,8 +22,8 @@ def get_user_topics(
     user_profile: UserProfile,
     include_deactivated: bool = False,
     include_stream_name: bool = False,
-    visibility_policy: Optional[int] = None,
-) -> List[UserTopicDict]:
+    visibility_policy: int | None = None,
+) -> list[UserTopicDict]:
     """
     Fetches UserTopic objects associated with the target user.
     * include_deactivated: Whether to include those associated with
@@ -65,7 +66,7 @@ def get_user_topics(
 
 def get_topic_mutes(
     user_profile: UserProfile, include_deactivated: bool = False
-) -> List[Tuple[str, str, int]]:
+) -> list[tuple[str, str, int]]:
     user_topics = get_user_topics(
         user_profile=user_profile,
         include_deactivated=include_deactivated,
@@ -82,9 +83,9 @@ def get_topic_mutes(
 @transaction.atomic(savepoint=False)
 def set_topic_visibility_policy(
     user_profile: UserProfile,
-    topics: List[List[str]],
+    topics: list[list[str]],
     visibility_policy: int,
-    last_updated: Optional[datetime] = None,
+    last_updated: datetime | None = None,
 ) -> None:
     """
     This is only used in tests.
@@ -129,14 +130,14 @@ def get_topic_visibility_policy(
 
 @transaction.atomic(savepoint=False)
 def bulk_set_user_topic_visibility_policy_in_database(
-    user_profiles: List[UserProfile],
+    user_profiles: list[UserProfile],
     stream_id: int,
     topic_name: str,
     *,
     visibility_policy: int,
-    recipient_id: Optional[int] = None,
-    last_updated: Optional[datetime] = None,
-) -> List[UserProfile]:
+    recipient_id: int | None = None,
+    last_updated: datetime | None = None,
+) -> list[UserProfile]:
     # returns the list of user_profiles whose user_topic row
     # is either deleted, updated, or created.
     rows = UserTopic.objects.filter(
@@ -163,7 +164,7 @@ def bulk_set_user_topic_visibility_policy_in_database(
     assert last_updated is not None
     assert recipient_id is not None
 
-    user_profiles_seeking_user_topic_update_or_create: List[UserProfile] = (
+    user_profiles_seeking_user_topic_update_or_create: list[UserProfile] = (
         user_profiles_without_visibility_policy
     )
     for row in rows:
@@ -228,8 +229,8 @@ def topic_has_visibility_policy(
 
 
 def exclude_topic_mutes(
-    conditions: List[ClauseElement], user_profile: UserProfile, stream_id: Optional[int]
-) -> List[ClauseElement]:
+    conditions: list[ClauseElement], user_profile: UserProfile, stream_id: int | None
+) -> list[ClauseElement]:
     # Note: Unlike get_topic_mutes, here we always want to
     # consider topics in deactivated streams, so they are
     # never filtered from the query in this method.
@@ -281,7 +282,7 @@ def build_get_topic_visibility_policy(
         "visibility_policy",
     )
 
-    topic_to_visibility_policy: Dict[Tuple[int, str], int] = defaultdict(int)
+    topic_to_visibility_policy: dict[tuple[int, str], int] = defaultdict(int)
     for row in rows:
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]

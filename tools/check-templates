@@ -11,7 +11,7 @@ from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-from typing import Dict, Iterable, List
+from collections.abc import Iterable
 
 from zulint import lister
 
@@ -31,7 +31,7 @@ EXCLUDED_FILES = [
 ]
 
 
-def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: List[str]) -> None:
+def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: list[str]) -> None:
     by_lang = lister.list_files(
         targets=targets,
         modified_only=modified_only,
@@ -53,7 +53,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
     if "templates/corporate/team.html" in templates:
         templates.remove("templates/corporate/team.html")
 
-    def check_for_duplicate_ids(templates: List[str]) -> Dict[str, List[str]]:
+    def check_for_duplicate_ids(templates: list[str]) -> dict[str, list[str]]:
         template_id_dict = build_id_dict(templates)
         # TODO: Clean up these cases of duplicate ids in the code
         IGNORE_IDS = [

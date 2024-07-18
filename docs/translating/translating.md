@@ -32,7 +32,7 @@ Zulip:
    :::{note}
    Unless you plan to contribute country-specific translations, do not
    select a country-specific language in the **Languages** menu when you sign
-   up. E.g. use **English (United Kingdom)** if you plan to translate Zulip
+   up. E.g., use **English (United Kingdom)** if you plan to translate Zulip
    into UK English, but select **Russian** rather than **Russian (Russia)** for
    general Russian translations.
    :::
@@ -132,13 +132,13 @@ There are a few ways to see your translations in the Zulip UI:
 - If your system has languages configured in your OS/browser, Zulip's
   portico (logged-out) pages will automatically use your configured
   language. Note that we only tag for translation strings in pages
-  that individual users need to use (e.g. `/login/`, `/register/`,
+  that individual users need to use (e.g., `/login/`, `/register/`,
   etc.), not marketing pages like `/features/`.
 - In case you need to understand how the above interact, Zulip figures
   out the language the user requests in a browser using the following
   prioritization (mostly copied from the Django docs):
 
-  1. It looks for the language code as a URL prefix (e.g. `/de/login/`).
+  1. It looks for the language code as a URL prefix (e.g., `/de/login/`).
   1. It looks for the cookie named 'django_language'. You can set a
      different name through the `LANGUAGE_COOKIE_NAME` setting.
   1. It looks for the `Accept-Language` HTTP header in the HTTP request
@@ -180,7 +180,7 @@ translation:
 ### Translation style guides
 
 We maintain translation style guides for Zulip, giving guidance on how
-Zulip should be translated into specific languages (e.g. what word to
+Zulip should be translated into specific languages (e.g., what word to
 translate words like "channel" to), with reasoning, so that future
 translators can understand and preserve those decisions:
 
@@ -223,6 +223,6 @@ The Zulip test suite enforces these capitalization guidelines in the
 web app codebase [in our test
 suite](../testing/testing.md#other-test-suites)
 (`./tools/check-capitalization`; `tools/lib/capitalization.py` has
-some exclude lists, e.g. `IGNORED_PHRASES`).
+some exclude lists, e.g., `IGNORED_PHRASES`).
 
 [translation-channel]: https://chat.zulip.org/#narrow/channel/58-translation

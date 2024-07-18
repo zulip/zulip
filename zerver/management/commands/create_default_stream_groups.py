@@ -64,4 +64,4 @@ Create default stream groups which the users can choose during sign up.
             print(default_stream_group.description)
             for stream in default_stream_group.streams.all():
                 print(stream.name)
-            print("")
+            print()

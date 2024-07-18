@@ -1,12 +1,12 @@
 import json
 import re
-from typing import Any, Optional, Tuple
+from typing import Any
 
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, SubMessage
 
 
-def get_widget_data(content: str) -> Tuple[Optional[str], Any]:
+def get_widget_data(content: str) -> tuple[str | None, Any]:
     valid_widget_types = ["poll", "todo"]
     tokens = re.split(r"\s+|\n+", content)
 
@@ -71,7 +71,7 @@ def parse_todo_extra_data(content: str) -> Any:
     return extra_data
 
 
-def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) -> Any:
+def get_extra_data_from_widget_type(content: str, widget_type: str | None) -> Any:
     if widget_type == "poll":
         return parse_poll_extra_data(content)
     else:
@@ -113,7 +113,7 @@ def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
         send_request.submessages = SubMessage.get_raw_db_rows([message_id])
 
 
-def get_widget_type(*, message_id: int) -> Optional[str]:
+def get_widget_type(*, message_id: int) -> str | None:
     submessage = (
         SubMessage.objects.filter(
             message_id=message_id,

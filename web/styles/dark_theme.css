@@ -306,9 +306,9 @@
         }
     }
 
-    & textarea.new_message_textarea {
-        &.invalid,
-        &.invalid:focus {
+    #message-content-container {
+        &:has(textarea.new_message_textarea.invalid),
+        &:has(textarea.new_message_textarea.invalid:focus) {
             border-color: hsl(3deg 73% 74%);
             box-shadow: 0 0 2px hsl(3deg 73% 74%);
         }
@@ -350,7 +350,9 @@
     :disabled,
     input:not([type="radio"]):read-only,
     textarea:read-only,
-    #organization-permissions .dropdown-widget-button:disabled {
+    #organization-permissions .dropdown-widget-button:disabled,
+    #organization-settings .dropdown-widget-button:disabled,
+    #stream-advanced-configurations .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
     }
@@ -405,13 +407,15 @@
     .user-status-content-wrapper,
     #custom-expiration-time-input,
     #organization-permissions .dropdown-widget-button,
+    #organization-settings .dropdown-widget-button,
+    #stream-advanced-configurations .dropdown-widget-button,
     #compose_recipient_box {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
     }
 
-    .dropdown-list-search .dropdown-list-search-input:focus {
+    .popover-filter-input-wrapper .popover-filter-input:focus {
         background-color: hsl(225deg 6% 7%);
         border: 1px solid hsl(0deg 0% 100% / 50%);
         box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
@@ -645,7 +649,7 @@
     }
 
     #recent_view_table {
-        .fa-envelope,
+        .zulip-icon-user,
         .fa-group {
             opacity: 0.7;
         }
@@ -656,8 +660,6 @@
     }
 
     & .drafts-container .drafts-header,
-    .nav > li > a:focus,
-    .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
     .user-groups-container .user-groups-header,
     .overlay-messages-header,
@@ -713,10 +715,6 @@
         .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
-    }
-
-    .nav-list > li > a {
-        text-shadow: none;
     }
 
     #message-edit-history-overlay-container {
@@ -1017,7 +1015,8 @@
         }
     }
 
-    .panel_user_list > .pill-container {
+    .panel_user_list > .pill-container,
+    .stream_creator_details > .display_only_pill {
         &:hover {
             color: inherit;
         }

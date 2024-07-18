@@ -3,7 +3,7 @@
 
 import time
 from datetime import timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from bitfield import BitField
 from bitfield.types import Bit, BitHandler
@@ -186,6 +186,7 @@ class Message(AbstractMessage):
                 # receiver.  The prefix of this index (realm_id,
                 # sender_id) can be used for scrubbing users and/or
                 # deleting users' messages.
+                # Also used in send_welcome_bot_response
                 "realm_id",
                 "sender_id",
                 "recipient_id",
@@ -262,8 +263,8 @@ class Message(AbstractMessage):
 
     @staticmethod
     def need_to_render_content(
-        rendered_content: Optional[str],
-        rendered_content_version: Optional[int],
+        rendered_content: str | None,
+        rendered_content_version: int | None,
         markdown_version: int,
     ) -> bool:
         return (
@@ -315,7 +316,7 @@ class SubMessage(AbstractSubMessage):
     message = models.ForeignKey(Message, on_delete=CASCADE)
 
     @staticmethod
-    def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
+    def get_raw_db_rows(needed_ids: list[int]) -> list[dict[str, Any]]:
         fields = ["id", "message_id", "sender_id", "msg_type", "content"]
         query = SubMessage.objects.filter(message_id__in=needed_ids).values(*fields)
         query = query.order_by("message_id", "id")
@@ -394,7 +395,7 @@ class Reaction(AbstractReaction):
         return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
 
     @staticmethod
-    def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
+    def get_raw_db_rows(needed_ids: list[int]) -> list[dict[str, Any]]:
         fields = [
             "message_id",
             "emoji_name",
@@ -526,12 +527,12 @@ class AbstractUserMessage(models.Model):
             AbstractUserMessage.flags.active_mobile_push_notification
         )
 
-    def flags_list(self) -> List[str]:
+    def flags_list(self) -> list[str]:
         flags = int(self.flags)
         return self.flags_list_for_flags(flags)
 
     @staticmethod
-    def flags_list_for_flags(val: int) -> List[str]:
+    def flags_list_for_flags(val: int) -> list[str]:
         """
         This function is highly optimized, because it actually slows down
         sending messages in a naive implementation.
@@ -643,9 +644,7 @@ class UserMessage(AbstractUserMessage):
         ).exists()
 
 
-def get_usermessage_by_message_id(
-    user_profile: UserProfile, message_id: int
-) -> Optional[UserMessage]:
+def get_usermessage_by_message_id(user_profile: UserProfile, message_id: int) -> UserMessage | None:
     try:
         return UserMessage.objects.get(user_profile=user_profile, message_id=message_id)
     except UserMessage.DoesNotExist:
@@ -666,6 +665,18 @@ class ArchivedUserMessage(AbstractUserMessage):
         return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
 
 
+class ImageAttachment(models.Model):
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    path_id = models.TextField(db_index=True, unique=True)
+
+    original_width_px = models.IntegerField()
+    original_height_px = models.IntegerField()
+    frames = models.IntegerField()
+
+    # Contains a list of zerver.lib.thumbnail.StoredThumbnailFormat objects, serialized
+    thumbnail_metadata = models.JSONField(default=list, null=False)
+
+
 class AbstractAttachment(models.Model):
     file_name = models.TextField(db_index=True)
 
@@ -682,6 +693,8 @@ class AbstractAttachment(models.Model):
     )
     # Size of the uploaded file, in bytes
     size = models.IntegerField()
+
+    content_type = models.TextField(null=True)
 
     # The two fields below serve as caches to let us avoid looking up
     # the corresponding messages/streams to check permissions before
@@ -749,7 +762,7 @@ class Attachment(AbstractAttachment):
     def is_claimed(self) -> bool:
         return self.messages.exists() or self.scheduled_messages.exists()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "name": self.file_name,
@@ -770,3 +783,17 @@ class Attachment(AbstractAttachment):
 
 post_save.connect(flush_used_upload_space_cache, sender=Attachment)
 post_delete.connect(flush_used_upload_space_cache, sender=Attachment)
+
+
+class OnboardingUserMessage(models.Model):
+    """
+    Stores the message_id of new onboarding messages with the
+    flags data that should be copied while creating UserMessage
+    rows for a new user in 'add_new_user_history'.
+    """
+
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    message = models.ForeignKey(Message, on_delete=CASCADE)
+
+    ALL_FLAGS = ["read", "historical", "starred"]
+    flags: BitHandler = BitField(flags=ALL_FLAGS, default=0)

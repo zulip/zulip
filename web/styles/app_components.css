@@ -149,7 +149,18 @@ input::placeholder {
         }
 
         &.small {
-            font-size: 0.8rem;
+            /* This value was 0.8rem in the past. When using rem,
+               the root font size was 16px when the base font-size was
+               14px. Now, we have two modes, one with 14px base
+               font-size and one with 16px base font-size. We multiply
+               by (16 / 14 * 0.8 = 0.9143) so rem equivalent value
+               will remain the same in the legacy 14px mode, while
+               scaling the size up for 16px mode. The font-size will
+               resolve in pixels.
+               TODO: Refactor this part to either use `em` or `rem`
+               and not this temporary hack of using calc() and
+               variables. */
+            font-size: calc(0.9143 * var(--base-font-size-px));
             min-width: inherit;
             padding: 6px 10px;
         }
@@ -385,6 +396,11 @@ div.overlay {
     margin: 0;
 }
 
+/* TODO: Once all layouts using this button
+   are modernized, the Font Awesome icon
+   should be replaced with a Zulip icon,
+   and its formatting should have no extra
+   space around its viewbox in SVG. */
 .clear_search_button {
     &:hover {
         color: hsl(0deg 0% 0%);
@@ -730,13 +746,14 @@ div.overlay {
         }
     }
 
-    & thead th:not(.actions) {
-        min-width: 100px;
-    }
-
     & thead th {
         color: inherit;
         background-color: hsl(0deg 0% 100%);
+        word-break: normal;
+
+        &[data-sort] {
+            padding-right: 0.88em;
+        }
 
         &.active::after,
         &[data-sort]:hover::after {
@@ -933,6 +950,24 @@ div.overlay {
     }
 }
 
+.zulip-icon-lock {
+    /* The lock icon is bottom heavy, so to make it
+       appear better aligned, we pull it up by a
+       uniform margin throughout the UI. */
+    /* 3.5px at 16px/1em */
+    margin-top: -0.2188em !important;
+}
+
+.dropdown-list-container
+    .dropdown-list
+    .dropdown-list-item-common-styles
+    .zulip-icon-lock {
+    /* We do not need to pull up lock icons in dropdowns
+       so we reset their margin-top to the original value
+       for a dropdown's .zulip-icon */
+    margin-top: 2px !important;
+}
+
 /* This includes css needed to display messages in an overlay. */
 .overlay-messages-container {
     position: relative;
@@ -1104,6 +1139,7 @@ div.overlay {
     &:disabled {
         cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
+        opacity: 0.7;
     }
 }
 
@@ -1161,7 +1197,8 @@ div.overlay {
     min-width: max-content;
     padding: 1px;
     background-color: var(--color-background-tab-picker-container);
-    font-size: 16px;
+    /* 16px at 15px/1em */
+    font-size: 1.0666em;
 
     input[type="radio"] {
         display: none;

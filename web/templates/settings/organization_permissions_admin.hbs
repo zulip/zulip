@@ -110,6 +110,24 @@
             </div>
         </div>
 
+        <div id="org-direct-message-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Direct message permissions" }}
+                    {{> ../help_link_widget link="/help/restrict-direct-messages" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="direct-message-permissions" }}
+            </div>
+            {{> ../dropdown_widget_with_label
+              widget_name="realm_direct_message_permission_group"
+              label=(t 'Who can authorize a direct message conversation')
+              value_type="number" }}
+
+            {{> ../dropdown_widget_with_label
+              widget_name="realm_direct_message_initiator_group"
+              label=(t 'Who can start a direct message conversation')
+              value_type="number" }}
+        </div>
+
         <div id="org-msg-editing" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message editing" }}
@@ -334,15 +352,6 @@
                     <label for="realm_add_custom_emoji_policy" class="settings-field-label">{{t "Who can add custom emoji" }}</label>
                     <select name="realm_add_custom_emoji_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_add_custom_emoji_policy" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=common_policy_values}}
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="realm_private_message_policy" class="settings-field-label">{{t "Who can use direct messages" }} ({{t "beta" }})
-                        {{> ../help_link_widget link="/help/restrict-direct-messages" }}
-                    </label>
-                    <select name="realm_private_message_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_private_message_policy" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=private_message_policy_values}}
                     </select>
                 </div>
             </div>

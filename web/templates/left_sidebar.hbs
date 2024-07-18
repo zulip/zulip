@@ -143,22 +143,24 @@
         </ul>
     </div>
 
-    <div id="direct-messages-sticky-header" class="direct-messages-container zoom-out hidden-for-spectators">
-        <div id="direct-messages-section">
-            <div id="direct-messages-section-header" class="zoom-out zoom-in-sticky">
-                <i id="toggle-direct-messages-section-icon" class="fa fa-sm fa-caret-down dm-tooltip-target zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
-                <h4 class="left-sidebar-title"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
-                <div class="heading-markers-and-controls">
-                    <a id="show-all-direct-messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-direct-messages-template">
-                        <i class="fa fa-align-right" aria-label="{{t 'Direct message feed' }}"></i>
-                    </a>
-                    <span class="unread_count"></span>
-                </div>
-            </div>
+    <div id="direct-messages-section-header" class="direct-messages-container hidden-for-spectators zoom-out zoom-in-sticky">
+        <i id="toggle-direct-messages-section-icon" class="fa fa-sm fa-caret-down dm-tooltip-target zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
+        <h4 class="left-sidebar-title"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
+        <div class="heading-markers-and-controls">
+            <a id="show-all-direct-messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-direct-messages-template">
+                <i class="fa fa-align-right" aria-label="{{t 'Direct message feed' }}"></i>
+            </a>
+            <span class="unread_count"></span>
         </div>
         <a class="zoom-out-hide" id="hide-more-direct-messages">
-            <span> {{t 'back to channels' }}</span>
+            <span class="hide-more-direct-messages-text"> {{t 'back to channels' }}</span>
         </a>
+        <div class="zoom-out-hide direct-messages-search-section">
+            <input class="direct-messages-list-filter filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
+            <button type="button" class="btn clear_search_button" id="clear-direct-messages-search-button">
+                <i class="fa fa-remove" aria-hidden="true"></i>
+            </button>
+        </div>
     </div>
     {{~!-- squash whitespace --~}}
     <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar data-simplebar-tab-index="-1">
@@ -178,7 +180,7 @@
                     <span class="masked_unread_count"></span>
                 </div>
 
-                <div class="input-append notdisplayed stream_search_section">
+                <div class="notdisplayed stream_search_section">
                     <input class="stream-list-filter home-page-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
                         <i class="fa fa-remove" aria-hidden="true"></i>

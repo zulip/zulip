@@ -1,6 +1,7 @@
+from collections.abc import Iterable
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
+from typing import Any, TypeVar
 from unittest import mock
 
 import orjson
@@ -91,7 +92,7 @@ K = TypeVar("K")
 V = TypeVar("V")
 
 
-def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
+def find_dict(lst: Iterable[dict[K, V]], k: K, v: V) -> dict[K, V]:
     for dct in lst:
         if dct[k] == v:
             return dct
@@ -460,6 +461,14 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
+    def test_invalid_role(self) -> None:
+        self.login("iago")
+        req = dict(role=1000)
+        result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
+        self.assert_json_error(
+            result, "Invalid role: Value error, Not in the list of possible values"
+        )
+
     def test_admin_cannot_set_full_name_with_invalid_characters(self) -> None:
         new_name = "Opheli*"
         self.login("iago")
@@ -797,7 +806,7 @@ class PermissionTest(ZulipTestCase):
         empty_profile_data = []
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            value: Union[str, None, List[Any]] = ""
+            value: str | None | list[Any] = ""
             if field.field_type == CustomProfileField.USER:
                 value = []
             empty_profile_data.append(
@@ -908,17 +917,19 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(81):
-            with self.assert_memcached_count(19):
-                with self.capture_send_event_calls(expected_num_events=10) as events:
-                    fred = do_create_user(
-                        email="fred@zulip.com",
-                        password="password",
-                        realm=realm,
-                        full_name="Fred Flintstone",
-                        prereg_user=prereg_user,
-                        acting_user=None,
-                    )
+        with (
+            self.assert_database_query_count(84),
+            self.assert_memcached_count(19),
+            self.capture_send_event_calls(expected_num_events=10) as events,
+        ):
+            fred = do_create_user(
+                email="fred@zulip.com",
+                password="password",
+                realm=realm,
+                full_name="Fred Flintstone",
+                prereg_user=prereg_user,
+                acting_user=None,
+            )
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
@@ -1158,12 +1169,18 @@ class UserProfileTest(ZulipTestCase):
         othello = self.example_user("othello")
         bot = self.example_user("default_bot")
 
-        # Invalid user ID
+        # Invalid user IDs
         invalid_uid: object = 1000
+        another_invalid_uid: object = 1001
         with self.assertRaisesRegex(ValidationError, r"User IDs is not a list"):
             check_valid_user_ids(realm.id, invalid_uid)
-        with self.assertRaisesRegex(ValidationError, rf"Invalid user ID: {invalid_uid}"):
+        with self.assertRaisesRegex(ValidationError, rf"Invalid user IDs: {invalid_uid}"):
             check_valid_user_ids(realm.id, [invalid_uid])
+
+        with self.assertRaisesRegex(
+            ValidationError, rf"Invalid user IDs: {invalid_uid}, {another_invalid_uid}"
+        ):
+            check_valid_user_ids(realm.id, [invalid_uid, another_invalid_uid])
 
         invalid_uid = "abc"
         with self.assertRaisesRegex(ValidationError, r"User IDs\[0\] is not an integer"):
@@ -1174,7 +1191,7 @@ class UserProfileTest(ZulipTestCase):
             check_valid_user_ids(realm.id, [invalid_uid])
 
         # User is in different realm
-        with self.assertRaisesRegex(ValidationError, rf"Invalid user ID: {hamlet.id}"):
+        with self.assertRaisesRegex(ValidationError, rf"Invalid user IDs: {hamlet.id}"):
             check_valid_user_ids(get_realm("zephyr").id, [hamlet.id])
 
         # User is not active
@@ -1226,7 +1243,7 @@ class UserProfileTest(ZulipTestCase):
     def test_get_accounts_for_email(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
-        def check_account_present_in_accounts(user: UserProfile, accounts: List[Account]) -> None:
+        def check_account_present_in_accounts(user: UserProfile, accounts: list[Account]) -> None:
             for account in accounts:
                 realm = user.realm
                 if (
@@ -1298,7 +1315,7 @@ class UserProfileTest(ZulipTestCase):
         do_change_user_setting(cordelia, "emojiset", "twitter", acting_user=None)
         do_change_user_setting(cordelia, "timezone", "America/Phoenix", acting_user=None)
         do_change_user_setting(
-            cordelia, "color_scheme", UserProfile.COLOR_SCHEME_NIGHT, acting_user=None
+            cordelia, "color_scheme", UserProfile.COLOR_SCHEME_DARK, acting_user=None
         )
         do_change_user_setting(
             cordelia, "enable_offline_email_notifications", False, acting_user=None
@@ -1310,7 +1327,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Upload cordelia's avatar
         with get_test_image_file("img.png") as image_file:
-            upload_avatar_image(image_file, cordelia)
+            upload_avatar_image(image_file, cordelia, future=False)
 
         OnboardingStep.objects.filter(user=cordelia).delete()
         OnboardingStep.objects.filter(user=iago).delete()
@@ -1342,8 +1359,8 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.timezone, "America/Phoenix")
         self.assertEqual(hamlet.timezone, "")
 
-        self.assertEqual(iago.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
-        self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
+        self.assertEqual(iago.color_scheme, UserProfile.COLOR_SCHEME_DARK)
+        self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_DARK)
         self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_AUTOMATIC)
 
         self.assertEqual(iago.enable_offline_email_notifications, False)
@@ -1419,7 +1436,7 @@ class UserProfileTest(ZulipTestCase):
             get_user_by_id_in_realm_including_cross_realm(hamlet.id, None)
 
     def test_cross_realm_dicts(self) -> None:
-        def user_row(email: str) -> Dict[str, object]:
+        def user_row(email: str) -> dict[str, object]:
             user = UserProfile.objects.get(email=email)
             avatar_url = get_avatar_field(
                 user_id=user.id,
@@ -2365,7 +2382,7 @@ class BulkUsersTest(ZulipTestCase):
 
         hamlet = self.example_user("hamlet")
 
-        def get_hamlet_avatar(client_gravatar: bool) -> Optional[str]:
+        def get_hamlet_avatar(client_gravatar: bool) -> str | None:
             data = dict(client_gravatar=orjson.dumps(client_gravatar).decode())
             result = self.client_get("/json/users", data)
             rows = self.assert_json_success(result)["members"]
@@ -2397,9 +2414,8 @@ class GetProfileTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         email = self.example_user("hamlet").email
-        with self.assert_database_query_count(1):
-            with simulated_empty_cache() as cache_queries:
-                user_profile = get_user(email, realm)
+        with self.assert_database_query_count(1), simulated_empty_cache() as cache_queries:
+            user_profile = get_user(email, realm)
 
         self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, email)
@@ -2782,19 +2798,19 @@ class DeleteUserTest(ZulipTestCase):
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
 
-        huddle_message_ids_from_cordelia = [
-            self.send_huddle_message(cordelia, [hamlet, othello]) for i in range(3)
+        group_direct_message_ids_from_cordelia = [
+            self.send_group_direct_message(cordelia, [hamlet, othello]) for i in range(3)
         ]
-        huddle_message_ids_from_hamlet = [
-            self.send_huddle_message(hamlet, [cordelia, othello]) for i in range(3)
+        group_direct_message_ids_from_hamlet = [
+            self.send_group_direct_message(hamlet, [cordelia, othello]) for i in range(3)
         ]
 
-        huddle_with_hamlet_recipient_ids = list(
+        direct_message_group_with_hamlet_recipient_ids = list(
             Subscription.objects.filter(
                 user_profile=hamlet, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
             ).values_list("recipient_id", flat=True)
         )
-        self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
+        self.assertGreater(len(direct_message_group_with_hamlet_recipient_ids), 0)
 
         do_delete_user(hamlet, acting_user=None)
 
@@ -2808,18 +2824,22 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
 
         self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
-        # Huddle messages from hamlet should have been deleted, but messages of other participants should
-        # be kept.
-        self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_hamlet).count(), 0)
-        self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(), 3)
+        # Group direct messages from hamlet should have been deleted, but messages of other
+        # participants should be kept.
+        self.assertEqual(
+            Message.objects.filter(id__in=group_direct_message_ids_from_hamlet).count(), 0
+        )
+        self.assertEqual(
+            Message.objects.filter(id__in=group_direct_message_ids_from_cordelia).count(), 3
+        )
 
         self.assertEqual(
             Message.objects.filter(realm_id=realm.id, sender_id=hamlet_user_id).count(), 0
         )
 
-        # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
-        # in a correct state.
-        for recipient_id in huddle_with_hamlet_recipient_ids:
+        # Verify that the dummy user is subscribed to the deleted user's direct message groups,
+        #  to keep direct message group's data in a correct state.
+        for recipient_id in direct_message_group_with_hamlet_recipient_ids:
             self.assertTrue(
                 Subscription.objects.filter(
                     user_profile=replacement_dummy_user, recipient_id=recipient_id
@@ -2849,19 +2869,19 @@ class DeleteUserTest(ZulipTestCase):
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
 
-        huddle_message_ids_from_cordelia = [
-            self.send_huddle_message(cordelia, [hamlet, othello]) for i in range(3)
+        group_direct_message_ids_from_cordelia = [
+            self.send_group_direct_message(cordelia, [hamlet, othello]) for i in range(3)
         ]
-        huddle_message_ids_from_hamlet = [
-            self.send_huddle_message(hamlet, [cordelia, othello]) for i in range(3)
+        group_direct_message_ids_from_hamlet = [
+            self.send_group_direct_message(hamlet, [cordelia, othello]) for i in range(3)
         ]
 
-        huddle_with_hamlet_recipient_ids = list(
+        direct_message_group_with_hamlet_recipient_ids = list(
             Subscription.objects.filter(
                 user_profile=hamlet, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
             ).values_list("recipient_id", flat=True)
         )
-        self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
+        self.assertGreater(len(direct_message_group_with_hamlet_recipient_ids), 0)
 
         original_messages_from_hamlet_count = Message.objects.filter(
             realm_id=realm.id, sender_id=hamlet_user_id
@@ -2885,12 +2905,12 @@ class DeleteUserTest(ZulipTestCase):
             len(personal_message_ids_to_hamlet),
         )
         self.assertEqual(
-            Message.objects.filter(id__in=huddle_message_ids_from_hamlet).count(),
-            len(huddle_message_ids_from_hamlet),
+            Message.objects.filter(id__in=group_direct_message_ids_from_hamlet).count(),
+            len(group_direct_message_ids_from_hamlet),
         )
         self.assertEqual(
-            Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(),
-            len(huddle_message_ids_from_cordelia),
+            Message.objects.filter(id__in=group_direct_message_ids_from_cordelia).count(),
+            len(group_direct_message_ids_from_cordelia),
         )
 
         self.assertEqual(
@@ -2898,9 +2918,9 @@ class DeleteUserTest(ZulipTestCase):
             original_messages_from_hamlet_count,
         )
 
-        # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
-        # in a correct state.
-        for recipient_id in huddle_with_hamlet_recipient_ids:
+        # Verify that the dummy user is subscribed to the deleted user's direct message groups,
+        # to keep direct message group's data in a correct state.
+        for recipient_id in direct_message_group_with_hamlet_recipient_ids:
             self.assertTrue(
                 Subscription.objects.filter(
                     user_profile=replacement_dummy_user, recipient_id=recipient_id

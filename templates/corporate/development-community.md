@@ -132,7 +132,7 @@ topic to a different channel](/help/move-content-to-another-channel).
 - [#development
   help](https://chat.zulip.org/#narrow/channel/49-development-help) is
   for asking for help with any Zulip server/web app development work
-  (use the app channels #mobile, #desktop, or #zulip-terminal for help
+  (use the app channels #mobile-dev-help, #desktop, or #zulip-terminal for help
   working on one of the apps).
 - [#provision
   help](https://chat.zulip.org/#narrow/channel/21-provision-help) is
@@ -152,7 +152,7 @@ topic to a different channel](/help/move-content-to-another-channel).
   [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend),
   [#documentation](https://chat.zulip.org/#narrow/channel/19-documentation),
   and app-specific channels
-  ([#mobile](https://chat.zulip.org/#narrow/channel/48-mobile), etc.)
+  ([#mobile-team](https://chat.zulip.org/#narrow/channel/243-mobile-team), etc.)
   are the right place for general conversations about work in those
   areas (including design discussions, questions, updates on a
   project, or anything else).

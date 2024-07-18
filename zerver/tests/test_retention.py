@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 from unittest import mock
 
 import time_machine
@@ -52,13 +52,13 @@ MIT_REALM_DAYS = 100
 
 
 class RetentionTestingBase(ZulipTestCase):
-    def _get_usermessage_ids(self, message_ids: List[int]) -> List[int]:
+    def _get_usermessage_ids(self, message_ids: list[int]) -> list[int]:
         return list(
             UserMessage.objects.filter(message_id__in=message_ids).values_list("id", flat=True)
         )
 
     def _verify_archive_data(
-        self, expected_message_ids: List[int], expected_usermessage_ids: List[int]
+        self, expected_message_ids: list[int], expected_usermessage_ids: list[int]
     ) -> None:
         self.assertEqual(
             set(ArchivedMessage.objects.values_list("id", flat=True)),
@@ -75,7 +75,7 @@ class RetentionTestingBase(ZulipTestCase):
         self.assertEqual(UserMessage.objects.filter(id__in=expected_usermessage_ids).count(), 0)
 
     def _verify_restored_data(
-        self, expected_message_ids: List[int], expected_usermessage_ids: List[int]
+        self, expected_message_ids: list[int], expected_usermessage_ids: list[int]
     ) -> None:
         # Check that the data was restored:
         self.assertEqual(
@@ -122,12 +122,12 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         realm.save()
 
     def _set_stream_message_retention_value(
-        self, stream: Stream, retention_period: Optional[int]
+        self, stream: Stream, retention_period: int | None
     ) -> None:
         stream.message_retention_days = retention_period
         stream.save()
 
-    def _change_messages_date_sent(self, msgs_ids: List[int], date_sent: datetime) -> None:
+    def _change_messages_date_sent(self, msgs_ids: list[int], date_sent: datetime) -> None:
         Message.objects.filter(id__in=msgs_ids).update(date_sent=date_sent)
 
     def _make_mit_messages(self, message_quantity: int, date_sent: datetime) -> Any:
@@ -165,7 +165,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         assert msg_id is not None
         return msg_id
 
-    def _make_expired_zulip_messages(self, message_quantity: int) -> List[int]:
+    def _make_expired_zulip_messages(self, message_quantity: int) -> list[int]:
         msg_ids = list(
             Message.objects.order_by("id")
             .filter(realm=self.zulip_realm)
@@ -178,19 +178,20 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
         return msg_ids
 
-    def _send_messages_with_attachments(self) -> Dict[str, int]:
+    def _send_messages_with_attachments(self) -> dict[str, int]:
         user_profile = self.example_user("hamlet")
-        sample_size = 10
         host = user_profile.realm.host
         realm_id = get_realm("zulip").id
         dummy_files = [
-            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt", sample_size),
-            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py", sample_size),
-            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py", sample_size),
+            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt"),
+            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py"),
+            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"),
         ]
 
-        for file_name, path_id, size in dummy_files:
-            create_attachment(file_name, path_id, user_profile, user_profile.realm, size)
+        for file_name, path_id in dummy_files:
+            create_attachment(
+                file_name, path_id, "text/plain", b"1234567890", user_profile, user_profile.realm
+            )
 
         self.subscribe(user_profile, "Denmark")
         body = (
@@ -592,18 +593,19 @@ class MoveMessageToArchiveBase(RetentionTestingBase):
         self.recipient = self.example_user("cordelia")
 
     def _create_attachments(self) -> None:
-        sample_size = 10
         realm_id = get_realm("zulip").id
         dummy_files = [
-            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt", sample_size),
-            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py", sample_size),
-            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py", sample_size),
-            ("hello.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt", sample_size),
-            ("new.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py", sample_size),
+            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt"),
+            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py"),
+            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"),
+            ("hello.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt"),
+            ("new.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py"),
         ]
         user_profile = self.example_user("hamlet")
-        for file_name, path_id, size in dummy_files:
-            create_attachment(file_name, path_id, user_profile, user_profile.realm, size)
+        for file_name, path_id in dummy_files:
+            create_attachment(
+                file_name, path_id, "text/plain", b"1234567890", user_profile, user_profile.realm
+            )
 
     def _assert_archive_empty(self) -> None:
         self.assertFalse(ArchivedUserMessage.objects.exists())
@@ -701,7 +703,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             self.send_personal_message(self.sender, self.recipient, body2),
         ]
 
-        attachment_id_to_message_ids: Dict[int, List[int]] = {}
+        attachment_id_to_message_ids: dict[int, list[int]] = {}
         attachment_ids = list(
             Attachment.objects.filter(messages__id__in=msg_ids).values_list("id", flat=True),
         )
@@ -982,7 +984,7 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
 
 
 class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
-    def fix_ordering_of_result(self, result: List[Tuple[Realm, List[Stream]]]) -> None:
+    def fix_ordering_of_result(self, result: list[tuple[Realm, list[Stream]]]) -> None:
         """
         This is a helper for giving the structure returned by get_realms_and_streams_for_archiving
         a consistent ordering.
@@ -994,7 +996,7 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         for realm, streams_list in result:
             streams_list.sort(key=lambda stream: stream.id)
 
-    def simple_get_realms_and_streams_for_archiving(self) -> List[Tuple[Realm, List[Stream]]]:
+    def simple_get_realms_and_streams_for_archiving(self) -> list[tuple[Realm, list[Stream]]]:
         """
         This is an implementation of the function we're testing, but using the obvious,
         unoptimized algorithm. We can use this for additional verification of correctness,
@@ -1066,7 +1068,7 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         # so we use a helper to order both structures in a consistent manner. This wouldn't be necessary
         # if python had a true "unordered list" data structure. Set doesn't do the job, because it requires
         # elements to be hashable.
-        expected_result: List[Tuple[Realm, List[Stream]]] = [
+        expected_result: list[tuple[Realm, list[Stream]]] = [
             (zulip_realm, list(Stream.objects.filter(realm=zulip_realm).exclude(id=verona.id))),
             (zephyr_realm, [archiving_enabled_zephyr_stream]),
             (realm_all_streams_archiving_disabled, []),
@@ -1143,8 +1145,8 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with self.assert_database_query_count(21):
-            do_delete_messages(realm, messages)
+        with self.assert_database_query_count(22):
+            do_delete_messages(realm, messages, acting_user=None)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)

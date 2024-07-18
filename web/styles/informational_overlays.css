@@ -49,6 +49,10 @@
     & td.operator {
         font-size: 0.9em;
     }
+
+    .poll-question-header {
+        display: inline;
+    }
 }
 
 .hotkeys_table {
@@ -120,4 +124,9 @@
             display: table;
         }
     }
+}
+
+#message-formatting-first-header,
+#search-operators-first-header {
+    width: 40%;
 }

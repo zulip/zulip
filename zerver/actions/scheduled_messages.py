@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Sequence
 from datetime import datetime, timedelta
-from typing import List, Optional, Sequence, Tuple
 
 from django.conf import settings
 from django.db import transaction
@@ -33,14 +33,14 @@ def check_schedule_message(
     sender: UserProfile,
     client: Client,
     recipient_type_name: str,
-    message_to: List[int],
-    topic_name: Optional[str],
+    message_to: list[int],
+    topic_name: str | None,
     message_content: str,
     deliver_at: datetime,
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
     *,
-    forwarder_user_profile: Optional[UserProfile] = None,
-    read_by_sender: Optional[bool] = None,
+    forwarder_user_profile: UserProfile | None = None,
+    read_by_sender: bool | None = None,
 ) -> int:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     send_request = check_message(
@@ -69,8 +69,8 @@ def do_schedule_messages(
     sender: UserProfile,
     *,
     read_by_sender: bool = False,
-) -> List[int]:
-    scheduled_messages: List[Tuple[ScheduledMessage, SendMessageRequest]] = []
+) -> list[int]:
+    scheduled_messages: list[tuple[ScheduledMessage, SendMessageRequest]] = []
 
     for send_request in send_message_requests:
         scheduled_message = ScheduledMessage()
@@ -130,11 +130,11 @@ def edit_scheduled_message(
     sender: UserProfile,
     client: Client,
     scheduled_message_id: int,
-    recipient_type_name: Optional[str],
-    message_to: Optional[str],
-    topic_name: Optional[str],
-    message_content: Optional[str],
-    deliver_at: Optional[datetime],
+    recipient_type_name: str | None,
+    message_to: str | None,
+    topic_name: str | None,
+    message_content: str | None,
+    deliver_at: datetime | None,
     realm: Realm,
 ) -> None:
     with transaction.atomic():

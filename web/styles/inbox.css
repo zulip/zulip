@@ -223,14 +223,14 @@
                 margin-right: 3px;
             }
 
-            .fa-envelope,
+            .zulip-icon-user,
             .stream-privacy.filter-icon {
                 font-size: 16px;
                 margin: 0;
                 margin-right: 1px;
             }
 
-            .fa-envelope {
+            .zulip-icon-user {
                 position: relative;
                 top: -1px;
                 margin-right: 4px;

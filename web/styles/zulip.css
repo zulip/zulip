@@ -779,7 +779,8 @@ strong {
 .buddy_list_tooltip_content {
     text-align: left;
     word-wrap: break-word;
-    max-width: 280px;
+    /* 280px at 14px/1em */
+    max-width: 20em;
 }
 
 #change_visibility_policy_button_tooltip {
@@ -789,94 +790,6 @@ strong {
 .narrow-filter {
     display: block;
     position: relative;
-}
-
-/* .dropdown-menu from v2.3.2
-   + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
-   basic idea of this fix is to remove decorations from :hover and apply them only
-   on :focus. */
-.typeahead.dropdown-menu .typeahead-menu {
-    & li {
-        word-break: break-word;
-
-        & a {
-            display: flex;
-            padding: 3px 10px;
-            gap: 5px;
-            font-weight: normal;
-            line-height: 20px;
-            color: var(--color-dropdown-item);
-            white-space: nowrap;
-
-            /* hidden text just to maintain line height for a blank option */
-            strong:empty {
-                &::after {
-                    content: ".";
-                    visibility: hidden;
-                }
-            }
-
-            &:hover,
-            &:focus {
-                text-decoration: none;
-                outline: 0;
-            }
-
-            /* styles defined for user_circle here only deal with positioning of user_presence_circle
-            in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
-            Most of the style rules related to color, gradient etc. which are generally common throughout
-            the app are defined in user_circles.css and are not overridden here. */
-            .user_circle {
-                width: var(--length-user-status-circle);
-                height: var(--length-user-status-circle);
-                position: relative;
-                left: -2px;
-                flex-shrink: 0;
-                align-self: center;
-            }
-
-            .typeahead-text-container {
-                align-self: center;
-
-                & > * {
-                    margin-right: 3px;
-                }
-            }
-        }
-    }
-
-    .active > a {
-        &,
-        &:hover,
-        &:focus {
-            color: var(--color-active-dropdown-item);
-            background-color: var(--background-color-active-typeahead-item);
-        }
-    }
-}
-
-/* Copied from bootstrap 2.1.1 CSS for dropdown-menu li > a:focus */
-li.actual-dropdown-menu > a:focus {
-    color: hsl(0deg 0% 100%);
-    text-decoration: none;
-    background-color: transparent;
-    background-image: none;
-    filter: none;
-    outline: 0;
-}
-
-li.actual-dropdown-menu i {
-    /* In gear menu, make icons the same width so labels line up. */
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
-}
-
-td.pointer {
-    vertical-align: top;
-    padding-top: 10px;
-    background-color: hsl(0deg 0% 100%);
 }
 
 .new_messages {
@@ -923,11 +836,17 @@ td.pointer {
                values ensure a 26px x 25px clickable area for the icon. */
             padding: 2.5px 3px;
 
-            &:active {
+            &::before {
+                /* We specify block display so the
+                   scaling transform below works as
+                   expected. */
+                display: block;
+            }
+
+            &:active::before {
                 transform: scale(0.92);
                 transform-origin: center;
                 outline: 0;
-                transition: unset;
             }
 
             &:focus {
@@ -1109,13 +1028,6 @@ td.pointer {
     font-size: 60%;
 }
 
-.settings-forgot-password {
-    display: inline-block;
-    position: relative;
-    color: hsl(0deg 0% 73%);
-    bottom: 4px;
-}
-
 div.message-list {
     border-collapse: separate;
     margin-left: auto;
@@ -1212,7 +1124,7 @@ div.focused-message-list {
         display: none;
         width: 100%;
         height: 24px;
-        margin-bottom: 4px;
+        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
         color: var(--color-text-show-more-less-button);
         background-color: var(--color-show-more-less-button-background);
         border-radius: 4px;
@@ -1345,46 +1257,6 @@ div.focused-message-list {
     border-radius: 6px;
     padding: 0;
     font-size: 0;
-}
-
-.typeahead.dropdown-menu {
-    a strong.typeahead-strong-section {
-        white-space: pre;
-    }
-
-    .active {
-        .unsubscribed_icon {
-            display: block;
-            float: right;
-            margin-top: 5px;
-            margin-right: -12px;
-            font-size: 0.8em;
-            color: hsl(96deg 7% 73%);
-        }
-    }
-
-    .unsubscribed_icon {
-        display: none;
-    }
-}
-
-.typeahead-image {
-    display: inline-block;
-    height: 21px;
-    width: 21px;
-    border-radius: 4px;
-
-    /* For FontAwesome icons and zulip icons used in place of images for some users. */
-    font-size: 19px;
-    text-align: center;
-
-    &.zulip-icon-triple-users {
-        font-size: 19px;
-    }
-
-    &.no-presence-circle {
-        margin-left: 14px;
-    }
 }
 
 nav {
@@ -1745,30 +1617,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     user-select: none;
 }
 
-.user_popover_email {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: all 0.4s ease;
-
-    & i {
-        cursor: pointer;
-
-        &.hide_copy_icon {
-            display: none;
-        }
-    }
-}
-
-.email_copied,
-.user_popover_email i:hover {
-    color: hsl(170deg 48% 54%);
-}
-
-.email_copied i {
-    display: none !important;
-}
-
 .flatpickr-calendar {
     /* Hide the up and down arrows in the Flatpickr datepicker year */
     .flatpickr-months .numInputWrapper span {
@@ -2040,14 +1888,6 @@ body:not(.hide-left-sidebar) {
             margin-left: 40px;
         }
 
-        .typeahead.dropdown-menu .typeahead-menu li {
-            width: 100%;
-
-            & a {
-                white-space: normal;
-            }
-        }
-
         #feedback_container {
             width: calc(90% - 30px);
             left: 5%;
@@ -2214,32 +2054,40 @@ body:not(.hide-left-sidebar) {
 }
 
 .simplebar-content-wrapper {
+    /* `simplebar-content-wrapper` has `tabindex=-1` set, which makes sure
+       that it does not get focus when navigating via a keyboard.
+
+       But in a few situations, we programmatically focus this
+       element, and in this case, we don't want to see the outline. */
+    outline: none;
+
     /* This prevents the popover from closing once the top/bottom is reached */
     overscroll-behavior: contain;
 }
 
-.dropdown-list-container {
-    .dropdown-list-search {
-        display: flex;
+.popover-filter-input-wrapper {
+    display: flex;
 
-        .dropdown-list-search-input {
-            background: var(--color-background-widget-input);
-            color: var(--color-text-dropdown-input);
-            width: 100%;
-            margin: 4px 4px 2px;
+    .popover-filter-input {
+        background: var(--color-background-widget-input);
+        color: var(--color-text-dropdown-input);
+        width: 100%;
+        margin: 4px 4px 2px;
 
-            &:focus {
-                background: hsl(0deg 0% 100%);
-                border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
-                box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
-            }
+        &:focus {
+            background: hsl(0deg 0% 100%);
+            border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
+            box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
         }
     }
+}
 
+.dropdown-list-container {
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
-        min-width: 200px;
+        /* 200px/14px */
+        min-width: 14.285em;
 
         .dropdown-list {
             list-style: none;
@@ -2267,18 +2115,23 @@ body:not(.hide-left-sidebar) {
 }
 
 .dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
-    display: block;
+    display: flex;
     color: var(--color-dropdown-item);
     padding: 3px 10px 3px 8px;
+    gap: 4px;
     font-weight: 400;
-    line-height: 20px;
+    line-height: var(--base-line-height-unitless);
     white-space: normal;
 
     .stream-privacy-type-icon {
-        font-size: 13px;
-        width: 13px;
-        height: 13px;
+        font-size: 0.93em;
+        width: 0.93em;
+        height: 0.93em;
         padding-right: 2px;
+    }
+
+    .zulip-icon {
+        margin-top: 2px;
     }
 
     &:focus,
@@ -2312,15 +2165,6 @@ body:not(.hide-left-sidebar) {
     .zulip-icon-star {
         position: relative;
         top: 2px;
-    }
-}
-
-.typeahead-option-label {
-    display: flex !important;
-    justify-content: space-between;
-
-    > strong {
-        margin-right: 14px;
     }
 }
 

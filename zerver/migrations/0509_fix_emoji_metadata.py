@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict
+from typing import Any
 
 import boto3
 from botocore.client import Config
@@ -40,7 +40,7 @@ def fix_emoji_metadata(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
         )
         assert fallback_owner is not None
 
-        emoji_by_filename: Dict[str, Any] = {}
+        emoji_by_filename: dict[str, Any] = {}
         for emoji in RealmEmoji.objects.filter(realm_id=realm.id).exclude(file_name=None):
             assert emoji.file_name is not None
             if emoji.author_id is None:

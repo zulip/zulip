@@ -1,11 +1,12 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Concatenate
 from unittest import mock
 
 import orjson
 from django.conf import settings
 from django.test import override_settings
-from typing_extensions import Concatenate, ParamSpec, override
+from typing_extensions import ParamSpec, override
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events
@@ -491,8 +492,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
         def check_values_passed(
             queue_name: Any,
-            trigger_event: Dict[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            trigger_event: dict[str, Any],
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
@@ -534,8 +535,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
         def check_values_passed(
             queue_name: Any,
-            trigger_event: Dict[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            trigger_event: dict[str, Any],
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
@@ -566,7 +567,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
     @for_all_bot_types
     @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
-    def test_trigger_on_huddle_message_from_user(
+    def test_trigger_on_group_direct_message_from_user(
         self, mock_queue_event_on_commit: mock.Mock
     ) -> None:
         self.second_bot_profile.bot_type = self.bot_profile.bot_type
@@ -578,8 +579,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
         def check_values_passed(
             queue_name: Any,
-            trigger_event: Dict[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            trigger_event: dict[str, Any],
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
@@ -591,15 +592,15 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
         mock_queue_event_on_commit.side_effect = check_values_passed
 
-        self.send_huddle_message(sender, recipients, "test")
+        self.send_group_direct_message(sender, recipients, "test")
         self.assertEqual(mock_queue_event_on_commit.call_count, 2)
 
     @for_all_bot_types
     @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
-    def test_no_trigger_on_huddle_message_from_bot(
+    def test_no_trigger_on_group_direct_message_from_bot(
         self, mock_queue_event_on_commit: mock.Mock
     ) -> None:
         sender = self.second_bot_profile
         recipients = [self.user_profile, self.bot_profile]
-        self.send_huddle_message(sender, recipients)
+        self.send_group_direct_message(sender, recipients)
         self.assertFalse(mock_queue_event_on_commit.called)

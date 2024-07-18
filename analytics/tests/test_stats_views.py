@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
 
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -84,11 +83,11 @@ class TestGetChartData(ZulipTestCase):
             ceiling_to_day(self.realm.date_created) + timedelta(days=i) for i in range(4)
         ]
 
-    def data(self, i: int) -> List[int]:
+    def data(self, i: int) -> list[int]:
         return [0, 0, i, 0]
 
     def insert_data(
-        self, stat: CountStat, realm_subgroups: List[Optional[str]], user_subgroups: List[str]
+        self, stat: CountStat, realm_subgroups: list[str | None], user_subgroups: list[str]
     ) -> None:
         if stat.frequency == CountStat.HOUR:
             insert_time = self.end_times_hour[2]
@@ -605,7 +604,7 @@ class TestGetChartData(ZulipTestCase):
 
 class TestGetChartDataHelpers(ZulipTestCase):
     def test_sort_by_totals(self) -> None:
-        empty: List[int] = []
+        empty: list[int] = []
         value_arrays = {"c": [0, 1], "a": [9], "b": [1, 1, 1], "d": empty}
         self.assertEqual(sort_by_totals(value_arrays), ["a", "b", "c", "d"])
 

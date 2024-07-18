@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 from unittest import mock, skipUnless
 from unittest.mock import MagicMock, call, patch
 from urllib.parse import quote, quote_plus
@@ -29,11 +29,13 @@ from zerver.models.users import get_user_profile_by_email
 class TestCheckConfig(ZulipTestCase):
     def test_check_config(self) -> None:
         check_config()
-        with self.settings(REQUIRED_SETTINGS=[("asdf", "not asdf")]):
-            with self.assertRaisesRegex(
+        with (
+            self.settings(REQUIRED_SETTINGS=[("asdf", "not asdf")]),
+            self.assertRaisesRegex(
                 CommandError, "Error: You must set asdf in /etc/zulip/settings.py."
-            ):
-                check_config()
+            ),
+        ):
+            check_config()
 
     @override_settings(WARN_NO_EMAIL=True)
     def test_check_send_email(self) -> None:
@@ -89,12 +91,12 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(get_user_profile_by_email(email), user_profile)
 
     def get_users_sorted(
-        self, options: Dict[str, Any], realm: Optional[Realm], **kwargs: Any
-    ) -> List[UserProfile]:
+        self, options: dict[str, Any], realm: Realm | None, **kwargs: Any
+    ) -> list[UserProfile]:
         user_profiles = self.command.get_users(options, realm, **kwargs)
         return sorted(user_profiles, key=lambda x: x.email)
 
-    def sorted_users(self, users: List[UserProfile]) -> List[UserProfile]:
+    def sorted_users(self, users: list[UserProfile]) -> list[UserProfile]:
         return sorted(users, key=lambda x: x.email)
 
     def test_get_users(self) -> None:
@@ -210,9 +212,8 @@ class TestCommandsCanStart(ZulipTestCase):
     def test_management_commands_show_help(self) -> None:
         with stdout_suppressed():
             for command in self.commands:
-                with self.subTest(management_command=command):
-                    with self.assertRaises(SystemExit):
-                        call_command(command, "--help")
+                with self.subTest(management_command=command), self.assertRaises(SystemExit):
+                    call_command(command, "--help")
         # zerver/management/commands/runtornado.py sets this to True;
         # we need to reset it here.  See #3685 for details.
         settings.RUNNING_INSIDE_TORNADO = False
@@ -361,9 +362,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         key = generated_link[-24:]
         # Manually expire the link by changing the date of creation
         obj = RealmCreationKey.objects.get(creation_key=key)
-        obj.date_created = obj.date_created - timedelta(
-            days=settings.REALM_CREATION_LINK_VALIDITY_DAYS + 1
-        )
+        obj.date_created -= timedelta(days=settings.REALM_CREATION_LINK_VALIDITY_DAYS + 1)
         obj.save()
 
         result = self.client_get(generated_link)
@@ -473,9 +472,10 @@ class TestConvertMattermostData(ZulipTestCase):
     COMMAND_NAME = "convert_mattermost_data"
 
     def test_if_command_calls_do_convert_data(self) -> None:
-        with patch(
-            "zerver.management.commands.convert_mattermost_data.do_convert_data"
-        ) as m, patch("builtins.print") as mock_print:
+        with (
+            patch("zerver.management.commands.convert_mattermost_data.do_convert_data") as m,
+            patch("builtins.print") as mock_print,
+        ):
             mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
             call_command(self.COMMAND_NAME, mm_fixtures, f"--output={output_dir}")
@@ -532,9 +532,11 @@ class TestExport(ZulipTestCase):
             self.example_user("hamlet"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
         )
 
-        with patch("zerver.management.commands.export.export_realm_wrapper") as m, patch(
-            "builtins.print"
-        ) as mock_print, patch("builtins.input", return_value="y") as mock_input:
+        with (
+            patch("zerver.management.commands.export.export_realm_wrapper") as m,
+            patch("builtins.print") as mock_print,
+            patch("builtins.input", return_value="y") as mock_input,
+        ):
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(
                 realm=realm,
@@ -559,9 +561,10 @@ class TestExport(ZulipTestCase):
             ],
         )
 
-        with self.assertRaisesRegex(CommandError, "Message with given ID does not"), patch(
-            "builtins.print"
-        ) as mock_print:
+        with (
+            self.assertRaisesRegex(CommandError, "Message with given ID does not"),
+            patch("builtins.print") as mock_print,
+        ):
             call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id=123456")
         self.assertEqual(
             mock_print.mock_calls,
@@ -572,9 +575,10 @@ class TestExport(ZulipTestCase):
 
         message.last_edit_time = timezone_now()
         message.save()
-        with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."), patch(
-            "builtins.print"
-        ) as mock_print:
+        with (
+            self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."),
+            patch("builtins.print") as mock_print,
+        ):
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
         self.assertEqual(
             mock_print.mock_calls,
@@ -588,9 +592,12 @@ class TestExport(ZulipTestCase):
         do_add_reaction(
             self.mit_user("sipbtest"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
         )
-        with self.assertRaisesRegex(
-            CommandError, "Users from a different realm reacted to message. Aborting..."
-        ), patch("builtins.print") as mock_print:
+        with (
+            self.assertRaisesRegex(
+                CommandError, "Users from a different realm reacted to message. Aborting..."
+            ),
+            patch("builtins.print") as mock_print,
+        ):
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
 
         self.assertEqual(

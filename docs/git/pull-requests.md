@@ -19,7 +19,7 @@ In the Zulip project, we encourage submitting [draft pull
 requests][github-help-draft-pr] early and often. This allows you to
 share your code to make it easier to get feedback and help with your
 changes, even if you don't think your pull request is ready to be
-merged (e.g. it might not work or pass tests). This sets expectations
+merged (e.g., it might not work or pass tests). This sets expectations
 correctly for any feedback from other developers, and prevents your
 work from being merged before you're confident in it.
 

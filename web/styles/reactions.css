@@ -3,7 +3,7 @@
     user-select: none;
 
     &:has(.message_reaction) {
-        padding-bottom: 5px;
+        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
     }
 
     .message_reaction {
@@ -170,32 +170,6 @@
 
     .emoji-popover {
         width: 250px;
-
-        .emoji-popover-top {
-            position: relative;
-
-            padding: 8px 10px;
-            margin-bottom: 0;
-
-            background-color: var(--color-background-emoji-picker-popover);
-
-            border-radius: 3px 3px 0 0;
-
-            .fa-search {
-                position: absolute;
-                color: hsl(0deg 0% 73%);
-                top: 15px;
-                left: 17px;
-                z-index: 3;
-            }
-
-            .emoji-popover-filter {
-                margin: auto;
-                padding-left: 22px;
-                width: calc(100% - 22px - 8px);
-                font-size: 90%;
-            }
-        }
 
         .emoji-popover-category-tabs {
             /* Flex needed here to work around #7511 (90% zoom issues in firefox) */

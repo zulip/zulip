@@ -272,6 +272,13 @@
                    spoiler messages to wrap. */
                 flex: 1 1 auto;
             }
+
+            time {
+                /* Time tag pushes the arrow out of view when overflow,
+                   adding white-space property prevents this by wrapping
+                   the element */
+                white-space: normal;
+            }
         }
 
         .spoiler-content {
@@ -951,4 +958,14 @@
 /* Search highlight used in both topics and rendered_markdown */
 .highlight {
     background-color: hsl(51deg 100% 79%);
+}
+
+/* For elements where we want to show as much markdown content we can
+   in a single line and then hide the overflowing part. */
+.single-line-rendered-markdown {
+    /* Any element which can `wrap` in the above defined elements. */
+    code,
+    .stream-topic {
+        white-space: nowrap;
+    }
 }

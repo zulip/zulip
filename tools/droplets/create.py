@@ -20,7 +20,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import digitalocean
 import requests
@@ -56,7 +56,7 @@ def assert_github_user_exists(github_username: str) -> bool:
         sys.exit(1)
 
 
-def get_ssh_public_keys_from_github(github_username: str) -> List[Dict[str, Any]]:
+def get_ssh_public_keys_from_github(github_username: str) -> list[dict[str, Any]]:
     print("Checking to see that GitHub user has available public keys...")
     apiurl_keys = f"https://api.github.com/users/{github_username}/keys"
     try:
@@ -108,12 +108,12 @@ def assert_droplet_does_not_exist(my_token: str, droplet_name: str, recreate: bo
     print("...No droplet found...proceeding.")
 
 
-def get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts: List[Dict[str, Any]]) -> str:
+def get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts: list[dict[str, Any]]) -> str:
     return "\n".join(userkey_dict["key"] for userkey_dict in userkey_dicts)
 
 
 def generate_dev_droplet_user_data(
-    username: str, subdomain: str, userkey_dicts: List[Dict[str, Any]]
+    username: str, subdomain: str, userkey_dicts: list[dict[str, Any]]
 ) -> str:
     ssh_keys_string = get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts)
     setup_root_ssh_keys = f"printf '{ssh_keys_string}' > /root/.ssh/authorized_keys"
@@ -159,7 +159,7 @@ su -c 'git config --global pull.rebase true' zulipdev
     return cloudconf
 
 
-def generate_prod_droplet_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
+def generate_prod_droplet_user_data(username: str, userkey_dicts: list[dict[str, Any]]) -> str:
     ssh_keys_string = get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts)
     setup_root_ssh_keys = f"printf '{ssh_keys_string}' > /root/.ssh/authorized_keys"
 
@@ -179,10 +179,10 @@ def create_droplet(
     my_token: str,
     template_id: str,
     name: str,
-    tags: List[str],
+    tags: list[str],
     user_data: str,
     region: str = "nyc3",
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     droplet = digitalocean.Droplet(
         token=my_token,
         name=name,
@@ -215,7 +215,7 @@ def create_droplet(
     return (droplet.ip_address, droplet.ip_v6_address)
 
 
-def delete_existing_records(records: List[digitalocean.Record], record_name: str) -> None:
+def delete_existing_records(records: list[digitalocean.Record], record_name: str) -> None:
     count = 0
     for record in records:
         if (
@@ -224,7 +224,7 @@ def delete_existing_records(records: List[digitalocean.Record], record_name: str
             and record.type in ("AAAA", "A")
         ):
             record.destroy()
-            count = count + 1
+            count += 1
     if count:
         print(f"Deleted {count} existing A / AAAA records for {record_name}.zulipdev.org.")
 

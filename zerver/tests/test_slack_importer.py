@@ -1,7 +1,8 @@
 import os
 import shutil
+from collections.abc import Iterator
 from io import BytesIO
-from typing import Any, Dict, Iterator, List, Set, Tuple
+from typing import Any
 from unittest import mock
 from unittest.mock import ANY
 from urllib.parse import parse_qs, urlsplit
@@ -57,7 +58,7 @@ def remove_folder(path: str) -> None:
         shutil.rmtree(path)
 
 
-def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
+def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], bytes]:
     valid_endpoint = False
     endpoints = [
         "https://slack.com/api/users.list",
@@ -95,7 +96,7 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
             return (200, {}, orjson.dumps({"ok": False, "error": "user_not_found"}))
         return (200, {}, orjson.dumps({"ok": True, "user": {"id": user_id, "team_id": team_id}}))
     # Else, https://slack.com/api/team.info
-    team_not_found: Tuple[int, Dict[str, str], bytes] = (
+    team_not_found: tuple[int, dict[str, str], bytes] = (
         200,
         {},
         orjson.dumps({"ok": False, "error": "team_not_found"}),
@@ -176,7 +177,7 @@ class SlackImporter(ZulipTestCase):
         realm_id = 2
         realm_subdomain = "test-realm"
         time = float(timezone_now().timestamp())
-        test_realm: List[Dict[str, Any]] = build_zerver_realm(
+        test_realm: list[dict[str, Any]] = build_zerver_realm(
             realm_id, realm_subdomain, time, "Slack"
         )
         test_zerver_realm_dict = test_realm[0]
@@ -190,7 +191,7 @@ class SlackImporter(ZulipTestCase):
 
     @responses.activate
     def test_check_token_access(self) -> None:
-        def token_request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
+        def token_request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], bytes]:
             auth = request.headers.get("Authorization")
             if auth == "Bearer xoxb-broken-request":
                 return (400, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
@@ -293,7 +294,7 @@ class SlackImporter(ZulipTestCase):
     def test_get_timezone(self) -> None:
         user_chicago_timezone = {"tz": "America/Chicago"}
         user_timezone_none = {"tz": None}
-        user_no_timezone: Dict[str, Any] = {}
+        user_no_timezone: dict[str, Any] = {}
 
         self.assertEqual(get_user_timezone(user_chicago_timezone), "America/Chicago")
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
@@ -314,7 +315,7 @@ class SlackImporter(ZulipTestCase):
             [  # Private channels ("groups")
                 {"name": "private", "members": ["U061A1R2R", "U11111111"]},
             ],
-            [  # Huddles ("mpims")
+            [  # Direct message groups ("mpims")
                 {
                     "name": "mpdm-foo--bar--baz-1",
                     "members": ["U061A1R2R", "U061A5N1G", "U22222222"],
@@ -357,7 +358,7 @@ class SlackImporter(ZulipTestCase):
             ("U22222222", "foreignteam2"),
             ("U33333333", "foreignteam2"),
         ]
-        for expected, found in zip(expected_users, later_users):
+        for expected, found in zip(expected_users, later_users, strict=False):
             self.assertEqual(found["id"], expected[0])
             self.assertEqual(found["team_domain"], expected[1])
             self.assertEqual(found["is_mirror_dummy"], True)
@@ -671,7 +672,7 @@ class SlackImporter(ZulipTestCase):
         }
         subscription_id_count = 0
         recipient_id = 12
-        zerver_subscription: List[Dict[str, Any]] = []
+        zerver_subscription: list[dict[str, Any]] = []
         final_subscription_id = get_subscription(
             channel_members,
             zerver_subscription,
@@ -798,7 +799,7 @@ class SlackImporter(ZulipTestCase):
         self, mock_channels_to_zerver_stream: mock.Mock, mock_users_to_zerver_userprofile: mock.Mock
     ) -> None:
         realm_id = 1
-        user_list: List[Dict[str, Any]] = []
+        user_list: list[dict[str, Any]] = []
         (
             realm,
             slack_user_id_to_zulip_user_id,
@@ -848,7 +849,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(user_without_file, "U064KUGRJ")
 
     def test_build_zerver_message(self) -> None:
-        zerver_usermessage: List[Dict[str, Any]] = []
+        zerver_usermessage: list[dict[str, Any]] = []
 
         # recipient_id -> set of user_ids
         subscriber_map = {
@@ -899,7 +900,7 @@ class SlackImporter(ZulipTestCase):
 
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
 
-        all_messages: List[Dict[str, Any]] = [
+        all_messages: list[dict[str, Any]] = [
             {
                 "text": "<@U066MTL5U> has joined the channel",
                 "subtype": "channel_join",
@@ -1003,9 +1004,9 @@ class SlackImporter(ZulipTestCase):
             "DHX1UP7EG": ("U061A5N1G", "U061A1R2R"),
         }
 
-        zerver_usermessage: List[Dict[str, Any]] = []
-        subscriber_map: Dict[int, Set[int]] = {}
-        added_channels: Dict[str, Tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
+        zerver_usermessage: list[dict[str, Any]] = []
+        subscriber_map: dict[int, set[int]] = {}
+        added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
 
         (
             zerver_message,
@@ -1100,7 +1101,7 @@ class SlackImporter(ZulipTestCase):
 
         slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
 
-        all_messages: List[Dict[str, Any]] = [
+        all_messages: list[dict[str, Any]] = [
             {
                 "text": "<@U066MTL5U> has joined the channel",
                 "subtype": "channel_join",
@@ -1154,9 +1155,9 @@ class SlackImporter(ZulipTestCase):
         }
         dm_members: DMMembersT = {}
 
-        zerver_usermessage: List[Dict[str, Any]] = []
-        subscriber_map: Dict[int, Set[int]] = {}
-        added_channels: Dict[str, Tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
+        zerver_usermessage: list[dict[str, Any]] = []
+        subscriber_map: dict[int, set[int]] = {}
+        added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
 
         (
             zerver_message,
@@ -1209,7 +1210,7 @@ class SlackImporter(ZulipTestCase):
         output_dir = os.path.join(settings.TEST_WORKER_DIR, "test-slack-import")
         os.makedirs(output_dir, exist_ok=True)
 
-        added_channels: Dict[str, Tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
+        added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
 
         time = float(timezone_now().timestamp())
         zerver_message = [{"id": 1, "ts": time}, {"id": 5, "ts": time}]
@@ -1224,11 +1225,11 @@ class SlackImporter(ZulipTestCase):
 
             return iter(copy.deepcopy(zerver_message))
 
-        realm: Dict[str, Any] = {"zerver_subscription": []}
-        user_list: List[Dict[str, Any]] = []
+        realm: dict[str, Any] = {"zerver_subscription": []}
+        user_list: list[dict[str, Any]] = []
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
-        attachments: List[Dict[str, Any]] = []
-        uploads: List[Dict[str, Any]] = []
+        attachments: list[dict[str, Any]] = []
+        uploads: list[dict[str, Any]] = []
 
         zerver_usermessage = [{"id": 3}, {"id": 5}, {"id": 6}, {"id": 9}]
 
@@ -1317,6 +1318,7 @@ class SlackImporter(ZulipTestCase):
             team_info_fixture["team"],
         ]
         mock_requests_get.return_value.raw = BytesIO(read_test_image_file("img.png"))
+        mock_requests_get.return_value.headers = {"Content-Type": "image/png"}
 
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
@@ -1410,8 +1412,8 @@ class SlackImporter(ZulipTestCase):
             "alice": alice_id,
         }
 
-        zerver_attachment: List[Dict[str, Any]] = []
-        uploads_list: List[Dict[str, Any]] = []
+        zerver_attachment: list[dict[str, Any]] = []
+        uploads_list: list[dict[str, Any]] = []
 
         info = process_message_files(
             message=message,

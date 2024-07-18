@@ -1,5 +1,5 @@
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import markdown
 import markdown.extensions.admonition
@@ -29,7 +29,7 @@ from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, i
 register = Library()
 
 
-def and_n_others(values: List[str], limit: int) -> str:
+def and_n_others(values: list[str], limit: int) -> str:
     # A helper for the commonly appended "and N other(s)" string, with
     # the appropriate pluralization.
     return " and {} other{}".format(
@@ -39,7 +39,7 @@ def and_n_others(values: List[str], limit: int) -> str:
 
 
 @register.filter(name="display_list", is_safe=True)
-def display_list(values: List[str], display_limit: int) -> str:
+def display_list(values: list[str], display_limit: int) -> str:
     """
     Given a list of values, return a string nicely formatting those values,
     summarizing when you have more than `display_limit`. Eg, for a
@@ -66,8 +66,8 @@ def display_list(values: List[str], display_limit: int) -> str:
     return display_string
 
 
-md_extensions: Optional[List[markdown.Extension]] = None
-md_macro_extension: Optional[markdown.Extension] = None
+md_extensions: list[markdown.Extension] | None = None
+md_macro_extension: markdown.Extension | None = None
 # Prevent the automatic substitution of macros in these docs. If
 # they contain a macro, it is always used literally for documenting
 # the macro system.
@@ -85,7 +85,7 @@ docs_without_macros = [
 @register.filter(name="render_markdown_path", is_safe=True)
 def render_markdown_path(
     markdown_file_path: str,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     integration_doc: bool = False,
     help_center: bool = False,
 ) -> str:
@@ -103,8 +103,7 @@ def render_markdown_path(
 
     set_relative_help_links(bool(context is not None and context.get("html_settings_links")))
 
-    global md_extensions
-    global md_macro_extension
+    global md_extensions, md_macro_extension
     if md_extensions is None:
         md_extensions = [
             markdown.extensions.extra.makeExtension(),
@@ -177,7 +176,7 @@ def render_markdown_path(
     return mark_safe(jinja.from_string(html).render(context))  # noqa: S308
 
 
-def webpack_entry(entrypoint: str) -> List[str]:
+def webpack_entry(entrypoint: str) -> list[str]:
     while True:
         with open(settings.WEBPACK_STATS_FILE, "rb") as f:
             stats = orjson.loads(f.read())

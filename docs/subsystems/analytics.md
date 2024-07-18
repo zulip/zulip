@@ -7,7 +7,7 @@ designed around the following goals:
 
 - Minimal impact on scalability and service complexity.
 - Well-tested so that we can count on the results being correct.
-- Efficient to query so that we can display data in-app (e.g. on the channels
+- Efficient to query so that we can display data in-app (e.g., on the channels
   page) with minimum impact on the overall performance of those pages.
 - Storage size smaller than the size of the main Message/UserMessage
   database tables, so that we can store the data in the main PostgreSQL
@@ -45,7 +45,7 @@ set of database tables. Each of these tables has the following fields:
   an hour (or UTC day) boundary for stats collected at hourly (or daily)
   frequency. The time interval is determined by the `CountStat`.
 - various "id" fields: Foreign keys into `Realm`, `UserProfile`, `Stream`, or
-  nothing. E.g. the `RealmCount` table has a foreign key into `Realm`.
+  nothing. E.g., the `RealmCount` table has a foreign key into `Realm`.
 - value: The integer counts. For `"active_users_audit:is_bot:hour"` in the
   `RealmCount` table, this is the number of active humans or bots (depending
   on subgroup) in a particular realm at a particular `end_time`. For
@@ -114,7 +114,7 @@ efficient:
   for this, which is why we use raw database queries (which we usually avoid
   in Zulip) rather than the ORM.
 - Aggregating where possible to avoid unnecessary queries against the
-  `Message` and `UserMessage` tables. E.g. rather than querying the `Message`
+  `Message` and `UserMessage` tables. E.g., rather than querying the `Message`
   table both to generate sent message counts for each realm and again for
   each user, we just query for each user, and then add up the numbers for
   the users to get the totals for the realm.
@@ -147,10 +147,10 @@ analytics tests, to make sure it stays that way as we refactor.
 
 The system discussed above is designed primarily around the technical
 problem of showing useful analytics about things where the raw data is
-already stored in the database (e.g. `Message`, `UserMessage`). This is great
+already stored in the database (e.g., `Message`, `UserMessage`). This is great
 because we can always backfill that data to the beginning of time, but of
 course sometimes one wants to do analytics on things that aren't worth
-storing every data point for (e.g. activity data, request performance
+storing every data point for (e.g., activity data, request performance
 statistics, etc.). There is currently a reference implementation of a
 `LoggingCountStat` that shows how to handle such a situation.
 
@@ -203,7 +203,7 @@ Tips and tricks:
   better in Chrome than in Firefox, though this hasn't been extensively
   verified.
 - Unless a graph has a ton of data, it is typically better to just redraw it
-  when something changes (e.g. in the various aggregation click handlers)
+  when something changes (e.g., in the various aggregation click handlers)
   rather than to use retrace or relayout or do other complicated
   things. Performance on the `/stats` page is nice but not critical, and we've
   run into a lot of small bugs when trying to use Plotly's retrace/relayout.
@@ -211,7 +211,7 @@ Tips and tricks:
   isn't documented well.
 - `'paper'` as a Plotly option refers to the bounding box of the graph (or
   something related to that).
-- You can't right click and inspect the elements of a Plotly graph (e.g. the
+- You can't right click and inspect the elements of a Plotly graph (e.g., the
   bars in a bar graph) in your browser, since there is an interaction layer
   on top of it. But if you hunt around the document tree you should be able
   to find it.

@@ -1,23 +1,27 @@
+# Zulip Freshstatus integration
+
 Receive Freshstatus notifications in Zulip!
+
+{start_tabs}
 
 1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
-1. On your Freshstatus dashboard, click **Settings** and click **Integrations**.
-   Go to **Webhooks** and click **Manage**. Click **New Webhook**
-   to set up a new webhook.
+1. On your Freshstatus dashboard, select **Settings** and then click
+   **Integrations**. Under **Webhooks**, select **Manage**, and click
+   **New Webhook**.
 
-1. Set **Webhook Name** to any name of your choice, such as `Zulip`.
-   Set **Description** to any suitable description.
+1. Set **Webhook Name** to a name of your choice, such as `Zulip`, and
+   **Description** to any suitable description.
 
-1. Under **Condition**, select the events you would like to be notified for.
-   Under **Action**, set **Request Type** to `POST`. Set **Callback URL**
-   to the **URL** constructed above.
+1. Under **Condition**, select the [events](#filtering-incoming-events)
+   you'd like to be notified for. Under **Action**, set **Request Type**
+   to `POST`. Set **Callback URL** to the **URL** generated above.
 
-1. Leave **Requires Authentication** unchecked and set **Content** to
+1. Leave **Requires Authentication** untoggled, and set **Content** to
    **Advanced**.
 
 1. Set **Incident JSON** to the following:
@@ -73,9 +77,17 @@ Receive Freshstatus notifications in Zulip!
       }
       ```
 
-1. Finally, click **Save**. Optionally, you may click **Test** to check if
-   the webhook was configured correctly.
+1. Click **Save**. Once the webhook is saved, you can check whether it
+   is configured correctly by clicking **Test**.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/freshstatus/001.png)
+
+{!event-filtering-additional-feature.md!}
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

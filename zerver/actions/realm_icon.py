@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
@@ -11,7 +9,7 @@ from zerver.tornado.django_api import send_event_on_commit
 
 @transaction.atomic(durable=True)
 def do_change_icon_source(
-    realm: Realm, icon_source: str, *, acting_user: Optional[UserProfile]
+    realm: Realm, icon_source: str, *, acting_user: UserProfile | None
 ) -> None:
     realm.icon_source = icon_source
     realm.icon_version += 1

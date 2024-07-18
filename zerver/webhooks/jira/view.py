@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import re
 import string
-from typing import Callable, Dict, List, Optional
+from collections.abc import Callable
 
 from django.core.exceptions import ValidationError
 from django.db.models import Q
@@ -29,7 +29,7 @@ IGNORED_EVENTS = [
 ]
 
 
-def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[UserProfile]:
+def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> UserProfile | None:
     try:
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
@@ -95,7 +95,7 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
     return content
 
 
-def get_in(payload: WildValue, keys: List[str], default: str = "") -> WildValue:
+def get_in(payload: WildValue, keys: list[str], default: str = "") -> WildValue:
     try:
         for key in keys:
             payload = payload[key]
@@ -105,7 +105,7 @@ def get_in(payload: WildValue, keys: List[str], default: str = "") -> WildValue:
 
 
 def get_issue_string(
-    payload: WildValue, issue_id: Optional[str] = None, with_title: bool = False
+    payload: WildValue, issue_id: str | None = None, with_title: bool = False
 ) -> str:
     # Guess the URL as it is not specified in the payload
     # We assume that there is a /browse/BUG-### page
@@ -181,7 +181,7 @@ def get_sub_event_for_update_issue(payload: WildValue) -> str:
     return sub_event
 
 
-def get_event_type(payload: WildValue) -> Optional[str]:
+def get_event_type(payload: WildValue) -> str | None:
     event = payload.get("webhookEvent").tame(check_none_or(check_string))
     if event is None and payload.get("transition"):
         event = "jira:issue_updated"
@@ -189,7 +189,7 @@ def get_event_type(payload: WildValue) -> Optional[str]:
 
 
 def add_change_info(
-    content: str, field: Optional[str], from_field: Optional[str], to_field: Optional[str]
+    content: str, field: str | None, from_field: str | None, to_field: str | None
 ) -> str:
     content += f"* Changed {field}"
     if from_field:
@@ -339,7 +339,7 @@ def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
-JIRA_CONTENT_FUNCTION_MAPPER: Dict[str, Optional[Callable[[WildValue, UserProfile], str]]] = {
+JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, UserProfile], str] | None] = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
     "jira:issue_updated": handle_updated_issue_event,

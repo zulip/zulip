@@ -8,7 +8,6 @@ from urllib.parse import SplitResult
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
-from tornado.platform.asyncio import AsyncIOMainLoop
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
@@ -79,7 +78,6 @@ class Command(ZulipBaseCommand):
         async def inner_run() -> None:
             from django.utils import translation
 
-            AsyncIOMainLoop().install()
             loop = asyncio.get_running_loop()
             stop_fut = loop.create_future()
 

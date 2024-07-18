@@ -20,14 +20,14 @@ single place for:
     [Subscribe to email notifications](/help/channel-notifications) for
     channels such as **#announcements** to make sure you never miss an important message.
 
-Many classes use a dedicated channel to post general announcements, e.g.:
+Many classes use a dedicated channel to post general announcements, for example:
 
 * **\#announcements** > **office hours**: My office hours this week
 will be rescheduled from `Mon, Oct 11 2021, 1:00 PM` to `Thu, Oct 14 2021, 3:30 PM`.
 
 
 Share lecture notes and reading materials with [drag-and-drop file
-uploads](/help/share-and-upload-files), e.g.:
+uploads](/help/share-and-upload-files), for example:
 
 * **\#Unit 3: Sorting algorithms** > **lecture notes**: Here are the notes
 from today’s lecture. [lecture notes 10/2.pdf]() You can view a recording of the lecture [here]().
@@ -70,7 +70,7 @@ staff to see which conversations still require their attention.
 
 ## Coordination among teaching staff
 
-Use private channels to coordinate among course staff, e.g.:
+Use private channels to coordinate among course staff, for example:
 
 * **\#staff** > **homework 2 exercise 3b**: How many points should I
   take off for this? The assignment says clearly to use Python 3 syntax.

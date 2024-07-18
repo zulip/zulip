@@ -10,6 +10,7 @@ import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import {$t} from "./i18n";
+import {pick_empty_narrow_banner} from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
 import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
@@ -47,11 +48,7 @@ export function initialize(): void {
             const button_type = $elem.attr("data-reply-button-type");
             switch (button_type) {
                 case "direct_disabled": {
-                    instance.setContent(
-                        parse_html(
-                            $("#compose_reply_direct_disabled_button_tooltip_template").html(),
-                        ),
-                    );
+                    instance.setContent(pick_empty_narrow_banner().title);
                     return;
                 }
                 case "selected_message": {
@@ -92,12 +89,7 @@ export function initialize(): void {
         onShow(instance) {
             const $elem = $(instance.reference);
             const conversation_type = $elem.attr("data-conversation-type");
-            if (conversation_type === "direct") {
-                instance.setContent(
-                    parse_html($("#new_direct_message_button_tooltip_template").html()),
-                );
-                return undefined;
-            } else if (conversation_type === "stream") {
+            if (conversation_type === "stream") {
                 instance.setContent(
                     parse_html($("#new_topic_message_button_tooltip_template").html()),
                 );
@@ -240,7 +232,8 @@ export function initialize(): void {
         // TODO: Might need to target just the Send button itself
         // in the new design
         target: ".disabled-message-send-controls",
-        maxWidth: 350,
+        // 350px at 14px/1em
+        maxWidth: "25em",
         content: () =>
             compose_recipient.get_posting_policy_error_message() ||
             compose_validate.get_disabled_send_tooltip(),
@@ -248,5 +241,13 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
         },
+    });
+}
+
+export function hide_compose_control_button_tooltips($row: JQuery): void {
+    $row.find(
+        ".compose_control_button[data-tooltip-template-id], .compose_control_button[data-tippy-content], .compose_control_button_container",
+    ).each(function (this: tippy.ReferenceElement) {
+        this._tippy?.hide();
     });
 }

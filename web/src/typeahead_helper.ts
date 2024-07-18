@@ -6,6 +6,7 @@ import * as typeahead from "../shared/src/typeahead";
 import type {EmojiSuggestion} from "../shared/src/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
+import {MAX_ITEMS} from "./bootstrap_typeahead";
 import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
 import type {LanguageSuggestion, SlashCommandSuggestion} from "./composebox_typeahead";
@@ -43,9 +44,9 @@ export function build_highlight_regex(query: string): RegExp {
 }
 
 export function highlight_with_escaping_and_regex(regex: RegExp, item: string): string {
-    // if regex is empty return entire item highlighted and escaped
+    // if regex is empty return entire item escaped
     if (regex.source === "()") {
-        return "<strong>" + Handlebars.Utils.escapeExpression(item) + "</strong>";
+        return Handlebars.Utils.escapeExpression(item);
     }
 
     // We need to assemble this manually (as opposed to doing 'join') because we need to
@@ -85,6 +86,7 @@ type StreamData = {
     color: string;
     name: string;
     description: string;
+    rendered_description: string;
     subscribed: boolean;
 };
 
@@ -94,6 +96,7 @@ export function render_typeahead_item(args: {
     img_src?: string;
     status_emoji_info?: UserStatusEmojiInfo | undefined;
     secondary?: string | null;
+    secondary_html?: string | undefined;
     pronouns?: string | undefined;
     is_user_group?: boolean;
     stream?: StreamData;
@@ -103,12 +106,14 @@ export function render_typeahead_item(args: {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
     const has_secondary = args.secondary !== undefined;
+    const has_secondary_html = args.secondary_html !== undefined;
     const has_pronouns = args.pronouns !== undefined;
     return render_typeahead_list_item({
         ...args,
         has_image,
         has_status,
         has_secondary,
+        has_secondary_html,
         has_pronouns,
     });
 }
@@ -166,15 +171,8 @@ export function render_person_or_user_group(
 }
 
 export function render_stream(stream: StreamData): string {
-    let desc = stream.description;
-    const short_desc = desc.slice(0, 35);
-
-    if (desc !== short_desc) {
-        desc = short_desc + "...";
-    }
-
     return render_typeahead_item({
-        secondary: desc,
+        secondary_html: stream.rendered_description,
         stream,
         is_unsubscribed: !stream.subscribed,
     });
@@ -419,7 +417,7 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     current_stream_id,
     current_topic,
     groups = [],
-    max_num_items = 20,
+    max_num_items = MAX_ITEMS,
 }: {
     users: UserType[];
     query: string;

@@ -2,16 +2,17 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as compose_validate from "./compose_validate";
 import {$t, $t_html} from "./i18n";
 import type {NarrowBannerData, SearchData} from "./narrow_error";
 import {narrow_error} from "./narrow_error";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import * as util from "./util";
 
 const SPECTATOR_STREAM_NARROW_BANNER = {
     title: "",
@@ -33,7 +34,7 @@ const MENTIONS_VIEW_EMPTY_BANNER = {
     html: $t_html(
         {
             defaultMessage:
-                "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a stream. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>",
+                "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>",
         },
         {
             "z-link": (content_html) =>
@@ -104,7 +105,7 @@ function retrieve_search_query_data(): SearchData {
     return search_string_result;
 }
 
-function pick_empty_narrow_banner(): NarrowBannerData {
+export function pick_empty_narrow_banner(): NarrowBannerData {
     const default_banner = {
         title: $t({defaultMessage: "There are no messages here."}),
         // Spectators cannot start a conversation.
@@ -230,17 +231,6 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     return MENTIONS_VIEW_EMPTY_BANNER;
                 case "dm":
                     // You have no direct messages.
-                    if (
-                        realm.realm_private_message_policy ===
-                        settings_config.private_message_policy_values.disabled.code
-                    ) {
-                        return {
-                            title: $t({
-                                defaultMessage:
-                                    "You are not allowed to send direct messages in this organization.",
-                            }),
-                        };
-                    }
                     return {
                         title: $t({defaultMessage: "You have no direct messages yet!"}),
                         html: $t_html(
@@ -324,16 +314,21 @@ function pick_empty_narrow_banner(): NarrowBannerData {
             }
             const user_ids = people.emails_strings_to_user_ids_array(first_operand);
             assert(user_ids?.[0] !== undefined);
-            if (
-                realm.realm_private_message_policy ===
-                    settings_config.private_message_policy_values.disabled.code &&
-                (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
-            ) {
+            const user_ids_string = util.sorted_ids(user_ids).join(",");
+            const direct_message_error_string =
+                compose_validate.check_dm_permissions_and_get_error_string(user_ids_string);
+            if (direct_message_error_string) {
                 return {
-                    title: $t({
-                        defaultMessage:
-                            "You are not allowed to send direct messages in this organization.",
-                    }),
+                    title: direct_message_error_string,
+                    html: $t_html(
+                        {
+                            defaultMessage: "<z-link>Learn more.</z-link>",
+                        },
+                        {
+                            "z-link": (content_html) =>
+                                `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
+                        },
+                    ),
                 };
             }
             if (!first_operand.includes(",")) {
@@ -409,16 +404,21 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     title: $t({defaultMessage: "This user does not exist!"}),
                 };
             }
-            if (
-                realm.realm_private_message_policy ===
-                    settings_config.private_message_policy_values.disabled.code &&
-                !person_in_dms.is_bot
-            ) {
+            const person_id_string = person_in_dms.user_id.toString();
+            const direct_message_error_string =
+                compose_validate.check_dm_permissions_and_get_error_string(person_id_string);
+            if (direct_message_error_string) {
                 return {
-                    title: $t({
-                        defaultMessage:
-                            "You are not allowed to send direct messages in this organization.",
-                    }),
+                    title: direct_message_error_string,
+                    html: $t_html(
+                        {
+                            defaultMessage: "<z-link>Learn more.</z-link>",
+                        },
+                        {
+                            "z-link": (content_html) =>
+                                `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
+                        },
+                    ),
                 };
             }
             if (people.is_current_user(first_operand)) {

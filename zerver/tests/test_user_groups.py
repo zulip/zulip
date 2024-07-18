@@ -1,5 +1,5 @@
+from collections.abc import Iterable
 from datetime import timedelta
-from typing import Iterable, Optional
 from unittest import mock
 
 import orjson
@@ -31,6 +31,7 @@ from zerver.lib.user_groups import (
     get_subgroup_ids,
     get_user_group_member_ids,
     has_user_group_access,
+    is_any_user_in_group,
     is_user_in_group,
     user_groups_in_realm_serialized,
 )
@@ -276,6 +277,38 @@ class UserGroupTestCase(ZulipTestCase):
 
         self.assertFalse(is_user_in_group(moderators_group, hamlet))
         self.assertFalse(is_user_in_group(moderators_group, hamlet, direct_member_only=True))
+
+    def test_is_any_user_in_group(self) -> None:
+        realm = get_realm("zulip")
+        shiva = self.example_user("shiva").id
+        iago = self.example_user("iago").id
+        hamlet = self.example_user("hamlet").id
+        polonius = self.example_user("polonius").id
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        administrators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+
+        self.assertTrue(is_any_user_in_group(moderators_group, [shiva, hamlet, polonius]))
+
+        # Iago is member of a subgroup of moderators group.
+        self.assertTrue(is_any_user_in_group(moderators_group, [iago, hamlet, polonius]))
+        self.assertFalse(
+            is_any_user_in_group(
+                moderators_group, [iago, hamlet, polonius], direct_member_only=True
+            )
+        )
+        self.assertTrue(
+            is_any_user_in_group(
+                administrators_group, [iago, shiva, hamlet], direct_member_only=True
+            )
+        )
+
+        self.assertFalse(is_any_user_in_group(moderators_group, [hamlet, polonius]))
+        self.assertFalse(is_any_user_in_group(moderators_group, [hamlet], direct_member_only=True))
 
     def test_has_user_group_access_to_subgroup(self) -> None:
         iago = self.example_user("iago")
@@ -538,7 +571,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
 
-        with self.settings(ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS=False):
+        with self.settings(ALLOW_GROUP_VALUED_SETTINGS=False):
             params = {
                 "name": "frontend",
                 "members": orjson.dumps([hamlet.id]).decode(),
@@ -551,9 +584,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 ).decode(),
             }
             result = self.client_post("/json/user_groups/create", info=params)
-            self.assert_json_error(
-                result, "can_mention_group can only be set to a single named user group."
-            )
+            self.assert_json_error(result, "'can_mention_group' must be a system user group.")
 
             params = {
                 "name": "frontend",
@@ -575,12 +606,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 "name": "devops",
                 "members": orjson.dumps([hamlet.id]).decode(),
                 "description": "Devops team",
-                "can_mention_group": orjson.dumps(moderators_group.id).decode(),
+                "can_mention_group": orjson.dumps(leadership_group.id).decode(),
             }
             result = self.client_post("/json/user_groups/create", info=params)
             self.assert_json_success(result)
             devops_group = NamedUserGroup.objects.get(name="devops", realm=hamlet.realm)
-            self.assertEqual(devops_group.can_mention_group_id, moderators_group.id)
+            self.assertEqual(devops_group.can_mention_group_id, leadership_group.id)
 
     def test_user_group_get(self) -> None:
         # Test success
@@ -835,8 +866,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
 
-        # Test case when ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS is False.
-        with self.settings(ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS=False):
+        # Test case when ALLOW_GROUP_VALUED_SETTINGS is False.
+        with self.settings(ALLOW_GROUP_VALUED_SETTINGS=False):
             params = {
                 "can_mention_group": orjson.dumps(
                     {
@@ -848,9 +879,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 ).decode()
             }
             result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
-            self.assert_json_error(
-                result, "can_mention_group can only be set to a single named user group."
-            )
+            self.assert_json_error(result, "'can_mention_group' must be a system user group.")
 
             params = {
                 "can_mention_group": orjson.dumps(
@@ -1127,9 +1156,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         munge = lambda obj: orjson.dumps(obj).decode()
         params = dict(add=munge(new_user_ids))
 
-        with mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"):
-            with self.assert_database_query_count(11):
-                result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        with (
+            mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"),
+            self.assert_database_query_count(11),
+        ):
+            result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
 
         with self.assert_database_query_count(1):
@@ -1281,7 +1312,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
-        def check_create_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
+        def check_create_user_group(acting_user: str, error_msg: str | None = None) -> None:
             self.login(acting_user)
             params = {
                 "name": "support",
@@ -1296,7 +1327,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             else:
                 self.assert_json_error(result, error_msg)
 
-        def check_delete_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
+        def check_delete_user_group(acting_user: str, error_msg: str | None = None) -> None:
             self.login(acting_user)
             user_group = NamedUserGroup.objects.get(name="support")
             with transaction.atomic():
@@ -1394,7 +1425,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             new_name: str,
             new_description: str,
             acting_user: str,
-            error_msg: Optional[str] = None,
+            error_msg: str | None = None,
         ) -> None:
             self.login(acting_user)
             params = {
@@ -1488,9 +1519,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
 
-        def check_adding_members_to_group(
-            acting_user: str, error_msg: Optional[str] = None
-        ) -> None:
+        def check_adding_members_to_group(acting_user: str, error_msg: str | None = None) -> None:
             self.login(acting_user)
             params = {"add": orjson.dumps([aaron.id]).decode()}
             self.assert_user_membership(user_group, [othello])
@@ -1502,7 +1531,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 self.assert_json_error(result, error_msg)
 
         def check_removing_members_from_group(
-            acting_user: str, error_msg: Optional[str] = None
+            acting_user: str, error_msg: str | None = None
         ) -> None:
             self.login(acting_user)
             params = {"delete": orjson.dumps([aaron.id]).decode()}

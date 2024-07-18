@@ -3,7 +3,7 @@
         <div class="flex_container flex_container_pm">
             <div class="left_part recent_view_focusable" data-col-index="{{ column_indexes.stream }}">
                 {{#if is_private}}
-                <span class="fa fa-envelope"></span>
+                <span class="zulip-icon zulip-icon-user"></span>
                 <a href="{{pm_url}}">{{t "Direct messages" }}</a>
                 {{else}}
                 <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
@@ -21,7 +21,7 @@
                     {{else if is_bot}}
                     <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
                     {{else}}
-                    <span class="{{user_circle_class}} user_circle"></span>
+                    <span class="{{user_circle_class}} user_circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
                     {{/if}}
                 </span>
             </div>

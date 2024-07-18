@@ -3,7 +3,6 @@ This module stores data for "external account" custom profile field.
 """
 
 from dataclasses import dataclass
-from typing import Dict
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -46,7 +45,7 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
 }
 
 
-def get_default_external_accounts() -> Dict[str, Dict[str, str]]:
+def get_default_external_accounts() -> dict[str, dict[str, str]]:
     return {
         subtype: {
             "text": external_account.text,

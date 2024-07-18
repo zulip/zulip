@@ -1,6 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
-from typing import Any, Dict, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from typing_extensions import override
 from zulip_bots.lib import extract_query_without_mention
@@ -24,7 +25,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         user_profile_id = event["user_profile_id"]
         user_profile = get_user_profile_by_id(user_profile_id)
 
-        message: Dict[str, Any] = event["message"]
+        message: dict[str, Any] = event["message"]
 
         # TODO: Do we actually want to allow multiple Services per bot user?
         services = get_bot_services(user_profile_id)

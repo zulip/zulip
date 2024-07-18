@@ -1,5 +1,4 @@
 from dataclasses import asdict, dataclass
-from typing import Optional
 from urllib.parse import urlencode
 
 import orjson
@@ -36,7 +35,7 @@ from zerver.models import Realm
 
 
 @add_google_analytics
-def apps_view(request: HttpRequest, platform: Optional[str] = None) -> HttpResponse:
+def apps_view(request: HttpRequest, platform: str | None = None) -> HttpResponse:
     if not settings.CORPORATE_ENABLED:
         # This seems impossible (CORPORATE_ENABLED set to false when
         # rendering a "corporate" view) -- but we add it to make
@@ -71,7 +70,7 @@ def is_customer_on_free_trial(customer_plan: CustomerPlan) -> bool:
 @dataclass
 class PlansPageContext:
     sponsorship_url: str
-    free_trial_days: Optional[int]
+    free_trial_days: int | None
     on_free_trial: bool = False
     sponsorship_pending: bool = False
     is_sponsored: bool = False
@@ -81,10 +80,10 @@ class PlansPageContext:
 
     is_new_customer: bool = False
     on_free_tier: bool = False
-    customer_plan: Optional[CustomerPlan] = None
+    customer_plan: CustomerPlan | None = None
     is_legacy_server_with_scheduled_upgrade: bool = False
-    legacy_server_new_plan: Optional[CustomerPlan] = None
-    requested_sponsorship_plan: Optional[str] = None
+    legacy_server_new_plan: CustomerPlan | None = None
+    requested_sponsorship_plan: str | None = None
 
     billing_base_url: str = ""
 
@@ -412,7 +411,7 @@ def customer_portal(
     *,
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
-    tier: Optional[Json[int]] = None,
+    tier: Json[int] | None = None,
     setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
     user = request.user
@@ -436,7 +435,7 @@ def remote_realm_customer_portal(
     *,
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
-    tier: Optional[Json[int]] = None,
+    tier: Json[int] | None = None,
     setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
     review_billing_information_url = billing_session.get_stripe_customer_portal_url(
@@ -453,7 +452,7 @@ def remote_server_customer_portal(
     *,
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
-    tier: Optional[Json[int]] = None,
+    tier: Json[int] | None = None,
     setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
     review_billing_information_url = billing_session.get_stripe_customer_portal_url(

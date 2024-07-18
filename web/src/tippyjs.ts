@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
+import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
@@ -53,7 +54,8 @@ export const EXTRA_LONG_HOVER_DELAY: [number, number] = [1500, 20];
 // documentation for default properties.
 tippy.default.setDefaultProps({
     // Tooltips shouldn't take more space than mobile widths.
-    maxWidth: 300,
+    // 300px at 14px/1em
+    maxWidth: "21.4286em",
     delay: INSTANT_HOVER_DELAY,
     placement: "top",
     // Disable animations to make the tooltips feel snappy.
@@ -75,6 +77,23 @@ tippy.default.setDefaultProps({
     // Or, override this with a function returning string (text) or DocumentFragment (HTML).
     content: get_tooltip_content,
 });
+
+export const topic_visibility_policy_tooltip_props = {
+    delay: LONG_HOVER_DELAY,
+    appendTo: () => document.body,
+    onShow(instance: tippy.Instance) {
+        const $elem = $(instance.reference);
+        const current_visibility_policy_str = $elem.attr("data-tippy-content");
+        instance.setContent(
+            ui_util.parse_html(
+                render_change_visibility_policy_button_tooltip({current_visibility_policy_str}),
+            ),
+        );
+    },
+    onHidden(instance: tippy.Instance) {
+        instance.destroy();
+    },
+};
 
 export function initialize(): void {
     $("#tooltip-templates-container").html(render_tooltip_templates());
@@ -115,6 +134,25 @@ export function initialize(): void {
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "bottom",
+    });
+
+    tippy.delegate("body", {
+        target: "#subscription_overlay .subscription_settings .sub-stream-name",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "top",
+        onShow(instance) {
+            const stream_name_element = instance.reference;
+            assert(stream_name_element instanceof HTMLElement);
+            // Only show tooltip if the stream name is truncated.
+            // See https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
+            // for more details.
+            if (stream_name_element.offsetWidth >= stream_name_element.scrollWidth) {
+                return false;
+            }
+
+            return undefined;
+        },
     });
 
     tippy.delegate("body", {
@@ -262,6 +300,7 @@ export function initialize(): void {
             "#filter_streams_tooltip",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
+            ".popover-group-menu-member-list .popover_user_presence",
             "#copy_generated_invite_link",
         ].join(","),
         appendTo: () => document.body,
@@ -563,6 +602,12 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: [".personal-menu-clear-status", ".user-card-clear-status-button"].join(","),
+        placement: "top",
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
         /*
             The tooltip for new user group button (+) icon button on #groups
             overlay was not mounted correctly as its sibling element (search bar)
@@ -656,6 +701,15 @@ export function initialize(): void {
                 ),
             );
         },
+    });
+
+    tippy.delegate("body", {
+        target: [
+            "#recent_view .recipient_bar_icon",
+            "#inbox-view .recipient_bar_icon",
+            "#left-sidebar-container .visibility-policy-icon",
+        ].join(","),
+        ...topic_visibility_policy_tooltip_props,
     });
 
     tippy.delegate("body", {

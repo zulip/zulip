@@ -3,8 +3,6 @@ import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_state from "./compose_state";
@@ -13,6 +11,7 @@ import * as direct_message_group_data from "./direct_message_group_data";
 import * as drafts from "./drafts";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
+import * as message_events_util from "./message_events_util";
 import * as message_helper from "./message_helper";
 import * as message_lists from "./message_lists";
 import * as message_notifications from "./message_notifications";
@@ -35,82 +34,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) {
-    const ids = [];
-
-    for (const elem of messages) {
-        ids.push(elem.id);
-    }
-
-    channel.get({
-        url: "/json/messages/matches_narrow",
-        data: {
-            msg_ids: JSON.stringify(ids),
-            narrow: JSON.stringify(narrow_state.public_search_terms()),
-        },
-        timeout: 5000,
-        success(data) {
-            if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
-                // We unnarrowed or moved to Recent Conversations in the meantime.
-                return;
-            }
-
-            let new_messages = [];
-            for (const elem of messages) {
-                if (Object.hasOwn(data.messages, elem.id)) {
-                    util.set_match_data(elem, data.messages[elem.id]);
-                    new_messages.push(elem);
-                }
-            }
-
-            // This second call to process_new_message in the
-            // insert_new_messages code path is designed to replace
-            // our slightly stale message object with the latest copy
-            // from the message_store. This helps in very rare race
-            // conditions, where e.g. the current user's name was
-            // edited in between when they sent the message and when
-            // we hear back from the server and can echo the new
-            // message.
-            new_messages = new_messages.map((message) =>
-                message_helper.process_new_message(message),
-            );
-
-            callback(new_messages, msg_list);
-            unread_ops.process_visible();
-        },
-        error(xhr) {
-            if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
-                return;
-            }
-            if (xhr.status === 400) {
-                // This narrow was invalid -- don't retry it, and don't display the message.
-                return;
-            }
-            if (attempt >= 5) {
-                // Too many retries -- bail out.  However, this means the `messages` are potentially
-                // missing from the search results view.  Since this is a very unlikely circumstance
-                // (Tornado is up, Django is down for 5 retries, user is in a search view that it
-                // cannot apply itself) and the failure mode is not bad (it will simply fail to
-                // include live updates of new matching messages), just log an error.
-                blueslip.error(
-                    "Failed to determine if new message matches current narrow, after 5 tries",
-                );
-                return;
-            }
-            // Backoff on retries, with full jitter: up to 2s, 4s, 8s, 16s, 32s
-            const delay = Math.random() * 2 ** attempt * 2000;
-            setTimeout(() => {
-                if (msg_list === message_lists.current) {
-                    // Don't actually try again if we un-narrowed
-                    // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, callback, attempt + 1);
-                }
-            }, delay);
-        },
-    });
-}
-
-export function insert_new_messages(messages, sent_by_this_client) {
+export function insert_new_messages(messages, sent_by_this_client, deliver_locally) {
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
@@ -128,7 +52,22 @@ export function insert_new_messages(messages, sent_by_this_client) {
             // new messages match the narrow, and use that to
             // determine which new messages to add to the current
             // message list (or display a notification).
-            maybe_add_narrowed_messages(messages, list, message_util.add_new_messages);
+
+            if (deliver_locally) {
+                // However, this is a local echo attempt, we can't ask
+                // the server about the match, since we don't have a
+                // final message ID. In that situation, we do nothing
+                // and echo.process_from_server will call
+                // message_events_util.maybe_add_narrowed_messages
+                // once the message is fully delivered.
+                continue;
+            }
+
+            message_events_util.maybe_add_narrowed_messages(
+                messages,
+                list,
+                message_util.add_new_messages,
+            );
             continue;
         }
 
@@ -173,9 +112,11 @@ export function update_messages(events) {
     const messages_to_rerender = [];
     let any_topic_edited = false;
     let changed_narrow = false;
+    let refreshed_current_narrow = false;
     let changed_compose = false;
     let any_message_content_edited = false;
     let any_stream_changed = false;
+    let local_cache_missing_messages = false;
 
     for (const event of events) {
         const anchor_message = message_store.get(event.message_id);
@@ -285,9 +226,15 @@ export function update_messages(events) {
                 const message = message_store.get(message_id);
                 if (message !== undefined) {
                     event_messages.push(message);
+                } else {
+                    // If we don't have the message locally, we need to
+                    // refresh the current narrow after the update to fetch
+                    // the updated messages.
+                    local_cache_missing_messages = true;
                 }
             }
             // The event.message_ids received from the server are not in sorted order.
+            // Sorts in ascending order.
             event_messages.sort((a, b) => a.id - b.id);
 
             if (
@@ -305,6 +252,18 @@ export function update_messages(events) {
 
             if (going_forward_change) {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
+            }
+
+            // Remove the stream_topic_entry for the old topics;
+            // must be called before we call set message topic.
+            const num_messages = event_messages.length;
+            if (num_messages > 0) {
+                stream_topic_history.remove_messages({
+                    stream_id: old_stream_id,
+                    topic_name: orig_topic,
+                    num_messages,
+                    max_removed_msg_id: event_messages[num_messages - 1].id,
+                });
             }
 
             for (const moved_message of event_messages) {
@@ -334,23 +293,6 @@ export function update_messages(events) {
                     ];
                 }
                 moved_message.last_edit_timestamp = event.edit_timestamp;
-
-                // Remove the Recent Conversations entry for the old topics;
-                // must be called before we call set_message_topic.
-                //
-                // TODO: Use a single bulk request to do this removal.
-                // Note that we need to be careful to only remove IDs
-                // that were present in stream_topic_history data.
-                // This may not be possible to do correctly without extra
-                // complexity; the present loop assumes stream_topic_history has
-                // only messages in message_store, but that's been false
-                // since we added the server_history feature.
-                stream_topic_history.remove_messages({
-                    stream_id: moved_message.stream_id,
-                    topic_name: moved_message.topic,
-                    num_messages: 1,
-                    max_removed_msg_id: moved_message.id,
-                });
 
                 // Update the unread counts; again, this must be called
                 // before we modify the topic field on the message.
@@ -433,6 +375,33 @@ export function update_messages(events) {
                 }
             }
 
+            // If a message was moved to the current narrow and we don't have
+            // the message cached, we need to refresh the narrow to display the message.
+            if (!changed_narrow && local_cache_missing_messages && current_filter) {
+                let moved_message_stream = old_stream_name;
+                let moved_message_topic = orig_topic;
+                if (stream_changed) {
+                    moved_message_stream = sub_store.get(new_stream_id).name;
+                }
+
+                if (topic_edited) {
+                    moved_message_topic = new_topic;
+                }
+
+                if (
+                    current_filter.can_newly_match_moved_messages(
+                        moved_message_stream,
+                        moved_message_topic,
+                    )
+                ) {
+                    refreshed_current_narrow = true;
+                    message_view.show(current_filter.terms(), {
+                        then_select_id: current_selected_id,
+                        trigger: "stream/topic change",
+                    });
+                }
+            }
+
             // Ensure messages that are no longer part of this
             // narrow are deleted and messages that are now part
             // of this narrow are added to the message_list.
@@ -443,7 +412,7 @@ export function update_messages(events) {
             // this should be a loop over all valid message_list_data
             // objects, without the rerender (which will naturally
             // happen in the following code).
-            if (!changed_narrow && current_filter) {
+            if (!changed_narrow && !refreshed_current_narrow && current_filter) {
                 let message_ids_to_remove = [];
                 if (current_filter.can_apply_locally()) {
                     const predicate = current_filter.predicate();
@@ -469,7 +438,7 @@ export function update_messages(events) {
                         updated_messages.map((msg) => msg.id),
                     );
                     // For filters that cannot be processed locally, ask server.
-                    maybe_add_narrowed_messages(
+                    message_events_util.maybe_add_narrowed_messages(
                         event_messages,
                         message_lists.current,
                         message_util.add_messages,
@@ -543,7 +512,7 @@ export function update_messages(events) {
         // large organizations.
 
         for (const list of message_lists.all_rendered_message_lists()) {
-            if (changed_narrow && list === message_lists.current) {
+            if ((changed_narrow || refreshed_current_narrow) && list === message_lists.current) {
                 // Avoid updating current message list if user switched to a different narrow and
                 // we don't want to preserver the rendered state for the current one.
                 continue;

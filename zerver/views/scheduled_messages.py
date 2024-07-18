@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -42,13 +40,13 @@ def update_scheduled_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     scheduled_message_id: int = REQ(converter=to_non_negative_int, path_only=True),
-    req_type: Optional[str] = REQ(
+    req_type: str | None = REQ(
         "type", str_validator=check_string_in(Message.API_RECIPIENT_TYPES), default=None
     ),
-    req_to: Optional[str] = REQ("to", default=None),
-    topic_name: Optional[str] = REQ_topic(),
-    message_content: Optional[str] = REQ("content", default=None),
-    scheduled_delivery_timestamp: Optional[int] = REQ(json_validator=check_int, default=None),
+    req_to: str | None = REQ("to", default=None),
+    topic_name: str | None = REQ_topic(),
+    message_content: str | None = REQ("content", default=None),
+    scheduled_delivery_timestamp: int | None = REQ(json_validator=check_int, default=None),
 ) -> HttpResponse:
     if (
         req_type is None
@@ -118,10 +116,10 @@ def create_scheduled_message_backend(
     user_profile: UserProfile,
     req_type: str = REQ("type", str_validator=check_string_in(Message.API_RECIPIENT_TYPES)),
     req_to: str = REQ("to"),
-    topic_name: Optional[str] = REQ_topic(),
+    topic_name: str | None = REQ_topic(),
     message_content: str = REQ("content"),
     scheduled_delivery_timestamp: int = REQ(json_validator=check_int),
-    read_by_sender: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    read_by_sender: bool | None = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":

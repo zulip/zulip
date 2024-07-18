@@ -1,5 +1,3 @@
-from typing import List, Union
-
 from django.conf import settings
 from django.conf.urls import include
 from django.urls import path
@@ -16,7 +14,7 @@ from analytics.views.stats import (
 )
 from zerver.lib.rest import rest_path
 
-i18n_urlpatterns: List[Union[URLPattern, URLResolver]] = [
+i18n_urlpatterns: list[URLPattern | URLResolver] = [
     # Server admin (user_profile.is_staff) visible stats pages
     path("stats/realm/<realm_str>/", stats_for_realm),
     path("stats/installation", stats_for_installation),

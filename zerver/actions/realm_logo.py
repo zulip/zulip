@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
@@ -11,7 +9,7 @@ from zerver.tornado.django_api import send_event_on_commit
 
 @transaction.atomic(durable=True)
 def do_change_logo_source(
-    realm: Realm, logo_source: str, night: bool, *, acting_user: Optional[UserProfile]
+    realm: Realm, logo_source: str, night: bool, *, acting_user: UserProfile | None
 ) -> None:
     if not night:
         realm.logo_source = logo_source

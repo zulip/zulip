@@ -3,8 +3,9 @@
 __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import secrets
 from base64 import b32encode
+from collections.abc import Mapping
 from datetime import timedelta
-from typing import List, Mapping, Optional, Union, cast
+from typing import Optional, TypeAlias, Union, cast
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -16,7 +17,7 @@ from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
 from zerver.lib.types import UnspecifiedValue
@@ -62,25 +63,25 @@ def generate_key() -> str:
     return b32encode(secrets.token_bytes(15)).decode().lower()
 
 
-NoZilencerConfirmationObjT: TypeAlias = Union[
-    MultiuseInvite,
-    PreregistrationRealm,
-    PreregistrationUser,
-    EmailChangeStatus,
-    UserProfile,
-    RealmReactivationStatus,
-]
+NoZilencerConfirmationObjT: TypeAlias = (
+    MultiuseInvite
+    | PreregistrationRealm
+    | PreregistrationUser
+    | EmailChangeStatus
+    | UserProfile
+    | RealmReactivationStatus
+)
 ZilencerConfirmationObjT: TypeAlias = Union[
     NoZilencerConfirmationObjT,
     "PreregistrationRemoteServerBillingUser",
     "PreregistrationRemoteRealmBillingUser",
 ]
 
-ConfirmationObjT: TypeAlias = Union[NoZilencerConfirmationObjT, ZilencerConfirmationObjT]
+ConfirmationObjT: TypeAlias = NoZilencerConfirmationObjT | ZilencerConfirmationObjT
 
 
 def get_object_from_key(
-    confirmation_key: str, confirmation_types: List[int], *, mark_object_used: bool
+    confirmation_key: str, confirmation_types: list[int], *, mark_object_used: bool
 ) -> ConfirmationObjT:
     """Access a confirmation object from one of the provided confirmation
     types with the provided key.
@@ -128,7 +129,7 @@ def create_confirmation_object(
     obj: ConfirmationObjT,
     confirmation_type: int,
     *,
-    validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
+    validity_in_minutes: int | None | UnspecifiedValue = UnspecifiedValue(),
     no_associated_realm_object: bool = False,
 ) -> "Confirmation":
     # validity_in_minutes is an override for the default values which are
@@ -171,7 +172,7 @@ def create_confirmation_link(
     obj: ConfirmationObjT,
     confirmation_type: int,
     *,
-    validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
+    validity_in_minutes: int | None | UnspecifiedValue = UnspecifiedValue(),
     url_args: Mapping[str, str] = {},
     no_associated_realm_object: bool = False,
 ) -> str:
@@ -194,7 +195,7 @@ def confirmation_url_for(confirmation_obj: "Confirmation", url_args: Mapping[str
 
 def confirmation_url(
     confirmation_key: str,
-    realm: Optional[Realm],
+    realm: Realm | None,
     confirmation_type: int,
     url_args: Mapping[str, str] = {},
 ) -> str:
@@ -290,7 +291,7 @@ def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> st
 # add another Confirmation.type for this; it's this way for historical reasons.
 
 
-def validate_key(creation_key: Optional[str]) -> Optional["RealmCreationKey"]:
+def validate_key(creation_key: str | None) -> Optional["RealmCreationKey"]:
     """Get the record for this key, raising InvalidCreationKey if non-None but invalid."""
     if creation_key is None:
         return None

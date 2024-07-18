@@ -1,8 +1,9 @@
 import itertools
 import re
+from collections.abc import Collection
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Collection, Dict, Optional, Set
+from typing import Any
 
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
@@ -27,8 +28,8 @@ class UserActivitySummary:
     user_id: int
     user_type: str
     messages_sent: int
-    last_heard_from: Optional[datetime]
-    last_message_sent: Optional[datetime]
+    last_heard_from: datetime | None
+    last_message_sent: datetime | None
 
 
 def get_user_activity_records_for_realm(realm: str) -> QuerySet[UserActivity]:
@@ -67,8 +68,8 @@ def get_user_activity_summary(records: Collection[UserActivity]) -> UserActivity
             user_type = UserProfile.BOT_TYPES[bot_type]
 
     messages = 0
-    heard_from: Optional[datetime] = None
-    last_sent: Optional[datetime] = None
+    heard_from: datetime | None = None
+    last_sent: datetime | None = None
 
     for record in records:
         query = str(record.query)
@@ -97,9 +98,9 @@ def get_user_activity_summary(records: Collection[UserActivity]) -> UserActivity
 
 
 def realm_user_summary_table(
-    all_records: QuerySet[UserActivity], admin_emails: Set[str], title: str, stats_link: Markup
+    all_records: QuerySet[UserActivity], admin_emails: set[str], title: str, stats_link: Markup
 ) -> str:
-    user_records: Dict[str, UserActivitySummary] = {}
+    user_records: dict[str, UserActivitySummary] = {}
 
     def by_email(record: UserActivity) -> str:
         return record.user_profile.delivery_email
@@ -141,7 +142,7 @@ def realm_user_summary_table(
         row = dict(cells=cells, row_class=row_class)
         rows.append(row)
 
-    def by_last_heard_from(row: Dict[str, Any]) -> str:
+    def by_last_heard_from(row: dict[str, Any]) -> str:
         return row["cells"][4]
 
     rows = sorted(rows, key=by_last_heard_from, reverse=True)

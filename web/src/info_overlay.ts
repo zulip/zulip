@@ -166,7 +166,7 @@ Tea
 Coffee`,
         output_html: `\
 <div class="poll-widget">
-    <h4 class="poll-question-header reduced-font-size">What did you drink this morning?</h4>
+    <h4 class="poll-question-header">What did you drink this morning?</h4>
     <i class="fa fa-pencil poll-edit-question"></i>
     <ul class="poll-widget">
     <li>

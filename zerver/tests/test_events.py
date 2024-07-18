@@ -6,10 +6,11 @@
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import timedelta
 from io import StringIO
-from typing import Any, Dict, Iterator, List, Optional, Set
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -276,7 +277,7 @@ class BaseAction(ZulipTestCase):
     def verify_action(
         self,
         *,
-        event_types: Optional[List[str]] = None,
+        event_types: list[str] | None = None,
         include_subscribers: bool = True,
         state_change_expected: bool = True,
         notification_settings_null: bool = False,
@@ -292,7 +293,7 @@ class BaseAction(ZulipTestCase):
         linkifier_url_template: bool = True,
         user_list_incomplete: bool = False,
         client_is_old: bool = False,
-    ) -> Iterator[List[Dict[str, Any]]]:
+    ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
         If we don't do this, then certain failures will only manifest when you
@@ -344,7 +345,7 @@ class BaseAction(ZulipTestCase):
         if client_is_old:
             mark_clients_to_reload([client.event_queue.id])
 
-        events: List[Dict[str, Any]] = []
+        events: list[dict[str, Any]] = []
 
         # We want even those `send_event` calls which have been hooked to
         # `transaction.on_commit` to execute in tests.
@@ -413,9 +414,9 @@ class BaseAction(ZulipTestCase):
         self.match_states(hybrid_state, normal_state, events)
 
     def match_states(
-        self, state1: Dict[str, Any], state2: Dict[str, Any], events: List[Dict[str, Any]]
+        self, state1: dict[str, Any], state2: dict[str, Any], events: list[dict[str, Any]]
     ) -> None:
-        def normalize(state: Dict[str, Any]) -> None:
+        def normalize(state: dict[str, Any]) -> None:
             if "never_subscribed" in state:
                 for u in state["never_subscribed"]:
                     if "subscribers" in u:
@@ -566,7 +567,7 @@ class NormalActionsTest(BaseAction):
         pm = Message.objects.order_by("-id")[0]
         content = "new content"
         rendering_result = render_message_markdown(pm, content)
-        prior_mention_user_ids: Set[int] = set()
+        prior_mention_user_ids: set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,
@@ -598,14 +599,17 @@ class NormalActionsTest(BaseAction):
             is_embedded_update_only=False,
         )
 
-    def test_huddle_send_message_events(self) -> None:
-        huddle = [
+    def test_direct_message_group_send_message_events(self) -> None:
+        direct_message_group = [
             self.example_user("hamlet"),
             self.example_user("othello"),
         ]
         with self.verify_action():
-            self.send_huddle_message(
-                self.example_user("cordelia"), huddle, "hola", skip_capture_on_commit_callbacks=True
+            self.send_group_direct_message(
+                self.example_user("cordelia"),
+                direct_message_group,
+                "hola",
+                skip_capture_on_commit_callbacks=True,
             )
 
     def test_user_creation_events_on_sending_messages(self) -> None:
@@ -634,7 +638,7 @@ class NormalActionsTest(BaseAction):
         desdemona = self.example_user("desdemona")
 
         with self.verify_action(num_events=3) as events:
-            self.send_huddle_message(
+            self.send_group_direct_message(
                 othello, [polonius, desdemona, bot], "hola", skip_capture_on_commit_callbacks=True
             )
         check_realm_user_add("events[0]", events[0])
@@ -651,7 +655,7 @@ class NormalActionsTest(BaseAction):
             do_change_subscription_property(hamlet, sub, stream, "is_muted", True, acting_user=None)
 
         def verify_events_generated_and_reset_visibility_policy(
-            events: List[Dict[str, Any]], stream_name: str, topic_name: str
+            events: list[dict[str, Any]], stream_name: str, topic_name: str
         ) -> None:
             # event-type: muted_topics
             check_muted_topics("events[0]", events[0])
@@ -867,7 +871,7 @@ class NormalActionsTest(BaseAction):
         message = Message.objects.order_by("-id")[0]
         content = "new content"
         rendering_result = render_message_markdown(message, content)
-        prior_mention_user_ids: Set[int] = set()
+        prior_mention_user_ids: set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,
@@ -1068,17 +1072,17 @@ class NormalActionsTest(BaseAction):
                 do_update_message_flags(user_profile, "remove", "read", [personal_message])
             check_update_message_flags_remove("events[0]", events[0])
 
-            huddle_message = self.send_huddle_message(
+            group_direct_message = self.send_group_direct_message(
                 from_user=self.example_user("cordelia"),
                 to_users=[user_profile, self.example_user("othello")],
                 content=content,
             )
 
             with self.verify_action(state_change_expected=True):
-                do_update_message_flags(user_profile, "add", "read", [huddle_message])
+                do_update_message_flags(user_profile, "add", "read", [group_direct_message])
 
             with self.verify_action(state_change_expected=True) as events:
-                do_update_message_flags(user_profile, "remove", "read", [huddle_message])
+                do_update_message_flags(user_profile, "remove", "read", [group_direct_message])
             check_update_message_flags_remove("events[0]", events[0])
 
     def test_send_message_to_existing_recipient(self) -> None:
@@ -1738,17 +1742,19 @@ class NormalActionsTest(BaseAction):
         cordelia.save()
 
         away_val = False
-        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
-            with self.verify_action(num_events=0, state_change_expected=False) as events:
-                do_update_user_status(
-                    user_profile=cordelia,
-                    away=away_val,
-                    status_text="out to lunch",
-                    emoji_name="car",
-                    emoji_code="1f697",
-                    reaction_type=UserStatus.UNICODE_EMOJI,
-                    client_id=client.id,
-                )
+        with (
+            self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True),
+            self.verify_action(num_events=0, state_change_expected=False) as events,
+        ):
+            do_update_user_status(
+                user_profile=cordelia,
+                away=away_val,
+                status_text="out to lunch",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+                client_id=client.id,
+            )
 
         away_val = True
         with self.verify_action(num_events=1, state_change_expected=True) as events:
@@ -2124,13 +2130,12 @@ class NormalActionsTest(BaseAction):
             {"Google": False, "Email": False, "GitHub": True, "LDAP": False, "Dev": True},
             {"Google": False, "Email": True, "GitHub": True, "LDAP": True, "Dev": False},
         ):
-            with fake_backends():
-                with self.verify_action() as events:
-                    do_set_realm_authentication_methods(
-                        self.user_profile.realm,
-                        auth_method_dict,
-                        acting_user=None,
-                    )
+            with fake_backends(), self.verify_action() as events:
+                do_set_realm_authentication_methods(
+                    self.user_profile.realm,
+                    auth_method_dict,
+                    acting_user=None,
+                )
 
             check_realm_update_dict("events[0]", events[0])
 
@@ -2660,9 +2665,10 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_emoji_events(self) -> None:
         author = self.example_user("iago")
-        with get_test_image_file("img.png") as img_file:
-            with self.verify_action() as events:
-                check_add_realm_emoji(self.user_profile.realm, "my_emoji", author, img_file)
+        with get_test_image_file("img.png") as img_file, self.verify_action() as events:
+            check_add_realm_emoji(
+                self.user_profile.realm, "my_emoji", author, img_file, "image/png"
+            )
 
         check_realm_emoji_update("events[0]", events[0])
 
@@ -3111,7 +3117,7 @@ class NormalActionsTest(BaseAction):
         msg_id_2 = self.send_stream_message(hamlet, "Verona")
         messages = [Message.objects.get(id=msg_id), Message.objects.get(id=msg_id_2)]
         with self.verify_action(state_change_expected=True) as events:
-            do_delete_messages(self.user_profile.realm, messages)
+            do_delete_messages(self.user_profile.realm, messages, acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3132,7 +3138,7 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(
             state_change_expected=True, bulk_message_deletion=False, num_events=2
         ) as events:
-            do_delete_messages(self.user_profile.realm, messages)
+            do_delete_messages(self.user_profile.realm, messages, acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3148,7 +3154,7 @@ class NormalActionsTest(BaseAction):
         msg_id_2 = self.send_stream_message(hamlet, "test_stream1")
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True, num_events=2) as events:
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
 
         check_stream_update("events[0]", events[0])
         self.assertEqual(events[0]["property"], "first_message_id")
@@ -3170,7 +3176,7 @@ class NormalActionsTest(BaseAction):
         )
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True) as events:
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3187,7 +3193,7 @@ class NormalActionsTest(BaseAction):
         )
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True, bulk_message_deletion=False) as events:
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3204,13 +3210,13 @@ class NormalActionsTest(BaseAction):
         msg_id = self.send_stream_message(user_profile, "Verona")
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True):
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
     def test_do_delete_message_with_no_messages(self) -> None:
         with self.verify_action(num_events=0, state_change_expected=False) as events:
-            do_delete_messages(self.user_profile.realm, [])
+            do_delete_messages(self.user_profile.realm, [], acting_user=None)
         self.assertEqual(events, [])
 
     def test_add_attachment(self) -> None:
@@ -3225,7 +3231,9 @@ class NormalActionsTest(BaseAction):
 
             response_dict = self.assert_json_success(result)
             self.assertIn("uri", response_dict)
-            url = response_dict["uri"]
+            self.assertIn("url", response_dict)
+            url = response_dict["url"]
+            self.assertEqual(response_dict["uri"], url)
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
 
@@ -3272,9 +3280,12 @@ class NormalActionsTest(BaseAction):
             "zerver.lib.export.do_export_realm",
             return_value=create_dummy_file("test-export.tar.gz"),
         ):
-            with stdout_suppressed(), self.assertLogs(level="INFO") as info_logs:
-                with self.verify_action(state_change_expected=True, num_events=3) as events:
-                    self.client_post("/json/export/realm")
+            with (
+                stdout_suppressed(),
+                self.assertLogs(level="INFO") as info_logs,
+                self.verify_action(state_change_expected=True, num_events=3) as events,
+            ):
+                self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in" in info_logs.output[0])
 
         # We get two realm_export events for this action, where the first
@@ -3318,12 +3329,15 @@ class NormalActionsTest(BaseAction):
         )
         self.login_user(self.user_profile)
 
-        with mock.patch(
-            "zerver.lib.export.do_export_realm", side_effect=Exception("Some failure")
-        ), self.assertLogs(level="ERROR") as error_log:
-            with stdout_suppressed():
-                with self.verify_action(state_change_expected=False, num_events=2) as events:
-                    self.client_post("/json/export/realm")
+        with (
+            mock.patch("zerver.lib.export.do_export_realm", side_effect=Exception("Some failure")),
+            self.assertLogs(level="ERROR") as error_log,
+        ):
+            with (
+                stdout_suppressed(),
+                self.verify_action(state_change_expected=False, num_events=2) as events,
+            ):
+                self.client_post("/json/export/realm")
 
             # Log is of following format: "ERROR:root:Data export for zulip failed after 0.004499673843383789"
             # Where last floating number is time and will vary in each test hence the following assertion is
@@ -3393,8 +3407,8 @@ class NormalActionsTest(BaseAction):
 
 class RealmPropertyActionTest(BaseAction):
     def do_set_realm_property_test(self, name: str) -> None:
-        bool_tests: List[bool] = [True, False, True]
-        test_values: Dict[str, Any] = dict(
+        bool_tests: list[bool] = [True, False, True]
+        test_values: dict[str, Any] = dict(
             default_language=["es", "de", "en"],
             description=["Realm description", "New description"],
             digest_weekday=[0, 1, 2],
@@ -3403,7 +3417,6 @@ class RealmPropertyActionTest(BaseAction):
             waiting_period_threshold=[1000, 2000],
             create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
-            private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
@@ -3738,15 +3751,16 @@ class RealmPropertyActionTest(BaseAction):
                 self.do_set_realm_permission_group_setting_to_anonymous_groups_test(prop)
 
     def do_set_realm_user_default_setting_test(self, name: str) -> None:
-        bool_tests: List[bool] = [True, False, True]
-        test_values: Dict[str, Any] = dict(
-            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
-            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
+        bool_tests: list[bool] = [True, False, True]
+        test_values: dict[str, Any] = dict(
+            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_COMPACT],
+            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_COMPACT],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
             web_home_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
+            web_channel_default_view=UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
             desktop_icon_count_display=UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES,
@@ -3869,12 +3883,13 @@ class UserDisplayActionTest(BaseAction):
     def do_change_user_settings_test(self, setting_name: str) -> None:
         """Test updating each setting in UserProfile.property_types dict."""
 
-        test_changes: Dict[str, Any] = dict(
+        test_changes: dict[str, Any] = dict(
             emojiset=["twitter"],
             default_language=["es", "de", "en"],
             web_home_view=["all_messages", "inbox", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
+            web_channel_default_view=[2, 1],
             user_list_style=[1, 2, 3],
             web_stream_unreads_count_display_policy=[1, 2, 3],
             web_font_size_px=[12, 16, 18],

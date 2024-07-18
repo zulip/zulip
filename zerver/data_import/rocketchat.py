@@ -1,10 +1,9 @@
-import hashlib
 import logging
 import os
 import random
 import secrets
 import uuid
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any
 
 import bson
 from django.conf import settings
@@ -14,8 +13,8 @@ from zerver.data_import.import_util import (
     SubscriberHandler,
     ZerverFieldsT,
     build_attachment,
-    build_huddle,
-    build_huddle_subscriptions,
+    build_direct_message_group,
+    build_direct_message_group_subscriptions,
     build_message,
     build_personal_subscriptions,
     build_realm,
@@ -39,7 +38,7 @@ from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
 
 def make_realm(
-    realm_id: int, realm_subdomain: str, domain_name: str, rc_instance: Dict[str, Any]
+    realm_id: int, realm_subdomain: str, domain_name: str, rc_instance: dict[str, Any]
 ) -> ZerverFieldsT:
     created_at = float(rc_instance["_createdAt"].timestamp())
 
@@ -53,14 +52,14 @@ def make_realm(
 
 
 def process_users(
-    user_id_to_user_map: Dict[str, Dict[str, Any]],
+    user_id_to_user_map: dict[str, dict[str, Any]],
     realm_id: int,
     domain_name: str,
     user_handler: UserHandler,
-    user_id_mapper: IdMapper,
+    user_id_mapper: IdMapper[str],
 ) -> None:
-    realm_owners: List[int] = []
-    bots: List[int] = []
+    realm_owners: list[int] = []
+    bots: list[int] = []
 
     for rc_user_id in user_id_to_user_map:
         user_dict = user_id_to_user_map[rc_user_id]
@@ -144,7 +143,7 @@ def truncate_name(name: str, name_id: int, max_length: int = 60) -> str:
     return name
 
 
-def get_stream_name(rc_channel: Dict[str, Any]) -> str:
+def get_stream_name(rc_channel: dict[str, Any]) -> str:
     if rc_channel.get("teamMain"):
         stream_name = f'[TEAM] {rc_channel["name"]}'
     else:
@@ -156,11 +155,11 @@ def get_stream_name(rc_channel: Dict[str, Any]) -> str:
 
 
 def convert_channel_data(
-    room_id_to_room_map: Dict[str, Dict[str, Any]],
-    team_id_to_team_map: Dict[str, Dict[str, Any]],
-    stream_id_mapper: IdMapper,
+    room_id_to_room_map: dict[str, dict[str, Any]],
+    team_id_to_team_map: dict[str, dict[str, Any]],
+    stream_id_mapper: IdMapper[str],
     realm_id: int,
-) -> List[ZerverFieldsT]:
+) -> list[ZerverFieldsT]:
     streams = []
 
     for rc_room_id in room_id_to_room_map:
@@ -202,14 +201,14 @@ def convert_channel_data(
 
 
 def convert_stream_subscription_data(
-    user_id_to_user_map: Dict[str, Dict[str, Any]],
-    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
-    zerver_stream: List[ZerverFieldsT],
-    stream_id_mapper: IdMapper,
-    user_id_mapper: IdMapper,
+    user_id_to_user_map: dict[str, dict[str, Any]],
+    dsc_id_to_dsc_map: dict[str, dict[str, Any]],
+    zerver_stream: list[ZerverFieldsT],
+    stream_id_mapper: IdMapper[str],
+    user_id_mapper: IdMapper[str],
     subscriber_handler: SubscriberHandler,
 ) -> None:
-    stream_members_map: Dict[int, Set[int]] = {}
+    stream_members_map: dict[int, set[int]] = {}
 
     for rc_user_id in user_id_to_user_map:
         user_dict = user_id_to_user_map[rc_user_id]
@@ -238,41 +237,41 @@ def convert_stream_subscription_data(
         subscriber_handler.set_info(users=users, stream_id=stream["id"])
 
 
-def convert_huddle_data(
-    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
-    huddle_id_mapper: IdMapper,
-    user_id_mapper: IdMapper,
+def convert_direct_message_group_data(
+    huddle_id_to_huddle_map: dict[str, dict[str, Any]],
+    huddle_id_mapper: IdMapper[str],
+    user_id_mapper: IdMapper[str],
     subscriber_handler: SubscriberHandler,
-) -> List[ZerverFieldsT]:
-    zerver_huddle: List[ZerverFieldsT] = []
+) -> list[ZerverFieldsT]:
+    zerver_direct_message_group: list[ZerverFieldsT] = []
 
     for rc_huddle_id in huddle_id_to_huddle_map:
-        huddle_id = huddle_id_mapper.get(rc_huddle_id)
-        huddle = build_huddle(huddle_id)
-        zerver_huddle.append(huddle)
+        direct_message_group_id = huddle_id_mapper.get(rc_huddle_id)
+        direct_message_group = build_direct_message_group(direct_message_group_id)
+        zerver_direct_message_group.append(direct_message_group)
 
-        huddle_dict = huddle_id_to_huddle_map[rc_huddle_id]
-        huddle_user_ids = set()
-        for rc_user_id in huddle_dict["uids"]:
-            huddle_user_ids.add(user_id_mapper.get(rc_user_id))
+        direct_message_group_dict = huddle_id_to_huddle_map[rc_huddle_id]
+        direct_message_group_user_ids = {
+            user_id_mapper.get(rc_user_id) for rc_user_id in direct_message_group_dict["uids"]
+        }
         subscriber_handler.set_info(
-            users=huddle_user_ids,
-            huddle_id=huddle_id,
+            users=direct_message_group_user_ids,
+            direct_message_group_id=direct_message_group_id,
         )
 
-    return zerver_huddle
+    return zerver_direct_message_group
 
 
 def build_custom_emoji(
-    realm_id: int, custom_emoji_data: Dict[str, List[Dict[str, Any]]], output_dir: str
-) -> List[ZerverFieldsT]:
+    realm_id: int, custom_emoji_data: dict[str, list[dict[str, Any]]], output_dir: str
+) -> list[ZerverFieldsT]:
     logging.info("Starting to process custom emoji")
 
     emoji_folder = os.path.join(output_dir, "emoji")
     os.makedirs(emoji_folder, exist_ok=True)
 
-    zerver_realmemoji: List[ZerverFieldsT] = []
-    emoji_records: List[ZerverFieldsT] = []
+    zerver_realmemoji: list[ZerverFieldsT] = []
+    emoji_records: list[ZerverFieldsT] = []
 
     # Map emoji file_id to emoji file data
     emoji_file_data = {}
@@ -329,10 +328,10 @@ def build_custom_emoji(
 
 
 def build_reactions(
-    total_reactions: List[ZerverFieldsT],
-    reactions: List[Dict[str, Any]],
+    total_reactions: list[ZerverFieldsT],
+    reactions: list[dict[str, Any]],
     message_id: int,
-    zerver_realmemoji: List[ZerverFieldsT],
+    zerver_realmemoji: list[ZerverFieldsT],
 ) -> None:
     realmemoji = {}
     for emoji in zerver_realmemoji:
@@ -369,16 +368,16 @@ def build_reactions(
 
 
 def process_message_attachment(
-    upload: Dict[str, Any],
+    upload: dict[str, Any],
     realm_id: int,
     message_id: int,
     user_id: int,
     user_handler: UserHandler,
-    zerver_attachment: List[ZerverFieldsT],
-    uploads_list: List[ZerverFieldsT],
-    upload_id_to_upload_data_map: Dict[str, Dict[str, Any]],
+    zerver_attachment: list[ZerverFieldsT],
+    uploads_list: list[ZerverFieldsT],
+    upload_id_to_upload_data_map: dict[str, dict[str, Any]],
     output_dir: str,
-) -> Tuple[str, bool]:
+) -> tuple[str, bool]:
     if upload["_id"] not in upload_id_to_upload_data_map:  # nocoverage
         logging.info("Skipping unknown attachment of message_id: %s", message_id)
         return "", False
@@ -456,19 +455,19 @@ def process_message_attachment(
 
 def process_raw_message_batch(
     realm_id: int,
-    raw_messages: List[Dict[str, Any]],
-    subscriber_map: Dict[int, Set[int]],
+    raw_messages: list[dict[str, Any]],
+    subscriber_map: dict[int, set[int]],
     user_handler: UserHandler,
     is_pm_data: bool,
     output_dir: str,
-    zerver_realmemoji: List[ZerverFieldsT],
-    total_reactions: List[ZerverFieldsT],
-    uploads_list: List[ZerverFieldsT],
-    zerver_attachment: List[ZerverFieldsT],
-    upload_id_to_upload_data_map: Dict[str, Dict[str, Any]],
+    zerver_realmemoji: list[ZerverFieldsT],
+    total_reactions: list[ZerverFieldsT],
+    uploads_list: list[ZerverFieldsT],
+    zerver_attachment: list[ZerverFieldsT],
+    upload_id_to_upload_data_map: dict[str, dict[str, Any]],
 ) -> None:
     def fix_mentions(
-        content: str, mention_user_ids: Set[int], rc_channel_mention_data: List[Dict[str, str]]
+        content: str, mention_user_ids: set[int], rc_channel_mention_data: list[dict[str, str]]
     ) -> str:
         # Fix user mentions
         for user_id in mention_user_ids:
@@ -490,9 +489,9 @@ def process_raw_message_batch(
 
         return content
 
-    user_mention_map: Dict[int, Set[int]] = {}
-    wildcard_mention_map: Dict[int, bool] = {}
-    zerver_message: List[ZerverFieldsT] = []
+    user_mention_map: dict[int, set[int]] = {}
+    wildcard_mention_map: dict[int, bool] = {}
+    zerver_message: list[ZerverFieldsT] = []
 
     for raw_message in raw_messages:
         message_id = NEXT_ID("message")
@@ -580,9 +579,9 @@ def process_raw_message_batch(
 
 
 def get_topic_name(
-    message: Dict[str, Any],
-    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
-    thread_id_mapper: IdMapper,
+    message: dict[str, Any],
+    dsc_id_to_dsc_map: dict[str, dict[str, Any]],
+    thread_id_mapper: IdMapper[str],
     is_pm_data: bool = False,
 ) -> str:
     if is_pm_data:
@@ -605,33 +604,33 @@ def get_topic_name(
 
 def process_messages(
     realm_id: int,
-    messages: List[Dict[str, Any]],
-    subscriber_map: Dict[int, Set[int]],
+    messages: list[dict[str, Any]],
+    subscriber_map: dict[int, set[int]],
     is_pm_data: bool,
-    username_to_user_id_map: Dict[str, str],
-    user_id_mapper: IdMapper,
+    username_to_user_id_map: dict[str, str],
+    user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
-    user_id_to_recipient_id: Dict[int, int],
-    stream_id_mapper: IdMapper,
-    stream_id_to_recipient_id: Dict[int, int],
-    huddle_id_mapper: IdMapper,
-    huddle_id_to_recipient_id: Dict[int, int],
-    thread_id_mapper: IdMapper,
-    room_id_to_room_map: Dict[str, Dict[str, Any]],
-    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
-    direct_id_to_direct_map: Dict[str, Dict[str, Any]],
-    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
-    zerver_realmemoji: List[ZerverFieldsT],
-    total_reactions: List[ZerverFieldsT],
-    uploads_list: List[ZerverFieldsT],
-    zerver_attachment: List[ZerverFieldsT],
-    upload_id_to_upload_data_map: Dict[str, Dict[str, Any]],
+    user_id_to_recipient_id: dict[int, int],
+    stream_id_mapper: IdMapper[str],
+    stream_id_to_recipient_id: dict[int, int],
+    huddle_id_mapper: IdMapper[str],
+    huddle_id_to_recipient_id: dict[int, int],
+    thread_id_mapper: IdMapper[str],
+    room_id_to_room_map: dict[str, dict[str, Any]],
+    dsc_id_to_dsc_map: dict[str, dict[str, Any]],
+    direct_id_to_direct_map: dict[str, dict[str, Any]],
+    huddle_id_to_huddle_map: dict[str, dict[str, Any]],
+    zerver_realmemoji: list[ZerverFieldsT],
+    total_reactions: list[ZerverFieldsT],
+    uploads_list: list[ZerverFieldsT],
+    zerver_attachment: list[ZerverFieldsT],
+    upload_id_to_upload_data_map: dict[str, dict[str, Any]],
     output_dir: str,
 ) -> None:
-    def list_reactions(reactions: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def list_reactions(reactions: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
         # List of dictionaries of form:
         # {"name": "smile", "user_id": 2}
-        reactions_list: List[Dict[str, Any]] = []
+        reactions_list: list[dict[str, Any]] = []
         for react_code in reactions:
             name = react_code.split(":")[1]
             usernames = reactions[react_code]["usernames"]
@@ -648,7 +647,7 @@ def process_messages(
 
         return reactions_list
 
-    def message_to_dict(message: Dict[str, Any]) -> Dict[str, Any]:
+    def message_to_dict(message: dict[str, Any]) -> dict[str, Any]:
         rc_sender_id = message["u"]["_id"]
         sender_id = user_id_mapper.get(rc_sender_id)
         if "msg" in message:
@@ -679,8 +678,8 @@ def process_messages(
             # Message is in a 1:1 or group direct message.
             rc_channel_id = message["rid"]
             if rc_channel_id in huddle_id_to_huddle_map:
-                huddle_id = huddle_id_mapper.get(rc_channel_id)
-                message_dict["recipient_id"] = huddle_id_to_recipient_id[huddle_id]
+                direct_message_group_id = huddle_id_mapper.get(rc_channel_id)
+                message_dict["recipient_id"] = huddle_id_to_recipient_id[direct_message_group_id]
             else:
                 rc_member_ids = direct_id_to_direct_map[rc_channel_id]["uids"]
 
@@ -731,7 +730,7 @@ def process_messages(
         message_dict["wildcard_mention"] = wildcard_mention
 
         # Add channel mentions to message_dict
-        rc_channel_mention_data: List[Dict[str, str]] = []
+        rc_channel_mention_data: list[dict[str, str]] = []
         for mention in message.get("channels", []):
             mention_rc_channel_id = mention["_id"]
             mention_rc_channel_name = mention["name"]
@@ -786,7 +785,7 @@ def process_messages(
 
         return message_dict
 
-    raw_messages: List[Dict[str, Any]] = []
+    raw_messages: list[dict[str, Any]] = []
     for message in messages:
         if message.get("t") is not None:
             # Messages with a type are system notifications like user_joined
@@ -794,7 +793,7 @@ def process_messages(
             continue
         raw_messages.append(message_to_dict(message))
 
-    def process_batch(lst: List[Dict[str, Any]]) -> None:
+    def process_batch(lst: list[dict[str, Any]]) -> None:
         process_raw_message_batch(
             realm_id=realm_id,
             raw_messages=lst,
@@ -819,9 +818,9 @@ def process_messages(
 
 
 def map_upload_id_to_upload_data(
-    upload_data: Dict[str, List[Dict[str, Any]]],
-) -> Dict[str, Dict[str, Any]]:
-    upload_id_to_upload_data_map: Dict[str, Dict[str, Any]] = {}
+    upload_data: dict[str, list[dict[str, Any]]],
+) -> dict[str, dict[str, Any]]:
+    upload_id_to_upload_data_map: dict[str, dict[str, Any]] = {}
 
     for upload in upload_data["upload"]:
         upload_id_to_upload_data_map[upload["_id"]] = {**upload, "chunk": []}
@@ -840,14 +839,14 @@ def map_upload_id_to_upload_data(
 
 
 def separate_channel_private_and_livechat_messages(
-    messages: List[Dict[str, Any]],
-    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
-    direct_id_to_direct_map: Dict[str, Dict[str, Any]],
-    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
-    livechat_id_to_livechat_map: Dict[str, Dict[str, Any]],
-    channel_messages: List[Dict[str, Any]],
-    private_messages: List[Dict[str, Any]],
-    livechat_messages: List[Dict[str, Any]],
+    messages: list[dict[str, Any]],
+    dsc_id_to_dsc_map: dict[str, dict[str, Any]],
+    direct_id_to_direct_map: dict[str, dict[str, Any]],
+    huddle_id_to_huddle_map: dict[str, dict[str, Any]],
+    livechat_id_to_livechat_map: dict[str, dict[str, Any]],
+    channel_messages: list[dict[str, Any]],
+    private_messages: list[dict[str, Any]],
+    livechat_messages: list[dict[str, Any]],
 ) -> None:
     private_channels_list = [*direct_id_to_direct_map, *huddle_id_to_huddle_map]
     for message in messages:
@@ -871,12 +870,12 @@ def separate_channel_private_and_livechat_messages(
 
 
 def map_receiver_id_to_recipient_id(
-    zerver_recipient: List[ZerverFieldsT],
-    stream_id_to_recipient_id: Dict[int, int],
-    huddle_id_to_recipient_id: Dict[int, int],
-    user_id_to_recipient_id: Dict[int, int],
+    zerver_recipient: list[ZerverFieldsT],
+    stream_id_to_recipient_id: dict[int, int],
+    huddle_id_to_recipient_id: dict[int, int],
+    user_id_to_recipient_id: dict[int, int],
 ) -> None:
-    # receiver_id represents stream_id/huddle_id/user_id
+    # receiver_id represents stream_id/direct_message_group_id/user_id
     for recipient in zerver_recipient:
         if recipient["type"] == Recipient.STREAM:
             stream_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
@@ -886,65 +885,52 @@ def map_receiver_id_to_recipient_id(
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
 
-# This is inspired by get_huddle_hash from zerver/models/recipients.py. It
-# expects strings identifying Rocket.Chat users, like
-# `LdBZ7kPxtKESyHPEe`, not integer IDs.
-#
-# Its purpose is to be a stable map usable for deduplication/merging
-# of Rocket.Chat threads involving the same set of people. Thus, its
-# only important property is that if two sets of users S and T are
-# equal and thus will have the same actual huddle hash once imported,
-# that get_string_huddle_hash(S) = get_string_huddle_hash(T).
-def get_string_huddle_hash(id_list: List[str]) -> str:
-    id_list = sorted(set(id_list))
-    hash_key = ",".join(str(x) for x in id_list)
-    return hashlib.sha1(hash_key.encode()).hexdigest()
-
-
 def categorize_channels_and_map_with_id(
-    channel_data: List[Dict[str, Any]],
-    room_id_to_room_map: Dict[str, Dict[str, Any]],
-    team_id_to_team_map: Dict[str, Dict[str, Any]],
-    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
-    direct_id_to_direct_map: Dict[str, Dict[str, Any]],
-    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
-    livechat_id_to_livechat_map: Dict[str, Dict[str, Any]],
+    channel_data: list[dict[str, Any]],
+    room_id_to_room_map: dict[str, dict[str, Any]],
+    team_id_to_team_map: dict[str, dict[str, Any]],
+    dsc_id_to_dsc_map: dict[str, dict[str, Any]],
+    direct_id_to_direct_map: dict[str, dict[str, Any]],
+    huddle_id_to_huddle_map: dict[str, dict[str, Any]],
+    livechat_id_to_livechat_map: dict[str, dict[str, Any]],
 ) -> None:
-    huddle_hashed_channels: Dict[str, Any] = {}
+    direct_message_group_hashed_channels: dict[frozenset[str], Any] = {}
     for channel in channel_data:
         if channel.get("prid"):
             dsc_id_to_dsc_map[channel["_id"]] = channel
         elif channel["t"] == "d":
             if len(channel["uids"]) > 2:
-                huddle_hash = get_string_huddle_hash(channel["uids"])
-                logging.info(
-                    "Huddle channel found. UIDs: %s -> hash %s", channel["uids"], huddle_hash
-                )
+                direct_message_group_members = frozenset(channel["uids"])
+                logging.info("Huddle channel found. UIDs: %r", channel["uids"])
 
                 if channel["msgs"] == 0:  # nocoverage
                     # Rocket.Chat exports in the wild sometimes
                     # contain duplicates of real huddles, with no
                     # messages in the duplicate.  We ignore these
                     # minor database corruptions in the Rocket.Chat
-                    # export. Doing so is safe, because a huddle with no
-                    # message history has no value in Zulip's data
-                    # model.
-                    logging.debug("Skipping huddle with 0 messages: %s", channel)
-                elif huddle_hash in huddle_hashed_channels:  # nocoverage
+                    # export. Doing so is safe, because a direct
+                    # message group with no message history has no
+                    # value in Zulip's data model.
+                    logging.debug("Skipping direct message group with 0 messages: %s", channel)
+                elif (
+                    direct_message_group_members in direct_message_group_hashed_channels
+                ):  # nocoverage
                     logging.info(
-                        "Mapping huddle hash %s to existing channel: %s",
-                        huddle_hash,
-                        huddle_hashed_channels[huddle_hash],
+                        "Mapping direct message group %r to existing channel: %s",
+                        direct_message_group_members,
+                        direct_message_group_hashed_channels[direct_message_group_members],
                     )
-                    huddle_id_to_huddle_map[channel["_id"]] = huddle_hashed_channels[huddle_hash]
+                    huddle_id_to_huddle_map[channel["_id"]] = direct_message_group_hashed_channels[
+                        direct_message_group_members
+                    ]
 
-                    # Ideally, we'd merge the duplicate huddles. Doing
-                    # so correctly requires special handling in
-                    # convert_huddle_data() and on the message import
-                    # side as well, since those appear to be mapped
-                    # via rocketchat channel IDs and not all of that
-                    # information is resolved via the
-                    # huddle_id_to_huddle_map.
+                    # Ideally, we'd merge the duplicate direct message
+                    # groups. Doing so correctly requires special
+                    # handling in convert_direct_message_group_data()
+                    # and on the message import side as well, since
+                    # those appear to be mapped via rocketchat channel
+                    # IDs and not all of that information is resolved
+                    # via the huddle_id_to_huddle_map.
                     #
                     # For now, just throw an exception here rather
                     # than during the import process.
@@ -953,7 +939,7 @@ def categorize_channels_and_map_with_id(
                     )
                 else:
                     huddle_id_to_huddle_map[channel["_id"]] = channel
-                    huddle_hashed_channels[huddle_hash] = channel
+                    direct_message_group_hashed_channels[direct_message_group_members] = channel
             else:
                 direct_id_to_direct_map[channel["_id"]] = channel
         elif channel["t"] == "l":
@@ -964,24 +950,24 @@ def categorize_channels_and_map_with_id(
                 team_id_to_team_map[channel["teamId"]] = channel
 
 
-def map_username_to_user_id(user_id_to_user_map: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
-    username_to_user_id_map: Dict[str, str] = {}
+def map_username_to_user_id(user_id_to_user_map: dict[str, dict[str, Any]]) -> dict[str, str]:
+    username_to_user_id_map: dict[str, str] = {}
     for user_id, user_dict in user_id_to_user_map.items():
         username_to_user_id_map[user_dict["username"]] = user_id
     return username_to_user_id_map
 
 
-def map_user_id_to_user(user_data_list: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+def map_user_id_to_user(user_data_list: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     user_id_to_user_map = {}
     for user in user_data_list:
         user_id_to_user_map[user["_id"]] = user
     return user_id_to_user_map
 
 
-def rocketchat_data_to_dict(rocketchat_data_dir: str) -> Dict[str, Any]:
+def rocketchat_data_to_dict(rocketchat_data_dir: str) -> dict[str, Any]:
     codec_options = bson.DEFAULT_CODEC_OPTIONS.with_options(tz_aware=True)
 
-    rocketchat_data: Dict[str, Any] = {}
+    rocketchat_data: dict[str, Any] = {}
     rocketchat_data["instance"] = []
     rocketchat_data["user"] = []
     rocketchat_data["avatar"] = {"avatar": [], "file": [], "chunk": []}
@@ -1061,15 +1047,15 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
 
     realm = make_realm(realm_id, realm_subdomain, domain_name, rocketchat_data["instance"][0])
 
-    user_id_to_user_map: Dict[str, Dict[str, Any]] = map_user_id_to_user(rocketchat_data["user"])
-    username_to_user_id_map: Dict[str, str] = map_username_to_user_id(user_id_to_user_map)
+    user_id_to_user_map: dict[str, dict[str, Any]] = map_user_id_to_user(rocketchat_data["user"])
+    username_to_user_id_map: dict[str, str] = map_username_to_user_id(user_id_to_user_map)
 
     user_handler = UserHandler()
     subscriber_handler = SubscriberHandler()
-    user_id_mapper = IdMapper()
-    stream_id_mapper = IdMapper()
-    huddle_id_mapper = IdMapper()
-    thread_id_mapper = IdMapper()
+    user_id_mapper = IdMapper[str]()
+    stream_id_mapper = IdMapper[str]()
+    huddle_id_mapper = IdMapper[str]()
+    thread_id_mapper = IdMapper[str]()
 
     process_users(
         user_id_to_user_map=user_id_to_user_map,
@@ -1079,12 +1065,12 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         user_id_mapper=user_id_mapper,
     )
 
-    room_id_to_room_map: Dict[str, Dict[str, Any]] = {}
-    team_id_to_team_map: Dict[str, Dict[str, Any]] = {}
-    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
-    direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
-    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
-    livechat_id_to_livechat_map: Dict[str, Dict[str, Any]] = {}
+    room_id_to_room_map: dict[str, dict[str, Any]] = {}
+    team_id_to_team_map: dict[str, dict[str, Any]] = {}
+    dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
+    direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
+    huddle_id_to_huddle_map: dict[str, dict[str, Any]] = {}
+    livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
     categorize_channels_and_map_with_id(
         channel_data=rocketchat_data["room"],
@@ -1114,20 +1100,20 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         subscriber_handler=subscriber_handler,
     )
 
-    zerver_huddle = convert_huddle_data(
+    zerver_direct_message_group = convert_direct_message_group_data(
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
         huddle_id_mapper=huddle_id_mapper,
         user_id_mapper=user_id_mapper,
         subscriber_handler=subscriber_handler,
     )
-    realm["zerver_huddle"] = zerver_huddle
+    realm["zerver_huddle"] = zerver_direct_message_group
 
     all_users = user_handler.get_all_users()
 
     zerver_recipient = build_recipients(
         zerver_userprofile=all_users,
         zerver_stream=zerver_stream,
-        zerver_huddle=zerver_huddle,
+        zerver_direct_message_group=zerver_direct_message_group,
     )
     realm["zerver_recipient"] = zerver_recipient
 
@@ -1137,17 +1123,19 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         zerver_stream=zerver_stream,
     )
 
-    huddle_subscriptions = build_huddle_subscriptions(
+    direct_message_group_subscriptions = build_direct_message_group_subscriptions(
         get_users=subscriber_handler.get_users,
         zerver_recipient=zerver_recipient,
-        zerver_huddle=zerver_huddle,
+        zerver_direct_message_group=zerver_direct_message_group,
     )
 
     personal_subscriptions = build_personal_subscriptions(
         zerver_recipient=zerver_recipient,
     )
 
-    zerver_subscription = personal_subscriptions + stream_subscriptions + huddle_subscriptions
+    zerver_subscription = (
+        personal_subscriptions + stream_subscriptions + direct_message_group_subscriptions
+    )
     realm["zerver_subscription"] = zerver_subscription
 
     zerver_realmemoji = build_custom_emoji(
@@ -1161,9 +1149,9 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         zerver_subscription=zerver_subscription,
     )
 
-    stream_id_to_recipient_id: Dict[int, int] = {}
-    huddle_id_to_recipient_id: Dict[int, int] = {}
-    user_id_to_recipient_id: Dict[int, int] = {}
+    stream_id_to_recipient_id: dict[int, int] = {}
+    huddle_id_to_recipient_id: dict[int, int] = {}
+    user_id_to_recipient_id: dict[int, int] = {}
 
     map_receiver_id_to_recipient_id(
         zerver_recipient=zerver_recipient,
@@ -1172,9 +1160,9 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         user_id_to_recipient_id=user_id_to_recipient_id,
     )
 
-    channel_messages: List[Dict[str, Any]] = []
-    private_messages: List[Dict[str, Any]] = []
-    livechat_messages: List[Dict[str, Any]] = []
+    channel_messages: list[dict[str, Any]] = []
+    private_messages: list[dict[str, Any]] = []
+    livechat_messages: list[dict[str, Any]] = []
 
     separate_channel_private_and_livechat_messages(
         messages=rocketchat_data["message"],
@@ -1187,9 +1175,9 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         livechat_messages=livechat_messages,
     )
 
-    total_reactions: List[ZerverFieldsT] = []
-    uploads_list: List[ZerverFieldsT] = []
-    zerver_attachment: List[ZerverFieldsT] = []
+    total_reactions: list[ZerverFieldsT] = []
+    uploads_list: list[ZerverFieldsT] = []
+    zerver_attachment: list[ZerverFieldsT] = []
 
     upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_data["upload"])
 
@@ -1254,6 +1242,6 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     create_converted_data_files([], output_dir, "/avatars/records.json")
 
     # Import attachments
-    attachment: Dict[str, List[Any]] = {"zerver_attachment": zerver_attachment}
+    attachment: dict[str, list[Any]] = {"zerver_attachment": zerver_attachment}
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")

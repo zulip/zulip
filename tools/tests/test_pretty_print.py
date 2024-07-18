@@ -1,5 +1,4 @@
 import unittest
-from typing import Optional
 
 from tools.lib.pretty_print import pretty_print_html
 from tools.lib.template_parser import validate
@@ -281,7 +280,7 @@ GOOD_HTML11 = """
 """
 
 
-def pretty_print(html: str, template_format: Optional[str] = None) -> str:
+def pretty_print(html: str, template_format: str | None = None) -> str:
     fn = "<test str>"
     tokens = validate(fn=fn, text=html, template_format=template_format)
     return pretty_print_html(tokens, fn=fn)

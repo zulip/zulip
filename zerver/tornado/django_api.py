@@ -1,6 +1,7 @@
 from collections import defaultdict
+from collections.abc import Iterable, Mapping, Sequence
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any
 from urllib.parse import urlsplit
 
 import orjson
@@ -37,10 +38,10 @@ class TornadoAdapter(HTTPAdapter):
         self,
         request: PreparedRequest,
         stream: bool = False,
-        timeout: Union[None, float, Tuple[float, float], Tuple[float, None]] = 0.5,
-        verify: Union[bool, str] = True,
-        cert: Union[None, bytes, str, Tuple[Union[bytes, str], Union[bytes, str]]] = None,
-        proxies: Optional[Mapping[str, str]] = None,
+        timeout: None | float | tuple[float, float] | tuple[float, None] = 0.5,
+        verify: bool | str = True,
+        cert: None | bytes | str | tuple[bytes | str, bytes | str] = None,
+        proxies: Mapping[str, str] | None = None,
     ) -> Response:
         # Don't talk to Tornado through proxies, which only allow
         # requests to external hosts.
@@ -80,7 +81,7 @@ def request_event_queue(
     client_gravatar: bool,
     slim_presence: bool,
     queue_lifespan_secs: int,
-    event_types: Optional[Sequence[str]] = None,
+    event_types: Sequence[str] | None = None,
     all_public_streams: bool = False,
     narrow: Iterable[Sequence[str]] = [],
     bulk_message_deletion: bool = False,
@@ -89,7 +90,7 @@ def request_event_queue(
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
-) -> Optional[str]:
+) -> str | None:
     if not settings.USING_TORNADO:
         return None
 
@@ -123,12 +124,12 @@ def request_event_queue(
 
 def get_user_events(
     user_profile: UserProfile, queue_id: str, last_event_id: int
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     if not settings.USING_TORNADO:
         return []
 
     tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
-    post_data: Dict[str, Any] = {
+    post_data: dict[str, Any] = {
         "queue_id": queue_id,
         "last_event_id": last_event_id,
         "dont_block": "true",
@@ -176,7 +177,7 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 def send_event(
-    realm: Realm, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
+    realm: Realm, event: Mapping[str, Any], users: Iterable[int] | Iterable[Mapping[str, Any]]
 ) -> None:
     """`users` is a list of user IDs, or in some special cases like message
     send/update or embeds, dictionaries containing extra data."""
@@ -198,6 +199,6 @@ def send_event(
 
 
 def send_event_on_commit(
-    realm: Realm, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
+    realm: Realm, event: Mapping[str, Any], users: Iterable[int] | Iterable[Mapping[str, Any]]
 ) -> None:
     transaction.on_commit(lambda: send_event(realm, event, users))

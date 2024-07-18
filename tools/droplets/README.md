@@ -66,7 +66,7 @@ listing all the droplets created during GCI.
 [Tags](https://www.digitalocean.com/community/tutorials/how-to-tag-digitalocean-droplets)
 may contain letters, numbers, colons, dashes, and underscores.
 
-You'll need to run this from the Zulip development environment (e.g. in
+You'll need to run this from the Zulip development environment (e.g., in
 Vagrant).
 
 The script will also stop if a droplet has already been created for the
@@ -130,7 +130,7 @@ so they are notified.
    - Check "Monitoring", "IPv6", and "User data"
    - Paste the contents of `tools/droplets/new-droplet-image` into the
      text box which says `Enter user data here...`
-   - Name it e.g. `base-ubuntu-22-04.zulipdev.org`
+   - Name it (e.g., `base-ubuntu-22-04.zulipdev.org`)
 1. Wait for the host to boot.
 1. Wait for the host to complete provisioning and shut down; this will take
    about 15 minutes.

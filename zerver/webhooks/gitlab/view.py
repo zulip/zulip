@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Optional, Protocol, Union
+from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
@@ -28,7 +28,7 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 
-def fixture_to_headers(fixture_name: str) -> Dict[str, str]:
+def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     if fixture_name.startswith("build"):
         return {}  # Since there are 2 possible event types.
 
@@ -176,7 +176,7 @@ def get_merge_request_open_or_updated_body(
     )
 
 
-def get_assignees(payload: WildValue) -> Union[List[WildValue], WildValue]:
+def get_assignees(payload: WildValue) -> list[WildValue] | WildValue:
     assignee_details = payload.get("assignees")
     if not assignee_details:
         single_assignee_details = payload.get("assignee")
@@ -189,8 +189,8 @@ def get_assignees(payload: WildValue) -> Union[List[WildValue], WildValue]:
 
 
 def replace_assignees_username_with_name(
-    assignees: Union[List[WildValue], WildValue],
-) -> List[Dict[str, str]]:
+    assignees: list[WildValue] | WildValue,
+) -> list[dict[str, str]]:
     """Replace the username of each assignee with their (full) name.
 
     This is a hack-like adaptor so that when assignees are passed to
@@ -382,7 +382,7 @@ class EventFunction(Protocol):
     def __call__(self, payload: WildValue, include_title: bool) -> str: ...
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, EventFunction] = {
+EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Push Hook": get_push_event_body,
     "Tag Push Hook": get_tag_push_event_body,
     "Test Hook": get_test_event_body,
@@ -423,7 +423,7 @@ def api_gitlab_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
     use_merge_request_title: Json[bool] = True,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
@@ -508,7 +508,7 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
     return get_repo_name(payload)
 
 
-def get_event(request: HttpRequest, payload: WildValue, branches: Optional[str]) -> Optional[str]:
+def get_event(request: HttpRequest, payload: WildValue, branches: str | None) -> str | None:
     event = validate_extract_webhook_http_header(request, "X-GitLab-Event", "GitLab")
     if event == "System Hook":
         # Convert the event name to a GitLab event title

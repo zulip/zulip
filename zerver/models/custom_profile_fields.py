@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List, Tuple
+from collections.abc import Callable
+from typing import Any
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -29,29 +30,31 @@ from zerver.lib.validator import (
     validate_select_field,
 )
 from zerver.models.realms import Realm
-from zerver.models.users import UserProfile, get_user_profile_by_id_in_realm
+from zerver.models.users import UserProfile
 
 
-def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> List[int]:
+def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> list[int]:
     user_ids = check_list(check_int)("User IDs", val)
-    realm = Realm.objects.get(id=realm_id)
-    for user_id in user_ids:
-        # TODO: Structurally, we should be doing a bulk fetch query to
-        # get the users here, not doing these in a loop.  But because
-        # this is a rarely used feature and likely to never have more
-        # than a handful of users, it's probably mostly OK.
-        try:
-            user_profile = get_user_profile_by_id_in_realm(user_id, realm)
-        except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid user ID: {user_id}").format(user_id=user_id))
+    user_profiles = UserProfile.objects.filter(realm_id=realm_id, id__in=user_ids)
 
-        if not allow_deactivated and not user_profile.is_active:
+    valid_users_ids = set(user_profiles.values_list("id", flat=True))
+    invalid_users_ids = [invalid_id for invalid_id in user_ids if invalid_id not in valid_users_ids]
+
+    if invalid_users_ids:
+        raise ValidationError(
+            _("Invalid user IDs: {invalid_ids}").format(
+                invalid_ids=", ".join(map(str, invalid_users_ids))
+            )
+        )
+
+    for user in user_profiles:
+        if not allow_deactivated and not user.is_active:
             raise ValidationError(
-                _("User with ID {user_id} is deactivated").format(user_id=user_id)
+                _("User with ID {user_id} is deactivated").format(user_id=user.id)
             )
 
-        if user_profile.is_bot:
-            raise ValidationError(_("User with ID {user_id} is a bot").format(user_id=user_id))
+        if user.is_bot:
+            raise ValidationError(_("User with ID {user_id} is a bot").format(user_id=user.id))
 
     return user_ids
 
@@ -91,21 +94,21 @@ class CustomProfileField(models.Model):
     # These are the fields whose validators require more than var_name
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
-    SELECT_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
+    SELECT_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
         (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
-    USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
+    USER_FIELD_TYPE_DATA: list[UserFieldElement] = [
         (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),
     ]
 
-    SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
+    SELECT_FIELD_VALIDATORS: dict[int, ExtendedValidator] = {
         item[0]: item[2] for item in SELECT_FIELD_TYPE_DATA
     }
-    USER_FIELD_VALIDATORS: Dict[int, RealmUserValidator] = {
+    USER_FIELD_VALIDATORS: dict[int, RealmUserValidator] = {
         item[0]: item[2] for item in USER_FIELD_TYPE_DATA
     }
 
-    FIELD_TYPE_DATA: List[FieldElement] = [
+    FIELD_TYPE_DATA: list[FieldElement] = [
         # Type, display name, validator, converter, keyword
         (SHORT_TEXT, gettext_lazy("Text (short)"), check_short_string, str, "SHORT_TEXT"),
         (LONG_TEXT, gettext_lazy("Text (long)"), check_long_string, str, "LONG_TEXT"),
@@ -125,13 +128,13 @@ class CustomProfileField(models.Model):
         [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA], key=lambda x: x[1]
     )
 
-    FIELD_VALIDATORS: Dict[int, Validator[ProfileDataElementValue]] = {
+    FIELD_VALIDATORS: dict[int, Validator[ProfileDataElementValue]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
     }
-    FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {
+    FIELD_CONVERTERS: dict[int, Callable[[Any], Any]] = {
         item[0]: item[3] for item in ALL_FIELD_TYPES
     }
-    FIELD_TYPE_CHOICES: List[Tuple[int, StrPromise]] = [
+    FIELD_TYPE_CHOICES: list[tuple[int, StrPromise]] = [
         (item[0], item[1]) for item in ALL_FIELD_TYPES
     ]
 

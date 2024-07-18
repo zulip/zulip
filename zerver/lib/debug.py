@@ -8,7 +8,6 @@ import threading
 import traceback
 import tracemalloc
 from types import FrameType
-from typing import Optional
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -21,7 +20,7 @@ logger = logging.getLogger("zulip.debug")
 # (that link also points to code for an interactive remote debugger
 # setup, which we might want if we move Tornado to run in a daemon
 # rather than via screen).
-def interactive_debug(sig: int, frame: Optional[FrameType]) -> None:
+def interactive_debug(sig: int, frame: FrameType | None) -> None:
     """Interrupt running process, and provide a python prompt for
     interactive debugging."""
     d = {"_frame": frame}  # Allow access to frame object.
@@ -74,7 +73,7 @@ def tracemalloc_listen_sock(sock: socket.socket) -> None:
         tracemalloc_dump()
 
 
-listener_pid: Optional[int] = None
+listener_pid: int | None = None
 
 
 def tracemalloc_listen() -> None:

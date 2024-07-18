@@ -40,6 +40,7 @@ import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as playground_links_popover from "./playground_links_popover";
+import * as pm_list from "./pm_list";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
@@ -290,11 +291,6 @@ export function process_escape_key(e) {
     }
 
     if (popovers.any_active()) {
-        if (user_card_popover.manage_menu.is_open()) {
-            user_card_popover.manage_menu.hide();
-            $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
-            return true;
-        }
         popovers.hide_all();
         return true;
     }
@@ -338,6 +334,11 @@ export function process_escape_key(e) {
         // will zoom out, handled below.
         if (stream_list.is_zoomed_in() && $("#filter-topic-input").is(":focus")) {
             topic_list.clear_topic_search(e);
+            return true;
+        }
+
+        if (pm_list.is_zoomed_in() && $(".direct-messages-list-filter").is(":focus")) {
+            pm_list.clear_search();
             return true;
         }
 
@@ -400,11 +401,6 @@ function handle_popover_events(event_name) {
             popover_menu_visible_instance,
             event_name,
         );
-        return true;
-    }
-
-    if (user_card_popover.manage_menu.is_open()) {
-        user_card_popover.manage_menu.handle_keyboard(event_name);
         return true;
     }
 

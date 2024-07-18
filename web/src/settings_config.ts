@@ -57,6 +57,17 @@ export const web_mark_read_on_scroll_policy_values = {
     },
 };
 
+export const web_channel_default_view_values = {
+    top_topic_in_channel: {
+        code: 1,
+        description: $t({defaultMessage: "Top topic in the channel"}),
+    },
+    channel_feed: {
+        code: 2,
+        description: $t({defaultMessage: "Channel feed"}),
+    },
+};
+
 export const user_list_style_values = {
     compact: {
         code: 1,
@@ -134,41 +145,40 @@ export type DisplaySettings = {
         user_display_settings: string[];
     };
     render_group?: boolean;
-    render_only: {
-        dense_mode?: boolean;
-        high_contrast_mode?: boolean;
-        web_font_size_px?: boolean;
-        web_line_height_percent?: boolean;
-    };
 };
 
 /* istanbul ignore next */
-export const get_all_preferences = (): DisplaySettings => ({
+export const information_section_checkbox_group: DisplaySettings = {
     settings: {
         user_display_settings: [
-            "dense_mode",
-            "high_contrast_mode",
             "starred_message_counts",
             "receives_typing_notifications",
             "fluid_layout_width",
         ],
     },
-    render_only: {
-        dense_mode: page_params.development_environment,
-        high_contrast_mode: page_params.development_environment,
-    },
-});
+};
 
 /* istanbul ignore next */
 export const get_information_density_preferences = (): DisplaySettings => ({
     render_group: page_params.development_environment,
-    render_only: {
-        web_font_size_px: page_params.development_environment,
-        web_line_height_percent: page_params.development_environment,
-    },
     settings: {
         user_display_settings: ["web_font_size_px", "web_line_height_percent"],
     },
+});
+
+type SettingsRenderOnly = {
+    dense_mode: boolean;
+    high_contrast_mode: boolean;
+    web_font_size_px: boolean;
+    web_line_height_percent: boolean;
+};
+
+/* istanbul ignore next */
+export const get_settings_render_only = (): SettingsRenderOnly => ({
+    dense_mode: page_params.development_environment,
+    high_contrast_mode: page_params.development_environment,
+    web_font_size_px: page_params.development_environment,
+    web_line_height_percent: page_params.development_environment,
 });
 
 export const email_address_visibility_values = {
@@ -242,19 +252,6 @@ export const email_invite_to_realm_policy_values = {
         order: 5,
         code: 1,
         description: $t({defaultMessage: "Admins, moderators and members"}),
-    },
-};
-
-export const private_message_policy_values = {
-    by_anyone: {
-        order: 1,
-        code: 1,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
-    },
-    disabled: {
-        order: 2,
-        code: 2,
-        description: $t({defaultMessage: "Direct messages disabled"}),
     },
 };
 
@@ -555,7 +552,7 @@ export const user_role_map = new Map(user_role_array.map((role) => [role.code, r
 
 export const preferences_settings_labels = {
     default_language_settings_label: $t({defaultMessage: "Language"}),
-    dense_mode: $t({defaultMessage: "Dense mode"}),
+    dense_mode: $t({defaultMessage: "Compact mode"}),
     display_emoji_reaction_users: new Handlebars.SafeString(
         $t_html({
             defaultMessage:
@@ -575,6 +572,9 @@ export const preferences_settings_labels = {
     web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
     web_font_size_px: $t({defaultMessage: "Message-area font size (px)"}),
     web_line_height_percent: $t({defaultMessage: "Message-area line height (%)"}),
+    web_navigate_to_sent_message: $t({
+        defaultMessage: "Automatically go to conversation where you sent a message",
+    }),
 };
 
 export const notification_settings_labels = {

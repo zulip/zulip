@@ -1,6 +1,7 @@
+from collections.abc import Collection, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
-from typing import Collection, Dict, Iterable, Iterator, List, Mapping, Optional, TypedDict, Union
+from typing import TypedDict
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -11,7 +12,11 @@ from django_cte import With
 from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL, Literal
 
-from zerver.lib.exceptions import JsonableError, PreviousSettingValueMismatchedError
+from zerver.lib.exceptions import (
+    JsonableError,
+    PreviousSettingValueMismatchedError,
+    SystemGroupRequiredError,
+)
 from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
 from zerver.models import (
     GroupGroupMembership,
@@ -28,24 +33,24 @@ from zerver.models.groups import SystemGroups
 
 @dataclass
 class AnonymousSettingGroupDict:
-    direct_members: List[int]
-    direct_subgroups: List[int]
+    direct_members: list[int]
+    direct_subgroups: list[int]
 
 
 @dataclass
 class GroupSettingChangeRequest:
-    new: Union[int, AnonymousSettingGroupDict]
-    old: Optional[Union[int, AnonymousSettingGroupDict]] = None
+    new: int | AnonymousSettingGroupDict
+    old: int | AnonymousSettingGroupDict | None = None
 
 
 class UserGroupDict(TypedDict):
     id: int
     name: str
     description: str
-    members: List[int]
-    direct_subgroup_ids: List[int]
+    members: list[int]
+    direct_subgroup_ids: list[int]
     is_system_group: bool
-    can_mention_group: Union[int, AnonymousSettingGroupDict]
+    can_mention_group: int | AnonymousSettingGroupDict
 
 
 @dataclass
@@ -59,8 +64,8 @@ class LockedUserGroupContext:
     """
 
     supergroup: NamedUserGroup
-    direct_subgroups: List[NamedUserGroup]
-    recursive_subgroups: List[NamedUserGroup]
+    direct_subgroups: list[NamedUserGroup]
+    recursive_subgroups: list[NamedUserGroup]
 
 
 def has_user_group_access(
@@ -187,10 +192,13 @@ def check_setting_configuration_for_system_groups(
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
 ) -> None:
+    if setting_name != "can_mention_group" and (
+        not settings.ALLOW_GROUP_VALUED_SETTINGS and not setting_group.is_system_group
+    ):
+        raise SystemGroupRequiredError(setting_name)
+
     if permission_configuration.require_system_group and not setting_group.is_system_group:
-        raise JsonableError(
-            _("'{setting_name}' must be a system user group.").format(setting_name=setting_name)
-        )
+        raise SystemGroupRequiredError(setting_name)
 
     if (
         not permission_configuration.allow_internet_group
@@ -245,9 +253,9 @@ def check_setting_configuration_for_system_groups(
 
 def update_or_create_user_group_for_setting(
     realm: Realm,
-    direct_members: List[int],
-    direct_subgroups: List[int],
-    current_setting_value: Optional[UserGroup],
+    direct_members: list[int],
+    direct_subgroups: list[int],
+    current_setting_value: UserGroup | None,
 ) -> UserGroup:
     if current_setting_value is not None and not hasattr(current_setting_value, "named_user_group"):
         # We do not create a new group if the setting was already set
@@ -278,12 +286,12 @@ def update_or_create_user_group_for_setting(
 
 
 def access_user_group_for_setting(
-    setting_user_group: Union[int, AnonymousSettingGroupDict],
+    setting_user_group: int | AnonymousSettingGroupDict,
     user_profile: UserProfile,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
-    current_setting_value: Optional[UserGroup] = None,
+    current_setting_value: UserGroup | None = None,
 ) -> UserGroup:
     if isinstance(setting_user_group, int):
         named_user_group = access_user_group_by_id(setting_user_group, user_profile, for_read=True)
@@ -328,7 +336,7 @@ def check_user_group_name(group_name: str) -> str:
 
 def get_group_setting_value_for_api(
     setting_value_group: UserGroup,
-) -> Union[int, AnonymousSettingGroupDict]:
+) -> int | AnonymousSettingGroupDict:
     if hasattr(setting_value_group, "named_user_group"):
         return setting_value_group.id
 
@@ -338,7 +346,7 @@ def get_group_setting_value_for_api(
     )
 
 
-def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
+def user_groups_in_realm_serialized(realm: Realm) -> list[UserGroupDict]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
     Django's ORM doesn't properly support the left join between
@@ -364,7 +372,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
         .filter(realm=realm)
     )
 
-    group_dicts: Dict[int, UserGroupDict] = {}
+    group_dicts: dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
         group_dicts[user_group.id] = dict(
             id=user_group.id,
@@ -399,7 +407,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     return sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"])
 
 
-def get_direct_user_groups(user_profile: UserProfile) -> List[UserGroup]:
+def get_direct_user_groups(user_profile: UserProfile) -> list[UserGroup]:
     return list(user_profile.direct_groups.all())
 
 
@@ -415,7 +423,7 @@ def get_user_group_direct_members(user_group: UserGroup) -> QuerySet[UserProfile
     return user_group.direct_members.all()
 
 
-def get_direct_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) -> List[int]:
+def get_direct_memberships_of_users(user_group: UserGroup, members: list[UserProfile]) -> list[int]:
     return list(
         UserGroupMembership.objects.filter(
             user_group=user_group, user_profile__in=members
@@ -479,9 +487,18 @@ def is_user_in_group(
     return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
 
 
+def is_any_user_in_group(
+    user_group: UserGroup, user_ids: Iterable[int], *, direct_member_only: bool = False
+) -> bool:
+    if direct_member_only:
+        return get_user_group_direct_members(user_group=user_group).filter(id__in=user_ids).exists()
+
+    return get_recursive_group_members(user_group=user_group).filter(id__in=user_ids).exists()
+
+
 def get_user_group_member_ids(
     user_group: UserGroup, *, direct_member_only: bool = False
-) -> List[int]:
+) -> list[int]:
     if direct_member_only:
         member_ids: Iterable[int] = get_user_group_direct_member_ids(user_group)
     else:
@@ -490,7 +507,7 @@ def get_user_group_member_ids(
     return list(member_ids)
 
 
-def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = False) -> List[int]:
+def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = False) -> list[int]:
     if direct_subgroup_only:
         subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
     else:
@@ -513,7 +530,7 @@ def get_recursive_subgroups_for_groups(
     return recursive_subgroups
 
 
-def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, NamedUserGroup]:
+def get_role_based_system_groups_dict(realm: Realm) -> dict[str, NamedUserGroup]:
     system_groups = NamedUserGroup.objects.filter(realm=realm, is_system_group=True).select_related(
         "usergroup_ptr"
     )
@@ -527,7 +544,7 @@ def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, NamedUserGroup]
 def set_defaults_for_group_settings(
     user_group: NamedUserGroup,
     group_settings_map: Mapping[str, UserGroup],
-    system_groups_name_dict: Dict[str, NamedUserGroup],
+    system_groups_name_dict: dict[str, NamedUserGroup],
 ) -> NamedUserGroup:
     for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
         if setting_name in group_settings_map:
@@ -546,7 +563,7 @@ def set_defaults_for_group_settings(
     return user_group
 
 
-def bulk_create_system_user_groups(groups: List[Dict[str, str]], realm: Realm) -> None:
+def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -> None:
     # This value will be used to set the temporary initial value for different
     # settings since we can only set them to the correct values after the groups
     # are created.
@@ -586,14 +603,14 @@ def bulk_create_system_user_groups(groups: List[Dict[str, str]], realm: Realm) -
 
 
 @transaction.atomic(savepoint=False)
-def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, NamedUserGroup]:
+def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGroup]:
     """Any changes to this function likely require a migration to adjust
     existing realms.  See e.g. migration 0382_create_role_based_system_groups.py,
     which is a copy of this function from when we introduced system groups.
     """
-    role_system_groups_dict: Dict[int, NamedUserGroup] = {}
+    role_system_groups_dict: dict[int, NamedUserGroup] = {}
 
-    system_groups_info_list: List[Dict[str, str]] = []
+    system_groups_info_list: list[dict[str, str]] = []
 
     nobody_group_info = {
         "name": SystemGroups.NOBODY,
@@ -623,7 +640,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, NamedUserGrou
 
     bulk_create_system_user_groups(system_groups_info_list, realm)
 
-    system_groups_name_dict: Dict[str, NamedUserGroup] = get_role_based_system_groups_dict(realm)
+    system_groups_name_dict: dict[str, NamedUserGroup] = get_role_based_system_groups_dict(realm)
     for role in NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
         group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
         role_system_groups_dict[role] = system_groups_name_dict[group_name]
@@ -660,7 +677,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, NamedUserGrou
         groups_with_updated_settings.append(user_group)
     NamedUserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
 
-    subgroup_objects: List[GroupGroupMembership] = []
+    subgroup_objects: list[GroupGroupMembership] = []
     # "Nobody" system group is not a subgroup of any user group, since it is already empty.
     subgroup, remaining_groups = system_user_groups_list[1], system_user_groups_list[2:]
     for supergroup in remaining_groups:
@@ -712,28 +729,24 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
 
 
 def parse_group_setting_value(
-    setting_value: Union[int, AnonymousSettingGroupDict],
+    setting_value: int | AnonymousSettingGroupDict,
     setting_name: str,
-) -> Union[int, AnonymousSettingGroupDict]:
+) -> int | AnonymousSettingGroupDict:
     if isinstance(setting_value, int):
         return setting_value
 
     if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
         return setting_value.direct_subgroups[0]
 
-    if not settings.ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS:
-        raise JsonableError(
-            _("{setting_name} can only be set to a single named user group.").format(
-                setting_name=setting_name
-            )
-        )
+    if not settings.ALLOW_GROUP_VALUED_SETTINGS:
+        raise SystemGroupRequiredError(setting_name)
 
     return setting_value
 
 
 def are_both_group_setting_values_equal(
-    first_setting_value: Union[int, AnonymousSettingGroupDict],
-    second_setting_value: Union[int, AnonymousSettingGroupDict],
+    first_setting_value: int | AnonymousSettingGroupDict,
+    second_setting_value: int | AnonymousSettingGroupDict,
 ) -> bool:
     if isinstance(first_setting_value, int) and isinstance(second_setting_value, int):
         return first_setting_value == second_setting_value
@@ -751,9 +764,9 @@ def are_both_group_setting_values_equal(
 
 
 def validate_group_setting_value_change(
-    current_setting_api_value: Union[int, AnonymousSettingGroupDict],
-    new_setting_value: Union[int, AnonymousSettingGroupDict],
-    expected_current_setting_value: Optional[Union[int, AnonymousSettingGroupDict]],
+    current_setting_api_value: int | AnonymousSettingGroupDict,
+    new_setting_value: int | AnonymousSettingGroupDict,
+    expected_current_setting_value: int | AnonymousSettingGroupDict | None,
 ) -> bool:
     if expected_current_setting_value is not None and not are_both_group_setting_values_equal(
         expected_current_setting_value,
@@ -768,8 +781,8 @@ def validate_group_setting_value_change(
 
 
 def get_group_setting_value_for_audit_log_data(
-    setting_value: Union[int, AnonymousSettingGroupDict],
-) -> Union[int, Dict[str, List[int]]]:
+    setting_value: int | AnonymousSettingGroupDict,
+) -> int | dict[str, list[int]]:
     if isinstance(setting_value, int):
         return setting_value
 

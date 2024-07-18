@@ -2071,13 +2071,25 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent when a message has been deleted.
-                                Sent to all users who received the message.
+
+                                Sent to all users who currently are subscribed to the
+                                messages' recipient. May also be sent to additional users
+                                who had access to it, including, in particular, an
+                                administrator user deleting messages in a stream that they
+                                are not subscribed to.
+
+                                This means that clients can assume that they will always
+                                receive an event of this type for deletions that the
+                                client itself initiated.
 
                                 This event is also sent when the user loses access to a message,
                                 such as when it is [moved to a channel][message-move-channel] that
                                 the user does not [have permission to access][channel-access].
 
-                                **Changes**: Before Zulip 5.0 (feature level 77), events
+                                **Changes**: Before Zulip 9.0 (feature level 274), this
+                                event was only sent to subscribers of the message's recipient.
+
+                                Before Zulip 5.0 (feature level 77), events
                                 for direct messages contained additional `sender_id` and
                                 `recipient_id` fields.
 
@@ -4306,6 +4318,37 @@ paths:
                                       description: |
                                         The day of the week when the organization will send
                                         its weekly digest email to inactive users.
+                                    direct_message_initiator_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to start a new direct message conversation
+                                            involving other non-bot users. Users who are outside this group and attempt
+                                            to send the first direct message to a given collection of recipient users
+                                            will receive an error, unless all other recipients are bots or the sender.
+
+                                            **Changes**: New in Zulip 9.0 (feature level 270).
+
+                                            Previously, access to send direct messages was controlled by the
+                                            `private_message_policy` realm setting, which supported values of
+                                            1 (enabled) and 2 (disabled).
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                    direct_message_permission_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to fully use direct messages. Users outside
+                                            this group can only send direct messages to conversations where all the
+                                            recipients are in this group, are bots, or are the sender, ensuring that
+                                            every direct message conversation will be visible to at least one user in
+                                            this group.
+
+                                            **Changes**: New in Zulip 9.0 (feature level 270).
+
+                                            Previously, access to send direct messages was controlled by the
+                                            `private_message_policy` realm setting, which supported values of
+                                            1 (enabled) and 2 (disabled).
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     disallow_disposable_email_addresses:
                                       type: boolean
                                       description: |
@@ -4574,17 +4617,6 @@ paths:
                                       description: |
                                         Whether online presence of other users is shown in this
                                         organization.
-                                    private_message_policy:
-                                      type: integer
-                                      description: |
-                                        [Policy](/api/roles-and-permissions#permission-levels)
-                                        for [who can send direct messages](/help/restrict-direct-messages)
-                                        in this organization.
-
-                                        - 1 = Everyone
-                                        - 2 = Nobody
-
-                                        **Changes**: New in Zulip 3.0 (feature level 1).
                                     require_unique_names:
                                       type: boolean
                                       description: |
@@ -6234,7 +6266,8 @@ paths:
             subscribed to appropriate channels or use a shared history
             search narrow with this endpoint.
 
-            **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
+            **Changes**: See [changes section](/api/construct-narrow#changes)
+            of search/narrow filter documentation.
           content:
             application/json:
               schema:
@@ -7097,7 +7130,8 @@ paths:
                     optimization. Including that filter takes advantage of the fact that
                     the server has a database index for unread messages.
 
-                    **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
+                    **Changes**: See [changes section](/api/construct-narrow#changes)
+                    of search/narrow filter documentation.
                   type: array
                   items:
                     oneOf:
@@ -7518,7 +7552,8 @@ paths:
             A structure defining the narrow to check against. See how to
             [construct a narrow](/api/construct-narrow).
 
-            **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
+            **Changes**: See [changes section](/api/construct-narrow#changes)
+            of search/narrow filter documentation.
           content:
             application/json:
               schema:
@@ -8073,7 +8108,7 @@ paths:
       summary: Upload a file
       tags: ["messages"]
       description: |
-        Upload a single file and get the corresponding URI.
+        Upload a single file and get the corresponding URL.
 
         Initially, only you will be able to access the link. To share the
         uploaded file, you'll need to [send a message][send-message]
@@ -8120,13 +8155,25 @@ paths:
                       ignored_parameters_unsupported: {}
                       uri:
                         type: string
+                        deprecated: true
                         description: |
-                          The URI of the uploaded file.
+                          The URL of the uploaded file. Alias of `url`.
+
+                          **Changes**: Deprecated in Zulip 9.0 (feature level 272). The term
+                          "URI" is deprecated in [web standards](https://url.spec.whatwg.org/#goals).
+                      url:
+                        type: string
+                        description: |
+                          The URL of the uploaded file.
+
+                          **Changes**: New in Zulip 9.0 (feature level 272). Previously,
+                          this property was only available under the legacy `uri` name.
                     example:
                       {
                         "msg": "",
                         "result": "success",
                         "uri": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
+                        "url": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
                       }
   /user_uploads/{realm_id_str}/{filename}:
     get:
@@ -11140,6 +11187,21 @@ paths:
                     - 2
                     - 3
                   example: 1
+                web_channel_default_view:
+                  description: |
+                    Web/desktop app setting controlling the default navigation
+                    behavior when clicking on a channel link.
+
+                    - 1 - Top topic in the channel
+                    - 2 - Channel feed
+
+                    **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                    was not configurable, and every user had the "Channel feed" behavior.
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
                 web_font_size_px:
                   description: |
                     User-configured primary `font-size` for the web application, in pixels.
@@ -11552,6 +11614,15 @@ paths:
                     - 4
                     - 5
                   example: 1
+                web_navigate_to_sent_message:
+                  description: |
+                    Web/desktop app setting for whether the user's view should
+                    automatically go to the conversation where they sent a message.
+
+                    **Changes**: New in Zulip 9.0 (feature level 268). Previously,
+                    this behavior was not configurable.
+                  type: boolean
+                  example: true
             encoding:
               dense_mode:
                 contentType: application/json
@@ -11564,6 +11635,8 @@ paths:
               high_contrast_mode:
                 contentType: application/json
               web_mark_read_on_scroll_policy:
+                contentType: application/json
+              web_channel_default_view:
                 contentType: application/json
               web_font_size_px:
                 contentType: application/json
@@ -11648,6 +11721,8 @@ paths:
               send_read_receipts:
                 contentType: application/json
               email_address_visibility:
+                contentType: application/json
+              web_navigate_to_sent_message:
                 contentType: application/json
       responses:
         "200":
@@ -12425,6 +12500,7 @@ paths:
                               invited: 1710606654,
                               invited_as: 200,
                               invited_by_user_id: 9,
+                              notify_referrer_on_join: true,
                               is_multiuse: false,
                             },
                             {
@@ -12434,6 +12510,7 @@ paths:
                               invited_as: 400,
                               invited_by_user_id: 9,
                               is_multiuse: true,
+                              notify_referrer_on_join: true,
                               link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
                             },
                           ],
@@ -12511,6 +12588,18 @@ paths:
                   type: boolean
                   default: false
                   example: false
+                notify_referrer_on_join:
+                  description: |
+                    A boolean indicating whether the referrer would like to receive a
+                    direct message from [notification
+                    bot](/help/configure-automated-notices) when a user account is created
+                    using this invitation.
+
+                    **Changes**: New in Zulip 9.0 (feature level 267). Previously,
+                    referrers always received such direct messages.
+                  type: boolean
+                  example: false
+                  default: true
               required:
                 - invitee_emails
                 - stream_ids
@@ -14068,6 +14157,17 @@ paths:
                               **Changes**: New in Zulip 7.0 (feature level 175). Previously, there was no
                               way for the user to configure this behavior on the web, and the Zulip web and
                               desktop apps behaved like the "Always" setting when marking messages as read.
+                          web_channel_default_view:
+                            type: integer
+                            description: |
+                              Web/desktop app setting controlling the default navigation
+                              behavior when clicking on a channel link.
+
+                              - 1 - Top topic in the channel
+                              - 2 - Channel feed
+
+                              **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                              was not configurable, and every user had the "Channel feed" behavior.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -14459,6 +14559,14 @@ paths:
                               **Changes**: New in Zulip 5.0 (feature level 105).
                           email_address_visibility:
                             $ref: "#/components/schemas/EmailAddressVisibility"
+                          web_navigate_to_sent_message:
+                            type: boolean
+                            description: |
+                              Web/desktop app setting for whether the user's view should
+                              automatically go to the conversation where they sent a message.
+
+                              **Changes**: New in Zulip 9.0 (feature level 268). Previously,
+                              this behavior was not configurable.
                       user_topics:
                         type: array
                         description: |
@@ -15690,19 +15798,37 @@ paths:
 
                           The day of the week when the organization will send
                           its weekly digest email to inactive users.
-                      realm_private_message_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
+                      realm_direct_message_initiator_group:
+                        allOf:
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to start a new direct message conversation
+                              involving other non-bot users. Users who are outside this group and attempt
+                              to send the first direct message to a given collection of recipient users
+                              will receive an error, unless all other recipients are bots or the sender.
 
-                          [Policy](/api/roles-and-permissions#permission-levels)
-                          for [who can send direct messages](/help/restrict-direct-messages)
-                          in this organization.
+                              **Changes**: New in Zulip 9.0 (feature level 270).
 
-                          - 1 = Everyone
-                          - 2 = Nobody
+                              Previously, access to send direct messages was controlled by the
+                              `private_message_policy` realm setting, which supported values of
+                              1 (enabled) and 2 (disabled).
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_direct_message_permission_group:
+                        allOf:
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to fully use direct messages. Users outside
+                              this group can only send direct messages to conversations where all the
+                              recipients are in this group, are bots, or are the sender, ensuring that
+                              every direct message conversation will be visible to at least one user in
+                              this group.
 
-                          **Changes**: New in Zulip 3.0 (feature level 1).
+                              **Changes**: New in Zulip 9.0 (feature level 270).
+
+                              Previously, access to send direct messages was controlled by the
+                              `private_message_policy` realm setting, which supported values of
+                              1 (enabled) and 2 (disabled).
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_user_group_edit_policy:
                         type: integer
                         description: |
@@ -16286,6 +16412,43 @@ paths:
                           Clients containing administrative UI for changing
                           `realm_inline_url_embed_preview` should consult this field before offering
                           that feature.
+                      server_thumbnail_formats:
+                        description: |
+                          A list describing the image formats that uploaded
+                          images will be thumbnailed into. Any image with a
+                          source starting with `/user_uploads/thumbnail/` can
+                          have its last path component replaced with any of the
+                          names contained in this list, to obtain the desired
+                          thumbnail size.
+
+                          **Changes**: New in Zulip 9.0 (feature level 273).
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The file path component of the thumbnail format.
+                            max_width:
+                              type: integer
+                              description: |
+                                The maximum width of this format.
+                            max_height:
+                              type: integer
+                              description: |
+                                The maximum height of this format.
+                            format:
+                              type: string
+                              description: |
+                                The extension of this format.
+                            animated:
+                              type: boolean
+                              description: |
+                                If this file format is animated. These formats
+                                are only generated for uploaded imates which
+                                themselves are animated.
                       server_avatar_changes_disabled:
                         type: boolean
                         description: |
@@ -16456,6 +16619,17 @@ paths:
                               **Changes**: New in Zulip 7.0 (feature level 175). Previously, there was no
                               way for the user to configure this behavior on the web, and the Zulip web and
                               desktop apps behaved like the "Always" setting when marking messages as read.
+                          web_channel_default_view:
+                            type: integer
+                            description: |
+                              Web/desktop app setting controlling the default navigation
+                              behavior when clicking on a channel link.
+
+                              - 1 - Top topic in the channel
+                              - 2 - Channel feed
+
+                              **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                              was not configurable, and every user had the "Channel feed" behavior.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -16839,6 +17013,14 @@ paths:
                               **Changes**: New in Zulip 5.0 (feature level 105).
                           email_address_visibility:
                             $ref: "#/components/schemas/EmailAddressVisibility"
+                          web_navigate_to_sent_message:
+                            type: boolean
+                            description: |
+                              Web/desktop app setting for whether the user's view should
+                              automatically go to the conversation where they sent a message.
+
+                              **Changes**: New in Zulip 9.0 (feature level 268). Previously,
+                              this behavior was not configurable.
                       realm_users:
                         type: array
                         description: |
@@ -17558,6 +17740,21 @@ paths:
                     - 2
                     - 3
                   example: 1
+                web_channel_default_view:
+                  description: |
+                    Web/desktop app setting controlling the default navigation
+                    behavior when clicking on a channel link.
+
+                    - 1 - Top topic in the channel
+                    - 2 - Channel feed
+
+                    **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                    was not configurable, and every user had the "Channel feed" behavior.
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
                 starred_message_counts:
                   description: |
                     Whether clients should display the [number of starred
@@ -18126,12 +18323,23 @@ paths:
                     - 4
                     - 5
                   example: 1
+                web_navigate_to_sent_message:
+                  description: |
+                    Web/desktop app setting for whether the user's view should
+                    automatically go to the conversation where they sent a message.
+
+                    **Changes**: New in Zulip 9.0 (feature level 268). Previously,
+                    this behavior was not configurable.
+                  type: boolean
+                  example: true
             encoding:
               twenty_four_hour_time:
                 contentType: application/json
               dense_mode:
                 contentType: application/json
               web_mark_read_on_scroll_policy:
+                contentType: application/json
+              web_channel_default_view:
                 contentType: application/json
               starred_message_counts:
                 contentType: application/json
@@ -18226,6 +18434,8 @@ paths:
               send_read_receipts:
                 contentType: application/json
               email_address_visibility:
+                contentType: application/json
+              web_navigate_to_sent_message:
                 contentType: application/json
       responses:
         "200":
@@ -20688,6 +20898,15 @@ components:
           description: |
             The email address the invitation was sent to. This will not be present when
             `is_multiuse` is `true` (i.e. the invitation is a reusable invitation link).
+        notify_referrer_on_join:
+          type: boolean
+          description: |
+            A boolean indicating whether the referrer has opted to receive a direct
+            message from [notification bot](/help/configure-automated-notices) when a user
+            account is created using this invitation.
+
+            **Changes**: New in Zulip 9.0 (feature level 267). Previously,
+            referrers always received such direct messages.
         link_url:
           type: string
           description: |
@@ -22457,7 +22676,8 @@ components:
         See the `all_public_streams` parameter for how to process all
         public channel messages in an organization.
 
-        **Changes**: See changelog at [Construct a narrow](/api/construct-narrow).
+        **Changes**: See [changes section](/api/construct-narrow#changes)
+        of search/narrow filter documentation.
       type: array
       items:
         type: array

@@ -1,12 +1,15 @@
+import hashlib
 import os
 import re
 from dataclasses import dataclass
 
 import orjson
+from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.mime_types import guess_extension
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
@@ -148,12 +151,20 @@ def get_emoji_url(emoji_file_name: str, realm_id: int, still: bool = False) -> s
     return upload_backend.get_emoji_url(emoji_file_name, realm_id, still)
 
 
-def get_emoji_file_name(emoji_file_name: str, emoji_id: int) -> str:
-    image_ext = os.path.splitext(emoji_file_name)[1]
-    if not re.match(r"\.\w+$", image_ext):
-        # Because the extension from the uploaded filename is
-        # user-provided, preserved in the output filename, and libvips
-        # uses `[...]` after the extension for options, we validate
-        # the simple file extension.
-        raise JsonableError(_("Bad file name!"))  # nocoverage
-    return "".join((str(emoji_id), image_ext))
+def get_emoji_file_name(content_type: str, emoji_id: int) -> str:
+    image_ext = guess_extension(content_type, strict=False)
+    # The only callsite of this pre-limits the content_type to a
+    # reasonable set that we know have extensions.
+    assert image_ext is not None
+
+    # We salt this with a server-side secret so that it is not
+    # enumerable by clients, and will not collide on the server.  New
+    # realm imports may pass a synthetic emoji_id, which is fine as
+    # long as it starts at 1, and as such later emoji cannot collide
+    # unless there is a legit hash collision.
+    #
+    # We truncate the hash at 8 characters, as this is enough entropy
+    # to make collisions vanishingly unlikely.  In the event of a
+    # collusion, the id will advance and a manual retry will succeed.
+    hash_key = settings.AVATAR_SALT.encode() + b":" + str(emoji_id).encode()
+    return "".join((hashlib.sha256(hash_key).hexdigest()[0:8], image_ext))

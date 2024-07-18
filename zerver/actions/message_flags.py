@@ -1,7 +1,6 @@
 import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
-from typing import List, Optional, Set
 
 from django.conf import settings
 from django.db import transaction
@@ -26,7 +25,7 @@ from zerver.tornado.django_api import send_event
 
 @dataclass
 class ReadMessagesEvent:
-    messages: List[int]
+    messages: list[int]
     all: bool
     type: str = field(default="update_message_flags", init=False)
     op: str = field(default="add", init=False)
@@ -34,9 +33,7 @@ class ReadMessagesEvent:
     flag: str = field(default="read", init=False)
 
 
-def do_mark_all_as_read(
-    user_profile: UserProfile, *, timeout: Optional[float] = None
-) -> Optional[int]:
+def do_mark_all_as_read(user_profile: UserProfile, *, timeout: float | None = None) -> int | None:
     start_time = time.monotonic()
 
     # First, we clear mobile push notifications.  This is safer in the
@@ -105,7 +102,7 @@ def do_mark_all_as_read(
 
 
 def do_mark_stream_messages_as_read(
-    user_profile: UserProfile, stream_recipient_id: int, topic_name: Optional[str] = None
+    user_profile: UserProfile, stream_recipient_id: int, topic_name: str | None = None
 ) -> int:
     with transaction.atomic(savepoint=False):
         query = (
@@ -203,9 +200,9 @@ def do_mark_muted_user_messages_as_read(
 
 def do_update_mobile_push_notification(
     message: Message,
-    prior_mention_user_ids: Set[int],
-    mentions_user_ids: Set[int],
-    stream_push_user_ids: Set[int],
+    prior_mention_user_ids: set[int],
+    mentions_user_ids: set[int],
+    stream_push_user_ids: set[int],
 ) -> None:
     # Called during the message edit code path to remove mobile push
     # notifications for users who are no longer mentioned following
@@ -223,7 +220,7 @@ def do_update_mobile_push_notification(
 
 
 def do_clear_mobile_push_notifications_for_ids(
-    user_profile_ids: List[int], message_ids: List[int]
+    user_profile_ids: list[int], message_ids: list[int]
 ) -> None:
     if len(message_ids) == 0:
         return
@@ -261,7 +258,7 @@ def do_clear_mobile_push_notifications_for_ids(
 
 
 def do_update_message_flags(
-    user_profile: UserProfile, operation: str, flag: str, messages: List[int]
+    user_profile: UserProfile, operation: str, flag: str, messages: list[int]
 ) -> int:
     valid_flags = [item for item in UserMessage.flags if item not in UserMessage.NON_API_FLAGS]
     if flag not in valid_flags:

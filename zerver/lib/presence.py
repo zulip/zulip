@@ -1,7 +1,8 @@
 import time
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timedelta
-from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -13,7 +14,7 @@ from zerver.models import Realm, UserPresence, UserProfile
 
 def get_presence_dicts_for_rows(
     all_rows: Sequence[Mapping[str, Any]], slim_presence: bool
-) -> Dict[str, Dict[str, Any]]:
+) -> dict[str, dict[str, Any]]:
     if slim_presence:
         # Stringify user_id here, since it's gonna be turned
         # into a string anyway by JSON, and it keeps mypy happy.
@@ -23,7 +24,7 @@ def get_presence_dicts_for_rows(
         get_user_key = lambda row: row["user_profile__email"]
         get_user_presence_info = get_legacy_user_presence_info
 
-    user_statuses: Dict[str, Dict[str, Any]] = {}
+    user_statuses: dict[str, dict[str, Any]] = {}
 
     for presence_row in all_rows:
         user_key = get_user_key(presence_row)
@@ -45,7 +46,7 @@ def get_presence_dicts_for_rows(
 
 
 def user_presence_datetime_with_date_joined_default(
-    dt: Optional[datetime], date_joined: datetime
+    dt: datetime | None, date_joined: datetime
 ) -> datetime:
     """
     Our data models support UserPresence objects not having None
@@ -66,7 +67,7 @@ def user_presence_datetime_with_date_joined_default(
 
 def get_modern_user_presence_info(
     last_active_time: datetime, last_connected_time: datetime
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     # TODO: Do further bandwidth optimizations to this structure.
     result = {}
     result["active_timestamp"] = datetime_to_timestamp(last_active_time)
@@ -76,7 +77,7 @@ def get_modern_user_presence_info(
 
 def get_legacy_user_presence_info(
     last_active_time: datetime, last_connected_time: datetime
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Reformats the modern UserPresence data structure so that legacy
     API clients can still access presence data.
@@ -107,7 +108,7 @@ def get_legacy_user_presence_info(
 
 def format_legacy_presence_dict(
     last_active_time: datetime, last_connected_time: datetime
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     This function assumes it's being called right after the presence object was updated,
     and is not meant to be used on old presence data.
@@ -132,7 +133,7 @@ def format_legacy_presence_dict(
 
 def get_presence_for_user(
     user_profile_id: int, slim_presence: bool = False
-) -> Dict[str, Dict[str, Any]]:
+) -> dict[str, dict[str, Any]]:
     query = UserPresence.objects.filter(user_profile_id=user_profile_id).values(
         "last_active_time",
         "last_connected_time",
@@ -149,11 +150,11 @@ def get_presence_for_user(
 def get_presence_dict_by_realm(
     realm: Realm,
     slim_presence: bool = False,
-    last_update_id_fetched_by_client: Optional[int] = None,
-    requesting_user_profile: Optional[UserProfile] = None,
-) -> Tuple[Dict[str, Dict[str, Any]], int]:
+    last_update_id_fetched_by_client: int | None = None,
+    requesting_user_profile: UserProfile | None = None,
+) -> tuple[dict[str, dict[str, Any]], int]:
     two_weeks_ago = timezone_now() - timedelta(weeks=2)
-    kwargs: Dict[str, object] = dict()
+    kwargs: dict[str, object] = dict()
     if last_update_id_fetched_by_client is not None:
         kwargs["last_update_id__gt"] = last_update_id_fetched_by_client
 
@@ -188,7 +189,7 @@ def get_presence_dict_by_realm(
     )
     # Get max last_update_id from the list.
     if presence_rows:
-        last_update_id_fetched_by_server: Optional[int] = max(
+        last_update_id_fetched_by_server: int | None = max(
             row["last_update_id"] for row in presence_rows
         )
     elif last_update_id_fetched_by_client is not None:
@@ -211,9 +212,9 @@ def get_presence_dict_by_realm(
 def get_presences_for_realm(
     realm: Realm,
     slim_presence: bool,
-    last_update_id_fetched_by_client: Optional[int],
+    last_update_id_fetched_by_client: int | None,
     requesting_user_profile: UserProfile,
-) -> Tuple[Dict[str, Dict[str, Dict[str, Any]]], int]:
+) -> tuple[dict[str, dict[str, dict[str, Any]]], int]:
     if realm.presence_disabled:
         # Return an empty dict if presence is disabled in this realm
         return defaultdict(dict), -1
@@ -229,8 +230,8 @@ def get_presences_for_realm(
 def get_presence_response(
     requesting_user_profile: UserProfile,
     slim_presence: bool,
-    last_update_id_fetched_by_client: Optional[int] = None,
-) -> Dict[str, Any]:
+    last_update_id_fetched_by_client: int | None = None,
+) -> dict[str, Any]:
     realm = requesting_user_profile.realm
     server_timestamp = time.time()
     presences, last_update_id_fetched_by_server = get_presences_for_realm(

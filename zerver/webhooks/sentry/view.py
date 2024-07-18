@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 from urllib.parse import urljoin
 
 from django.http import HttpRequest, HttpResponse
@@ -81,7 +81,7 @@ syntax_highlight_as_map = {
 }
 
 
-def is_sample_event(event: Dict[str, Any]) -> bool:
+def is_sample_event(event: dict[str, Any]) -> bool:
     # This is just a heuristic to detect the sample event, this should
     # not be used for making important behavior decisions.
     title = event.get("title", "")
@@ -90,7 +90,7 @@ def is_sample_event(event: Dict[str, Any]) -> bool:
     return False
 
 
-def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
+def convert_lines_to_traceback_string(lines: list[str] | None) -> str:
     traceback = ""
     if lines is not None:
         for line in lines:
@@ -101,7 +101,7 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
     return traceback
 
 
-def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
+def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
     """Handle either an exception type event or a message type event payload."""
 
     topic_name = event["title"]
@@ -182,8 +182,8 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
 
 
 def handle_issue_payload(
-    action: str, issue: Dict[str, Any], actor: Dict[str, Any]
-) -> Tuple[str, str]:
+    action: str, issue: dict[str, Any], actor: dict[str, Any]
+) -> tuple[str, str]:
     """Handle either an issue type event."""
     topic_name = issue["title"]
     datetime = issue["lastSeen"].split(".")[0].replace("T", " ")
@@ -233,7 +233,7 @@ def handle_issue_payload(
     return (topic_name, body)
 
 
-def handle_deprecated_payload(payload: Dict[str, Any]) -> Tuple[str, str]:
+def handle_deprecated_payload(payload: dict[str, Any]) -> tuple[str, str]:
     topic_name = "{}".format(payload.get("project_name"))
     body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
         level=payload["level"].upper(),
@@ -243,7 +243,7 @@ def handle_deprecated_payload(payload: Dict[str, Any]) -> Tuple[str, str]:
     return (topic_name, body)
 
 
-def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
     """Attempt to use webhook payload for the notification.
 
     When the integration is configured as a webhook, instead of being added as
@@ -272,7 +272,7 @@ def api_sentry_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: JsonBodyPayload[Dict[str, Any]],
+    payload: JsonBodyPayload[dict[str, Any]],
 ) -> HttpResponse:
     data = payload.get("data", None)
 

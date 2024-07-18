@@ -5,6 +5,8 @@
 */
 .tippy-box[data-theme="light-border"] {
     background-color: var(--color-background-popover);
+    /* Basic Tippy popovers scale with the base font-size. */
+    font-size: var(--base-font-size-px);
 
     .sp-input {
         /* Override incorrect color for text in dark theme. */
@@ -12,24 +14,16 @@
     }
 
     .tippy-content {
-        font-size: 14px;
+        /* We set the font-size here to override the
+           default value in the upstream tippy.css */
+        /* 14px at 14px/1em */
+        font-size: 1em;
     }
 
     /* TODO: Clean this logic up after drop Bootstrap styling */
     & hr {
         /* Override bootstrap defaults */
         margin: 5px 0;
-    }
-
-    /* TODO: Clean this logic up after drop Bootstrap styling */
-    & ul.nav {
-        /* Override default padding of tippyjs */
-        margin: 0 -9px;
-
-        /* Override bootstrap defaults */
-        .nav-list > li > a {
-            padding: 3px 15px;
-        }
     }
 
     &[data-placement^="top"] {
@@ -73,9 +67,14 @@
         0 7px 13px hsl(0deg 0% 0% / 15%),
         0 5px 8px hsl(0deg 0% 0% / 12%),
         0 2px 4px hsl(0deg 0% 0% / 10%);
+    /* Tippy dropdown widgets scale with the base font-size. */
+    font-size: var(--base-font-size-px);
 
     .tippy-content {
-        font-size: 14px;
+        /* We set the font-size here to override the
+           default value in the upstream tippy.css */
+        /* 14px at 14px/1em */
+        font-size: 1em;
         color: hsl(0deg 0% 75%);
         padding: 0;
     }
@@ -86,10 +85,16 @@
     border: 1px solid var(--color-border-popover-menu);
     border-radius: 6px;
     box-shadow: var(--box-shadow-popover-menu);
+    /* Popover menus should scale no smaller than 15px,
+       but scale up with the base font-size. */
+    font-size: max(15px, var(--base-font-size-px));
 
     > .tippy-content {
         padding: 0;
-        font-size: 14px;
+        /* We set the font-size here to override the
+           default value in the upstream tippy.css */
+        /* 15 at 15px/1em */
+        font-size: 1em;
     }
 
     > .tippy-arrow {
@@ -124,69 +129,47 @@
     white-space: nowrap;
 }
 
-.popover_user_name_row {
-    display: flex;
-    align-items: center;
-
-    .zulip-icon.zulip-icon-bot {
-        padding-left: 5px;
-    }
-}
-
-.user-card-popover-action-buttons {
-    margin-left: auto;
-    line-height: 1;
-}
-
-.user-card-popover-manage-menu-btn {
-    &:hover,
-    &:focus {
-        text-decoration: none;
-    }
-}
-
-.user_popover_manage_menu {
-    .zulip-icon {
-        /* Overriding CSS margin */
-        margin-right: 0;
-    }
-}
-
-/* Used extra classes to override styles from .nav */
-.tippy-box .tippy-content .user-card-popover-content {
-    padding: 5px 0;
-
-    .user-card-popover-actions {
-        margin: 0;
-    }
-}
-
-.user-card-popover-actions .custom_user_field {
-    display: flex;
-    align-items: center;
-
-    .value {
+.user-card-popover-actions {
+    .custom-profile-field-value {
+        display: flex;
+        align-items: center;
+        gap: 5px;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
     }
 
-    /* Overriding CSS from rendered_markdown.css */
-    .rendered_markdown p {
+    .custom-profile-field-value.rendered_markdown p {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        /* Overriding CSS from rendered_markdown.css */
         margin: 0;
     }
 
-    /* Overriding CSS from bootstrap > nav-list. */
-    .custom-profile-fields-link {
-        padding-top: 0;
-        padding-bottom: 0;
+    .custom-profile-field-link {
+        color: var(--color-text-item);
 
         &:hover {
-            background-color: transparent !important;
+            color: var(--color-text-link);
+            text-decoration: none;
         }
 
-        &:focus {
-            background-color: transparent !important;
+        &:focus-visible {
+            color: var(--color-text-url-hover);
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
+        .custom-profile-field-text {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+
+            &:hover {
+                text-decoration: underline;
+            }
         }
     }
 }
@@ -221,14 +204,6 @@
     }
 }
 
-.user-card-popover-actions .user-card-popover-manage-menu-btn {
-    opacity: 0.8;
-
-    &:hover {
-        opacity: 1;
-    }
-}
-
 .sp-container {
     z-index: 106;
 }
@@ -245,11 +220,20 @@
         margin-top: 4px;
     }
 
+    .zulip-icon-lock {
+        /* Override the margin-top set on the stream lock icon
+           at the top-level, since we don't need to pull up this
+           icon for the stream actions popover header.  */
+        margin: 0 !important;
+    }
+
     .colorpicker-container {
         display: none;
         margin-right: 10px;
 
         .sp-container {
+            /* The base-font size for the color container is 12px,
+               inherited from the upstream spectrum.css file. */
             background-color: hsl(0deg 0% 100%);
             cursor: pointer;
             border: none;
@@ -271,7 +255,8 @@
                 border: 1px solid hsl(0deg 0% 80%);
                 border-radius: 4px;
                 color: hsl(0deg 0% 25%);
-                font-size: 12px;
+                /* 12px at 12px/1em */
+                font-size: 1em;
                 padding: 6px;
                 text-transform: capitalize;
                 text-align: center;
@@ -295,120 +280,58 @@
     }
 }
 
-ul {
-    &.user-card-popover-actions i {
-        display: inline-block;
-        text-align: center;
+.popover-group-menu-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 3px 10px;
+}
 
-        &:not(.popover_action_icon, .guest-indicator) {
-            width: 14px;
-        }
+.popover-group-menu-name-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    /* 18px at 15px/1em */
+    font-size: 1.2em;
+    font-weight: 600;
+    /* 20px at 18px/1em */
+    line-height: 1.1111em;
+    color: var(--color-text-full-name);
+    word-break: break-word;
+}
 
-        &:not(.popover_action_icon, .custom_user_field i) {
-            margin-right: 3px;
-        }
+.popover-group-menu-description {
+    /* 15px at 15px/1em */
+    font-size: 1em;
+    /* 16px at 15px/1em */
+    line-height: 1.0667em;
+}
 
-        &.zulip-icon {
-            /* These icons are different from font awesome icons,
-                so they need to be aligned separately. */
-            line-height: 14px;
-            position: relative;
+ul.popover-group-menu-member-list {
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
 
-            &:not(.zulip-icon-bot) {
-                top: 2px;
-            }
-
-            &.popover_action_icon {
-                font-size: 17px;
-                line-height: 1;
-                top: 1px;
-            }
-        }
-    }
-
-    &.user-card-popover-actions i.fa-edit {
-        vertical-align: middle;
+    .simplebar-content {
+        width: unset;
     }
 }
 
-/* Important note: The user info popover user-sidebar-popover-root
-   class is applied to user info popovers ONLY when they are opened
-   from the right sidebar; otherwise, it will have the
-   user-card-popover-root class instead. */
-.user-sidebar-popover-root {
-    /* 240px (width of avatar) + 2px (1px for each border) */
-    width: 242px;
-
-    margin: -14px;
-    padding: 0;
-
-    .user-card-popover-title {
-        padding: 0;
-        border-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    .popover_info li {
-        word-wrap: break-word;
-    }
+.popover-group-menu-member {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
 }
 
-.group-info-popover,
-.message-user-card-popover-root,
-.user-card-popover-root {
-    /* 240px (width of avatar) + 2px (1px for each border) */
-    width: 242px;
-    padding: 0;
+.popover-group-menu-member-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.group-info-popover {
-    .group-info-content {
-        padding: 5px 0;
-    }
-
-    .group-info {
-        padding-left: 11px;
-        padding-right: 11px;
-
-        .group-name {
-            font-weight: bold;
-
-            .zulip-icon-triple-users {
-                position: relative;
-                top: 2px;
-                margin-right: 5px;
-            }
-        }
-    }
-
-    .manage-group {
-        a {
-            display: flex;
-            align-items: center;
-            padding-left: 11px;
-
-            .zulip-icon {
-                position: relative;
-                top: -1px;
-                margin-right: 5px;
-            }
-        }
-    }
-
-    .member-list {
-        position: relative;
-        max-height: 300px;
-        overflow-y: auto;
-        list-style: none;
-        margin-left: 0;
-
-        .bot {
-            color: hsl(180deg 5% 74%);
-            vertical-align: top;
-            width: 20px;
-            padding-top: 3.5px;
-            text-align: center;
-        }
-    }
+.popover-group-menu-description,
+.popover-group-menu-member-name {
+    color: var(--color-text-popover-menu);
 }
 
 .user_profile_presence,
@@ -508,7 +431,8 @@ ul {
     }
 
     #exit-sign {
-        font-size: 1.5rem;
+        /* 24px at 14px/1em */
+        font-size: 1.7143em;
         line-height: 1;
     }
 
@@ -548,11 +472,13 @@ ul {
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button {
         text-decoration: none;
-        font-size: 15px;
+        /* 15px at 22px/1em */
+        font-size: 0.6818em;
     }
 
     .user-profile-manage-own-copy-link-button {
-        font-size: 19px;
+        /* 19px at 22px/1em */
+        font-size: 0.8638em;
         text-decoration: none;
     }
 
@@ -622,7 +548,8 @@ ul {
         margin: 0;
         display: inline-block;
         font-weight: inherit;
-        font-size: 21px;
+        /* 21px at 14px/1em */
+        font-size: 1.5em;
     }
 
     #user-profile-streams-tab {
@@ -841,11 +768,7 @@ ul {
 }
 
 .giphy-popover,
-.emoji-popover-root,
-.user-group-popover-root,
-.user-sidebar-popover-root,
-.message-user-card-popover-root,
-.user-card-popover-root {
+.emoji-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
            as it is not necessary for the Giphy popover. */
@@ -854,28 +777,6 @@ ul {
         /* By resetting to the default color from the `body`,
            we can ignore the colors applied from `tippy-box`. */
         color: var(--color-text-default);
-    }
-
-    & ul.nav {
-        /* TODO: Clean this logic up after drop Bootstrap styling */
-        margin: 0;
-    }
-}
-
-.user-group-popover-root {
-    .group-info-popover ul.nav {
-        /* TODO: Clean this logic up after drop Bootstrap styling */
-        margin: 0;
-
-        &.member-list {
-            padding-left: 6px;
-        }
-    }
-
-    & .tippy-box {
-        box-shadow: 0 5px 10px hsl(0deg 0% 0% / 20%);
-        /* User group popover has a bigger border-radius than our usual popovers. */
-        border-radius: 6px;
     }
 }
 
@@ -919,31 +820,6 @@ ul {
         outline: 1px solid hsl(0deg 100% 50%);
     }
 
-    .search-box {
-        display: flex;
-        position: sticky;
-        padding: 2px;
-
-        & input {
-            flex-grow: 1;
-            margin: 5px;
-            border-radius: 3px;
-        }
-
-        .clear_search_button {
-            position: absolute;
-            top: 5px;
-            right: 3px;
-            font-size: 16px;
-
-            &:focus {
-                .fa-remove {
-                    outline: 2px solid var(--color-outline-focus);
-                }
-            }
-        }
-    }
-
     .giphy-scrolling-container {
         overflow: auto;
         height: 200px;
@@ -967,32 +843,8 @@ ul {
     }
 }
 
-.user-card-status-area {
-    opacity: 0.8;
-
-    .status-emoji {
-        height: 18px;
-        width: 18px;
-        /* Override the default 3px left margin for status emoji, which is
-           intended for their presentation elsewhere to the left of a
-           user's name. */
-        margin-left: 0;
-        margin-right: 2px;
-    }
-
-    #status_message {
-        padding: 1px 0;
-        display: flex;
-        align-items: baseline;
-        hyphens: auto;
-    }
-
-    .status_text {
-        overflow-wrap: anywhere;
-    }
-}
-
 #move_topic_modal {
+    /* Modals have a 16px/1em base font-size. */
     & form {
         margin: 0;
     }
@@ -1003,7 +855,8 @@ ul {
 
         .dropdown-widget-button {
             outline: none;
-            line-height: 24px;
+            /* 24px at 16px/1em */
+            line-height: 1.5em;
             width: auto;
             max-width: 206px;
         }
@@ -1015,9 +868,11 @@ ul {
             color: var(--color-text-default);
 
             .stream-privacy-type-icon {
-                font-size: 13px;
-                width: 13px;
-                height: 13px;
+                /* 13px at 16px/1em */
+                font-size: 0.8125em;
+                /* 13px at 13px/1em */
+                width: 1em;
+                height: 1em;
                 position: relative;
                 top: 2px;
             }
@@ -1091,11 +946,113 @@ ul {
 
 .recipient-bar-topic-visibility-switcher {
     .tab-option-content {
-        font-size: 15px;
+        /* 15px at 16px/1em */
+        font-size: 0.9375em;
         color: var(--color-text-popover-menu);
         gap: 10px;
         justify-content: flex-start;
         padding: 2px 13px;
+    }
+}
+
+.popover-menu-user-header {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 7px;
+    text-align: left;
+    padding: 4px;
+
+    .popover-menu-user-avatar-container {
+        position: relative;
+        flex-shrink: 0;
+        width: 64px;
+        height: 64px;
+    }
+
+    .popover-menu-user-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 4px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .popover-menu-user-presence {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        right: -1px;
+        bottom: -1px;
+        border: solid 1px var(--color-background);
+        border-radius: 50%;
+    }
+
+    .popover-menu-user-info {
+        width: max-content;
+        align-self: center;
+    }
+
+    .popover-menu-user-full-name {
+        /* 18px at 15px/1em */
+        font-size: 1.2em;
+        font-weight: 600;
+        /* 20px at 18px/1em */
+        line-height: 1.1111em;
+        color: var(--color-text-full-name);
+        word-break: break-word;
+    }
+
+    .popover-menu-user-type {
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
+        font-weight: 400;
+        /* 16px at 14px/1em */
+        line-height: 1.1428em;
+        color: var(--color-text-item);
+    }
+
+    .user_circle_empty {
+        background-color: var(--color-background-popover-menu);
+        border-color: hsl(0deg 0% 50%);
+    }
+}
+
+.user-card-popover-email-field {
+    & .user_popover_email {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+}
+
+#popover-menu-copy-email,
+.copy-custom-profile-field-link {
+    display: flex;
+    padding: 3px 2px 1px;
+    border-radius: 4px;
+    color: var(--color-text-item);
+    text-decoration: none !important;
+    margin-left: auto;
+
+    &.hide_copy_icon {
+        display: none;
+    }
+
+    &:hover {
+        color: var(--color-copy-btn-hover) !important;
+        background-color: var(--color-copy-btn-bg-hover);
+    }
+
+    &:active {
+        color: var(--color-copy-btn-active) !important;
+        background-color: var(--color-copy-btn-bg-active);
+    }
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus) !important;
+        outline-offset: 0;
+        color: var(--color-copy-btn-hover) !important;
+        background-color: var(--color-copy-btn-bg-hover);
     }
 }
 
@@ -1147,18 +1104,22 @@ ul {
     }
 
     .full-name {
-        font-size: 18px;
+        /* 18px at 15px/1em */
+        font-size: 1.2em;
         font-weight: 600;
-        line-height: 20px;
+        /* 20px at 18px/1em */
+        line-height: 1.1111em;
         color: var(--color-text-full-name) !important;
         max-width: 150px;
         word-break: break-word;
     }
 
     .user-type {
-        font-size: 14px;
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
         font-weight: 400;
-        line-height: 16px;
+        /* 16px at 14px/1em */
+        line-height: 1.1429em;
         color: var(--color-text-item) !important;
     }
 }
@@ -1204,15 +1165,19 @@ ul {
         flex-flow: row nowrap;
         align-items: flex-start;
         gap: 5px;
-        padding: 3px 10px;
-        font-size: 15px;
-        line-height: 16px;
+        padding: 0.2em 0.6666em;
+        /* 15px at 15px/1em */
+        font-size: 1em;
+        /* 16px at 15px/1em */
+        line-height: 1.0667em;
         min-height: 26px;
 
         .popover-menu-icon {
-            width: 16px;
-            height: 16px;
-            font-size: 16px;
+            /* 16px at 15px/1em */
+            font-size: 1.0667em;
+            /* 16px at 16px/1em */
+            width: 1em;
+            height: 1em;
             text-align: center;
         }
     }
@@ -1276,8 +1241,11 @@ ul {
     }
 
     .status_emoji {
-        width: 16px;
-        height: 16px;
+        align-self: flex-start;
+        flex-shrink: 0;
+        /* 16px at 15px/1em */
+        width: 1.0667em;
+        height: 1.0667em;
     }
 
     .zulip-icon {
@@ -1295,7 +1263,8 @@ ul {
 }
 
 #message-actions-menu-dropdown {
-    --popover-menu-max-width: 350px;
+    /* 350px at 15px/1em */
+    --popover-menu-max-width: 23.3333em;
 
     .simplebar-content {
         min-width: var(--message-actions-popover-min-width);
@@ -1309,14 +1278,34 @@ ul {
     }
 }
 
+#user_card_popover {
+    /* 250px at 14px/1em */
+    --popover-menu-max-width: 17.8571em;
+
+    .simplebar-content {
+        min-width: var(--user-card-popover-min-width);
+    }
+}
+
+.user-group-info-popover {
+    .simplebar-content {
+        min-width: var(--user-group-info-popover-min-width);
+    }
+}
+
 .personal-menu-clear-status {
     display: flex;
-    padding: 3px;
     align-items: center;
     margin-left: auto;
     color: hsl(0deg 0% 40%) !important;
     border-radius: 4px;
     opacity: 0.5;
+
+    &:focus {
+        /* Override bootstrap defaults */
+        outline: 1px solid var(--color-outline-focus) !important;
+        outline-offset: 0;
+    }
 
     &:hover,
     &:focus {
@@ -1331,7 +1320,7 @@ ul {
 
 .personal-menu-status-wrapper {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 5px;
 }
 
@@ -1351,10 +1340,10 @@ ul {
         .org-info {
             display: flex;
             justify-content: flex-start;
-            font-size: 15px;
             font-style: normal;
             font-weight: 400;
-            line-height: 16px; /* 114.286% */
+            /* 16px at 15px/1em */
+            line-height: 1.0667em;
             letter-spacing: 0.28px;
 
             &:focus-within {
@@ -1395,14 +1384,19 @@ ul {
         }
 
         .org-name {
-            font-size: 17px;
+            /* 17px at 15px/1em */
+            font-size: 1.1333em;
             font-weight: 600;
-            line-height: 22px;
+            /* 22px at 17px/1em */
+            line-height: 1.2941em;
             padding: 0 10px;
         }
 
         .org-upgrade {
-            font-size: 14px;
+            /* 14px at 15px/1em */
+            font-size: 0.9333em;
+            /* 16px at 14px/1em */
+            line-height: 1.1428em;
         }
 
         .org-upgrade,
@@ -1438,11 +1432,14 @@ ul.popover-menu-list {
         box-sizing: border-box;
         color: var(--color-popover-hotkey-hint);
         text-align: center;
-        font-size: 14px;
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
         font-style: normal;
         font-weight: 500;
-        line-height: 14px;
-        min-width: 1.25rem;
+        /* 14px at 14px/1em */
+        line-height: 1em;
+        /* 20px at 14px/1em */
+        min-width: 1.4285em;
         padding: 2px 4px;
         border-radius: 3px;
         border: 1px solid var(--color-border-popover-hotkey-hint);

@@ -1,5 +1,4 @@
 import os
-from typing import Optional, Set
 from unittest.mock import patch
 
 import botocore.exceptions
@@ -46,11 +45,13 @@ class RealmExportTest(ZulipTestCase):
 
         # Test the export logic.
         with patch("zerver.lib.export.do_export_realm", return_value=tarball_path) as mock_export:
-            with self.settings(LOCAL_UPLOADS_DIR=None), stdout_suppressed(), self.assertLogs(
-                level="INFO"
-            ) as info_logs:
-                with self.captureOnCommitCallbacks(execute=True):
-                    result = self.client_post("/json/export/realm")
+            with (
+                self.settings(LOCAL_UPLOADS_DIR=None),
+                stdout_suppressed(),
+                self.assertLogs(level="INFO") as info_logs,
+                self.captureOnCommitCallbacks(execute=True),
+            ):
+                result = self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
@@ -118,10 +119,10 @@ class RealmExportTest(ZulipTestCase):
             realm: Realm,
             output_dir: str,
             threads: int,
-            exportable_user_ids: Optional[Set[int]] = None,
+            exportable_user_ids: set[int] | None = None,
             public_only: bool = False,
-            consent_message_id: Optional[int] = None,
-            export_as_active: Optional[bool] = None,
+            consent_message_id: int | None = None,
+            export_as_active: bool | None = None,
         ) -> str:
             self.assertEqual(realm, admin.realm)
             self.assertEqual(public_only, True)
@@ -149,9 +150,12 @@ class RealmExportTest(ZulipTestCase):
         with patch(
             "zerver.lib.export.do_export_realm", side_effect=fake_export_realm
         ) as mock_export:
-            with stdout_suppressed(), self.assertLogs(level="INFO") as info_logs:
-                with self.captureOnCommitCallbacks(execute=True):
-                    result = self.client_post("/json/export/realm")
+            with (
+                stdout_suppressed(),
+                self.assertLogs(level="INFO") as info_logs,
+                self.captureOnCommitCallbacks(execute=True),
+            ):
+                result = self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
         mock_export.assert_called_once()
         data = self.assert_json_success(result)
@@ -207,12 +211,15 @@ class RealmExportTest(ZulipTestCase):
         admin = self.example_user("iago")
         self.login_user(admin)
 
-        with patch(
-            "zerver.lib.export.do_export_realm", side_effect=Exception("failure")
-        ) as mock_export:
-            with stdout_suppressed(), self.assertLogs(level="INFO") as info_logs:
-                with self.captureOnCommitCallbacks(execute=True):
-                    result = self.client_post("/json/export/realm")
+        with (
+            patch(
+                "zerver.lib.export.do_export_realm", side_effect=Exception("failure")
+            ) as mock_export,
+            stdout_suppressed(),
+            self.assertLogs(level="INFO") as info_logs,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_post("/json/export/realm")
         self.assertTrue(
             info_logs.output[0].startswith("ERROR:root:Data export for zulip failed after ")
         )
@@ -239,18 +246,20 @@ class RealmExportTest(ZulipTestCase):
 
         # If the queue worker sees the same export-id again, it aborts
         # instead of retrying
-        with patch("zerver.lib.export.do_export_realm") as mock_export:
-            with self.assertLogs(level="INFO") as info_logs:
-                queue_json_publish(
-                    "deferred_work",
-                    {
-                        "type": "realm_export",
-                        "time": 42,
-                        "realm_id": admin.realm.id,
-                        "user_profile_id": admin.id,
-                        "id": export_id,
-                    },
-                )
+        with (
+            patch("zerver.lib.export.do_export_realm") as mock_export,
+            self.assertLogs(level="INFO") as info_logs,
+        ):
+            queue_json_publish(
+                "deferred_work",
+                {
+                    "type": "realm_export",
+                    "time": 42,
+                    "realm_id": admin.realm.id,
+                    "user_profile_id": admin.id,
+                    "id": export_id,
+                },
+            )
         mock_export.assert_not_called()
         self.assertEqual(
             info_logs.output,

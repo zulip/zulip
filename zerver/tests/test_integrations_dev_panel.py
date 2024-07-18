@@ -24,9 +24,11 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "custom_headers": "{}",
             "is_json": "true",
         }
-        with self.assertLogs(level="ERROR") as logs, self.settings(
-            TEST_SUITE=False
-        ), self.assertRaises(ValidationError):
+        with (
+            self.assertLogs(level="ERROR") as logs,
+            self.settings(TEST_SUITE=False),
+            self.assertRaises(ValidationError),
+        ):
             self.client_post(target_url, data)
 
         # Intention of this test looks like to trigger ValidationError

@@ -7,6 +7,42 @@ const {run_test} = require("./lib/test");
 
 const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
+const people = zrequire("people");
+
+const user1 = {
+    user_id: 10,
+    email: "user1@example.com",
+    full_name: "User One",
+};
+people.add_active_user(user1);
+
+const user2 = {
+    user_id: 20,
+    email: "user2@example.com",
+    full_name: "User Two",
+};
+people.add_active_user(user2);
+
+const user3 = {
+    user_id: 30,
+    email: "user3@example.com",
+    full_name: "User Three",
+};
+people.add_active_user(user3);
+
+const user4 = {
+    user_id: 40,
+    email: "user4@example.com",
+    full_name: "User Four",
+};
+people.add_active_user(user4);
+
+const user5 = {
+    user_id: 50,
+    email: "user5@example.com",
+    full_name: "User Five",
+};
+people.add_active_user(user5);
 
 const admins = {
     name: "Admins",
@@ -20,21 +56,37 @@ const testers = {
     id: 102,
     members: [20, 50, 30, 40],
 };
+const everyone = {
+    name: "role:everyone",
+    description: "Everyone",
+    id: 103,
+    members: [],
+    direct_subgroup_ids: [101, 102],
+};
 
 const admins_pill = {
     group_id: admins.id,
     group_name: admins.name,
     type: "user_group",
-    display_value: admins.name + ": " + admins.members.length + " users",
+    display_value: "translated HTML: " + admins.name + ": " + admins.members.length + " users",
 };
 const testers_pill = {
     group_id: testers.id,
     group_name: testers.name,
     type: "user_group",
-    display_value: testers.name + ": " + testers.members.length + " users",
+    display_value: "translated HTML: " + testers.name + ": " + testers.members.length + " users",
+};
+const everyone_pill = {
+    group_id: everyone.id,
+    group_name: everyone.name,
+    type: "user_group",
+    // While we can programmatically set the user count below,
+    // calculating it would almost mimic the entire display function
+    // here, reducing the usefulness of the test.
+    display_value: "translated HTML: translated: Everyone: 5 users",
 };
 
-const groups = [admins, testers];
+const groups = [admins, testers, everyone];
 for (const group of groups) {
     user_groups.add(group);
 }
@@ -49,6 +101,7 @@ run_test("create_item", () => {
     test_create_item("admins", [testers_pill], admins_pill);
     test_create_item("admins", [admins_pill], undefined);
     test_create_item("unknown", [], undefined);
+    test_create_item("role:everyone", [], everyone_pill);
 });
 
 run_test("get_stream_id", () => {
@@ -56,19 +109,31 @@ run_test("get_stream_id", () => {
 });
 
 run_test("get_user_ids", () => {
-    const items = [admins_pill, testers_pill];
+    let items = [admins_pill, testers_pill];
     const widget = {items: () => items};
 
-    const user_ids = user_group_pill.get_user_ids(widget);
+    let user_ids = user_group_pill.get_user_ids(widget);
     assert.deepEqual(user_ids, [10, 20, 30, 40, 50]);
+
+    // Test whether subgroup members are included or not.
+    items = [everyone_pill];
+    user_ids = user_group_pill.get_user_ids(widget);
+    assert.deepEqual(user_ids, [10, 20, 30, 40, 50]);
+
+    // Deactivated users should be excluded.
+    people.deactivate(user5);
+    user_ids = user_group_pill.get_user_ids(widget);
+    assert.deepEqual(user_ids, [10, 20, 30, 40]);
+    people.add_active_user(user5);
 });
 
 run_test("get_group_ids", () => {
-    const items = [admins_pill, testers_pill];
+    const items = [admins_pill, everyone_pill];
     const widget = {items: () => items};
 
+    // Subgroups should not be part of the results, we use `everyone_pill` to test that.
     const group_ids = user_group_pill.get_group_ids(widget);
-    assert.deepEqual(group_ids, [101, 102]);
+    assert.deepEqual(group_ids, [101, 103]);
 });
 
 run_test("append_user_group", () => {

@@ -11,7 +11,6 @@ import glob
 import os
 import shutil
 import sys
-from typing import List
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -57,7 +56,7 @@ def create_var_directories() -> None:
         os.makedirs(path, exist_ok=True)
 
 
-def build_pygments_data_paths() -> List[str]:
+def build_pygments_data_paths() -> list[str]:
     paths = [
         "tools/setup/build_pygments_data",
         "tools/setup/lang.json",
@@ -65,27 +64,27 @@ def build_pygments_data_paths() -> List[str]:
     return paths
 
 
-def build_timezones_data_paths() -> List[str]:
+def build_timezones_data_paths() -> list[str]:
     paths = [
         "tools/setup/build_timezone_values",
     ]
     return paths
 
 
-def build_landing_page_images_paths() -> List[str]:
+def build_landing_page_images_paths() -> list[str]:
     paths = ["tools/setup/generate_landing_page_images.py"]
     paths += glob.glob("static/images/landing-page/hello/original/*")
     return paths
 
 
-def compilemessages_paths() -> List[str]:
+def compilemessages_paths() -> list[str]:
     paths = ["zerver/management/commands/compilemessages.py"]
     paths += glob.glob("locale/*/LC_MESSAGES/*.po")
     paths += glob.glob("locale/*/translations.json")
     return paths
 
 
-def configure_rabbitmq_paths() -> List[str]:
+def configure_rabbitmq_paths() -> list[str]:
     paths = [
         "scripts/setup/configure-rabbitmq",
     ]
@@ -98,7 +97,7 @@ def setup_shell_profile(shell_profile: str) -> None:
     def write_command(command: str) -> None:
         if os.path.exists(shell_profile_path):
             with open(shell_profile_path) as shell_profile_file:
-                lines = [line.strip() for line in shell_profile_file.readlines()]
+                lines = [line.strip() for line in shell_profile_file]
             if command not in lines:
                 with open(shell_profile_path, "a+") as shell_profile_file:
                     shell_profile_file.writelines(command + "\n")
@@ -194,7 +193,7 @@ def need_to_run_compilemessages() -> bool:
     )
 
 
-def need_to_run_configure_rabbitmq(settings_list: List[str]) -> bool:
+def need_to_run_configure_rabbitmq(settings_list: list[str]) -> bool:
     obsolete = is_digest_obsolete(
         "last_configure_rabbitmq_hash",
         configure_rabbitmq_paths(),

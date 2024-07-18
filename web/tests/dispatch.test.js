@@ -28,6 +28,7 @@ const alert_words_ui = mock_esm("../src/alert_words_ui");
 const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
+const compose_banner = mock_esm("../src/compose_banner");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const theme = mock_esm("../src/theme");
 const emoji_picker = mock_esm("../src/emoji_picker");
@@ -441,6 +442,7 @@ run_test("realm settings", ({override}) => {
     current_user.is_admin = true;
     realm.realm_date_created = new Date("2023-01-01Z");
 
+    override(settings_org, "check_disable_direct_message_initiator_group_dropdown", noop);
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(settings_invites, "update_invite_user_panel", noop);
@@ -449,6 +451,7 @@ run_test("realm settings", ({override}) => {
     override(narrow_title, "redraw_title", noop);
     override(navbar_alerts, "check_profile_incomplete", noop);
     override(navbar_alerts, "show_profile_incomplete", noop);
+    override(compose_banner, "clear_errors", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
         with_overrides(({override}) => {
@@ -573,6 +576,7 @@ run_test("realm settings", ({override}) => {
     realm.realm_edit_topic_policy = 3;
     realm.realm_authentication_methods = {Google: {enabled: false, available: true}};
     realm.realm_can_create_public_channel_group = 1;
+    realm.realm_direct_message_permission_group = 1;
     override(settings_org, "populate_auth_methods", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
@@ -583,6 +587,7 @@ run_test("realm settings", ({override}) => {
         Google: {enabled: true, available: true},
     });
     assert_same(realm.realm_can_create_public_channel_group, 3);
+    assert_same(realm.realm_direct_message_permission_group, 3);
     assert_same(update_stream_privacy_choices_called, true);
 
     event = event_fixtures.realm__update_dict__icon;
@@ -945,8 +950,16 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_mark_read_on_scroll_policy, 1);
 
+    event = event_fixtures.user_settings__web_channel_default_view;
+    user_settings.web_channel_default_view = 2;
+    dispatch(event);
+    assert_same(user_settings.web_channel_default_view, 1);
+
     event = event_fixtures.user_settings__dense_mode;
     user_settings.dense_mode = false;
+    settings_preferences.user_settings_panel = {
+        container: "#user-preferences",
+    };
     override(information_density, "set_base_typography_css_variables", noop);
     toggled = [];
     dispatch(event);
@@ -1121,6 +1134,11 @@ run_test("user_settings", ({override}) => {
     user_settings.email_address_visibility = 3;
     dispatch(event);
     assert_same(user_settings.email_address_visibility, 5);
+
+    event = event_fixtures.user_settings__web_navigate_to_sent_message;
+    user_settings.web_navigate_to_sent_message = true;
+    dispatch(event);
+    assert_same(user_settings.web_navigate_to_sent_message, false);
 });
 
 run_test("update_message (read)", ({override}) => {

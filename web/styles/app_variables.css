@@ -1,4 +1,167 @@
 :root {
+    /* Zulip color palette */
+    /* stylelint-disable color-no-hex */
+    /* grey */
+    --grey-0: #f7f8fc;
+    --grey-50: #f2f3f7;
+    --grey-100: #e9ebf2;
+    --grey-150: #dfe1e8;
+    --grey-200: #cbcdd6;
+    --grey-250: #bbbdc8;
+    --grey-300: #aaadba;
+    --grey-350: #9ea1ae;
+    --grey-400: #9194a3;
+    --grey-450: #858897;
+    --grey-500: #767988;
+    --grey-550: #626573;
+    --grey-600: #535663;
+    --grey-650: #444754;
+    --grey-700: #393c49;
+    --grey-750: #2d303c;
+    --grey-800: #242631;
+    --grey-850: #181a25;
+    --grey-900: #11131e;
+    --grey-950: #0a0c17;
+    --grey-1000: #070812;
+
+    /* purple */
+    --purple-0: #f3f2fd;
+    --purple-50: #ededfc;
+    --purple-100: #e5e5fc;
+    --purple-150: #dbdaff;
+    --purple-200: #c9c7fd;
+    --purple-250: #b8b4ff;
+    --purple-300: #aba5fd;
+    --purple-350: #9e94fd;
+    --purple-400: #9283fd;
+    --purple-450: #8a70fc;
+    --purple-500: #7f63ee;
+    --purple-550: #7153dc;
+    --purple-600: #5f3cc5;
+    --purple-650: #522ab4;
+    --purple-700: #4615a3;
+    --purple-750: #370386;
+    --purple-800: #2c0070;
+    --purple-850: #200154;
+    --purple-900: #13013a;
+    --purple-950: #0d002c;
+    --purple-1000: #070020;
+
+    /* violet */
+    --violet-0: #f1f3fe;
+    --violet-50: #eceefc;
+    --violet-100: #e3e6fd;
+    --violet-150: #d8dcfc;
+    --violet-200: #c3c9fe;
+    --violet-250: #b1b7fe;
+    --violet-300: #a3a9fc;
+    --violet-350: #9398fd;
+    --violet-400: #8688fd;
+    --violet-450: #7977fe;
+    --violet-500: #6e69f3;
+    --violet-550: #6159e1;
+    --violet-600: #4f42c9;
+    --violet-650: #4331b8;
+    --violet-700: #381da7;
+    --violet-750: #2b0e8a;
+    --violet-800: #230773;
+    --violet-850: #180557;
+    --violet-900: #0e033c;
+    --violet-950: #08012e;
+    --violet-1000: #050121;
+
+    /* blue */
+    --blue-0: #eff3fe;
+    --blue-50: #e5edfe;
+    --blue-100: #dae5fd;
+    --blue-150: #cbdbfd;
+    --blue-200: #b4cafd;
+    --blue-250: #97b6fe;
+    --blue-300: #84a8fd;
+    --blue-350: #7199fe;
+    --blue-400: #5f8bfc;
+    --blue-450: #4d7bfd;
+    --blue-500: #406ef6;
+    --blue-550: #325ce3;
+    --blue-600: #2145cb;
+    --blue-650: #1633b9;
+    --blue-700: #0f23ac;
+    --blue-750: #0a089b;
+    --blue-800: #06037c;
+    --blue-850: #03025c;
+    --blue-900: #020145;
+    --blue-950: #010034;
+    --blue-1000: #010024;
+
+    /* green */
+    --green-0: #ebffee;
+    --green-50: #d0fed8;
+    --green-100: #b4ffc3;
+    --green-150: #a3f9b5;
+    --green-200: #82e89a;
+    --green-250: #6bd586;
+    --green-300: #57c273;
+    --green-350: #41ae61;
+    --green-400: #2f9f52;
+    --green-450: #158f44;
+    --green-500: #07833c;
+    --green-550: #087736;
+    --green-600: #09672e;
+    --green-650: #035926;
+    --green-700: #054f22;
+    --green-750: #05401b;
+    --green-800: #013112;
+    --green-850: #03260e;
+    --green-900: #001d07;
+    --green-950: #011505;
+    --green-1000: #010d03;
+
+    /* orange */
+    --orange-0: #fef4e3;
+    --orange-50: #ffeccd;
+    --orange-100: #ffda9b;
+    --orange-150: #fecb6f;
+    --orange-200: #febe3d;
+    --orange-250: #f8b325;
+    --orange-300: #eba002;
+    --orange-350: #db920d;
+    --orange-400: #c8850d;
+    --orange-450: #ba7401;
+    --orange-500: #a96a05;
+    --orange-550: #9c5c00;
+    --orange-600: #88520c;
+    --orange-650: #764607;
+    --orange-700: #623b0c;
+    --orange-750: #4f2e06;
+    --orange-800: #3f2404;
+    --orange-850: #321c04;
+    --orange-900: #291602;
+    --orange-950: #200f01;
+    --orange-1000: #180c03;
+
+    /* red */
+    --red-0: #fcf3f2;
+    --red-50: #ffe4e0;
+    --red-100: #ffd4cd;
+    --red-150: #ffbfb5;
+    --red-200: #fea497;
+    --red-250: #ff8b7c;
+    --red-300: #fd7465;
+    --red-350: #fd5f50;
+    --red-400: #f34c3e;
+    --red-450: #e1392e;
+    --red-500: #d22720;
+    --red-550: #c0070a;
+    --red-600: #ac0508;
+    --red-650: #960708;
+    --red-700: #7c0203;
+    --red-750: #650102;
+    --red-800: #4f0001;
+    --red-850: #400101;
+    --red-900: #330201;
+    --red-950: #280100;
+    --red-1000: #1a0200;
+
     color-scheme: light;
 
     /*
@@ -21,10 +184,6 @@
     */
     --search-box-height: 28px;
     --search-box-width: 150px;
-
-    @media (height < $short_navbar_cutoff_height) {
-        --search-box-height: var(--header-height);
-    }
 
     @media (width < $md_min) {
         --search-box-width: 40px;
@@ -60,13 +219,21 @@
     /* This represents the space in the sidebar reserved for symbols like
        the #; labels like the stream name go to the right of this. */
     --left-sidebar-privacy-icon-column-size: 19px;
-    /* The full topic indentation includes 4px of indent in addition to
-       the above (and another 5px of padding not measured here) */
+    /* 13px at 14px/1em */
+    --left-sidebar-topic-resolve-width: 0.9286em;
+    /* At legacy sizes, the full indentation to the
+       left of the topic name was 25px of gutter,
+       plus 13px for the topic-resolution checkmark.
+       That works out to 38px (25px + 13px), which
+       we here express as pixels, as that is always
+       the amount of space to the left of the topic
+       name. However, CSS subtracts the em-unit width
+       of the topic-resolution checkmark to prevent
+       the the topic name from being shifted to the
+       right. */
     --left-sidebar-topic-indent: calc(
-        var(--left-sidebar-far-left-gutter-size) +
-            var(--left-sidebar-privacy-icon-column-size) + 4px
+        38px - var(--left-sidebar-topic-resolve-width)
     );
-    --left-sidebar-topic-resolve-width: 13px;
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
@@ -77,7 +244,11 @@
     --left-sidebar-header-icon-width: 15px;
     /* Space between section in the left sidebar. */
     --left-sidebar-sections-vertical-gutter: 8px;
-    --left-sidebar-bottom-scrolling-buffer: 25px;
+    /* The legacy value here is 25px; that's the unitless legacy line-height
+       of 20px, plus 5px at 14px/1em */
+    --left-sidebar-bottom-scrolling-buffer: calc(
+        (var(--legacy-body-line-height-unitless) * 1em) + 0.3571em
+    );
 
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
@@ -89,7 +260,9 @@
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
     --message-actions-popover-min-width: 230px;
+    --user-group-info-popover-min-width: 16.4285em; /* 230px / 14px em */
     --topic-actions-popover-min-width: 200px;
+    --user-card-popover-min-width: 200px;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
@@ -139,21 +312,36 @@
     /*
     Message box elements and values.
     */
-    --message-box-avatar-width: 35px;
+    /* 35px at 14px/1em */
+    --message-box-avatar-width: 2.5em;
     --message-box-avatar-height: var(--message-box-avatar-width);
-    --message-box-avatar-column-width: 46px;
-    /* 6px appears to provide 5px of space between the avatar
-       and the selected-message outline, which is offset by -1px. */
-    --message-box-vertical-margin: 6px;
+    /* 46px at 14px/1em */
+    --message-box-avatar-column-width: 3.2857em;
+    /* Increase the margin here to account for the
+       focus ring, which is is offset by -1px, as well
+       as the vertical height between the hover icons
+       and focus ring. */
+    --message-box-vertical-margin: calc(
+        var(--markdown-interelement-space-px) * 1.4
+    );
     --message-box-markdown-aligned-vertical-space: var(
         --markdown-interelement-space-px
     );
-    --message-box-icon-width: 26px;
+    /* 22px matches to the width of the padded icon. */
+    --message-box-icon-width: 22px;
     --message-box-icon-height: 25px;
+    --message-box-height-senderless-single-line-message: calc(
+        var(--base-line-height-unitless) * var(--base-font-size-px) +
+            calc(var(--markdown-interelement-space-px) * 2)
+    );
     /* The line-height on the sender line should coordinate with the
-       height of the hover icons. The sender line never wraps, so this
-       just keeps the two in line with the grid definition. */
-    --message-box-sender-line-height: var(--message-box-icon-height);
+       height of a single-line, senderless message, but never be smaller
+       than the height of the hover icons. The sender line never wraps,
+       so this just keeps everything in line with the grid definition. */
+    --message-box-sender-line-height: max(
+        var(--message-box-icon-height),
+        var(--message-box-height-senderless-single-line-message)
+    );
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
@@ -175,7 +363,14 @@
     flex item. 2.1786em is 30.5px at 14px/1em.
     */
     --compose-recipient-box-min-height: 2.1786em;
-    --compose-formatting-buttons-row-height: 28px;
+    /* 28px at 14px/1em */
+    /* Note that this variable can only be used in contexts where
+       the font-size doesn't deviate from the base font-size;
+       that excludes contexts like .compose_control_button, which
+       uses font-sizing to adjust the size of the icon. Related
+       values have been noted in comments with this variable name,
+       to make their coordination a little less painful. */
+    --compose-formatting-buttons-row-height: 2em;
 
     /*
     Width of the area where the compose box buttons are placed, "inside"
@@ -221,9 +416,13 @@
     --recent-topics-filters-height: 50px;
 
     /* Pill dimensions. */
-    /* 1.4286em is 20px at 14px/1em */
-    --height-input-pill: 1.4286em;
-    --length-input-pill-image: var(--height-input-pill);
+    /* 1.5714em is 22px (border-inclusive) at 14px/1em */
+    --height-input-pill: 1.5714em;
+    /* Reduce user pill image lengths by 2px to
+       preserve an apparent border around
+       them, and a square aspect-ratio, even under
+       `box-sizing: border-box` in the area. */
+    --length-input-pill-image: calc(var(--height-input-pill) - 2px);
     --vertical-spacing-input-pill: 2px;
     --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
     --horizontal-spacing-input-pill: 6px;
@@ -245,9 +444,7 @@
     /* .settings-sticky-footer */
     --subscriptions-overlay-sticky-footer-height: 60px;
     /* Informational overlay */
-    /* Because zoom breaks at 525px perhaps due to rounding errors, we add a
-       trivial amount of width so the overlay doesn't break. */
-    --informational-overlay-max-width: 550px;
+    --informational-overlay-max-width: 43.75em;
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
@@ -392,6 +589,9 @@
     --color-compose-embedded-button-background-hover: hsl(
         231deg 100% 90% / 50%
     );
+    --color-compose-embedded-button-background-interactive: hsl(
+        231deg 100% 90% / 90%
+    );
     --color-compose-chevron-arrow: hsl(0deg 0% 58%);
     --color-limit-indicator: hsl(38deg 100% 36%);
     --color-limit-indicator-over-limit: hsl(3deg 80% 40%);
@@ -409,6 +609,7 @@
     --color-message-content-container-border: hsl(0deg 0% 0% / 10%);
     --color-message-content-container-border-focus: hsl(0deg 0% 57%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
+    --color-compose-focus-ring: var(--color-outline-focus);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -443,6 +644,7 @@
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 87%);
     --color-border-table-bordered: hsl(0deg 0% 87%);
+    --color-border-table-subscriber-list: hsl(0deg 0% 87%);
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
@@ -463,6 +665,7 @@
     --color-message-action-visible: hsl(216deg 43% 20% / 50%);
     --color-message-action-interactive: hsl(216deg 43% 20% / 100%);
     --color-message-star-action: hsl(41deg 100% 47% / 100%);
+    --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 0%);
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
     --color-left-sidebar-navigation-icon: hsl(0deg 0% 20% / 70%);
@@ -475,6 +678,19 @@
     --color-tab-picker-icon: hsl(200deg 100% 40%);
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
+    --color-copy-btn: color-mix(in srgb, var(--grey-600) 70%, transparent);
+    --color-copy-btn-hover: var(--green-600);
+    --color-copy-btn-bg-hover: color-mix(
+        in srgb,
+        var(--green-600) 8%,
+        transparent
+    );
+    --color-copy-btn-active: var(--green-500);
+    --color-copy-btn-bg-active: color-mix(
+        in srgb,
+        var(--green-500) 12%,
+        transparent
+    );
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 0% / 10%);
@@ -529,6 +745,7 @@
     --color-background-exit-hover-deactivated-user-pill: hsl(
         4deg 75% 53% / 15%
     );
+    --color-background-user-pill: hsla(0deg 0% 100% / 85%);
 
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
@@ -684,7 +901,6 @@
     --color-background-modal: hsl(212deg 28% 18%);
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 0% / 20%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
-    --color-outline-focus: hsl(0deg 0% 67%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
     --color-background-search: hsl(0deg 0% 20%);
     --color-background-search-option-hover: hsl(0deg 0% 30%);
@@ -766,6 +982,9 @@
     --color-compose-embedded-button-background-hover: hsl(
         235deg 100% 70% / 11%
     );
+    --color-compose-embedded-button-background-interactive: hsl(
+        235deg 100% 70% / 20%
+    );
     --color-background-popover: hsl(212deg 32% 14%);
     --color-limit-indicator: hsl(38deg 100% 70%);
     --color-limit-indicator-over-limit: hsl(3deg 80% 60%);
@@ -782,6 +1001,7 @@
     --color-message-content-container-border: hsl(0deg 0% 0% / 80%);
     --color-message-content-container-border-focus: hsl(0deg 0% 100% / 27%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 100% / 5%);
+    --color-compose-focus-ring: hsl(0deg 0% 67%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -826,6 +1046,7 @@
     --color-border-table-striped: hsl(0deg 0% 0% / 20%);
     --color-border-table-bordered: hsl(0deg 0% 0% / 20%);
     --color-background-notification-table-thead: hsl(0deg 0% 0% / 20%);
+    --color-border-table-subscriber-list: hsl(0deg 0% 0% / 20%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
@@ -845,6 +1066,7 @@
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
     --color-message-action-visible: hsl(217deg 41% 90% / 50%);
     --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
+    --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 100%);
     --color-left-sidebar-navigation-icon: hsl(0deg 0% 100% / 56%);
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
@@ -853,6 +1075,19 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
+    --color-copy-btn: color-mix(in srgb, var(--grey-300) 70%, transparent);
+    --color-copy-btn-hover: var(--green-300);
+    --color-copy-btn-bg-hover: color-mix(
+        in srgb,
+        var(--green-600) 8%,
+        transparent
+    );
+    --color-copy-btn-active: var(--green-300);
+    --color-copy-btn-bg-active: color-mix(
+        in srgb,
+        var(--green-400) 17%,
+        transparent
+    );
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 100% / 15%);
@@ -906,6 +1141,7 @@
     --color-focus-outline-deactivated-user-pill: hsl(0deg 0% 100% / 70%);
     --color-close-deactivated-user-pill: hsl(7deg 100% 74%);
     --color-background-exit-hover-deactivated-user-pill: hsl(0deg 0% 100% / 7%);
+    --color-background-user-pill: hsl(0deg 0% 0% / 40%);
 
     /* Inbox view */
     --color-background-inbox: var(--color-background);

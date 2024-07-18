@@ -1,6 +1,6 @@
 import string
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 TOPIC_WITH_BRANCH_TEMPLATE = "{repo} / {branch}"
 TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = "{repo} / {type} #{id} {title}"
@@ -77,7 +77,7 @@ TAG_WITHOUT_URL_TEMPLATE = "{tag_name}"
 RELEASE_MESSAGE_TEMPLATE = "{user_name} {action} release [{release_name}]({url}) for tag {tagname}."
 
 
-def get_assignee_string(assignees: List[Dict[str, Any]]) -> str:
+def get_assignee_string(assignees: list[dict[str, Any]]) -> str:
     assignees_string = ""
     if len(assignees) == 1:
         assignees_string = "{username}".format(**assignees[0])
@@ -90,12 +90,12 @@ def get_assignee_string(assignees: List[Dict[str, Any]]) -> str:
 
 def get_push_commits_event_message(
     user_name: str,
-    compare_url: Optional[str],
+    compare_url: str | None,
     branch_name: str,
-    commits_data: List[Dict[str, Any]],
+    commits_data: list[dict[str, Any]],
     is_truncated: bool = False,
     deleted: bool = False,
-    force_push: Optional[bool] = False,
+    force_push: bool | None = False,
 ) -> str:
     if not commits_data and deleted:
         return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(
@@ -130,7 +130,7 @@ def get_push_commits_event_message(
         commit_or_commits=COMMIT_OR_COMMITS.format("s" if len(commits_data) > 1 else ""),
     )
 
-    committers_items: List[Tuple[str, int]] = get_all_committers(commits_data)
+    committers_items: list[tuple[str, int]] = get_all_committers(commits_data)
     if len(committers_items) == 1 and user_name == committers_items[0][0]:
         return PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS.format(
             user_name=user_name,
@@ -167,7 +167,7 @@ def get_force_push_commits_event_message(
     )
 
 
-def get_create_branch_event_message(user_name: str, url: Optional[str], branch_name: str) -> str:
+def get_create_branch_event_message(user_name: str, url: str | None, branch_name: str) -> str:
     if url is None:
         return CREATE_BRANCH_WITHOUT_URL_MESSAGE_TEMPLATE.format(
             user_name=user_name,
@@ -192,15 +192,15 @@ def get_pull_request_event_message(
     user_name: str,
     action: str,
     url: str,
-    number: Optional[int] = None,
-    target_branch: Optional[str] = None,
-    base_branch: Optional[str] = None,
-    message: Optional[str] = None,
-    assignee: Optional[str] = None,
-    assignees: Optional[List[Dict[str, Any]]] = None,
-    reviewer: Optional[str] = None,
+    number: int | None = None,
+    target_branch: str | None = None,
+    base_branch: str | None = None,
+    message: str | None = None,
+    assignee: str | None = None,
+    assignees: list[dict[str, Any]] | None = None,
+    reviewer: str | None = None,
     type: str = "PR",
-    title: Optional[str] = None,
+    title: str | None = None,
 ) -> str:
     kwargs = {
         "user_name": user_name,
@@ -260,11 +260,11 @@ def get_issue_event_message(
     user_name: str,
     action: str,
     url: str,
-    number: Optional[int] = None,
-    message: Optional[str] = None,
-    assignee: Optional[str] = None,
-    assignees: Optional[List[Dict[str, Any]]] = None,
-    title: Optional[str] = None,
+    number: int | None = None,
+    message: str | None = None,
+    assignee: str | None = None,
+    assignees: list[dict[str, Any]] | None = None,
+    title: str | None = None,
 ) -> str:
     return get_pull_request_event_message(
         user_name=user_name,
@@ -286,7 +286,7 @@ def get_issue_labeled_or_unlabeled_event_message(
     number: int,
     label_name: str,
     user_url: str,
-    title: Optional[str] = None,
+    title: str | None = None,
 ) -> str:
     args = {
         "user_name": user_name,
@@ -311,7 +311,7 @@ def get_issue_milestoned_or_demilestoned_event_message(
     milestone_name: str,
     milestone_url: str,
     user_url: str,
-    title: Optional[str] = None,
+    title: str | None = None,
 ) -> str:
     args = {
         "user_name": user_name,
@@ -330,7 +330,7 @@ def get_issue_milestoned_or_demilestoned_event_message(
 
 
 def get_push_tag_event_message(
-    user_name: str, tag_name: str, tag_url: Optional[str] = None, action: str = "pushed"
+    user_name: str, tag_name: str, tag_url: str | None = None, action: str = "pushed"
 ) -> str:
     if tag_url:
         tag_part = TAG_WITH_URL_TEMPLATE.format(tag_name=tag_name, tag_url=tag_url)
@@ -350,7 +350,7 @@ def get_push_tag_event_message(
 
 
 def get_commits_comment_action_message(
-    user_name: str, action: str, commit_url: str, sha: str, message: Optional[str] = None
+    user_name: str, action: str, commit_url: str, sha: str, message: str | None = None
 ) -> str:
     content = COMMITS_COMMENT_MESSAGE_TEMPLATE.format(
         user_name=user_name,
@@ -368,7 +368,7 @@ def get_commits_comment_action_message(
     return content
 
 
-def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: bool = False) -> str:
+def get_commits_content(commits_data: list[dict[str, Any]], is_truncated: bool = False) -> str:
     commits_content = ""
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(
@@ -406,18 +406,18 @@ def get_short_sha(sha: str) -> str:
     return sha[:11]
 
 
-def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, int]]:
-    committers: Dict[str, int] = defaultdict(int)
+def get_all_committers(commits_data: list[dict[str, Any]]) -> list[tuple[str, int]]:
+    committers: dict[str, int] = defaultdict(int)
 
     for commit in commits_data:
         committers[commit["name"]] += 1
 
     # Sort by commit count, breaking ties alphabetically.
-    committers_items: List[Tuple[str, int]] = sorted(
+    committers_items: list[tuple[str, int]] = sorted(
         committers.items(),
         key=lambda item: (-item[1], item[0]),
     )
-    committers_values: List[int] = [c_i[1] for c_i in committers_items]
+    committers_values: list[int] = [c_i[1] for c_i in committers_items]
 
     if len(committers) > PUSH_COMMITTERS_LIMIT_INFO:
         others_number_of_commits = sum(committers_values[PUSH_COMMITTERS_LIMIT_INFO:])

@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 from typing_extensions import override
 
@@ -17,7 +17,7 @@ class TemplateParserError(Exception):
 
 
 class TokenizationError(Exception):
-    def __init__(self, message: str, line_content: Optional[str] = None) -> None:
+    def __init__(self, message: str, line_content: str | None = None) -> None:
         self.message = message
         self.line_content = line_content
 
@@ -39,19 +39,19 @@ class Token:
         self.line_span = line_span
 
         # These get set during the validation pass.
-        self.start_token: Optional[Token] = None
-        self.end_token: Optional[Token] = None
+        self.start_token: Token | None = None
+        self.end_token: Token | None = None
 
         # These get set during the pretty-print phase.
         self.new_s = ""
-        self.indent: Optional[str] = None
-        self.orig_indent: Optional[str] = None
-        self.child_indent: Optional[str] = None
+        self.indent: str | None = None
+        self.orig_indent: str | None = None
+        self.child_indent: str | None = None
         self.indent_is_final = False
-        self.parent_token: Optional[Token] = None
+        self.parent_token: Token | None = None
 
 
-def tokenize(text: str, template_format: Optional[str] = None) -> List[Token]:
+def tokenize(text: str, template_format: str | None = None) -> list[Token]:
     in_code_block = False
 
     def advance(n: int) -> None:
@@ -124,7 +124,7 @@ def tokenize(text: str, template_format: Optional[str] = None) -> List[Token]:
         return looking_at("\n") or looking_at(" ")
 
     state = TokenizerState()
-    tokens: List[Token] = []
+    tokens: list[Token] = []
 
     while state.i < len(text):
         try:
@@ -307,7 +307,7 @@ HTML_INLINE_TAGS = {
 }
 
 
-def tag_flavor(token: Token) -> Optional[str]:
+def tag_flavor(token: Token) -> str | None:
     kind = token.kind
     tag = token.tag
     if kind in (
@@ -352,10 +352,10 @@ def tag_flavor(token: Token) -> Optional[str]:
 
 
 def validate(
-    fn: Optional[str] = None,
-    text: Optional[str] = None,
-    template_format: Optional[str] = None,
-) -> List[Token]:
+    fn: str | None = None,
+    text: str | None = None,
+    template_format: str | None = None,
+) -> list[Token]:
     assert fn or text
 
     if fn is None:
@@ -379,12 +379,12 @@ def validate(
     prevent_whitespace_violations(fn, tokens)
 
     class State:
-        def __init__(self, func: Callable[[Optional[Token]], None]) -> None:
+        def __init__(self, func: Callable[[Token | None], None]) -> None:
             self.depth = 0
             self.foreign = False
             self.matcher = func
 
-    def no_start_tag(token: Optional[Token]) -> None:
+    def no_start_tag(token: Token | None) -> None:
         assert token
         raise TemplateParserError(
             f"""
@@ -410,7 +410,7 @@ def validate(
         if start_tag in ["math", "svg"]:
             state.foreign = True
 
-        def f(end_token: Optional[Token]) -> None:
+        def f(end_token: Token | None) -> None:
             if end_token is None:
                 raise TemplateParserError(
                     f"""
@@ -431,7 +431,7 @@ def validate(
             end_line = end_token.line
             end_col = end_token.col
 
-            def report_problem() -> Optional[str]:
+            def report_problem() -> str | None:
                 if (start_tag == "code") and (end_line == start_line + 1):
                     return "Code tag is split across two lines."
 
@@ -500,7 +500,7 @@ def validate(
     return tokens
 
 
-def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) -> None:
+def ensure_matching_indentation(fn: str, tokens: list[Token], lines: list[str]) -> None:
     def has_bad_indentation() -> bool:
         is_inline_tag = start_tag in HTML_INLINE_TAGS and start_token.kind == "html_start"
 
@@ -545,7 +545,7 @@ def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) 
             )
 
 
-def prevent_extra_newlines(fn: str, tokens: List[Token]) -> None:
+def prevent_extra_newlines(fn: str, tokens: list[Token]) -> None:
     count = 0
 
     for token in tokens:
@@ -560,7 +560,7 @@ def prevent_extra_newlines(fn: str, tokens: List[Token]) -> None:
             )
 
 
-def prevent_whitespace_violations(fn: str, tokens: List[Token]) -> None:
+def prevent_whitespace_violations(fn: str, tokens: list[Token]) -> None:
     if tokens[0].kind in ("indent", "whitespace"):
         raise TemplateParserError(f" Please remove the whitespace at the beginning of {fn}.")
 

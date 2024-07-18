@@ -1,6 +1,7 @@
 import logging
 import time
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
@@ -26,7 +27,7 @@ class Command(ZulipBaseCommand):
         self,
         key: bytes,
         count_func: Callable[[], int],
-        trim_func: Optional[Callable[[bytes, int], object]] = None,
+        trim_func: Callable[[bytes, int], object] | None = None,
     ) -> None:
         user_id = int(key.split(b":")[2])
         user = get_user_profile_by_id(user_id)
@@ -58,7 +59,7 @@ than max_api_calls! (trying to trim) %s %s",
         wildcard_list = "ratelimit:*:*:*:list"
         wildcard_zset = "ratelimit:*:*:*:zset"
 
-        trim_func: Optional[Callable[[bytes, int], object]] = lambda key, max_calls: client.ltrim(
+        trim_func: Callable[[bytes, int], object] | None = lambda key, max_calls: client.ltrim(
             key, 0, max_calls - 1
         )
         if not options["trim"]:

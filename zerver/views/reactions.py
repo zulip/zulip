@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -22,8 +20,8 @@ def add_reaction(
     message_id: int,
     *,
     emoji_name: str,
-    emoji_code: Optional[str] = None,
-    reaction_type: Optional[str] = None,
+    emoji_code: str | None = None,
+    reaction_type: str | None = None,
 ) -> HttpResponse:
     check_add_reaction(user_profile, message_id, emoji_name, emoji_code, reaction_type)
 
@@ -38,8 +36,8 @@ def remove_reaction(
     user_profile: UserProfile,
     message_id: int,
     *,
-    emoji_name: Optional[str] = None,
-    emoji_code: Optional[str] = None,
+    emoji_name: str | None = None,
+    emoji_code: str | None = None,
     reaction_type: str = "unicode_emoji",
 ) -> HttpResponse:
     message = access_message(user_profile, message_id, lock_message=True)

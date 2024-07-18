@@ -205,16 +205,16 @@ def main() -> None:
     # STEP 5: Write final dictionary to `emoji_names.py`.
     with open(OUT_EMOJI_FILE, "w") as f:
         f.write(
-            "from typing import Any, Dict\n\n"
+            "from typing import Any\n\n"
             "# Generated with `generate_emoji_names`.\n\n"
-            "EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {\n"
+            "EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {\n"
         )
         for key, emoji_names in all_emojis.items():
             f.write(f"    {key!r}: {emoji_names!r},\n")
         f.write("}\n")
 
     print(
-        "\n\nDone! You should run the linter to format emoji_names.py with `./tools/lint --fix -m --only black`"
+        "\n\nDone! You should run the linter to format emoji_names.py with `./tools/lint --fix -m --only ruff-format`"
     )
 
 

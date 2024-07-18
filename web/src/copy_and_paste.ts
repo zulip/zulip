@@ -2,11 +2,14 @@ import isUrl from "is-url";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import {insertTextIntoField} from "text-field-edit";
 import TurndownService from "turndown";
 
 import * as compose_ui from "./compose_ui";
+import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import * as rows from "./rows";
+import * as topic_link_util from "./topic_link_util";
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -354,7 +357,7 @@ function image_to_zulip_markdown(
     const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
     const title = deduplicate_newlines(node.getAttribute("title") ?? "");
     // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") ?? "";
+    return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
 function within_single_element(html_fragment: HTMLElement): boolean {
@@ -562,7 +565,7 @@ export function paste_handler_converter(paste_html: string): string {
 
             const className = codeElement.getAttribute("class") ?? "";
             const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? ""
+                ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
                 : (className.match(/language-(\S+)/) ?? [null, ""])[1];
 
             assert(options.fence !== undefined);
@@ -617,13 +620,17 @@ function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boole
     // Look at the two characters before the start of the original
     // range in search of the tell-tale `](` from existing Markdown
     // link syntax
-    const possible_markdown_link_markers = $textarea[0]!.value.slice(range.start - 2, range.start);
-
-    if (possible_markdown_link_markers === "](") {
+    if (cursor_at_markdown_link_marker($textarea)) {
         return false;
     }
 
     return true;
+}
+
+export function cursor_at_markdown_link_marker($textarea: JQuery<HTMLTextAreaElement>): boolean {
+    const range = $textarea.range();
+    const possible_markdown_link_markers = $textarea[0]!.value.slice(range.start - 2, range.start);
+    return possible_markdown_link_markers === "](";
 }
 
 export function maybe_transform_html(html: string, text: string): string {
@@ -634,6 +641,41 @@ export function maybe_transform_html(html: string, text: string): string {
         return "<pre><code>" + _.escape(text) + "</code></pre>";
     }
     return html;
+}
+
+function add_text_and_select(text: string, $textarea: JQuery<HTMLTextAreaElement>): void {
+    const textarea = $textarea.get(0);
+    assert(textarea instanceof HTMLTextAreaElement);
+    const init_cursor_pos = textarea.selectionStart;
+    insertTextIntoField(textarea, text);
+    const new_cursor_pos = textarea.selectionStart;
+    textarea.setSelectionRange(init_cursor_pos, new_cursor_pos);
+}
+
+export function try_stream_topic_syntax_text(text: string): string | null {
+    const stream_topic = hash_util.decode_stream_topic_from_url(text);
+
+    if (!stream_topic) {
+        return null;
+    }
+
+    if (topic_link_util.will_produce_broken_stream_topic_link(stream_topic.stream_name)) {
+        return null;
+    }
+
+    if (
+        stream_topic.topic_name !== undefined &&
+        topic_link_util.will_produce_broken_stream_topic_link(stream_topic.topic_name)
+    ) {
+        return null;
+    }
+
+    let syntax_text = "#**" + stream_topic.stream_name;
+    if (stream_topic.topic_name) {
+        syntax_text += ">" + stream_topic.topic_name;
+    }
+    syntax_text += "**";
+    return syntax_text;
 }
 
 export function paste_handler(this: HTMLTextAreaElement, event: JQuery.TriggeredEvent): void {
@@ -657,15 +699,36 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
 
         // Only intervene to generate formatted links when dealing
         // with a URL and a URL-safe range selection.
-        if (isUrl(trimmed_paste_text) && is_safe_url_paste_target($textarea)) {
-            event.preventDefault();
-            event.stopPropagation();
-            const url = trimmed_paste_text;
-            compose_ui.format_text($textarea, "linked", url);
-            return;
-        }
+        if (isUrl(trimmed_paste_text)) {
+            if (is_safe_url_paste_target($textarea)) {
+                event.preventDefault();
+                event.stopPropagation();
+                const url = trimmed_paste_text;
+                compose_ui.format_text($textarea, "linked", url);
+                return;
+            }
 
-        // We do not paste formatted markdoown when inside a code block.
+            if (
+                !compose_ui.cursor_inside_code_block($textarea) &&
+                !cursor_at_markdown_link_marker($textarea) &&
+                !compose_ui.shift_pressed
+            ) {
+                // Try to transform the url to #**stream>topic** syntax
+                // if it is a valid url.
+                const syntax_text = try_stream_topic_syntax_text(trimmed_paste_text);
+                if (syntax_text) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    // To ensure you can get the actual pasted URL back via the browser
+                    // undo feature, we first paste the URL in, then select it, and then
+                    // replace it with the nicer markdown syntax.
+                    add_text_and_select(trimmed_paste_text, $textarea);
+                    compose_ui.insert_and_scroll_into_view(syntax_text + " ", $textarea);
+                }
+                return;
+            }
+        }
+        // We do not paste formatted markdown when inside a code block.
         // Unlike Chrome, Firefox doesn't automatically paste plainly on using Ctrl+Shift+V,
         // hence we need to handle it ourselves, by checking if shift key is pressed, and only
         // if not, we proceed with the default formatted paste.

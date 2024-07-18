@@ -1,6 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.conf import settings
 from typing_extensions import override
@@ -29,10 +29,10 @@ class PushNotificationsWorker(QueueProcessingWorker):
         self,
         threaded: bool = False,
         disable_timeout: bool = False,
-        worker_num: Optional[int] = None,
+        worker_num: int | None = None,
     ) -> None:
         if settings.MOBILE_NOTIFICATIONS_SHARDS > 1 and worker_num is not None:  # nocoverage
-            self.queue_name = self.queue_name + f"_shard{worker_num}"
+            self.queue_name += f"_shard{worker_num}"
         super().__init__(threaded, disable_timeout, worker_num)
 
     @override
@@ -44,7 +44,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
         super().start()
 
     @override
-    def consume(self, event: Dict[str, Any]) -> None:
+    def consume(self, event: dict[str, Any]) -> None:
         try:
             if event.get("type", "add") == "remove":
                 message_ids = event["message_ids"]
@@ -53,7 +53,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
                 handle_push_notification(event["user_profile_id"], event)
         except PushNotificationBouncerRetryLaterError:
 
-            def failure_processor(event: Dict[str, Any]) -> None:
+            def failure_processor(event: dict[str, Any]) -> None:
                 logger.warning(
                     "Maximum retries exceeded for trigger:%s event:push_notification",
                     event["user_profile_id"],

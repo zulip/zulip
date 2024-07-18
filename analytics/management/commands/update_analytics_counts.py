@@ -2,7 +2,7 @@ import hashlib
 import time
 from argparse import ArgumentParser
 from datetime import timezone
-from typing import Any, Dict
+from typing import Any
 
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
@@ -11,7 +11,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import ALL_COUNT_STATS, logger, process_count_stat
 from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
-from zerver.lib.remote_server import send_server_data_to_push_bouncer
+from zerver.lib.remote_server import send_server_data_to_push_bouncer, should_send_analytics_data
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
 
@@ -43,7 +43,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         self.run_update_analytics_counts(options)
 
-    def run_update_analytics_counts(self, options: Dict[str, Any]) -> None:
+    def run_update_analytics_counts(self, options: dict[str, Any]) -> None:
         # installation_epoch relies on there being at least one realm; we
         # shouldn't run the analytics code if that condition isn't satisfied
         if not Realm.objects.exists():
@@ -83,7 +83,10 @@ class Command(ZulipBaseCommand):
             )
         logger.info("Finished updating analytics counts through %s", fill_to_time)
 
-        if settings.PUSH_NOTIFICATION_BOUNCER_URL:
+        if should_send_analytics_data():
+            # Based on the specific value of the setting, the exact details to send
+            # will be decided. However, we proceed just based on this not being falsey.
+
             # Skew 0-10 minutes based on a hash of settings.ZULIP_ORG_ID, so
             # that each server will report in at a somewhat consistent time.
             assert settings.ZULIP_ORG_ID

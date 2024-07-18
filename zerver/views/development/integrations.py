@@ -1,18 +1,18 @@
 import os
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 import orjson
 from django.http import HttpRequest, HttpResponse
 from django.http.response import HttpResponseBase
 from django.shortcuts import render
 from django.test import Client
+from pydantic import Json
 
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_bool
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
@@ -23,11 +23,11 @@ if TYPE_CHECKING:
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 
 
-def get_webhook_integrations() -> List[str]:
+def get_webhook_integrations() -> list[str]:
     return [integration.name for integration in WEBHOOK_INTEGRATIONS]
 
 
-def get_valid_integration_name(name: str) -> Optional[str]:
+def get_valid_integration_name(name: str) -> str | None:
     for integration_name in get_webhook_integrations():
         if name == integration_name:
             return integration_name
@@ -47,7 +47,7 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
 
 
 def send_webhook_fixture_message(
-    url: str, body: str, is_json: bool, custom_headers: Dict[str, Any]
+    url: str, body: str, is_json: bool, custom_headers: dict[str, Any]
 ) -> "TestHttpResponse":
     client = Client()
     realm = get_realm("zulip")
@@ -69,8 +69,8 @@ def send_webhook_fixture_message(
     )
 
 
-@has_request_variables
-def get_fixtures(request: HttpRequest, integration_name: str = REQ()) -> HttpResponse:
+@typed_endpoint
+def get_fixtures(request: HttpRequest, *, integration_name: PathOnly[str]) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
         raise ResourceNotFoundError(f'"{integration_name}" is not a valid webhook integration.')
@@ -104,13 +104,14 @@ def get_fixtures(request: HttpRequest, integration_name: str = REQ()) -> HttpRes
     return json_success(request, data={"fixtures": fixtures})
 
 
-@has_request_variables
+@typed_endpoint
 def check_send_webhook_fixture_message(
     request: HttpRequest,
-    url: str = REQ(),
-    body: str = REQ(),
-    is_json: bool = REQ(json_validator=check_bool),
-    custom_headers: str = REQ(),
+    *,
+    url: str,
+    body: str,
+    is_json: Json[bool],
+    custom_headers: str,
 ) -> HttpResponseBase:
     try:
         custom_headers_dict = orjson.loads(custom_headers)
@@ -125,9 +126,9 @@ def check_send_webhook_fixture_message(
         return response
 
 
-@has_request_variables
+@typed_endpoint
 def send_all_webhook_fixture_messages(
-    request: HttpRequest, url: str = REQ(), integration_name: str = REQ()
+    request: HttpRequest, *, url: str, integration_name: str
 ) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:  # nocoverage

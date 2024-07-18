@@ -1,5 +1,5 @@
 # vim:fenc=utf-8
-from typing import Dict, List, Optional, Protocol
+from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
 
@@ -46,7 +46,7 @@ def format_push_event(payload: WildValue) -> str:
     )
 
 
-def _transform_commits_list_to_common_format(commits: WildValue) -> List[Dict[str, str]]:
+def _transform_commits_list_to_common_format(commits: WildValue) -> list[dict[str, str]]:
     return [
         {
             "name": commit["author"]["username"].tame(check_string)
@@ -157,7 +157,7 @@ def api_gogs_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     return gogs_webhook_main(
@@ -183,8 +183,8 @@ def gogs_webhook_main(
     request: HttpRequest,
     user_profile: UserProfile,
     payload: WildValue,
-    branches: Optional[str],
-    user_specified_topic: Optional[str],
+    branches: str | None,
+    user_specified_topic: str | None,
 ) -> HttpResponse:
     repo = payload["repository"]["name"].tame(check_string)
     event = validate_extract_webhook_http_header(request, http_header_name, integration_name)

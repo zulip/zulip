@@ -19,7 +19,7 @@ Every error response will also contain an additional key:
 
 Clients should always check `code`, rather than `msg`, when looking for
 specific error conditions. The string values for `msg` are
-internationalized (e.g. the server will send the error message
+internationalized (e.g., the server will send the error message
 translated into French if the user has a French locale), so checking
 those strings will result in buggy code.
 
@@ -53,7 +53,7 @@ In JSON success responses, all Zulip REST API endpoints may return
 an array of parameters sent in the request that are not supported
 by that specific endpoint.
 
-While this can be expected, e.g. when sending both current and legacy
+While this can be expected, e.g., when sending both current and legacy
 names for a parameter to a Zulip server of unknown version, this often
 indicates either a bug in the client implementation or an attempt to
 configure a new feature while connected to an older Zulip server that

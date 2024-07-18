@@ -187,7 +187,6 @@ export function get_personal_menu_content_context() {
         show_placeholder_for_status_text: !status_text && status_emoji_info,
         status_text,
         status_emoji_info,
-        user_time: people.get_user_time(my_user_id),
 
         // user color scheme
         user_color_scheme: user_settings.color_scheme,

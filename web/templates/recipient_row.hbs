@@ -87,13 +87,13 @@
           data-tippy-content="{{t 'Go to direct messages with {display_reply_to_for_tooltip}' }}">
         <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
         <span class="private_message_header_name">
-            {{#tr}}You and <z-user-names></z-user-names>
+            {{~#tr}}You and <z-user-names></z-user-names>
             {{#*inline "z-user-names"}}
                 {{#each recipient_users}}
-                    {{full_name}}{{#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{/if}}{{#unless @last}},{{/unless}}
+                    {{~full_name}}{{#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{/if}}{{#unless @last}}, {{/unless~}}
                 {{/each}}
             {{/inline}}
-            {{/tr}}
+            {{/tr~}}
         </span>
         </a>
         <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>

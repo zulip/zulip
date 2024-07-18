@@ -27,7 +27,7 @@
 # See check_delete_message and check_presence for examples of this
 # paradigm.
 
-from typing import Dict, List, Sequence, Set, Tuple, Union
+from collections.abc import Sequence
 
 from zerver.lib.data_types import (
     DictType,
@@ -71,7 +71,7 @@ basic_stream_fields = [
     ("stream_weekly_traffic", OptionalType(int)),
 ]
 
-subscription_fields: Sequence[Tuple[str, object]] = [
+subscription_fields: Sequence[tuple[str, object]] = [
     *basic_stream_fields,
     ("audible_notifications", OptionalType(bool)),
     ("color", str),
@@ -231,7 +231,7 @@ _check_delete_message = make_checker(delete_message_event)
 
 def check_delete_message(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
     message_type: str,
     num_message_ids: int,
     is_legacy: bool,
@@ -312,7 +312,7 @@ _check_has_zoom_token = make_checker(has_zoom_token_event)
 
 def check_has_zoom_token(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
     value: bool,
 ) -> None:
     _check_has_zoom_token(var_name, event)
@@ -329,7 +329,7 @@ _check_heartbeat = make_checker(heartbeat_event)
 
 def check_heartbeat(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
 ) -> None:
     _check_heartbeat(var_name, event)
 
@@ -498,7 +498,7 @@ _check_presence = make_checker(presence_event)
 
 def check_presence(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
     has_email: bool,
     presence_key: str,
     status: str,
@@ -622,7 +622,7 @@ _check_realm_bot_add = make_checker(realm_bot_add_event)
 
 def check_realm_bot_add(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
 ) -> None:
     _check_realm_bot_add(var_name, event)
 
@@ -699,7 +699,7 @@ _check_realm_bot_update = make_checker(realm_bot_update_event)
 def check_realm_bot_update(
     # Check schema plus the field.
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
     field: str,
 ) -> None:
     # Check the overall schema first.
@@ -756,7 +756,7 @@ realm_playgrounds_event = event_dict_type(
 _check_realm_playgrounds = make_checker(realm_playgrounds_event)
 
 
-def check_realm_playgrounds(var_name: str, event: Dict[str, object]) -> None:
+def check_realm_playgrounds(var_name: str, event: dict[str, object]) -> None:
     _check_realm_playgrounds(var_name, event)
     assert isinstance(event["realm_playgrounds"], list)
 
@@ -782,7 +782,7 @@ realm_emoji_update_event = event_dict_type(
 _check_realm_emoji_update = make_checker(realm_emoji_update_event)
 
 
-def check_realm_emoji_update(var_name: str, event: Dict[str, object]) -> None:
+def check_realm_emoji_update(var_name: str, event: dict[str, object]) -> None:
     """
     The way we send realm emojis is kinda clumsy--we
     send a dict mapping the emoji id to a sub_dict with
@@ -823,7 +823,7 @@ _check_realm_export = make_checker(realm_export_event)
 
 def check_realm_export(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
     has_export_url: bool,
     has_deleted_timestamp: bool,
     has_failed_timestamp: bool,
@@ -888,7 +888,7 @@ _check_realm_update = make_checker(realm_update_event)
 
 def check_realm_update(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
     prop: str,
 ) -> None:
     """
@@ -948,7 +948,7 @@ _check_realm_default_update = make_checker(realm_user_settings_defaults_update_e
 
 def check_realm_default_update(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
     prop: str,
 ) -> None:
     _check_realm_default_update(var_name, event)
@@ -1049,6 +1049,8 @@ group_setting_update_data_type = DictType(
         ("can_access_all_users_group", int),
         ("can_create_public_channel_group", group_setting_type),
         ("can_create_private_channel_group", group_setting_type),
+        ("direct_message_initiator_group", group_setting_type),
+        ("direct_message_permission_group", group_setting_type),
     ],
 )
 
@@ -1079,7 +1081,7 @@ _check_realm_update_dict = make_checker(realm_update_dict_event)
 def check_realm_update_dict(
     # handle union types
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
 ) -> None:
     _check_realm_update_dict(var_name, event)
 
@@ -1252,7 +1254,7 @@ _check_realm_user_update = make_checker(realm_user_update_event)
 def check_realm_user_update(
     # person_flavor tells us which extra fields we need
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
     person_flavor: str,
 ) -> None:
     _check_realm_user_update(var_name, event)
@@ -1373,7 +1375,7 @@ _check_stream_update = make_checker(stream_update_event)
 
 def check_stream_update(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
 ) -> None:
     _check_stream_update(var_name, event)
     prop = event["property"]
@@ -1493,7 +1495,7 @@ _check_subscription_update = make_checker(subscription_update_event)
 
 
 def check_subscription_update(
-    var_name: str, event: Dict[str, object], property: str, value: bool
+    var_name: str, event: dict[str, object], property: str, value: bool
 ) -> None:
     _check_subscription_update(var_name, event)
     assert event["property"] == property
@@ -1575,7 +1577,7 @@ _check_user_settings_update = make_checker(user_settings_update_event)
 
 def check_update_display_settings(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
 ) -> None:
     """
     Display setting events have a "setting" field that
@@ -1601,7 +1603,7 @@ def check_update_display_settings(
 
 def check_user_settings_update(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
 ) -> None:
     _check_user_settings_update(var_name, event)
     setting_name = event["property"]
@@ -1633,8 +1635,8 @@ _check_update_global_notifications = make_checker(update_global_notifications_ev
 
 def check_update_global_notifications(
     var_name: str,
-    event: Dict[str, object],
-    desired_val: Union[bool, int, str],
+    event: dict[str, object],
+    desired_val: bool | int | str,
 ) -> None:
     """
     See UserProfile.notification_settings_legacy for
@@ -1661,19 +1663,19 @@ update_message_required_fields = [
     ("rendering_only", bool),
 ]
 
-update_message_stream_fields: List[Tuple[str, object]] = [
+update_message_stream_fields: list[tuple[str, object]] = [
     ("stream_id", int),
     ("stream_name", str),
 ]
 
-update_message_content_fields: List[Tuple[str, object]] = [
+update_message_content_fields: list[tuple[str, object]] = [
     ("is_me_message", bool),
     ("orig_content", str),
     ("orig_rendered_content", str),
     ("prev_rendered_content_version", int),
 ]
 
-update_message_content_or_embedded_data_fields: List[Tuple[str, object]] = [
+update_message_content_or_embedded_data_fields: list[tuple[str, object]] = [
     ("content", str),
     ("rendered_content", str),
 ]
@@ -1683,11 +1685,11 @@ update_message_topic_fields = [
     (TOPIC_NAME, str),
 ]
 
-update_message_change_stream_fields: List[Tuple[str, object]] = [
+update_message_change_stream_fields: list[tuple[str, object]] = [
     ("new_stream_id", int),
 ]
 
-update_message_change_stream_or_topic_fields: List[Tuple[str, object]] = [
+update_message_change_stream_or_topic_fields: list[tuple[str, object]] = [
     (
         "propagate_mode",
         EnumType(
@@ -1721,7 +1723,7 @@ _check_update_message = make_checker(update_message_event)
 
 def check_update_message(
     var_name: str,
-    event: Dict[str, object],
+    event: dict[str, object],
     is_stream_message: bool,
     has_content: bool,
     has_topic: bool,
@@ -1874,7 +1876,7 @@ user_group_update_event = event_dict_type(
 _check_user_group_update = make_checker(user_group_update_event)
 
 
-def check_user_group_update(var_name: str, event: Dict[str, object], field: str) -> None:
+def check_user_group_update(var_name: str, event: dict[str, object], field: str) -> None:
     _check_user_group_update(var_name, event)
 
     assert isinstance(event["data"], dict)
@@ -1920,7 +1922,7 @@ user_status_event = event_dict_type(
 _check_user_status = make_checker(user_status_event)
 
 
-def check_user_status(var_name: str, event: Dict[str, object], fields: Set[str]) -> None:
+def check_user_status(var_name: str, event: dict[str, object], fields: set[str]) -> None:
     _check_user_status(var_name, event)
 
     assert set(event.keys()) == {"id", "type", "user_id"} | fields

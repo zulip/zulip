@@ -3,7 +3,6 @@ import json
 import random
 import secrets
 from base64 import b32encode
-from typing import Dict
 from urllib.parse import quote, urlencode, urljoin
 
 import requests
@@ -104,7 +103,7 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
 @has_request_variables
 def complete_zoom_user(
     request: HttpRequest,
-    state: Dict[str, str] = REQ(
+    state: dict[str, str] = REQ(
         json_validator=check_dict([("realm", check_string)], value_validator=check_string)
     ),
 ) -> HttpResponse:
@@ -118,7 +117,7 @@ def complete_zoom_user(
 def complete_zoom_user_in_realm(
     request: HttpRequest,
     code: str = REQ(),
-    state: Dict[str, str] = REQ(
+    state: dict[str, str] = REQ(
         json_validator=check_dict([("sid", check_string)], value_validator=check_string)
     ),
 ) -> HttpResponse:

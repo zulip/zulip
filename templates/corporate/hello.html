@@ -3,8 +3,8 @@
 
 {% set PAGE_TITLE = "Zulip — organized team chat" %}
 
-{% set PAGE_DESCRIPTION = "Zulip is an organized team chat app, designed
-  for efficient communication." %}
+{% set PAGE_DESCRIPTION = "Zulip is an organized team chat app for distributed
+  teams of all sizes." %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,6 +18,9 @@
         </div>
         <div class="screen-1">
             <h1>Organized team&nbsp;chat</h1>
+            <div class='h1-subheader'>
+                For distributed teams of all sizes.
+            </div>
             <div class='appshot-1'>
                 <picture>
                     <!-- dark theme is only with webp images, since webp support was at the same time or earlier than prefers-color-scheme https://caniuse.com/?search=prefers-color-scheme https://caniuse.com/webp -->
@@ -118,61 +121,70 @@
         <div class="screen-3">
             <div class="screen-3__container">
                 <div class="screen-3__content">
-                    <h2 class="screen-3__header">Zulip transforms how work gets done.</h2>
+                    <h2 class="screen-3__header">Zulip empowers remote and flexible work.</h2>
                     <div class="screen-3__subtitle">Check out these case studies to see the impact.</div>
                     <div class='screen-3__quotes'>
-                        <a class="quote" href="/case-studies/asciidoctor/">
+                        <a class="quote" href="/case-studies/atolio/">
                             <div class="quote__text">
-                                <h4>Less stress</h4>
-                                With Zulip, I can <strong>manage hundreds of participants</strong> across two communities extremely efficiently, and I don’t feel stressed.
+                                <h4>Work better together</h4>
+                                The first-class threads in Zulip are <strong>absolutely critical to how we work</strong>. So many people on Hacker News talk about using Zulip — I'm so glad we joined them!
                             </div>
                             <div class="quote__source">
-                                <strong>Dan Allen</strong>, <i>Asciidoctor open-source project lead</i>
-                            </div>
-                        </a>
-                        <a class="quote" href="/case-studies/rust/">
-                            <div class="quote__text">
-                                <h4>Faster decisions</h4>
-                                Zulip lets us move faster, connect with each other better, and have interactive technical discussions that are <strong>organized, recorded, and welcoming</strong>.
-                            </div>
-                            <div class="quote__source">
-                                <strong>Josh Triplett</strong>, <i>Rust Language team co-lead</i>
+                                <strong>David Lanstein</strong>, <i>co-founder and CEO of Atolio</i>
                             </div>
                         </a>
                         <a class="quote" href="/case-studies/idrift/">
                             <div class="quote__text">
-                                <h4>Leaders are informed</h4>
+                                <h4>Empower leaders</h4>
                                 Using Zulip significantly <strong>increases the size of the team</strong> for which a manager can meaningfully know what’s going on.
                             </div>
                             <div class="quote__source">
                                 <strong>Gaute Lund</strong>, <i>co-founder of iDrift AS</i>
                             </div>
                         </a>
-                        <a class="quote" href="/case-studies/tum/">
+                        <a class="quote" href="/case-studies/rust/">
                             <div class="quote__text">
-                                <h4>Scalable communication</h4>
-                                Zulip has the <strong>best user experience</strong> of all the chat apps I’ve tried… It is the only app that makes hundreds of conversations manageable.
+                                <h4>Make decisions faster</h4>
+                                Some decisions that were blocked for months on
+                                GitHub were <strong>resolved within 24 hours</strong> on Zulip.
                             </div>
                             <div class="quote__source">
-                                <strong>Tobias Lasser</strong>, <i>Technical University of Munich</i>
+                                <strong>Josh Triplett</strong>, <i>Rust Language team co-lead</i>
                             </div>
                         </a>
-                        <a class="quote" href="/case-studies/atolio/">
+                        <a class="quote" href="https://monadical.com/posts/how-to-make-remote-work-part-two-zulip.html">
                             <div class="quote__text">
-                                <h4>Uninterrupted focus</h4>
-                                In Zulip, it’s super <strong>easy to find</strong> things 24 hours later if you weren’t online when a discussion happened.
+                                <h4>Simplify knowledge management</h4>
+                                Using Zulip in a way that feels natural creates
+                                an <strong>organized repository</strong> of knowledge <i>as a
+                                side effect</i>.
                             </div>
                             <div class="quote__source">
-                                <strong>Gareth Watts</strong>, <i>co-founder and CTO of Atolio</i>
+                                <strong>Max McCrea</strong>, <i>Co-founder of Monadical</i>
+                            </div>
+                        </a>
+                        <a class="quote" href="/case-studies/end-point/">
+                            <div class="quote__text">
+                                <h4>Organize 100s of workstreams</h4>
+                                Other apps like Slack would struggle with
+                                organizing the flow of information in a complex
+                                organization like ours. Zulip’s UI makes it easy
+                                to <strong>access all the information you need</strong>.
+                            </div>
+                            <div class="quote__source">
+                                <strong>Jon Jensen</strong>, <i>CTO of End Point
+                                Dev</i>
                             </div>
                         </a>
                         <a class="quote" href="/case-studies/gut-contact/">
                             <div class="quote__text">
-                                <h4>Easy to use software</h4>
-                                The software must be as simple as possible. That’s why we love Zulip.
+                                <h4>Communicate with efficiency</h4>
+                                I don’t like going back to Slack now. It’s just
+                                not as efficient a way to <strong>organize
+                                communication</strong>.
                             </div>
                             <div class="quote__source">
-                                <strong>Erik Dittert</strong>, <i>Head of IT at GUT contact</i>
+                                <strong>James van Lommel</strong>, <i>Director of Engineering at Semsee</i>
                             </div>
                         </a>
                     </div>

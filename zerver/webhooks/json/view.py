@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict
+from typing import Any
 
 from django.http import HttpRequest, HttpResponse
 
@@ -22,7 +22,7 @@ def api_json_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: JsonBodyPayload[Dict[str, Any]],
+    payload: JsonBodyPayload[dict[str, Any]],
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
     topic_name = get_topic_for_http_request(payload)
@@ -31,10 +31,10 @@ def api_json_webhook(
     return json_success(request)
 
 
-def get_topic_for_http_request(payload: Dict[str, Any]) -> str:
+def get_topic_for_http_request(payload: dict[str, Any]) -> str:
     return "JSON"
 
 
-def get_body_for_http_request(payload: Dict[str, Any]) -> str:
+def get_body_for_http_request(payload: dict[str, Any]) -> str:
     prettypayload = json.dumps(payload, indent=2)
     return JSON_MESSAGE_TEMPLATE.format(webhook_payload=prettypayload, sort_keys=True)

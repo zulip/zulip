@@ -3,7 +3,7 @@
 `zerver.models.Client` is Zulip's analogue of the HTTP User-Agent
 header (and is populated from User-Agent). It exists for use in
 analytics and other places to provide human-readable summary data
-about "which Zulip client" was used for an operation (e.g. was it the
+about "which Zulip client" was used for an operation (e.g., was it the
 Android app, the desktop app, or a bot?).
 
 In general, it shouldn't be used for anything controlling the behavior

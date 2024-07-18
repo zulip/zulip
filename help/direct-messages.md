@@ -28,13 +28,31 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 * Open the compose box, and enter a list of users on the **To:**
   line. Type <kbd>Ctrl</kbd> + <kbd>.</kbd> to open that conversation.
 
+## Find a direct message conversation
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. If the **DIRECT MESSAGES** section in the left sidebar is collapsed, click on
+   the **DIRECT MESSAGES** heading to expand it.
+1. At the bottom of the list of your recent direct messages, click **more
+   conversations**. If you don't see this link, you are already viewing all of
+   your direct message conversations.
+1. Type the name of a participant in the conversation you're looking for.
+
+{end_tabs}
+
 ## Access all DMs
 
 {start_tabs}
 
 {tab|desktop-web}
 
-{relative|message|direct}
+1. In the left sidebar, click the **Direct message feed**
+   (<i class="fa fa-align-right"></i>) icon to the right of the
+   **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
+   keyboard shortcut.
 
 {tab|mobile}
 
@@ -43,6 +61,7 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
    tab at the bottom of the app.
 
 {end_tabs}
+
 
 ## Related articles
 

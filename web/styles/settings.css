@@ -1,7 +1,7 @@
 /* The height of the settings header (including tab switcher). */
 $settings_header_height: 45px;
 /* The width of the settings sidebar. */
-$settings_sidebar_width: 250px;
+$settings_sidebar_width: 255px;
 
 label {
     margin: 0;
@@ -180,6 +180,11 @@ h3,
     }
 }
 
+#change_email_button,
+#change_password {
+    min-width: 0;
+}
+
 .admin-realm-description {
     height: 16em;
     width: 100%;
@@ -223,8 +228,7 @@ h3,
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
-.upload-file-name {
-    width: 43%;
+#attachments-settings .upload-file-name {
     word-break: break-all;
 }
 
@@ -371,6 +375,9 @@ td .button {
     &:disabled {
         cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
+
+        /* This is reset for other browsers to use Chrome's opacity. */
+        opacity: 0.7;
     }
 }
 
@@ -392,8 +399,11 @@ select.settings_select {
     }
 }
 
-.user_role {
-    min-width: 95px;
+.user_role,
+.profile_field_type,
+.bot_type,
+.last_active {
+    word-break: normal;
 }
 
 .button,
@@ -560,21 +570,31 @@ input[type="checkbox"] {
 .language_selection_widget .language_selection_button {
     text-decoration: none;
     color: hsl(0deg 0% 20%);
+    min-width: 0;
 
     .fa.fa-pencil {
         margin-left: 5px;
     }
 }
 
-.remove-attachment {
-    margin-right: 5px !important;
-    font-size: 1.1em !important;
-    padding-left: 0 !important;
+.edit-attachment-buttons {
+    display: inline-block;
+    vertical-align: middle;
+    height: 32px;
 }
 
-#download_attachment {
-    padding-left: 0;
-    border-left: 0;
+.edit-attachment-buttons .remove-attachment {
+    margin-left: 5px;
+}
+
+.edit-attachment-buttons #download_attachment {
+    display: block;
+    padding: 6px 9px;
+    text-decoration: none;
+
+    &:hover {
+        color: hsl(156deg 41% 40%);
+    }
 }
 
 .remove-alert-word {
@@ -752,9 +772,19 @@ input[type="checkbox"] {
     float: right;
 
     #show-add-default-streams-modal {
-        padding: 5px 0;
-        min-width: 100px;
-        margin-top: 11px;
+        /* We want this button to have the same height as the filter
+           button on its right. We're overriding the default vertical
+           padding of `.new-style` and setting it to 0. Having the
+           height fixed will mean that the vertical whitespace will
+           adjust itself for different font-sizes without changing the
+           height.
+           */
+        padding-top: 0;
+        padding-bottom: 0;
+        height: 30px;
+
+        min-width: 0;
+        margin-top: 12px;
         margin-right: 6px;
     }
 }
@@ -847,14 +877,15 @@ input[type="checkbox"] {
 
 #organization-permissions {
     .dropdown-widget-button {
-        width: 325px;
+        min-width: 325px;
+        width: auto;
         color: hsl(0deg 0% 33%);
+    }
+}
 
-        &:disabled {
-            cursor: not-allowed;
-            background-color: hsl(0deg 0% 93%);
-            opacity: 0.7;
-        }
+#organization-settings {
+    .dropdown-widget-button {
+        color: hsl(0deg 0% 33%);
     }
 }
 
@@ -881,6 +912,11 @@ input[type="checkbox"] {
 
     .config-download-text {
         margin-left: 5px;
+    }
+
+    .ind-tab {
+        width: auto;
+        min-width: 90px;
     }
 }
 
@@ -962,7 +998,6 @@ input[type="checkbox"] {
         position: relative;
         display: inline-block;
         width: calc(50% - 10px);
-        max-height: 220px;
         margin: 5px;
 
         border-radius: 4px;
@@ -1121,22 +1156,72 @@ input[type="checkbox"] {
 
 #api_key_form,
 #change_password_modal {
-    .password-div {
-        position: relative;
+    .settings-password-div {
+        display: flex;
+        flex-wrap: wrap;
 
-        & input[type="text"] {
-            margin-bottom: 10px;
+        .modal-field-label {
+            /* Keep the label to its own
+               line in the wrapping flexbox. */
+            flex: 0 0 100%;
         }
 
-        .password_visibility_toggle {
-            position: absolute;
-            left: 194px;
-            top: 32px;
-            width: 14px;
-            opacity: 0.6;
+        .password-input-row {
+            display: flex;
+            margin-bottom: 10px;
+            /* This helps us in making sure that the
+               password_visibility_toggle does not look
+               misaligned in small screens where that component
+               increases in height on small screens. */
+            max-height: 2em;
 
-            &:hover {
-                opacity: 1;
+            .modal_password_input {
+                /* The usual width of input is 206px, but we reduce
+                   it by 30px to make way for the padding. */
+                width: 176px;
+                padding-right: 30px;
+                /* Override the original 10px value so that we can
+                   set the margin-bottom in the parent div instead. */
+                margin-bottom: 0;
+            }
+
+            .password_visibility_toggle {
+                /* We're going to use flexbox, not
+                   positioning, to get the clear button
+                   over top of the input. This -2em
+                   margin accomplishes that, in tandem
+                   with the 2em width of this element,
+                   which is shared with the ending
+                   anchor element in left sidebar header
+                   rows. We're using em instead of pixels
+                   so the whitespace between the input box
+                   and the icon doesn't decrease when the
+                   icon's font-size increases when switching
+                   from 14px info density to 16px info density
+                   mode. */
+                width: 2em;
+                margin-left: -2em;
+
+                /* Make the button itself a flex container,
+                   so we can perfectly center the X icon. */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                opacity: 0.6;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            .settings-forgot-password {
+                /* Make the link itself a flex container,
+                   so we can perfectly center the text
+                   in relation to the input box. */
+                display: flex;
+                align-items: center;
+                margin-left: 10px;
             }
         }
     }
@@ -1289,6 +1374,31 @@ $option_title_width: 180px;
             height: $settings_header_height;
             padding: 6px;
             border-bottom: 1px solid hsl(0deg 0% 87%);
+
+            @media (width >= $md_min) {
+                .tab-switcher {
+                    position: absolute;
+                    display: flex;
+                    left: 10px;
+                    z-index: 1;
+
+                    .ind-tab {
+                        width: auto;
+                        min-width: 95px;
+                    }
+                }
+            }
+
+            @media (width < $md_min) {
+                .tab-switcher {
+                    display: flex;
+                    justify-content: center;
+
+                    .ind-tab {
+                        width: auto;
+                    }
+                }
+            }
         }
     }
 
@@ -1374,13 +1484,6 @@ $option_title_width: 180px;
         .normal-settings-list,
         .org-settings-list {
             position: relative;
-        }
-
-        .settings-sticky-bar {
-            position: sticky;
-            z-index: 1;
-            background-color: hsl(0deg 0% 100%);
-            top: 0;
         }
     }
 
@@ -1580,10 +1683,6 @@ $option_title_width: 180px;
     }
 }
 
-#admin-active-users-list .last_active {
-    width: 100px;
-}
-
 #payload_url_inputbox {
     & input[type="text"] {
         width: 340px;
@@ -1711,6 +1810,10 @@ $option_title_width: 180px;
 }
 
 @media (width < $lg_min) {
+    .settings-email-column {
+        display: none;
+    }
+
     .upload-size {
         display: none;
     }
@@ -1787,12 +1890,53 @@ $option_title_width: 180px;
     }
 }
 
+@media (width < 830px) and (width > $md_min) {
+    #attachments-settings .upload-file-name {
+        min-width: 10em;
+    }
+
+    #user_topics_table {
+        .user-topic-stream {
+            min-width: 6em;
+        }
+
+        .user-topic {
+            min-width: 10em;
+        }
+    }
+
+    #admin-user-list,
+    #admin-bot-list {
+        .user_row {
+            .user_name,
+            .email {
+                min-width: 8em;
+            }
+        }
+    }
+
+    .admin_profile_fields_table {
+        .profile_field_name,
+        .profile_field_hint {
+            min-width: 8em;
+        }
+    }
+}
+
 @media (width < $sm_min) {
-    .user_row,
-    .settings-section {
-        .bot_type,
-        .last_active {
-            display: none;
+    #admin-user-list,
+    #admin-bot-list {
+        .user_row,
+        .table-sticky-headers {
+            .bot_type,
+            .last_active {
+                display: none;
+            }
+
+            .user_name,
+            .email {
+                min-width: 8em;
+            }
         }
     }
 
@@ -1821,6 +1965,27 @@ $option_title_width: 180px;
     #change_password_modal,
     #change_email_modal {
         width: 400px;
+    }
+
+    #attachments-settings .upload-file-name {
+        min-width: 10em;
+    }
+
+    #user_topics_table {
+        .user-topic {
+            min-width: 10em;
+        }
+
+        .user-topic-stream {
+            min-width: 6em;
+        }
+    }
+
+    .admin_profile_fields_table {
+        .profile_field_name,
+        .profile_field_hint {
+            min-width: 8em;
+        }
     }
 }
 
@@ -1859,7 +2024,6 @@ $option_title_width: 180px;
        information box */
     .bots_list .bot-information-box {
         width: calc(100% - 10px);
-        max-height: unset;
     }
 }
 
@@ -1926,7 +2090,7 @@ $option_title_width: 180px;
 }
 
 #admin_users_table .deactivated_user,
-#admin_deactivated_users_table .reactivated_user {
+#admin_deactivated_users_table .active-user {
     color: hsl(0deg 0% 64%);
 
     & a {

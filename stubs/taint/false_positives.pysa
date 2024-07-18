@@ -16,9 +16,9 @@ def zerver.lib.thumbnail.generate_thumbnail_url(
 # filesystem operations.
 def zerver.lib.upload.sanitize_name(value) -> Sanitize: ...
 
-# This function accepts two integers and then concatenates them into a path
+# This function accepts three integers and then concatenates them into a path
 # segment. The result should be safe for use in filesystem and other operations.
-def zerver.lib.avatar_hash.user_avatar_path_from_ids(user_profile_id, realm_id) -> Sanitize: ...
+def zerver.lib.avatar_hash.user_avatar_base_path_from_ids(user_profile_id, version, realm_id) -> Sanitize: ...
 
 # This function creates a list of 'UserMessageLite' objects, which contain only
 # integral IDs and flags. These should safe for use with SQL and other

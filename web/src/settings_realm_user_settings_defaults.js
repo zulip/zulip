@@ -1,9 +1,13 @@
 import $ from "jquery";
 
 import * as audible_notifications from "./audible_notifications";
+import {
+    NON_COMPACT_MODE_FONT_SIZE_PX,
+    NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
+} from "./information_density";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
-import * as settings_components from "./settings_components";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
 import * as settings_preferences from "./settings_preferences";
@@ -32,30 +36,16 @@ export function update_page(property) {
     if (!overlays.settings_open()) {
         return;
     }
-    const $container = $(realm_default_settings_panel.container);
-    let value = realm_user_settings_defaults[property];
 
-    // settings_org.set_input_element_value doesn't support radio
-    // button widgets like these.
-    if (property === "emojiset" || property === "user_list_style") {
-        $container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
-        return;
+    const $element = $(`#realm_${CSS.escape(property)}`);
+    if ($element.length) {
+        const $subsection = $element.closest(".settings-subsection-parent");
+        if ($subsection.find(".save-button-controls").hasClass("hide")) {
+            settings_org.discard_realm_default_property_element_changes($element[0]);
+        } else {
+            settings_org.discard_realm_default_settings_subsection_changes($subsection);
+        }
     }
-
-    if (property === "email_notifications_batching_period_seconds") {
-        settings_notifications.set_notification_batching_ui($container, value);
-        return;
-    }
-
-    // The twenty_four_hour_time setting is represented as a boolean
-    // in the API, but a dropdown with "true"/"false" as strings in
-    // the UI, so we need to convert its format here.
-    if (property === "twenty_four_hour_time") {
-        value = value.toString();
-    }
-
-    const $input_elem = $container.find(`[name=${CSS.escape(property)}]`);
-    settings_components.set_input_element_value($input_elem, value);
 }
 
 export function set_up() {
@@ -76,6 +66,25 @@ export function set_up() {
             notification_sound: sound,
         });
     });
+
+    if (!page_params.development_environment) {
+        $("#realm_dense_mode").on("change", (e) => {
+            const val = $(e.target).prop("checked");
+            if (val) {
+                $container.find(".information-density-settings").hide();
+                return;
+            }
+
+            if (
+                !realm_user_settings_defaults.dense_mode &&
+                (realm_user_settings_defaults.web_font_size_px !== NON_COMPACT_MODE_FONT_SIZE_PX ||
+                    realm_user_settings_defaults.web_line_height_percent !==
+                        NON_COMPACT_MODE_LINE_HEIGHT_PERCENT)
+            ) {
+                $container.find(".information-density-settings").show();
+            }
+        });
+    }
 
     settings_notifications.set_up(realm_default_settings_panel);
 

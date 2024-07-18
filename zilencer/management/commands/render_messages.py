@@ -1,5 +1,6 @@
 import os
-from typing import Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 import orjson
 from django.core.management.base import CommandParser

@@ -1,6 +1,7 @@
 import cProfile
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, TypeVar
+from typing import TypeVar
 
 from typing_extensions import ParamSpec
 

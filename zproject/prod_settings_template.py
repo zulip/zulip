@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from .config import get_secret
 
@@ -148,7 +148,7 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 ## The install process requires EmailAuthBackend (the default) to be
 ## enabled.  If you want to disable it, do so after creating the
 ## initial realm and user.
-AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
+AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     "zproject.backends.EmailAuthBackend",  # Email and password; just requires SMTP setup
     # "zproject.backends.GoogleAuthBackend",  # Google auth, setup below
     # "zproject.backends.GitHubAuthBackend",  # GitHub auth, setup below
@@ -375,7 +375,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ##     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#openid-connect
 ##
 
-SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, Any] = {
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, Any] = {
     ## This field (example: "idp_name") may appear in URLs during
     ## authentication, but is otherwise not user-visible.
     "idp_name": {
@@ -421,7 +421,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
         "url": "{}{}".format("https://", EXTERNAL_HOST),
     },
 }
-SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
+SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
     ## The fields are explained in detail here:
     ##     https://python-social-auth.readthedocs.io/en/latest/backends/saml.html
     "idp_name": {
@@ -479,7 +479,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
 
 # More complete documentation of the configurable security settings
 # are available in the "security" part of https://github.com/onelogin/python3-saml#settings.
-SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {
+SOCIAL_AUTH_SAML_SECURITY_CONFIG: dict[str, Any] = {
     ## If you've set up the optional private and public server keys,
     ## set this to True to enable signing of SAMLRequests using the
     ## private key.
@@ -734,25 +734,25 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## How long outgoing webhook requests time out after
 # OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 
-## Support for mobile push notifications.  Setting controls whether
-## push notifications will be forwarded through a Zulip push
-## notification bouncer server to the mobile apps.  See
-## https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
-## for information on how to sign up for and configure this.
-# PUSH_NOTIFICATION_BOUNCER_URL = "https://push.zulipchat.com"
+## Mobile push notifications require registering for the Zulip Mobile
+## Push Notification Service and configuring your server to use the
+## service here. For complete documentation, see:
+##
+##   https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
+##
+# ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
+
+## By default, a Zulip server that has registered for Zulip services
+## submits both basic metadata (required for billing and for determining
+## free plan eligibility), as well as aggregate usage statistics. You
+## can disable submitting usage statistics here.
+# ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
 
 ## Whether to redact the content of push notifications.  This is less
 ## usable, but avoids sending message content over the wire.  In the
 ## future, we're likely to replace this with an end-to-end push
 ## notification encryption feature.
 # PUSH_NOTIFICATION_REDACT_CONTENT = False
-
-## Whether to submit basic usage statistics to help the Zulip core team.  Details at
-##
-##   https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
-##
-## Defaults to True if and only if the Mobile Push Notifications Service is enabled.
-# SUBMIT_USAGE_STATISTICS = True
 
 ## Whether to lightly advertise sponsoring Zulip in the gear menu.
 # PROMOTE_SPONSORING_ZULIP = True

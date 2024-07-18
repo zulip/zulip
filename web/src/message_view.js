@@ -10,6 +10,7 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
@@ -87,7 +88,19 @@ export function changehash(newhash, trigger) {
         return;
     }
     message_viewport.stop_auto_scrolling();
-    browser_history.set_hash(newhash);
+
+    if (trigger === "retarget topic location") {
+        // It is important to use `replaceState` rather than `replace`
+        // here for the `back` button to work; we don't want to use
+        // any metadata potentially stored by
+        // update_current_history_state_data associated with an old
+        // URL for the target conversation, and conceptually we want
+        // to replace the inaccurate/old URL for the conversation with
+        // the current/corrected value.
+        window.history.replaceState(null, "", newhash);
+    } else {
+        browser_history.set_hash(newhash);
+    }
 }
 
 export function update_hash_to_match_filter(filter, trigger) {
@@ -132,12 +145,14 @@ function create_and_update_message_list(filter, id_info, opts) {
         });
 
         // Populate the message list if we can apply our filter locally (i.e.
-        // with no backend help) and we have the message we want to select.
+        // with no server help) and we have the message we want to select.
         // Also update id_info accordingly.
-        maybe_add_local_messages({
-            id_info,
-            msg_data,
-        });
+        if (!filter.requires_adjustment_for_moved_with_target) {
+            maybe_add_local_messages({
+                id_info,
+                msg_data,
+            });
+        }
 
         if (!id_info.local_select_id) {
             // If we're not actually ready to select an ID, we need to
@@ -233,18 +248,24 @@ function try_rendering_locally_for_same_narrow(filter, opts) {
         return false;
     }
 
-    // If the difference between the current filter and the new filter
-    // is just a `near` operator, or just the value of a `near` operator,
-    // we can render the new filter without a rerender of the message list
-    // if the target message in the `near` operator is already rendered.
-    const excluded_operators = ["near"];
-    if (!filter.equals(current_filter, excluded_operators)) {
-        return false;
-    }
-
     if (filter.has_operator("near")) {
         const target_id = Number.parseInt(filter.operands("near")[0], 10);
-        if (!message_lists.current?.get(target_id)) {
+        const target_message = message_lists.current?.get(target_id);
+        if (!target_message) {
+            return false;
+        }
+
+        const adjusted_terms = Filter.adjusted_terms_if_moved(filter.terms(), target_message);
+        if (adjusted_terms !== null) {
+            filter = new Filter(adjusted_terms);
+        }
+
+        // If the difference between the current filter and the new filter
+        // is just a `near` operator, or just the value of a `near` operator,
+        // we can render the new filter without a rerender of the message list
+        // if the target message in the `near` operator is already rendered.
+        const excluded_operators = ["near"];
+        if (!filter.equals(current_filter, excluded_operators)) {
             return false;
         }
 
@@ -256,7 +277,7 @@ function try_rendering_locally_for_same_narrow(filter, opts) {
         }
 
         message_lists.current.data.filter = filter;
-        update_hash_to_match_filter(filter);
+        update_hash_to_match_filter(filter, "retarget message location");
         return true;
     }
 
@@ -297,9 +318,10 @@ export function show(raw_terms, opts) {
 
     // No operators is an alias for the Combined Feed view.
     if (raw_terms.length === 0) {
-        raw_terms = [{operator: "is", operand: "home"}];
+        raw_terms = [{operator: "in", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
+    filter.try_adjusting_for_moved_with_target();
 
     if (try_rendering_locally_for_same_narrow(filter, opts)) {
         return;
@@ -402,38 +424,6 @@ export function show(raw_terms, opts) {
         if (id_info.target_id && filter.has_operator("channel") && filter.has_operator("topic")) {
             const target_message = message_store.get(id_info.target_id);
 
-            function adjusted_terms_if_moved(raw_terms, message) {
-                const adjusted_terms = [];
-                let terms_changed = false;
-
-                for (const term of raw_terms) {
-                    const adjusted_term = {...term};
-                    if (
-                        Filter.canonicalize_operator(term.operator) === "channel" &&
-                        !util.lower_same(term.operand, message.display_recipient)
-                    ) {
-                        adjusted_term.operand = message.display_recipient;
-                        terms_changed = true;
-                    }
-
-                    if (
-                        Filter.canonicalize_operator(term.operator) === "topic" &&
-                        !util.lower_same(term.operand, message.topic)
-                    ) {
-                        adjusted_term.operand = message.topic;
-                        terms_changed = true;
-                    }
-
-                    adjusted_terms.push(adjusted_term);
-                }
-
-                if (!terms_changed) {
-                    return null;
-                }
-
-                return adjusted_terms;
-            }
-
             if (target_message) {
                 // If we have the target message ID for the narrow in our
                 // local cache, and the target message has been moved from
@@ -447,7 +437,10 @@ export function show(raw_terms, opts) {
                     // The stream name is invalid or incorrect in the URL.
                     // We reconstruct the narrow with the data from the
                     // target message ID that we have.
-                    const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
+                    const adjusted_terms = Filter.adjusted_terms_if_moved(
+                        raw_terms,
+                        target_message,
+                    );
 
                     if (adjusted_terms === null) {
                         blueslip.error("adjusted_terms impossibly null");
@@ -485,7 +478,10 @@ export function show(raw_terms, opts) {
                     !narrow_matches_target_message &&
                     (narrow_exists_in_edit_history || !realm.realm_allow_edit_history)
                 ) {
-                    const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
+                    const adjusted_terms = Filter.adjusted_terms_if_moved(
+                        raw_terms,
+                        target_message,
+                    );
                     if (adjusted_terms !== null) {
                         show(adjusted_terms, {
                             ...opts,
@@ -662,7 +658,27 @@ export function show(raw_terms, opts) {
                 }
                 message_fetch.load_messages_for_narrow({
                     anchor,
+                    validate_filter_topic_post_fetch:
+                        filter.requires_adjustment_for_moved_with_target,
                     cont() {
+                        if (filter.narrow_requires_hash_change) {
+                            // We've already adjusted our filter via
+                            // filter.try_adjusting_for_moved_with_target, and
+                            // should update the URL hash accordingly.
+                            update_hash_to_match_filter(filter, "retarget topic location");
+                            // Since filter is updated, we need to handle various things
+                            // like updating the message view header title, unread banner
+                            // based on the updated filter.
+                            handle_post_message_list_change(
+                                id_info,
+                                message_lists.current,
+                                opts,
+                                select_immediately,
+                                select_opts,
+                                then_select_offset,
+                            );
+                            filter.narrow_requires_hash_change = false;
+                        }
                         if (!select_immediately) {
                             render_message_list_with_selected_message({
                                 id_info,
@@ -1271,6 +1287,13 @@ export function to_compose_target() {
 
 function handle_post_view_change(msg_list, opts) {
     const filter = msg_list.data.filter;
+
+    if (narrow_state.narrowed_by_reply()) {
+        compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
+    } else {
+        compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+    }
+
     scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
 
@@ -1284,6 +1307,7 @@ function handle_post_view_change(msg_list, opts) {
     compose_closed_ui.update_reply_recipient_label();
 
     message_view_header.render_title_area();
+
     narrow_title.update_narrow_title(filter);
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);

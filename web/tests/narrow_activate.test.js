@@ -19,6 +19,7 @@ const compose_actions = mock_esm("../src/compose_actions");
 const compose_banner = mock_esm("../src/compose_banner");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 const compose_recipient = mock_esm("../src/compose_recipient");
+const compose_notifications = mock_esm("../src/compose_notifications");
 const message_fetch = mock_esm("../src/message_fetch");
 const message_list = mock_esm("../src/message_list");
 const message_lists = mock_esm("../src/message_lists", {
@@ -206,10 +207,17 @@ run_test("basics", ({override}) => {
             cont: opts.cont,
             msg_list: opts.msg_list,
             anchor: 1000,
+            validate_filter_topic_post_fetch: false,
         });
 
         opts.cont();
     };
+
+    override(
+        compose_notifications,
+        "maybe_show_one_time_interleaved_view_messages_fading_banner",
+        noop,
+    );
 
     message_view.show(terms, {
         then_select_id: selected_id,

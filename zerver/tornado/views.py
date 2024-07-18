@@ -1,5 +1,6 @@
 import time
-from typing import Any, Callable, Mapping, Optional, Sequence, TypeVar
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, TypeVar
 
 from asgiref.sync import async_to_sync
 from django.conf import settings
@@ -61,7 +62,7 @@ def notify(
 def web_reload_clients(
     request: HttpRequest,
     *,
-    client_count: Optional[Json[int]] = None,
+    client_count: Json[int] | None = None,
     immediate: Json[bool] = False,
 ) -> HttpResponse:
     sent_events = in_tornado_thread(send_web_reload_client_events)(
@@ -142,11 +143,11 @@ def get_events_backend(
     user_profile: UserProfile,
     # user_client is intended only for internal Django=>Tornado requests
     # and thus shouldn't be documented for external use.
-    user_client: Optional[Client] = REQ(
+    user_client: Client | None = REQ(
         converter=lambda var_name, s: get_client(s), default=None, intentionally_undocumented=True
     ),
-    last_event_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    queue_id: Optional[str] = REQ(default=None),
+    last_event_id: int | None = REQ(json_validator=check_int, default=None),
+    queue_id: str | None = REQ(default=None),
     # apply_markdown, client_gravatar, all_public_streams, and various
     # other parameters are only used when registering a new queue via this
     # endpoint.  This is a feature used primarily by get_events_internal
@@ -163,7 +164,7 @@ def get_events_backend(
     all_public_streams: bool = REQ(
         default=False, json_validator=check_bool, intentionally_undocumented=True
     ),
-    event_types: Optional[Sequence[str]] = REQ(
+    event_types: Sequence[str] | None = REQ(
         default=None, json_validator=check_list(check_string), intentionally_undocumented=True
     ),
     dont_block: bool = REQ(default=False, json_validator=check_bool),

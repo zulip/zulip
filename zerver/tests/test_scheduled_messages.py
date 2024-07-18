@@ -2,7 +2,7 @@ import re
 import time
 from datetime import timedelta
 from io import StringIO
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -33,7 +33,7 @@ class ScheduledMessageTest(ZulipTestCase):
     def do_schedule_message(
         self,
         msg_type: str,
-        to: Union[int, List[str], List[int]],
+        to: int | list[str] | list[int],
         msg: str,
         scheduled_delivery_timestamp: int,
     ) -> "TestHttpResponse":
@@ -443,7 +443,7 @@ class ScheduledMessageTest(ZulipTestCase):
             timestamp_to_datetime(scheduled_delivery_timestamp),
         )
         scheduled_message_id = scheduled_message.id
-        payload: Dict[str, Any]
+        payload: dict[str, Any]
 
         # Edit message with other stream message type ("stream") and no other changes
         # results in no changes to the scheduled message.
@@ -656,13 +656,13 @@ class ScheduledMessageTest(ZulipTestCase):
         attachment_file1 = StringIO("zulip!")
         attachment_file1.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {"file": attachment_file1})
-        path_id1 = re.sub(r"/user_uploads/", "", result.json()["uri"])
+        path_id1 = re.sub(r"/user_uploads/", "", result.json()["url"])
         attachment_object1 = Attachment.objects.get(path_id=path_id1)
 
         attachment_file2 = StringIO("zulip!")
         attachment_file2.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {"file": attachment_file2})
-        path_id2 = re.sub(r"/user_uploads/", "", result.json()["uri"])
+        path_id2 = re.sub(r"/user_uploads/", "", result.json()["url"])
         attachment_object2 = Attachment.objects.get(path_id=path_id2)
 
         content = f"Test [zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id1})"

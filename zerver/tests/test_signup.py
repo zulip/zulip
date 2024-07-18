@@ -1,7 +1,8 @@
 import re
 import time
+from collections.abc import Sequence
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Union
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote, quote_plus, urlencode, urlsplit
 
@@ -19,7 +20,7 @@ from django.utils import translation
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, one_click_unsubscribe_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
-from zerver.actions.create_user import add_new_user_history
+from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
@@ -65,6 +66,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     DefaultStream,
     Message,
+    OnboardingUserMessage,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -78,7 +80,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_huddle_user_ids
+from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
@@ -254,11 +256,11 @@ class AddNewUserHistoryTest(ZulipTestCase):
             self.example_user("hamlet"), streams[0].name, "test"
         )
 
-        # Overwrite MAX_NUM_ONBOARDING_UNREAD_MESSAGES to 2
-        MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 2
+        # Overwrite MAX_NUM_RECENT_UNREAD_MESSAGES to 2
+        MAX_NUM_RECENT_UNREAD_MESSAGES = 2
         with patch(
-            "zerver.actions.create_user.MAX_NUM_ONBOARDING_UNREAD_MESSAGES",
-            MAX_NUM_ONBOARDING_UNREAD_MESSAGES,
+            "zerver.actions.create_user.MAX_NUM_RECENT_UNREAD_MESSAGES",
+            MAX_NUM_RECENT_UNREAD_MESSAGES,
         ):
             add_new_user_history(user_profile, streams)
 
@@ -266,7 +268,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         self.assertTrue(
             UserMessage.objects.filter(user_profile=user_profile, message_id=message_id).exists()
         )
-        # The race message is in the user's history and marked unread.
+        # The race message is in the user's history, marked unread & NOT historical.
         self.assertTrue(
             UserMessage.objects.filter(
                 user_profile=user_profile, message_id=race_message_id
@@ -277,22 +279,28 @@ class AddNewUserHistoryTest(ZulipTestCase):
                 user_profile=user_profile, message_id=race_message_id
             ).flags.read.is_set
         )
+        self.assertFalse(
+            UserMessage.objects.get(
+                user_profile=user_profile, message_id=race_message_id
+            ).flags.historical.is_set
+        )
 
-        # Verify that the MAX_NUM_ONBOARDING_UNREAD_MESSAGES latest messages
-        # that weren't the race message are marked as unread.
+        # Verify that the MAX_NUM_RECENT_UNREAD_MESSAGES latest messages
+        # that weren't the race message are marked as unread & historical.
         latest_messages = (
             UserMessage.objects.filter(
                 user_profile=user_profile,
                 message__recipient__type=Recipient.STREAM,
             )
             .exclude(message_id=race_message_id)
-            .order_by("-message_id")[0:MAX_NUM_ONBOARDING_UNREAD_MESSAGES]
+            .order_by("-message_id")[0:MAX_NUM_RECENT_UNREAD_MESSAGES]
         )
         self.assert_length(latest_messages, 2)
         for msg in latest_messages:
             self.assertFalse(msg.flags.read.is_set)
+            self.assertTrue(msg.flags.historical.is_set)
 
-        # Verify that older messages are correctly marked as read.
+        # Verify that older messages are correctly marked as read & historical.
         older_messages = (
             UserMessage.objects.filter(
                 user_profile=user_profile,
@@ -300,12 +308,112 @@ class AddNewUserHistoryTest(ZulipTestCase):
             )
             .exclude(message_id=race_message_id)
             .order_by("-message_id")[
-                MAX_NUM_ONBOARDING_UNREAD_MESSAGES : MAX_NUM_ONBOARDING_UNREAD_MESSAGES + 1
+                MAX_NUM_RECENT_UNREAD_MESSAGES : MAX_NUM_RECENT_UNREAD_MESSAGES + 1
             ]
         )
         self.assertGreater(len(older_messages), 0)
         for msg in older_messages:
             self.assertTrue(msg.flags.read.is_set)
+            self.assertTrue(msg.flags.historical.is_set)
+
+    def test_only_tracked_onboarding_messages_marked_unread(self) -> None:
+        """
+        Realms with tracked onboarding messages have only
+        those messages marked as unread.
+        """
+        realm = do_create_realm("realm_string_id", "realm name")
+        hamlet = do_create_user(
+            "hamlet", "password", realm, "hamlet", realm_creation=True, acting_user=None
+        )
+        stream = Stream.objects.get(realm=realm, name=str(realm.ZULIP_SANDBOX_CHANNEL_NAME))
+
+        # Onboarding messages sent during realm creation are tracked.
+        self.assertTrue(OnboardingUserMessage.objects.filter(realm=realm).exists())
+        onboarding_message_ids = OnboardingUserMessage.objects.filter(realm=realm).values_list(
+            "message_id", flat=True
+        )
+
+        # Other messages sent before a new user joins.
+        for i in range(3):
+            self.send_stream_message(hamlet, stream.name, f"test {i}")
+
+        new_user = do_create_user("new_user", "password", realm, "new_user", acting_user=None)
+
+        # The onboarding messages are in the user's history and marked unread.
+        onboarding_user_messages = UserMessage.objects.filter(
+            user_profile=new_user, message_id__in=onboarding_message_ids
+        )
+        for user_message in onboarding_user_messages:
+            self.assertFalse(user_message.flags.read.is_set)
+            self.assertTrue(user_message.flags.historical.is_set)
+
+        # Other messages are in user's history and marked as read.
+        other_user_messages = UserMessage.objects.filter(
+            user_profile=new_user, message__recipient__type=Recipient.STREAM
+        ).exclude(message_id__in=onboarding_message_ids)
+        self.assertTrue(other_user_messages.exists())
+        for user_message in other_user_messages:
+            self.assertTrue(user_message.flags.read.is_set)
+            self.assertTrue(user_message.flags.historical.is_set)
+
+        # Onboarding messages for hamlet (realm creator) are not
+        # marked as historical.
+        onboarding_user_messages = UserMessage.objects.filter(
+            user_profile=hamlet, message_id__in=onboarding_message_ids
+        )
+        for user_message in onboarding_user_messages:
+            self.assertFalse(user_message.flags.read.is_set)
+            self.assertFalse(user_message.flags.historical.is_set)
+
+    def test_tracked_onboarding_topics_first_messages_marked_starred(self) -> None:
+        """
+        Realms with tracked onboarding messages have only
+        first message in each onboarding topic marked as starred.
+        """
+        realm = do_create_realm("realm_string_id", "realm name")
+        hamlet = do_create_user(
+            "hamlet", "password", realm, "hamlet", realm_creation=True, acting_user=None
+        )
+
+        # Onboarding messages sent during realm creation are tracked.
+        self.assertTrue(OnboardingUserMessage.objects.filter(realm=realm).exists())
+
+        seen_topics = set()
+        onboarding_topics_first_message_ids = set()
+        onboarding_messages = Message.objects.filter(
+            realm=realm, recipient__type=Recipient.STREAM
+        ).order_by("id")
+        for message in onboarding_messages:
+            topic_name = message.topic_name()
+            if topic_name not in seen_topics:
+                onboarding_topics_first_message_ids.add(message.id)
+                seen_topics.add(topic_name)
+
+        # The first onboarding message in each topic are in the
+        # user's history and marked starred.
+        onboarding_user_messages = UserMessage.objects.filter(
+            user_profile=hamlet, message_id__in=onboarding_topics_first_message_ids
+        )
+        for user_message in onboarding_user_messages:
+            self.assertTrue(user_message.flags.starred.is_set)
+            self.assertFalse(user_message.flags.read.is_set)
+            self.assertFalse(user_message.flags.historical.is_set)
+
+        # Other messages are in user's history but not marked starred.
+        other_user_messages = UserMessage.objects.filter(
+            user_profile=hamlet, message__recipient__type=Recipient.STREAM
+        ).exclude(message_id__in=onboarding_topics_first_message_ids)
+        self.assertTrue(other_user_messages.exists())
+        for user_message in other_user_messages:
+            self.assertFalse(user_message.flags.starred.is_set)
+            self.assertFalse(user_message.flags.read.is_set)
+            self.assertFalse(user_message.flags.historical.is_set)
+
+        # Initial DM sent by welcome bot is also starred.
+        initial_direct_user_message = UserMessage.objects.get(
+            user_profile=hamlet, message__recipient__type=Recipient.PERSONAL
+        )
+        self.assertTrue(initial_direct_user_message.flags.starred.is_set)
 
     def test_auto_subbed_to_personals(self) -> None:
         """
@@ -819,7 +927,7 @@ class LoginTest(ZulipTestCase):
 
     def test_login_bad_password(self) -> None:
         user = self.example_user("hamlet")
-        password: Optional[str] = "wrongpassword"
+        password: str | None = "wrongpassword"
         result = self.login_with_return(user.delivery_email, password=password)
         self.assert_in_success_response([user.delivery_email], result)
         self.assert_logged_in_user_id(None)
@@ -859,17 +967,20 @@ class LoginTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         password = "a_password_of_22_chars"
 
-        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.SHA1PasswordHasher",)):
+        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",)):
             user_profile.set_password(password)
             user_profile.save()
 
-        with self.settings(
-            PASSWORD_HASHERS=(
-                "django.contrib.auth.hashers.MD5PasswordHasher",
-                "django.contrib.auth.hashers.SHA1PasswordHasher",
+        with (
+            self.settings(
+                PASSWORD_HASHERS=(
+                    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+                    "django.contrib.auth.hashers.MD5PasswordHasher",
+                ),
+                PASSWORD_MIN_LENGTH=30,
             ),
-            PASSWORD_MIN_LENGTH=30,
-        ), self.assertLogs("zulip.auth.email", level="INFO"):
+            self.assertLogs("zulip.auth.email", level="INFO"),
+        ):
             result = self.login_with_return(self.example_email("hamlet"), password)
             self.assertEqual(result.status_code, 200)
             self.assert_in_response(
@@ -922,7 +1033,7 @@ class LoginTest(ZulipTestCase):
         # Make sure there's at least one recent message to be mark
         # unread.  This prevents a bug where this test would start
         # failing the test database was generated more than
-        # ONBOARDING_RECENT_TIMEDELTA ago.
+        # RECENT_MESSAGES_TIMEDELTA ago.
         self.subscribe(hamlet, "stream_0")
         self.send_stream_message(
             hamlet,
@@ -939,9 +1050,12 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(91), self.assert_memcached_count(14):
-            with self.captureOnCommitCallbacks(execute=True):
-                self.register(self.nonreg_email("test"), "test")
+        with (
+            self.assert_database_query_count(94),
+            self.assert_memcached_count(14),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            self.register(self.nonreg_email("test"), "test")
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -1624,8 +1738,9 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         # Make sure the correct Welcome Bot direct message is sent.
+        realm = get_realm(string_id)
         welcome_msg = Message.objects.filter(
-            realm_id=get_realm(string_id).id,
+            realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
             recipient__type=Recipient.PERSONAL,
         ).latest("id")
@@ -1636,6 +1751,22 @@ class RealmCreationTest(ZulipTestCase):
         self.assertIn("Getting started guide", welcome_msg.content)
         self.assertNotIn("Using Zulip for a class guide", welcome_msg.content)
         self.assertNotIn("demo organization", welcome_msg.content)
+
+        # Organization has tracked onboarding messages.
+        self.assertTrue(OnboardingUserMessage.objects.filter(realm_id=realm.id).exists())
+        self.assertIn("I've kicked off some conversations", welcome_msg.content)
+
+        # Verify that Organization without 'OnboardingUserMessage' records
+        # doesn't include "I've kicked off..." text in welcome_msg content.
+        OnboardingUserMessage.objects.filter(realm_id=realm.id).delete()
+        do_create_user("hamlet", "password", realm, "hamlet", acting_user=None)
+        welcome_msg = Message.objects.filter(
+            realm_id=realm.id,
+            sender__email="welcome-bot@zulip.com",
+            recipient__type=Recipient.PERSONAL,
+        ).latest("id")
+        self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertNotIn("I've kicked off some conversations", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
@@ -2104,10 +2235,10 @@ class UserSignUpTest(ZulipTestCase):
         self,
         *,
         email: str = "newguy@zulip.com",
-        password: Optional[str] = "newpassword",
+        password: str | None = "newpassword",
         full_name: str = "New user's name",
-        realm: Optional[Realm] = None,
-        subdomain: Optional[str] = None,
+        realm: Realm | None = None,
+        subdomain: str | None = None,
     ) -> Union[UserProfile, "TestHttpResponse"]:
         """Common test function for signup tests.  It is a goal to use this
         common function for all signup tests to avoid code duplication; doing
@@ -2116,7 +2247,7 @@ class UserSignUpTest(ZulipTestCase):
         if realm is None:  # nocoverage
             realm = get_realm("zulip")
 
-        client_kwargs: Dict[str, Any] = {}
+        client_kwargs: dict[str, Any] = {}
         if subdomain:
             client_kwargs["subdomain"] = subdomain
 
@@ -2818,21 +2949,23 @@ class UserSignUpTest(ZulipTestCase):
             return_data = kwargs.get("return_data", {})
             return_data["invalid_subdomain"] = True
 
-        with patch("zerver.views.registration.authenticate", side_effect=invalid_subdomain):
-            with self.assertLogs(level="ERROR") as m:
-                result = self.client_post(
-                    "/accounts/register/",
-                    {
-                        "password": password,
-                        "full_name": "New User",
-                        "key": find_key_by_email(email),
-                        "terms": True,
-                    },
-                )
-                self.assertEqual(
-                    m.output,
-                    ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
-                )
+        with (
+            patch("zerver.views.registration.authenticate", side_effect=invalid_subdomain),
+            self.assertLogs(level="ERROR") as m,
+        ):
+            result = self.client_post(
+                "/accounts/register/",
+                {
+                    "password": password,
+                    "full_name": "New User",
+                    "key": find_key_by_email(email),
+                    "terms": True,
+                },
+            )
+            self.assertEqual(
+                m.output,
+                ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
+            )
         self.assertEqual(result.status_code, 302)
 
     def test_signup_using_invalid_subdomain_preserves_state_of_form(self) -> None:
@@ -2899,7 +3032,7 @@ class UserSignUpTest(ZulipTestCase):
                 last_message.content,
             )
             self.assertEqual(
-                set(get_huddle_user_ids(last_message.recipient)),
+                set(get_direct_message_group_user_ids(last_message.recipient)),
                 expected_group_direct_message_user_ids,
             )
 
@@ -3180,13 +3313,15 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
 
-        with self.settings(
-            POPULATE_PROFILE_VIA_LDAP=True,
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-        ), self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs, self.assertLogs(
-            level="WARNING"
-        ) as root_logs:
+        with (
+            self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN="zulip.com",
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            ),
+            self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs,
+            self.assertLogs(level="WARNING") as root_logs,
+        ):
             # Click confirmation link
             result = self.submit_reg_form_for_user(
                 email,
@@ -3412,9 +3547,12 @@ class UserSignUpTest(ZulipTestCase):
 
         self.change_ldap_user_attr("newuser_with_email", "mail", "thisisnotavalidemail")
 
-        with self.settings(
-            LDAP_EMAIL_ATTR="mail",
-        ), self.assertLogs("zulip.auth.ldap", "WARNING") as mock_log:
+        with (
+            self.settings(
+                LDAP_EMAIL_ATTR="mail",
+            ),
+            self.assertLogs("zulip.auth.ldap", "WARNING") as mock_log,
+        ):
             original_user_count = UserProfile.objects.count()
             self.login_with_return(username, password, HTTP_HOST=subdomain + ".testserver")
             # Verify that the process failed as intended - no UserProfile is created.
@@ -3563,11 +3701,14 @@ class UserSignUpTest(ZulipTestCase):
 
         # If the user's email is not in the LDAP directory, but fits LDAP_APPEND_DOMAIN,
         # we refuse to create the account.
-        with self.settings(
-            POPULATE_PROFILE_VIA_LDAP=True,
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-        ), self.assertLogs("zulip.ldap", "DEBUG") as debug_log:
+        with (
+            self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN="zulip.com",
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            ),
+            self.assertLogs("zulip.ldap", "DEBUG") as debug_log,
+        ):
             result = self.submit_reg_form_for_user(
                 email,
                 password,
@@ -3974,9 +4115,10 @@ class UserSignUpTest(ZulipTestCase):
         # (this is an invalid state, so it's a bug we got here):
         change_user_is_active(user_profile, True)
 
-        with self.assertRaisesRegex(
-            AssertionError, "Mirror dummy user is already active!"
-        ), self.assertLogs("django.request", "ERROR") as error_log:
+        with (
+            self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"),
+            self.assertLogs("django.request", "ERROR") as error_log,
+        ):
             result = self.submit_reg_form_for_user(
                 email,
                 password,
@@ -4028,9 +4170,10 @@ class UserSignUpTest(ZulipTestCase):
         user_profile.save()
         change_user_is_active(user_profile, True)
 
-        with self.assertRaisesRegex(
-            AssertionError, "Mirror dummy user is already active!"
-        ), self.assertLogs("django.request", "ERROR") as error_log:
+        with (
+            self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"),
+            self.assertLogs("django.request", "ERROR") as error_log,
+        ):
             self.client_post("/register/", {"email": email}, subdomain="zephyr")
         self.assertTrue(
             "ERROR:django.request:Internal Server Error: /register/" in error_log.output[0]

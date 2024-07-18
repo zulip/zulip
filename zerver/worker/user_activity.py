@@ -1,6 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from django.db import connection
 from psycopg2.sql import SQL, Literal
@@ -31,7 +31,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
 
     """
 
-    client_id_map: Dict[str, int] = {}
+    client_id_map: dict[str, int] = {}
 
     @override
     def start(self) -> None:
@@ -40,8 +40,8 @@ class UserActivityWorker(LoopQueueProcessingWorker):
         super().start()
 
     @override
-    def consume_batch(self, user_activity_events: List[Dict[str, Any]]) -> None:
-        uncommitted_events: Dict[Tuple[int, int, str], Tuple[int, float]] = {}
+    def consume_batch(self, user_activity_events: list[dict[str, Any]]) -> None:
+        uncommitted_events: dict[tuple[int, int, str], tuple[int, float]] = {}
 
         # First, we drain the queue of all user_activity events and
         # deduplicate them for insertion into the database.

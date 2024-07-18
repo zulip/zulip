@@ -10,7 +10,8 @@ import signal
 import sys
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
-from typing import List, Match, Optional, Set, TextIO, Tuple
+from re import Match
+from typing import TextIO
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
@@ -147,7 +148,7 @@ NGINX_LOG_LINE_RE = re.compile(
       (?P<hostname> \S+ ) \s+
       (?P<duration> \S+ )
     """,
-    re.X,
+    re.VERBOSE,
 )
 
 PYTHON_LOG_LINE_RE = re.compile(
@@ -178,7 +179,7 @@ PYTHON_LOG_LINE_RE = re.compile(
         ) \s+ via \s+ (?P<user_agent> .* )
       \)
     """,
-    re.X,
+    re.VERBOSE,
 )
 
 
@@ -242,7 +243,7 @@ def main() -> None:
         sys.exit(signal.SIGINT + 128)
 
 
-def parse_logfile_names(args: argparse.Namespace) -> List[str]:
+def parse_logfile_names(args: argparse.Namespace) -> list[str]:
     if args.nginx:
         base_path = "/var/log/nginx/access.log"
     else:
@@ -311,7 +312,7 @@ def convert_to_nginx_date(date: str) -> str:
 
 def parse_filters(
     args: argparse.Namespace,
-) -> Tuple[Set[FilterType], List[FilterFunc], List[str]]:
+) -> tuple[set[FilterType], list[FilterFunc], list[str]]:
     # The heuristics below are not intended to be precise -- they
     # certainly count things as "IPv4" or "IPv6" addresses that are
     # invalid.  However, we expect the input here to already be
@@ -397,7 +398,7 @@ def parse_filters(
 
 
 def passes_filters(
-    string_filters: List[FilterFunc],
+    string_filters: list[FilterFunc],
     match: Match[str],
     args: argparse.Namespace,
 ) -> bool:
@@ -428,13 +429,13 @@ def passes_filters(
         return not args.no_other
 
 
-last_match_end: Optional[datetime] = None
+last_match_end: datetime | None = None
 
 
 def print_line(
     match: Match[str],
     args: argparse.Namespace,
-    filter_types: Set[FilterType],
+    filter_types: set[FilterType],
     use_color: bool,
 ) -> None:
     global last_match_end

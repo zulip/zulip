@@ -1,5 +1,3 @@
-from typing import List
-
 import orjson
 from django.utils.translation import gettext as _
 
@@ -15,7 +13,7 @@ def extract_stream_id(req_to: str) -> int:
     return stream_id
 
 
-def extract_direct_message_recipient_ids(req_to: str) -> List[int]:
+def extract_direct_message_recipient_ids(req_to: str) -> list[int]:
     try:
         user_ids = orjson.loads(req_to)
     except orjson.JSONDecodeError:

@@ -3,7 +3,6 @@
 import os
 import sys
 from contextlib import suppress
-from typing import Dict, List
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -62,7 +61,7 @@ def generate_django_secretkey() -> str:
     return get_random_string(50, chars)
 
 
-def get_old_conf(output_filename: str) -> Dict[str, str]:
+def get_old_conf(output_filename: str) -> dict[str, str]:
     if not os.path.exists(output_filename) or os.path.getsize(output_filename) == 0:
         return {}
 
@@ -79,7 +78,7 @@ def generate_secrets(development: bool = False) -> None:
         OUTPUT_SETTINGS_FILENAME = "/etc/zulip/zulip-secrets.conf"
     current_conf = get_old_conf(OUTPUT_SETTINGS_FILENAME)
 
-    lines: List[str] = []
+    lines: list[str] = []
     if len(current_conf) == 0:
         lines = ["[secrets]\n"]
 

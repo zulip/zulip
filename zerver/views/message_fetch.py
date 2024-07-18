@@ -1,4 +1,5 @@
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from collections.abc import Iterable
+from typing import Annotated
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -9,7 +10,6 @@ from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
 from sqlalchemy.sql import and_, column, join, literal, literal_column, select, table
 from sqlalchemy.types import Integer, Text
-from typing_extensions import Annotated
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
@@ -21,6 +21,7 @@ from zerver.lib.narrow import (
     is_spectator_compatible,
     is_web_public_narrow,
     parse_anchor_value,
+    update_narrow_terms_containing_with_operator,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -33,7 +34,7 @@ from zerver.models import UserMessage, UserProfile
 MAX_MESSAGES_PER_FETCH = 5000
 
 
-def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
+def highlight_string(text: str, locs: Iterable[tuple[int, int]]) -> str:
     highlight_start = '<span class="highlight">'
     highlight_stop = "</span>"
     pos = 0
@@ -73,9 +74,9 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
 def get_search_fields(
     rendered_content: str,
     topic_name: str,
-    content_matches: Iterable[Tuple[int, int]],
-    topic_matches: Iterable[Tuple[int, int]],
-) -> Dict[str, str]:
+    content_matches: Iterable[tuple[int, int]],
+    topic_matches: Iterable[tuple[int, int]],
+) -> dict[str, str]:
     return {
         "match_content": highlight_string(rendered_content, content_matches),
         MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
@@ -83,8 +84,8 @@ def get_search_fields(
 
 
 def clean_narrow_for_web_public_api(
-    narrow: Optional[List[NarrowParameter]],
-) -> Optional[List[NarrowParameter]]:
+    narrow: list[NarrowParameter] | None,
+) -> list[NarrowParameter] | None:
     if narrow is None:
         return None
 
@@ -101,20 +102,22 @@ def clean_narrow_for_web_public_api(
 @typed_endpoint
 def get_messages_backend(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    anchor_val: Annotated[Optional[str], ApiParamConfig("anchor")] = None,
+    anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
     include_anchor: Json[bool] = True,
     num_before: Json[NonNegativeInt],
     num_after: Json[NonNegativeInt],
-    narrow: Json[Optional[List[NarrowParameter]]] = None,
+    narrow: Json[list[NarrowParameter] | None] = None,
     use_first_unread_anchor_val: Annotated[
         Json[bool], ApiParamConfig("use_first_unread_anchor")
     ] = False,
     client_gravatar: Json[bool] = True,
     apply_markdown: Json[bool] = True,
 ) -> HttpResponse:
+    realm = get_valid_realm_from_request(request)
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
+    narrow = update_narrow_terms_containing_with_operator(realm, maybe_user_profile, narrow)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         raise JsonableError(
             _("Too many messages requested (maximum {max_messages}).").format(
@@ -124,7 +127,6 @@ def get_messages_backend(
     if num_before > 0 and num_after > 0 and not include_anchor:
         raise JsonableError(_("The anchor can only be excluded at an end of the range"))
 
-    realm = get_valid_realm_from_request(request)
     if not maybe_user_profile.is_authenticated:
         # If user is not authenticated, clients must include
         # `streams:web-public` in their narrow query to indicate this
@@ -148,7 +150,7 @@ def get_messages_backend(
         # We use None to indicate unauthenticated requests as it's more
         # readable than using AnonymousUser, and the lack of Django
         # stubs means that mypy can't check AnonymousUser well.
-        user_profile: Optional[UserProfile] = None
+        user_profile: UserProfile | None = None
         is_web_public_query = True
     else:
         assert isinstance(maybe_user_profile, UserProfile)
@@ -224,8 +226,8 @@ def get_messages_backend(
         # rendered message dict before returning it.  We attempt to
         # bulk-fetch rendered message dicts from remote cache using the
         # 'messages' list.
-        message_ids: List[int] = []
-        user_message_flags: Dict[int, List[str]] = {}
+        message_ids: list[int] = []
+        user_message_flags: dict[int, list[str]] = {}
         if is_web_public_query:
             # For spectators, we treat all historical messages as read.
             for row in rows:
@@ -252,7 +254,7 @@ def get_messages_backend(
                 user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
                 message_ids.append(message_id)
 
-        search_fields: Dict[int, Dict[str, str]] = {}
+        search_fields: dict[int, dict[str, str]] = {}
         if is_search:
             for row in rows:
                 message_id = row[0]
@@ -290,8 +292,8 @@ def messages_in_narrow_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    msg_ids: Json[List[int]],
-    narrow: Json[List[NarrowParameter]],
+    msg_ids: Json[list[int]],
+    narrow: Json[list[NarrowParameter]],
 ) -> HttpResponse:
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]

@@ -1,23 +1,36 @@
+# Zulip Travis CI integration
+
 See your Travis CI build notifications in Zulip!
+
+{start_tabs}
 
 1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. Add the following to the bottom of your `.travis.yml` file:
+1. {!generate-webhook-url-basic.md!}
+
+1. Add the following to the bottom of your `.travis.yml` file, and push
+   the change to your repository:
 
     ```
     notifications:
       webhooks:
-        - <URL constructed above>
+        - <URL generated above>
     ```
 
-    Push this change to your repository. To further configure which
-    specific events should trigger a notification, see
-    [Travis CI's webhook documentation][1].
-
-[1]: https://docs.travis-ci.com/user/notifications/#Configuring-webhook-notifications
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/travis/001.png)
+
+{!event-filtering-additional-feature.md!}
+
+### Related documentation
+
+- [Travis CI's webhook documentation][1]
+
+{!webhooks-url-specification.md!}
+
+[1]: https://docs.travis-ci.com/user/notifications/#configuring-webhook-notifications

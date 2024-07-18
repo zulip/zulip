@@ -2,27 +2,42 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
-const narrow_state = mock_esm("../src/narrow_state");
 const search_suggestion = mock_esm("../src/search_suggestion");
 
-const Filter = {};
-
-mock_esm("../src/filter", {
-    Filter,
-});
-
 const search = zrequire("search");
+const search_pill = zrequire("search_pill");
+const stream_data = zrequire("stream_data");
+
+function stub_pills() {
+    const $pill_container = $("#searchbox-input-container.pill-container");
+    const $pill_input = $.create("pill_input");
+    $pill_container.set_find_results(".input", $pill_input);
+    $pill_input.before = noop;
+}
+
+set_global("getSelection", () => ({
+    modify: noop,
+}));
 
 let typeahead_forced_open = false;
+
+const verona = {
+    subscribed: true,
+    color: "blue",
+    name: "Verona",
+    stream_id: 1,
+};
+stream_data.add_sub(verona);
 
 run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
+    stub_pills();
 
     mock_template("search_list_item.hbs", true, (data, html) => {
         assert.equal(typeof data.description_html, "string");
@@ -37,13 +52,32 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         return html;
     });
 
+    let expected_suggestion_parts = [];
+    mock_template("search_description.hbs", false, (data, html) => {
+        assert.deepStrictEqual(data.parts, expected_suggestion_parts);
+        return html;
+    });
+    let expected_pill_display_value = "";
+    let input_pill_displayed = false;
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(data.display_value, expected_pill_display_value);
+        input_pill_displayed = true;
+        return html;
+    });
+
     search_suggestion.max_num_of_search_results = 999;
     let terms;
+
+    function mock_pill_removes(widget) {
+        const pills = widget._get_pills_for_testing();
+        for (const pill of pills) {
+            pill.$element.remove = noop;
+        }
+    }
 
     override(bootstrap_typeahead, "Typeahead", (input_element, opts) => {
         assert.equal(input_element.$element, $search_query_box);
         assert.equal(opts.items, 999);
-        assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);
 
@@ -72,7 +106,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             search_suggestion.get_suggestions = () => search_suggestions;
             const expected_source_value = search_suggestions.strings;
             const source = opts.source("ver");
-            assert.equal(source, expected_source_value);
+            assert.deepStrictEqual(source, expected_source_value);
 
             /* Test highlighter */
             let expected_value = `<div class="search_list_item">\n    <span>Search for ver</span>\n</div>\n`;
@@ -160,19 +194,19 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             search_suggestion.get_suggestions = () => search_suggestions;
             const expected_source_value = search_suggestions.strings;
             const source = opts.source("zo");
-            assert.equal(source, expected_source_value);
+            assert.deepStrictEqual(source, expected_source_value);
 
             /* Test highlighter */
             let expected_value = `<div class="search_list_item">\n    <span>Search for zo</span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[1]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[3]), expected_value);
 
             /* Test sorter */
@@ -180,18 +214,17 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         }
 
         {
-            let is_blurred;
-            $search_query_box.on("blur", () => {
-                is_blurred = true;
-            });
             /* Test updater */
-            const _setup = (search_box_val) => {
-                is_blurred = false;
-                $search_query_box.val(search_box_val);
-                Filter.parse = (search_string) => {
-                    assert.equal(search_string, search_box_val);
-                    return terms;
-                };
+            const _setup = (terms) => {
+                const pills = search.search_pill_widget._get_pills_for_testing();
+                for (const pill of pills) {
+                    pill.$element.remove = noop;
+                }
+                search_pill.set_search_bar_contents(
+                    terms,
+                    search.search_pill_widget,
+                    $search_query_box.text,
+                );
             };
 
             terms = [
@@ -201,27 +234,48 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                     operand: "ver",
                 },
             ];
-            _setup("ver");
+            expected_suggestion_parts = [
+                {
+                    operand: "ver",
+                    prefix_for_operator: "search for",
+                    type: "prefix_for_operator",
+                },
+            ];
+            expected_pill_display_value = null;
+            _setup(terms);
+            input_pill_displayed = false;
+            mock_pill_removes(search.search_pill_widget);
+            $(".navbar-search.expanded").length = 1;
             assert.equal(opts.updater("ver"), "ver");
-            assert.ok(is_blurred);
+            assert.ok(!input_pill_displayed);
 
             terms = [
                 {
                     negated: false,
-                    operator: "stream",
+                    operator: "channel",
                     operand: "Verona",
                 },
             ];
-            _setup("stream:Verona");
-            assert.equal(opts.updater("stream:Verona"), "stream:Verona");
-            assert.ok(is_blurred);
+            expected_suggestion_parts = [
+                {
+                    type: "prefix_for_operator",
+                    prefix_for_operator: "channel",
+                    operand: "Verona",
+                },
+            ];
+            expected_pill_display_value = "channel: Verona";
+            _setup(terms);
+            input_pill_displayed = false;
+            mock_pill_removes(search.search_pill_widget);
+            assert.equal(opts.updater("channel:Verona"), "");
+            assert.ok(input_pill_displayed);
 
             search.__Rewire__("is_using_input_method", true);
-            _setup("stream:Verona");
-            assert.equal(opts.updater("stream:Verona"), "stream:Verona");
-            assert.ok(!is_blurred);
-
-            $search_query_box.off("blur");
+            _setup(terms);
+            input_pill_displayed = false;
+            mock_pill_removes(search.search_pill_widget);
+            assert.equal(opts.updater("channel:Verona"), "");
+            assert.ok(input_pill_displayed);
         }
         return {
             lookup() {
@@ -231,14 +285,10 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     });
 
     search.initialize({
-        on_narrow_search(raw_terms, options) {
-            assert.deepEqual(raw_terms, terms);
-            assert.deepEqual(options, {trigger: "search"});
-        },
+        on_narrow_search() {},
     });
 
-    $search_query_box.val("test string");
-    narrow_state.search_string = () => "ver";
+    $search_query_box.text("test string");
 
     search.__Rewire__("is_using_input_method", false);
     $searchbox_form.trigger("compositionend");
@@ -269,19 +319,17 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     ev = {
         type: "keyup",
     };
-    let is_blurred;
-    $search_query_box.off("blur");
-    $search_query_box.on("blur", () => {
-        is_blurred = true;
-    });
 
-    const _setup = (search_box_val) => {
-        is_blurred = false;
-        $search_query_box.val(search_box_val);
-        Filter.parse = (search_string) => {
-            assert.equal(search_string, search_box_val);
-            return terms;
-        };
+    const _setup = (terms) => {
+        const pills = search.search_pill_widget._get_pills_for_testing();
+        for (const pill of pills) {
+            pill.$element.remove = noop;
+        }
+        search_pill.set_search_bar_contents(
+            terms,
+            search.search_pill_widget,
+            $search_query_box.text,
+        );
     };
 
     terms = [
@@ -291,56 +339,66 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             operand: "",
         },
     ];
-    _setup("");
+    _setup(terms);
 
     ev.key = "a";
     /* istanbul ignore next */
     $search_query_box.is = () => false;
     $searchbox_form.trigger(ev);
 
-    assert.ok(!is_blurred);
+    let search_exited = false;
+    override_rewire(search, "exit_search", () => {
+        search_exited = true;
+    });
 
     ev.key = "Enter";
     $search_query_box.is = () => false;
     $searchbox_form.trigger(ev);
+    assert.ok(!search_exited);
 
-    assert.ok(!is_blurred);
-
-    override_rewire(search, "exit_search", noop);
     ev.key = "Enter";
     $search_query_box.is = () => true;
     $searchbox_form.trigger(ev);
-    assert.ok(is_blurred);
+    assert.ok(search_exited);
 
-    _setup("ver");
+    let is_blurred = false;
+    $search_query_box.on("blur", () => {
+        is_blurred = true;
+    });
+    terms = [
+        {
+            negated: false,
+            operator: "search",
+            operand: "ver",
+        },
+    ];
+    expected_suggestion_parts = [
+        {
+            operand: "ver",
+            prefix_for_operator: "search for",
+            type: "prefix_for_operator",
+        },
+    ];
+    expected_pill_display_value = "ver";
+    _setup(terms);
     ev.key = "Enter";
     search.__Rewire__("is_using_input_method", true);
     $searchbox_form.trigger(ev);
-    // No change on Enter keyup event when using input tool
+    // No change on first Enter keyup event
     assert.ok(!is_blurred);
-
-    _setup("ver");
-    ev.key = "Enter";
-    $search_query_box.is = () => true;
     $searchbox_form.trigger(ev);
     assert.ok(is_blurred);
 });
 
-run_test("initiate_search", () => {
-    // open typeahead and select text when navbar is open
-    // this implicitly expects the code to used the chained
-    // function calls, which is something to keep in mind if
-    // this test ever fails unexpectedly.
-    narrow_state.filter = () => ({is_keyword_search: () => false});
-    let is_searchbox_text_selected = false;
-    $("#search_query").on("select", () => {
-        is_searchbox_text_selected = true;
+run_test("initiate_search", ({override_rewire}) => {
+    let search_bar_opened = false;
+    override_rewire(search, "open_search_bar_and_close_narrow_description", () => {
+        search_bar_opened = true;
     });
-
     $(".navbar-search.expanded").length = 0;
+    $("#search_query").text("");
     search.initiate_search();
     assert.ok(typeahead_forced_open);
-    assert.ok(is_searchbox_text_selected);
-    // test that we append space for user convenience
-    assert.equal($("#search_query").val(), "ver ");
+    assert.ok(search_bar_opened);
+    assert.equal($("#search_query").text(), "");
 });

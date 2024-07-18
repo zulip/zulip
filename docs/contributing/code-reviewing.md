@@ -213,13 +213,13 @@ down the line!
 - Open up the parts of the UI that were changed, and make sure they look as
   you were expecting.
 - Is the new UI consistent with similar UI elements? Think about fonts, colors,
-  sizes, etc. If a new or modified element has multiple states (e.g. "on" and
+  sizes, etc. If a new or modified element has multiple states (e.g., "on" and
   "off"), consider all of them.
 - Is the new UI aligned correctly with the elements around it, both vertically and
   horizontally?
 - If the PR adds or modifies a clickable element, does it have a hover behavior
   that's consistent with similar UI elements?
-- If the PR adds or modifies an element (e.g. a button or checkbox) that is
+- If the PR adds or modifies an element (e.g., a button or checkbox) that is
   sometimes disabled, is the disabled version of the UI consistent with similar
   UI elements?
 - Did the PR accidentally affect any other parts of the UI? E.g., if the PR

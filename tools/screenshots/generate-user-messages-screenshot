@@ -6,8 +6,8 @@ import os
 import subprocess
 import sys
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
 
+from django.conf import settings
 from pydantic import BaseModel, ConfigDict
 
 SCREENSHOTS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -33,9 +33,12 @@ import json
 
 from tools.lib.test_script import prepare_puppeteer_run
 from zerver.actions.create_user import do_create_user
+from zerver.actions.message_edit import check_update_message
+from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.message_send import do_send_messages, internal_prep_stream_message
 from zerver.actions.reactions import do_add_reaction
 from zerver.actions.streams import bulk_add_subscriptions, do_change_subscription_property
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.message import SendMessageRequest, access_message
@@ -45,12 +48,30 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import topic_narrow_url
 from zerver.models import Message, UserProfile
+from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import get_realm
-from zerver.models.users import get_user_by_delivery_email
+from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 realm = get_realm("zulip")
+realm.message_content_edit_limit_seconds = None
+realm.save()
+
 DEFAULT_USER = get_user_by_delivery_email("iago@zulip.com", realm)
-message_thread_ids: List[int] = []
+NOTIFICATION_BOT = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+message_thread_ids: list[int] = []
+
+USER_AVATARS_MAP = {
+    "Ariella Drake": "tools/screenshots/user_avatars/AriellaDrake.png",
+    "Elena Garcia": "tools/screenshots/user_avatars/ElenaGarcia.jpg",
+    "Kevin Lin": "tools/screenshots/user_avatars/KevinLin.png",
+    "Zoe Davis": "tools/screenshots/user_avatars/ZoeDavis.png",
+    "Bo Williams": "tools/screenshots/user_avatars/BoWilliams.png",
+    "James Williams": "tools/screenshots/user_avatars/JamesWilliams.png",
+    "Manvir Singh": "tools/screenshots/user_avatars/ManvirSingh.png",
+    "Dal Kim": "tools/screenshots/user_avatars/DalKim.jpg",
+    "John Lin": "tools/screenshots/user_avatars/JohnLin.png",
+    "Maxy Stert": "tools/screenshots/user_avatars/MaxyStert.jpg",
+}
 
 
 class MessageThread(BaseModel):
@@ -58,18 +79,20 @@ class MessageThread(BaseModel):
 
     sender: str
     content: str
-    reactions: Dict[str, List[str]]
-    date: Dict[str, int]
+    starred: bool
+    edited: bool
+    reactions: dict[str, list[str]]
+    date: dict[str, int]
 
 
-def create_user(full_name: str, avatar_filename: str) -> None:
+def create_user(full_name: str, avatar_filename: str | None) -> None:
     email = f'{full_name.replace(" ", "")}@zulip.com'
     try:
         user = UserProfile.objects.get(realm=realm, full_name=full_name)
     except UserProfile.DoesNotExist:
         user = do_create_user(email, "password", realm, full_name, acting_user=DEFAULT_USER)
 
-    if avatar_filename != "":
+    if avatar_filename is not None:
         set_avatar(user, avatar_filename)
 
 
@@ -80,9 +103,9 @@ def set_avatar(user: UserProfile, filename: str) -> None:
 
 
 def create_and_subscribe_stream(
-    stream_name: str, users: List[str], color: Optional[str] = None
+    stream_name: str, users: list[str], color: str | None = None, invite_only: bool = False
 ) -> None:
-    stream = ensure_stream(realm, stream_name, acting_user=DEFAULT_USER)
+    stream = ensure_stream(realm, stream_name, invite_only=invite_only, acting_user=DEFAULT_USER)
     bulk_add_subscriptions(
         realm,
         [stream],
@@ -99,20 +122,22 @@ def create_and_subscribe_stream(
 
 
 def send_stream_messages(
-    stream_name: str, topic: str, staged_messages_data: List[MessageThread]
-) -> List[int]:
+    stream_name: str, topic: str, staged_messages_data: list[MessageThread]
+) -> list[int]:
     staged_messages = [dict(staged_message) for staged_message in staged_messages_data]
     stream = ensure_stream(realm, stream_name, acting_user=DEFAULT_USER)
     subscribers_query = get_active_subscriptions_for_stream_id(
         stream.id, include_deactivated_users=False
     ).values_list("user_profile", flat=True)
 
-    subscribers: Dict[str, UserProfile] = {}
+    subscribers: dict[str, UserProfile] = {}
     for subscriber_id in subscribers_query:
         subscriber = UserProfile.objects.get(realm=realm, id=subscriber_id)
         subscribers[subscriber.full_name] = subscriber
 
-    messages: List[Optional[SendMessageRequest]] = []
+    subscribers["Notification Bot"] = NOTIFICATION_BOT
+
+    messages: list[SendMessageRequest | None] = []
 
     for message in staged_messages:
         date_sent = message["date"]
@@ -142,23 +167,39 @@ def send_stream_messages(
     global message_thread_ids
     message_thread_ids += message_ids
 
-    for message, message_id in zip(staged_messages, message_ids):
+    for message, message_id in zip(staged_messages, message_ids, strict=False):
         if message.get("reactions") is not None:
             reactions = message["reactions"]
             for reaction, user_names in reactions.items():
                 users = [subscribers[user_name] for user_name in user_names]
                 add_message_reactions(message_id, reaction, users)
 
+        if message.get("starred"):
+            do_update_message_flags(DEFAULT_USER, "add", "starred", [message_id])
+
+        if message.get("edited"):
+            sender = UserProfile.objects.get(realm=realm, full_name=message["sender"])
+            updated_content = message["content"] + " "
+            check_update_message(sender, message_id, content=updated_content)
+
     return message_ids
 
 
-def add_message_reactions(message_id: int, emoji: str, users: List[UserProfile]) -> None:
+def add_message_reactions(message_id: int, emoji: str, users: list[UserProfile]) -> None:
     preview_message = access_message(user_profile=DEFAULT_USER, message_id=message_id)
     emoji_data = get_emoji_data(realm.id, emoji)
     for user in users:
         do_add_reaction(
             user, preview_message, emoji, emoji_data.emoji_code, emoji_data.reaction_type
         )
+
+
+def create_user_group(group_name: str, members: list[str]) -> None:
+    member_profiles = [
+        UserProfile.objects.get(realm=realm, full_name=member_name) for member_name in members
+    ]
+    member_profiles.append(DEFAULT_USER)
+    check_add_user_group(realm, group_name, member_profiles, acting_user=DEFAULT_USER)
 
 
 def capture_streams_narrow_screenshot(
@@ -193,13 +234,28 @@ try:
     with open(options.thread[0]) as f:
         threads = json.load(f)
         for thread in threads:
-            for user, avatar in thread["users"].items():
-                create_user(user, avatar)
+            for user in thread["users"]:
+                user_avatar = USER_AVATARS_MAP.get(user)
+                create_user(user, user_avatar)
 
             if thread["recipient_type"] == "channel":
                 users = list(thread["users"].keys())
                 users.append("Iago")
-                create_and_subscribe_stream(thread["channel"], users, thread["color"])
+
+                if thread.get("user_groups") is not None:
+                    for user_group in thread.get("user_groups"):
+                        user_grp = NamedUserGroup.objects.filter(
+                            name=user_group["group_name"], realm=realm
+                        ).first()
+                        if user_grp is not None:
+                            user_grp.delete()
+
+                        create_user_group(user_group["group_name"], user_group["members"])
+
+                invite_only = (
+                    False if thread.get("invite_only") is None else thread.get("invite_only")
+                )
+                create_and_subscribe_stream(thread["channel"], users, thread["color"], invite_only)
                 message_ids = send_stream_messages(
                     thread["channel"], thread["topic"], thread["messages"]
                 )

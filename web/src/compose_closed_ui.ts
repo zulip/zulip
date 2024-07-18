@@ -4,6 +4,7 @@ import * as compose_actions from "./compose_actions";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
+import * as message_util from "./message_util";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
@@ -81,79 +82,35 @@ function update_reply_button_state(disable = false): void {
     }
 }
 
-function update_new_conversation_button(
-    btn_text: string,
-    is_direct_message_narrow?: boolean,
-): void {
-    const $new_conversation_button = $("#new_conversation_button");
-    $new_conversation_button.text(btn_text);
-    // In a direct-message narrow, the new conversation button should act
-    // like a new direct message button
-    if (is_direct_message_narrow) {
-        $new_conversation_button.addClass("compose_new_direct_message_button");
-        $new_conversation_button.removeClass("compose_new_conversation_button");
-    } else {
-        // Restore the usual new conversation button class, if it was
-        // changed after a previous direct-message narrow visit
-        $new_conversation_button.addClass("compose_new_conversation_button");
-        $new_conversation_button.removeClass("compose_new_direct_message_button");
-    }
-}
-
-function update_new_direct_message_button(btn_text: string): void {
-    $("#new_direct_message_button").text(btn_text);
-}
-
-function toggle_direct_message_button_visibility(is_direct_message_narrow?: boolean): void {
-    const $new_direct_message_button_container = $(".new_direct_message_button_container");
-    if (is_direct_message_narrow) {
-        $new_direct_message_button_container.hide();
-    } else {
-        $new_direct_message_button_container.show();
-    }
-}
-
-function update_buttons(
-    text_stream: string,
-    is_direct_message_narrow?: boolean,
-    disable_reply?: boolean,
-): void {
-    const text_conversation = $t({defaultMessage: "New direct message"});
-    update_new_conversation_button(text_stream, is_direct_message_narrow);
-    update_new_direct_message_button(text_conversation);
+function update_buttons(disable_reply?: boolean): void {
     update_reply_button_state(disable_reply);
-    toggle_direct_message_button_visibility(is_direct_message_narrow);
 }
 
 export function update_buttons_for_private(): void {
-    const text_stream = $t({defaultMessage: "Start new conversation"});
-    const is_direct_message_narrow = true;
     const pm_ids_string = narrow_state.pm_ids_string();
 
     let disable_reply;
 
-    if (!pm_ids_string || people.user_can_direct_message(pm_ids_string)) {
+    if (!pm_ids_string || message_util.user_can_send_direct_message(pm_ids_string)) {
         disable_reply = false;
     } else {
         // disable the [Message X] button when in a private narrow
         // if the user cannot dm the current recipient
         disable_reply = true;
     }
-    $("#new_conversation_button").attr("data-conversation-type", "direct");
 
-    update_buttons(text_stream, is_direct_message_narrow, disable_reply);
+    $("#new_conversation_button").attr("data-conversation-type", "direct");
+    update_buttons(disable_reply);
 }
 
 export function update_buttons_for_stream_views(): void {
-    const text_stream = $t({defaultMessage: "Start new conversation"});
     $("#new_conversation_button").attr("data-conversation-type", "stream");
-    update_buttons(text_stream);
+    update_buttons();
 }
 
 export function update_buttons_for_non_specific_views(): void {
-    const text_stream = $t({defaultMessage: "Start new conversation"});
     $("#new_conversation_button").attr("data-conversation-type", "non-specific");
-    update_buttons(text_stream);
+    update_buttons();
 }
 
 function set_reply_button_label(label: string): void {
@@ -191,6 +148,18 @@ export function initialize(): void {
         compose_actions.start({
             message_type: "stream",
             trigger: "clear topic button",
+            keep_composebox_empty: true,
+        });
+    });
+
+    $("body").on("click", ".compose_mobile_button", () => {
+        // Remove the channel and topic context, since on mobile widths,
+        // the "+" button should open the compose box with the channel
+        // picker open (even if the user is in a topic or channel view).
+        compose_actions.start({
+            message_type: "stream",
+            stream_id: undefined,
+            topic: "",
             keep_composebox_empty: true,
         });
     });

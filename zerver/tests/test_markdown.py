@@ -3,7 +3,7 @@ import os
 import re
 from html import escape
 from textwrap import dedent
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -75,7 +75,7 @@ class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
     # Simulate code formatting.
 
     @override
-    def format_code(self, lang: Optional[str], code: str) -> str:
+    def format_code(self, lang: str | None, code: str) -> str:
         return (lang or "") + ":" + code
 
     @override
@@ -377,7 +377,7 @@ class MarkdownMiscTest(ZulipTestCase):
 class MarkdownListPreprocessorTest(ZulipTestCase):
     # We test that the preprocessor inserts blank lines at correct places.
     # We use <> to indicate that we need to insert a blank line here.
-    def split_message(self, msg: str) -> Tuple[List[str], List[str]]:
+    def split_message(self, msg: str) -> tuple[list[str], list[str]]:
         original = msg.replace("<>", "").split("\n")
         expected = re.split(r"\n|<>", msg)
         return original, expected
@@ -482,7 +482,7 @@ class MarkdownTest(ZulipTestCase):
         else:
             super().assertEqual(first, second)
 
-    def load_markdown_tests(self) -> Tuple[Dict[str, Any], List[List[str]]]:
+    def load_markdown_tests(self) -> tuple[dict[str, Any], list[list[str]]]:
         test_fixtures = {}
         with open(
             os.path.join(os.path.dirname(__file__), "fixtures/markdown_test_cases.json"), "rb"
@@ -503,7 +503,7 @@ class MarkdownTest(ZulipTestCase):
 
     def test_markdown_fixtures_unique_names(self) -> None:
         # All markdown fixtures must have unique names.
-        found_names: Set[str] = set()
+        found_names: set[str] = set()
         with open(
             os.path.join(os.path.dirname(__file__), "fixtures/markdown_test_cases.json"), "rb"
         ) as f:
@@ -1104,9 +1104,11 @@ class MarkdownTest(ZulipTestCase):
         )
 
     def test_fetch_tweet_data_settings_validation(self) -> None:
-        with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
-            with self.assertRaises(NotImplementedError):
-                fetch_tweet_data("287977969287315459")
+        with (
+            self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None),
+            self.assertRaises(NotImplementedError),
+        ):
+            fetch_tweet_data("287977969287315459")
 
     def test_content_has_emoji(self) -> None:
         self.assertFalse(content_has_emoji_syntax("boring"))
@@ -1271,10 +1273,12 @@ class MarkdownTest(ZulipTestCase):
         )
 
     def check_add_linkifiers(
-        self, linkifiers: List[RealmFilter], expected_linkifier_reprs: List[str]
+        self, linkifiers: list[RealmFilter], expected_linkifier_reprs: list[str]
     ) -> None:
         self.assert_length(linkifiers, len(expected_linkifier_reprs))
-        for linkifier, expected_linkifier_repr in zip(linkifiers, expected_linkifier_reprs):
+        for linkifier, expected_linkifier_repr in zip(
+            linkifiers, expected_linkifier_reprs, strict=False
+        ):
             linkifier.clean()
             linkifier.save()
             self.assertEqual(repr(linkifier), expected_linkifier_repr)
@@ -1708,9 +1712,11 @@ class MarkdownTest(ZulipTestCase):
             self.assertEqual(linkifiers_for_realm(realm.id), [])
 
         # Verify that our in-memory cache avoids round trips.
-        with self.assert_database_query_count(0, keep_cache_warm=True):
-            with self.assert_memcached_count(0):
-                self.assertEqual(linkifiers_for_realm(realm.id), [])
+        with (
+            self.assert_database_query_count(0, keep_cache_warm=True),
+            self.assert_memcached_count(0),
+        ):
+            self.assertEqual(linkifiers_for_realm(realm.id), [])
 
         linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_template="whatever")
         linkifier.save()
@@ -1722,12 +1728,14 @@ class MarkdownTest(ZulipTestCase):
         )
 
         # And the in-process cache works again.
-        with self.assert_database_query_count(0, keep_cache_warm=True):
-            with self.assert_memcached_count(0):
-                self.assertEqual(
-                    linkifiers_for_realm(realm.id),
-                    [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
-                )
+        with (
+            self.assert_database_query_count(0, keep_cache_warm=True),
+            self.assert_memcached_count(0),
+        ):
+            self.assertEqual(
+                linkifiers_for_realm(realm.id),
+                [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+            )
 
     def test_alert_words(self) -> None:
         user_profile = self.example_user("othello")
@@ -1760,7 +1768,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, set())
 
     def test_alert_words_returns_user_ids_with_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+        alert_words_for_users: dict[str, list[str]] = {
             "hamlet": ["how"],
             "cordelia": ["this possible"],
             "iago": ["hello"],
@@ -1768,7 +1776,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": ["how are you"],
             "aaron": ["hey"],
         }
-        user_profiles: Dict[str, UserProfile] = {}
+        user_profiles: dict[str, UserProfile] = {}
         for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1788,7 +1796,7 @@ class MarkdownTest(ZulipTestCase):
 
         content = "hello how is this possible how are you doing today"
         rendering_result = render(msg, content)
-        expected_user_ids: Set[int] = {
+        expected_user_ids: set[int] = {
             user_profiles["hamlet"].id,
             user_profiles["cordelia"].id,
             user_profiles["iago"].id,
@@ -1799,14 +1807,14 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_1(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+        alert_words_for_users: dict[str, list[str]] = {
             "hamlet": ["provisioning", "Prod deployment"],
             "cordelia": ["test", "Prod"],
             "iago": ["prod"],
             "prospero": ["deployment"],
             "othello": ["last"],
         }
-        user_profiles: Dict[str, UserProfile] = {}
+        user_profiles: dict[str, UserProfile] = {}
         for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1830,7 +1838,7 @@ class MarkdownTest(ZulipTestCase):
         and this is a new line
         last"""
         rendering_result = render(msg, content)
-        expected_user_ids: Set[int] = {
+        expected_user_ids: set[int] = {
             user_profiles["hamlet"].id,
             user_profiles["cordelia"].id,
             user_profiles["iago"].id,
@@ -1841,14 +1849,14 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_in_french(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+        alert_words_for_users: dict[str, list[str]] = {
             "hamlet": ["réglementaire", "une politique", "une merveille"],
             "cordelia": ["énormément", "Prod"],
             "iago": ["prod"],
             "prospero": ["deployment"],
             "othello": ["last"],
         }
-        user_profiles: Dict[str, UserProfile] = {}
+        user_profiles: dict[str, UserProfile] = {}
         for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1871,12 +1879,12 @@ class MarkdownTest(ZulipTestCase):
         et j'espère qu'il n'y n' réglementaire a pas de mots d'alerte dans ce texte français
         """
         rendering_result = render(msg, content)
-        expected_user_ids: Set[int] = {user_profiles["hamlet"].id, user_profiles["cordelia"].id}
+        expected_user_ids: set[int] = {user_profiles["hamlet"].id, user_profiles["cordelia"].id}
         # Only hamlet and cordelia have their alert-words appear in the message content
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_empty_user_ids_with_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+        alert_words_for_users: dict[str, list[str]] = {
             "hamlet": [],
             "cordelia": [],
             "iago": [],
@@ -1884,7 +1892,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": [],
             "aaron": [],
         }
-        user_profiles: Dict[str, UserProfile] = {}
+        user_profiles: dict[str, UserProfile] = {}
         for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1905,22 +1913,22 @@ class MarkdownTest(ZulipTestCase):
         in sending of the message
         """
         rendering_result = render(msg, content)
-        expected_user_ids: Set[int] = set()
+        expected_user_ids: set[int] = set()
         # None of the users have their alert-words appear in the message content
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
-    def get_mock_alert_words(self, num_words: int, word_length: int) -> List[str]:
+    def get_mock_alert_words(self, num_words: int, word_length: int) -> list[str]:
         alert_words = ["x" * word_length] * num_words  # type List[str]
         return alert_words
 
     def test_alert_words_with_empty_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+        alert_words_for_users: dict[str, list[str]] = {
             "hamlet": [],
             "cordelia": [],
             "iago": [],
             "othello": [],
         }
-        user_profiles: Dict[str, UserProfile] = {}
+        user_profiles: dict[str, UserProfile] = {}
         for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1940,17 +1948,17 @@ class MarkdownTest(ZulipTestCase):
 
         content = """This is to test a empty alert words i.e. no user has any alert-words set"""
         rendering_result = render(msg, content)
-        expected_user_ids: Set[int] = set()
+        expected_user_ids: set[int] = set()
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+        alert_words_for_users: dict[str, list[str]] = {
             "hamlet": ["issue124"],
             "cordelia": self.get_mock_alert_words(500, 10),
             "iago": self.get_mock_alert_words(500, 10),
             "othello": self.get_mock_alert_words(500, 10),
         }
-        user_profiles: Dict[str, UserProfile] = {}
+        user_profiles: dict[str, UserProfile] = {}
         for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1976,7 +1984,7 @@ class MarkdownTest(ZulipTestCase):
         between 1 and 100 for you. The process is fairly simple
         """
         rendering_result = render(msg, content)
-        expected_user_ids: Set[int] = {user_profiles["hamlet"].id}
+        expected_user_ids: set[int] = {user_profiles["hamlet"].id}
         # Only hamlet has alert-word 'issue124' present in the message content
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
@@ -2382,7 +2390,7 @@ class MarkdownTest(ZulipTestCase):
     def test_possible_mentions(self) -> None:
         def assert_mentions(
             content: str,
-            names: Set[str],
+            names: set[str],
             has_topic_wildcards: bool = False,
             has_stream_wildcards: bool = False,
         ) -> None:
@@ -2705,7 +2713,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.mentions_user_group_ids, {user_group.id})
 
     def test_possible_user_group_mentions(self) -> None:
-        def assert_mentions(content: str, names: Set[str]) -> None:
+        def assert_mentions(content: str, names: set[str]) -> None:
             self.assertEqual(possible_user_group_mentions(content), names)
 
         assert_mentions("", set())
@@ -3287,17 +3295,18 @@ class MarkdownApiTests(ZulipTestCase):
 
 class MarkdownErrorTests(ZulipTestCase):
     def test_markdown_error_handling(self) -> None:
-        with self.simulated_markdown_failure():
-            with self.assertRaises(MarkdownRenderingError):
-                markdown_convert_wrapper("")
+        with self.simulated_markdown_failure(), self.assertRaises(MarkdownRenderingError):
+            markdown_convert_wrapper("")
 
     def test_send_message_errors(self) -> None:
         message = "whatever"
-        with self.simulated_markdown_failure():
+        with (
+            self.simulated_markdown_failure(),
             # We don't use assertRaisesRegex because it seems to not
             # handle i18n properly here on some systems.
-            with self.assertRaises(JsonableError):
-                self.send_stream_message(self.example_user("othello"), "Denmark", message)
+            self.assertRaises(JsonableError),
+        ):
+            self.send_stream_message(self.example_user("othello"), "Denmark", message)
 
     @override_settings(MAX_MESSAGE_LENGTH=10)
     def test_ultra_long_rendering(self) -> None:
@@ -3305,11 +3314,12 @@ class MarkdownErrorTests(ZulipTestCase):
         throws an exception"""
         msg = "mock rendered message\n" * 10 * settings.MAX_MESSAGE_LENGTH
 
-        with mock.patch("zerver.lib.markdown.unsafe_timeout", return_value=msg), mock.patch(
-            "zerver.lib.markdown.markdown_logger"
+        with (
+            mock.patch("zerver.lib.markdown.unsafe_timeout", return_value=msg),
+            mock.patch("zerver.lib.markdown.markdown_logger"),
+            self.assertRaises(MarkdownRenderingError),
         ):
-            with self.assertRaises(MarkdownRenderingError):
-                markdown_convert_wrapper(msg)
+            markdown_convert_wrapper(msg)
 
     def test_curl_code_block_validation(self) -> None:
         processor = SimulatedFencedBlockPreprocessor(Markdown())

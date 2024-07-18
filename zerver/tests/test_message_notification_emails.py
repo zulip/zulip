@@ -1,7 +1,7 @@
 import random
 import re
+from collections.abc import Sequence
 from email.headerregistry import Address
-from typing import Dict, List, Optional, Sequence, Union
 from unittest import mock
 from unittest.mock import patch
 
@@ -25,6 +25,7 @@ from zerver.lib.email_notifications import (
     include_realm_name_in_missedmessage_emails_subject,
     relative_to_full_url,
 )
+from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserMessage, UserProfile, UserTopic
@@ -88,23 +89,23 @@ class TestMessageNotificationEmails(ZulipTestCase):
             )
         m.assert_not_called()
 
-    def normalize_string(self, s: Union[str, StrPromise]) -> str:
+    def normalize_string(self, s: str | StrPromise) -> str:
         s = s.strip()
         return re.sub(r"\s+", " ", s)
 
-    def _get_tokens(self) -> List[str]:
+    def _get_tokens(self) -> list[str]:
         return ["mm" + str(random.getrandbits(32)) for _ in range(30)]
 
     def _test_cases(
         self,
         msg_id: int,
-        verify_body_include: List[str],
+        verify_body_include: list[str],
         email_subject: str,
         verify_html_body: bool = False,
         show_message_content: bool = True,
         verify_body_does_not_include: Sequence[str] = [],
         trigger: str = "",
-        mentioned_user_group_id: Optional[int] = None,
+        mentioned_user_group_id: int | None = None,
     ) -> None:
         hamlet = self.example_user("hamlet")
         tokens = self._get_tokens()
@@ -185,7 +186,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 "You are receiving this because you were personally mentioned.",
             ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -245,7 +246,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                     "You are receiving this because you have email notifications enabled for #Denmark.",
                 ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -285,7 +286,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 "You are receiving this because you have wildcard mention notifications enabled for topics you follow.",
             ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -344,7 +345,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                     "You are receiving this because you have email notifications enabled for #Denmark.",
                 ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -384,7 +385,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 "You are receiving this because everyone was mentioned in #Denmark.",
             ]
             email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -492,7 +493,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         if show_message_content:
             verify_body_include = ["> Extremely personal message!"]
             email_subject = "DMs with Othello, the Moor of Venice"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             if message_content_disabled_by_realm:
                 verify_body_include = [
@@ -544,10 +545,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(msg_id, verify_body_include, email_subject)
 
-    def _extra_context_in_missed_huddle_messages_two_others(
+    def _extra_context_in_missed_group_direct_messages_two_others(
         self, show_message_content: bool = True
     ) -> None:
-        msg_id = self.send_huddle_message(
+        msg_id = self.send_group_direct_message(
             self.example_user("othello"),
             [
                 self.example_user("hamlet"),
@@ -561,7 +562,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 "Othello, the Moor of Venice: > Group personal message! -- Reply"
             ]
             email_subject = "Group DMs with Iago and Othello, the Moor of Venice"
-            verify_body_does_not_include: List[str] = []
+            verify_body_does_not_include: list[str] = []
         else:
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
@@ -585,8 +586,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
             verify_body_does_not_include=verify_body_does_not_include,
         )
 
-    def _extra_context_in_missed_huddle_messages_three_others(self) -> None:
-        msg_id = self.send_huddle_message(
+    def _extra_context_in_missed_group_direct_messages_three_others(self) -> None:
+        msg_id = self.send_group_direct_message(
             self.example_user("othello"),
             [
                 self.example_user("hamlet"),
@@ -602,8 +603,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         self._test_cases(msg_id, verify_body_include, email_subject)
 
-    def _extra_context_in_missed_huddle_messages_many_others(self) -> None:
-        msg_id = self.send_huddle_message(
+    def _extra_context_in_missed_group_direct_messages_many_others(self) -> None:
+        msg_id = self.send_group_direct_message(
             self.example_user("othello"),
             [
                 self.example_user("hamlet"),
@@ -648,8 +649,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         self.assert_length(mail.outbox, 0)
 
-    def _deleted_message_in_missed_huddle_messages(self) -> None:
-        msg_id = self.send_huddle_message(
+    def _deleted_message_in_missed_group_direct_messages(self) -> None:
+        msg_id = self.send_group_direct_message(
             self.example_user("othello"),
             [
                 self.example_user("hamlet"),
@@ -1042,7 +1043,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             show_message_content=False, message_content_disabled_by_user=True
         )
         mail.outbox = []
-        self._extra_context_in_missed_huddle_messages_two_others(show_message_content=False)
+        self._extra_context_in_missed_group_direct_messages_two_others(show_message_content=False)
 
     def test_extra_context_in_missed_stream_messages(self) -> None:
         self._extra_context_in_missed_stream_messages_mention()
@@ -1100,14 +1101,14 @@ class TestMessageNotificationEmails(ZulipTestCase):
     def test_extra_context_in_missed_personal_messages(self) -> None:
         self._extra_context_in_missed_personal_messages()
 
-    def test_extra_context_in_missed_huddle_messages_two_others(self) -> None:
-        self._extra_context_in_missed_huddle_messages_two_others()
+    def test_extra_context_in_missed_group_direct_messages_two_others(self) -> None:
+        self._extra_context_in_missed_group_direct_messages_two_others()
 
-    def test_extra_context_in_missed_huddle_messages_three_others(self) -> None:
-        self._extra_context_in_missed_huddle_messages_three_others()
+    def test_extra_context_in_missed_group_direct_messages_three_others(self) -> None:
+        self._extra_context_in_missed_group_direct_messages_three_others()
 
-    def test_extra_context_in_missed_huddle_messages_many_others(self) -> None:
-        self._extra_context_in_missed_huddle_messages_many_others()
+    def test_extra_context_in_missed_group_direct_messages_many_others(self) -> None:
+        self._extra_context_in_missed_group_direct_messages_many_others()
 
     def test_deleted_message_in_missed_stream_messages(self) -> None:
         self._deleted_message_in_missed_stream_messages()
@@ -1115,8 +1116,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
     def test_deleted_message_in_missed_personal_messages(self) -> None:
         self._deleted_message_in_missed_personal_messages()
 
-    def test_deleted_message_in_missed_huddle_messages(self) -> None:
-        self._deleted_message_in_missed_huddle_messages()
+    def test_deleted_message_in_missed_group_direct_messages(self) -> None:
+        self._deleted_message_in_missed_group_direct_messages()
 
     def test_realm_message_content_allowed_in_email_notifications(self) -> None:
         user = self.example_user("hamlet")
@@ -1175,9 +1176,11 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "Extremely personal message with a realm emoji :green_tick:!",
         )
         realm_emoji_dict = get_name_keyed_dict_for_active_realm_emoji(realm.id)
-        realm_emoji_id = realm_emoji_dict["green_tick"]["id"]
+        realm_emoji_file_name = get_emoji_file_name(
+            "image/png", int(realm_emoji_dict["green_tick"]["id"])
+        )
         realm_emoji_url = (
-            f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_id}.png"
+            f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_file_name}"
         )
         verify_body_include = [
             f'<img alt=":green_tick:" src="{realm_emoji_url}" title="green tick" style="height: 20px;">'
@@ -1315,7 +1318,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         othello = self.example_user("othello")
         iago = self.example_user("iago")
 
-        message_ids: Dict[int, MissedMessageData] = {}
+        message_ids: dict[int, MissedMessageData] = {}
         for i in range(1, 4):
             msg_id = self.send_stream_message(othello, "Denmark", content=str(i))
             message_ids[msg_id] = MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL)

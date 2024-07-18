@@ -18,6 +18,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_call from "./compose_call";
 import * as compose_state from "./compose_state";
+import * as compose_tooltips from "./compose_tooltips";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as composebox_typeahead from "./composebox_typeahead";
@@ -850,7 +851,6 @@ export function try_save_inline_topic_edit($row) {
             html_body: render_confirm_merge_topics_with_rename({
                 topic_name: new_topic,
             }),
-            focus_submit_on_open: false,
             on_click: () => do_save_inline_topic_edit($row, message, new_topic),
         });
     } else {
@@ -927,6 +927,8 @@ export function do_save_inline_topic_edit($row, message, new_topic) {
 }
 
 export function save_message_row_edit($row) {
+    compose_tooltips.hide_compose_control_button_tooltips($row);
+
     assert(message_lists.current !== undefined);
     const $banner_container = compose_banner.get_compose_banner_container(
         $row.find(".message_edit_form textarea"),

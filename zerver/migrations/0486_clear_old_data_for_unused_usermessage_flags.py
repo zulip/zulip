@@ -42,7 +42,7 @@ def clear_old_data_for_unused_usermessage_flags(
             )
 
         print(f"Processed {upper_id_bound} / {max_id}")
-        lower_id_bound = lower_id_bound + BATCH_SIZE
+        lower_id_bound += BATCH_SIZE
 
 
 class Migration(migrations.Migration):

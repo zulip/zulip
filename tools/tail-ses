@@ -12,8 +12,9 @@ setup_path()
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 import argparse
 import secrets
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator, List, Tuple, TypedDict
+from typing import TypedDict
 
 import boto3.session
 import orjson
@@ -65,9 +66,11 @@ def main() -> None:
     args = parser.parse_args()
 
     sns_topic_arn = get_ses_arn(session, args)
-    with our_sqs_queue(session, sns_topic_arn) as (queue_arn, queue_url):
-        with our_sns_subscription(session, sns_topic_arn, queue_arn):
-            print_messages(session, queue_url)
+    with (
+        our_sqs_queue(session, sns_topic_arn) as (queue_arn, queue_url),
+        our_sns_subscription(session, sns_topic_arn, queue_arn),
+    ):
+        print_messages(session, queue_url)
 
 
 def get_ses_arn(session: boto3.session.Session, args: argparse.Namespace) -> str:
@@ -86,7 +89,7 @@ def get_ses_arn(session: boto3.session.Session, args: argparse.Namespace) -> str
 
 
 @contextmanager
-def our_sqs_queue(session: boto3.session.Session, ses_topic_arn: str) -> Iterator[Tuple[str, str]]:
+def our_sqs_queue(session: boto3.session.Session, ses_topic_arn: str) -> Iterator[tuple[str, str]]:
     (_, _, _, region, account_id, topic_name) = ses_topic_arn.split(":")
 
     sqs: SQSClient = session.client("sqs")
@@ -153,7 +156,7 @@ def print_messages(session: boto3.session.Session, queue_url: str) -> None:
                 MessageAttributeNames=["All"],
             )
             messages = resp.get("Messages", [])
-            delete_list: List[DeleteMessageBatchRequestEntryTypeDef] = []
+            delete_list: list[DeleteMessageBatchRequestEntryTypeDef] = []
             for m in messages:
                 body = orjson.loads(m["Body"])
                 body_message = orjson.loads(body["Message"])

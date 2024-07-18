@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import orjson
 from django.http import HttpRequest, HttpResponse
@@ -45,7 +46,7 @@ class REQTestCase(ZulipTestCase):
         self.assertEqual(str(cm.exception), "Can't decide between 'number' and 'x' arguments")
 
     def test_REQ_converter(self) -> None:
-        def my_converter(var_name: str, data: str) -> List[int]:
+        def my_converter(var_name: str, data: str) -> list[int]:
             lst = orjson.loads(data)
             if not isinstance(lst, list):
                 raise ValueError("not a list")
@@ -135,7 +136,7 @@ class REQTestCase(ZulipTestCase):
     def test_REQ_argument_type(self) -> None:
         @has_request_variables
         def get_payload(
-            request: HttpRequest, payload: Dict[str, Any] = REQ(argument_type="body")
+            request: HttpRequest, payload: dict[str, Any] = REQ(argument_type="body")
         ) -> HttpResponse:
             return json_response(data={"payload": payload})
 
@@ -160,8 +161,8 @@ class TestIgnoredParametersUnsupported(ZulipTestCase):
         @has_request_variables
         def test_view(
             request: HttpRequest,
-            name: Optional[str] = REQ(default=None),
-            age: Optional[int] = 0,
+            name: str | None = REQ(default=None),
+            age: int | None = 0,
         ) -> HttpResponse:
             return json_success(request)
 

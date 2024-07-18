@@ -1,6 +1,5 @@
 import os
 import pwd
-from typing import Dict, Optional, Set, Tuple
 
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import SCIMConfigDict
@@ -52,7 +51,7 @@ ALLOWED_HOSTS = ["*"]
 
 # Uncomment extra backends if you want to test with them.  Note that
 # for Google and GitHub auth you'll need to do some pre-setup.
-AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
+AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     "zproject.backends.DevAuthBackend",
     "zproject.backends.EmailAuthBackend",
     "zproject.backends.GitHubAuthBackend",
@@ -80,6 +79,7 @@ STAFF_SUBDOMAIN = "zulip"
 EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
 # Disable Camo in development
 CAMO_URI = ""
+KATEX_SERVER = False
 
 TORNADO_PORTS = [9993]
 
@@ -94,11 +94,11 @@ LOGIN_URL = "/devlogin/"
 # For development convenience, configure the ToS/Privacy Policies
 POLICIES_DIRECTORY = "corporate/policies"
 TERMS_OF_SERVICE_VERSION = "1.0"
-TERMS_OF_SERVICE_MESSAGE: Optional[str] = "Description of changes to the ToS!"
+TERMS_OF_SERVICE_MESSAGE: str | None = "Description of changes to the ToS!"
 
 EMBEDDED_BOTS_ENABLED = True
 
-SYSTEM_ONLY_REALMS: Set[str] = set()
+SYSTEM_ONLY_REALMS: set[str] = set()
 USING_PGROONGA = True
 # Flush cache after migration.
 POST_MIGRATION_CACHE_FLUSHING = True
@@ -133,7 +133,7 @@ TWO_FACTOR_SMS_GATEWAY = "two_factor.gateways.fake.Fake"
 #   (C) If LDAP usernames are completely unrelated to email addresses.
 #
 # Fake LDAP data has e.g. ("ldapuser1", "ldapuser1@zulip.com") for username/email.
-FAKE_LDAP_MODE: Optional[str] = None
+FAKE_LDAP_MODE: str | None = None
 # FAKE_LDAP_NUM_USERS = 8
 
 if FAKE_LDAP_MODE:
@@ -180,7 +180,7 @@ if FAKE_LDAP_MODE:
     AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipLDAPAuthBackend",)
 
 BILLING_ENABLED = True
-LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
+LANDING_PAGE_NAVBAR_MESSAGE: str | None = None
 
 # Our run-dev proxy uses X-Forwarded-Port to communicate to Django
 # that the request is actually on port 9991, not port 9992 (the Django
@@ -194,9 +194,9 @@ SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
 
 SOCIAL_AUTH_SUBDOMAIN = "auth"
 
-MEMCACHED_USERNAME: Optional[str] = None
+MEMCACHED_USERNAME: str | None = None
 
-SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
+SCIM_CONFIG: dict[str, SCIMConfigDict] = {
     "zulip": {
         "bearer_token": "token1234",
         "scim_client_name": "test-scim-client",
@@ -206,10 +206,13 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
 
 SELF_HOSTING_MANAGEMENT_SUBDOMAIN = "selfhosting"
 DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = True
-PUSH_NOTIFICATION_BOUNCER_URL = f"http://push.{EXTERNAL_HOST}"
+ZULIP_SERVICES_URL = f"http://push.{EXTERNAL_HOST}"
+
+ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
+ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = True
 
 # Breaks the UI if used, but enabled for development environment testing.
-ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = True
+ALLOW_GROUP_VALUED_SETTINGS = True
 
 # This value needs to be lower in development than usual to allow
 # for quicker testing of the feature.

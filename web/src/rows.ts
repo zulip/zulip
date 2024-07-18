@@ -119,14 +119,14 @@ export function get_message_id(elem: HTMLElement): number {
     return message_id;
 }
 
-export function get_closest_group(element: string): JQuery {
+export function get_closest_group(element: HTMLElement): JQuery {
     // This gets the closest message row to an element, whether it's
     // a recipient bar or message.  With our current markup,
     // this is the most reliable way to do it.
     return $(element).closest("div.recipient_row");
 }
 
-export function get_closest_row(element: string): JQuery {
+export function get_closest_row(element: HTMLElement): JQuery {
     return $(element).closest("div.message_row");
 }
 

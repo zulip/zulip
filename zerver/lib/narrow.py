@@ -1,21 +1,10 @@
 import re
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import Any, Generic, TypeAlias, TypeVar
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
@@ -41,11 +30,15 @@ from sqlalchemy.sql import (
 )
 from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
-from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import get_first_visible_message_id
+from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
+from zerver.lib.message import (
+    access_message,
+    access_web_public_message,
+    get_first_visible_message_id,
+)
 from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -72,7 +65,7 @@ from zerver.lib.validator import (
     check_string_or_int_list,
 )
 from zerver.models import (
-    Huddle,
+    DirectMessageGroup,
     Message,
     Realm,
     Recipient,
@@ -81,6 +74,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_active_streams
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
@@ -95,7 +89,7 @@ class NarrowParameter(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def convert_term(cls, elem: Union[Dict[str, Any], List[str]]) -> Dict[str, Any]:
+    def convert_term(cls, elem: dict[str, Any] | list[str]) -> dict[str, Any]:
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
             if len(elem) != 2 or any(not isinstance(x, str) for x in elem):
@@ -124,6 +118,7 @@ class NarrowParameter(BaseModel):
             "sender",
             "group-pm-with",
             "dm-including",
+            "with",
         ]
         operators_supporting_ids = ["pm-with", "dm"]
         operators_non_empty_operand = {"search"}
@@ -161,6 +156,7 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
         "search",
         "near",
         "id",
+        "with",
     ]
     for element in narrow:
         operator = element.operator
@@ -169,7 +165,7 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
     return True
 
 
-def is_web_public_narrow(narrow: Optional[Iterable[NarrowParameter]]) -> bool:
+def is_web_public_narrow(narrow: Iterable[NarrowParameter] | None) -> bool:
     if narrow is None:
         return False
 
@@ -198,6 +194,19 @@ class BadNarrowOperatorError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Invalid narrow operator: {desc}")
+
+
+class InvalidOperatorCombinationError(JsonableError):
+    code = ErrorCode.BAD_NARROW
+    data_fields = ["desc"]
+
+    def __init__(self, desc: str) -> None:
+        self.desc: str = desc
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid narrow operator combination: {desc}")
 
 
 ConditionTransform: TypeAlias = Callable[[ClauseElement], ClauseElement]
@@ -250,7 +259,7 @@ class NarrowBuilder:
 
     def __init__(
         self,
-        user_profile: Optional[UserProfile],
+        user_profile: UserProfile | None,
         msg_id_column: ColumnElement[Integer],
         realm: Realm,
         is_web_public_query: bool = False,
@@ -345,7 +354,7 @@ class NarrowBuilder:
                 # If the initial query doesn't use `zerver_usermessage`
                 check_col = literal_column("zerver_message.id", Integer)
             exists_cond = (
-                select([1])
+                select(1)
                 .select_from(table("zerver_reaction"))
                 .where(check_col == literal_column("zerver_reaction.message_id", Integer))
                 .exists()
@@ -427,7 +436,7 @@ class NarrowBuilder:
         return "".join(s)
 
     def by_channel(
-        self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
+        self, query: Select, operand: str | int, maybe_negate: ConditionTransform
     ) -> Select:
         self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
 
@@ -537,7 +546,7 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_sender(
-        self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
+        self, query: Select, operand: str | int, maybe_negate: ConditionTransform
     ) -> Select:
         try:
             if isinstance(operand, str):
@@ -553,16 +562,14 @@ class NarrowBuilder:
     def by_near(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         return query
 
-    def by_id(
-        self, query: Select, operand: Union[int, str], maybe_negate: ConditionTransform
-    ) -> Select:
+    def by_id(self, query: Select, operand: int | str, maybe_negate: ConditionTransform) -> Select:
         if not str(operand).isdigit() or int(operand) > Message.MAX_POSSIBLE_MESSAGE_ID:
             raise BadNarrowOperatorError("Invalid message ID")
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
     def by_dm(
-        self, query: Select, operand: Union[str, Iterable[int]], maybe_negate: ConditionTransform
+        self, query: Select, operand: str | Iterable[int], maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
@@ -597,7 +604,7 @@ class NarrowBuilder:
             )
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
-        except Huddle.DoesNotExist:
+        except DirectMessageGroup.DoesNotExist:
             # Group DM where huddle doesn't exist
             return query.where(maybe_negate(false()))
 
@@ -648,7 +655,7 @@ class NarrowBuilder:
         )
         return query.where(maybe_negate(cond))
 
-    def _get_huddle_recipients(self, other_user: UserProfile) -> Set[int]:
+    def _get_direct_message_group_recipients(self, other_user: UserProfile) -> set[int]:
         self_recipient_ids = [
             recipient_tuple["recipient_id"]
             for recipient_tuple in Subscription.objects.filter(
@@ -667,7 +674,7 @@ class NarrowBuilder:
         return set(self_recipient_ids) & set(narrow_recipient_ids)
 
     def by_dm_including(
-        self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
+        self, query: Select, operand: str | int, maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
@@ -693,7 +700,9 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
 
         # all direct messages including another person (group and 1:1)
-        huddle_recipient_ids = self._get_huddle_recipients(narrow_user_profile)
+        direct_message_group_recipient_ids = self._get_direct_message_group_recipients(
+            narrow_user_profile
+        )
 
         self_recipient_id = self.user_profile.recipient_id
         # See note above in `by_dm` about needing bidirectional messages
@@ -711,14 +720,14 @@ class NarrowBuilder:
                     column("recipient_id", Integer) == narrow_user_profile.recipient_id,
                 ),
                 and_(
-                    column("recipient_id", Integer).in_(huddle_recipient_ids),
+                    column("recipient_id", Integer).in_(direct_message_group_recipient_ids),
                 ),
             ),
         )
         return query.where(maybe_negate(cond))
 
     def by_group_pm_with(
-        self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
+        self, query: Select, operand: str | int, maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
@@ -734,7 +743,7 @@ class NarrowBuilder:
         except UserProfile.DoesNotExist:
             raise BadNarrowOperatorError("unknown user " + str(operand))
 
-        recipient_ids = self._get_huddle_recipients(narrow_profile)
+        recipient_ids = self._get_direct_message_group_recipients(narrow_profile)
         cond = and_(
             column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
             column("realm_id", Integer) == self.realm.id,
@@ -800,8 +809,8 @@ class NarrowBuilder:
 
 
 def ok_to_include_history(
-    narrow: Optional[List[NarrowParameter]],
-    user_profile: Optional[UserProfile],
+    narrow: list[NarrowParameter] | None,
+    user_profile: UserProfile | None,
     is_web_public_query: bool,
 ) -> bool:
     # There are occasions where we need to find Message rows that
@@ -829,7 +838,7 @@ def ok_to_include_history(
     if narrow is not None:
         for term in narrow:
             if term.operator in channel_operators and not term.negated:
-                operand: Union[str, int] = term.operand
+                operand: str | int = term.operand
                 if isinstance(operand, str):
                     include_history = can_access_stream_history_by_name(user_profile, operand)
                 else:
@@ -852,8 +861,8 @@ def ok_to_include_history(
 
 
 def get_channel_from_narrow_access_unchecked(
-    narrow: Optional[List[NarrowParameter]], realm: Realm
-) -> Optional[Stream]:
+    narrow: list[NarrowParameter] | None, realm: Realm
+) -> Stream | None:
     if narrow is not None:
         for term in narrow:
             if term.operator in channel_operators:
@@ -861,10 +870,86 @@ def get_channel_from_narrow_access_unchecked(
     return None
 
 
+# This function implements the core logic of the `with` operator,
+# which is designed to support permanent links to a topic that
+# robustly function if the topic is moved.
+#
+# The with operator accepts a message ID as an operand. If the
+# message ID does not exist or is otherwise not accessible to the
+# current user, then it has no effect.
+#
+# Otherwise, the narrow terms are mutated to remove any
+# channel/topic/dm operators, replacing them with the appropriate
+# operators for the conversation view containing the targeted message.
+def update_narrow_terms_containing_with_operator(
+    realm: Realm,
+    maybe_user_profile: UserProfile | AnonymousUser,
+    narrow: list[NarrowParameter] | None,
+) -> list[NarrowParameter] | None:
+    if narrow is None:
+        return narrow
+
+    with_operator_terms = list(filter(lambda term: term.operator == "with", narrow))
+
+    if len(with_operator_terms) > 1:
+        raise InvalidOperatorCombinationError(_("Duplicate 'with' operators."))
+    elif len(with_operator_terms) == 0:
+        return narrow
+
+    with_term = with_operator_terms[0]
+    narrow.remove(with_term)
+    try:
+        message_id = int(with_term.operand)
+    except ValueError:
+        # TODO: This probably should be handled earlier.
+        raise BadNarrowOperatorError(_("Invalid 'with' operator"))
+
+    if maybe_user_profile.is_authenticated:
+        try:
+            message = access_message(maybe_user_profile, message_id)
+        except JsonableError:
+            return narrow
+    else:
+        try:
+            message = access_web_public_message(realm, message_id)
+        except MissingAuthenticationError:
+            return narrow
+
+    # TODO: It would be better if the legacy names here are canonicalized
+    # while building a NarrowParameter.
+    filtered_terms = [
+        term
+        for term in narrow
+        if term.operator not in ["stream", "channel", "topic", "dm", "pm-with"]
+    ]
+
+    if message.recipient.type == Recipient.STREAM:
+        channel_id = message.recipient.type_id
+        topic = message.topic_name()
+        channel_conversation_terms = [
+            NarrowParameter(operator="channel", operand=channel_id),
+            NarrowParameter(operator="topic", operand=topic),
+        ]
+        return channel_conversation_terms + filtered_terms
+
+    elif message.recipient.type == Recipient.PERSONAL:
+        dm_conversation_terms = [
+            NarrowParameter(operator="dm", operand=[message.recipient.type_id])
+        ]
+        return dm_conversation_terms + filtered_terms
+
+    elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        huddle_user_ids = list(get_direct_message_group_user_ids(message.recipient))
+        dm_conversation_terms = [NarrowParameter(operator="dm", operand=huddle_user_ids)]
+        return dm_conversation_terms + filtered_terms
+
+    raise AssertionError("Invalid recipient type")
+
+
 def exclude_muting_conditions(
-    user_profile: UserProfile, narrow: Optional[List[NarrowParameter]]
-) -> List[ClauseElement]:
-    conditions: List[ClauseElement] = []
+    user_profile: UserProfile, narrow: list[NarrowParameter] | None
+) -> list[ClauseElement]:
+    conditions: list[ClauseElement] = []
     channel_id = None
     try:
         # Note: It is okay here to not check access to channel
@@ -907,8 +992,8 @@ def exclude_muting_conditions(
 
 
 def get_base_query_for_search(
-    realm_id: int, user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
-) -> Tuple[Select, ColumnElement[Integer]]:
+    realm_id: int, user_profile: UserProfile | None, need_message: bool, need_user_message: bool
+) -> tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
         assert need_message
@@ -952,13 +1037,13 @@ def get_base_query_for_search(
 
 
 def add_narrow_conditions(
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     inner_msg_id_col: ColumnElement[Integer],
     query: Select,
-    narrow: Optional[List[NarrowParameter]],
+    narrow: list[NarrowParameter] | None,
     is_web_public_query: bool,
     realm: Realm,
-) -> Tuple[Select, bool]:
+) -> tuple[Select, bool]:
     is_search = False  # for now
 
     if narrow is None:
@@ -991,8 +1076,8 @@ def add_narrow_conditions(
 
 def find_first_unread_anchor(
     sa_conn: Connection,
-    user_profile: Optional[UserProfile],
-    narrow: Optional[List[NarrowParameter]],
+    user_profile: UserProfile | None,
+    narrow: list[NarrowParameter] | None,
 ) -> int:
     # For anonymous web users, all messages are treated as read, and so
     # always return LARGER_THAN_MAX_MESSAGE_ID.
@@ -1045,7 +1130,7 @@ def find_first_unread_anchor(
     return anchor
 
 
-def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool) -> Optional[int]:
+def parse_anchor_value(anchor_val: str | None, use_first_unread_anchor: bool) -> int | None:
     """Given the anchor and use_first_unread_anchor parameters passed by
     the client, computes what anchor value the client requested,
     handling backwards-compatibility and the various string-valued
@@ -1170,7 +1255,7 @@ MessageRowT = TypeVar("MessageRowT", bound=Sequence[Any])
 
 @dataclass
 class LimitedMessages(Generic[MessageRowT]):
-    rows: List[MessageRowT]
+    rows: list[MessageRowT]
     found_anchor: bool
     found_newest: bool
     found_oldest: bool
@@ -1253,11 +1338,11 @@ class FetchedMessages(LimitedMessages[Row]):
 
 def fetch_messages(
     *,
-    narrow: Optional[List[NarrowParameter]],
-    user_profile: Optional[UserProfile],
+    narrow: list[NarrowParameter] | None,
+    user_profile: UserProfile | None,
     realm: Realm,
     is_web_public_query: bool,
-    anchor: Optional[int],
+    anchor: int | None,
     include_anchor: bool,
     num_before: int,
     num_after: int,

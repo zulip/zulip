@@ -397,6 +397,25 @@ test("basics", () => {
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
 
+    terms = [
+        {operator: "channel", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "with", operand: 17},
+    ];
+    filter = new Filter(terms);
+
+    assert.ok(!filter.is_keyword_search());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.allow_use_first_unread_when_narrowing());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.is_conversation_view());
+    assert.ok(filter.can_bucket_by("channel", "topic", "with"));
+    assert.ok(!filter.is_conversation_view_with_near());
+
     // "stream" was renamed to "channel"
     terms = [
         {operator: "stream", operand: "foo"},
@@ -723,6 +742,13 @@ test("redundancies", () => {
     ];
     filter = new Filter(terms);
     assert.ok(filter.can_bucket_by("is-dm", "not-dm"));
+
+    terms = [
+        {operator: "dm", operand: "joe@example.com,"},
+        {operator: "with", operand: "12"},
+    ];
+    filter = new Filter(terms);
+    assert.ok(filter.can_bucket_by("dm"));
 });
 
 test("canonicalization", () => {
@@ -785,6 +811,23 @@ test("canonicalization", () => {
     term = Filter.canonicalize_term({operator: "has", operand: "reactions"});
     assert.equal(term.operator, "has");
     assert.equal(term.operand, "reaction");
+});
+
+test("ensure_channel_topic_terms", () => {
+    const channel_term = {operator: "channel", operand: ""};
+    const topic_term = {operator: "topic", operand: ""};
+
+    const term_1 = Filter.ensure_channel_topic_terms([{operator: "with", operand: 12}]);
+    const term_2 = Filter.ensure_channel_topic_terms([topic_term, {operator: "with", operand: 12}]);
+    const term_3 = Filter.ensure_channel_topic_terms([
+        channel_term,
+        {operator: "with", operand: 12},
+    ]);
+    const terms = [term_1, term_2, term_3];
+
+    for (const term of terms) {
+        assert.deepEqual(term, [channel_term, topic_term, {operator: "with", operand: 12}]);
+    }
 });
 
 test("predicate_basics", ({override}) => {
@@ -1457,7 +1500,7 @@ test("describe", ({mock_template}) => {
         {operator: "channel", operand: "devel"},
         {operator: "has", operand: "image", negated: true},
     ];
-    string = "channel devel, exclude messages with one or more image";
+    string = "channel devel, exclude messages with images";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
@@ -1471,7 +1514,7 @@ test("describe", ({mock_template}) => {
         {operator: "has", operand: "image", negated: true},
         {operator: "channel", operand: "devel"},
     ];
-    string = "exclude messages with one or more image, channel devel";
+    string = "exclude messages with images, channel devel";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [];
@@ -1598,6 +1641,8 @@ test("term_type", () => {
         ["dm", "near", "is-unread", "has-link"],
     );
 
+    assert_term_sort(["topic", "channel", "with"], ["channel", "topic", "with"]);
+
     assert_term_sort(["bogus", "channel", "topic"], ["channel", "topic", "bogus"]);
     assert_term_sort(["channel", "topic", "channel"], ["channel", "channel", "topic"]);
 
@@ -1657,6 +1702,49 @@ test("first_valid_id_from", ({override}) => {
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
 });
 
+test("is_valid_search_term", () => {
+    const denmark = {
+        stream_id: 100,
+        name: "Denmark",
+    };
+    stream_data.add_sub(denmark);
+
+    const test_data = [
+        ["has: image", true],
+        ["has: nonsense", false],
+        ["is: unread", true],
+        ["is: nonsense", false],
+        ["in: home", true],
+        ["in: nowhere", false],
+        ["id: 4", true],
+        ["near: home", false],
+        ["channel: Denmark", true],
+        ["channel: GhostTown", false],
+        ["channels: public", true],
+        ["channels: private", false],
+        ["topic: GhostTown", true],
+        ["dm-including: alice@example.com", true],
+        ["sender: ghost@zulip.com", false],
+        ["dm: alice@example.com,ghost@example.com", false],
+        ["dm: alice@example.com,joe@example.com", true],
+    ];
+    for (const [search_term_string, expected_is_valid] of test_data) {
+        assert.equal(
+            Filter.is_valid_search_term(Filter.parse(search_term_string)[0]),
+            expected_is_valid,
+        );
+    }
+
+    blueslip.expect("error", "Unexpected search term operator: foo");
+    assert.equal(
+        Filter.is_valid_search_term({
+            operator: "foo",
+            operand: "bar",
+        }),
+        false,
+    );
+});
+
 test("update_email", () => {
     const terms = [
         {operator: "dm", operand: "steve@foo.com"},
@@ -1668,6 +1756,125 @@ test("update_email", () => {
     assert.deepEqual(filter.operands("dm"), ["showell@foo.com"]);
     assert.deepEqual(filter.operands("sender"), ["showell@foo.com"]);
     assert.deepEqual(filter.operands("channel"), ["steve@foo.com"]);
+});
+
+test("try_adjusting_for_moved_with_target", ({override}) => {
+    const messages = {
+        12: {type: "stream", display_recipient: "Scotland", topic: "Test 1", id: 12},
+        17: {type: "stream", display_recipient: "Verona", topic: "Test 2", id: 17},
+        2: {type: "direct", id: 2, display_recipient: [{id: 3, email: "user3@zulip.com"}]},
+    };
+
+    override(message_store, "get", (msg_id) => messages[msg_id]);
+
+    // When the narrow terms are correct, it returns the same terms
+    let terms = [
+        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "topic", operand: "Test 1", negated: false},
+        {operator: "with", operand: "12", negated: false},
+    ];
+
+    let filter = new Filter(terms);
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, true);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
+    assert.deepEqual(filter.terms(), terms);
+
+    // When the narrow terms are incorrect, the narrow is corrected
+    // to the narrow of the `with` operand.
+    const incorrect_terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "12", negated: false},
+    ];
+
+    filter = new Filter(incorrect_terms);
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, true);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
+    assert.deepEqual(filter.terms(), terms);
+
+    // when message specified in `with` operator does not exist in
+    // message_store, we rather go to the server, without any updates.
+    terms = [
+        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "topic", operand: "Test 1", negated: false},
+        {operator: "with", operand: "11", negated: false},
+    ];
+
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, true);
+    assert.deepEqual(filter.terms(), terms);
+
+    // When the narrow consists of `channel` or `topic` operators, while
+    // the `with` operator corresponds to that of a direct message, then
+    // the narrow is adjusted to point to the narrow containing the message.
+    terms = [
+        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "topic", operand: "Test 1", negated: false},
+        {operator: "with", operand: "2", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
+    assert.deepEqual(filter.terms(), [
+        {operator: "dm", operand: "user3@zulip.com", negated: false},
+    ]);
+
+    // When message id attached to `with` operator is found locally,
+    // and is present in the same narrow as the original one, then
+    // no hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "17", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.narrow_requires_hash_change, false);
+
+    // When message id attached to `with` operator is not found
+    // locally, but messages fetched are in same narrow as
+    // original narrow, then no hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "1", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    // now messages are fetched from server, and a single
+    // fetched message is used to adjust narrow terms.
+    filter.try_adjusting_for_moved_with_target(messages["17"]);
+    assert.deepEqual(filter.narrow_requires_hash_change, false);
+
+    // When message id attached to `with` operator is found locally,
+    // and is not present in the same narrow as the original one,
+    // then hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "12", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.narrow_requires_hash_change, true);
+
+    // When message id attached to `with` operator is not found
+    // locally, and messages fetched are in different narrow from
+    // original narrow, then hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "1", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    // now messages are fetched from server, and a single
+    // fetched message is used to adjust narrow terms.
+    filter.try_adjusting_for_moved_with_target(messages["12"]);
+    assert.deepEqual(filter.narrow_requires_hash_change, true);
 });
 
 function make_private_sub(name, stream_id) {
@@ -1689,6 +1896,12 @@ function make_web_public_sub(name, stream_id) {
 }
 
 test("navbar_helpers", () => {
+    const sub = {
+        name: "Foo",
+        stream_id: 12,
+    };
+    stream_data.add_sub(sub);
+
     const stream_id = 43;
     make_sub("Foo", stream_id);
 
@@ -1798,6 +2011,11 @@ test("navbar_helpers", () => {
         {operator: "dm", operand: "joe@example.com"},
         {operator: "near", operand: "12"},
     ];
+    const channel_with = [
+        {operator: "channel", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "with", operand: "12"},
+    ];
 
     const test_cases = [
         {
@@ -1840,7 +2058,7 @@ test("navbar_helpers", () => {
         {
             terms: is_dm,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: "translated: Direct message feed",
             redirect_url_with_search: "/#narrow/is/dm",
         },
@@ -1921,7 +2139,7 @@ test("navbar_helpers", () => {
         {
             terms: dm,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([joe.full_name]),
             redirect_url_with_search:
                 "/#narrow/dm/" + joe.user_id + "-" + parseOneAddress(joe.email).local,
@@ -1929,14 +2147,14 @@ test("navbar_helpers", () => {
         {
             terms: dm_group,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([joe.full_name, steve.full_name]),
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + steve.user_id + "-group",
         },
         {
             terms: dm_with_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: "translated: alice (guest)",
             redirect_url_with_search:
                 "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
@@ -1944,14 +2162,14 @@ test("navbar_helpers", () => {
         {
             terms: dm_group_including_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: "translated: alice (guest) and joe",
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },
         {
             terms: dm_group_including_missing_person,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([
                 joe.full_name,
                 steve.full_name,
@@ -1992,8 +2210,15 @@ test("navbar_helpers", () => {
         {
             terms: dm_near,
             is_common_narrow: false,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([joe.full_name]),
+            redirect_url_with_search: "#",
+        },
+        {
+            terms: channel_with,
+            is_common_narrow: true,
+            zulip_icon: "hashtag",
+            title: "Foo",
             redirect_url_with_search: "#",
         },
     ];
@@ -2065,7 +2290,7 @@ test("navbar_helpers", () => {
         {
             terms: dm_with_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([alice.full_name]),
             redirect_url_with_search:
                 "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
@@ -2073,7 +2298,7 @@ test("navbar_helpers", () => {
         {
             terms: dm_group_including_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([alice.full_name, joe.full_name]),
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },
@@ -2203,4 +2428,101 @@ run_test("equals", () => {
             ["near"],
         ),
     );
+});
+
+run_test("adjusted_terms_if_moved", () => {
+    // should return null for non-stream messages containing no
+    // `with` operator
+    let raw_terms = [{operator: "channel", operand: "Foo"}];
+    let message = {type: "private"};
+    let result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.strictEqual(result, null);
+
+    // should adjust terms to contain `dm` for non-stream messages
+    // if it contains `with` operator
+    message = {type: "private", id: 2, display_recipient: [{id: 3, email: "user3@zulip.com"}]};
+    raw_terms = [
+        {operator: "channel", operand: "Foo"},
+        {operator: "with", operand: `${message.id}`},
+    ];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepEqual(result, [
+        {operator: "dm", operand: "user3@zulip.com", negated: false},
+        {operator: "with", operand: "2"},
+    ]);
+
+    // should return null if no terms are changed
+    raw_terms = [{operator: "channel", operand: "general"}];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.strictEqual(result, null);
+
+    // should adjust channel term to match message's display_recipient
+    raw_terms = [{operator: "channel", operand: "random"}];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    let expected = [{operator: "channel", operand: "general"}];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepStrictEqual(result, expected);
+
+    // should adjust topic term to match message's topic
+    raw_terms = [{operator: "topic", operand: "random"}];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    expected = [{operator: "topic", operand: "discussion"}];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepStrictEqual(result, expected);
+
+    // should adjust both channel and topic terms when both are different
+    raw_terms = [
+        {operator: "channel", operand: "random"},
+        {operator: "topic", operand: "random"},
+    ];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    expected = [
+        {operator: "channel", operand: "general"},
+        {operator: "topic", operand: "discussion"},
+    ];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepStrictEqual(result, expected);
+
+    // should not adjust terms that are not channel or topic
+    raw_terms = [
+        {operator: "channel", operand: "random"},
+        {operator: "topic", operand: "random"},
+        {operator: "sender", operand: "alice"},
+    ];
+    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    expected = [
+        {operator: "channel", operand: "general"},
+        {operator: "topic", operand: "discussion"},
+        {operator: "sender", operand: "alice"},
+    ];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepStrictEqual(result, expected);
+});
+
+run_test("can_newly_match_moved_messages", () => {
+    // Matches stream
+    let filter = new Filter([{operator: "channel", operand: "general"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("General", "test"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("random-stream", "test"), false);
+
+    // Matches topic
+    filter = new Filter([{operator: "topic", operand: "Test topic"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "Test topic"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test topic"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "random topic"), false);
+
+    // Matches common narrows
+    filter = new Filter([{operator: "is", operand: "followed"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
+
+    filter = new Filter([{operator: "is", operand: "starred"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), false);
+
+    filter = new Filter([{negated: true, operator: "channel", operand: "general"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("something-else", "test"), true);
+
+    filter = new Filter([{negated: true, operator: "is", operand: "followed"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
 });

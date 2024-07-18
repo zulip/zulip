@@ -1,6 +1,5 @@
 from math import sqrt
 from random import Random
-from typing import List
 
 from analytics.lib.counts import CountStat
 
@@ -16,7 +15,7 @@ def generate_time_series_data(
     frequency: str = CountStat.DAY,
     partial_sum: bool = False,
     random_seed: int = 26,
-) -> List[int]:
+) -> list[int]:
     """
     Generate semi-realistic looking time series data for testing analytics graphs.
 
@@ -70,7 +69,7 @@ def generate_time_series_data(
 
     values = [
         0 if holiday else int(v + sqrt(v) * noise_scalar * spikiness)
-        for v, noise_scalar, holiday in zip(values_no_noise, noise_scalars, holidays)
+        for v, noise_scalar, holiday in zip(values_no_noise, noise_scalars, holidays, strict=False)
     ]
     if partial_sum:
         for i in range(1, length):

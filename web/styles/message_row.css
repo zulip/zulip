@@ -104,7 +104,7 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        var(--message-box-icon-height) repeat(3, auto) /
+        var(--message-box-sender-line-height) repeat(3, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
             3 * var(--message-box-icon-width)
         )
@@ -280,6 +280,10 @@
                    to center me-messages within the baseline group. */
                 line-height: var(--message-box-avatar-height);
                 align-self: baseline;
+                /* Because the avatar may be the tallest element in a
+                   single-line me message, this margin preserves the
+                   overall height of the message box. */
+                margin-bottom: var(--message-box-vertical-margin);
             }
 
             .message_sender {
@@ -325,10 +329,7 @@
             grid-area: avatar;
             /* The picture should not participate in the baseline group. */
             align-self: start;
-            /* Because the avatar may be the tallest element in a
-              single-line me message, this margin preserves the
-              overall height of the message box. */
-            margin: var(--message-box-vertical-margin) 0;
+            margin-top: var(--message-box-vertical-margin);
         }
 
         .status-message {
@@ -336,8 +337,14 @@
         }
 
         .message_content {
-            /* Top padding is reduced when there is a sender line. */
-            padding-top: 3px;
+            /* Pull message content up closer to sender to
+               let the text baseline sit adjacent the bottom
+               of the avatar. We also need to account for the
+               padding atop .message_content. */
+            margin-top: calc(
+                (var(--message-box-markdown-aligned-vertical-space) * 0.5 * -1) -
+                    var(--message-box-markdown-aligned-vertical-space)
+            );
             grid-area: message;
         }
 
@@ -553,7 +560,7 @@
     /* Setting resize as none hides the bottom right diagonal box
        (which even has a background color of its own!). */
     resize: none !important;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     background-color: hsl(0deg 0% 100%);
     border-radius: 3px;
     vertical-align: middle;

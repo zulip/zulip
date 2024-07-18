@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -92,7 +92,7 @@ class ReactionEmojiTest(ZulipTestCase):
         emojis = ["smile", "tada"]
         expected_emoji_codes = ["1f642", "1f389"]
 
-        for sender, emoji in zip(senders, emojis):
+        for sender, emoji in zip(senders, emojis, strict=False):
             reaction_info = {
                 "emoji_name": emoji,
             }
@@ -119,7 +119,9 @@ class ReactionEmojiTest(ZulipTestCase):
             # It's important that we preserve the loop order in this
             # test, since this is our test to verify that we're
             # returning reactions in chronological order.
-            for sender, emoji, emoji_code in zip(senders, emojis, expected_emoji_codes)
+            for sender, emoji, emoji_code in zip(
+                senders, emojis, expected_emoji_codes, strict=False
+            )
         ]
         self.assertEqual(expected_reaction_data, message["reactions"])
 
@@ -616,14 +618,14 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event_user_ids, {iago.id, hamlet.id})
 
         # Group direct message; event should go to all participants.
-        huddle_message_id = self.send_huddle_message(
+        group_direct_message_id = self.send_group_direct_message(
             hamlet,
             [polonius, iago],
             "hello message to multiple receiver",
         )
         with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
-                polonius, f"/api/v1/messages/{huddle_message_id}/reactions", reaction_info
+                polonius, f"/api/v1/messages/{group_direct_message_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
         event = events[0]["event"]
@@ -639,7 +641,7 @@ class EmojiReactionBase(ZulipTestCase):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-    def post_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
+    def post_reaction(self, reaction_info: dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_post(
@@ -647,7 +649,7 @@ class EmojiReactionBase(ZulipTestCase):
         )
         return result
 
-    def post_other_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
+    def post_other_reaction(self, reaction_info: dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_post(
@@ -655,7 +657,7 @@ class EmojiReactionBase(ZulipTestCase):
         )
         return result
 
-    def delete_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
+    def delete_reaction(self, reaction_info: dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_delete(
@@ -665,7 +667,7 @@ class EmojiReactionBase(ZulipTestCase):
 
     def get_message_reactions(
         self, message_id: int, emoji_code: str, reaction_type: str
-    ) -> List[Reaction]:
+    ) -> list[Reaction]:
         message = Message.objects.get(id=message_id)
         reactions = Reaction.objects.filter(
             message=message, emoji_code=emoji_code, reaction_type=reaction_type
@@ -1052,12 +1054,14 @@ class ReactionAPIEventTest(EmojiReactionBase):
             "emoji_code": "1f354",
             "reaction_type": "unicode_emoji",
         }
-        with self.capture_send_event_calls(expected_num_events=1) as events:
-            with mock.patch("zerver.tornado.django_api.queue_json_publish") as m:
-                m.side_effect = AssertionError(
-                    "Events should be sent only after the transaction commits!"
-                )
-                self.api_post(reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info)
+        with (
+            self.capture_send_event_calls(expected_num_events=1) as events,
+            mock.patch("zerver.tornado.django_api.queue_json_publish") as m,
+        ):
+            m.side_effect = AssertionError(
+                "Events should be sent only after the transaction commits!"
+            )
+            self.api_post(reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -1135,9 +1139,11 @@ class ReactionAPIEventTest(EmojiReactionBase):
             reaction_type="whatever",
         )
 
-        with self.capture_send_event_calls(expected_num_events=1):
-            with mock.patch("zerver.tornado.django_api.queue_json_publish") as m:
-                m.side_effect = AssertionError(
-                    "Events should be sent only after the transaction commits."
-                )
-                notify_reaction_update(hamlet, message, reaction, "stuff")
+        with (
+            self.capture_send_event_calls(expected_num_events=1),
+            mock.patch("zerver.tornado.django_api.queue_json_publish") as m,
+        ):
+            m.side_effect = AssertionError(
+                "Events should be sent only after the transaction commits."
+            )
+            notify_reaction_update(hamlet, message, reaction, "stuff")

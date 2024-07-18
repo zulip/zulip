@@ -1,5 +1,3 @@
-from typing import List
-
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
 
@@ -28,7 +26,7 @@ def create_drafts(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    drafts: Json[List[DraftData]],
+    drafts: Json[list[DraftData]],
 ) -> HttpResponse:
     created_draft_objects = do_create_drafts(drafts, user_profile)
     draft_ids = [draft_object.id for draft_object in created_draft_objects]

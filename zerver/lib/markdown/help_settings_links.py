@@ -1,5 +1,6 @@
 import re
-from typing import Any, List, Match
+from re import Match
+from typing import Any
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -65,8 +66,13 @@ link_mapping = {
     ],
     "deactivated": [
         "Organization settings",
-        "Deactivated users",
+        "Users",
         "/#organization/users/deactivated",
+    ],
+    "invitations": [
+        "Organization settings",
+        "Users",
+        "/#organization/users/invitations",
     ],
     "bot-list-admin": [
         "Organization settings",
@@ -93,11 +99,6 @@ link_mapping = {
         "Custom profile fields",
         "/#organization/profile-field-settings",
     ],
-    "invitations": [
-        "Organization settings",
-        "Invitations",
-        "/#organization/users/invitations",
-    ],
     "data-exports-admin": [
         "Organization settings",
         "Data exports",
@@ -120,7 +121,7 @@ def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) ->
         relative_link = f"[{setting_name}]({setting_link})"
         # The "Bots" label appears in both Personal and Organization settings
         # in the user interface so we need special text for this setting.
-        if setting_name == "Bots":
+        if setting_name in ["Bots", "Users"]:
             return f"1. Navigate to the {relative_link} \
                     tab of the **{setting_type_name}** menu."
         return f"1. Go to {relative_link}."
@@ -148,7 +149,7 @@ def set_relative_settings_links(value: bool) -> None:
 
 class Setting(Preprocessor):
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         done = False
         while not done:
             for line in lines:

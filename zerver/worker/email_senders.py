@@ -2,8 +2,9 @@
 import copy
 import logging
 import socket
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from django.core.mail.backends.base import BaseEmailBackend
 from typing_extensions import override
@@ -25,16 +26,16 @@ logger = logging.getLogger(__name__)
 # function doesn't delete the "failed_tries" attribute of "data" which is needed for
 # "retry_event" to work correctly; see EmailSendingWorker for an example with deepcopy.
 def retry_send_email_failures(
-    func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None],
-) -> Callable[[ConcreteQueueWorker, Dict[str, Any]], None]:
+    func: Callable[[ConcreteQueueWorker, dict[str, Any]], None],
+) -> Callable[[ConcreteQueueWorker, dict[str, Any]], None]:
     @wraps(func)
-    def wrapper(worker: ConcreteQueueWorker, data: Dict[str, Any]) -> None:
+    def wrapper(worker: ConcreteQueueWorker, data: dict[str, Any]) -> None:
         try:
             func(worker, data)
         except (socket.gaierror, TimeoutError, EmailNotDeliveredError) as e:
             error_class_name = type(e).__name__
 
-            def on_failure(event: Dict[str, Any]) -> None:
+            def on_failure(event: dict[str, Any]) -> None:
                 logging.exception(
                     "Event %r failed due to exception %s", event, error_class_name, stack_info=True
                 )
@@ -50,13 +51,13 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
         self,
         threaded: bool = False,
         disable_timeout: bool = False,
-        worker_num: Optional[int] = None,
+        worker_num: int | None = None,
     ) -> None:
         super().__init__(threaded, disable_timeout, worker_num)
-        self.connection: Optional[BaseEmailBackend] = None
+        self.connection: BaseEmailBackend | None = None
 
     @retry_send_email_failures
-    def send_email(self, event: Dict[str, Any]) -> None:
+    def send_email(self, event: dict[str, Any]) -> None:
         # Copy the event, so that we don't pass the `failed_tries'
         # data to send_email (which neither takes that
         # argument nor needs that data).
@@ -72,7 +73,7 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
         send_email(**copied_event, connection=self.connection)
 
     @override
-    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+    def consume_batch(self, events: list[dict[str, Any]]) -> None:
         for event in events:
             self.send_email(event)
 

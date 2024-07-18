@@ -49,7 +49,7 @@ To learn more, see the [plugin's README](https://github.com/jenkinsci/zulip-plug
 
 1. Did you set up a post-build action for your project?
 
-1. Does the stream you picked (e.g. `jenkins`) already exist?
+1. Does the stream you picked (e.g., `jenkins`) already exist?
    If not, create the stream and make sure you're subscribed to it.
 
 1. Are your API key and email address correct? Test them

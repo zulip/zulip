@@ -10,10 +10,11 @@
     align-items: stretch;
 
     .new_message_button {
-        .button.small {
+        .button {
             /* Keep the new message button sized to match
                adjacent buttons. */
             font-size: inherit;
+            min-width: inherit;
             line-height: var(--line-height-compose-buttons);
             padding: 3px 10px;
         }
@@ -119,7 +120,7 @@
 /* Main geometry for this element is in zulip.css */
 #compose-content {
     background-color: hsl(232deg 30% 92%);
-    padding: 4px 4px 8px;
+    padding: 7px 7px 8px;
     border: 1px solid hsl(0deg 0% 0% / 10%);
     border-radius: 9px 9px 0 0;
     box-shadow: 0 0 0 hsl(236deg 11% 28%);
@@ -137,7 +138,7 @@
 
 .message_comp {
     display: none;
-    padding: 5px 10px 0 5px;
+    padding: 0 7px 0 0;
 
     #compose_banners {
         max-height: min(25vh, 240px);
@@ -146,15 +147,6 @@
            plus 6px of grid gap for 118px here. */
         margin-right: calc(var(--compose-send-controls-width) + 6px);
     }
-}
-
-.autocomplete_secondary {
-    opacity: 0.8;
-    font-size: 85%;
-}
-
-.active .autocomplete_secondary {
-    opacity: 1;
 }
 
 .compose_table {
@@ -292,10 +284,10 @@
     &:has(.new_message_textarea.over_limit),
     &:has(.new_message_textarea.over_limit:focus) {
         box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
+    }
 
-        &.flash {
-            animation: message-limit-flash 0.5s ease-in-out infinite;
-        }
+    &:has(.new_message_textarea.over_limit.flash) {
+        animation: message-limit-flash 0.5s ease-in-out 3;
     }
 
     &:has(.new_message_textarea.invalid),
@@ -360,6 +352,7 @@
 #preview_message_area {
     margin-right: calc(var(--composebox-buttons-width) * -1);
     padding-right: var(--composebox-buttons-width);
+    color: var(--color-text-default);
 }
 
 .surround-formatting-buttons-row {
@@ -469,12 +462,12 @@
     right: 0;
     color: var(--color-compose-send-control-button);
     background: transparent;
-    font-size: 15px;
+    font-size: 12.5px;
     font-weight: normal;
     line-height: 20px;
     opacity: 0.7;
     border: 0;
-    padding: 5px 7px;
+    padding: 3px 7px;
     border-radius: 8px;
     vertical-align: unset;
     text-shadow: none;
@@ -485,12 +478,18 @@
         color: var(--color-compose-send-control-button-interactive);
     }
 
+    &:active {
+        background-color: var(
+            --color-compose-embedded-button-background-interactive
+        );
+    }
+
     &:focus:not(:focus-visible) {
         outline: none;
     }
 
     &:focus-visible {
-        outline-color: var(--color-outline-focus);
+        outline-color: var(--color-compose-focus-ring);
     }
 }
 
@@ -969,7 +968,7 @@ textarea.new_message_textarea {
 
 #compose-send-button {
     width: 74px;
-    height: 28px;
+    height: var(--compose-formatting-buttons-row-height);
     /* Allow to grow but not shrink */
     flex: 1 0 auto;
     /* Override inherited styles
@@ -1004,41 +1003,80 @@ textarea.new_message_textarea {
 }
 
 .enter_sends_choices {
+    display: flex;
+    flex-direction: column;
+    color: var(--color-text-popover-menu);
+
     .enter_sends_choice {
         display: flex;
         gap: 8px;
-        padding-top: 4px;
+        padding: 4px 10px;
+        align-items: flex-start;
 
-        & input[type="radio"] {
-            position: relative;
-            top: 5px;
+        &:hover {
+            background: var(--color-background-hover-popover-menu);
+            outline: none;
+        }
+
+        &:active {
+            background: var(--color-background-active-popover-menu);
+        }
+
+        & .enter_sends_choice_radio {
             width: auto;
             cursor: pointer;
             margin: 4px 0 0;
+            accent-color: hsl(217deg 100% 60%);
 
             &:focus {
                 outline: 1px dotted hsl(0deg 0% 20%);
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
             }
-        }
 
-        &:first-child {
-            padding: 0 0 4px;
-            border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+            &:checked
+                + .enter_sends_choice_text_container
+                .popover-menu-hotkey-hint {
+                color: hsl(217deg 100% 60%);
+                border: 1px solid hsl(217deg 100% 60% / 50%);
+            }
         }
+    }
+
+    .enter_sends_choice_text_container {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        gap: 3px;
+        white-space: nowrap;
     }
 
     .enter_sends_choice_text {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        gap: 3px;
     }
 
-    .enter_sends_minor,
-    .enter_sends_minor kbd {
-        opacity: 0.9;
-        font-size: 11px;
-        color: hsl(0deg 0% 50%);
+    .popover-menu-hotkey-hints {
+        margin: 0;
+        padding: 0;
+
+        .popover-menu-hotkey-hint {
+            padding: 2px 5px;
+        }
+    }
+
+    .enter_sends_major {
+        font-size: 15px;
+    }
+
+    .enter_sends_minor {
+        font-size: 12px;
+
+        .popover-menu-hotkey-hint {
+            font-size: 12px;
+            padding: 1px 4px;
+        }
     }
 }
 
@@ -1048,6 +1086,13 @@ textarea.new_message_textarea {
        in the compose box. */
     @media (width < $sm_min) {
         display: block;
+    }
+
+    .unread_count {
+        margin: 1px 0 0 6px;
+        border: 0.5px solid var(--color-border-unread-counter);
+        background-color: unset;
+        color: inherit;
     }
 }
 
@@ -1074,15 +1119,20 @@ textarea.new_message_textarea {
     align-items: center;
 
     .compose_control_button {
-        height: var(--compose-formatting-buttons-row-height);
-        width: 30px;
+        /* 22px at 14px/1em */
+        font-size: 1.5714em;
+        /* Coordinate with the value of
+           --compose-formatting-buttons-row-height */
+        /* 28px at 22px/1em */
+        height: 1.2727em;
+        /* 30px at 22px/1em */
+        width: 1.3636em;
         display: flex;
         align-items: center;
         justify-content: center;
         opacity: 0.7;
         color: inherit;
         text-decoration: none;
-        font-size: 22px;
 
         &:hover {
             opacity: 1;
@@ -1096,7 +1146,7 @@ textarea.new_message_textarea {
         }
 
         &:focus-visible {
-            outline-color: var(--color-outline-focus);
+            outline-color: var(--color-compose-focus-ring);
         }
     }
 
@@ -1116,7 +1166,12 @@ textarea.new_message_textarea {
 
     .compose_control_menu {
         padding: 0 1px;
-        font-size: 18px;
+        /* 18px at 14px/1em */
+        font-size: 1.2957em;
+        /* Coordinate with the value of
+           --compose-formatting-buttons-row-height */
+        /* 28px at 18px/1em */
+        height: 1.5556em;
     }
 
     .compose_control_menu_wrapper {
@@ -1136,25 +1191,23 @@ textarea.new_message_textarea {
             opacity: 1;
             display: none;
         }
-
-        /* The media query below handles the hiding and showing of the
-        vdot menu icon, so that it is hidden when all compose buttons fit
-        in the main row below the compose box. So, this is the same as
-        the media query for .show_popover_buttons. */
-        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
-            display: block;
-
-            .compose_control_menu {
-                display: flex;
-            }
-        }
     }
 
     .divider {
         color: hsl(0deg 0% 75%);
-        font-size: 20px;
+        /* 20px at 14px/1em */
+        font-size: 1.4286em;
         margin: 0 3px;
-        height: var(--compose-formatting-buttons-row-height);
+        /* Coordinate with the value of
+           --compose-formatting-buttons-row-height */
+        /* 28px at 20px/1em */
+        height: 1.4em;
+
+        @media (width < 400px) {
+            /* Remove at mobile widths to make more space
+               for compose buttons */
+            display: none;
+        }
     }
 
     .compose_draft_button {
@@ -1176,15 +1229,6 @@ textarea.new_message_textarea {
         align-items: center;
         padding: 0;
         margin: 0;
-
-        /* We use this class for the div containing those compose buttons, which
-        we hide and show in a popover instead when they no longer fit in a
-        single row. The media query below handles the hiding and showing of the
-        buttons from the main row of compose buttons below the compose box. */
-
-        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
-            display: none;
-        }
     }
 
     .show_popover_buttons_2 {
@@ -1192,24 +1236,94 @@ textarea.new_message_textarea {
         align-items: center;
         padding: 0;
         margin: 0;
-
-        /* This is similar to show_popover_buttons, but it's only for those
-        compose buttons that we hide, and show in the popover only when the
-        screen gets extremely narrow. */
-
-        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
-            display: none;
-        }
     }
 
     &.show_in_popover {
         display: none;
+    }
+}
 
-        /* This is to show the popover 2 buttons in the popover, only when
-        they are hidden in the main row below the compose box. */
+.less-dense-mode {
+    .compose-control-buttons-container {
+        .compose_control_menu_wrapper {
+            /* The media query below handles the hiding and showing of the
+            vdot menu icon, so that it is hidden when all compose buttons fit
+            in the main row below the compose box. So, this is the same as
+            the media query for .show_popover_buttons. */
+            @media (((width < 1398px) and (width >= $xl_min)) or (width < 1158px)) {
+                display: block;
 
-        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
-            display: flex;
+                .compose_control_menu {
+                    display: flex;
+                }
+            }
+        }
+
+        .show_popover_buttons {
+            /* We use this class for the div containing those compose buttons, which
+            we hide and show in a popover instead when they no longer fit in a
+            single row. The media query below handles the hiding and showing of the
+            buttons from the main row of compose buttons below the compose box. */
+            @media (((width < 1398px) and (width >= $xl_min)) or (width < 1158px)) {
+                display: none;
+            }
+        }
+
+        .show_popover_buttons_2 {
+            /* This is similar to show_popover_buttons, but it's only for those
+            compose buttons that we hide, and show in the popover only when the
+            screen gets extremely narrow. */
+            @media ((width < 596px) or ((width < 919px) and (width >= $md_min))) {
+                display: none;
+            }
+        }
+
+        &.show_in_popover {
+            /* This is to show the popover 2 buttons in the popover, only when
+            they are hidden in the main row below the compose box. */
+            @media ((width < 596px) or ((width < 919px) and (width >= $md_min))) {
+                display: flex;
+            }
+        }
+
+        .compose_control_button {
+            /* Slightly reduce width so that buttons don't overflow the available
+            space at mobile widths */
+            @media (width < 400px) {
+                width: 1.28em;
+            }
+        }
+    }
+}
+
+.more-dense-mode {
+    .compose-control-buttons-container {
+        .compose_control_menu_wrapper {
+            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+                display: block;
+
+                .compose_control_menu {
+                    display: flex;
+                }
+            }
+        }
+
+        .show_popover_buttons {
+            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+                display: none;
+            }
+        }
+
+        .show_popover_buttons_2 {
+            @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+                display: none;
+            }
+        }
+
+        &.show_in_popover {
+            @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+                display: flex;
+            }
         }
     }
 }
@@ -1288,31 +1402,6 @@ textarea.new_message_textarea {
     }
 }
 
-.typeahead.dropdown-menu {
-    .typeahead-menu {
-        list-style: none;
-        margin: 4px 0;
-    }
-
-    .typeahead-header {
-        margin: 0;
-        padding: 4px 10px;
-        border-top: 1px solid hsl(0deg 0% 0% / 20%);
-        display: flex;
-        align-items: center;
-    }
-
-    #typeahead-header-text {
-        color: var(--color-dropdown-item);
-        font-size: 12px;
-    }
-}
-
-.compose_mobile_stream_button i,
-.compose_mobile_direct_message_button i {
-    margin-right: 4px;
-}
-
 /* Class for send-area buttons, such as
    Drafts and the send-adjacent vdots */
 .send-control-button {
@@ -1335,7 +1424,7 @@ textarea.new_message_textarea {
     }
 
     &:focus-visible {
-        outline-color: var(--color-outline-focus);
+        outline-color: var(--color-compose-focus-ring);
     }
 
     &:hover {
@@ -1358,9 +1447,7 @@ textarea.new_message_textarea {
     width: 40px;
     /* Allow to grow but not shrink */
     flex: 1 0 auto;
-    /* TODO: Set this as a variable shared with
-       the send button. */
-    height: 28px;
+    height: var(--compose-formatting-buttons-row-height);
     /* Make the vdots appear to extend from
        beneath the send button when an
        interactive background is present.
@@ -1381,7 +1468,7 @@ textarea.new_message_textarea {
            will handle the dimension change, so there won't
            be any movement of the vdots in this state. */
         outline: 0;
-        border: 2px solid var(--color-outline-focus);
+        border: 2px solid var(--color-compose-focus-ring);
     }
 
     @media ((width >= $sm_min) and (width < $mc_min)) {
@@ -1402,7 +1489,8 @@ textarea.new_message_textarea {
 
     .zulip-icon {
         padding: 5px 0 5px 4px;
-        font-size: 17px;
+        /* 17px at 14px/1em */
+        font-size: 1.2143em;
         flex-grow: 1;
 
         @media (width < $sm_min) {

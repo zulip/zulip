@@ -171,7 +171,7 @@ This is a **complete sentence** that briefly summarizes your changes. There are
 a few rules to keep in mind:
 
 - Start the sentence with an
-  [imperative](https://en.wikipedia.org/wiki/Imperative_mood) verb, e.g.
+  [imperative](https://en.wikipedia.org/wiki/Imperative_mood) verb, e.g.,
   "fix", "add", "change", "rename", etc.
 - Use proper capitalization and punctuation.
 - Avoid abbreviations and acronyms.

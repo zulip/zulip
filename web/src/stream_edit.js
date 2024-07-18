@@ -228,13 +228,11 @@ function setup_dropdown(sub, slim_sub) {
             );
         },
         $events_container: $("#subscription_overlay .subscription_settings"),
-        tippy_props: {
-            placement: "bottom-start",
-        },
         default_id: sub.can_remove_subscribers_group,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
+            $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
         },
     });
     settings_components.set_dropdown_setting_widget(
@@ -756,12 +754,8 @@ export function initialize() {
             const sub = sub_store.get(stream_id);
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
-            for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-                settings_org.discard_stream_property_element_changes(elem, sub);
-            }
+            settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
-            const $save_btn_controls = $(e.target).closest(".save-button-controls");
-            settings_components.change_save_button_state($save_btn_controls, "discarded");
         },
     );
 }

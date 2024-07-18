@@ -163,6 +163,19 @@ test("get_conversations", ({override}) => {
     set_pm_with_filter("iago@zulip.com");
     pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
+
+    pm_data = pm_list_data.get_conversations("Ia");
+    assert.deepEqual(
+        pm_data,
+        expected_data.filter((item) => item.recipients === "Iago"),
+    );
+
+    // filter should work with email
+    pm_data = pm_list_data.get_conversations("me@zulip");
+    assert.deepEqual(
+        pm_data,
+        expected_data.filter((item) => item.recipients === "Me Myself"),
+    );
 });
 
 test("get_conversations bot", ({override}) => {
