@@ -82,13 +82,7 @@ function update_reply_button_state(disable = false): void {
     }
 }
 
-function update_new_direct_message_button(btn_text: string): void {
-    $("#new_direct_message_button").text(btn_text);
-}
-
 function update_buttons(disable_reply?: boolean): void {
-    const text_conversation = $t({defaultMessage: "New direct message"});
-    update_new_direct_message_button(text_conversation);
     update_reply_button_state(disable_reply);
 }
 
