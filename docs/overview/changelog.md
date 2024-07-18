@@ -205,7 +205,7 @@ log][commit-log] for an up-to-date list of all changes.
   `SUBMIT_USAGE_STATISTICS` to
   `ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS`, if you have either of those
   settings enabled. It's important not to set both the old and new
-  settings: The modern settings will be ignored if the legacy ones are
+  settings: The legacy settings will be ignored if the modern ones are
   present.
 
   The one minor functional change in this restructuring is that it is
