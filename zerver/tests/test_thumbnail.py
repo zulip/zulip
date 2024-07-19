@@ -1,6 +1,4 @@
 import re
-from collections.abc import Iterator
-from contextlib import contextmanager
 from dataclasses import asdict
 from io import StringIO
 from unittest.mock import patch
@@ -300,15 +298,14 @@ class ThumbnailClassesTest(ZulipTestCase):
 
 
 class TestStoreThumbnail(ZulipTestCase):
-    @patch(
-        "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS",
-        [ThumbnailFormat("webp", 100, 75, animated=True)],
-    )
     def test_upload_image(self) -> None:
         assert settings.LOCAL_FILES_DIR
         self.login_user(self.example_user("hamlet"))
 
-        with self.captureOnCommitCallbacks(execute=True):
+        with (
+            self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
             with get_test_image_file("animated_unequal_img.gif") as image_file:
                 response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": image_file})
@@ -354,10 +351,10 @@ class TestStoreThumbnail(ZulipTestCase):
             sorted([path_id, f"thumbnail/{path_id}/100x75-anim.webp"]),
         )
 
-        self.assertEqual(ensure_thumbnails(image_attachment), 0)
+        with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)):
+            self.assertEqual(ensure_thumbnails(image_attachment), 0)
 
-        bigger_thumb_format = ThumbnailFormat("webp", 150, 100, opts="Q=90", animated=False)
-        with patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [bigger_thumb_format]):
+        with self.thumbnail_formats(ThumbnailFormat("webp", 150, 100, opts="Q=90", animated=False)):
             self.assertEqual(ensure_thumbnails(image_attachment), 1)
         self.assert_length(image_attachment.thumbnail_metadata, 2)
 
@@ -383,10 +380,6 @@ class TestStoreThumbnail(ZulipTestCase):
             ),
         )
 
-    @patch(
-        "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS",
-        [ThumbnailFormat("webp", 100, 75, animated=False)],
-    )
     def test_bad_upload(self) -> None:
         assert settings.LOCAL_FILES_DIR
         hamlet = self.example_user("hamlet")
@@ -412,16 +405,19 @@ class TestStoreThumbnail(ZulipTestCase):
             frames=1,
             thumbnail_metadata=[],
         )
-        self.assert_length(missing_thumbnails(image_attachment), 1)
-        with self.assertLogs("zerver.worker.thumbnail", level="ERROR") as error_log:
-            self.assertEqual(ensure_thumbnails(image_attachment), 0)
-            libvips_version = (pyvips.version(0), pyvips.version(1))
-            # This error message changed
-            if libvips_version < (8, 13):  # nocoverage # branch varies with version
-                expected_message = "gifload_buffer: Insufficient data to do anything"
-            else:  # nocoverage # branch varies with version
-                expected_message = "gifload_buffer: no frames in GIF"
-            self.assertTrue(expected_message in error_log.output[0])
+        with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=False)):
+            self.assert_length(missing_thumbnails(image_attachment), 1)
+
+            with self.assertLogs("zerver.worker.thumbnail", level="ERROR") as error_log:
+                self.assertEqual(ensure_thumbnails(image_attachment), 0)
+
+        libvips_version = (pyvips.version(0), pyvips.version(1))
+        # This error message changed
+        if libvips_version < (8, 13):  # nocoverage # branch varies with version
+            expected_message = "gifload_buffer: Insufficient data to do anything"
+        else:  # nocoverage # branch varies with version
+            expected_message = "gifload_buffer: no frames in GIF"
+        self.assertTrue(expected_message in error_log.output[0])
 
         # It should have now been removed
         self.assertEqual(ImageAttachment.objects.filter(path_id=path_id).count(), 0)
@@ -434,22 +430,20 @@ class TestStoreThumbnail(ZulipTestCase):
             frames=1,
             thumbnail_metadata=[],
         )
-        with patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", []):
+        with self.thumbnail_formats():
             self.assertEqual(missing_thumbnails(image_attachment), [])
 
         still_webp = ThumbnailFormat("webp", 100, 75, animated=False, opts="Q=90")
-        with patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp]):
+        with self.thumbnail_formats(still_webp):
             self.assertEqual(missing_thumbnails(image_attachment), [still_webp])
 
         anim_webp = ThumbnailFormat("webp", 100, 75, animated=True, opts="Q=90")
-        with patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp, anim_webp]):
+        with self.thumbnail_formats(still_webp, anim_webp):
             # It's not animated, so the animated format doesn't appear at all
             self.assertEqual(missing_thumbnails(image_attachment), [still_webp])
 
         still_jpeg = ThumbnailFormat("jpeg", 100, 75, animated=False, opts="Q=90")
-        with patch(
-            "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp, anim_webp, still_jpeg]
-        ):
+        with self.thumbnail_formats(still_webp, anim_webp, still_jpeg):
             # But other still formats do
             self.assertEqual(missing_thumbnails(image_attachment), [still_webp, still_jpeg])
 
@@ -465,28 +459,16 @@ class TestStoreThumbnail(ZulipTestCase):
             byte_size=1234,
         )
         image_attachment.thumbnail_metadata = [asdict(rendered_still_webp)]
-        with patch(
-            "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp, anim_webp, still_jpeg]
-        ):
+        with self.thumbnail_formats(still_webp, anim_webp, still_jpeg):
             self.assertEqual(missing_thumbnails(image_attachment), [still_jpeg])
 
         # If we have the still, and it's animated, we do still need the animated
         image_attachment.frames = 10
-        with patch(
-            "zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", [still_webp, anim_webp, still_jpeg]
-        ):
+        with self.thumbnail_formats(still_webp, anim_webp, still_jpeg):
             self.assertEqual(missing_thumbnails(image_attachment), [anim_webp, still_jpeg])
 
 
 class TestThumbnailRetrieval(ZulipTestCase):
-    @contextmanager
-    def mock_formats(self, thumbnail_formats: list[ThumbnailFormat]) -> Iterator[None]:
-        with (
-            patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
-            patch("zerver.views.upload.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
-        ):
-            yield
-
     def test_get_thumbnail(self) -> None:
         assert settings.LOCAL_FILES_DIR
         hamlet = self.example_user("hamlet")
@@ -494,7 +476,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
 
         webp_anim = ThumbnailFormat("webp", 100, 75, animated=True)
         webp_still = ThumbnailFormat("webp", 100, 75, animated=False)
-        with self.mock_formats([webp_anim, webp_still]):
+        with self.thumbnail_formats(webp_anim, webp_still):
             with (
                 self.captureOnCommitCallbacks(execute=True),
                 get_test_image_file("animated_unequal_img.gif") as image_file,
@@ -560,7 +542,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
 
         # Shrink the list of formats, and check that we can still get
         # the thumbnails that were generated at the time
-        with self.mock_formats([webp_still]):
+        with self.thumbnail_formats(webp_still):
             response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
             self.assertEqual(response.status_code, 200)
             consume_response(response)
@@ -574,7 +556,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
         jpeg_still = ThumbnailFormat("jpg", 100, 75, animated=False)
         big_jpeg_still = ThumbnailFormat("jpg", 200, 150, animated=False)
         with (
-            self.mock_formats([webp_still, jpeg_still, big_jpeg_still]),
+            self.thumbnail_formats(webp_still, jpeg_still, big_jpeg_still),
             patch.object(
                 pyvips.Image, "thumbnail_buffer", wraps=pyvips.Image.thumbnail_buffer
             ) as thumb_mock,
@@ -599,7 +581,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
             )
 
         # Upload a static image, and verify that we only generate the still versions
-        with self.mock_formats([webp_anim, webp_still, jpeg_still]):
+        with self.thumbnail_formats(webp_anim, webp_still, jpeg_still):
             with (
                 self.captureOnCommitCallbacks(execute=True),
                 get_test_image_file("img.tif") as image_file,
@@ -641,7 +623,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
         tiny_webp_still = ThumbnailFormat("webp", 10, 10, animated=False)
         gif_still = ThumbnailFormat("gif", 100, 75, animated=False)
         with (
-            self.mock_formats([webp_anim, webp_still, tiny_webp_still, gif_still]),
+            self.thumbnail_formats(webp_anim, webp_still, tiny_webp_still, gif_still),
             self.captureOnCommitCallbacks(execute=True),
             get_test_image_file("animated_img.gif") as image_file,
         ):
