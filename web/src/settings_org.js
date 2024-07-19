@@ -805,6 +805,7 @@ function set_up_dropdown_widget(
             if (setting_type === "group") {
                 $(dropdown.popper).css("min-width", "300px");
                 $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
+                $(dropdown.popper).find(".simplebar-content").css("min-width", "100%");
             }
         },
     });
