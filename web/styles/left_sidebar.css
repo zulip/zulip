@@ -34,7 +34,7 @@
 
 #stream_filters,
 #left-sidebar-navigation-list {
-    margin-right: 12px;
+    margin-right: var(--left-sidebar-right-margin);
 }
 
 li.show-more-topics {
@@ -65,7 +65,6 @@ li.show-more-topics {
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;
-    margin-right: 12px;
     padding: 0;
     font-weight: normal;
 
@@ -176,15 +175,6 @@ li.show-more-topics {
     width: 100%;
 
     .direct-messages-container {
-        /* TODO: Clean up this value and the
-           analogous one on #stream-filters;
-           this could be done alongside the
-           --left-sidebar-collapse-widget-gutter
-           cleanup so that all of the left sidebar
-           space is better, more uniformly handled.
-           That will be an essential pre-condition
-           for a resizable left sidebar. */
-        margin-right: 12px;
         margin-left: 0;
     }
 }
@@ -232,7 +222,7 @@ li.show-more-topics {
 .direct-messages-container {
     /* Properly offset all the grid rows
        in the DM section. */
-    margin-right: 12px;
+    margin-right: var(--left-sidebar-right-margin);
 
     & ul.dm-list {
         list-style-type: none;
@@ -763,7 +753,7 @@ li.top_left_scheduled_messages {
 #views-label-container {
     grid-template-columns:
         0 15px minmax(0, 0.5fr) minmax(0, 1fr)
-        30px 12px;
+        30px var(--left-sidebar-right-margin);
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
        value and the styles dependent on it so that this kind of
@@ -1179,7 +1169,9 @@ li.topic-list-item {
 }
 
 #streams_header {
-    grid-template-columns: 0 0 minmax(0, 1fr) minmax(17px, max-content) 30px 12px;
+    grid-template-columns: 0 0 minmax(0, 1fr) minmax(17px, max-content) 30px var(
+            --left-sidebar-right-margin
+        );
     /* Keep the stream-search area rows collapsed. */
     grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
     cursor: pointer;
@@ -1324,7 +1316,9 @@ li.topic-list-item {
    one that reassigns the vdots space to markers and
    controls. */
 .spectator-view #streams_header {
-    grid-template-columns: 0 0 minmax(0, 1fr) minmax(30px, max-content) 0 12px;
+    grid-template-columns: 0 0 minmax(0, 1fr) minmax(30px, max-content) 0 var(
+            --left-sidebar-right-margin
+        );
 
     /* With markers and controls now sized the same
        as the ordinary vdots area (but allowed to grow,
@@ -1345,7 +1339,7 @@ li.topic-list-item {
     padding-left: var(--left-sidebar-far-left-gutter-size);
     cursor: pointer;
     text-align: center;
-    margin-right: 12px;
+    margin-right: var(--left-sidebar-right-margin);
     color: hsl(240deg 10% 50%);
 
     & span {
