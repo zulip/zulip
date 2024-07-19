@@ -1777,6 +1777,10 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         display: none;
 
         &.expanded {
+            /* In the extended state, we open the sidebar
+               to its maximum possible size (otherwise, it
+               would be unnecessarily too narrow). */
+            --left-sidebar-width: var(--left-sidebar-max-width);
             display: block;
             position: absolute;
             float: none;
