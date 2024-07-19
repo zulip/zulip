@@ -97,5 +97,20 @@
         .fa {
             margin: 0;
         }
+
+        .fa-question-circle-o {
+            /* Override relative position for sake of
+               Chrome paint bug that keeps the circle
+               visible when ellipses are showing. */
+            position: static;
+        }
+
+        .help_link_widget {
+            /* With relative positioning no longer
+               in effect, we vertically align the
+               help icon with an inline-block assist,
+               which is present on the .fa class. */
+            vertical-align: middle;
+        }
     }
 }
