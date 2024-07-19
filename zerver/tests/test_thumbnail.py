@@ -380,6 +380,37 @@ class TestStoreThumbnail(ZulipTestCase):
             ),
         )
 
+    def test_big_upload(self) -> None:
+        # We decline to treat as an image a large single-frame image
+        self.login_user(self.example_user("hamlet"))
+
+        with get_test_image_file("img.gif") as image_file:
+            with patch.object(pyvips.Image, "new_from_buffer") as mock_from_buffer:
+                mock_from_buffer.return_value.width = 1000000
+                mock_from_buffer.return_value.height = 1000000
+                mock_from_buffer.return_value.get_n_pages.return_value = 1
+                response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": image_file})
+                )
+            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            self.assertTrue(Attachment.objects.filter(path_id=path_id).exists())
+            self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
+
+    def test_big_animated_upload(self) -> None:
+        # We also decline to process a small but many-frame image
+        self.login_user(self.example_user("hamlet"))
+        with get_test_image_file("img.gif") as image_file:
+            with patch.object(pyvips.Image, "new_from_buffer") as mock_from_buffer:
+                mock_from_buffer.return_value.width = 100
+                mock_from_buffer.return_value.height = 100
+                mock_from_buffer.return_value.get_n_pages.return_value = 1000000
+                response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": image_file})
+                )
+            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            self.assertTrue(Attachment.objects.filter(path_id=path_id).exists())
+            self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
+
     def test_bad_upload(self) -> None:
         assert settings.LOCAL_FILES_DIR
         hamlet = self.example_user("hamlet")

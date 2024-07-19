@@ -163,7 +163,10 @@ def libvips_check_image(image_data: bytes) -> Iterator[pyvips.Image]:
     except pyvips.Error:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
 
-    if source_image.width * source_image.height > IMAGE_BOMB_TOTAL_PIXELS:
+    if (
+        source_image.width * source_image.height * source_image.get_n_pages()
+        > IMAGE_BOMB_TOTAL_PIXELS
+    ):
         raise BadImageError(_("Image size exceeds limit."))
 
     try:
