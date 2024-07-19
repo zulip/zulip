@@ -353,7 +353,7 @@
         }
 
         .search_list_item .pill-container {
-            margin-left: 5px;
+            margin: 1px 5px;
             /* This contains only one pill, which handles its own border */
             border: none;
             cursor: pointer;
