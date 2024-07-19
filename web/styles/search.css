@@ -251,7 +251,11 @@
         }
 
         .user-pill-container {
-            gap: 5px;
+            gap: 2px 5px;
+            /* Don't enforce a height, as user-pill containers
+               can contain multiple user pills that wrap onto
+               new lines. */
+            height: unset;
 
             > .pill-label {
                 min-width: fit-content;
