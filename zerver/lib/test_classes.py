@@ -279,6 +279,18 @@ Output:
         token=r"[a-z0-9_]{24}"
     )
 
+    @override
+    def assertEqual(self, first: Any, second: Any, msg: Any = "") -> None:
+        if isinstance(first, str) and isinstance(second, str):
+            if first != second:
+                raise AssertionError(
+                    "Actual and expected outputs do not match; showing diff.\n"
+                    + diff_strings(first, second)
+                    + str(msg)
+                )
+        else:
+            super().assertEqual(first, second, msg)
+
     def set_http_headers(self, extra: dict[str, str], skip_user_agent: bool = False) -> None:
         if "subdomain" in extra:
             assert isinstance(extra["subdomain"], str)
@@ -2160,20 +2172,6 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
                     read_by_sender=read_by_sender,
                 )
         return message_id
-
-
-class ZulipVerboseEqualTestCase(ZulipTestCase):
-    @override
-    def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
-        if isinstance(first, str) and isinstance(second, str):
-            if first != second:
-                raise AssertionError(
-                    "Actual and expected outputs do not match; showing diff.\n"
-                    + diff_strings(first, second)
-                    + msg
-                )
-        else:
-            super().assertEqual(first, second)
 
 
 def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:

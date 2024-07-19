@@ -60,7 +60,7 @@ from zerver.lib.mention import (
     topic_wildcards,
 )
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.test_classes import ZulipVerboseEqualTestCase
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
@@ -82,7 +82,7 @@ class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
         return "**" + s.strip("\n") + "**"
 
 
-class FencedBlockPreprocessorTest(ZulipVerboseEqualTestCase):
+class FencedBlockPreprocessorTest(ZulipTestCase):
     def test_simple_quoting(self) -> None:
         processor = FencedBlockPreprocessor(Markdown())
         markdown_input = [
@@ -207,7 +207,7 @@ def markdown_convert_wrapper(content: str) -> str:
     ).rendered_content
 
 
-class MarkdownMiscTest(ZulipVerboseEqualTestCase):
+class MarkdownMiscTest(ZulipTestCase):
     def test_diffs_work_as_expected(self) -> None:
         str1 = "<p>The quick brown fox jumps over the lazy dog.  Animal stories are fun, yeah</p>"
         str2 = "<p>The fast fox jumps over the lazy dogs and cats.  Animal stories are fun</p>"
@@ -373,7 +373,7 @@ class MarkdownMiscTest(ZulipVerboseEqualTestCase):
             self.assertEqual(render_tex("foo"), "<i>html</i>")
 
 
-class MarkdownListPreprocessorTest(ZulipVerboseEqualTestCase):
+class MarkdownListPreprocessorTest(ZulipTestCase):
     # We test that the preprocessor inserts blank lines at correct places.
     # We use <> to indicate that we need to insert a blank line here.
     def split_message(self, msg: str) -> tuple[list[str], list[str]]:
@@ -463,7 +463,7 @@ Outside. Should convert:<>
         self.assertEqual(preprocessor.run(original), expected)
 
 
-class MarkdownFixtureTest(ZulipVerboseEqualTestCase):
+class MarkdownFixtureTest(ZulipTestCase):
     def load_markdown_tests(self) -> tuple[dict[str, Any], list[list[str]]]:
         test_fixtures = {}
         with open(
@@ -555,7 +555,7 @@ class MarkdownFixtureTest(ZulipVerboseEqualTestCase):
             self.assertEqual(match, converted)
 
 
-class MarkdownLinkTest(ZulipVerboseEqualTestCase):
+class MarkdownLinkTest(ZulipTestCase):
     def test_url_to_a(self) -> None:
         url = "javascript://example.com/invalidURL"
         converted = url_to_a(db_data=None, url=url, text=url)
@@ -663,7 +663,7 @@ class MarkdownLinkTest(ZulipVerboseEqualTestCase):
         )
 
 
-class MarkdownEmbedsTest(ZulipVerboseEqualTestCase):
+class MarkdownEmbedsTest(ZulipTestCase):
     def test_inline_youtube(self) -> None:
         msg = "Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE"
         converted = markdown_convert_wrapper(msg)
@@ -1149,7 +1149,7 @@ class MarkdownEmbedsTest(ZulipVerboseEqualTestCase):
             fetch_tweet_data("287977969287315459")
 
 
-class MarkdownEmojiTest(ZulipVerboseEqualTestCase):
+class MarkdownEmojiTest(ZulipTestCase):
     def test_content_has_emoji(self) -> None:
         self.assertFalse(content_has_emoji_syntax("boring"))
         self.assertFalse(content_has_emoji_syntax("hello: world"))
@@ -1242,7 +1242,7 @@ class MarkdownEmojiTest(ZulipVerboseEqualTestCase):
         )
 
 
-class MarkdownLinkifierTest(ZulipVerboseEqualTestCase):
+class MarkdownLinkifierTest(ZulipTestCase):
     def test_links_in_topic_name(self) -> None:
         realm = get_realm("zulip")
         msg = Message(sender=self.example_user("othello"), realm=realm)
@@ -1792,7 +1792,7 @@ class MarkdownLinkifierTest(ZulipVerboseEqualTestCase):
             )
 
 
-class MarkdownAlertTest(ZulipVerboseEqualTestCase):
+class MarkdownAlertTest(ZulipTestCase):
     def test_alert_words(self) -> None:
         user_profile = self.example_user("othello")
         do_add_alert_words(user_profile, ["ALERTWORD", "scaryword"])
@@ -2045,7 +2045,7 @@ class MarkdownAlertTest(ZulipVerboseEqualTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
 
-class MarkdownCodeBlockTest(ZulipVerboseEqualTestCase):
+class MarkdownCodeBlockTest(ZulipTestCase):
     def test_default_code_block_language(self) -> None:
         realm = get_realm("zulip")
         self.assertEqual(realm.default_code_block_language, "")
@@ -2130,7 +2130,7 @@ class MarkdownCodeBlockTest(ZulipVerboseEqualTestCase):
         self.assertEqual(rendering_result.rendered_content, expected_output)
 
 
-class MarkdownMentionTest(ZulipVerboseEqualTestCase):
+class MarkdownMentionTest(ZulipTestCase):
     def test_mention_topic_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(
@@ -2960,7 +2960,7 @@ class MarkdownMentionTest(ZulipVerboseEqualTestCase):
         self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
 
 
-class MarkdownStreamMentionTests(ZulipVerboseEqualTestCase):
+class MarkdownStreamMentionTests(ZulipTestCase):
     def test_stream_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
@@ -3174,7 +3174,7 @@ class MarkdownStreamMentionTests(ZulipVerboseEqualTestCase):
         )
 
 
-class MarkdownMITTest(ZulipVerboseEqualTestCase):
+class MarkdownMITTest(ZulipTestCase):
     def test_mit_rendering(self) -> None:
         """Test the Markdown configs for the MIT Zephyr mirroring system;
         verifies almost all inline patterns are disabled, but
@@ -3202,7 +3202,7 @@ class MarkdownMITTest(ZulipVerboseEqualTestCase):
         )
 
 
-class MarkdownHTMLTest(ZulipVerboseEqualTestCase):
+class MarkdownHTMLTest(ZulipTestCase):
     def test_html_entity_conversion(self) -> None:
         msg = """\
             Test raw: Hello, &copy;
@@ -3253,7 +3253,7 @@ class MarkdownHTMLTest(ZulipVerboseEqualTestCase):
         self.assertEqual(converted, dedent(expected_output))
 
 
-class MarkdownApiTests(ZulipVerboseEqualTestCase):
+class MarkdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = "That is a **bold** statement"
         result = self.api_post(
@@ -3283,7 +3283,7 @@ class MarkdownApiTests(ZulipVerboseEqualTestCase):
         )
 
 
-class MarkdownErrorTests(ZulipVerboseEqualTestCase):
+class MarkdownErrorTests(ZulipTestCase):
     def test_markdown_error_handling(self) -> None:
         with self.simulated_markdown_failure(), self.assertRaises(MarkdownRenderingError):
             markdown_convert_wrapper("")
