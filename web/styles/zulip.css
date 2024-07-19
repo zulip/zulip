@@ -39,7 +39,7 @@ body {
     .header-main,
     .app .app-main,
     #compose-container {
-        max-width: 1400px;
+        max-width: 1500px;
     }
 
     &.fluid_layout_width {
