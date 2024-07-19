@@ -74,6 +74,7 @@ from zerver.lib.test_helpers import (
     instrument_url,
     queries_captured,
 )
+from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
@@ -2017,6 +2018,14 @@ Output:
         user_group.direct_members.set(direct_members)
         user_group.direct_subgroups.set(direct_subgroups)
         return user_group
+
+    @contextmanager
+    def thumbnail_formats(self, *thumbnail_formats: ThumbnailFormat) -> Iterator[None]:
+        with (
+            mock.patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
+            mock.patch("zerver.views.upload.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
+        ):
+            yield
 
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):
