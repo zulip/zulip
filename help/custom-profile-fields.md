@@ -2,12 +2,16 @@
 
 {!admin-only.md!}
 
-By default, user profiles show their name, email, date they joined, and when
-they were last active. You can also add custom profile fields like country
-of residence, birthday, manager, Twitter handle, and more.
+[User cards](/help/user-cards) show basic information about a user, and [user
+profiles](/help/view-someones-profile) provide additional details. You can add
+custom profile fields to user cards and user profiles, making it easy for users
+to share information, such as their pronouns, job title, or team.
 
-Custom profile fields are always optional, and do not appear in users'
-profiles until they fill them out.
+Zulip supports many types of profile fields, such as dates, lists of options,
+GitHub account links, and [more](#profile-field-types). You can choose which
+custom profile fields to [display](#display-custom-fields-on-user-card) on user
+cards. Custom profile fields can be optional or
+[required](#make-a-custom-profile-field-required).
 
 Zulip supports synchronizing custom profile fields from an external
 user database such as LDAP or SAML. See the [authentication
@@ -41,23 +45,6 @@ methods][authentication-production] documentation for details.
 
 {end_tabs}
 
-## Profile field types
-
-Choose the profile field type that's most appropriate for the requested information.
-
-* **Date**: For dates (e.g., birthdays or work anniversaries).
-* **Link**: For links to websites, including company-internal pages.
-* **External account**: For linking to an account on GitHub, X (Twitter), etc.
-* **List of options**: A dropdown with a list of predefined options (e.g.,
-  office location).
-* **Pronouns**: What pronouns should people use to refer to the user? Pronouns
-  are displayed in [user mention](/help/mention-a-user-or-group) autocomplete
-  suggestions.
-* **Text (long)**: For multiline responses (e.g., a user's intro message).
-* **Text (short)**: For one-line responses up to 50 characters (e.g., team
-  name or role in your organization).
-* **Users**: For selecting one or more users (e.g., manager or direct reports).
-
 ## Display custom fields on user card
 
 Organizations may find it useful to display additional fields on the
@@ -87,9 +74,52 @@ checkboxes will be disabled.
 
 {end_tabs}
 
+## Make a custom profile field required
+
+If a custom profile field is required, users who have left it blank will see a
+banner every time they open the Zulip web or desktop app prompting them to fill
+it out.
+
+{start_tabs}
+
+{settings_tab|profile-field-settings}
+
+1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
+   icon for the profile field you want to edit.
+
+1. Toggle **Required field**.
+
+4. Click **Save changes**.
+
+!!! tip ""
+
+    You can also choose which custom profile fields are required by toggling the
+    checkboxes in the **Required** column of the **Custom profile fields** table.
+
+{end_tabs}
+
+
+## Profile field types
+
+Choose the profile field type that's most appropriate for the requested information.
+
+* **Date**: For dates (e.g., birthdays or work anniversaries).
+* **Link**: For links to websites, including company-internal pages.
+* **External account**: For linking to an account on GitHub, X (Twitter), etc.
+* **List of options**: A dropdown with a list of predefined options (e.g.,
+  office location).
+* **Pronouns**: What pronouns should people use to refer to the user? Pronouns
+  are displayed in [user mention](/help/mention-a-user-or-group) autocomplete
+  suggestions.
+* **Text (long)**: For multiline responses (e.g., a user's intro message).
+* **Text (short)**: For one-line responses up to 50 characters (e.g., team
+  name or role in your organization).
+* **Users**: For selecting one or more users (e.g., manager or direct reports).
+
 ## Related articles
 
 * [Edit your profile](/help/edit-your-profile)
+* [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
 
 [authentication-production]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html
