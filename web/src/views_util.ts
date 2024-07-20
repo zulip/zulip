@@ -145,7 +145,7 @@ export function is_in_focus(): boolean {
         !popovers.any_active() &&
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.any_active() &&
-        !modals.any_active() &&
+        !modals.any_active_or_animating() &&
         !$(".home-page-input").is(":focus") &&
         !$("#search_query").is(":focus")
     );
