@@ -234,54 +234,53 @@ function handle_post_message_list_change(
     compose_recipient.handle_middle_pane_transition();
 }
 
-function try_rendering_locally_for_same_narrow(filter, opts) {
-    if (opts.then_select_id || opts.then_select_offset) {
-        // This function is designed to navigate user to a target message
-        // specified via `near` operator, which doesn't handle
-        // `then_select_id` or `then_select_offset` to avoid targeting
-        // the wrong message.
-        return false;
-    }
-
+export function try_rendering_locally_for_same_narrow(filter, opts) {
     const current_filter = narrow_state.filter();
+    let target_scroll_offset;
     if (!current_filter) {
         return false;
     }
 
-    if (filter.has_operator("near")) {
-        const target_id = Number.parseInt(filter.operands("near")[0], 10);
-        const target_message = message_lists.current?.get(target_id);
-        if (!target_message) {
-            return false;
-        }
-
-        const adjusted_terms = Filter.adjusted_terms_if_moved(filter.terms(), target_message);
-        if (adjusted_terms !== null) {
-            filter = new Filter(adjusted_terms);
-        }
-
-        // If the difference between the current filter and the new filter
-        // is just a `near` operator, or just the value of a `near` operator,
-        // we can render the new filter without a rerender of the message list
-        // if the target message in the `near` operator is already rendered.
-        const excluded_operators = ["near"];
-        if (!filter.equals(current_filter, excluded_operators)) {
-            return false;
-        }
-
-        const currently_selected_id = message_lists.current?.selected_id();
-        if (currently_selected_id !== target_id) {
-            message_lists.current.select_id(target_id, {
-                then_scroll: true,
-            });
-        }
-
-        message_lists.current.data.filter = filter;
-        update_hash_to_match_filter(filter, "retarget message location");
-        return true;
+    let target_id;
+    if (opts.then_select_id !== undefined) {
+        target_id = opts.then_select_id;
+        target_scroll_offset = opts.then_select_offset;
+    } else if (filter.has_operator("near")) {
+        target_id = Number.parseInt(filter.operands("near")[0], 10);
+    } else {
+        return false;
     }
 
-    return false;
+    const target_message = message_lists.current?.get(target_id);
+    if (!target_message) {
+        return false;
+    }
+
+    const adjusted_terms = Filter.adjusted_terms_if_moved(filter.terms(), target_message);
+    if (adjusted_terms !== null) {
+        filter = new Filter(adjusted_terms);
+    }
+
+    // If the difference between the current filter and the new filter
+    // is just a `near` operator, or just the value of a `near` operator,
+    // we can render the new filter without a rerender of the message list
+    // if the target message in the `near` operator is already rendered.
+    const excluded_operators = ["near"];
+    if (!filter.equals(current_filter, excluded_operators)) {
+        return false;
+    }
+
+    const currently_selected_id = message_lists.current?.selected_id();
+    if (currently_selected_id !== target_id) {
+        message_lists.current.select_id(target_id, {
+            then_scroll: true,
+            target_scroll_offset,
+        });
+    }
+
+    message_lists.current.data.filter = filter;
+    update_hash_to_match_filter(filter, "retarget message location");
+    return true;
 }
 
 export function show(raw_terms, opts) {
