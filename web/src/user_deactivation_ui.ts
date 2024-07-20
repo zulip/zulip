@@ -78,6 +78,7 @@ export function confirm_deactivation(
                 on_click: handle_confirm,
                 post_render: set_email_field_visibility,
                 loading_spinner,
+                focus_submit_on_open: true,
             });
         },
     });
