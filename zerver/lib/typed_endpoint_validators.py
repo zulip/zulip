@@ -1,3 +1,4 @@
+import re
 import zoneinfo
 from collections.abc import Collection
 
@@ -83,3 +84,12 @@ def to_non_negative_int_or_none(s: str) -> NonNegativeInt | None:
 # integer, and we want to return None in that case.
 def non_negative_int_or_none_validator() -> BeforeValidator:
     return BeforeValidator(lambda s: to_non_negative_int_or_none(s))
+
+
+def check_color(var_name: str, val: object) -> str:
+    s = str(val)
+    valid_color_pattern = re.compile(r"^#([a-fA-F0-9]{3,6})$")
+    matched_results = valid_color_pattern.match(s)
+    if not matched_results:
+        raise ValueError(_("{var_name} is not a valid hex color code").format(var_name=var_name))
+    return s
