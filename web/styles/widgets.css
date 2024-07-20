@@ -209,7 +209,7 @@ button {
         padding: 4px;
         padding-left: 14px;
         padding-right: 14px;
-        transition: all 0.2s ease;
+        transition: all 0.1s ease;
 
         &:hover,
         &:focus {
