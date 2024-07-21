@@ -11,7 +11,9 @@ import render_insecure_desktop_app_alert_content from "../templates/navbar_alert
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
+import render_time_zone_update_offer_content from "../templates/navbar_alerts/time_zone_update_offer.hbs";
 
+import * as channel from "./channel";
 import * as desktop_notifications from "./desktop_notifications";
 import * as keydown_util from "./keydown_util";
 import type {LocalStorage} from "./localstorage";
@@ -19,10 +21,12 @@ import {localstorage} from "./localstorage";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import {current_user, realm} from "./state_data";
+import * as timerender from "./timerender";
 import {should_display_profile_incomplete_alert} from "./timerender";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
+import * as user_settings from "./user_settings";
 import * as util from "./util";
 
 const show_step = function ($process: JQuery, step: number): void {
@@ -147,8 +151,30 @@ export function get_demo_organization_deadline_days_remaining(): number {
     return days_remaining;
 }
 
+function are_different_timezones(timezone1: string, timezone2: string): boolean {
+    if (timezone2 === "") {
+        return true;
+    }
+    const date1 = Date.parse(new Date().toLocaleString("en-US", {timeZone: timezone1}));
+    const date2 = Date.parse(new Date().toLocaleString("en-US", {timeZone: timezone2}));
+    return date1 !== date2;
+}
+
+export function should_offer_to_update_timezone(): boolean {
+    // This offer is only for logged-in users with the setting enabled.
+    return Boolean(
+        !page_params.is_spectator &&
+            user_settings.user_settings.web_suggest_update_timezone &&
+            are_different_timezones(
+                timerender.display_time_zone,
+                user_settings.user_settings.timezone,
+            ),
+    );
+}
+
 export function initialize(): void {
     const ls = localstorage();
+    const browser_time_zone = timerender.display_time_zone;
     if (realm.demo_organization_scheduled_deletion_date) {
         const days_remaining = get_demo_organization_deadline_days_remaining();
         open({
@@ -163,6 +189,13 @@ export function initialize(): void {
             data_process: "insecure-desktop-app",
             custom_class: "red",
             rendered_alert_content_html: render_insecure_desktop_app_alert_content(),
+        });
+    } else if (should_offer_to_update_timezone()) {
+        open({
+            data_process: "time_zone_update_offer",
+            rendered_alert_content_html: render_time_zone_update_offer_content({
+                browser_time_zone,
+            }),
         });
     } else if (realm.server_needs_upgrade) {
         if (should_show_server_upgrade_notification(ls)) {
@@ -250,6 +283,26 @@ export function initialize(): void {
             $(window).trigger("resize");
         },
     );
+
+    $(".time-zone-update").on("click", function (e) {
+        e.preventDefault();
+        $(this).closest(".alert").hide();
+        void channel.patch({
+            url: "/json/settings",
+            data: {timezone: browser_time_zone},
+        });
+        $(window).trigger("resize");
+    });
+
+    $(".time-zone-auto-detect-off").on("click", function (e) {
+        e.preventDefault();
+        $(this).closest(".alert").hide();
+        void channel.patch({
+            url: "/json/settings",
+            data: {web_suggest_update_timezone: false},
+        });
+        $(window).trigger("resize");
+    });
 
     // Treat Enter with links in the navbar alerts UI focused like a click.,
     $("#navbar_alerts_wrapper").on("keyup", ".alert-link[role=button]", function (e) {
