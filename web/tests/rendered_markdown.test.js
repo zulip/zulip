@@ -201,7 +201,7 @@ run_test("message_inline_video", () => {
     window.GestureEvent = false;
 });
 
-run_test("message_inline_animated_image", ({override}) => {
+run_test("message_inline_animated_image_still", ({override}) => {
     const $content = get_content_element();
     const $elem = $.create("img");
 
@@ -212,6 +212,13 @@ run_test("message_inline_animated_image", ({override}) => {
         'div.message_inline_image > a > img[src^="/user_uploads/thumbnail/"]',
         $array([$elem]),
     );
+
+    const $stub = $.create("div.message_inline_image");
+
+    $elem.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".message_inline_image");
+        return $stub;
+    };
 
     const thumbnail_formats = [
         {
@@ -257,9 +264,22 @@ run_test("message_inline_animated_image", ({override}) => {
     rm.update_elements($content);
     assert.equal($elem.attr("src"), "/path/to/840x560.webp");
 
+    // Now verify the behavior for animated images.
     $elem.attr("data-animated", "true");
+    override(user_settings, "web_animate_image_previews", "always");
     rm.update_elements($content);
     assert.equal($elem.attr("src"), "/path/to/840x560-anim.webp");
+
+    // And verify the different behavior for other values of the animation setting.
+    override(user_settings, "web_animate_image_previews", "on_hover");
+    rm.update_elements($content);
+    assert.equal($elem.attr("src"), "/path/to/840x560.webp");
+    assert.equal($stub.hasClass("message_inline_animated_image_still"), true);
+
+    override(user_settings, "web_animate_image_previews", "never");
+    rm.update_elements($content);
+    assert.equal($elem.attr("src"), "/path/to/840x560.webp");
+    assert.equal($stub.hasClass("message_inline_animated_image_still"), true);
 });
 
 run_test("user-mention", () => {

@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 275**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_animate_image_previews` setting, which controls how
+  animated images should be played in the web/desktop app message feed.
+
 **Feature level 274**
 
 * [`GET /events`](/api/get-events): `delete_message` events are now

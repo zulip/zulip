@@ -775,6 +775,7 @@ class TestRealmAuditLog(ZulipTestCase):
         value: bool | int | str
         test_values = dict(
             default_language="de",
+            web_animate_image_previews="on_hover",
             web_home_view="all_messages",
             emojiset="twitter",
             notification_sound="ding",

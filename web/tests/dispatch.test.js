@@ -1031,6 +1031,26 @@ run_test("user_settings", ({override}) => {
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
     }
+    {
+        event = event_fixtures.user_settings__web_animate_image_previews_always;
+        user_settings.web_animate_image_previews = "on_hover";
+        dispatch(event);
+        assert.equal(user_settings.web_animate_image_previews, "always");
+    }
+
+    {
+        event = event_fixtures.user_settings__web_animate_image_previews_on_hover;
+        user_settings.web_animate_image_previews = "never";
+        dispatch(event);
+        assert.equal(user_settings.web_animate_image_previews, "on_hover");
+    }
+
+    {
+        event = event_fixtures.user_settings__web_animate_image_previews_never;
+        user_settings.web_animate_image_previews = "always";
+        dispatch(event);
+        assert.equal(user_settings.web_animate_image_previews, "never");
+    }
 
     {
         const stub = make_stub();
