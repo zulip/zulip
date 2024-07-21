@@ -14,7 +14,6 @@ import render_user_with_status_icon from "../templates/user_with_status_icon.hbs
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
-import * as compose_state from "./compose_state";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import type {DropdownWidget} from "./dropdown_widget";
@@ -29,18 +28,14 @@ import type {MessageListData} from "./message_list_data";
 import * as message_store from "./message_store";
 import type {DisplayRecipientUser, Message} from "./message_store";
 import * as message_util from "./message_util";
-import * as modals from "./modals";
 import * as muted_users from "./muted_users";
 import * as onboarding_steps from "./onboarding_steps";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
 import * as recent_view_data from "./recent_view_data";
 import type {ConversationData} from "./recent_view_data";
 import * as recent_view_util from "./recent_view_util";
-import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
@@ -144,16 +139,7 @@ export function save_filters(): void {
 
 export function is_in_focus(): boolean {
     // Check if user is focused on Recent Conversations.
-    return (
-        recent_view_util.is_visible() &&
-        !compose_state.composing() &&
-        !popovers.any_active() &&
-        !sidebar_ui.any_sidebar_expanded_as_overlay() &&
-        !overlays.any_active() &&
-        !modals.any_active() &&
-        !$(".home-page-input").is(":focus") &&
-        !$("#search_query").is(":focus")
-    );
+    return recent_view_util.is_visible() && views_util.is_in_focus();
 }
 
 export function set_default_focus(): void {
