@@ -23,12 +23,8 @@ import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
-import * as modals from "./modals";
 import * as onboarding_steps from "./onboarding_steps";
-import * as overlays from "./overlays";
 import * as people from "./people";
-import * as popovers from "./popovers";
-import * as sidebar_ui from "./sidebar_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -1456,18 +1452,7 @@ function move_focus_to_visible_area(): void {
 }
 
 export function is_in_focus(): boolean {
-    // Check if user is focused on
-    // inbox
-    return (
-        is_visible() &&
-        !compose_state.composing() &&
-        !popovers.any_active() &&
-        !sidebar_ui.any_sidebar_expanded_as_overlay() &&
-        !overlays.any_active() &&
-        !modals.any_active() &&
-        !$(".home-page-input").is(":focus") &&
-        !$("#search_query").is(":focus")
-    );
+    return is_visible() && views_util.is_in_focus();
 }
 
 export function initialize(): void {
