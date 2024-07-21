@@ -1458,9 +1458,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         default_user_profile_id=None,  # Fail if there is no user set
     )
 
-    # We need to have this check as the emoji files are only present in the data
-    # importer from Slack
-    # For Zulip export, this doesn't exist
+    # We need to have this check as the emoji files may not
+    # be present in import data from other services.
     if os.path.exists(os.path.join(import_dir, "emoji")):
         import_uploads(
             realm,
