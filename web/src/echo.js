@@ -172,7 +172,7 @@ export function insert_local_message(message_request, local_id_float, insert_new
     message.local_id = local_id_float.toString();
     message.locally_echoed = true;
     message.id = local_id_float;
-    if (message.topic === undefined) {
+    if (!message.topic) {
         message.topic_links = [];
     } else {
         message.topic_links = markdown.get_topic_links(message.topic);
