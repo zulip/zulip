@@ -119,6 +119,7 @@ export function initialize() {
         // Inline image, video and twitter previews.
         if (
             $target.is("img.message_inline_image") ||
+            $target.is(".message_inline_animated_image_still") ||
             $target.is("video") ||
             $target.is(".message_inline_video") ||
             $target.is("img.twitter-avatar")

@@ -84,6 +84,21 @@ export const user_list_style_values = {
     // },
 };
 
+export const web_animate_image_previews_values = {
+    always: {
+        code: "always",
+        description: $t({defaultMessage: "Always"}),
+    },
+    on_hover: {
+        code: "on_hover",
+        description: $t({defaultMessage: "On hover"}),
+    },
+    never: {
+        code: "never",
+        description: $t({defaultMessage: "Only in image viewer"}),
+    },
+};
+
 export const web_stream_unreads_count_display_policy_values = {
     all_streams: {
         code: 1,
