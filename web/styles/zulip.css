@@ -786,7 +786,25 @@ strong {
 }
 
 #change_visibility_policy_button_tooltip {
-    text-align: center;
+    text-align: left;
+
+    .tooltip-privacy-icon {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip-privacy-icon .zulip-icon-lock {
+        margin-top: -0.15em !important;
+    }
+
+    .tooltip-privacy-icon i {
+        position: absolute;
+        top: 0.1667em;
+    }
+
+    .tooltip-privacy-icon span {
+        margin-left: 1.25em;
+    }
 }
 
 .narrow-filter {

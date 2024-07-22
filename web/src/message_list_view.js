@@ -292,6 +292,7 @@ function populate_group_from_message_container(group, message_container) {
         } else {
             group.stream_id = sub.stream_id;
         }
+        group.stream_name = stream_data.get_stream_name_from_id(sub.stream_id);
         group.is_subscribed = stream_data.is_subscribed(group.stream_id);
         group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
         group.visibility_policy = user_topics.get_topic_visibility_policy(

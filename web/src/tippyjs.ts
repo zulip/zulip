@@ -11,6 +11,7 @@ import {$t} from "./i18n";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_config from "./settings_config";
+import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -83,11 +84,27 @@ export const topic_visibility_policy_tooltip_props = {
     appendTo: () => document.body,
     onShow(instance: tippy.Instance) {
         const $elem = $(instance.reference);
-        const current_visibility_policy_str = $elem.attr("data-tippy-content");
+        let should_render_privacy_icon;
+        let current_visibility_policy_str;
+        if ($elem.hasClass("zulip-icon-inherit")) {
+            should_render_privacy_icon = true;
+        } else {
+            should_render_privacy_icon = false;
+            current_visibility_policy_str = $elem.attr("data-tippy-content");
+        }
+        let current_stream_obj;
+        if (should_render_privacy_icon) {
+            current_stream_obj = stream_data.get_sub_by_id(
+                Number($elem.parent().attr("data-stream-id")),
+            );
+        }
+        const tooltip_context = {
+            ...current_stream_obj,
+            current_visibility_policy_str,
+            should_render_privacy_icon,
+        };
         instance.setContent(
-            ui_util.parse_html(
-                render_change_visibility_policy_button_tooltip({current_visibility_policy_str}),
-            ),
+            ui_util.parse_html(render_change_visibility_policy_button_tooltip(tooltip_context)),
         );
     },
     onHidden(instance: tippy.Instance) {
