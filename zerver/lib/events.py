@@ -1681,8 +1681,11 @@ def do_events_register(
         event_types_set = None
 
     # Fetch the realm object again to prefetch all the
-    # group settings which support anonymous groups
+    # settings that will be used in 'fetch_initial_state_data'
     # to avoid unnecessary DB queries.
+    # The settings include:
+    # * group settings which support anonymous groups
+    # * announcements streams
     realm = get_realm_with_settings(realm_id=realm.id)
 
     if user_profile is None:
