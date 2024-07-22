@@ -480,7 +480,9 @@ function get_user_card_popover_for_message_items() {
         return undefined;
     }
 
-    return $("li:not(.divider):visible a:not(.hide_copy_icon)", $popover);
+    // Return only the popover menu options that are visible, and not the
+    // copy buttons or the link items in the custom profile fields.
+    return $(".link-item .popover-menu-link", $popover).filter(":visible");
 }
 
 // Functions related to the user card popover in the user sidebar.
