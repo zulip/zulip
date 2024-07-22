@@ -1,15 +1,31 @@
-# Block image and website previews
+# Image, video and website previews
+
+Zulip displays previews of images, videos and websites in your message feed. To
+avoid disrupting the flow of conversation, these previews are small. You can
+configure how animated images are previewed, and organization administrators can
+also disable previews altogether.
+
+## Configure how animated images are played
+
+In the desktop and web apps, you can configure previews of animated images to
+always show the animation, show it when you hover over the image with your
+mouse, or not show it at all. You can always see the animated image by opening
+it in the [image viewer](/help/view-images-and-videos).
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|preferences}
+
+1. Under **Information**, select the desired option from the **Play animated
+   images** dropdown.
+
+{end_tabs}
+
+## Configure whether image and video previews are shown
 
 {!admin-only.md!}
-
-By default, when a user links to an image or a website, a preview of the
-image or website content is shown. You can choose to disable previews of
-images and/or website links.
-
-Zulip proxies all external images in messages through the server, to
-prevent images from being used to track Zulip users.
-
-### Block image and website previews
 
 {start_tabs}
 
@@ -17,14 +33,32 @@ prevent images from being used to track Zulip users.
 
 1. Under **Other settings**, toggle **Show previews of uploaded and linked images and videos**.
 
+{!save-changes.md!}
+
+{end_tabs}
+
+## Configure whether website previews are shown
+
+{!admin-only.md!}
+
+{start_tabs}
+
+{settings_tab|organization-settings}
+
 1. Under **Other settings**, toggle **Show previews of linked websites**.
 
 {!save-changes.md!}
 
 {end_tabs}
 
+## Security
+
+To prevent images from being used to track Zulip users, Zulip proxies all
+external images in messages through the server.
+
 ## Related articles
 
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [Share and upload files](/help/share-and-upload-files)
 * [View images and videos](/help/view-images-and-videos)
+* [Animated GIFs](/help/animated-gifs-from-giphy)
