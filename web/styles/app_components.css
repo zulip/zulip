@@ -1144,6 +1144,10 @@ div.overlay {
     }
 }
 
+.dropdown_widget_with_label_wrapper {
+    margin-top: 0 !important;
+}
+
 .dropdown-current-value-not-in-options,
 .setting-disabled-option {
     color: hsl(38deg 46% 54%);

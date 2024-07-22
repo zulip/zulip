@@ -1069,6 +1069,11 @@ div.settings-radio-input-parent {
     }
 }
 
+.group-permissions .dropdown_widget_with_label_wrapper {
+    display: inline-block;
+    height: 30px;
+}
+
 #stream-advanced-configurations {
     .dropdown-widget-button {
         color: hsl(0deg 0% 33%);
