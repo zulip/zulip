@@ -1,48 +1,63 @@
+# Zulip Sentry integration
+
 Get Zulip notifications for the issues in your Sentry projects!
 
-This integration supports Sentry's Node, Python, and Go
-[platforms](https://sentry.io/platforms/).  [Contact
-us](/help/contact-support) if a platform you care about is missing.
+!!! warn ""
+
+    **Note:** This integration supports Sentry's Node, Python, and Go
+    [platforms](https://sentry.io/platforms/). If there's a platform
+    you're interested in seeing support for that's missing, let us
+    know in the [integrations][dev-community] channel of the Zulip
+    development community.
+
+{start_tabs}
 
 1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
-    The default topic, if not set in the URL, will be the title of the
-    issue or event.
-
-1. In Sentry, go to your organization's **Settings**, and then go to
-    **Developer Settings**. Click on the **Create New Integration** button,
-    and select **Internal Integration**. Set the **Webhook URL** to the URL
-    you constructed in the above step, and then enable **Alert Rule
-    Action**.
-
-    You can fill out the remaining details as you like. If you want
-    notifications for issues and not just events, you can scroll down to
-    **Webhooks** on the same page, and check the box that says **issue**.
-    Make sure that you set up the permissions so that the integration will
-    be visible to the right people.
+1. In your Sentry organization's **Settings**, go to **Developer
+   Settings**. Click on **Create New Integration**, and select
+   **Internal Integration**.
 
     !!! warn ""
 
-        **Note:** Zulip also supports configuring this as a webhook in
-        Sentry &mdash; which, while easier to configure (navigate to
-        **Settings &gt; Integrations &gt; WebHooks**), may not include the
-        full breadth of event types. For instance, some events, like issue
-        assignments or issues being resolved, will not trigger notifications
-        with this configuration.
+        **Note**: Zulip also supports configuring this integration as a
+        webhook in Sentry. While this is easier to configure (navigate
+        to **Settings &gt; Integrations**, and search for **WebHooks**),
+        it doesn't support the full breadth of event types. For instance,
+        some events, like issue assignments or issues being resolved,
+        will not trigger notifications with this configuration.
 
-1. Once you've saved the internal integration, go to **Alerts** and click
-    on the **Create Alert** button to create a new alert rule. Select the
-    project for which you want to receive notifications. Set the conditions
-    to be whatever you want (e.g., the events you want to be notified for),
-    and under **PERFORM THESE ACTIONS**, select **Add an action...** &gt;
-    **Send a notification via an integration**, and set it to the internal
-    integration you created in the previous step.
+1. Set the **Webhook URL** to the URL generated above, and then enable
+   **Alert Rule Action**. Fill out the remaining details based on your
+   preferences, and click **Save Changes**.
+
+    !!! tip ""
+
+        If you want notifications for issues, as well as events, you can
+        scroll down to **Webhooks** on the same page, and toggle the
+        **issue** checkbox.
+
+1. Go to **Alerts**, and click **Create Alert**.
+
+1. Select the project for which you want to receive notifications, and
+   set the conditions as you'd prefer (e.g., the events you want to be
+   notified about). Under **PERFORM THESE ACTIONS**, select **Add an
+   action...** &gt; **Send a notification via an integration**, and set
+   it to the internal integration created above.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/sentry/001.png)
 ![](/static/images/integrations/sentry/002.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}
+
+[dev-community]: https://chat.zulip.org/#narrow/stream/127-integrations
