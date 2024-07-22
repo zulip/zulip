@@ -20,6 +20,8 @@ type Payload = {
     preview: string;
     source: string;
     url: string;
+    original_width_px: number | undefined;
+    original_height_px: number | undefined;
 };
 
 let is_open = false;
@@ -261,7 +263,17 @@ function display_image(payload: Payload): void {
     $(".image-preview, .media-actions, .media-description, .download, .lightbox-zoom-reset").show();
 
     const $img_container = $("#lightbox_overlay .image-preview > .zoom-element");
-    const $img = $("<img>").attr("src", payload.source);
+    const $img = $("<img>");
+    if (payload.preview && payload.original_width_px && payload.original_height_px) {
+        $img.attr("src", payload.preview);
+        $img.attr("width", payload.original_width_px);
+        $img.attr("height", payload.original_height_px);
+        $img.one("load", () => {
+            $img.attr("src", payload.source);
+        });
+    } else {
+        $img.attr("src", payload.source);
+    }
     $img_container.empty();
     $img_container.append($img).show();
 
@@ -482,6 +494,16 @@ export function parse_media_data(media: HTMLElement): Payload {
     if (is_loading_placeholder) {
         preview_src = "";
     }
+    const original_dimensions = $media.attr("data-original-dimensions");
+    let original_width_px;
+    let original_height_px;
+    if (original_dimensions) {
+        const found = original_dimensions.match(/^(\d+)x(\d+)$/);
+        if (found) {
+            original_width_px = Number(found[1]);
+            original_height_px = Number(found[2]);
+        }
+    }
 
     if (is_inline_video) {
         type = "inline-video";
@@ -529,6 +551,8 @@ export function parse_media_data(media: HTMLElement): Payload {
         title: $parent.attr("aria-label") ?? $parent.attr("href"),
         type,
         preview: preview_src && util.is_valid_url(preview_src) ? preview_src : "",
+        original_width_px,
+        original_height_px,
         source: source && util.is_valid_url(source) ? source : "",
         url: url && util.is_valid_url(url) ? url : "",
     };
