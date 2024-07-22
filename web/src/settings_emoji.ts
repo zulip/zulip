@@ -126,12 +126,15 @@ export function populate_emoji(): void {
         name: "emoji_list",
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
+            const author = item.author
+                ? {...item.author, is_active: people.is_person_active(item.author_id)}
+                : "";
             return render_admin_emoji_list({
                 emoji: {
                     name: item.name,
                     display_name: item.name.replaceAll("_", " "),
                     source_url: item.source_url,
-                    author: item.author ?? "",
+                    author,
                     can_delete_emoji: can_delete_emoji(item),
                 },
             });
