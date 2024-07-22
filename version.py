@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 275  # Last bumped for `web_animate_image_previews` setting.
+API_FEATURE_LEVEL = 276  # Last bumped for data-original-dimensions
 
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision

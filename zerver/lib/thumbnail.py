@@ -329,6 +329,8 @@ def split_thumbnail_path(file_path: str) -> tuple[str, BaseThumbnailFormat]:
 class MarkdownImageMetadata:
     url: str
     is_animated: bool
+    original_width_px: int
+    original_height_px: int
 
 
 def get_user_upload_previews(
@@ -347,6 +349,8 @@ def get_user_upload_previews(
             upload_preview_data[image_attachment.path_id] = MarkdownImageMetadata(
                 url=url,
                 is_animated=is_animated,
+                original_width_px=image_attachment.original_width_px,
+                original_height_px=image_attachment.original_height_px,
             )
     return upload_preview_data
 
@@ -421,6 +425,9 @@ def rewrite_thumbnailed_images(
             changed = True
             del image_tag["class"]
             image_tag["src"] = image_data.url
+            image_tag["data-original-dimensions"] = (
+                f"{image_data.original_width_px}x{image_data.original_height_px}"
+            )
             if image_data.is_animated:
                 image_tag["data-animated"] = "true"
 
