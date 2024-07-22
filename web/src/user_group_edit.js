@@ -101,6 +101,34 @@ function update_add_members_elements(group) {
     }
 }
 
+function update_general_settings_elements(group) {
+    if (!is_editing_group(group.id)) {
+        return;
+    }
+
+    // We are concerend with the General tab for changing group permissions.
+    const $group_permission_settings = $("#group_permission_settings");
+
+    // Otherwise, we adjust whether the widgets are disabled based on
+    // whether this user is authorized to change the group settings.
+    const $permission_dropdown_elements =
+        $group_permission_settings.find(".dropdown-widget-button");
+
+    if (settings_data.can_edit_user_group(group.id)) {
+        $permission_dropdown_elements.prop("disabled", false);
+        $permission_dropdown_elements
+            .closest(".dropdown_widget_with_label_wrapper")
+            ._tippy?.destroy();
+    } else {
+        $permission_dropdown_elements.prop("disabled", true);
+
+        settings_components.initialize_disable_btn_hint_popover(
+            $permission_dropdown_elements.closest(".dropdown_widget_with_label_wrapper"),
+            $t({defaultMessage: "You do not have permission to edit this setting."}),
+        );
+    }
+}
+
 function show_membership_settings(group) {
     const $edit_container = get_edit_container(group);
     update_add_members_elements(group);
@@ -110,6 +138,11 @@ function show_membership_settings(group) {
         group,
         $parent_container: $member_container,
     });
+}
+
+function show_general_settings(group) {
+    user_group_components.setup_permissions_dropdown(group, false);
+    update_general_settings_elements(group);
 }
 
 function enable_group_edit_settings(group) {
@@ -285,7 +318,7 @@ export function show_settings_for(group) {
 
     $edit_container.show();
     show_membership_settings(group);
-    user_group_components.setup_permissions_dropdown(group, false);
+    show_general_settings(group);
 }
 
 export function setup_group_settings(group) {
