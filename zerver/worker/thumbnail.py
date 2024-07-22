@@ -147,6 +147,8 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
         MarkdownImageMetadata(
             url=url,
             is_animated=is_animated,
+            original_width_px=image_attachment.original_width_px,
+            original_height_px=image_attachment.original_height_px,
         ),
     )
     return written_images
