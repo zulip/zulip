@@ -553,7 +553,12 @@ export function change_save_button_state($element: JQuery, state: string): void 
     }
 
     if (state === "discarded") {
-        show_hide_element($element, false, 0, () => {
+        let hide_delay = 0;
+        if ($saveBtn.attr("data-status") === "saved") {
+            // Keep saved button displayed a little longer.
+            hide_delay = 500;
+        }
+        show_hide_element($element, false, hide_delay, () => {
             enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
         });
         return;
