@@ -12,8 +12,8 @@
 # without users needing a manual pgdump and restore.
 
 # https://hub.docker.com/r/groonga/pgroonga/tags
-ARG PGROONGA_VERSION=latest
-ARG POSTGRESQL_VERSION=14
+ARG PGROONGA_VERSION=3.2.1
+ARG POSTGRESQL_VERSION=16
 FROM groonga/pgroonga:$PGROONGA_VERSION-alpine-$POSTGRESQL_VERSION-slim
 
 # Install hunspell, Zulip stop words, and run Zulip database
