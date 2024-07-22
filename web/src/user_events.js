@@ -38,14 +38,13 @@ export const update_person = function update(person) {
         const user_id = person.user_id;
         const new_email = person.new_email;
 
+        people.update_email(user_id, new_email);
         narrow_state.update_email(user_id, new_email);
         compose_state.update_email(user_id, new_email);
 
         if (people.is_my_user_id(person.user_id)) {
             current_user.email = new_email;
         }
-
-        people.update_email(user_id, new_email);
     }
 
     if (Object.hasOwn(person, "delivery_email")) {
