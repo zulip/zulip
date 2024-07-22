@@ -207,7 +207,7 @@ const current_user_schema = z.object({
     can_subscribe_other_users: NOT_TYPED_YET,
     delivery_email: z.string(),
     email: NOT_TYPED_YET,
-    full_name: NOT_TYPED_YET,
+    full_name: z.string(),
     has_zoom_token: z.boolean(),
     is_admin: z.boolean(),
     is_billing_admin: z.boolean(),
