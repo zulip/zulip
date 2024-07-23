@@ -21,6 +21,7 @@ import * as markdown from "./markdown";
 import * as message_events from "./message_events";
 import * as onboarding_steps from "./onboarding_steps";
 import * as people from "./people";
+import {postprocess_content} from "./postprocess_content";
 import * as rendered_markdown from "./rendered_markdown";
 import * as scheduled_messages from "./scheduled_messages";
 import * as sent_messages from "./sent_messages";
@@ -350,7 +351,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
             rendered_preview_html = rendered_content;
         }
 
-        $preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
+        $preview_content_box.html(postprocess_content(rendered_preview_html));
         rendered_markdown.update_elements($preview_content_box);
     }
 
