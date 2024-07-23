@@ -60,10 +60,10 @@ class zulip::common {
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.22.3',
+      'version' => '1.22.5',
       'sha256'  => {
-        'amd64'   => '8920ea521bad8f6b7bc377b4824982e011c19af27df88a815e3586ea895f1b36',
-        'aarch64' => '6c33e52a5b26e7aa021b94475587fce80043a727a54ceb0eee2f9fc160646434',
+        'amd64'   => '904b924d435eaea086515bc63235b192ea441bd8c9b198c507e85009e6e4c7f0',
+        'aarch64' => '8d21325bfcf431be3660527c1a39d3d9ad71535fabdf5041c826e44e31642b5a',
       },
     },
 
