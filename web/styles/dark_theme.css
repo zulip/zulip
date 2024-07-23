@@ -90,7 +90,8 @@
     }
 
     .enter_sends_choices,
-    #user_enter_sends_label {
+    #user_enter_sends_label,
+    #realm_enter_sends_label {
         & kbd {
             background-color: hsl(211deg 29% 14%);
             border-color: hsl(211deg 29% 14%);

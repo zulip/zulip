@@ -576,7 +576,8 @@ input[type="checkbox"] {
     }
 }
 
-#user_enter_sends_label kbd {
+#user_enter_sends_label kbd,
+#realm_enter_sends_label kbd {
     opacity: 0.9;
     font-size: 11px;
     color: hsl(0deg 0% 50%);
