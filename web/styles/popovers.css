@@ -319,7 +319,7 @@ ul.popover-group-menu-member-list {
 
 ul.popover-group-menu-member-list:not(:has(li))::after {
     content: "No members in the group" !important;
-    color: gray;
+    color: var(--color-text-search-placeholder);
     padding-left: 10px;
     font-style: italic;
 }
