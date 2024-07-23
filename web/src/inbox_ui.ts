@@ -208,7 +208,7 @@ export function show(): void {
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Welcome to your <b>inbox</b>!"}),
             html_body,
-            html_submit_button: $t_html({defaultMessage: "Continue"}),
+            html_submit_button: $t_html({defaultMessage: "Got it"}),
             on_click() {
                 // Do nothing
             },
