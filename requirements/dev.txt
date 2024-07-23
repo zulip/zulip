@@ -256,9 +256,9 @@ cachetools==5.3.3 \
     --hash=sha256:0abad1021d3f8325b2fc1d2e9c8b9c9d57b04c3932657a72465447332c24d945 \
     --hash=sha256:ba29e2dfa0b8b556606f097407ed1aa62080ee108ab0dc5ec9d6a723a007d105
     # via google-auth
-certifi==2024.6.2 \
-    --hash=sha256:3cd43f1c6fa7dedc5899d69d3ad0398fd018ad1a17fba83ddaf78aa46c747516 \
-    --hash=sha256:ddc6c8ce995e6987e7faf5e3f1b02b302836a0e5d98ece18392cb1a36c72ad56
+certifi==2024.7.4 \
+    --hash=sha256:5a1e7645bc0ec61a09e26c36f6106dd4cf40c6db3a1fb6352b0244e7fb057c7b \
+    --hash=sha256:c198e21b1289c2ab85ee4e67bb4b4ef3ead0892059901a8d5b622f24a1101e90
     # via
     #   requests
     #   sentry-sdk
@@ -2804,9 +2804,9 @@ semgrep==1.77.0 \
     --hash=sha256:cf6dc949ca06a504d06fa54b59e23e2fc0514caff5eccb9c09160e867145751f \
     --hash=sha256:fb902a373c830782b40eced6ae364c2e7a98255b877d4a66ec98dccf8ad1e4bc
     # via -r requirements/dev.in
-sentry-sdk==2.7.1 \
-    --hash=sha256:25006c7e68b75aaa5e6b9c6a420ece22e8d7daec4b7a906ffd3a8607b67c037b \
-    --hash=sha256:ef1b3d54eb715825657cd4bb3cb42bb4dc85087bac14c56b0fd8c21abd968c9a
+sentry-sdk==2.10.0 \
+    --hash=sha256:545fcc6e36c335faa6d6cda84669b6e17025f31efbf3b2211ec14efe008b75d1 \
+    --hash=sha256:87b3d413c87d8e7f816cc9334bff255a83d8b577db2b22042651c30c19c09190
     # via -r requirements/common.in
 service-identity==24.1.0 \
     --hash=sha256:6829c9d62fb832c2e1c435629b0a8c476e1929881f28bee4d20bc24161009221 \
