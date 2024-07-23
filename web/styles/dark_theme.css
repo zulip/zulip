@@ -348,7 +348,7 @@
 
     .active .autocomplete_secondary {
         opacity: 0.6;
-        color: white;
+        color: hsl(0deg 0% 100%);
         text-decoration: underline;
     }
 
