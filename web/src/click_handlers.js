@@ -9,10 +9,10 @@ import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_c
 import * as activity_ui from "./activity_ui";
 import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
@@ -377,7 +377,7 @@ export function initialize() {
         $row.find(".undo_markdown_preview").show();
         $row.find(".preview_message_area").show();
 
-        compose.render_and_show_preview(
+        compose_ui.render_and_show_preview(
             $row.find(".markdown_preview_spinner"),
             $row.find(".preview_content"),
             content,
