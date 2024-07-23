@@ -561,6 +561,9 @@ export const preferences_settings_labels = {
     ),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
+    enter_sends: new Handlebars.SafeString(
+        $t_html({defaultMessage: "<kbd>Enter</kbd> sends when composing a message"}),
+    ),
     receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),

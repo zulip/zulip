@@ -518,6 +518,17 @@ input[type="checkbox"] {
     }
 }
 
+#user_enter_sends_label kbd {
+    /* 14px at 15px/1em */
+    font-size: 0.9333em;
+    font-style: normal;
+    font-weight: 500;
+    color: hsl(0deg 0% 40%);
+    position: relative;
+    bottom: 1px;
+    margin: 0 2px;
+}
+
 .edit-attachment-buttons {
     display: inline-block;
     vertical-align: middle;
