@@ -55,7 +55,11 @@ from zerver.lib.mention import (
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
-from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
+from zerver.lib.thumbnail import (
+    MarkdownImageMetadata,
+    get_user_upload_previews,
+    rewrite_thumbnailed_images,
+)
 from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
@@ -125,7 +129,7 @@ class DbData:
     sent_by_bot: bool
     stream_names: dict[str, int]
     translate_emoticons: bool
-    user_upload_previews: dict[str, tuple[str, bool] | None]
+    user_upload_previews: dict[str, MarkdownImageMetadata | None]
 
 
 # Format version of the Markdown rendering; stored along with rendered

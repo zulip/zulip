@@ -1350,6 +1350,9 @@ export function show(): void {
             on_click() {
                 /* This widget is purely informational and clicking only closes it. */
             },
+            on_hidden() {
+                revive_current_focus();
+            },
             single_footer_button: true,
             focus_submit_on_open: true,
         });

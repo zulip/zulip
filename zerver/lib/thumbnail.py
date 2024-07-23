@@ -325,9 +325,19 @@ def split_thumbnail_path(file_path: str) -> tuple[str, BaseThumbnailFormat]:
     return path_id, thumbnail_format
 
 
-def get_user_upload_previews(realm_id: int, content: str) -> dict[str, tuple[str, bool] | None]:
+@dataclass
+class MarkdownImageMetadata:
+    url: str
+    is_animated: bool
+    original_width_px: int
+    original_height_px: int
+
+
+def get_user_upload_previews(
+    realm_id: int, content: str
+) -> dict[str, MarkdownImageMetadata | None]:
     matches = re.findall(r"/user_uploads/(\d+/[/\w.-]+)", content)
-    upload_preview_data: dict[str, tuple[str, bool] | None] = {}
+    upload_preview_data: dict[str, MarkdownImageMetadata | None] = {}
     for image_attachment in ImageAttachment.objects.filter(realm_id=realm_id, path_id__in=matches):
         if image_attachment.thumbnail_metadata == []:
             # Image exists, and header of it parsed as a valid image,
@@ -335,8 +345,12 @@ def get_user_upload_previews(realm_id: int, content: str) -> dict[str, tuple[str
             # spinner.
             upload_preview_data[image_attachment.path_id] = None
         else:
-            upload_preview_data[image_attachment.path_id] = get_default_thumbnail_url(
-                image_attachment
+            url, is_animated = get_default_thumbnail_url(image_attachment)
+            upload_preview_data[image_attachment.path_id] = MarkdownImageMetadata(
+                url=url,
+                is_animated=is_animated,
+                original_width_px=image_attachment.original_width_px,
+                original_height_px=image_attachment.original_height_px,
             )
     return upload_preview_data
 
@@ -364,7 +378,7 @@ def get_default_thumbnail_url(image_attachment: ImageAttachment) -> tuple[str, b
 
 def rewrite_thumbnailed_images(
     rendered_content: str,
-    images: dict[str, tuple[str, bool] | None],
+    images: dict[str, MarkdownImageMetadata | None],
     to_delete: set[str] | None = None,
 ) -> str | None:
     if not images and not to_delete:
@@ -410,8 +424,11 @@ def rewrite_thumbnailed_images(
         else:
             changed = True
             del image_tag["class"]
-            image_tag["src"], is_animated = image_data
-            if is_animated:
+            image_tag["src"] = image_data.url
+            image_tag["data-original-dimensions"] = (
+                f"{image_data.original_width_px}x{image_data.original_height_px}"
+            )
+            if image_data.is_animated:
                 image_tag["data-animated"] = "true"
 
     if changed:
