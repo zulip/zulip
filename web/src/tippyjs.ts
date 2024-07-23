@@ -602,9 +602,19 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [".personal-menu-clear-status", ".user-card-clear-status-button"].join(","),
+        target: [
+            ".custom-profile-field-value",
+            ".copy-custom-profile-field-link",
+            "#popover-menu-copy-email",
+            ".personal-menu-clear-status",
+            ".user-card-clear-status-button",
+        ].join(","),
         placement: "top",
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onHidden(instance: tippy.Instance) {
+            instance.destroy();
+        },
     });
 
     tippy.delegate("body", {
