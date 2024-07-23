@@ -11,6 +11,7 @@ from typing_extensions import override
 from zerver.actions.message_edit import do_update_embedded_data
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import (
+    MarkdownImageMetadata,
     StoredThumbnailFormat,
     get_default_thumbnail_url,
     get_image_thumbnail_path,
@@ -139,16 +140,22 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
             pass
 
     image_attachment.save(update_fields=["thumbnail_metadata"])
+    url, is_animated = get_default_thumbnail_url(image_attachment)
     update_message_rendered_content(
         image_attachment.realm_id,
         image_attachment.path_id,
-        get_default_thumbnail_url(image_attachment),
+        MarkdownImageMetadata(
+            url=url,
+            is_animated=is_animated,
+            original_width_px=image_attachment.original_width_px,
+            original_height_px=image_attachment.original_height_px,
+        ),
     )
     return written_images
 
 
 def update_message_rendered_content(
-    realm_id: int, path_id: str, image_data: tuple[str, bool] | None
+    realm_id: int, path_id: str, image_data: MarkdownImageMetadata | None
 ) -> None:
     for message_class in [Message, ArchivedMessage]:
         messages_with_image = (

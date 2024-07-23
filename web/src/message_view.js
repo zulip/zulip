@@ -660,6 +660,10 @@ export function show(raw_terms, opts) {
                     validate_filter_topic_post_fetch:
                         filter.requires_adjustment_for_moved_with_target,
                     cont() {
+                        if (message_lists.current !== msg_list) {
+                            return;
+                        }
+
                         if (filter.narrow_requires_hash_change) {
                             // We've already adjusted our filter via
                             // filter.try_adjusting_for_moved_with_target, and
@@ -682,7 +686,7 @@ export function show(raw_terms, opts) {
                             render_message_list_with_selected_message({
                                 id_info,
                                 select_offset: then_select_offset,
-                                msg_list: message_lists.current,
+                                msg_list,
                                 select_opts,
                             });
                         }

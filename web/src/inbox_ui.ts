@@ -212,6 +212,9 @@ export function show(): void {
             on_click() {
                 // Do nothing
             },
+            on_hidden() {
+                revive_current_focus();
+            },
             single_footer_button: true,
             focus_submit_on_open: true,
         });
@@ -831,6 +834,9 @@ function focus_clicked_list_element($elt: JQuery): void {
 }
 
 export function revive_current_focus(): void {
+    if (!is_in_focus()) {
+        return;
+    }
     if (is_list_focused()) {
         set_list_focus();
     } else {

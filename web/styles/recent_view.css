@@ -121,6 +121,10 @@
     .table_fix_head table th {
         padding: 8px;
         text-align: left;
+
+        &[data-sort] {
+            padding-right: 0.88em;
+        }
     }
 
     #recent_view_filter_buttons {

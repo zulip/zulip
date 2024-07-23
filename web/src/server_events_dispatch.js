@@ -728,6 +728,7 @@ export function dispatch_normal_event(event) {
                 "translate_emoticons",
                 "display_emoji_reaction_users",
                 "user_list_style",
+                "web_animate_image_previews",
                 "web_stream_unreads_count_display_policy",
                 "starred_message_counts",
                 "send_stream_typing_notifications",
@@ -778,6 +779,12 @@ export function dispatch_normal_event(event) {
             if (event.property === "demote_inactive_streams") {
                 stream_list.update_streams_sidebar();
                 stream_list_sort.set_filter_out_inactives();
+            }
+            if (event.property === "web_animate_image_previews") {
+                // Rerender the whole message list UI
+                for (const msg_list of message_lists.all_rendered_message_lists()) {
+                    msg_list.rerender();
+                }
             }
             if (event.property === "web_stream_unreads_count_display_policy") {
                 stream_list.update_dom_unread_counts_visibility();

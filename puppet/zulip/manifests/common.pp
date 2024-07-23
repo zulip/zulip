@@ -50,20 +50,20 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version'   => '2.4.13',
-      'goversion' => '1222',
+      'version'   => '2.5.1',
+      'goversion' => '1225',
       'sha256'    => {
-        'amd64'   => '3fbe4dbd16b533eecfb68dbcd988eab185a07bd9b41b8b070287637df4d3d7b6',
-        'aarch64' => 'c5a2d9664a57e172551adac4bbd96898af0c11822b74c641ea8af62c3c5c4dab',
+        'amd64'   => '6b66a926fb6f3e93db63069eef79682b540618d4976ce7e1b917f3ae3e8b986e',
+        'aarch64' => 'cee9b1dc3a62efb104d8aa73d5dcee41c161cec1aeeee0f0004a76819e3a117f',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.22.3',
+      'version' => '1.22.5',
       'sha256'  => {
-        'amd64'   => '8920ea521bad8f6b7bc377b4824982e011c19af27df88a815e3586ea895f1b36',
-        'aarch64' => '6c33e52a5b26e7aa021b94475587fce80043a727a54ceb0eee2f9fc160646434',
+        'amd64'   => '904b924d435eaea086515bc63235b192ea441bd8c9b198c507e85009e6e4c7f0',
+        'aarch64' => '8d21325bfcf431be3660527c1a39d3d9ad71535fabdf5041c826e44e31642b5a',
       },
     },
 

@@ -638,6 +638,7 @@ def update_realm_user_settings_defaults(
         Annotated[int, check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)]
     ]
     | None = None,
+    web_animate_image_previews: Literal["always", "on_hover", "never"] | None = None,
     email_address_visibility: Json[
         Annotated[int, check_int_in_validator(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)]
     ]

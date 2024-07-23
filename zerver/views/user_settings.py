@@ -161,6 +161,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
 emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
 web_home_view_options = ["recent_topics", "inbox", "all_messages"]
+web_animate_image_previews_options = ["always", "on_hover", "never"]
 
 
 def check_settings_values(
@@ -328,6 +329,9 @@ def json_change_settings(
     send_read_receipts: bool | None = REQ(json_validator=check_bool, default=None),
     user_list_style: int | None = REQ(
         json_validator=check_int_in(UserProfile.USER_LIST_STYLE_CHOICES), default=None
+    ),
+    web_animate_image_previews: str | None = REQ(
+        str_validator=check_string_in(web_animate_image_previews_options), default=None
     ),
     email_address_visibility: int | None = REQ(
         json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None

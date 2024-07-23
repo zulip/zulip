@@ -194,6 +194,7 @@ export function build_page() {
         user_list_style_values: settings_config.user_list_style_values,
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
+        web_animate_image_previews_values: settings_config.web_animate_image_previews_values,
         color_scheme_values: settings_config.color_scheme_values,
         web_home_view_values: settings_config.web_home_view_values,
         settings_object: realm_user_settings_defaults,
