@@ -28,13 +28,14 @@ from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
 from zerver.lib.mime_types import guess_type
+from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend
+from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
@@ -823,6 +824,41 @@ def process_avatars(record: dict[str, Any]) -> None:
         do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
 
 
+def process_emojis(
+    import_dir: str, default_user_profile_id: int | None, record: dict[str, Any]
+) -> None:
+    if not record["s3_path"].endswith(".original"):
+        return
+
+    if "author_id" in record and record["author_id"] is not None:
+        user_profile = get_user_profile_by_id(record["author_id"])
+    else:
+        assert default_user_profile_id is not None
+        user_profile = get_user_profile_by_id(default_user_profile_id)
+
+    # file_name has the proper file extension without the
+    # .original suffix.
+    # application/octet-stream will be rejected by upload_emoji_image,
+    # but it's easier to use it here as the sensible default value
+    # and let upload_emoji_image figure out the exact error; or handle
+    # the file somehow anyway if it's ever changed to do that.
+    content_type = guess_type(record["file_name"])[0] or "application/octet-stream"
+    emoji_import_data_file_dath = os.path.join(import_dir, record["path"])
+    with open(emoji_import_data_file_dath, "rb") as f:
+        try:
+            # This will overwrite the files that got copied to the appropriate paths
+            # for emojis (whether in S3 or in the local uploads dir), ensuring to
+            # thumbnail them and generate stills for animated emojis.
+            upload_emoji_image(f, record["file_name"], user_profile, content_type)
+        except BadImageError:
+            logging.warning(
+                "Could not thumbnail emoji image %s; ignoring",
+                record["s3_path"],
+            )
+            # TODO:: should we delete the RealmEmoji object, or keep it with the files
+            # that did get copied; even though they do generate this error?
+
+
 def import_uploads(
     realm: Realm,
     import_dir: Path,
@@ -855,6 +891,16 @@ def import_uploads(
         re_map_foreign_keys_internal(
             records, "records", "user_profile_id", related_table="user_profile", id_field=True
         )
+    if processing_emojis and records and "author" in records[0]:
+        # This condition only guarantees author field appears in the generated
+        # records. Potentially the value of it might be None though. In that
+        # case, this will be ignored by the remap below.
+        # Any code further down the codepath that wants to use the author value
+        # needs to be mindful of it potentially being None and use a fallback
+        # value, most likely default_user_profile_id being the right choice.
+        re_map_foreign_keys_internal(
+            records, "records", "author", related_table="user_profile", id_field=False
+        )
 
     s3_uploads = settings.LOCAL_UPLOADS_DIR is None
 
@@ -881,6 +927,8 @@ def import_uploads(
             relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
                 realm_id=record["realm_id"], emoji_file_name=record["file_name"]
             )
+            if record["s3_path"].endswith(".original"):
+                relative_path += ".original"
             record["last_modified"] = timestamp
         elif processing_realm_icons:
             icon_name = os.path.basename(record["path"])
@@ -948,15 +996,25 @@ def import_uploads(
         if count % 1000 == 0:
             logging.info("Processed %s/%s uploads", count, len(records))
 
-    if processing_avatars:
+    if processing_avatars or processing_emojis:
+        if processing_avatars:
+            process_func = process_avatars
+        else:
+            assert processing_emojis
+            process_func = partial(
+                process_emojis,
+                import_dir,
+                default_user_profile_id,
+            )
+
         # Ensure that we have medium-size avatar images for every
-        # avatar.  TODO: This implementation is hacky, both in that it
+        # avatar and properly thumbnailed emojis with stills (for animated emoji).
+        # TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it
         # might be better to require the export to just have these.
-
         if processes == 1:
             for record in records:
-                process_avatars(record)
+                process_func(record)
         else:
             connection.close()
             _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
@@ -964,7 +1022,7 @@ def import_uploads(
             _cache.disconnect_all()
             with ProcessPoolExecutor(max_workers=processes) as executor:
                 for future in as_completed(
-                    executor.submit(process_avatars, record) for record in records
+                    executor.submit(process_func, record) for record in records
                 ):
                     future.result()
 
