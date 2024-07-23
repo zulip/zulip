@@ -68,7 +68,7 @@ currently composing to.
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, toggle **Automatically go to conversation
+1. Under **Navigation**, toggle **Automatically go to conversation
 where you sent a message**, as desired.
 
 {end_tabs}
