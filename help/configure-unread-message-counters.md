@@ -16,7 +16,7 @@ unread messages in a channel by moving your mouse over it in the left sidebar.
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, select your preferred option from the
+1. Under **Information**, select your preferred option from the
    **Show unread counts for** dropdown.
 
 {end_tabs}

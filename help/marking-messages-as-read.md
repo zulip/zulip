@@ -31,7 +31,7 @@ web/desktop app.
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, click on the **Automatically mark messages as
+1. Under **Navigation**, click on the **Automatically mark messages as
    read** dropdown, and select **Always**, **Never** or **Only in
    [conversation](/help/reading-conversations) views**.
 
