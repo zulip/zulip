@@ -54,6 +54,7 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
     use_s3_backend,
 )
+from zerver.lib.thumbnail import BadImageError
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -251,16 +252,27 @@ class ExportFile(ZulipTestCase):
 
         emoji_path = f"{realm.id}/emoji/images/{file_name}"
         emoji_dir = export_fn(f"emoji/{realm.id}/emoji/images")
-        self.assertEqual(os.listdir(emoji_dir), [file_name])
+        self.assertEqual(set(os.listdir(emoji_dir)), {file_name, file_name + ".original"})
 
-        (record,) = read_json("emoji/records.json")
+        (record1, record2) = read_json("emoji/records.json")
+        # The return order is not guaranteed, so sort it so that we can reliably
+        # know which record is for the .original file and which for the actual emoji.
+        record, record_original = sorted(
+            (record1, record2), key=lambda r: r["path"].endswith(".original")
+        )
+
         self.assertEqual(record["file_name"], file_name)
         self.assertEqual(record["path"], emoji_path)
         self.assertEqual(record["s3_path"], emoji_path)
+        self.assertEqual(record_original["file_name"], file_name)
+        self.assertEqual(record_original["path"], emoji_path + ".original")
+        self.assertEqual(record_original["s3_path"], emoji_path + ".original")
 
         if is_s3:
             self.assertEqual(record["realm_id"], realm.id)
             self.assertEqual(record["user_profile_id"], user.id)
+            self.assertEqual(record_original["realm_id"], realm.id)
+            self.assertEqual(record_original["user_profile_id"], user.id)
 
     def verify_realm_logo_and_icon(self) -> None:
         records = read_json("realm_icons/records.json")
@@ -1622,6 +1634,24 @@ class RealmImportExportTest(ExportFile):
             new_realm.id, [realm["id"] for realm in json.loads(m.call_args_list[1][0][2]["realms"])]
         )
 
+    def test_import_emoji_error(self) -> None:
+        user = self.example_user("hamlet")
+        realm = user.realm
+
+        self.upload_files_for_user(user)
+        self.upload_files_for_realm(user)
+
+        self.export_realm_and_create_auditlog(realm)
+
+        with (
+            self.settings(BILLING_ENABLED=False),
+            self.assertLogs(level="WARNING") as mock_log,
+            patch("zerver.lib.import_realm.upload_emoji_image", side_effect=BadImageError("test")),
+        ):
+            do_import_realm(get_output_dir(), "test-zulip")
+        self.assert_length(mock_log.output, 1)
+        self.assertIn("Could not thumbnail emoji image", mock_log.output[0])
+
     def test_import_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
@@ -1646,6 +1676,9 @@ class RealmImportExportTest(ExportFile):
         attachment_file_path = os.path.join(settings.LOCAL_FILES_DIR, uploaded_file.path_id)
         self.assertTrue(os.path.isfile(attachment_file_path))
 
+        test_image_data = read_test_image_file("img.png")
+        self.assertIsNotNone(test_image_data)
+
         # Test emojis
         realm_emoji = RealmEmoji.objects.get(realm=imported_realm)
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
@@ -1653,6 +1686,8 @@ class RealmImportExportTest(ExportFile):
             emoji_file_name=realm_emoji.file_name,
         )
         emoji_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path)
+        with open(emoji_file_path + ".original", "rb") as f:
+            self.assertEqual(f.read(), test_image_data)
         self.assertTrue(os.path.isfile(emoji_file_path))
 
         # Test avatars
@@ -1664,9 +1699,6 @@ class RealmImportExportTest(ExportFile):
         # Test realm icon and logo
         upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
         full_upload_path = os.path.join(settings.LOCAL_AVATARS_DIR, upload_path)
-
-        test_image_data = read_test_image_file("img.png")
-        self.assertIsNotNone(test_image_data)
 
         with open(os.path.join(full_upload_path, "icon.original"), "rb") as f:
             self.assertEqual(f.read(), test_image_data)
@@ -1715,9 +1747,13 @@ class RealmImportExportTest(ExportFile):
             realm_id=imported_realm.id,
             emoji_file_name=realm_emoji.file_name,
         )
-        emoji_key = avatar_bucket.Object(emoji_path)
-        self.assertIsNotNone(emoji_key.get()["Body"].read())
-        self.assertEqual(emoji_key.key, emoji_path)
+        resized_emoji_key = avatar_bucket.Object(emoji_path)
+        self.assertIsNotNone(resized_emoji_key.get()["Body"].read())
+        self.assertEqual(resized_emoji_key.key, emoji_path)
+        original_emoji_path_id = emoji_path + ".original"
+        original_emoji_key = avatar_bucket.Object(original_emoji_path_id)
+        self.assertEqual(original_emoji_key.get()["Body"].read(), test_image_data)
+        self.assertEqual(original_emoji_key.key, original_emoji_path_id)
 
         # Test avatars
         user_profile = UserProfile.objects.get(full_name=user.full_name, realm=imported_realm)
