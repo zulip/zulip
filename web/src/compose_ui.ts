@@ -3,23 +3,29 @@
 
 import autosize from "autosize";
 import $ from "jquery";
+import _ from "lodash";
 import {
     insertTextIntoField,
     replaceFieldText,
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
+import {z} from "zod";
 
 import type {Typeahead} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
+import * as channel from "./channel";
 import * as common from "./common";
 import type {TypeaheadSuggestion} from "./composebox_typeahead";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
+import {postprocess_content} from "./postprocess_content";
+import * as rendered_markdown from "./rendered_markdown";
 import * as rtl from "./rtl";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 import * as util from "./util";
@@ -56,6 +62,12 @@ type SelectedLinesSections = {
     separating_new_line_after: boolean;
     after_lines: string;
 };
+
+const message_render_response_schema = z.object({
+    msg: z.string(),
+    result: z.string(),
+    rendered: z.string(),
+});
 
 export let compose_spinner_visible = false;
 export let shift_pressed = false; // true or false
@@ -1165,4 +1177,65 @@ export function get_compose_click_target(element: HTMLElement): Element {
         return compose_control_buttons_popover.reference;
     }
     return element;
+}
+
+export function render_and_show_preview(
+    $preview_spinner: JQuery,
+    $preview_content_box: JQuery,
+    content: string,
+): void {
+    function show_preview(rendered_content: string, raw_content?: string): void {
+        // content is passed to check for status messages ("/me ...")
+        // and will be undefined in case of errors
+        let rendered_preview_html;
+        if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
+            // Handle previews of /me messages
+            rendered_preview_html =
+                "<p><strong>" +
+                _.escape(current_user.full_name) +
+                "</strong>" +
+                rendered_content.slice("<p>/me".length);
+        } else {
+            rendered_preview_html = rendered_content;
+        }
+
+        $preview_content_box.html(postprocess_content(rendered_preview_html));
+        rendered_markdown.update_elements($preview_content_box);
+    }
+
+    if (content.length === 0) {
+        show_preview($t_html({defaultMessage: "Nothing to preview"}));
+    } else {
+        if (markdown.contains_backend_only_syntax(content)) {
+            const $spinner = $preview_spinner.expectOne();
+            loading.make_indicator($spinner);
+        } else {
+            // For messages that don't appear to contain syntax that
+            // is only supported by our backend Markdown processor, we
+            // render using the frontend Markdown processor (but still
+            // render server-side to ensure the preview is accurate;
+            // if the `markdown.contains_backend_only_syntax` logic is
+            // wrong, users will see a brief flicker of the locally
+            // echoed frontend rendering before receiving the
+            // authoritative backend rendering from the server).
+            markdown.render(content);
+        }
+        void channel.post({
+            url: "/json/messages/render",
+            data: {content},
+            success(response_data) {
+                const data = message_render_response_schema.parse(response_data);
+                if (markdown.contains_backend_only_syntax(content)) {
+                    loading.destroy_indicator($preview_spinner);
+                }
+                show_preview(data.rendered, content);
+            },
+            error() {
+                if (markdown.contains_backend_only_syntax(content)) {
+                    loading.destroy_indicator($preview_spinner);
+                }
+                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
+            },
+        });
+    }
 }
