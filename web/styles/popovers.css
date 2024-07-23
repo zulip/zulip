@@ -317,6 +317,13 @@ ul.popover-group-menu-member-list {
     }
 }
 
+ul.popover-group-menu-member-list:not(:has(li))::after {
+    content: "No members in the group" !important;
+    color: gray;
+    padding-left: 10px;
+    font-style: italic;
+}
+
 .popover-group-menu-member {
     display: flex;
     align-items: center;
