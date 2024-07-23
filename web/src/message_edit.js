@@ -1442,3 +1442,18 @@ export function show_preview_area($element) {
         content,
     );
 }
+
+export function clear_preview_area($element) {
+    const $row = rows.get_closest_row($element);
+
+    // While in preview mode we disable unneeded compose_control_buttons,
+    // so here we are re-enabling those compose_control_buttons
+    $row.removeClass("preview_mode");
+    $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
+
+    $row.find(".message_edit_content").show();
+    $row.find(".undo_markdown_preview").hide();
+    $row.find(".preview_message_area").hide();
+    $row.find(".preview_content").empty();
+    $row.find(".markdown_preview").show();
+}
