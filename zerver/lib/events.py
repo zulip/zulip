@@ -573,7 +573,9 @@ def fetch_initial_state_data(
             realm.can_create_public_channel_group_id in settings_user_recursive_group_ids
         )
 
-        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
+        state["can_create_web_public_streams"] = (
+            realm.can_create_web_public_channel_group_id in settings_user_recursive_group_ids
+        )
         # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
         # 102); we can remove this once we no longer need to support
         # legacy mobile app versions that read the old property.
@@ -1230,7 +1232,6 @@ def apply_event(
                 )
 
             policy_permission_dict = {
-                "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
             }
@@ -1250,13 +1251,6 @@ def apply_event(
                 state[policy_permission_dict[event["property"]]] = user_profile.has_permission(
                     event["property"]
                 )
-
-            # Finally, we need to recompute this value from its inputs.
-            state["can_create_streams"] = (
-                state["can_create_private_streams"]
-                or state["can_create_public_streams"]
-                or state["can_create_web_public_streams"]
-            )
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
                 state["realm_" + key] = value
@@ -1269,7 +1263,11 @@ def apply_event(
                     )
                     state["realm_email_auth_enabled"] = value["Email"]["enabled"]
 
-                if key in ["can_create_public_channel_group", "can_create_private_channel_group"]:
+                if key in [
+                    "can_create_public_channel_group",
+                    "can_create_private_channel_group",
+                    "can_create_web_public_channel_group",
+                ]:
                     if key == "can_create_public_channel_group":
                         state["realm_create_public_stream_policy"] = (
                             get_corresponding_policy_value_for_group_setting(
@@ -1279,7 +1277,7 @@ def apply_event(
                             )
                         )
                         state["can_create_public_streams"] = user_profile.has_permission(key)
-                    else:
+                    elif key == "can_create_private_channel_group":
                         state["realm_create_private_stream_policy"] = (
                             get_corresponding_policy_value_for_group_setting(
                                 user_profile.realm,
@@ -1288,6 +1286,8 @@ def apply_event(
                             )
                         )
                         state["can_create_private_streams"] = user_profile.has_permission(key)
+                    else:
+                        state["can_create_web_public_streams"] = user_profile.has_permission(key)
 
                     state["can_create_streams"] = (
                         state["can_create_private_streams"]
