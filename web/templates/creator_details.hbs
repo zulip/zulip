@@ -1,0 +1,20 @@
+{{#if creator}}
+    {{#tr}}
+        Created by <z-user></z-user> on <z-date-created></z-date-created>.
+        {{#*inline "z-user"}}
+            {{> user_display_only_pill
+              is_inline=true
+              user_id=creator.user_id
+              img_src=creator.avatar_url
+              display_value=creator.full_name
+              is_current_user=is_creator
+              is_active=creator.is_active }}
+        {{/inline}}
+        {{#*inline "z-date-created"}}{{date_created_string}}{{/inline}}
+    {{/tr}}
+{{else}}
+    {{#tr}}
+        Created on <z-date-created></z-date-created>.
+        {{#*inline "z-date-created"}}{{date_created_string}}{{/inline}}
+    {{/tr}}
+{{/if}}
