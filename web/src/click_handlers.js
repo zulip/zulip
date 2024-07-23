@@ -12,7 +12,6 @@ import * as buddy_data from "./buddy_data";
 import * as compose_actions from "./compose_actions";
 import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
 import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
@@ -363,25 +362,7 @@ export function initialize() {
 
     $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
         e.preventDefault();
-        const $row = rows.get_closest_row(e.target);
-        const $msg_edit_content = $row.find(".message_edit_content");
-        const content = $msg_edit_content.val();
-
-        // Disable unneeded compose_control_buttons as we don't
-        // need them in preview mode.
-        $row.addClass("preview_mode");
-        $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
-
-        $msg_edit_content.hide();
-        $row.find(".markdown_preview").hide();
-        $row.find(".undo_markdown_preview").show();
-        $row.find(".preview_message_area").show();
-
-        compose_ui.render_and_show_preview(
-            $row.find(".markdown_preview_spinner"),
-            $row.find(".preview_content"),
-            content,
-        );
+        message_edit.show_preview_area(e.target);
     });
 
     $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
