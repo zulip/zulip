@@ -518,7 +518,8 @@ input[type="checkbox"] {
     }
 }
 
-#user_enter_sends_label kbd {
+#user_enter_sends_label kbd,
+#realm_enter_sends_label kbd {
     /* 14px at 15px/1em */
     font-size: 0.9333em;
     font-style: normal;
