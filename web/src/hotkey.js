@@ -798,13 +798,28 @@ export function process_hotkey(e, hotkey) {
         return true;
     }
 
-    if (event_name === "toggle_compose_preview" && compose_state.composing()) {
-        if ($("#compose .markdown_preview").is(":visible")) {
-            compose.show_preview_area();
-        } else {
-            compose.clear_preview_area();
+    if (event_name === "toggle_compose_preview") {
+        const $last_focused_compose_type_input = $(
+            compose_state.get_last_focused_compose_type_input(),
+        );
+
+        if ($last_focused_compose_type_input.hasClass("message_edit_content")) {
+            if ($last_focused_compose_type_input.closest(".preview_mode").length) {
+                message_edit.clear_preview_area($last_focused_compose_type_input);
+            } else {
+                message_edit.show_preview_area($last_focused_compose_type_input);
+            }
+            return true;
         }
-        return true;
+
+        if (compose_state.composing()) {
+            if ($("#compose .markdown_preview").is(":visible")) {
+                compose.show_preview_area();
+            } else {
+                compose.clear_preview_area();
+            }
+            return true;
+        }
     }
 
     if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
