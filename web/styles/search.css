@@ -212,12 +212,8 @@
             background-color: var(--color-background-search);
             /* Maintain only a column gap. */
             gap: 0 5px;
-
-            @media (height < $short_navbar_cutoff_height) {
-                /* Lose the luxury of padding in short navbar settings. */
-                padding-top: 0;
-                padding-bottom: 0;
-            }
+            /* Override padding. */
+            padding: 0;
         }
 
         .pill {
