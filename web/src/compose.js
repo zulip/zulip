@@ -253,6 +253,10 @@ export function send_message(request = create_message_object()) {
         drafts.sync_count();
 
         const draft = drafts.draft_model.getDraft(request.draft_id);
+        if (!draft) {
+            return;
+        }
+
         draft.is_sending_saving = false;
         drafts.draft_model.editDraft(request.draft_id, draft);
     }
@@ -441,6 +445,10 @@ function schedule_message_to_custom_date() {
             $("textarea#compose-textarea"),
         );
         const draft = drafts.draft_model.getDraft(draft_id);
+        if (!draft) {
+            return;
+        }
+
         draft.is_sending_saving = false;
         drafts.draft_model.editDraft(draft_id, draft);
     };
