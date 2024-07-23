@@ -362,6 +362,8 @@
             vertical-align: baseline;
             /* A bit of margin here helps these not look associated with the name. */
             margin-left: 4px;
+            /* Unset the padding used on edited notices under the avatar. */
+            padding-right: 0;
         }
 
         .message_sender {
@@ -656,6 +658,8 @@ of the base style defined for a read-only textarea in dark mode. */
     white-space: nowrap;
     overflow-x: hidden;
     overflow-x: clip;
+    text-overflow: ellipsis;
+    padding-right: 5.5px;
 }
 
 .fade-in-message {
