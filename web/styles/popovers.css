@@ -130,6 +130,8 @@
 }
 
 .user-card-popover-actions {
+    --color-text-item: var(--color-text-user-card-secondary);
+
     .custom-profile-field-value {
         display: flex;
         align-items: center;
