@@ -179,14 +179,20 @@
 
     /*
     Height of the search box, which appears in the header.
-    On very short screens, the search box's height becomes
-    the height of its parent (i.e. the header height).
     */
-    --search-box-height: 28px;
+    --search-box-height: 32px;
     --search-box-width: 150px;
 
     @media (width < $md_min) {
         --search-box-width: 40px;
+    }
+
+    /*
+        On very short screens, the search box's height becomes
+        is reduced to fit the available space.
+    */
+    @media (height < $short_navbar_cutoff_height) {
+        --search-box-height: 28px;
     }
 
     /*
