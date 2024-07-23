@@ -1,4 +1,7 @@
 import {$t} from "./i18n";
+import * as thumbnail from "./thumbnail";
+import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 let inertDocument: Document | undefined;
 
@@ -84,5 +87,33 @@ export function postprocess_content(html: string): string {
             );
         }
     }
+
+    for (const inline_img_thumbnail of template.content.querySelectorAll<HTMLImageElement>(
+        'div.message_inline_image > a > img[src^="/user_uploads/thumbnail/"]',
+    )) {
+        let thumbnail_name = thumbnail.preferred_format.name;
+        if (inline_img_thumbnail.dataset.animated === "true") {
+            if (
+                user_settings.web_animate_image_previews === "always" ||
+                // Treat on_hover as "always" on mobile web, where
+                // hovering is impossible and there's much less on
+                // the screen.
+                (user_settings.web_animate_image_previews === "on_hover" && util.is_mobile())
+            ) {
+                thumbnail_name = thumbnail.animated_format.name;
+            } else {
+                // If we're showing a still thumbnail, show a play
+                // button so that users that it can be played.
+                inline_img_thumbnail
+                    .closest(".message_inline_image")!
+                    .classList.add("message_inline_animated_image_still");
+            }
+        }
+        inline_img_thumbnail.src = inline_img_thumbnail.src.replace(
+            /\/[^/]+$/,
+            "/" + thumbnail_name,
+        );
+    }
+
     return template.innerHTML;
 }
