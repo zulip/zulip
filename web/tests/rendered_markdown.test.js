@@ -23,7 +23,6 @@ mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
-const thumbnail = mock_esm("../src/thumbnail");
 user_settings.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");
@@ -139,14 +138,6 @@ const get_content_element = () => {
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
-    $content.set_find_results(
-        'div.message_inline_image > a > img[src^="/user_uploads/thumbnail/"]',
-        $array([]),
-    );
-    $content.set_find_results(
-        "div.message_inline_image img, div.message_inline_image video",
-        $array([]),
-    );
 
     set_message_for_message_content($content, undefined);
 
@@ -199,87 +190,6 @@ run_test("message_inline_video", () => {
     rm.update_elements($content);
     assert.equal(load_called, true);
     window.GestureEvent = false;
-});
-
-run_test("message_inline_animated_image_still", ({override}) => {
-    const $content = get_content_element();
-    const $elem = $.create("img");
-
-    $elem.attr("data-animated", "false");
-    $elem.attr("src", "/path/to/image.png");
-
-    $content.set_find_results(
-        'div.message_inline_image > a > img[src^="/user_uploads/thumbnail/"]',
-        $array([$elem]),
-    );
-
-    const $stub = $.create("div.message_inline_image");
-
-    $elem.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".message_inline_image");
-        return $stub;
-    };
-
-    const thumbnail_formats = [
-        {
-            name: "840x560-anim.webp",
-            max_width: 840,
-            max_height: 560,
-            format: "webp",
-            animated: true,
-        },
-        {
-            name: "840x560.webp",
-            max_width: 840,
-            max_height: 560,
-            format: "webp",
-            animated: false,
-        },
-        {
-            name: "300x200-anim.webp",
-            max_width: 300,
-            max_height: 200,
-            format: "webp",
-            animated: true,
-        },
-        {
-            name: "300x200.webp",
-            max_width: 300,
-            max_height: 200,
-            format: "webp",
-            animated: false,
-        },
-        {
-            name: "300x200.jpg",
-            max_width: 300,
-            max_height: 200,
-            format: "jpg",
-            animated: false,
-        },
-    ];
-    // TODO: Initialize the real thumbnail.ts rather than mocking it.
-    override(thumbnail, "preferred_format", thumbnail_formats[1]);
-    override(thumbnail, "animated_format", thumbnail_formats[0]);
-
-    rm.update_elements($content);
-    assert.equal($elem.attr("src"), "/path/to/840x560.webp");
-
-    // Now verify the behavior for animated images.
-    $elem.attr("data-animated", "true");
-    override(user_settings, "web_animate_image_previews", "always");
-    rm.update_elements($content);
-    assert.equal($elem.attr("src"), "/path/to/840x560-anim.webp");
-
-    // And verify the different behavior for other values of the animation setting.
-    override(user_settings, "web_animate_image_previews", "on_hover");
-    rm.update_elements($content);
-    assert.equal($elem.attr("src"), "/path/to/840x560.webp");
-    assert.equal($stub.hasClass("message_inline_animated_image_still"), true);
-
-    override(user_settings, "web_animate_image_previews", "never");
-    rm.update_elements($content);
-    assert.equal($elem.attr("src"), "/path/to/840x560.webp");
-    assert.equal($stub.hasClass("message_inline_animated_image_still"), true);
 });
 
 run_test("user-mention", () => {

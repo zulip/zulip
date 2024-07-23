@@ -16,7 +16,6 @@ import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
 import * as rtl from "./rtl";
 import * as sub_store from "./sub_store";
-import * as thumbnail from "./thumbnail";
 import * as timerender from "./timerender";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
@@ -338,32 +337,4 @@ export const update_elements = ($content: JQuery): void => {
             .contents()
             .unwrap();
     }
-
-    $content
-        .find('div.message_inline_image > a > img[src^="/user_uploads/thumbnail/"]')
-        .each(function (): void {
-            const $inline_img_thumbnail = $(this);
-            let thumbnail_name = thumbnail.preferred_format.name;
-            if ($inline_img_thumbnail.attr("data-animated") === "true") {
-                if (
-                    user_settings.web_animate_image_previews === "always" ||
-                    // Treat on_hover as "always" on mobile web, where
-                    // hovering is impossible and there's much less on
-                    // the screen.
-                    (user_settings.web_animate_image_previews === "on_hover" && util.is_mobile())
-                ) {
-                    thumbnail_name = thumbnail.animated_format.name;
-                } else {
-                    // If we're showing a still thumbnail, show a play
-                    // button so that users that it can be played.
-                    $inline_img_thumbnail
-                        .closest(".message_inline_image")
-                        .addClass("message_inline_animated_image_still");
-                }
-            }
-            $inline_img_thumbnail.attr(
-                "src",
-                $inline_img_thumbnail.attr("src")!.replace(/\/[^/]+$/, "/" + thumbnail_name),
-            );
-        });
 };
