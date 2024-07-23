@@ -1959,9 +1959,9 @@ class RealmAPITest(ZulipTestCase):
                 self.do_test_realm_permission_group_setting_update_api(prop)
 
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
-            if prop == "can_create_web_public_channel_group":
-                # This setting supports the new API format but
-                # allows only system groups.
+            if Realm.REALM_PERMISSION_GROUP_SETTINGS[prop].require_system_group:
+                # Anonymous system groups aren't relevant when
+                # restricted to system groups.
                 continue
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api_with_anonymous_groups(prop)

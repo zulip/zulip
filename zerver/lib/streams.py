@@ -768,8 +768,8 @@ def list_to_streams(
             if not user_profile.realm.web_public_streams_enabled():
                 raise JsonableError(_("Web-public channels are not enabled."))
             if not user_profile.can_create_web_public_streams():
-                # We set create_web_public_stream_policy to allow only organization owners
-                # to create web-public streams, because of their sensitive nature.
+                # We set can_create_web_public_channel_group to allow only organization
+                # owners to create web-public streams, because of their sensitive nature.
                 raise JsonableError(_("Insufficient permission"))
 
         if message_retention_days_not_none:

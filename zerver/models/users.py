@@ -780,6 +780,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "add_custom_emoji_policy",
             "can_create_private_channel_group",
             "can_create_public_channel_group",
+            "can_create_web_public_channel_group",
             "create_multiuse_invite_group",
             "create_web_public_stream_policy",
             "delete_own_message_policy",
@@ -845,7 +846,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_create_web_public_streams(self) -> bool:
         if not self.realm.web_public_streams_enabled():
             return False
-        return self.has_permission("create_web_public_stream_policy")
+        return self.has_permission("can_create_web_public_channel_group")
 
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")
