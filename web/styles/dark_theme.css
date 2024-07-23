@@ -346,6 +346,12 @@
         color: inherit;
     }
 
+    .active .autocomplete_secondary {
+        opacity: 0.6;
+        color: white;
+        text-decoration: underline;
+    }
+
     /* these are converting grey things to "new grey" */
     :disabled,
     input:not([type="radio"]):read-only,

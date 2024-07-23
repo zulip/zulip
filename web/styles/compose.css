@@ -154,7 +154,9 @@
 }
 
 .active .autocomplete_secondary {
-    opacity: 1;
+    opacity: 0.6;
+    color: black;
+    text-decoration: underline;
 }
 
 .compose_table {
