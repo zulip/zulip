@@ -753,7 +753,7 @@ div.overlay {
         word-break: normal;
 
         &[data-sort] {
-            padding-right: 0.88em;
+            padding-right: var(--table-header-sortable-column-padding-right);
         }
 
         &.active::after,
