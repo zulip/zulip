@@ -29,6 +29,12 @@
     </div>
 
     {{> settings_checkbox
+      setting_name="enter_sends"
+      is_checked=settings_object.enter_sends
+      label=settings_label.enter_sends
+      prefix=prefix}}
+
+    {{> settings_checkbox
       setting_name="dense_mode"
       is_checked=settings_object.dense_mode
       label=settings_label.dense_mode

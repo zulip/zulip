@@ -49,16 +49,4 @@
             </select>
         </div>
     </div>
-
-    <div class="other_settings settings-subsection-parent">
-        <div class="subsection-header inline-block">
-            <h3 class="inline-block">{{t "Other settings" }}</h3>
-            {{> settings_save_discard_widget section_name="other-setting" show_only_indicator=false }}
-        </div>
-        {{> settings_checkbox
-          setting_name="enter_sends"
-          is_checked=settings_object.enter_sends
-          label=settings_label.realm_enter_sends
-          prefix="realm_"}}
-    </div>
 </div>

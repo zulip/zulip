@@ -853,7 +853,6 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "enter_sends") {
                 user_settings.enter_sends = event.value;
-                break;
             }
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;

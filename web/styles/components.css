@@ -50,6 +50,10 @@
         }
     }
 
+    & label.checkbox:has(.enter_sends) {
+        vertical-align: middle;
+    }
+
     & a.no-style {
         color: inherit;
     }
