@@ -396,7 +396,7 @@ export function process_from_server(messages) {
 
         reify_message_id(local_id, message.id);
 
-        if (message_store.get(message.id).failed_request) {
+        if (message_store.get(message.id)?.failed_request) {
             failed_message_success(message.id);
         }
 
