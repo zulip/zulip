@@ -699,16 +699,16 @@
     --color-tab-picker-icon: hsl(200deg 100% 40%);
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
-    --color-copy-btn: color-mix(in srgb, var(--grey-600) 70%, transparent);
+    --color-copy-btn: color-mix(in oklch, var(--grey-600) 70%, transparent);
     --color-copy-btn-hover: var(--green-600);
     --color-copy-btn-bg-hover: color-mix(
-        in srgb,
+        in oklch,
         var(--green-600) 8%,
         transparent
     );
     --color-copy-btn-active: var(--green-500);
     --color-copy-btn-bg-active: color-mix(
-        in srgb,
+        in oklch,
         var(--green-500) 12%,
         transparent
     );
@@ -1096,16 +1096,16 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
-    --color-copy-btn: color-mix(in srgb, var(--grey-300) 70%, transparent);
+    --color-copy-btn: color-mix(in oklch, var(--grey-300) 70%, transparent);
     --color-copy-btn-hover: var(--green-300);
     --color-copy-btn-bg-hover: color-mix(
-        in srgb,
+        in oklch,
         var(--green-600) 8%,
         transparent
     );
     --color-copy-btn-active: var(--green-300);
     --color-copy-btn-bg-active: color-mix(
-        in srgb,
+        in oklch,
         var(--green-400) 17%,
         transparent
     );
