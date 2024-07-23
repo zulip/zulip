@@ -89,7 +89,7 @@ class PopoverMenu {
             return;
         }
 
-        const $items = $("li:not(.divider):visible a:visible", $popover);
+        const $items = $("[tabindex='0']", $popover).filter(":visible");
 
         popover_items_handle_keyboard_with_overrides(key, $items);
     }
@@ -100,15 +100,21 @@ export const message_user_card = new PopoverMenu();
 export const user_card = new PopoverMenu();
 
 function popover_items_handle_keyboard_with_overrides(key, $items) {
-    /* Variant of popover_items_handle_keyboard */
+    /* Variant of popover_items_handle_keyboard for focusing on the
+       user card popover menu options first, instead of other tabbable
+       buttons and links which can be distracting. */
+
     if (!$items) {
         return;
     }
 
     const index = $items.index($items.filter(":focus"));
 
-    if (key === "enter" && index >= 0 && index < $items.length) {
-        $items[index].click();
+    if (index === -1) {
+        const first_menu_option_index = $items.index(
+            $items.filter(".link-item .popover-menu-link"),
+        );
+        $items.eq(first_menu_option_index).trigger("focus");
         return;
     }
 
