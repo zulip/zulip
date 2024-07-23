@@ -3187,9 +3187,9 @@ types-s3transfer==0.10.1 \
     --hash=sha256:02154cce46528287ad76ad1a0153840e0492239a0887e8833466eccf84b98da0 \
     --hash=sha256:49a7c81fa609ac1532f8de3756e64b58afcecad8767933310228002ec7adff74
     # via boto3-stubs
-types-setuptools==70.1.0.20240627 \
-    --hash=sha256:385907a47b5cf302b928ce07953cd91147d5de6f3da604c31905fdf0ec309e83 \
-    --hash=sha256:c7bdf05cd0a8b66868b4774c7b3c079d01ae025d8c9562bfc8bf2ff44d263c9c
+types-setuptools==71.0.0.20240722 \
+    --hash=sha256:04a383bd1a2dcdb6a85397516ce2d7b46617d89f1d758f686d0d9069943d9811 \
+    --hash=sha256:8f1fd5281945ed8f5a896f05dd50bc31917d6e2487ff9508f4bac522d13ad395
     # via
     #   types-cffi
     #   types-pygments
