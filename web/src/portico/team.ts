@@ -152,6 +152,7 @@ export default function render_tabs(contributors: Contributor[]): void {
         .map((c) => template(c))
         .join("");
 
+    const twenty_plus_total_contributors = mapped_contributors_list.filter((c) => c.commits >= 20);
     const hundred_plus_total_contributors = mapped_contributors_list.filter(
         (c) => c.commits >= 100,
     );
@@ -162,6 +163,7 @@ export default function render_tabs(contributors: Contributor[]): void {
             total_count_template({
                 contributor_count: contributors_list.length,
                 tab_name: "total",
+                twenty_plus_contributor_count: twenty_plus_total_contributors.length,
                 hundred_plus_contributor_count: hundred_plus_total_contributors.length,
             }),
         ),
@@ -213,6 +215,10 @@ export default function render_tabs(contributors: Contributor[]): void {
                     const commits = c.total_commits;
                     return commits >= 100;
                 }).length;
+                const twenty_plus_contributor_count = filtered_by_tab.filter((c) => {
+                    const commits = c.total_commits;
+                    return commits >= 20;
+                }).length;
                 const repo_url_list = repo_list.map(
                     (repo_name) => `https://github.com/zulip/${repo_name}`,
                 );
@@ -222,6 +228,7 @@ export default function render_tabs(contributors: Contributor[]): void {
                             contributor_count,
                             repo_list,
                             repo_url_list,
+                            twenty_plus_contributor_count,
                             hundred_plus_contributor_count,
                         }),
                     ),
