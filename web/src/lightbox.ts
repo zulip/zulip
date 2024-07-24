@@ -268,11 +268,15 @@ function display_image(payload: Payload): void {
         $img.attr("src", payload.preview);
         $img.attr("width", payload.original_width_px);
         $img.attr("height", payload.original_height_px);
-        $img.one("load", () => {
-            $img.attr("src", payload.source);
-        });
+        // srcset contains the reference to the original image,
+        // and will be preferred over the src image when available
+        $img.attr("srcset", `${payload.source} ${payload.original_width_px}w`);
+        $img.attr("sizes", "100vw");
     } else {
-        $img.attr("src", payload.source);
+        // this could be just assigned to src, but srcset is used here
+        // for consistency
+        $img.attr("srcset", `${payload.source} ${payload.original_width_px}w`);
+        $img.attr("sizes", "100vw");
     }
     $img_container.empty();
     $img_container.append($img).show();
