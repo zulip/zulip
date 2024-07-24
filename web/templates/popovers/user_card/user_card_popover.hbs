@@ -211,7 +211,11 @@
                 <li role="none" class="popover-menu-list-item link-item">
                     <a role="menuitem" class="sidebar-popover-mute-user popover-menu-link hidden-for-spectators" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
-                        <span class="popover-menu-label">{{t "Mute this user" }}</span>
+                        {{#if is_bot}}
+                            <span class="popover-menu-label">{{t "Mute this bot" }}</span>
+                        {{else}}
+                            <span class="popover-menu-label">{{t "Mute this user" }}</span>
+                        {{/if}}
                     </a>
                 </li>
             {{/if}}
@@ -219,7 +223,11 @@
                 <li role="none" class="popover-menu-list-item link-item">
                     <a role="menuitem" class="sidebar-popover-unmute-user popover-menu-link hidden-for-spectators" tabindex="0">
                         <i class="popover-menu-icon fa fa-eye" aria-hidden="true"></i>
-                        <span class="popover-menu-label">{{t "Unmute this user" }}</span>
+                        {{#if is_bot}}
+                            <span class="popover-menu-label">{{t "Unmute this bot" }}</span>
+                        {{else}}
+                            <span class="popover-menu-label">{{t "Unmute this user" }}</span>
+                        {{/if}}
                     </a>
                 </li>
             {{/if}}
