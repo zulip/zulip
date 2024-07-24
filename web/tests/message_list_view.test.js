@@ -764,7 +764,7 @@ test("render_windows", ({mock_template}) => {
     }
 
     function verify_no_move_range(start, end) {
-        // In our render window, there are up to 300 positions in
+        // In our render window, there are up to 150 positions in
         // the list (with potentially 50 at the start if the range
         // starts with 0) where we can move the pointer without forcing
         // a re-render.  The code avoids hasty re-renders for
@@ -788,11 +788,11 @@ test("render_windows", ({mock_template}) => {
     }
 
     function verify_move_and_no_move_range(move_target, opts = {}) {
-        // When we move to position X, we expect 400/2 = 200 messages on
+        // When we move to position X, we expect 250/2 = 125 messages on
         // either side, unless that goes outside the `count`, in which
         // case we'll specify it in `opts`.
-        const move_start = opts.move_start ?? move_target - 200;
-        const move_end = opts.move_end ?? move_target + 200;
+        const move_start = opts.move_start ?? move_target - 125;
+        const move_end = opts.move_end ?? move_target + 125;
         verify_move(move_target, [move_start, move_end]);
         // the no-move range is a 50 buffer on each side
         const no_move_start = opts.no_move_start ?? move_start + 50;
@@ -804,19 +804,19 @@ test("render_windows", ({mock_template}) => {
     verify_no_move_range(0, 51); // This is the whole list
 
     reset_list({count: 450});
-    // 400 messages rendered, with the last 50 in the move range
-    verify_no_move_range(0, 350);
+    // 250 messages rendered, with the last 50 in the move range
+    verify_no_move_range(0, 200);
 
     verify_move_and_no_move_range(350, {
         // top maxes out at 450
         move_end: 450,
     });
 
-    // We load more than 200 on the upper end, because we load the full 400
-    // messages and 199 is less than half of that.
-    verify_move_and_no_move_range(199, {
+    // We load more than 125 on the upper end, because we load the full 250
+    // messages and 124 is less than half of that.
+    verify_move_and_no_move_range(124, {
         move_start: 0,
-        move_end: 400,
+        move_end: 250,
     });
 
     verify_move_and_no_move_range(350, {
@@ -824,9 +824,9 @@ test("render_windows", ({mock_template}) => {
         move_end: 450,
     });
 
-    verify_move_and_no_move_range(199, {
+    verify_move_and_no_move_range(124, {
         move_start: 0,
-        move_end: 400,
+        move_end: 250,
         // The first 50 aren't in a move range, because we can't load earlier
         // messages than 0.
         no_move_start: 0,
@@ -838,13 +838,13 @@ test("render_windows", ({mock_template}) => {
     });
 
     reset_list({count: 800});
-    verify_no_move_range(0, 350);
+    verify_no_move_range(0, 200);
 
     verify_move_and_no_move_range(350);
 
     verify_move_and_no_move_range(500);
 
-    verify_move_and_no_move_range(650, {
+    verify_move_and_no_move_range(750, {
         // top maxes out at 800
         move_end: 800,
     });
@@ -853,11 +853,11 @@ test("render_windows", ({mock_template}) => {
 
     verify_move_and_no_move_range(348);
 
-    // We load more than 200 on the upper end, because we load the full 400
-    // messages and 197 is less than half of that.
-    verify_move_and_no_move_range(197, {
+    // We load more than 125 on the upper end, because we load the full 250
+    // messages and 122 is less than half of that.
+    verify_move_and_no_move_range(122, {
         move_start: 0,
-        move_end: 400,
+        move_end: 250,
         no_move_start: 0,
     });
 });
