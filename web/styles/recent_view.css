@@ -44,7 +44,9 @@
         display: flex;
         align-items: center;
 
-        & > * {
+        .recent-view-table-link,
+        .recent-view-table-unread-count,
+        & > .zulip-icon {
             outline: 0;
         }
 
