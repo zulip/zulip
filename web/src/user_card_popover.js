@@ -416,29 +416,28 @@ function load_medium_avatar(user, $elt) {
 // message is the message containing it, which should be selected
 function toggle_user_card_popover_for_message(element, user, message, on_mount) {
     const $elt = $(element);
-    if (!message_user_card.is_open()) {
-        if (user === undefined) {
-            // This is never supposed to happen, not even for deactivated
-            // users, so we'll need to debug this error if it occurs.
-            blueslip.error("Bad sender in message", {
-                message_id: message.id,
-                sender_id: message.sender_id,
-            });
-            return;
-        }
 
-        const is_sender_popover = message.sender_id === user.user_id;
-        show_user_card_popover(
-            user,
-            $elt,
-            is_sender_popover,
-            true,
-            "respond_personal_button",
-            "message_user_card",
-            "right",
-            on_mount,
-        );
+    if (user === undefined) {
+        // This is never supposed to happen, not even for deactivated
+        // users, so we'll need to debug this error if it occurs.
+        blueslip.error("Bad sender in message", {
+            message_id: message.id,
+            sender_id: message.sender_id,
+        });
+        return;
     }
+
+    const is_sender_popover = message.sender_id === user.user_id;
+    show_user_card_popover(
+        user,
+        $elt,
+        is_sender_popover,
+        true,
+        "respond_personal_button",
+        "message_user_card",
+        "right",
+        on_mount,
+    );
 }
 
 // This function serves as the entry point for toggling
