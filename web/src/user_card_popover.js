@@ -334,6 +334,7 @@ function show_user_card_popover(
                 if (on_mount) {
                     on_mount(instance);
                 }
+                const $popover = $(instance.popper);
                 // Note: We pass the normal-size avatar in initial rendering, and
                 // then query the server to replace it with the medium-size
                 // avatar.  The purpose of this double-fetch approach is to take
@@ -341,7 +342,7 @@ function show_user_card_popover(
                 // low-resolution image cached and thus display a low-resolution
                 // avatar rather than a blank area during the network delay for
                 // fetching the medium-size one.
-                load_medium_avatar(user, $(".popover-menu-user-avatar"));
+                load_medium_avatar(user, $popover.find(".popover-menu-user-avatar"));
                 init_email_clipboard();
                 init_email_tooltip(user);
             },
