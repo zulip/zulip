@@ -2,7 +2,8 @@ import type {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import type {StateData, onboarding_step_schema} from "./state_data";
+import * as people from "./people";
+import type {NarrowTerm, StateData, onboarding_step_schema} from "./state_data";
 
 export type OnboardingStep = z.output<typeof onboarding_step_schema>;
 
@@ -34,6 +35,32 @@ export function update_onboarding_steps_to_display(onboarding_steps: OnboardingS
     }
 }
 
-export function initialize(params: StateData["onboarding_steps"]): void {
+function narrow_to_dm_with_welcome_bot_new_user(
+    onboarding_steps: OnboardingStep[],
+    show_message_view: (raw_terms: NarrowTerm[], opts: {trigger: string}) => void,
+): void {
+    if (
+        onboarding_steps.some(
+            (onboarding_step) => onboarding_step.name === "narrow_to_dm_with_welcome_bot_new_user",
+        )
+    ) {
+        show_message_view(
+            [
+                {
+                    operator: "dm",
+                    operand: people.WELCOME_BOT.email,
+                },
+            ],
+            {trigger: "sidebar"},
+        );
+        post_onboarding_step_as_read("narrow_to_dm_with_welcome_bot_new_user");
+    }
+}
+
+export function initialize(
+    params: StateData["onboarding_steps"],
+    show_message_view: (raw_terms: NarrowTerm[], opts: {trigger: string}) => void,
+): void {
     update_onboarding_steps_to_display(params.onboarding_steps);
+    narrow_to_dm_with_welcome_bot_new_user(params.onboarding_steps, show_message_view);
 }
