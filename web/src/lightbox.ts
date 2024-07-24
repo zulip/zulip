@@ -204,24 +204,36 @@ export function clear_for_testing(): void {
     asset_map.clear();
 }
 
-export function canonical_url_of_media(media: HTMLElement): string {
-    let media_src = media.getAttribute("src");
-    if (!media_src || media_src.startsWith("/user_uploads/thumbnail/")) {
-        media_src = media.parentElement!.getAttribute("href")!;
+export function canonical_url_of_media(media: HTMLMediaElement): string {
+    let media_string = media.src;
+    if (!media_string) {
+        return "";
     }
-    return media_src;
+
+    const media_url = new URL(media_string);
+
+    if (
+        media_url.origin === window.location.origin &&
+        media_url.pathname.startsWith("/user_uploads/thumbnail/")
+    ) {
+        assert(media.parentElement instanceof HTMLAnchorElement);
+        media_string = media.parentElement.href;
+    }
+
+    return media_string;
 }
 
 export function render_lightbox_media_list(displayed_source: string): void {
     if (!is_open) {
-        const media_list = $(
+        const message_media_list = $<HTMLMediaElement>(
             ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
         ).toArray();
-        const $media_list = $("#lightbox_overlay .image-list").empty();
-
-        for (const media of media_list) {
-            const src = canonical_url_of_media(media);
-            const className = displayed_source === src ? "image selected" : "image";
+        const $lightbox_media_list = $("#lightbox_overlay .image-list").empty();
+        const canonical_displayed_source = new URL(displayed_source, window.location.origin).href;
+        for (const media of message_media_list) {
+            const message_media_list_src = canonical_url_of_media(media);
+            const className =
+                message_media_list_src === canonical_displayed_source ? "image selected" : "image";
             const is_video = media.tagName === "VIDEO";
 
             // We parse the data for each image to show in the list,
@@ -238,7 +250,7 @@ export function render_lightbox_media_list(displayed_source: string): void {
                     .attr("data-url", payload.url);
 
                 const $video = $("<video>");
-                $video.attr("src", src);
+                $video.attr("src", payload.source);
                 $video.attr("controls", "false");
 
                 $node.append($video);
@@ -251,7 +263,7 @@ export function render_lightbox_media_list(displayed_source: string): void {
                     });
             }
 
-            $media_list.append($node);
+            $lightbox_media_list.append($node);
         }
     }
 }
@@ -370,7 +382,7 @@ function display_video(payload: Payload): void {
 
 export function build_open_media_function(
     on_close: (() => void) | undefined,
-): ($media: JQuery) => void {
+): ($media: JQuery<HTMLMediaElement>) => void {
     if (on_close === undefined) {
         on_close = function () {
             remove_video_players();
@@ -380,7 +392,7 @@ export function build_open_media_function(
         };
     }
 
-    return function ($media: JQuery): void {
+    return function ($media: JQuery<HTMLMediaElement>): void {
         // This is used both for clicking on media in the messagelist, as well as clicking on images
         // in the media list under the lightbox when it is open.
         const payload = parse_media_data($media[0]!);
@@ -414,7 +426,7 @@ export function show_from_selected_message(): void {
     // This is a function to satisfy eslint unicorn/no-array-callback-reference
     const media_classes: () => string = () =>
         ".message_inline_image img, .message_inline_image video";
-    let $media = $message.find(media_classes());
+    let $media = $message.find<HTMLMediaElement>(media_classes());
     let $prev_traverse = false;
 
     // First, we walk upwards/backwards, starting with the current
@@ -432,12 +444,12 @@ export function show_from_selected_message(): void {
                 break;
             } else {
                 $message = rows.last_message_in_group($prev_message_group);
-                $media = $message.find(media_classes());
+                $media = $message.find<HTMLMediaElement>(media_classes());
                 continue;
             }
         }
         $message = $message.prev();
-        $media = $message.find(media_classes());
+        $media = $message.find<HTMLMediaElement>(media_classes());
     }
 
     if ($prev_traverse) {
@@ -448,12 +460,12 @@ export function show_from_selected_message(): void {
                     break;
                 } else {
                     $message = rows.first_message_in_group($next_message_group);
-                    $media = $message.find(media_classes());
+                    $media = $message.find<HTMLMediaElement>(media_classes());
                     continue;
                 }
             }
             $message = $message.next();
-            $media = $message.find(media_classes());
+            $media = $message.find<HTMLMediaElement>(media_classes());
         }
     }
 
@@ -464,7 +476,7 @@ export function show_from_selected_message(): void {
 }
 
 // retrieve the metadata from the DOM and store into the asset_map.
-export function parse_media_data(media: HTMLElement): Payload {
+export function parse_media_data(media: HTMLMediaElement): Payload {
     const canonical_url = canonical_url_of_media(media);
     if (asset_map.has(canonical_url)) {
         // Use the cached value
@@ -558,7 +570,7 @@ export function parse_media_data(media: HTMLElement): Payload {
         url: url && util.is_valid_url(url) ? url : "",
     };
 
-    if (!is_loading_placeholder) {
+    if (!is_loading_placeholder && canonical_url !== "") {
         asset_map.set(canonical_url, payload);
     }
     return payload;
@@ -611,7 +623,7 @@ export function initialize(): void {
             e.preventDefault();
             // prevent the message compose dialog from happening.
             e.stopPropagation();
-            const $img = $(this).find("img");
+            const $img = $(this).find<HTMLMediaElement>("img");
             open_image($img);
         },
     );
@@ -620,7 +632,7 @@ export function initialize(): void {
         e.preventDefault();
         e.stopPropagation();
 
-        const $video = $(e.currentTarget).find("video");
+        const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
         open_video($video);
     });
 
@@ -633,11 +645,11 @@ export function initialize(): void {
         let $original_media_element;
         const is_video = $(this).hasClass("lightbox_video");
         if (is_video) {
-            $original_media_element = $(
+            $original_media_element = $<HTMLMediaElement>(
                 `.message_row a[href='${CSS.escape($(this).attr("data-url")!)}'] video`,
             );
         } else {
-            $original_media_element = $(
+            $original_media_element = $<HTMLMediaElement>(
                 `.message_row a[href='${CSS.escape($(this).attr("data-url")!)}'] img`,
             );
         }
@@ -684,7 +696,7 @@ export function initialize(): void {
 
     $("#lightbox_overlay").on("click", ".lightbox-zoom-reset", () => {
         if (!$("#lightbox_overlay .lightbox-zoom-reset").hasClass("disabled")) {
-            const $img = $("#lightbox_overlay").find(".image-preview img");
+            const $img = $("#lightbox_overlay").find<HTMLMediaElement>(".image-preview img");
             open_image($img);
             pan_zoom_control.reset();
         }
