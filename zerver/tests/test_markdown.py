@@ -497,7 +497,6 @@ class MarkdownFixtureTest(ZulipTestCase):
             self.assertTrue(is_unique, message)
             found_names.add(test_name)
 
-    @override_settings(THUMBNAIL_IMAGES=True)
     def test_markdown_fixtures(self) -> None:
         format_tests, linkify_tests = self.load_markdown_tests()
         valid_keys = {
@@ -1004,7 +1003,6 @@ class MarkdownEmbedsTest(ZulipTestCase):
             f"""<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" title="1 photo"><img src="{get_camo_url("https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0")}"></a></div>""",
         )
 
-    @override_settings(THUMBNAIL_IMAGES=True)
     def test_inline_dropbox_negative(self) -> None:
         # Make sure we're not overzealous in our conversion:
         url = "https://www.dropbox.com/static/images/home_logo.png"
@@ -1032,7 +1030,6 @@ class MarkdownEmbedsTest(ZulipTestCase):
             '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>',
         )
 
-    @override_settings(THUMBNAIL_IMAGES=True)
     def test_inline_github_preview(self) -> None:
         # Test github URL translation
         url = "https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png"
@@ -3142,7 +3139,6 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
-    @override_settings(THUMBNAIL_IMAGES=True)
     def test_image_preview_title(self) -> None:
         msg = "[My favorite image](https://example.com/testimage.png)"
         converted = markdown_convert_wrapper(msg)
