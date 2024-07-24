@@ -86,7 +86,8 @@ previews:
   available. Clients that would like to size the lightbox based on the
   size of the original image can use the `data-original-dimensions`
   attribute, which encodes the dimensions of the original image as
-  `{width}x{height}`, to do so.
+  `{width}x{height}`, to do so.  These dimensions are for the image as
+  rendered, _after_ any EXIF rotation and mirroring has been applied.
 - Animated images will have a `data-animated` attribute on the `img`
   tag. As detailed in `server_thumbnail_formats`, both animated and
   still images are available for clients to use, depending on their

@@ -398,6 +398,56 @@ class TestStoreThumbnail(ZulipTestCase):
             ),
         )
 
+    def test_image_orientation(self) -> None:
+        self.login_user(self.example_user("hamlet"))
+
+        with (
+            self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=False)),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            with get_test_image_file("orientation.jpg") as image_file:
+                response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": image_file})
+                )
+            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 1)
+
+            image_attachment = ImageAttachment.objects.get(path_id=path_id)
+            # The bytes in this image are 100 wide, and 600 tall --
+            # however, it has EXIF orientation information which says
+            # to rotate it 270 degrees counter-clockwise.
+            self.assertEqual(image_attachment.original_height_px, 100)
+            self.assertEqual(image_attachment.original_width_px, 600)
+
+            # The worker triggers when we exit this block and call the pending callbacks
+        image_attachment = ImageAttachment.objects.get(path_id=path_id)
+        self.assert_length(image_attachment.thumbnail_metadata, 1)
+        generated_thumbnail = StoredThumbnailFormat(**image_attachment.thumbnail_metadata[0])
+
+        # The uploaded original content is technically "tall", not "wide", with a 270 CCW rotation set.
+        with BytesIO() as fh:
+            save_attachment_contents(path_id, fh)
+            thumbnailed_bytes = fh.getvalue()
+        with pyvips.Image.new_from_buffer(thumbnailed_bytes, "") as thumbnailed_image:
+            self.assertEqual(thumbnailed_image.get("vips-loader"), "jpegload_buffer")
+            self.assertEqual(thumbnailed_image.width, 100)
+            self.assertEqual(thumbnailed_image.height, 600)
+            self.assertEqual(thumbnailed_image.get("orientation"), 8)  # 270 CCW rotation
+
+        # The generated thumbnail should be wide, not tall, with the default orientation
+        self.assertEqual(str(generated_thumbnail), "100x75.webp")
+        self.assertEqual(generated_thumbnail.width, 100)
+        self.assertEqual(generated_thumbnail.height, 17)
+
+        with BytesIO() as fh:
+            save_attachment_contents(f"thumbnail/{path_id}/100x75.webp", fh)
+            thumbnailed_bytes = fh.getvalue()
+        with pyvips.Image.new_from_buffer(thumbnailed_bytes, "") as thumbnailed_image:
+            self.assertEqual(thumbnailed_image.get("vips-loader"), "webpload_buffer")
+            self.assertEqual(thumbnailed_image.width, 100)
+            self.assertEqual(thumbnailed_image.height, 17)
+            self.assertEqual(thumbnailed_image.get("orientation"), 1)
+
     def test_big_upload(self) -> None:
         # We decline to treat as an image a large single-frame image
         self.login_user(self.example_user("hamlet"))
