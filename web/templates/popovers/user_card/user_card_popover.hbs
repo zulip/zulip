@@ -17,7 +17,7 @@
                 {{#if is_bot}}
                     {{#if bot_owner}}
                         <div class="bot_owner" data-tippy-content="{{ bot_owner.full_name }}">{{t "Bot owner" }}:
-                            <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
+                            <span class="bot-owner-name view_bot_owner_user_profile" data-user-id='{{ bot_owner.user_id }}'>
                                 {{bot_owner.full_name}}
                             </span>
                         </div>

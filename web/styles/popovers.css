@@ -992,6 +992,7 @@ ul.popover-group-menu-member-list {
     .popover-menu-user-info {
         width: max-content;
         align-self: center;
+        overflow: hidden;
     }
 
     .popover-menu-user-full-name {
@@ -1011,6 +1012,8 @@ ul.popover-group-menu-member-list {
         /* 16px at 14px/1em */
         line-height: 1.1428em;
         color: var(--color-text-item);
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .user_circle_empty {
