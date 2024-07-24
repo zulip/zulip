@@ -708,15 +708,6 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".view_bot_owner_user_profile", (e) => {
-        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        const user = people.get_by_user_id(user_id);
-        const $target = $(e.currentTarget).closest(".popover-menu-user-type");
-        toggle_user_card_popover($target, user);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     $("body").on("click", ".view_user_profile, .person_picker .pill[data-user-id]", (e) => {
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);

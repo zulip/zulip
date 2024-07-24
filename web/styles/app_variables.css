@@ -795,6 +795,7 @@
 
     /* Input pills */
     --color-background-input-pill: hsl(237deg 68% 94%);
+    --color-background-input-pill-hover: hsl(240deg 70% 70% / 30%);
     --color-focus-outline-input-pill: hsl(240deg 50% 50%);
     --color-input-pill-close: hsl(240deg 60% 65%);
     --color-background-input-pill-exit-hover: hsla(240deg 70% 70% / 15%);
@@ -1220,6 +1221,7 @@
 
     /* Input pills */
     --color-background-input-pill: hsl(240deg 65% 60% / 22%);
+    --color-background-input-pill-hover: hsl(240deg 52% 60% / 45%);
     --color-focus-outline-input-pill: hsl(0deg 0% 100% / 60%);
     --color-input-pill-close: hsl(240deg 50% 74%);
     --color-background-input-pill-exit-hover: hsl(0deg 0% 100% / 7%);
