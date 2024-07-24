@@ -719,7 +719,8 @@ div.overlay {
         transition: all 0.2s ease;
     }
 
-    * {
+    .zulip-icon,
+    .color-animated-button-text {
         padding: 6px 3px;
     }
 
