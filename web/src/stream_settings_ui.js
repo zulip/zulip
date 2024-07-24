@@ -420,6 +420,17 @@ export function update_empty_left_panel_message() {
     } else {
         has_streams = stream_data.get_unsorted_subs().length;
     }
+
+    const has_hidden_streams =
+        $("#channels_overlay_container .stream-row:not(.notdisplayed)").length === 0;
+    const has_search_query = $("#stream_filter input[type='text']").val().trim() !== "";
+    // Show "no channels match" text if all channels are hidden and there's a search query.
+    if (has_hidden_streams && has_search_query) {
+        $(".no-streams-to-show").children().hide();
+        $(".no_stream_match_filter_empty_text").show();
+        $(".no-streams-to-show").show();
+        return;
+    }
     if (has_streams) {
         $(".no-streams-to-show").hide();
         return;
