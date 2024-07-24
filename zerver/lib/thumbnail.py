@@ -82,15 +82,13 @@ class StoredThumbnailFormat(BaseThumbnailFormat):
 # options on this list are the ones which are written into
 # rendered_content.
 THUMBNAIL_OUTPUT_FORMATS = [
-    # For now, we generate relatively large default "thumbnails", so
-    # that clients that do not understand the thumbnailing protocol
-    # (e.g. mobile) get something which does not look pixelated.
+    # We generate relatively large default "thumbnails", so that
+    # clients that do not understand the thumbnailing protocol
+    # (e.g. mobile) get something which does not look pixelated.  This
+    # is also useful when the web client lightbox temporarily shows an
+    # upsized thumbnail while loading the full resolution image.
     ThumbnailFormat("webp", 840, 560, animated=True),
     ThumbnailFormat("webp", 840, 560, animated=False),
-    # 300x200 is the size preferred by the web client.
-    ThumbnailFormat("webp", 300, 200, animated=True),
-    ThumbnailFormat("webp", 300, 200, animated=False),
-    ThumbnailFormat("jpg", 300, 200, animated=False),
 ]
 
 
