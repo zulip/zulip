@@ -12,6 +12,13 @@ always show the animation, show it when you hover over the image with your
 mouse, or not show it at all. You can always see the animated image by opening
 it in the [image viewer](/help/view-images-and-videos).
 
+!!! warn ""
+
+    This configuration applies only to images uploaded since July 21, 2024 on
+    Zulip Cloud, or on Zulip Server [9.0+](/help/view-zulip-version) in
+    self-hosted organizations. Previews of images uploaded earlier are always
+    animated.
+
 {start_tabs}
 
 {tab|desktop-web}
