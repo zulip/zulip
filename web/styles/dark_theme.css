@@ -961,7 +961,8 @@
     .color_animated_button {
         background-color: hsl(211deg 29% 14%);
 
-        * {
+        .zulip-icon,
+        .color-animated-button-text {
             color: hsl(0deg 0% 100%);
         }
 
