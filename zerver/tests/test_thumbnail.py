@@ -1,6 +1,6 @@
 import re
 from dataclasses import asdict
-from io import StringIO
+from io import BytesIO, StringIO
 from unittest.mock import patch
 
 import orjson
@@ -26,7 +26,7 @@ from zerver.lib.thumbnail import (
     resize_emoji,
     split_thumbnail_path,
 )
-from zerver.lib.upload import all_message_attachments
+from zerver.lib.upload import all_message_attachments, save_attachment_contents
 from zerver.models import Attachment, ImageAttachment
 from zerver.views.upload import closest_thumbnail_format
 from zerver.worker.thumbnail import ensure_thumbnails
@@ -351,6 +351,15 @@ class TestStoreThumbnail(ZulipTestCase):
             sorted([path_id, f"thumbnail/{path_id}/100x75-anim.webp"]),
         )
 
+        with BytesIO() as fh:
+            save_attachment_contents(f"thumbnail/{path_id}/100x75-anim.webp", fh)
+            thumbnailed_bytes = fh.getvalue()
+        with pyvips.Image.new_from_buffer(thumbnailed_bytes, "") as thumbnailed_image:
+            self.assertEqual(thumbnailed_image.get("vips-loader"), "webpload_buffer")
+            self.assertEqual(thumbnailed_image.width, 100)
+            self.assertEqual(thumbnailed_image.height, 44)
+            self.assertEqual(thumbnailed_image.get_n_pages(), 2)
+
         with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)):
             self.assertEqual(ensure_thumbnails(image_attachment), 0)
 
@@ -368,6 +377,15 @@ class TestStoreThumbnail(ZulipTestCase):
         self.assertEqual(bigger_thumbnail.content_type, "image/webp")
         self.assertGreater(bigger_thumbnail.byte_size, 200)
         self.assertLess(bigger_thumbnail.byte_size, 2 * 1024)
+
+        with BytesIO() as fh:
+            save_attachment_contents(f"thumbnail/{path_id}/150x100.webp", fh)
+            thumbnailed_bytes = fh.getvalue()
+        with pyvips.Image.new_from_buffer(thumbnailed_bytes, "") as thumbnailed_image:
+            self.assertEqual(thumbnailed_image.get("vips-loader"), "webpload_buffer")
+            self.assertEqual(thumbnailed_image.width, 128)
+            self.assertEqual(thumbnailed_image.height, 56)
+            self.assertEqual(thumbnailed_image.get_n_pages(), 1)
 
         self.assertEqual(
             sorted([r[0] for r in all_message_attachments(include_thumbnails=True)]),
