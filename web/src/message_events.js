@@ -5,6 +5,7 @@ import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
 import * as compose_fade from "./compose_fade";
 import * as compose_notifications from "./compose_notifications";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import * as direct_message_group_data from "./direct_message_group_data";
@@ -246,6 +247,12 @@ export function update_messages(events) {
             ) {
                 changed_compose = true;
                 compose_state.topic(new_topic);
+
+                if (stream_changed) {
+                    compose_state.set_stream_id(new_stream_id);
+                    compose_recipient.on_compose_select_recipient_update();
+                }
+
                 compose_validate.warn_if_topic_resolved(true);
                 compose_fade.set_focused_recipient("stream");
             }
