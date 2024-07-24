@@ -155,6 +155,38 @@ converted into nicely formatted links.
             link_help_url="/help/link-to-a-message-or-conversation",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=8,
+        message=(
+            """
+- New image uploads now load much faster in all Zulip apps.
+- In the desktop and web apps, you can now [configure]({image_previews_help_url})
+previews of animated images to **always show** the animation, show it **when you
+hover** over the image with your mouse (default), or **not show** it at all. You can
+always see the animated image by opening it in the [image
+viewer]({view_images_help_url})."""
+            + (
+                """
+
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since December
+2024, in the [blog post]({blog_post_9_0_url}) announcing today's release of
+Zulip Server 9.0.
+"""
+                if settings.CORPORATE_ENABLED
+                else """
+
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_9_0_url}) to learn about additional
+feature highlights in Zulip Server 9.0, and other Zulip project updates.
+"""
+            )
+        ).format(
+            image_previews_help_url="/help/allow-image-link-previews",
+            view_images_help_url="/help/view-images-and-videos",
+            blog_post_9_0_url="https://blog.zulip.com/zulip-server-9-0",
+        ),
+    ),
 ]
 
 
