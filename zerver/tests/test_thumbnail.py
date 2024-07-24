@@ -51,8 +51,8 @@ class ThumbnailRedirectEndpointTest(ZulipTestCase):
         self.assertEqual(base, url[: len(base)])
 
         result = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
-        self.assertEqual(result.status_code, 302, result)
-        self.assertEqual(url, result["Location"])
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.getvalue(), b"zulip!")
 
         self.login("iago")
         result = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
@@ -62,21 +62,15 @@ class ThumbnailRedirectEndpointTest(ZulipTestCase):
     def test_thumbnail_external_redirect(self) -> None:
         url = "https://www.google.com/images/srpr/logo4w.png"
         result = self.client_get("/thumbnail", {"url": url, "size": "full"})
-        self.assertEqual(result.status_code, 302, result)
-        base = "https://external-content.zulipcdn.net/external_content/56c362a24201593891955ff526b3b412c0f9fcd2/68747470733a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"
-        self.assertEqual(base, result["Location"])
+        self.assertEqual(result.status_code, 403)
 
         url = "http://www.google.com/images/srpr/logo4w.png"
         result = self.client_get("/thumbnail", {"url": url, "size": "full"})
-        self.assertEqual(result.status_code, 302, result)
-        base = "https://external-content.zulipcdn.net/external_content/7b6552b60c635e41e8f6daeb36d88afc4eabde79/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"
-        self.assertEqual(base, result["Location"])
+        self.assertEqual(result.status_code, 403)
 
         url = "//www.google.com/images/srpr/logo4w.png"
         result = self.client_get("/thumbnail", {"url": url, "size": "full"})
-        self.assertEqual(result.status_code, 302, result)
-        base = "https://external-content.zulipcdn.net/external_content/676530cf4b101d56f56cc4a37c6ef4d4fd9b0c03/2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"
-        self.assertEqual(base, result["Location"])
+        self.assertEqual(result.status_code, 403)
 
     @override_settings(RATE_LIMITING=True)
     def test_thumbnail_redirect_for_spectator(self) -> None:
@@ -99,7 +93,8 @@ class ThumbnailRedirectEndpointTest(ZulipTestCase):
 
             self.logout()
             response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response["Location"].startswith("/accounts/login/?next="))
 
             # Allow file access for web-public stream
             self.login("hamlet")
@@ -110,12 +105,13 @@ class ThumbnailRedirectEndpointTest(ZulipTestCase):
 
             self.logout()
             response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
-            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.status_code, 200)
 
         # Deny file access since rate limited
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
             response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response["Location"].startswith("/accounts/login/?next="))
 
         # Deny random file access
         response = self.client_get(
@@ -125,7 +121,7 @@ class ThumbnailRedirectEndpointTest(ZulipTestCase):
                 "size": "full",
             },
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
 
 
 class ThumbnailEmojiTest(ZulipTestCase):
