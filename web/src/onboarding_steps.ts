@@ -34,6 +34,13 @@ export function update_onboarding_steps_to_display(onboarding_steps: OnboardingS
     }
 }
 
-export function initialize(params: StateData["onboarding_steps"]): void {
+export function initialize({
+    params,
+    narrow_to_dm_with_welcome_bot_new_user,
+}: {
+    params: StateData["onboarding_steps"];
+    narrow_to_dm_with_welcome_bot_new_user: () => void;
+}): void {
     update_onboarding_steps_to_display(params.onboarding_steps);
+    narrow_to_dm_with_welcome_bot_new_user();
 }

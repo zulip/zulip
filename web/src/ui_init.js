@@ -669,7 +669,32 @@ export function initialize_everything(state_data) {
     });
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
-    onboarding_steps.initialize(state_data.onboarding_steps);
+    // This needs to happen after activity_ui.initialize, so that user_filter
+    // is defined. Also, must happen after people.initialize()
+    onboarding_steps.initialize({
+        params: state_data.onboarding_steps,
+        narrow_to_dm_with_welcome_bot_new_user() {
+            if (
+                state_data.onboarding_steps.onboarding_steps.some(
+                    (onboarding_step) =>
+                        onboarding_step.name === "narrow_to_dm_with_welcome_bot_new_user",
+                )
+            ) {
+                message_view.show(
+                    [
+                        {
+                            operator: "dm",
+                            operand: people.WELCOME_BOT.email,
+                        },
+                    ],
+                    {trigger: "sidebar"},
+                );
+                onboarding_steps.post_onboarding_step_as_read(
+                    "narrow_to_dm_with_welcome_bot_new_user",
+                );
+            }
+        },
+    });
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();
