@@ -5,15 +5,12 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import TypeVar
-from urllib.parse import urljoin
 
 import pyvips
 from bs4 import BeautifulSoup
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from typing_extensions import override
 
-from zerver.lib.camo import get_camo_url
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.queue import queue_event_on_commit
 from zerver.models import AbstractAttachment, ImageAttachment
@@ -137,14 +134,6 @@ pyvips.voperation.cache_set_max(0)
 
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
-
-
-def generate_thumbnail_url(path: str, size: str = "0x0") -> str:
-    path = urljoin("/", path)
-
-    if url_has_allowed_host_and_scheme(path, allowed_hosts=None):
-        return path
-    return get_camo_url(path)
 
 
 @contextmanager
