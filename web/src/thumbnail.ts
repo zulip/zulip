@@ -11,7 +11,7 @@ export let preferred_format: ThumbnailFormat;
 export let animated_format: ThumbnailFormat;
 
 export function initialize(): void {
-    // Go looking for the size closest to 300x200, of the smallest format.  We assume all browsers
+    // Go looking for the size closest to 840px wide.  We assume all browsers
     // support webp.
     const format_preferences = ["webp", "jpg", "gif"];
     const sorted_formats = realm.server_thumbnail_formats.sort((a, b) => {
