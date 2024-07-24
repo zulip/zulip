@@ -411,23 +411,14 @@ function load_medium_avatar(user, $elt) {
 
 // Functions related to message user card popover.
 
-// element is the target element to pop off of
-// user is the user whose profile to show
-// message is the message containing it, which should be selected
-function toggle_user_card_popover_for_message(element, user, message, on_mount) {
+// element is the target element to pop off of.
+// user is the user whose profile to show.
+// sender_id is the user id of the sender for the message we are
+// showing the popover from.
+function toggle_user_card_popover_for_message(element, user, sender_id, on_mount) {
     const $elt = $(element);
 
-    if (user === undefined) {
-        // This is never supposed to happen, not even for deactivated
-        // users, so we'll need to debug this error if it occurs.
-        blueslip.error("Bad sender in message", {
-            message_id: message.id,
-            sender_id: message.sender_id,
-        });
-        return;
-    }
-
-    const is_sender_popover = message.sender_id === user.user_id;
+    const is_sender_popover = sender_id === user.user_id;
     show_user_card_popover(
         user,
         $elt,
@@ -462,7 +453,7 @@ export function toggle_sender_info() {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
-    toggle_user_card_popover_for_message($sender[0], user, message, () => {
+    toggle_user_card_popover_for_message($sender[0], user, message.sender_id, () => {
         if (!page_params.is_spectator) {
             focus_user_card_popover_item();
         }
@@ -534,7 +525,7 @@ function register_click_handlers() {
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         const user = people.get_by_user_id(message.sender_id);
-        toggle_user_card_popover_for_message(this, user, message);
+        toggle_user_card_popover_for_message(this, user, message.sender_id);
     });
 
     $("#main_div").on("click", ".user-mention", function (e) {
@@ -565,7 +556,7 @@ function register_click_handlers() {
                 return;
             }
         }
-        toggle_user_card_popover_for_message(this, user, message);
+        toggle_user_card_popover_for_message(this, user, message.sender_id);
     });
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
