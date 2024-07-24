@@ -295,11 +295,23 @@ def maybe_thumbnail(attachment: AbstractAttachment, content: bytes) -> ImageAtta
     try:
         # This only attempts to read the header, not the full image content
         with libvips_check_image(content) as image:
+            # "original_width_px" and "original_height_px" here are
+            # _as rendered_, after applying the orientation
+            # information which the image may contain.
+            if (
+                "orientation" in image.get_fields()
+                and image.get("orientation") >= 5
+                and image.get("orientation") <= 8
+            ):
+                (width, height) = (image.height, image.width)
+            else:
+                (width, height) = (image.width, image.height)
+
             image_row = ImageAttachment.objects.create(
                 realm_id=attachment.realm_id,
                 path_id=attachment.path_id,
-                original_width_px=image.width,
-                original_height_px=image.height,
+                original_width_px=width,
+                original_height_px=height,
                 frames=image.get_n_pages(),
                 thumbnail_metadata=[],
             )
