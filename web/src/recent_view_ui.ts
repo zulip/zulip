@@ -794,6 +794,31 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
         msgs_to_process.push(...msgs);
     }
 
+    const dm_conversations_to_rerender = new Set<string>();
+    for (const msg_id of message_ids) {
+        const msg = message_store.get(msg_id);
+        if (msg === undefined) {
+            continue;
+        }
+
+        if (msg.type === "private") {
+            const key = recent_view_util.get_key_from_message(msg);
+            // Important to assert since we use the key in get_messages_in_dm_conversation.
+            assert(key === msg.to_user_ids);
+            dm_conversations_to_rerender.add(key);
+        }
+    }
+
+    for (const key of dm_conversations_to_rerender) {
+        recent_view_data.conversations.delete(key);
+    }
+    if (dm_conversations_to_rerender.size > 0) {
+        const dm_messages_to_process = message_util.get_messages_in_dm_conversations(
+            dm_conversations_to_rerender,
+        );
+        msgs_to_process.push(...dm_messages_to_process);
+    }
+
     if (msgs_to_process.length > 0) {
         process_messages(msgs_to_process);
     } else {
