@@ -94,6 +94,12 @@ export function get_messages_in_topic(stream_id: number, topic: string): Message
         );
 }
 
+export function get_messages_in_dm_conversations(user_ids_strings: Set<string>): Message[] {
+    return all_messages_data
+        .all_messages()
+        .filter((x) => x.type === "private" && user_ids_strings.has(x.to_user_ids));
+}
+
 export function get_max_message_id_in_stream(stream_id: number): number {
     let max_message_id = 0;
     for (const msg of all_messages_data.all_messages()) {
