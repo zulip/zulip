@@ -28,7 +28,7 @@ msgstr ""
 #: analytics/views/stats.py:112 zerver/decorator.py:630
 #: zerver/decorator.py:648
 msgid "Not allowed for guest users"
-msgstr "허용되지 않은 손님 사용자"
+msgstr "게스트 사용자에게 허용되지 않음"
 
 #: analytics/views/stats.py:155
 msgid "Invalid organization"

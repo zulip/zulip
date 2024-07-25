@@ -11,7 +11,7 @@
 # Иван Иванов <fireman300024@gmail.com>, 2023
 # Sergey Korablin <s.korablin@gmail.com>, 2023
 # Roman Bannack <apxwn@yandex.ru>, 2023
-# Lev Shereshevsky, 2024
+# Lev Shereshevsky <Lev.Shereshevsky@sms-a.ru>, 2024
 # Transifex Bot <>, 2024
 # 
 #, fuzzy
@@ -52,7 +52,7 @@ msgstr "Личные сообщения"
 
 #: analytics/views/stats.py:320
 msgid "Group direct messages"
-msgstr "Группировать личные сообщения"
+msgstr "Групповые личные сообщения"
 
 #: analytics/views/stats.py:343
 #, python-brace-format
@@ -88,10 +88,10 @@ msgid ""
 "users to join."
 msgstr ""
 "В вашей организации не осталось лицензий Zulip, и она больше не может "
-"принимать новых пользователей. Пожалуйста, [увеличьте количество лицензий] "
+"подключать новых пользователей. Пожалуйста, [увеличьте количество лицензий] "
 "({billing_page_link}) или [отключите неактивных пользователей] "
-"({deactivate_user_help_page_link}), чтобы разрешить присоединиться новым "
-"пользователям. "
+"({deactivate_user_help_page_link}), чтобы дать новым пользователям "
+"возможность присоединиться. "
 
 #: corporate/lib/registration.py:36
 #, python-brace-format
@@ -103,8 +103,8 @@ msgid ""
 msgstr ""
 "В вашей организации осталась только одна лицензия Zulip. Вы можете "
 "[увеличить количество лицензий] ({billing_page_link}) или [отключить "
-"неактивных пользователей] ({deactivate_user_help_page_link}), чтобы "
-"разрешить присоединиться более чем одному пользователю. "
+"неактивных пользователей] ({deactivate_user_help_page_link}), чтобы дать "
+"возможность присоединиться более чем одному пользователю. "
 
 #: corporate/lib/registration.py:41
 #, python-brace-format
@@ -116,7 +116,7 @@ msgid ""
 msgstr ""
 "В вашей организации остались только две лицензии Zulip. Вы можете [увеличить"
 " количество лицензий] ({billing_page_link}) или [отключить неактивных "
-"пользователей] ({deactivate_user_help_page_link}), чтобы разрешить "
+"пользователей] ({deactivate_user_help_page_link}), чтобы дать возможность "
 "присоединиться более чем двум пользователям. "
 
 #: corporate/lib/registration.py:46
@@ -129,7 +129,7 @@ msgid ""
 msgstr ""
 "В вашей организации остались только три лицензии Zulip. Вы можете [увеличить"
 " количество лицензий] ({billing_page_link}) или [отключить неактивных "
-"пользователей] ({deactivate_user_help_page_link}), чтобы разрешить "
+"пользователей] ({deactivate_user_help_page_link}), чтобы дать возможность "
 "присоединиться более чем трем пользователям. "
 
 #: corporate/lib/registration.py:57
@@ -511,7 +511,7 @@ msgstr "Пользователи"
 
 #: templates/analytics/stats.html:58
 msgid "Messages sent by recipient type"
-msgstr "Сообщений отправлено по типу получателя "
+msgstr "Отправленные сообщения по типу получателей"
 
 #: templates/analytics/stats.html:61 templates/analytics/stats.html:91
 #: templates/analytics/stats.html:113 templates/analytics/stats.html:124
@@ -541,15 +541,15 @@ msgstr "За все время"
 
 #: templates/analytics/stats.html:78
 msgid "Messages sent over time"
-msgstr "Сообщений отправлено за время"
+msgstr "Отправленные сообщения за период"
 
 #: templates/analytics/stats.html:81 templates/analytics/stats.html:103
 msgid "Daily"
-msgstr "Ежедневно"
+msgstr "По дням"
 
 #: templates/analytics/stats.html:82 templates/analytics/stats.html:104
 msgid "Weekly"
-msgstr "Еженедельно"
+msgstr "По неделям"
 
 #: templates/analytics/stats.html:83 templates/analytics/stats.html:105
 msgid "Cumulative"
@@ -565,11 +565,11 @@ msgstr "Боты"
 
 #: templates/analytics/stats.html:100
 msgid "Messages read over time"
-msgstr "Сообщений прочитано за время"
+msgstr "Прочитанные сообщения за период"
 
 #: templates/analytics/stats.html:121
 msgid "Messages sent by client"
-msgstr "Сообщений отправлено клиентом"
+msgstr "Отправленные сообщения по приложениям"
 
 #: templates/analytics/stats.html:143
 msgid "Last update"
@@ -581,7 +581,7 @@ msgid ""
 "time” graph is updated once an hour."
 msgstr ""
 "Полное обновление всех графиков происходит один раз в день. График "
-"“Сообщений отправлено за время” обновляется каждый час."
+"“отправленные сообщения за период” обновляется каждый час."
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -610,7 +610,7 @@ msgstr "Подтверждение вашего адреса электронн�
 
 #: templates/confirmation/link_does_not_exist.html:4
 msgid "Confirmation link does not exist"
-msgstr "Ссылка для подтверждения не существует"
+msgstr "Ссылка для подтверждения отсутствует"
 
 #: templates/confirmation/link_does_not_exist.html:13
 msgid "Whoops. We couldn't find your confirmation link in the system."
@@ -1525,11 +1525,11 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        Похоже, вы оказались здесь случайно. Этот сайт\n"
+"                        Похоже, вы оказались тут случайно. Этот сайт\n"
 "                        предназначен для промежуточного шага в процессе аутентификации\n"
 "                       и не должен быть доступен вручную. Если вы пришли сюда напрямую,\n"
-"                        вы, наверное, ошиблись адресом. Если вы застряли здесь, пытаясь\n"
-"                        войти, это, скорее всего, ошибка сервера или неправильная конфигурация.\n"
+"                        вы, наверное, ошиблись адресом. Если вы застряли тут, пытаясь\n"
+"                        войти, это, скорее всего, ошибка сервера или неправильная настройка.\n"
 "                        "
 
 #: templates/zerver/change_email_address_visibility_modal.html:6
@@ -1578,7 +1578,7 @@ msgstr "Теперь вы можете закрыть это окно."
 #: templates/zerver/config_error/container.html:4
 #: templates/zerver/config_error/container.html:14
 msgid "Configuration error"
-msgstr "Ошибка конфигурации"
+msgstr "Ошибка настройки"
 
 #: templates/zerver/config_error/ldap.html:4
 msgid ""
@@ -1707,7 +1707,7 @@ msgstr ""
 
 #: templates/zerver/desktop_login.html:18
 msgid "Paste token here"
-msgstr "Вставьте токен здесь"
+msgstr "Вставьте токен тут"
 
 #: templates/zerver/desktop_login.html:20
 msgid "Finish"
@@ -1802,7 +1802,7 @@ msgstr ""
 "Вы создали новую демо-организацию Zulip. Эта организация будет\n"
 "   автоматически удалена через 30 дней. Узнайте подробнее\n"
 "   о демо-организациях <a\n"
-"    href=\"%(demo_organizations_help_link)s\">здесь</a>."
+"    href=\"%(demo_organizations_help_link)s\">тут</a>."
 
 #: templates/zerver/emails/account_registered.html:19
 #, python-format
@@ -1911,7 +1911,7 @@ msgid ""
 " demo organizations here: %(demo_organizations_help_link)s!"
 msgstr ""
 "Вы создали новую демо-организацию Zulip. Эта организация будет автоматически"
-" удалена через 30 дней. Узнайте подробнее о демо-организациях здесь: "
+" удалена через 30 дней. Узнайте подробнее о демо-организациях тут: "
 "%(demo_organizations_help_link)s!"
 
 #: templates/zerver/emails/account_registered.txt:7
@@ -2122,7 +2122,7 @@ msgid ""
 "Your Zulip account on <a href=\"%(realm_uri)s\">%(realm_uri)s</a> has been deactivated, and you will no longer be able to log in.\n"
 msgstr ""
 "\n"
-"Ваша учетная запись Zulip в <a href=\"%(realm_uri)s\">%(realm_uri)s</a> отключена и вы больше не сможете войти.\n"
+"Ваша учетная запись Zulip в <a href=\"%(realm_uri)s\">%(realm_uri)s</a> была отключена, теперь вы не cможете авторизоваться.\n"
 
 #: templates/zerver/emails/deactivate.html:15
 #: templates/zerver/emails/deactivate.txt:6
@@ -2141,7 +2141,7 @@ msgid ""
 "Your Zulip account on %(realm_uri)s has been deactivated, and you will no longer be able to log in.\n"
 msgstr ""
 "\n"
-"Ваша учетная запись Zulip в %(realm_uri)s отключена и вы больше не сможете войти.\n"
+"Ваша учетная запись Zulip в %(realm_uri)s отключена, и вы больше не сможете войти.\n"
 
 #: templates/zerver/emails/digest.html:27
 msgid "New streams"
@@ -2149,7 +2149,7 @@ msgstr "Новые каналы"
 
 #: templates/zerver/emails/digest.html:34
 msgid "Click here to log in to Zulip and catch up."
-msgstr "Нажмите здесь, чтобы зайти в Zulip и наверстать упущенное"
+msgstr "Нажмите тут, чтобы войти в Zulip и посмотреть новые сообщения."
 
 #: templates/zerver/emails/digest.html:40
 msgid "Unsubscribe from digest emails"
@@ -2164,7 +2164,7 @@ msgstr "Дайджест Zulip для %(realm_name)s"
 #, python-format
 msgid "Click here to log in to Zulip and catch up: %(organization_url)s."
 msgstr ""
-"Нажмите здесь, чтобы войти в Zulip и наверстать упущенное: "
+"Нажмите тут, чтобы войти в Zulip и посмотреть новые сообщения: "
 "%(organization_url)s."
 
 #: templates/zerver/emails/digest.txt:15
@@ -2244,8 +2244,8 @@ msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
 msgstr ""
-"%(referrer_name)s приглашает вас общаться в Zulip &mdash; инструмент "
-"коммуникации для команд, созданный для эффективности."
+"%(referrer_name)s приглашает вас общаться в Zulip &mdash; системе командного"
+" общения, ориентированной на эффективность."
 
 #: templates/zerver/emails/invitation.html:15
 #: templates/zerver/emails/invitation_reminder.html:13
@@ -2443,8 +2443,8 @@ msgid ""
 "preferences</a>."
 msgstr ""
 "Ответьте прямо на это письмо, <a href=\"%(narrow_url)s\">посмотрите его в "
-"%(realm_name)s Zulip</a>, или <a href=\"%(notif_url)s\">посмотрите свои "
-"настройки электронной почты</a>."
+"%(realm_name)s Zulip</a>, или <a href=\"%(notif_url)s\">настройте оповещения"
+" по электронной почте</a>."
 
 #: templates/zerver/emails/missed_message.html:48
 #, python-format
@@ -2882,8 +2882,8 @@ msgid ""
 "In Zulip, <b>streams</b> determine who gets a message. <b>Topics</b> tell "
 "you what the message is about."
 msgstr ""
-"В Zulip <b>каналы</b> определяют, кто получает сообщения. <b>Темы</b> "
-"показывают, о чем сообщения."
+"В Zulip <b>каналы</b> определяют, кто получает сообщения. <b>Темы</b> дают "
+"понять, о чем переписка."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:13
 #: templates/zerver/emails/onboarding_zulip_topics.txt:3
@@ -2925,8 +2925,8 @@ msgid ""
 "<a href=\"%(move_topic_to_different_stream_link)s\">move a topic to a "
 "different stream</a>."
 msgstr ""
-"Не напрягайтесь, подбирая идеальное название для своей темы. Если обсуждение"
-" выйдет за ее пределы, можно легко <a "
+"Не старайтесь подобрать идеальное название для своей темы. Если что-то будет"
+" не в порядке, вы легко сможете <a "
 "href=\"%(move_messages_link)s\">переместить сообщения</a>, <a "
 "href=\"%(rename_topics_link)s\">переименовать тему</a>, или даже <a "
 "href=\"%(move_topic_to_different_stream_link)s\">переместить тему в другой "
@@ -2947,8 +2947,8 @@ msgid ""
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
-"В Zulip каналы определяют, кто получит сообщение. Темы сообщают вам, о чем "
-"сообщение."
+"В Zulip каналы определяют, кто получает сообщения. Темы дают понять, о чем "
+"переписка."
 
 #: templates/zerver/emails/onboarding_zulip_topics.txt:7
 #, python-format
@@ -2958,8 +2958,8 @@ msgid ""
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
 msgstr ""
-"Не напрягайтесь, подбирая идеальное название для своей темы. Если обсуждение"
-" выйдет за ее пределы, можно легко переместить сообщения "
+"Не старайтесь подобрать идеальное название для своей темы. Если что-то будет"
+" не в порядке, вы легко сможете переместить сообщения "
 "(%(move_messages_link)s), переименовать тему (%(rename_topics_link)s), или "
 "даже переместить тему в другой канал "
 "(%(move_topic_to_different_stream_link)s)."
@@ -3011,8 +3011,8 @@ msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
 msgstr ""
-"Вы можете попытаться авторизации или сбросить пароль в орагнизации (-ях), "
-"приведенных выше."
+"Вы можете попытаться авторизоваться или сбросить пароль в организации (-ях),"
+" приведенных выше."
 
 #: templates/zerver/emails/password_reset.html:38
 #: templates/zerver/emails/password_reset.txt:25
@@ -3622,7 +3622,7 @@ msgstr ""
 #: templates/zerver/invalid_realm.html:4
 #: templates/zerver/invalid_realm.html:12
 msgid "Organization does not exist"
-msgstr "Организация не существует"
+msgstr "Организация отсутствует"
 
 #: templates/zerver/invalid_realm.html:16
 msgid "Hi there! Thank you for your interest in Zulip."
@@ -3744,7 +3744,7 @@ msgid ""
 "Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
 msgstr ""
-"Пожалуйста, свяжитесь с человеком, который вас пригласил, и попросите его "
+"Пожалуйста, свяжитесь с тем, который вас пригласил, и попросите его/ее "
 "увеличить количество лицензий, а затем повторите попытку."
 
 #: templates/zerver/rate_limit_exceeded.html:4
@@ -3852,7 +3852,7 @@ msgstr ""
 #: templates/zerver/realm_redirect.html:4
 #: templates/zerver/realm_redirect.html:12
 msgid "Log in to your organization"
-msgstr "Зайти в вашу организацию"
+msgstr "Войти в вашу организацию"
 
 #: templates/zerver/realm_redirect.html:22
 msgid "Enter your organization's Zulip URL:"
@@ -4184,7 +4184,7 @@ msgstr "{user} только что зарегистрировался в Zulip. 
 #: zerver/actions/create_user.py:261
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
-msgstr "{user} принял ваше приглашение присоединиться к Zulip!"
+msgstr "{user} принял/а ваше приглашение присоединиться к Zulip!"
 
 #: zerver/actions/create_user.py:643
 msgid ""
@@ -4240,7 +4240,7 @@ msgstr ""
 #: zerver/actions/default_streams.py:112 zerver/actions/default_streams.py:173
 #, python-brace-format
 msgid "Default stream group '{group_name}' already exists"
-msgstr "Группа каналов по умолчанию '{group_name}' уже существует"
+msgstr "Группа каналов по умолчанию '{group_name}' уже есть"
 
 #: zerver/actions/default_streams.py:134
 #, python-brace-format
@@ -4298,7 +4298,7 @@ msgid ""
 "invitation. We did send invitations to everyone else!"
 msgstr ""
 "Некоторые из этих адресов электронной почты уже используют Zulip, поэтому мы"
-" не стали отправлять им приглашение. А всем остальным - выслали!"
+" не стали отправлять им приглашение. А всем остальным выслали!"
 
 #: zerver/actions/message_edit.py:100 zerver/views/scheduled_messages.py:60
 msgid "Nothing to change"
@@ -4395,7 +4395,7 @@ msgstr "Разрешенное время редактирования темы 
 
 #: zerver/actions/message_edit.py:1308
 msgid "You don't have permission to move this message"
-msgstr "У вас нет полномочий перемещать данное сообщение."
+msgstr "У вас нет прав для перемещения данного сообщения."
 
 #: zerver/actions/message_edit.py:1323
 msgid "The time limit for editing this message's stream has passed"
@@ -4451,7 +4451,7 @@ msgid ""
 "but there is no stream with that ID."
 msgstr ""
 "Ваш бот {bot_identity} попытался послать сообщение в канал с ID {stream_id},"
-" но канала с таким ID не существует."
+" но канал с таким ID отсутствует."
 
 #: zerver/actions/message_send.py:1485
 #, python-brace-format
@@ -4460,7 +4460,7 @@ msgid ""
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr ""
 "Ваш бот {bot_identity} попытался послать сообщение в канал {stream_name}, но"
-" такого канала не существует. Нажмите [здесь]({new_stream_link}), чтобы его "
+" такой канал отсутствует. Нажмите [тут]({new_stream_link}), чтобы его "
 "создать."
 
 #: zerver/actions/message_send.py:1497
@@ -4470,7 +4470,7 @@ msgid ""
 " stream exists but does not have any subscribers."
 msgstr ""
 "Ваш бот {bot_identity} попытался послать сообщение в канал {stream_name}. "
-"Канал существует, но на него никто не подписан."
+"Этот канал присутствует, но на него никто не подписан."
 
 #: zerver/actions/message_send.py:1544
 msgid "Direct messages are disabled in this organization."
@@ -4495,7 +4495,7 @@ msgstr "Виджеты: {error_msg}"
 
 #: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:38
 msgid "A custom emoji with this name already exists."
-msgstr "Пользовательский эмодзи с таким именем уже существует."
+msgstr "Пользовательский эмодзи с таким именем уже есть."
 
 #: zerver/actions/realm_linkifiers.py:156
 msgid "The ordered list must not contain duplicated linkifiers"
@@ -4509,7 +4509,7 @@ msgstr ""
 
 #: zerver/actions/scheduled_messages.py:150
 msgid "Scheduled message was already sent"
-msgstr "Запланированное сообщение уже отправлено"
+msgstr "Отложенное сообщение уже отправлено"
 
 #: zerver/actions/scheduled_messages.py:155
 #: zerver/views/scheduled_messages.py:88
@@ -4519,7 +4519,7 @@ msgstr "Запланированное время доставки должно 
 
 #: zerver/actions/scheduled_messages.py:290
 msgid "Message could not be sent at the scheduled time."
-msgstr "Сообщение не может быть отправлено в запланированное время."
+msgstr "Сообщение не удалось отправить в запланированное время."
 
 #: zerver/actions/scheduled_messages.py:341
 #, python-brace-format
@@ -4532,7 +4532,7 @@ msgstr ""
 
 #: zerver/actions/scheduled_messages.py:346
 msgid "[View scheduled messages](#scheduled)"
-msgstr "[Показать запланированные сообщения](#scheduled)"
+msgstr "[Показать отложенные сообщения](#scheduled)"
 
 #: zerver/actions/streams.py:119
 msgid "Stream is already deactivated"
@@ -4558,8 +4558,8 @@ msgid ""
 "{user} changed the [access permissions](/help/stream-permissions) for this "
 "stream from **{old_policy}** to **{new_policy}**."
 msgstr ""
-"{user} изменил [права доступа](/help/stream-permissions) для настоящего "
-"канала с **{old_policy}** на **{new_policy}**."
+"{user} изменил/а [права доступа](/help/stream-permissions) для этого канала "
+"с **{old_policy}** на **{new_policy}**."
 
 #: zerver/actions/streams.py:1355
 #, python-brace-format
@@ -4569,7 +4569,7 @@ msgid ""
 "* **Old permissions**: {old_policy}.\n"
 "* **New permissions**: {new_policy}.\n"
 msgstr ""
-"{user} изменил [права на запись сообщений](/help/stream-sending-policy) в настоящем канале:\n"
+"{user} изменил/а [права на запись сообщений](/help/stream-sending-policy) в этом канале:\n"
 "\n"
 "* **Прежние права**: {old_policy}.\n"
 "* **Новые права**: {new_policy}.\n"
@@ -4587,7 +4587,7 @@ msgstr "Нет описания."
 #: zerver/actions/streams.py:1492
 #, python-brace-format
 msgid "{user} changed the description for this stream."
-msgstr "{user} изменил описание этого канала."
+msgstr "{user} изменил/а описание этого канала."
 
 #: zerver/actions/streams.py:1494
 msgid "Old description"
@@ -4614,7 +4614,7 @@ msgid ""
 "\n"
 "{summary_line}"
 msgstr ""
-"{user} изменил [срок хранения сообщений](/help/message-retention-policy) в настоящем канале:\n"
+"{user} изменил/а [срок хранения сообщений](/help/message-retention-policy) в этом канале:\n"
 "* **Прежний срок хранения**: {old_retention_period}\n"
 "* **Новый срок хранения**: {new_retention_period}\n"
 "\n"
@@ -4632,7 +4632,7 @@ msgstr "Неверный ID пользователя {user_id}"
 #: zerver/actions/user_groups.py:210 zerver/actions/user_groups.py:240
 #, python-brace-format
 msgid "User group '{group_name}' already exists."
-msgstr "Группа пользователей '{group_name}' уже существует."
+msgstr "Группа пользователей '{group_name}' уже есть."
 
 #: zerver/decorator.py:251
 msgid "This API is not available to incoming webhook bots."
@@ -4648,7 +4648,7 @@ msgstr "Конечная точка не принимает запросы бо�
 
 #: zerver/decorator.py:612
 msgid "Must be an server administrator"
-msgstr "Должен быть администратором сервера"
+msgstr "Нужно быть администратором сервера"
 
 #: zerver/decorator.py:669 zerver/lib/streams.py:717 zerver/lib/streams.py:743
 #: zerver/lib/streams.py:745 zerver/lib/streams.py:747
@@ -4722,7 +4722,7 @@ msgstr "Пожалуйста, используйте реальный адрес
 msgid "The organization you are trying to join using {email} does not exist."
 msgstr ""
 "Организация, к которой вы пытаетесь подключиться с использованием {email}, "
-"не существует."
+"отсутствует."
 
 #: zerver/forms.py:264
 #, python-brace-format
@@ -4752,8 +4752,8 @@ msgid ""
 "number of licenses, then try again."
 msgstr ""
 "Новые участники не могут присоединиться к этой организации, потому что все "
-"лицензии Zulip используются. Свяжитесь с человеком, который вас пригласил, и"
-" попросите его увеличить количество лицензий, а затем повторите попытку."
+"лицензии Zulip используются. Свяжитесь с тем, который вас пригласил, и "
+"попросите его/ее увеличить количество лицензий, а затем повторите попытку."
 
 #: zerver/forms.py:315
 msgid "New password"
@@ -4888,7 +4888,7 @@ msgstr "Пользователь отключил синхронизацию ч�
 
 #: zerver/lib/drafts.py:136 zerver/lib/drafts.py:153
 msgid "Draft does not exist"
-msgstr "Черновик не существует"
+msgstr "Черновик отсутствует"
 
 #: zerver/lib/email_notifications.py:140 zerver/lib/email_notifications.py:162
 msgid "Open Zulip to see the spoiler content"
@@ -4897,7 +4897,7 @@ msgstr "Открыть Zulip, чтобы посмотреть содержани
 #: zerver/lib/email_notifications.py:577
 #, python-brace-format
 msgid "{service_name} notifications"
-msgstr "оповещения {service_name}"
+msgstr "Оповещения {service_name}"
 
 #: zerver/lib/email_validation.py:100
 msgid "Invalid address."
@@ -4931,7 +4931,7 @@ msgstr "Учетная запись отключена."
 #: zerver/lib/emoji.py:88 zerver/views/realm_emoji.py:62
 #, python-brace-format
 msgid "Emoji '{emoji_name}' does not exist"
-msgstr "Эмодзи '{emoji_name}' не существует"
+msgstr "Эмодзи '{emoji_name}' отсутствует"
 
 #: zerver/lib/emoji.py:101
 msgid "Invalid custom emoji."
@@ -4959,7 +4959,7 @@ msgstr "Неверный тип эмодзи."
 
 #: zerver/lib/emoji.py:133
 msgid "Must be an organization administrator or emoji author"
-msgstr "Должен быть администратором организации или автором эмодзи"
+msgstr "Нужно быть администратором организации или автором эмодзи"
 
 #: zerver/lib/emoji.py:141
 msgid "Emoji names must end with either a letter or digit."
@@ -4990,12 +4990,12 @@ msgstr ""
 #: zerver/lib/exceptions.py:176
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
-msgstr "Канал '{stream}' не существует"
+msgstr "Канал '{stream}' отсутствует"
 
 #: zerver/lib/exceptions.py:189
 #, python-brace-format
 msgid "Stream with ID '{stream_id}' does not exist"
-msgstr "Канал с ID '{stream_id}' не существует"
+msgstr "Канал с ID '{stream_id}' отсутствует"
 
 #: zerver/lib/exceptions.py:198
 msgid "organization owner"
@@ -5008,7 +5008,7 @@ msgstr "пользователь"
 #: zerver/lib/exceptions.py:203
 #, python-brace-format
 msgid "Cannot deactivate the only {entity}."
-msgstr "Нельзя отключить единственного {entity}."
+msgstr "Нельзя отключить {entity}, т.к. других нет."
 
 #: zerver/lib/exceptions.py:216
 #, python-brace-format
@@ -5026,15 +5026,15 @@ msgstr "Неверный JSON"
 
 #: zerver/lib/exceptions.py:267
 msgid "Must be an organization member"
-msgstr "Должен быть членом организации"
+msgstr "Нужно быть членом организации"
 
 #: zerver/lib/exceptions.py:279 zerver/views/invite.py:42
 msgid "Must be an organization administrator"
-msgstr "Должны быть администратором организации"
+msgstr "Нужно быть администратором организации"
 
 #: zerver/lib/exceptions.py:291
 msgid "Must be an organization owner"
-msgstr "Должен быть владельцем организации"
+msgstr "Нужно быть владельцем организации"
 
 #: zerver/lib/exceptions.py:305
 msgid "Your username or password is incorrect"
@@ -5114,11 +5114,11 @@ msgstr ""
 
 #: zerver/lib/exceptions.py:570
 msgid "Reaction already exists."
-msgstr "Реакция уже существует."
+msgstr "Реакция уже есть."
 
 #: zerver/lib/exceptions.py:582
 msgid "Reaction doesn't exist."
-msgstr "Реакция не существует."
+msgstr "Реакция отсутствует."
 
 #: zerver/lib/exceptions.py:607
 msgid ""
@@ -5136,14 +5136,13 @@ msgstr "Организация не зарегистрирована"
 msgid ""
 "You do not have permission to use stream wildcard mentions in this stream."
 msgstr ""
-"У вас нет права использовать подстановочные упоминания  канала в этом "
-"канале."
+"У вас нет права использовать подстановочные упоминания канала в этом канале."
 
 #: zerver/lib/exceptions.py:645
 msgid ""
 "You do not have permission to use topic wildcard mentions in this topic."
 msgstr ""
-"У вас нет права использовать подстановочные упоминания  темы в этой теме."
+"У вас нет права использовать подстановочные упоминания темы в этой теме."
 
 #: zerver/lib/external_accounts.py:36
 msgid "Twitter username"
@@ -5163,7 +5162,7 @@ msgstr "Неверный тип внешней учетной записи"
 
 #: zerver/lib/hotspots.py:34
 msgid "Catch up on a stream"
-msgstr "Догнать канал"
+msgstr "Просмотреть новое в канале"
 
 #: zerver/lib/hotspots.py:36
 msgid ""
@@ -5202,8 +5201,8 @@ msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
 msgstr ""
-"Нажмите здесь, чтобы начать новую беседу. Укажите тему (лучше всего 2-3 "
-"слова) и напишите сообщение!"
+"Нажмите тут, чтобы начать новую беседу. Укажите тему (лучше всего 2-3 слова)"
+" и напишите сообщение!"
 
 #: zerver/lib/integrations.py:38
 msgid "Integration frameworks"
@@ -5231,7 +5230,7 @@ msgstr "Общение"
 
 #: zerver/lib/integrations.py:49
 msgid "Financial"
-msgstr "Финансовые"
+msgstr "Финансы"
 
 #: zerver/lib/integrations.py:50
 msgid "Human resources"
@@ -5343,11 +5342,11 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:104
 msgid "Hello, and welcome to Zulip!"
-msgstr "Привет, добро пожаловать в Zulip!"
+msgstr "Здравствуйте! Добро пожаловать в Zulip!"
 
 #: zerver/lib/onboarding.py:105
 msgid "This is a direct message from me, Welcome Bot."
-msgstr "Это личное сообщение от меня, приветственного бота."
+msgstr "Это личное сообщение от меня, Приветствующего бота."
 
 #: zerver/lib/onboarding.py:110
 msgid ""
@@ -5387,18 +5386,18 @@ msgid ""
 "language](/help/change-your-language), and make other tweaks to your Zulip "
 "experience."
 msgstr ""
-"Перейдите в [Предпочтения](#settings/preferences), чтобы [выбрать светлую "
-"или темную тему оформления](/help/dark-theme), [указать предпочитаемый набор"
-" эмодзи](/help/emoji-and-emoticons#change-your-emoji-set), [сменить язык "
-"интерфейса](/help/change-your-language) и сделать другие персональные "
-"настройки Zulip."
+"Перейдите в [Предпочтения](#settings/preferences), чтобы [выбрать светлый "
+"или темный режим оформления](/help/dark-theme), [указать предпочитаемый "
+"набор эмодзи](/help/emoji-and-emoticons#change-your-emoji-set), [сменить "
+"язык интерфейса](/help/change-your-language) и изменить прочие настройки "
+"Zulip."
 
 #: zerver/lib/onboarding.py:175
 msgid ""
 "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
 "They are similar to channels in other chat apps."
 msgstr ""
-"В Zulip каналы [определяют, кто получит сообщение] (/help/streams-and-"
+"В Zulip каналы [определяют, кто получает сообщения](/help/streams-and-"
 "topics). Они похожи на каналы в других приложениях для общения."
 
 #: zerver/lib/onboarding.py:179
@@ -5412,8 +5411,7 @@ msgid ""
 " an email."
 msgstr ""
 "В Zulip темы [говорят вам, о чем сообщение] (/help/streams-and-topics). Это "
-"легковеснные описатели, очень похожие по сути на строку темы электронного "
-"письма."
+"краткие описатели, очень похожие по сути на строку темы электронного письма."
 
 #: zerver/lib/onboarding.py:191
 msgid ""
@@ -5435,7 +5433,7 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:204
 msgid "Press `?` any time to see a [cheat sheet](#keyboard-shortcuts)."
-msgstr "Нажмите `?`, чтобы посмотреть [шпаргалку] (#keyboard-shortcuts)."
+msgstr "Нажмите `?`, чтобы посмотреть [шпаргалку](#keyboard-shortcuts)."
 
 #: zerver/lib/onboarding.py:211
 msgid ""
@@ -5452,8 +5450,8 @@ msgid ""
 "Check out our [messaging tips](/help/messaging-tips) to learn about emoji "
 "reactions, code blocks and much more!"
 msgstr ""
-"Просмотрите наши [советы по обмену сообщениями](/help/messaging-tips), чтобы"
-" узнать о реакциях эмодзи, блоках кода и многом другом!"
+"Просмотрите наши [советы по ведению переписки](/help/messaging-tips), чтобы "
+"узнать о реакциях эмодзи, блоках кода и многом другом!"
 
 #: zerver/lib/onboarding.py:228
 msgid ""
@@ -5461,7 +5459,7 @@ msgid ""
 "browse the [Help center](/help/) to learn more!"
 msgstr ""
 "Посмотрите наше [Руководство по началу работы](/help/getting-started-with-"
-"zulip) или просмотрите [Центр помощи](/help/), чтобы узнать больше!"
+"zulip) или перейдите в [Центр помощи](/help/), чтобы узнать больше!"
 
 #: zerver/lib/onboarding.py:237
 msgid ""
@@ -5521,7 +5519,7 @@ msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `swimming turtles`."
 msgstr ""
-"Это сообщение в канале #**{default_notification_stream_name}** на тему "
+"Это сообщение в канале #**{default_notification_stream_name}** c темой "
 "`swimming turtles`."
 
 #: zerver/lib/onboarding.py:308
@@ -5553,7 +5551,7 @@ msgstr "Неверные параметры GCM для отражателя: {op
 #. error
 #: zerver/lib/push_notifications.py:739 zilencer/views.py:243
 msgid "Token does not exist"
-msgstr "Токен не существует"
+msgstr "Токен отсутствует"
 
 #: zerver/lib/push_notifications.py:910
 msgid ""
@@ -5566,17 +5564,17 @@ msgstr ""
 #: zerver/lib/push_notifications.py:1023
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
-msgstr "{full_name} упомянул @{user_group_name}:"
+msgstr "{full_name} упомянул/а @{user_group_name}:"
 
 #: zerver/lib/push_notifications.py:1027
 #, python-brace-format
 msgid "{full_name} mentioned you:"
-msgstr "{full_name} упомянул вас:"
+msgstr "{full_name} упомянул/а вас:"
 
 #: zerver/lib/push_notifications.py:1034
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
-msgstr "{full_name} упомянул всех:"
+msgstr "{full_name} упомянул/а всех:"
 
 #: zerver/lib/push_notifications.py:1438
 msgid "Test notification"
@@ -5654,7 +5652,7 @@ msgstr "Параметр \"{name}\" не является корректным J
 
 #: zerver/lib/scheduled_messages.py:20
 msgid "Scheduled message does not exist"
-msgstr "Запланированное сообщение не существует"
+msgstr "Отложенное сообщение отсутствует"
 
 #: zerver/lib/send_email.py:76
 #, python-brace-format
@@ -5664,7 +5662,7 @@ msgstr "безопасность аккаунта {service_name} "
 #: zerver/lib/streams.py:241
 msgid "Only organization administrators can send to this stream."
 msgstr ""
-"Только администратор организации может отправлять сообщения в этот канал."
+"Только администраторы организации могут отправлять сообщения в этот канал."
 
 #: zerver/lib/streams.py:247
 msgid ""
@@ -5675,7 +5673,7 @@ msgstr ""
 
 #: zerver/lib/streams.py:250
 msgid "Guests cannot send to this stream."
-msgstr "Гости не могут писать в этом канале"
+msgstr "Гости не могут писать сообщения в этом канале."
 
 #: zerver/lib/streams.py:255
 msgid "New members cannot send to this stream."
@@ -5726,7 +5724,7 @@ msgstr "Открытые веб-каналы не активированы."
 #: zerver/lib/streams.py:792
 #, python-brace-format
 msgid "Default stream group with id '{group_id}' does not exist."
-msgstr "Группа каналов по умолчанию с id '{group_id}' не существует."
+msgstr "Группа каналов по умолчанию с id '{group_id}' отсутствует."
 
 #: zerver/lib/string_validation.py:41
 msgid "Stream name can't be empty!"
@@ -5735,7 +5733,7 @@ msgstr "Название канала не может быть пустым!"
 #: zerver/lib/string_validation.py:45
 #, python-brace-format
 msgid "Stream name too long (limit: {max_length} characters)."
-msgstr "Слишком длинное имя канала (предел: {max_length} символов)."
+msgstr "Слишком длинное название канала (предел: {max_length} символов)."
 
 #: zerver/lib/string_validation.py:53
 #, python-brace-format
@@ -5744,7 +5742,7 @@ msgstr "Недопустимый символ в названии канала �
 
 #: zerver/lib/string_validation.py:61
 msgid "Topic can't be empty!"
-msgstr "Тема не может быть пустой"
+msgstr "Тема не может быть пустой!"
 
 #: zerver/lib/string_validation.py:66
 #, python-brace-format
@@ -5753,7 +5751,7 @@ msgstr "Недопустимый символ в теме на месте {posit
 
 #: zerver/lib/subscription_info.py:324
 msgid "Subscriber data is not available for this stream"
-msgstr "Данные подписчика недоступны для этого канала"
+msgstr "Данные о подписке недоступны для этого канала"
 
 #: zerver/lib/subscription_info.py:331
 msgid "Unable to retrieve subscribers for private stream"
@@ -6238,7 +6236,7 @@ msgstr "Гость"
 
 #: zerver/models.py:2709
 msgid "Web-public"
-msgstr "Открыто в сети"
+msgstr "Публичный в интернете"
 
 #: zerver/models.py:2715
 msgid "Public"
@@ -6258,20 +6256,19 @@ msgstr "Открытый, защищенная история переписки
 
 #: zerver/models.py:2755
 msgid "All stream members can post"
-msgstr "Все участники канала могут оставлять сообщения"
+msgstr "Все участники канала могут писать сообщения"
 
 #: zerver/models.py:2756
 msgid "Only organization administrators can post"
-msgstr "Только администраторы организации имеют право писать"
+msgstr "Только администраторы организации могут писать сообщения"
 
 #: zerver/models.py:2758
 msgid "Only organization administrators and moderators can post"
-msgstr ""
-"Только администраторы организации и модераторы могут публиковать сообщения"
+msgstr "Только администраторы организации и модераторы могут писать сообщения"
 
 #: zerver/models.py:2761
 msgid "Only organization full members can post"
-msgstr "Только полноценные члены организации могут писать"
+msgstr "Только полноценные участники организации могут писать сообщения"
 
 #: zerver/models.py:3446
 msgid "Unicode emoji"
@@ -6415,7 +6412,7 @@ msgstr ""
 #: zerver/views/custom_profile_fields.py:185
 #: zerver/views/custom_profile_fields.py:250
 msgid "A field with that label already exists."
-msgstr "Поле с такой меткой уже существует."
+msgstr "Поле с такой меткой уже есть."
 
 #: zerver/views/custom_profile_fields.py:235
 msgid "Default custom field cannot be updated."
@@ -6478,7 +6475,7 @@ msgstr "Канал с id: {stream_id} отсутствует. Приглашен
 
 #: zerver/views/invite.py:94
 msgid "You do not have permission to subscribe other users to streams."
-msgstr "У вас нет разрешения подписывать других пользователей на каналы."
+msgstr "У вас нет права подписывать других пользователей на каналы."
 
 #: zerver/views/invite.py:131 zerver/views/invite.py:134
 #: zerver/views/invite.py:151 zerver/views/invite.py:154
@@ -6543,15 +6540,15 @@ msgstr "В этой организации зеркалирование Zephyr �
 
 #: zerver/views/muted_users.py:16
 msgid "Cannot mute self"
-msgstr "Невозможно заглушить себя"
+msgstr "Невозможно отключить себя"
 
 #: zerver/views/muted_users.py:34
 msgid "User already muted"
-msgstr "Пользователь уже заглушен"
+msgstr "Пользователь уже отключен"
 
 #: zerver/views/muted_users.py:48
 msgid "User is not muted"
-msgstr "Пользователь не заглушен"
+msgstr "Пользователь не отключен"
 
 #: zerver/views/presence.py:50
 msgid "Presence is not supported for bot users."
@@ -6705,12 +6702,11 @@ msgstr "Неверная интерактивная среда"
 
 #: zerver/views/scheduled_messages.py:65
 msgid "Recipient required when updating type of scheduled message."
-msgstr "Требуется получатель при обновлении типа запланированного сообщения."
+msgstr "При обновлении типа отложенного сообщения требуется получатель."
 
 #: zerver/views/scheduled_messages.py:70
 msgid "Topic required when updating scheduled message type to stream."
-msgstr ""
-"Требуется тема при обновлении типа запланированного сообщения для канала."
+msgstr "При обновлении типа отложенного сообщения для канала требуется тема."
 
 #: zerver/views/sentry.py:39
 msgid "Invalid request format"
@@ -6744,12 +6740,12 @@ msgstr "Не указано действие. Укажите хотя бы од�
 #: zerver/views/streams.py:525
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
-msgstr "{user_full_name} подписал вас на канал {stream_name}."
+msgstr "{user_full_name} подписал/а вас на канал {stream_name}."
 
 #: zerver/views/streams.py:531
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
-msgstr "{user_full_name} подписал вас на следующие каналы:"
+msgstr "{user_full_name} подписал/а вас на следующие каналы:"
 
 #: zerver/views/streams.py:647
 #, python-brace-format
@@ -6759,18 +6755,18 @@ msgstr "Не удалось получить доступ к каналу ({stre
 #: zerver/views/streams.py:660
 msgid "You can only invite other Zephyr mirroring users to private streams."
 msgstr ""
-"Вы можете только приглашать других пользователей Zephyr зеркалирования в "
+"Вы можете только приглашать других пользователей зеркалирования Zephyr в "
 "закрытые каналы."
 
 #: zerver/views/streams.py:772
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
-msgstr "{user_name} создал следующие каналы: {stream_str}."
+msgstr "{user_name} создал/а следующие каналы: {stream_str}."
 
 #: zerver/views/streams.py:774
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
-msgstr "{user_name} создал новый канал {stream_str}."
+msgstr "{user_name} создал/а новый канал {stream_str}."
 
 #: zerver/views/streams.py:775
 msgid "new streams"
@@ -6779,7 +6775,7 @@ msgstr "новые каналы"
 #: zerver/views/streams.py:807
 #, python-brace-format
 msgid "**{policy}** stream created by {user_name}. **Description:**"
-msgstr "**{policy}** канал создан пользователем {user_name}. **Описание:**"
+msgstr "**{policy}** канала создана пользоваталем {user_name}. **Описание:**"
 
 #: zerver/views/streams.py:1070
 #, python-brace-format
@@ -6931,7 +6927,7 @@ msgstr "Вы должны загрузить ровно один аватар."
 
 #: zerver/views/user_topics.py:50
 msgid "Topic is not muted"
-msgstr "Тема не заглушена"
+msgstr "Тема не отключена"
 
 #: zerver/views/users.py:123
 msgid "Cannot deactivate the only organization owner"

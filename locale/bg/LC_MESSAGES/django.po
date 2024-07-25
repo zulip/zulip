@@ -4,8 +4,8 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Vladimir Valchev, 2024
 # Transifex Bot <>, 2024
+# Vladimir Valchev, 2024
 # 
 #, fuzzy
 msgid ""
@@ -14,7 +14,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: Transifex Bot <>, 2024\n"
+"Last-Translator: Vladimir Valchev, 2024\n"
 "Language-Team: Bulgarian (https://app.transifex.com/zulip/teams/53893/bg/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -291,7 +291,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:2348
 msgid "Payment intent not found"
-msgstr ""
+msgstr "Сесията за таксуване не е открита"
 
 #: corporate/lib/stripe.py:2351
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
@@ -3323,7 +3323,7 @@ msgstr "Образование"
 
 #: templates/zerver/footer.html:27
 msgid "Research"
-msgstr ""
+msgstr "Проучвания"
 
 #: templates/zerver/footer.html:28
 msgid "Events & conferences"
@@ -5619,7 +5619,7 @@ msgstr "Моля, изберете едно от двете: 'stream' или 'st
 #: zerver/lib/streams.py:432 zerver/lib/streams.py:500
 #: zerver/views/streams.py:391 zerver/views/user_topics.py:101
 msgid "Invalid stream ID"
-msgstr ""
+msgstr "Невалидно ID на поток"
 
 #: zerver/lib/streams.py:475
 #, python-brace-format
@@ -6165,7 +6165,7 @@ msgstr "Гост"
 
 #: zerver/models.py:2709
 msgid "Web-public"
-msgstr ""
+msgstr "Уеб-публичен"
 
 #: zerver/models.py:2715
 msgid "Public"
@@ -6173,15 +6173,15 @@ msgstr "Публичен"
 
 #: zerver/models.py:2721
 msgid "Private, shared history"
-msgstr ""
+msgstr "Лична, споделена история"
 
 #: zerver/models.py:2727
 msgid "Private, protected history"
-msgstr ""
+msgstr "Лична, защитена история"
 
 #: zerver/models.py:2735
 msgid "Public, protected history"
-msgstr ""
+msgstr "Публична, защитена история"
 
 #: zerver/models.py:2755
 msgid "All stream members can post"
@@ -6206,7 +6206,7 @@ msgstr ""
 
 #: zerver/models.py:3447
 msgid "Custom emoji"
-msgstr ""
+msgstr "Персонализирано емоджи"
 
 #: zerver/models.py:3448
 msgid "Zulip extra emoji"
@@ -6252,7 +6252,7 @@ msgstr "Външен акаунт"
 
 #: zerver/models.py:5053
 msgid "Pronouns"
-msgstr ""
+msgstr "Местоимения"
 
 #: zerver/signals.py:105
 msgid "Unknown IP address"

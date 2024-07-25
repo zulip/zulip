@@ -1560,6 +1560,6 @@
   "{seconds} sec to edit": "{seconds} eiliad i'w olygu",
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "",
-  "{username} [said]({link_to_message}):": "{username} [dywedodd] ({link_to_message}):",
+  "{username} [said]({link_to_message}):": "{username} [dywedodd]({link_to_message}):",
   "{username} reacted with {emoji_name}": "Adweithiodd {username} gyda {emoji_name}"
 }

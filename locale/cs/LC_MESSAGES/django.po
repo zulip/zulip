@@ -4,10 +4,10 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Transifex Bot <>, 2023
 # Tomáš Hozman, 2023
 # Filip Vařecha <filip@varecha.work>, 2023
-# fri, 2023
+# Transifex Bot <>, 2024
+# fri, 2024
 # 
 #, fuzzy
 msgid ""
@@ -16,7 +16,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: fri, 2023\n"
+"Last-Translator: fri, 2024\n"
 "Language-Team: Czech (https://app.transifex.com/zulip/teams/53893/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1764,6 +1764,8 @@ msgid ""
 "Congratulations, you have created a new Zulip\n"
 "    organization: <b>%(realm_name)s</b>."
 msgstr ""
+"Vytvořili jste novou organizaci na Zulipu\n"
+"    blahopřejeme: <b>%(realm_name)s</b>."
 
 #: templates/zerver/emails/account_registered.html:24
 #: templates/zerver/emails/account_registered.txt:1
@@ -1776,6 +1778,8 @@ msgid ""
 "You've joined the Zulip organization <b>%(realm_name)s</b>.\n"
 "    "
 msgstr ""
+"Připojil/a jste se k organizaci na Zulipu <b>%(realm_name)s</b>.\n"
+"    "
 
 #: templates/zerver/emails/account_registered.html:32
 #, python-format
@@ -1861,6 +1865,8 @@ msgstr ""
 msgid ""
 "Congratulations, you have created a new Zulip organization: %(realm_name)s."
 msgstr ""
+"Vytvořili jste novou organizaci na Zulipu\n"
+"blahopřejeme: %(realm_name)s."
 
 #: templates/zerver/emails/account_registered.txt:10
 #, python-format
@@ -6804,6 +6810,8 @@ msgid ""
 "Failed to migrate customer from server to realms. Please contact support for"
 " assistance."
 msgstr ""
+"Nepodařilo se přesunout zákazníka ze serveru do sféry. Obraťte se, prosím, "
+"na podporu a požádejte o pomoc."
 
 #: zilencer/views.py:1030
 msgid "Malformed audit log data"

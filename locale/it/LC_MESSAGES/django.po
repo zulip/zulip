@@ -6,8 +6,9 @@
 # Translators:
 # Matteo Piotto <matteo.piotto@welaika.com>, 2023
 # Maxxer <io@maxxer.it>, 2023
-# Transifex Bot <>, 2024
+# Davide Quagliotto, 2024
 # Andrea, 2024
+# Transifex Bot <>, 2024
 # 
 #, fuzzy
 msgid ""
@@ -16,7 +17,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: Andrea, 2024\n"
+"Last-Translator: Transifex Bot <>, 2024\n"
 "Language-Team: Italian (https://app.transifex.com/zulip/teams/53893/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -697,7 +698,7 @@ msgstr "Confermare"
 
 #: templates/corporate/billing.html:512
 msgid "Cancel upgrade"
-msgstr ""
+msgstr "Annulla aggiornamento"
 
 #: templates/corporate/communities.html:28
 msgid "Open communities directory"
@@ -754,7 +755,7 @@ msgstr "Tutto"
 #: templates/corporate/comparison_table_self_hosted.html:159
 #: templates/corporate/comparison_table_self_hosted.html:160
 msgid "Unlimited"
-msgstr ""
+msgstr "Illimitato"
 
 #: templates/corporate/comparison_table_self_hosted.html:106
 #: templates/corporate/comparison_table_self_hosted.html:107
@@ -999,7 +1000,7 @@ msgstr ""
 #: templates/corporate/comparison_table_self_hosted.html:1069
 #: templates/corporate/comparison_table_self_hosted.html:1076
 msgid "Supported"
-msgstr ""
+msgstr "Supportato"
 
 #: templates/corporate/comparison_table_self_hosted.html:121
 #: templates/corporate/comparison_table_self_hosted.html:131
@@ -1126,11 +1127,11 @@ msgstr ""
 #: templates/corporate/comparison_table_self_hosted.html:1038
 #: templates/corporate/comparison_table_self_hosted.html:1039
 msgid "Self-managed"
-msgstr ""
+msgstr "Autogestito"
 
 #: templates/corporate/comparison_table_self_hosted.html:157
 msgid "For organizations with up to 10 users"
-msgstr ""
+msgstr "Per organizzazioni con un massimo di 10 utenti"
 
 #: templates/corporate/comparison_table_self_hosted.html:864
 #: templates/corporate/comparison_table_self_hosted.html:1019
@@ -1145,7 +1146,7 @@ msgstr ""
 #: templates/corporate/comparison_table_self_hosted.html:1074
 #: templates/corporate/comparison_table_self_hosted.html:1075
 msgid "Not available"
-msgstr ""
+msgstr "Non disponibile"
 
 #: templates/corporate/development-community.html:23
 msgid "The Zulip development community"
@@ -1232,7 +1233,7 @@ msgstr "Disattivare la registrazione del server?"
 #: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:4
 #: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:16
 msgid "Plan management not available"
-msgstr ""
+msgstr "Gestione del piano non disponibile"
 
 #: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:18
 #, python-format
@@ -1247,6 +1248,14 @@ msgid ""
 "                        of the Zulip server to manage your plan.\n"
 "                        "
 msgstr ""
+"La gestione del piano non è disponibile per questa\n"
+"organizzazione, perché il tuo server Zulip è già su \n"
+"%(server_plan_name)spiano, che copre tutto\n"
+"organizzazioni su questo server. Segui il <a\n"
+"                        href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">registro\n"
+"nelle istruzioni </a>\n"
+"per <b>tutte le versioni precedenti</b>\n"
+"del server Zulip per gestire il tuo piano."
 
 #: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:29
 msgid ""
@@ -1255,6 +1264,9 @@ msgid ""
 "                        support_email }}\">contact support</a>.\n"
 "                        "
 msgstr ""
+"Per spostare il piano dal server a questo\n"
+"organizzazione o per altre domande, <a href=\"mailto:{{\n"
+"                        support_email }}\">contattare l'assistenza</a>."
 
 #: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:18
 msgid ""
@@ -1263,6 +1275,9 @@ msgid ""
 "                        hosted on this server already has an active plan.\n"
 "                        "
 msgstr ""
+"\n"
+"La gestione del piano per questo server non è disponibile perché almeno un'organizzazione\n"
+"ospitato su questo server ha già un piano attivo."
 
 #: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:24
 #, python-format
@@ -1272,6 +1287,9 @@ msgid ""
 "                        organization instead, or <a href='mailto:%(support_email)s'>contact support</a> with any questions.\n"
 "                        "
 msgstr ""
+"\n"
+"<a href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">Accedi </a>per pianificare la gestione della tua\n"
+"organizzazione, oppure <a href='mailto:%(support_email)s'>contatta l'assistenza </a>per qualsiasi domanda."
 
 #: templates/corporate/self-hosting.html:31
 msgid "Zulip for business"
@@ -2327,7 +2345,7 @@ msgid ""
 "href=\"mailto:%(email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
 "Hai domande o feedback da condividere? <a "
-"href=\"mailto:%(email)s\">Contattaci</a> - saremmo felici di aiutarti!"
+"href=\"mailto:%(email)s\">Contattaci</a> — saremmo felici di aiutarti!"
 
 #: templates/zerver/emails/missed_message.html:17
 #, python-format
@@ -2424,7 +2442,7 @@ msgid ""
 "preferences</a>."
 msgstr ""
 "Rispondi a questa mail direttamente, <a href=\"%(narrow_url)s\">guardalo "
-"dentro in %(realm_name)s Zulip</a>, o <a href=\"%(notif_url)s\">gestire le "
+"dentro in %(realm_name)s Zulip</a>, o <a href=\"%(notif_url)s\">gestisci le "
 "preferenze e-mail</a>."
 
 #: templates/zerver/emails/missed_message.html:48
@@ -2534,13 +2552,13 @@ msgid ""
 "immediately at %(support_email)s."
 msgstr ""
 "L'email associata al tuo account Zulip è stata cambiata recentemente in "
-"%(new_email)s. Se non ha richiesto questo cambiamento, per favore contattaci"
-" immediatamente su %(support_email)s."
+"%(new_email)s. Se non hai richiesto questo cambiamento, per favore "
+"contattaci immediatamente su %(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
 msgid "Best,"
-msgstr "Migliore, "
+msgstr "Grazie,"
 
 #: templates/zerver/emails/notify_change_in_email.html:14
 #: templates/zerver/emails/notify_change_in_email.txt:7
@@ -2560,8 +2578,8 @@ msgid ""
 "immediately at <%(support_email)s>."
 msgstr ""
 "L'email associata al tuo account Zulip è stato cambiato recentemente in "
-"%(new_email)s. Se non ha richiesto questo cambiamento, per favore contattaci"
-" immediatamente a <%(support_email)s>."
+"%(new_email)s. Se non hai richiesto questo cambiamento, per favore "
+"contattaci immediatamente a <%(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.html:4
 #, python-format
@@ -2609,7 +2627,7 @@ msgstr "Indirizzo IP: %(device_ip)s"
 #: templates/zerver/emails/notify_new_login.html:33
 #: templates/zerver/emails/notify_new_login.txt:14
 msgid "If this was you, great! There's nothing else you need to do."
-msgstr "Se fossi tu, fantastico! Non c'è nient'altro che devi fare."
+msgstr "Se sei stato tu, fantastico! Non c'è nient'altro che devi fare."
 
 #: templates/zerver/emails/notify_new_login.html:36
 #, python-format
@@ -2619,7 +2637,7 @@ msgid ""
 "contact us immediately at %(support_email)s."
 msgstr ""
 "Se non riconosci questo accesso o pensi che il tuo account possa essere "
-"stato compromesso, per cortesia<a href=\"%(reset_link)s\">reimposta la tua "
+"stato compromesso, per cortesia <a href=\"%(reset_link)s\">reimposta la tua "
 "password</a> o contattaci immediatamente su %(support_email)s."
 
 #: templates/zerver/emails/notify_new_login.html:40
@@ -3228,6 +3246,8 @@ msgid ""
 "If you could list Zulip as a sponsor on your website, we would really "
 "appreciate it!"
 msgstr ""
+"Se potessi elencare Zulip come sponsor sul tuo sito web, lo apprezzeremmo "
+"davvero!"
 
 #: templates/zerver/find_account.html:4
 msgid "Find your accounts"
@@ -3386,7 +3406,7 @@ msgstr "Guida al contributo"
 
 #: templates/zerver/footer.html:72
 msgid "Development community"
-msgstr "Community  di sviluppo"
+msgstr "Community di sviluppo"
 
 #: templates/zerver/footer.html:75
 msgid "Translation"
@@ -4143,7 +4163,7 @@ msgstr "{user} si è appena registrato su Zulip. (totale: {user_count})"
 #: zerver/actions/create_user.py:261
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
-msgstr "{user} ha accettato il tuo invito ad unirti a Zulip!"
+msgstr "{user} ha accettato il tuo invito ad unirsi a Zulip!"
 
 #: zerver/actions/create_user.py:643
 msgid ""
@@ -6477,7 +6497,7 @@ msgstr "L'invito è già stato revocato"
 #: zerver/views/invite.py:224
 #, python-brace-format
 msgid "Invalid stream ID {stream_id}. No invites were sent."
-msgstr "ID di canale non valido {stream_id}. Non sono state inviate inviti."
+msgstr "ID di canale non valido {stream_id}. Non sono stati inviati inviti."
 
 #: zerver/views/message_edit.py:99
 msgid "Message edit history is disabled in this organization"
@@ -7149,7 +7169,7 @@ msgstr "User_id o user_uuid mancanti"
 
 #: zilencer/views.py:433 zilencer/views.py:435
 msgid "Your plan doesn't allow sending push notifications."
-msgstr ""
+msgstr "Il tuo piano non consente l'invio di notifiche push."
 
 #: zilencer/views.py:631
 #, python-brace-format

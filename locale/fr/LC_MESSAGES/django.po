@@ -4,7 +4,6 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Transifex Bot <>, 2023
 # BRANDON THIBEAUX <thibeaux01@gmail.com>, 2023
 # Benjamin Somers <benjamin.somers@telecom-bretagne.eu>, 2023
 # Dorian Pigeau <dorian.pigeau@gmail.com>, 2023
@@ -14,6 +13,8 @@
 # lavamind <jerome@riseup.net>, 2023
 # Web Plankter <web.plankter@protonmail.com>, 2023
 # Sylvain R., 2023
+# sephii, 2024
+# Transifex Bot <>, 2024
 # 
 #, fuzzy
 msgid ""
@@ -22,7 +23,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: Sylvain R., 2023\n"
+"Last-Translator: Transifex Bot <>, 2024\n"
 "Language-Team: French (https://app.transifex.com/zulip/teams/53893/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -247,6 +248,8 @@ msgstr ""
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
+"Impossible de mettre à jour les licences dans la période de facturation en "
+"cours pour le plan d’essai."
 
 #: corporate/lib/stripe.py:2059 corporate/lib/stripe.py:2087
 msgid ""
@@ -275,6 +278,8 @@ msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
+"Impossible de changer les licences pour le prochain cycle de facturation "
+"pour un plan en cours de rétrogradation."
 
 #: corporate/lib/stripe.py:2102
 #, python-brace-format
@@ -287,7 +292,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:2117
 msgid "Nothing to change."
-msgstr "Rien à changer"
+msgstr "Rien à changer."
 
 #: corporate/lib/stripe.py:2322
 msgid "No customer for this organization!"
@@ -335,12 +340,12 @@ msgstr "Jeton d'accès à la facturation non valide."
 
 #: corporate/views/remote_billing_page.py:273
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "Le compte utilisateur n’existe pas encore."
 
 #: corporate/views/remote_billing_page.py:278
 #: corporate/views/remote_billing_page.py:691
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "Vous devez accepter les conditions d’utilisation pour continuer."
 
 #: corporate/views/remote_billing_page.py:504
 msgid ""
@@ -746,7 +751,7 @@ msgstr "Tous"
 #: templates/corporate/comparison_table_self_hosted.html:159
 #: templates/corporate/comparison_table_self_hosted.html:160
 msgid "Unlimited"
-msgstr ""
+msgstr "Illimité"
 
 #: templates/corporate/comparison_table_self_hosted.html:106
 #: templates/corporate/comparison_table_self_hosted.html:107
@@ -2004,6 +2009,7 @@ msgstr "Confirmer la modification de l'adresse email"
 #, python-format
 msgid "Verify your new email address for %(organization_host)s"
 msgstr ""
+"Vérifiez votre nouvelle adresse de courriel pour %(organization_host)s"
 
 #: templates/zerver/emails/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.txt:2
@@ -2014,7 +2020,7 @@ msgstr ""
 #: templates/zerver/emails/confirm_registration.txt:5
 #, python-format
 msgid "Organization type: %(organization_type)s"
-msgstr ""
+msgstr "Type d’organisation: %(organization_type)s"
 
 #: templates/zerver/emails/confirm_registration.html:16
 #: templates/zerver/emails/confirm_registration.txt:7
@@ -2209,7 +2215,8 @@ msgstr "Pour commencer, cliquez sur le bouton ci-dessous."
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
 msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
-msgstr "%(referrer_full_name)svous invite à rejoindre %(referrer_realm_name)s"
+msgstr ""
+"%(referrer_full_name)s vous invite à rejoindre %(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
@@ -2637,6 +2644,8 @@ msgid ""
 "<a href=\"%(invite_users)s\"><b>Invite your teammates</b></a> to explore "
 "with you and share their unique perspectives."
 msgstr ""
+"<a href=\"%(invite_users)s\"><b>Invitez vos coéquipiers</b></a> à explorer "
+"avec vous et à partager leurs points de vue."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:16
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:6
@@ -3054,6 +3063,8 @@ msgid ""
 "    Click the button below to log in.\n"
 "    "
 msgstr ""
+"\n"
+"Cliquez sur le bouton ci-dessous pour vous connecter."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:16
 #, python-format
@@ -3062,6 +3073,8 @@ msgid ""
 "    This link will expire in %(validity_in_hours)s hours.\n"
 "    "
 msgstr ""
+"\n"
+"Ce lien expirera dans %(validity_in_hours)s heures."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:24
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html:17
@@ -3084,12 +3097,12 @@ msgstr ""
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:4
 msgid "Click the link below to log in."
-msgstr ""
+msgstr "Cliquez surle lien ci-dessous pour vous connecter."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:4
 #, python-format
 msgid "This link will expire in %(validity_in_hours)s hours."
-msgstr ""
+msgstr "Ce lien expirera dans %(validity_in_hours)s heures."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:8
 #: templates/zerver/emails/remote_realm_billing_confirm_login.txt:6
