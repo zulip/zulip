@@ -19,9 +19,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-22 22:25+0000\n"
+"POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Davide Quagliotto, 2024\n"
+"Last-Translator: Andrea, 2020-2024\n"
 "Language-Team: Italian (http://app.transifex.com/zulip/zulip/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4569,6 +4569,10 @@ msgid ""
 "{error_message}"
 msgstr "Error sending message to channel {channel_name} via message notification email reply:\n{error_message}"
 
+#: zerver/lib/email_mirror.py:422
+msgid "Email with no subject"
+msgstr ""
+
 #: zerver/lib/email_notifications.py:130 zerver/lib/email_notifications.py:152
 msgid "Open Zulip to see the spoiler content"
 msgstr "Apri Zulip per vedere il contenuto dello spoiler"
@@ -5425,15 +5429,15 @@ msgstr "I dati degli iscritti non sono disponibili per questo canale"
 msgid "Unable to retrieve subscribers for private channel"
 msgstr "Impossibile recuperare gli iscritti al canale privato"
 
-#: zerver/lib/thumbnail.py:163
+#: zerver/lib/thumbnail.py:150
 msgid "Could not decode image; did you upload an image file?"
 msgstr "Impossibile decodificare l'immagine; hai caricato un file immagine?"
 
-#: zerver/lib/thumbnail.py:169
+#: zerver/lib/thumbnail.py:156
 msgid "Image size exceeds limit."
 msgstr "Le dimensioni dell'immagine superano il limite."
 
-#: zerver/lib/thumbnail.py:175
+#: zerver/lib/thumbnail.py:162
 msgid "Image is corrupted or truncated"
 msgstr "L'immagine è danneggiata o troncata"
 
@@ -5539,7 +5543,7 @@ msgstr "Invalido {var_name}: {msg}"
 #: zerver/lib/typed_endpoint.py:384
 #, python-brace-format
 msgid "{var_name} field is missing: {msg}"
-msgstr ""
+msgstr "{var_name} manca il campo: {msg}"
 
 #: zerver/lib/typed_endpoint_validators.py:31
 #: zerver/lib/typed_endpoint_validators.py:37
@@ -6468,7 +6472,7 @@ msgstr "**{policy}** canale creato da {user_name}. **Descrizione:**"
 #: zerver/views/streams.py:972
 #, python-brace-format
 msgid "{property} is not a boolean"
-msgstr ""
+msgstr "{property} non è un booleano"
 
 #: zerver/views/streams.py:975
 #, python-brace-format
@@ -6483,10 +6487,6 @@ msgstr "Non iscritto al canale ID {channel_id}"
 #: zerver/views/submessage.py:40
 msgid "Invalid json for submessage"
 msgstr "JSON invalido per sottomissione"
-
-#: zerver/views/thumbnail.py:43 zerver/views/upload.py:276
-msgid "<p>You are not authorized to view this file.</p>"
-msgstr "<p>Non sei autorizzato a visualizzare questo file.</p>"
 
 #: zerver/views/typing.py:41
 msgid "User has disabled typing notifications for channel messages"
@@ -6507,6 +6507,10 @@ msgstr "L'utente ha disattivato le notifiche di digitazione per i messaggi priva
 #: zerver/views/upload.py:266
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Questo file non esiste o è stato eliminato.</p>"
+
+#: zerver/views/upload.py:276
+msgid "<p>You are not authorized to view this file.</p>"
+msgstr "<p>Non sei autorizzato a visualizzare questo file.</p>"
 
 #: zerver/views/upload.py:374
 msgid "Invalid token"

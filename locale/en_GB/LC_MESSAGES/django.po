@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-22 22:25+0000\n"
+"POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: David Wood <heavy.spot0252@fuligin.ink>, 2022-2024\n"
 "Language-Team: English (United Kingdom) (http://app.transifex.com/zulip/zulip/language/en_GB/)\n"
@@ -4561,6 +4561,10 @@ msgid ""
 "{error_message}"
 msgstr "Error sending message to channel {channel_name} via message notification email reply:\n{error_message}"
 
+#: zerver/lib/email_mirror.py:422
+msgid "Email with no subject"
+msgstr ""
+
 #: zerver/lib/email_notifications.py:130 zerver/lib/email_notifications.py:152
 msgid "Open Zulip to see the spoiler content"
 msgstr "Open Zulip to see the spoiler content"
@@ -5417,15 +5421,15 @@ msgstr "Subscriber data is not available for this channel"
 msgid "Unable to retrieve subscribers for private channel"
 msgstr "Unable to retrieve subscribers for private channel"
 
-#: zerver/lib/thumbnail.py:163
+#: zerver/lib/thumbnail.py:150
 msgid "Could not decode image; did you upload an image file?"
 msgstr "Could not decode image; did you upload an image file?"
 
-#: zerver/lib/thumbnail.py:169
+#: zerver/lib/thumbnail.py:156
 msgid "Image size exceeds limit."
 msgstr "Image size exceeds limit."
 
-#: zerver/lib/thumbnail.py:175
+#: zerver/lib/thumbnail.py:162
 msgid "Image is corrupted or truncated"
 msgstr "Image is corrupted or truncated"
 
@@ -6476,10 +6480,6 @@ msgstr "Not subscribed to channel ID {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "Invalid json for submessage"
 
-#: zerver/views/thumbnail.py:43 zerver/views/upload.py:276
-msgid "<p>You are not authorized to view this file.</p>"
-msgstr "<p>You are not authorised to view this file.</p>"
-
 #: zerver/views/typing.py:41
 msgid "User has disabled typing notifications for channel messages"
 msgstr "User has disabled typing notifications for channel messages"
@@ -6499,6 +6499,10 @@ msgstr "User has disabled typing notifications for direct messages"
 #: zerver/views/upload.py:266
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>This file does not exist or has been deleted.</p>"
+
+#: zerver/views/upload.py:276
+msgid "<p>You are not authorized to view this file.</p>"
+msgstr "<p>You are not authorised to view this file.</p>"
 
 #: zerver/views/upload.py:374
 msgid "Invalid token"

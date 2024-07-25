@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-22 22:25+0000\n"
+"POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2019-2021,2024\n"
 "Language-Team: Turkish (http://app.transifex.com/zulip/zulip/language/tr/)\n"
@@ -4568,6 +4568,10 @@ msgid ""
 "{error_message}"
 msgstr ""
 
+#: zerver/lib/email_mirror.py:422
+msgid "Email with no subject"
+msgstr ""
+
 #: zerver/lib/email_notifications.py:130 zerver/lib/email_notifications.py:152
 msgid "Open Zulip to see the spoiler content"
 msgstr "Zulip'i açarak verileri önceden izleyin"
@@ -5424,15 +5428,15 @@ msgstr ""
 msgid "Unable to retrieve subscribers for private channel"
 msgstr ""
 
-#: zerver/lib/thumbnail.py:163
+#: zerver/lib/thumbnail.py:150
 msgid "Could not decode image; did you upload an image file?"
 msgstr "Resim dosyası açılamadı; resim dosyası mı yükledin?"
 
-#: zerver/lib/thumbnail.py:169
+#: zerver/lib/thumbnail.py:156
 msgid "Image size exceeds limit."
 msgstr "Resim boyutu limiti aşmaktadır."
 
-#: zerver/lib/thumbnail.py:175
+#: zerver/lib/thumbnail.py:162
 msgid "Image is corrupted or truncated"
 msgstr ""
 
@@ -6483,10 +6487,6 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr "Alt bildirim için geçersiz JSON"
 
-#: zerver/views/thumbnail.py:43 zerver/views/upload.py:276
-msgid "<p>You are not authorized to view this file.</p>"
-msgstr "<p>Bu dosyayı görüntülemeye yetkili değilsiniz.</p>"
-
 #: zerver/views/typing.py:41
 msgid "User has disabled typing notifications for channel messages"
 msgstr ""
@@ -6506,6 +6506,10 @@ msgstr "Kullanıcı doğrudan mesajlar için yazma bildirimlerini devre dışı 
 #: zerver/views/upload.py:266
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Bu dosya mevcut değil veya silindi.</p>"
+
+#: zerver/views/upload.py:276
+msgid "<p>You are not authorized to view this file.</p>"
+msgstr "<p>Bu dosyayı görüntülemeye yetkili değilsiniz.</p>"
 
 #: zerver/views/upload.py:374
 msgid "Invalid token"

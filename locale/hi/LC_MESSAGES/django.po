@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-22 22:25+0000\n"
+"POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Aruna Maurya, 2022\n"
 "Language-Team: Hindi (http://app.transifex.com/zulip/zulip/language/hi/)\n"
@@ -4564,6 +4564,10 @@ msgid ""
 "{error_message}"
 msgstr ""
 
+#: zerver/lib/email_mirror.py:422
+msgid "Email with no subject"
+msgstr ""
+
 #: zerver/lib/email_notifications.py:130 zerver/lib/email_notifications.py:152
 msgid "Open Zulip to see the spoiler content"
 msgstr ""
@@ -5420,15 +5424,15 @@ msgstr ""
 msgid "Unable to retrieve subscribers for private channel"
 msgstr ""
 
-#: zerver/lib/thumbnail.py:163
+#: zerver/lib/thumbnail.py:150
 msgid "Could not decode image; did you upload an image file?"
 msgstr ""
 
-#: zerver/lib/thumbnail.py:169
+#: zerver/lib/thumbnail.py:156
 msgid "Image size exceeds limit."
 msgstr ""
 
-#: zerver/lib/thumbnail.py:175
+#: zerver/lib/thumbnail.py:162
 msgid "Image is corrupted or truncated"
 msgstr ""
 
@@ -6479,10 +6483,6 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr ""
 
-#: zerver/views/thumbnail.py:43 zerver/views/upload.py:276
-msgid "<p>You are not authorized to view this file.</p>"
-msgstr ""
-
 #: zerver/views/typing.py:41
 msgid "User has disabled typing notifications for channel messages"
 msgstr ""
@@ -6501,6 +6501,10 @@ msgstr ""
 
 #: zerver/views/upload.py:266
 msgid "<p>This file does not exist or has been deleted.</p>"
+msgstr ""
+
+#: zerver/views/upload.py:276
+msgid "<p>You are not authorized to view this file.</p>"
 msgstr ""
 
 #: zerver/views/upload.py:374
