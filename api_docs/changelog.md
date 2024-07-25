@@ -20,6 +20,10 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 277**
+
+No changes; feature level used for Zulip 9.0 release.
+
 **Feature level 276**
 
 * [Markdown message formatting](/api/message-formatting#image-previews):
