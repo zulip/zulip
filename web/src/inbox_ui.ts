@@ -436,7 +436,6 @@ function format_topic(
         is_topic: true,
         stream_id,
         topic_name: topic,
-        stream_name: stream_data.get_stream_name_from_id(stream_id),
         unread_count: topic_unread_count,
         conversation_key: get_topic_key(stream_id, topic),
         topic_url: hash_util.by_stream_topic_url(stream_id, topic),
