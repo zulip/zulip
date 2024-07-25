@@ -273,10 +273,7 @@ function display_image(payload: Payload): void {
         $img.attr("srcset", `${payload.source} ${payload.original_width_px}w`);
         $img.attr("sizes", "100vw");
     } else {
-        // this could be just assigned to src, but srcset is used here
-        // for consistency
-        $img.attr("srcset", `${payload.source} ${payload.original_width_px}w`);
-        $img.attr("sizes", "100vw");
+        $img.attr("src", payload.source);
     }
     $img_container.empty();
     $img_container.append($img).show();
