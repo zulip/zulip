@@ -13,6 +13,7 @@ import * as overlays from "./overlays";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as stream_data from "./stream_data";
+import * as user_card_popover from "./user_card_popover";
 
 function restore_draft(draft_id) {
     const draft = drafts.draft_model.getDraft(draft_id);
@@ -190,6 +191,10 @@ export function launch() {
             const $draft_row = $(this).closest(".overlay-message-row");
             const draft_id = $draft_row.attr("data-draft-id");
             restore_draft(draft_id);
+        });
+
+        $("#drafts_table .restore-overlay-message").on("click", ".user-mention", (e) => {
+            user_card_popover.unsaved_message_user_mention_event_handler(e);
         });
 
         $("#drafts_table .overlay_message_controls .delete-overlay-message").on(
