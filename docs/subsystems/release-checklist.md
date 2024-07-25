@@ -103,8 +103,8 @@ preparing a new release.
     to both zulip.git and zulip-internal.git to get a correct version
     number for future Cloud deployments.
   - Add the new release to `.github/ISSUE_TEMPLATE/2_bug_report.md`.
-  - Consider removing a few old releases from ReadTheDocs; we keep about
-    two years of back-versions.
+  - Consider removing a few old releases from the issue template and
+    ReadTheDocs; we keep about two years of back-versions.
   - Update Transifex to add the new `4.x` style release branch
     resources and archive the previous release branch's resources with
     the "Translations can't translate this resource" setting.
