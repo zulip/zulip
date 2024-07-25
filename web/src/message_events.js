@@ -405,6 +405,7 @@ export function update_messages(events) {
                     message_view.show(current_filter.terms(), {
                         then_select_id: current_selected_id,
                         trigger: "stream/topic change",
+                        force_rerender: true,
                     });
                 }
             }

@@ -124,17 +124,19 @@ function create_and_update_message_list(filter, id_info, opts) {
     let msg_list;
     let restore_rendered_list = false;
     const is_combined_feed_global_view = filter.is_in_home();
-    for (const list of message_lists.all_rendered_message_lists()) {
-        if (is_combined_feed_global_view && list.data.filter.is_in_home()) {
-            if (opts.then_select_id > 0 && !list.msg_id_in_fetched_range(opts.then_select_id)) {
-                // We don't have the target message in the current rendered list.
-                // Read MessageList.should_preserve_current_rendered_state for details.
+    if (!opts.force_rerender) {
+        for (const list of message_lists.all_rendered_message_lists()) {
+            if (is_combined_feed_global_view && list.data.filter.is_in_home()) {
+                if (opts.then_select_id > 0 && !list.msg_id_in_fetched_range(opts.then_select_id)) {
+                    // We don't have the target message in the current rendered list.
+                    // Read MessageList.should_preserve_current_rendered_state for details.
+                    break;
+                }
+
+                msg_list = list;
+                restore_rendered_list = true;
                 break;
             }
-
-            msg_list = list;
-            restore_rendered_list = true;
-            break;
         }
     }
 
@@ -322,13 +324,13 @@ export function show(raw_terms, opts) {
     const filter = new Filter(raw_terms);
     filter.try_adjusting_for_moved_with_target();
 
-    if (try_rendering_locally_for_same_narrow(filter, opts)) {
+    if (!opts.force_rerender && try_rendering_locally_for_same_narrow(filter, opts)) {
         return;
     }
 
     const is_combined_feed_global_view = filter.is_in_home();
     const is_narrowed_to_combined_feed_view = narrow_state.filter()?.is_in_home();
-    if (is_narrowed_to_combined_feed_view && is_combined_feed_global_view) {
+    if (!opts.force_rerender && is_narrowed_to_combined_feed_view && is_combined_feed_global_view) {
         // If we're already looking at the combined feed, exit without doing any work.
         return;
     }
