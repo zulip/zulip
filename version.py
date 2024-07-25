@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 281  # Last bumped for realm_can_delete_any_message_group
+API_FEATURE_LEVEL = 282  # Last bumped for removing "POST users/me/tutorial_status"
 
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
