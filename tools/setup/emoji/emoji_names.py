@@ -1245,7 +1245,10 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1f64e-200d-2640": {"canonical_name": "woman_pouting", "aliases": []},
     "1f64e-200d-2642": {"canonical_name": "man_pouting", "aliases": []},
     "1f64e": {"canonical_name": "person_pouting", "aliases": []},
-    "1f64f": {"canonical_name": "pray", "aliases": ["welcome", "thank_you", "namaste"]},
+    "1f64f": {
+        "canonical_name": "folded_hands",
+        "aliases": ["welcome", "thank_you", "namaste", "pray"],
+    },
     "1f680": {"canonical_name": "rocket", "aliases": []},
     "1f681": {"canonical_name": "helicopter", "aliases": []},
     "1f682": {"canonical_name": "train", "aliases": ["steam_locomotive"]},

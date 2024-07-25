@@ -179,7 +179,10 @@ CUSTOM_EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     # welcome and thank_you from
     # https://emojipedia.org/person-with-folded-hands/, namaste from Indian
     # culture
-    "1f64f": {"canonical_name": "pray", "aliases": ["welcome", "thank_you", "namaste"]},
+    "1f64f": {
+        "canonical_name": "folded_hands",
+        "aliases": ["welcome", "thank_you", "namaste", "pray"],
+    },
     # done_deal seems like a natural addition
     "1f91d": {"canonical_name": "handshake", "aliases": ["done_deal"]},
     "1f44d": {"canonical_name": "+1", "aliases": ["thumbs_up", "like"]},
