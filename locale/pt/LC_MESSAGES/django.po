@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-22 22:25+0000\n"
+"POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Leonardo Pimenta, 2024\n"
 "Language-Team: Portuguese (http://app.transifex.com/zulip/zulip/language/pt/)\n"
@@ -3454,11 +3454,11 @@ msgstr "Pular para conteúdo principal"
 
 #: templates/zerver/portico_error_pages/auth_subdomain.html:4
 msgid "Authentication subdomain error"
-msgstr ""
+msgstr "Erro no subdomínio de autenticação"
 
 #: templates/zerver/portico_error_pages/auth_subdomain.html:11
 msgid "Authentication subdomain"
-msgstr ""
+msgstr "Subdomínio de autenticação"
 
 #: templates/zerver/portico_error_pages/auth_subdomain.html:13
 msgid ""
@@ -3505,7 +3505,7 @@ msgstr ""
 #: templates/zerver/portico_error_pages/realm_creation_disabled.html:4
 #: templates/zerver/portico_error_pages/realm_creation_disabled.html:11
 msgid "Organization creation link required"
-msgstr ""
+msgstr "Link de criação de organização necessário"
 
 #: templates/zerver/portico_error_pages/realm_creation_disabled.html:13
 msgid ""
@@ -3612,7 +3612,7 @@ msgstr "Sua organização foi reativada com sucesso."
 
 #: templates/zerver/realm_reactivation_link_error.html:4
 msgid "Organization reactivation link expired or invalid"
-msgstr ""
+msgstr "Link de reativação da organização expirado ou inválido"
 
 #: templates/zerver/realm_reactivation_link_error.html:13
 msgid "The organization reactivation link has expired or is not valid."
@@ -3653,7 +3653,7 @@ msgstr "Criar uma nova organização."
 
 #: templates/zerver/register.html:5
 msgid "Registration"
-msgstr ""
+msgstr "Registro"
 
 #: templates/zerver/register.html:21
 msgid "Create your organization"
@@ -3668,7 +3668,7 @@ msgid ""
 "\n"
 "            <p>Enter your account details to complete registration.</p>\n"
 "            "
-msgstr ""
+msgstr "\n            <p>Insira os detalhes da sua conta para concluir o registro.</p>\n            "
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
@@ -3803,7 +3803,7 @@ msgstr "Verifique seu e-mail em alguns minutos para concluir o processo."
 
 #: templates/zerver/social_auth_select_email.html:4
 msgid "Select account for authentication"
-msgstr ""
+msgstr "Selecione a conta para autenticação"
 
 #: templates/zerver/social_auth_select_email.html:10
 msgid ""
@@ -4564,6 +4564,10 @@ msgstr "Rascunho não existe"
 msgid ""
 "Error sending message to channel {channel_name} via message notification email reply:\n"
 "{error_message}"
+msgstr ""
+
+#: zerver/lib/email_mirror.py:422
+msgid "Email with no subject"
 msgstr ""
 
 #: zerver/lib/email_notifications.py:130 zerver/lib/email_notifications.py:152
@@ -5422,15 +5426,15 @@ msgstr "Os dados de inscrito não estão disponíveis para este canal"
 msgid "Unable to retrieve subscribers for private channel"
 msgstr ""
 
-#: zerver/lib/thumbnail.py:163
+#: zerver/lib/thumbnail.py:150
 msgid "Could not decode image; did you upload an image file?"
 msgstr "Não foi possível decodificar a imagem; você enviou um arquivo de imagem?"
 
-#: zerver/lib/thumbnail.py:169
+#: zerver/lib/thumbnail.py:156
 msgid "Image size exceeds limit."
 msgstr "Tamanho da imagem excede limite."
 
-#: zerver/lib/thumbnail.py:175
+#: zerver/lib/thumbnail.py:162
 msgid "Image is corrupted or truncated"
 msgstr ""
 
@@ -6481,10 +6485,6 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr "Json inválido para sub-mensagem"
 
-#: zerver/views/thumbnail.py:43 zerver/views/upload.py:276
-msgid "<p>You are not authorized to view this file.</p>"
-msgstr "<p>Você não está autorizado a visualizar este arquivo.</p>"
-
 #: zerver/views/typing.py:41
 msgid "User has disabled typing notifications for channel messages"
 msgstr "O usuário desativou as notificações de digitação para mensagens de canal."
@@ -6504,6 +6504,10 @@ msgstr "O usuário desativou as notificações de digitação para mensagens dir
 #: zerver/views/upload.py:266
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Esse arquivo não existe ou foi apagado.</p>"
+
+#: zerver/views/upload.py:276
+msgid "<p>You are not authorized to view this file.</p>"
+msgstr "<p>Você não está autorizado a visualizar este arquivo.</p>"
 
 #: zerver/views/upload.py:374
 msgid "Invalid token"
