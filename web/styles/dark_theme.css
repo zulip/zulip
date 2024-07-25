@@ -160,10 +160,6 @@
 
     #scroll-to-bottom-button-container {
         background: transparent;
-
-        & span {
-            color: hsl(0deg 0% 27%);
-        }
     }
 
     .main-view-banner {
