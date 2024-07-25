@@ -591,22 +591,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # us, pre-thumbnailing.
     avatar_hash = models.CharField(null=True, max_length=64)
 
-    # TODO: TUTORIAL_STATUS was originally an optimization designed to
-    # allow us to skip querying the OnboardingStep table when loading
-    # /. This optimization is no longer effective, so it's possible we
-    # should delete it.
-    TUTORIAL_WAITING = "W"
-    TUTORIAL_STARTED = "S"
-    TUTORIAL_FINISHED = "F"
-    TUTORIAL_STATES = (
-        (TUTORIAL_WAITING, "Waiting"),
-        (TUTORIAL_STARTED, "Started"),
-        (TUTORIAL_FINISHED, "Finished"),
-    )
-    tutorial_status = models.CharField(
-        default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1
-    )
-
     zoom_token = models.JSONField(default=None, null=True)
 
     objects = UserManager()

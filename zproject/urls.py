@@ -176,7 +176,6 @@ from zerver.views.streams import (
 )
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail
-from zerver.views.tutorial import set_tutorial_status
 from zerver.views.typing import send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
@@ -423,16 +422,6 @@ v1_api_and_json_patterns = [
             mark_onboarding_step_as_read,
             # This endpoint is low priority for documentation as
             # it is part of the web app-specific tutorial.
-            {"intentionally_undocumented"},
-        ),
-    ),
-    # users/me/tutorial_status -> zerver.views.tutorial
-    rest_path(
-        "users/me/tutorial_status",
-        POST=(
-            set_tutorial_status,
-            # This is a relic of an old Zulip tutorial model and
-            # should be deleted.
             {"intentionally_undocumented"},
         ),
     ),
