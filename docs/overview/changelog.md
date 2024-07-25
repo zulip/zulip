@@ -5,9 +5,9 @@ This page contains the release history for the Zulip server. See also the
 
 ## Zulip Server 9.x series
 
-### Zulip Server 9.0-beta1
+### Zulip Server 9.0
 
-_Released 2024-07-18_
+_Draft release notes_
 
 #### Highlights
 
@@ -27,7 +27,8 @@ _Released 2024-07-18_
 - When you paste content into the compose box, Zulip will now do its
   best to preserve the formatting, including links, bulleted lists,
   bold, italics, and more. Pasting as plain text remains an
-  alternative option.
+  alternative option, and the plain-text form is also placed into
+  browser undo history for convenient access.
 - Clicking a channel in the left sidebar now, by default, navigates
   you to the most recent topic in the channel, rather than the
   interleaved channel feed view. This behavior is controlled by a new
@@ -48,6 +49,12 @@ _Released 2024-07-18_
   now disable them.
 - Topics and messages now load much faster when you open the web or
   desktop app.
+- Uploaded images are now thumbnailed, making images load much faster
+  in all clients. Newly uploaded animated images shown in the message
+  feed now only animate on hover by default rather than continuously,
+  with a user setting to control the animation. (Previously uploaded
+  images, and image previews of third-party links, continue to
+  directly use the original image).
 - Zulip's new-user and new-organization onboarding experiences have
   been completely reworked.
 - Redesigned all popovers with a more modern visual style, better
@@ -65,7 +72,7 @@ _Released 2024-07-18_
 - Sending a message to a different conversation now, by default,
   navigates to that conversation; a new setting controls this behavior.
 - Added new `Alt+P` keyboard shortcut to toggle the Markdown preview
-  in the compose box.
+  in the compose box and message edit UI.
 - Added new `Shift+V` keyboard shortcut to view read receipts.
 - The `Shift+M` keyboard shortcut for muting now works in the recent
   conversations and inbox views.
@@ -133,6 +140,8 @@ _Released 2024-07-18_
   pills.
 - Improved the efficiency of Zulip's internal statistics system, both
   in terms of CPU and storage usage.
+- Improved topics used by the incoming email system for emails with an
+  empty subject line.
 - Improved tooltips to better clarify how drafts work.
 - Improved the mobile web compose area experience.
 - Improved left sidebar channel menu to be divided between personal
@@ -143,7 +152,8 @@ _Released 2024-07-18_
 - Improved performance/scalability of the Zulip server, including more
   efficient algorithms for fetching message history and presence.
 - New incoming webhook integrations for Patreon and GitHub Sponsors,
-  and reimplemented the Grafana integration.
+  and reimplemented the Grafana integration. Removed integrations for
+  some defunct products, like Solano CI.
 - Simplified the process for configuring integrations with custom
   filtering of events, and rewrote the documentation for most
   integrations for readability and simplicity.
@@ -173,7 +183,7 @@ _Released 2024-07-18_
   export API that enabled it.
 - Removed multiple queue workers, reducing memory usage.
 - Reimplemented image processing (avatars, logos, custom emoji, etc.)
-  using libvips as preparation for a new image thumbnailing system.
+  using libvips as part of the transition to the new image thumbnailing system.
 - Major API/internals changes towards supporting granting permissions
   to custom groups, not just the built-in roles. User-facing
   functionality is coming soon in a future release.
@@ -217,6 +227,28 @@ _Released 2024-07-18_
   the service, by setting `ZULIP_SERVICE_PUSH_NOTIFICATIONS = False`
   and `ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS=True`.
 
+- The Zulip server now thumbnails uploaded images for faster loading
+  and reduced bandwidth usage; note that only images uploaded after
+  upgrading to 9.0 benefit from this feature at present. Previews of
+  linked images/websites continue to use the original third-party
+  images, and thus have not yet been optimized in this way.
+- Installations that any point in the past enabled the
+  `THUMBNAIL_IMAGES` setting may have broken image previews on
+  messages containing previews of third-party image links while that
+  setting was enabled, due to incompatibilities between its approach
+  and the new thumbnailing system. The `THUMBNAIL_IMAGES` setting was
+  part of the experimental Thumbor-based thumbnailing system, which
+  was offered as an option starting with Zulip 1.9.0 but removed 3
+  years ago in Zulip 4.0. We recommend using [this chat.zulip.org
+  thread][thumbor-remediation-topic] to discuss remediation options
+  for this issue before upgrading to 9.0 if you believe your
+  installation may have used this setting.
+- We're aware of a slow memory leak in the new image thumbnailing
+  queue worker. The leak is slow enough that for most installations,
+  this is managed fully by the weekly server restart that Zulip does
+  to manage memory leak risk. Installations with very little free
+  memory that use a lot of images should consider adding a couple
+  gigabytes of swap before upgrading to avoid memory pressure.
 - The Zulip server now contains a KaTeX server worker, designed to
   make bulk-rendering LaTeX efficient. It has minimal memory
   footprint, but can be disabled using the `katex_server` [deployment
@@ -226,6 +258,8 @@ _Released 2024-07-18_
   installations with thousands of users, especially
   `0544_copy_avatar_images`, which re-thumbnails every uploaded avatar
   using Zulip's new image-processing pipeline.
+
+[thumbor-remediation-topic]: https://chat.zulip.org/#narrow/stream/31-production-help/topic/THUMBNAIL_IMAGES.20remediation
 
 ## Zulip Server 8.x series
 
