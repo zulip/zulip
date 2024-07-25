@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 280**
+
+* `POST users/me/tutorial_status`: Deprecated the endpoint as it
+  is no longer in use.
+
 Feature levels 278-279 are reserved for future use in 9.x maintenance
 releases.
 
