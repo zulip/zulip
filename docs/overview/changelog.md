@@ -11,40 +11,40 @@ _Draft release notes_
 
 #### Highlights
 
-- Added support for Ubuntu 24.04. Dropped support for Ubuntu 20.04.
-- Added a configurable "Zulip updates" system that sends automated
-  messages describing changes to Zulip that are relevant to end
-  users. See the upgrade notes for details.
-- Streams have been renamed to Channels. The functionality remains
-  exactly the same, and bots do not need to be updated.
-- The All messages view has been renamed to Combined feed, and
-  its internals have been reworked, fixing many subtle bugs.
-- To make reading more comfortable, Zulip has been redesigned with a
-  larger font size and line spacing. The previous configuration is
-  available via the "Compact mode" setting.
-- The main message feed search feature has been redesigned with
-  user-friendly pills for search operators.
-- When you paste content into the compose box, Zulip will now do its
-  best to preserve the formatting, including links, bulleted lists,
-  bold, italics, and more. Pasting as plain text remains an
-  alternative option, and the plain-text form is also placed into
-  browser undo history for convenient access.
-- Clicking a channel in the left sidebar now, by default, navigates
-  you to the most recent topic in the channel, rather than the
-  interleaved channel feed view. This behavior is controlled by a new
-  setting.
+- Added support for Ubuntu 24.04, and dropped support for Ubuntu 20.04.
+- To make it easier to discover what’s new in Zulip, important product changes
+  are now announced via automated messages, which are shipped with the Zulip
+  server version that includes the new feature. See the upgrade notes for
+  details.
+- To better match terminology familiar from other apps, “streams” have been
+  renamed to “channels” across the app in this release. The functionality
+  remains exactly the same, and integrations do not need to be updated for this
+  transition.
+- For clarity and consistency, three key message views that show multiple
+  conversations at once are now labeled “Combined feed” (previously “All
+  messages”), “Channel feed”, and “Direct message feed”.
+- To make reading more comfortable, Zulip has been redesigned with a larger font
+  size and line spacing. Because personal preferences vary, the previous design
+  remains available via the compact mode setting.
+- Redesigned the main search with pills for search filters, making it easier to
+  use.
+- When you paste content into the compose box, Zulip will now do its best to
+  preserve the formatting, including links, bulleted lists, bold, italics, and
+  more. If you don’t need the formatting, you can undo it with `Ctrl+Z`, or
+  paste as plain text.
+- To make it easier to read your messages topic-by-topic, channel links in the
+  left sidebar now take you directly to the top topic in the channel. You can
+  configure them to go to the channel feed instead (previously the only option).
 - To quote and reply to part of a message, you can now select the part
   that you want to quote.
 - The right sidebar has been redesigned to highlight users in the
   current channel or direct message conversation. You can also now
   hide the channel/user lists in the sidebars to reduce distraction.
-- When you start composing, the most recently edited draft for the
-  conversation you are composing to now automatically appears in the
-  compose box. You can always save a draft and start a new message
-  using the send options menu next to the Send button.
-- Added a new top-level view to show reactions to your messages, as
-  well as new search operators to search followed topics or messages
-  with emoji reactions.
+- When you start composing, the most recently edited draft for the conversation
+  you are composing to now automatically appears in the compose box. You can
+  always save a draft for later and start a new message.
+- Added a Reactions view to show how others have responded to your messages with
+  emoji reactions. You can also search all messages with reactions.
 - If you'd prefer not to see notifications when others type, you can
   now disable them.
 - Topics and messages now load much faster when you open the web or
@@ -55,10 +55,10 @@ _Draft release notes_
   with a user setting to control the animation. (Previously uploaded
   images, and image previews of third-party links, continue to
   directly use the original image).
-- Zulip's new-user and new-organization onboarding experiences have
-  been completely reworked.
-- Redesigned all popovers with a more modern visual style, better
-  icons, and improved accessibility for screen readers.
+- The onboarding experience has been redesigned to introduce core Zulip concepts
+  when they first become relevant.
+- Redesigned all popovers with a cleaner look, better icons, and improved screen
+  reader accessibility.
 - Added a new `with` narrow parameter for implementing permanent links
   to topics designed to handle topics being renamed or marked as
   resolved. This operator is not used in 9.0, but likely will be used
@@ -169,6 +169,7 @@ _Draft release notes_
 - Fixed several subtle bugs involving message feed scroll position.
 - Fixed the Home/End keyboard shortcuts not behaving correctly in very
   long views.
+- Reworked the internals of the combined feed view, fixing many subtle bugs.
 - Fixed several subtle scrolling, flickering, and live-update bugs in
   the recent conversations view.
 - Fixed several bugs involving uploading files while editing messages.
