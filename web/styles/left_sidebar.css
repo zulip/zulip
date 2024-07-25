@@ -1342,7 +1342,7 @@ li.topic-list-item {
     margin-right: var(--left-sidebar-right-margin);
     color: hsl(240deg 10% 50%);
 
-    & span {
+    & .streams_subheader_name {
         display: flex;
         flex-direction: row;
         width: 100%;
@@ -1351,8 +1351,8 @@ li.topic-list-item {
         opacity: 0.5;
     }
 
-    & span::before,
-    span::after {
+    & .streams_subheader_name::before,
+    .streams_subheader_name::after {
         content: " ";
         flex: 1 1;
         vertical-align: middle;
@@ -1361,11 +1361,11 @@ li.topic-list-item {
         opacity: 0.2;
     }
 
-    & span::before {
+    & .streams_subheader_name::before {
         margin-right: 0.5em;
     }
 
-    & span::after {
+    & .streams_subheader_name::after {
         margin-left: 0.5em;
     }
 }

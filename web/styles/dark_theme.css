@@ -895,8 +895,8 @@
     .streams_subheader {
         color: hsl(240deg 11% 85%);
 
-        & span::before,
-        span::after {
+        & .streams_subheader_name::before,
+        .streams_subheader_name::after {
             border-color: hsl(240deg 11% 85%);
         }
     }
