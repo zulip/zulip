@@ -379,7 +379,7 @@ function get_props_for_popover_centering(
 export function toggle_popover_menu(
     target: tippy.ReferenceElement,
     popover_props: Partial<tippy.Props>,
-    options?: {show_as_overlay_on_mobile: boolean},
+    options?: {show_as_overlay_on_mobile: boolean; show_as_overlay_always: boolean},
 ): tippy.Instance {
     const instance = target._tippy;
     if (instance) {
@@ -391,7 +391,11 @@ export function toggle_popover_menu(
 
     // If the window is mobile-sized, we will render the
     // popover centered on the screen as an overlay.
-    if (options?.show_as_overlay_on_mobile && window.innerWidth <= media_breakpoints_num.md) {
+    if (
+        (options?.show_as_overlay_on_mobile === true &&
+            window.innerWidth <= media_breakpoints_num.md) ||
+        options?.show_as_overlay_always === true
+    ) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),
         };
