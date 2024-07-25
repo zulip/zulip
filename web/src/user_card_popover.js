@@ -415,7 +415,13 @@ function load_medium_avatar(user, $elt) {
 // user is the user whose profile to show.
 // sender_id is the user id of the sender for the message we are
 // showing the popover from.
-function toggle_user_card_popover_for_message(element, user, sender_id, on_mount) {
+function toggle_user_card_popover_for_message(
+    element,
+    user,
+    sender_id,
+    has_message_context,
+    on_mount,
+) {
     const $elt = $(element);
 
     const is_sender_popover = sender_id === user.user_id;
@@ -423,12 +429,27 @@ function toggle_user_card_popover_for_message(element, user, sender_id, on_mount
         user,
         $elt,
         is_sender_popover,
-        true,
+        has_message_context,
         "respond_personal_button",
         "message_user_card",
         "right",
         on_mount,
     );
+}
+
+export function unsaved_message_user_mention_event_handler(e) {
+    e.stopPropagation();
+
+    const id_string = $(e.target).attr("data-user-id");
+    // Do not open popover for @all mention
+    if (id_string === "*") {
+        return;
+    }
+
+    const user_id = Number.parseInt(id_string, 10);
+    const user = people.get_by_user_id(user_id);
+
+    toggle_user_card_popover_for_message($(e.target), user, current_user.user_id, false);
 }
 
 // This function serves as the entry point for toggling
@@ -453,7 +474,7 @@ export function toggle_sender_info() {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
-    toggle_user_card_popover_for_message($sender[0], user, message.sender_id, () => {
+    toggle_user_card_popover_for_message($sender[0], user, message.sender_id, true, () => {
         if (!page_params.is_spectator) {
             focus_user_card_popover_item();
         }
@@ -525,7 +546,7 @@ function register_click_handlers() {
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         const user = people.get_by_user_id(message.sender_id);
-        toggle_user_card_popover_for_message(this, user, message.sender_id);
+        toggle_user_card_popover_for_message(this, user, message.sender_id, true);
     });
 
     $("#main_div").on("click", ".user-mention", function (e) {
@@ -556,7 +577,7 @@ function register_click_handlers() {
                 return;
             }
         }
-        toggle_user_card_popover_for_message(this, user, message.sender_id);
+        toggle_user_card_popover_for_message(this, user, message.sender_id, true);
     });
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
