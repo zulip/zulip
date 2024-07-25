@@ -702,7 +702,7 @@ div.overlay {
     color: hsl(0deg 0% 0%);
     border-radius: 4px;
 
-    & span {
+    .color-animated-button-text {
         color: hsl(0deg 0% 0%);
     }
 
@@ -711,7 +711,7 @@ div.overlay {
         background-color: hsl(240deg 96% 68%);
         color: hsl(0deg 0% 100%);
 
-        & span {
+        .color-animated-button-text {
             color: hsl(0deg 0% 100%);
             transition: all 0.2s ease;
         }
