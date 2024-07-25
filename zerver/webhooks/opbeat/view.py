@@ -79,7 +79,7 @@ def format_object(
         else:
             key = key_list[0]
             key_raw = key.lstrip("!").lstrip("#").lstrip('"')
-            if key_raw != "html_url" and key_raw != "subject" and ":" not in key_raw:
+            if key_raw not in {"html_url", "subject"} and ":" not in key_raw:
                 value = get_value(obj, key_raw)
                 if key.startswith("!"):
                     message += f"\n>{value}"
