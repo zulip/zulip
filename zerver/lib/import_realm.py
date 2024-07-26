@@ -628,6 +628,68 @@ def fix_channel_narrow_url(
         return None
 
 
+def fix_direct_message_narrow_url(
+    url: str, user_id_map: dict[int, int], message_id_map: dict[int, int], realm: Realm
+) -> str | None:
+    """
+    Remaps the object IDs (user ID(s) & message ID) in a given
+    narrow url.
+
+    Returns the updated narrow URL or `None` if the operation
+    fails.
+    """
+    try:
+        terms_handler = get_filter_instance_of_url(url, realm)
+    except (BadNarrowOperatorError, InvalidOperatorCombinationError):
+        return None
+
+    if not terms_handler:
+        return None
+
+    # Fix DM recipient IDs
+    dm_term = get_a_term_from_filter(terms_handler, "dm")
+    if dm_term is None:
+        return None
+
+    dm_recipients = dm_term.operand
+    if isinstance(dm_recipients, str | int):
+        return None
+
+    new_dm_recipient = [user_id_map[user_id] for user_id in dm_recipients if user_id in user_id_map]
+    if new_dm_recipient == []:
+        return None
+
+    new_dm_term = NarrowTerm(
+        operator=dm_term.operator, operand=new_dm_recipient, negated=dm_term.negated
+    )
+    try:
+        terms_handler.update_term(dm_term, new_dm_term)
+    except AssertionError:
+        return None
+
+    message_terms = terms_handler.get_terms_with_message_id()
+    if len(message_terms) != 1:
+        return terms_handler.generate_dm_with_url()
+
+    # Fix message ID
+    message_term = message_terms[0]
+
+    new_message_term = remap_terms_object_id(message_term, message_id_map)
+    if new_message_term is None:
+        # Fallback to create a topic URL if we fail to remap
+        # the message ID.
+        return terms_handler.generate_topic_url()
+
+    try:
+        terms_handler.update_term(message_term, new_message_term)
+    except AssertionError:
+        return None
+    try:
+        return terms_handler.generate_message_url()
+    except InvalidOperatorCombinationError:
+        return None
+
+
 def fix_narrow_urls_in_message_content(rendered_content: str, realm: Realm) -> str | None:
     """
     Remaps the object IDs of narrow links in message contents.
@@ -635,6 +697,8 @@ def fix_narrow_urls_in_message_content(rendered_content: str, realm: Realm) -> s
      - Channel link
      - Topic link
      - Channel message link
+     - DM/GDM-with link
+     - DM/GDM message link
     """
     # TODO: All exported narrow links in messages are broken,
     # this only fixes the most common cases. We can extend this
@@ -648,8 +712,18 @@ def fix_narrow_urls_in_message_content(rendered_content: str, realm: Realm) -> s
         "#narrow/channel",
         "#narrow/stream",
     )
+    DM_NARROW_PREFIXES = (
+        "#narrow/dm",
+        "#narrow/pm-with",
+    )
 
-    narrow_links = find_relative_links_from_soup(soup, [*CHANNEL_NARROW_PREFIXES])
+    narrow_links = find_relative_links_from_soup(
+        soup,
+        [
+            *CHANNEL_NARROW_PREFIXES,
+            *DM_NARROW_PREFIXES,
+        ],
+    )
 
     if narrow_links == []:
         return None
@@ -666,6 +740,15 @@ def fix_narrow_urls_in_message_content(rendered_content: str, realm: Realm) -> s
             )
         ):
             link["href"] = updated_channel_narrow_url
+        elif narrow_link.startswith(DM_NARROW_PREFIXES) and (
+            updated_dm_narrow_url := fix_direct_message_narrow_url(
+                narrow_link,
+                ID_MAP["user_profile"],
+                ID_MAP["message"],
+                realm,
+            )
+        ):
+            link["href"] = updated_dm_narrow_url
 
     return str(soup)
 
