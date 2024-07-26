@@ -204,7 +204,7 @@ export function clear_for_testing(): void {
     asset_map.clear();
 }
 
-export function canonical_url_of_media(media: HTMLMediaElement): string {
+export function canonical_url_of_media(media: HTMLMediaElement | HTMLImageElement): string {
     let media_string = media.src;
     if (!media_string) {
         return "";
@@ -225,7 +225,7 @@ export function canonical_url_of_media(media: HTMLMediaElement): string {
 
 export function render_lightbox_media_list(displayed_source: string): void {
     if (!is_open) {
-        const message_media_list = $<HTMLMediaElement>(
+        const message_media_list = $<HTMLMediaElement | HTMLImageElement>(
             ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
         ).toArray();
         const $lightbox_media_list = $("#lightbox_overlay .image-list").empty();
@@ -381,7 +381,7 @@ function display_video(payload: Payload): void {
 
 export function build_open_media_function(
     on_close: (() => void) | undefined,
-): ($media: JQuery<HTMLMediaElement>) => void {
+): ($media: JQuery<HTMLMediaElement | HTMLImageElement>) => void {
     if (on_close === undefined) {
         on_close = function () {
             remove_video_players();
@@ -391,7 +391,7 @@ export function build_open_media_function(
         };
     }
 
-    return function ($media: JQuery<HTMLMediaElement>): void {
+    return function ($media: JQuery<HTMLMediaElement | HTMLImageElement>): void {
         // This is used both for clicking on media in the messagelist, as well as clicking on images
         // in the media list under the lightbox when it is open.
         const payload = parse_media_data($media[0]!);
@@ -424,7 +424,7 @@ export function show_from_selected_message(): void {
     let $message = $message_selected;
     // This is a function to satisfy eslint unicorn/no-array-callback-reference
     const media_classes = (): string => ".message_inline_image img, .message_inline_image video";
-    let $media = $message.find<HTMLMediaElement>(media_classes());
+    let $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
     let $prev_traverse = false;
 
     // First, we walk upwards/backwards, starting with the current
@@ -442,12 +442,12 @@ export function show_from_selected_message(): void {
                 break;
             } else {
                 $message = rows.last_message_in_group($prev_message_group);
-                $media = $message.find<HTMLMediaElement>(media_classes());
+                $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
                 continue;
             }
         }
         $message = $message.prev();
-        $media = $message.find<HTMLMediaElement>(media_classes());
+        $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
     }
 
     if ($prev_traverse) {
@@ -458,12 +458,12 @@ export function show_from_selected_message(): void {
                     break;
                 } else {
                     $message = rows.first_message_in_group($next_message_group);
-                    $media = $message.find<HTMLMediaElement>(media_classes());
+                    $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
                     continue;
                 }
             }
             $message = $message.next();
-            $media = $message.find<HTMLMediaElement>(media_classes());
+            $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
         }
     }
 
@@ -474,7 +474,7 @@ export function show_from_selected_message(): void {
 }
 
 // retrieve the metadata from the DOM and store into the asset_map.
-export function parse_media_data(media: HTMLMediaElement): Payload {
+export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Payload {
     const canonical_url = canonical_url_of_media(media);
     if (asset_map.has(canonical_url)) {
         // Use the cached value
@@ -621,7 +621,7 @@ export function initialize(): void {
             e.preventDefault();
             // prevent the message compose dialog from happening.
             e.stopPropagation();
-            const $img = $(this).find<HTMLMediaElement>("img");
+            const $img = $(this).find<HTMLImageElement>("img");
             open_image($img);
         },
     );
@@ -647,7 +647,7 @@ export function initialize(): void {
                 `.message_row a[href='${CSS.escape($(this).attr("data-url")!)}'] video`,
             );
         } else {
-            $original_media_element = $<HTMLMediaElement>(
+            $original_media_element = $<HTMLImageElement>(
                 `.message_row a[href='${CSS.escape($(this).attr("data-url")!)}'] img`,
             );
         }
@@ -694,7 +694,7 @@ export function initialize(): void {
 
     $("#lightbox_overlay").on("click", ".lightbox-zoom-reset", () => {
         if (!$("#lightbox_overlay .lightbox-zoom-reset").hasClass("disabled")) {
-            const $img = $("#lightbox_overlay").find<HTMLMediaElement>(".image-preview img");
+            const $img = $("#lightbox_overlay").find<HTMLImageElement>(".image-preview img");
             open_image($img);
             pan_zoom_control.reset();
         }
