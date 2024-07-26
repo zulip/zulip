@@ -652,6 +652,17 @@ export function initialize(): void {
             );
         }
 
+        // If $original_media_element comes back empty, that means that
+        // something in the message list has changed (e.g., a moved or
+        // deleted message, or the deletion of a media element that was
+        // available when the lightbox opened). In that event, we continue
+        // to display whatever media is up in the lightbox, and remove
+        // the thumbnail from the media list.
+        if ($original_media_element.length === 0) {
+            $(this).remove();
+            return;
+        }
+
         open_image($original_media_element);
 
         if (!$(".image-list .image.selected").hasClass("lightbox_video") || !is_video) {
