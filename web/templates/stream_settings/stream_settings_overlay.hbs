@@ -28,7 +28,7 @@
                 </div>
                 <div class="no-streams-to-show">
                     <div class="subscribed_streams_tab_empty_text">
-                        <span>
+                        <span class="settings-empty-option-text">
                             {{t 'You are not subscribed to any channels.'}}
                             {{#if can_view_all_streams}}
                             <a href="#channels/all">{{t 'View all channels'}}</a>
@@ -36,13 +36,13 @@
                         </span>
                     </div>
                     <div class="not_subscribed_streams_tab_empty_text">
-                        <span>
+                        <span class="settings-empty-option-text">
                             {{t 'No channels to show.'}}
                             <a href="#channels/all">{{t 'View all channels'}}</a>
                         </span>
                     </div>
                     <div class="all_streams_tab_empty_text">
-                        <span>
+                        <span class="settings-empty-option-text">
                             {{t 'There are no channels you can view in this organization.'}}
                             {{#if can_create_streams}}
                                 <a href="#channels/new">{{t 'Create a channel'}}</a>
@@ -60,7 +60,7 @@
                 <div class="nothing-selected">
                     {{#if can_create_streams}}
                     <button type="button" class="create_stream_button animated-purple-button">{{t 'Create channel' }}</button>
-                    <span>
+                    <span class="settings-empty-option-text">
                         {{#tr}}
                             First time? Read our <z-link>guidelines</z-link> for creating and naming channels.
                             {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
