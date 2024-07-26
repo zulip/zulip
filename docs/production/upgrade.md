@@ -330,8 +330,8 @@ instructions for other supported platforms.
    step will re-install Zulip's configuration in any case.
 
    :::{tip}
-   Before you can run `do-release-upgrade`, you need to also have the latest packages installed `apt update && apt upgrade`.
-   While upgrading, you man see an error `The following packages have been kept back: <name of packages>`.
+   Before you can run `do-release-upgrade`, you need to have the latest packages installed with `apt update && apt upgrade`.
+   While upgrading, you may encounter an error `The following packages have been kept back: <name of packages>`.
    In order to update packages that are held back, you can run `apt install <name of packages>`.
    :::
 
@@ -340,6 +340,7 @@ instructions for other supported platforms.
    ```bash
    /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
    ```
+   
    :::{tip}
    Because of the system upgrade, the virtual environment that this script runs in may not work anymore.
    In order to recreate the virtual environment, please run:
