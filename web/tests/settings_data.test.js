@@ -263,52 +263,6 @@ run_test("user_can_invite_others_to_realm_nobody_case", () => {
     assert.equal(settings_data.user_can_invite_users_by_email(), false);
 });
 
-run_test("user_can_create_web_public_streams", () => {
-    current_user.is_owner = true;
-    realm.server_web_public_streams_enabled = true;
-    realm.realm_enable_spectator_access = true;
-    realm.realm_create_web_public_stream_policy =
-        settings_config.create_web_public_stream_policy_values.nobody.code;
-    assert.equal(settings_data.user_can_create_web_public_streams(), false);
-
-    realm.realm_create_web_public_stream_policy =
-        settings_config.create_web_public_stream_policy_values.by_owners_only.code;
-    assert.equal(settings_data.user_can_create_web_public_streams(), true);
-
-    realm.realm_enable_spectator_access = false;
-    realm.server_web_public_streams_enabled = true;
-    assert.equal(settings_data.user_can_create_web_public_streams(), false);
-
-    realm.realm_enable_spectator_access = true;
-    realm.server_web_public_streams_enabled = false;
-    assert.equal(settings_data.user_can_create_web_public_streams(), false);
-
-    realm.realm_enable_spectator_access = false;
-    realm.server_web_public_streams_enabled = false;
-    assert.equal(settings_data.user_can_create_web_public_streams(), false);
-
-    realm.realm_enable_spectator_access = true;
-    realm.server_web_public_streams_enabled = true;
-    current_user.is_owner = false;
-    current_user.is_admin = true;
-    assert.equal(settings_data.user_can_create_web_public_streams(), false);
-
-    realm.realm_create_web_public_stream_policy =
-        settings_config.create_web_public_stream_policy_values.by_admins_only.code;
-    assert.equal(settings_data.user_can_create_web_public_streams(), true);
-
-    current_user.is_admin = false;
-    current_user.is_moderator = true;
-    assert.equal(settings_data.user_can_create_web_public_streams(), false);
-
-    realm.realm_create_web_public_stream_policy =
-        settings_config.create_web_public_stream_policy_values.by_moderators_only.code;
-    assert.equal(settings_data.user_can_create_web_public_streams(), true);
-
-    current_user.is_moderator = false;
-    assert.equal(settings_data.user_can_create_web_public_streams(), false);
-});
-
 run_test("user_email_not_configured", () => {
     const user_email_not_configured = settings_data.user_email_not_configured;
 
@@ -472,4 +426,41 @@ run_test("user_can_create_private_streams", () => {
         "realm_can_create_private_channel_group",
         settings_data.user_can_create_private_streams,
     );
+});
+
+run_test("user_can_create_web_public_streams", () => {
+    realm.server_web_public_streams_enabled = true;
+    realm.realm_enable_spectator_access = true;
+
+    test_realm_group_settings(
+        "realm_can_create_web_public_channel_group",
+        settings_data.user_can_create_web_public_streams,
+    );
+    const owner_user_id = 4;
+    const owners = {
+        name: "Admins",
+        id: 3,
+        members: new Set([owner_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    current_user.user_id = owner_user_id;
+    user_groups.initialize({realm_user_groups: [owners]});
+
+    realm.server_web_public_streams_enabled = true;
+    realm.realm_enable_spectator_access = true;
+    realm.realm_can_create_web_public_channel_group = owners.id;
+    assert.equal(settings_data.user_can_create_web_public_streams(), true);
+
+    realm.realm_enable_spectator_access = false;
+    realm.server_web_public_streams_enabled = true;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
+
+    realm.realm_enable_spectator_access = true;
+    realm.server_web_public_streams_enabled = false;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
+
+    realm.realm_enable_spectator_access = false;
+    realm.server_web_public_streams_enabled = false;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
 });
