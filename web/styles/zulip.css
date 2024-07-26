@@ -802,7 +802,7 @@ strong {
         top: 0.1667em;
     }
 
-    .tooltip-privacy-icon span {
+    .privacy-tooltip-stream-name {
         margin-left: 1.25em;
     }
 }
