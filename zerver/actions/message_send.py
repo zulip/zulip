@@ -1237,17 +1237,10 @@ def already_sent_mirrored_message_id(message: Message) -> int | None:
     return None
 
 
-def extract_stream_indicator(s: str) -> str | int:
+def extract_stream_indicator(data: str | int | list[int] | list[str]) -> str | int:
     # Users can pass stream name as either an id or a name,
     # and if they choose to pass a name, they may JSON encode
     # it for legacy reasons.
-
-    try:
-        data = orjson.loads(s)
-    except orjson.JSONDecodeError:
-        # If there was no JSON encoding, then we just
-        # have a raw stream name.
-        return s
 
     # We should stop supporting this odd use case
     # once we improve our documentation.
@@ -1267,14 +1260,9 @@ def extract_stream_indicator(s: str) -> str | int:
     raise JsonableError(_("Invalid data type for channel"))
 
 
-def extract_private_recipients(s: str) -> list[str] | list[int]:
+def extract_private_recipients(data: str | int | list[int] | list[str]) -> list[str] | list[int]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
-
-    try:
-        data = orjson.loads(s)
-    except orjson.JSONDecodeError:
-        data = s
 
     if isinstance(data, str):
         data = data.split(",")
@@ -1295,7 +1283,7 @@ def extract_private_recipients(s: str) -> list[str] | list[int]:
     return get_validated_user_ids(data)
 
 
-def get_validated_user_ids(user_ids: Collection[int]) -> list[int]:
+def get_validated_user_ids(user_ids: Collection[Any]) -> list[int]:
     for user_id in user_ids:
         if not isinstance(user_id, int):
             raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
@@ -1303,7 +1291,7 @@ def get_validated_user_ids(user_ids: Collection[int]) -> list[int]:
     return list(set(user_ids))
 
 
-def get_validated_emails(emails: Collection[str]) -> list[str]:
+def get_validated_emails(emails: Collection[Any]) -> list[str]:
     for email in emails:
         if not isinstance(email, str):
             raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
