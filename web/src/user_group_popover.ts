@@ -143,6 +143,14 @@ export function register_click_handlers(): void {
             toggle_user_group_info_popover(this, undefined);
         },
     );
+
+    // This does not cover drafts because drafts has a direct
+    // event listener which receives the event before our delegated
+    // event listener.
+    $("body").on("click", ".messagebox .user-group-mention", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        toggle_user_group_info_popover(this, undefined);
+    });
 }
 
 function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {

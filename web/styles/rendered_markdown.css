@@ -173,7 +173,8 @@
     }
 
     /* We show the default pointer for `@all` mention */
-    .user-mention:not([data-user-id="*"]) {
+    .user-mention:not([data-user-id="*"]),
+    .user-group-mention {
         /* We have to explicitly mention this for compose box preview
            where cursor is set to not-allowed */
         cursor: pointer;
