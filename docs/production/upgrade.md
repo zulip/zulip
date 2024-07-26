@@ -329,13 +329,28 @@ instructions for other supported platforms.
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
-4. As root, upgrade the database to the latest version of PostgreSQL:
+   :::{tip}
+   Before you can run `do-release-upgrade`, you need to also have the latest packages installed `apt update && apt upgrade`.
+   While upgrading, you man see an error `The following packages have been kept back: <name of packages>`.
+   In order to update packages that are held back, you can run `apt install <name of packages>`.
+   :::
+
+5. As root, upgrade the database to the latest version of PostgreSQL:
 
    ```bash
    /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
    ```
+   :::{tip}
+   Because of the system upgrade, the virtual environment that this script runs in may not work anymore.
+   In order to recreate the virtual environment, please run:
 
-5. Next, we need to reinstall the current version of Zulip, which
+   ```bash
+   rm -rf /srv/zulip-venv-cache
+   /home/zulip/deployments/current/scripts/lib/create-production-venv /home/zulip/deployments/current
+   ```
+   :::
+
+7. Next, we need to reinstall the current version of Zulip, which
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python and rewrite Zulip's
    full-text search indexes to work with the upgraded dictionary
