@@ -1,7 +1,6 @@
 import inspect
 import os
 import types
-from collections import abc
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any, Union, get_args, get_origin
 from unittest.mock import MagicMock, patch
@@ -341,9 +340,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         elif origin in (Union, types.UnionType):
             subtypes = [self.get_standardized_argument_type(st) for st in get_args(t)]
             return self.get_type_by_priority(subtypes)
-        elif origin in [list, abc.Sequence]:
-            [st] = get_args(t)
-            return (list, self.get_standardized_argument_type(st))
         raise AssertionError(f"Unknown origin {origin}")
 
     def render_openapi_type_exception(
