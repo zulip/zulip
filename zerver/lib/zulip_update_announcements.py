@@ -8,6 +8,7 @@ from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 
+from zerver.actions.message_edit import check_update_message
 from zerver.actions.message_send import (
     do_send_messages,
     internal_prep_group_direct_message,
@@ -15,6 +16,7 @@ from zerver.actions.message_send import (
 )
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.lib.topic import messages_for_topic
+from zerver.models.messages import Message
 from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import Realm
 from zerver.models.users import UserProfile, get_system_bot
@@ -426,3 +428,43 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
 
     if new_zulip_update_announcements_level is not None:
         send_messages_and_update_level(realm, new_zulip_update_announcements_level, messages)
+
+
+def update_announcement_content_for_realm(realm: Realm, level: int, old_content: str) -> None:
+    zulip_update_announcements_message_ids = []
+    message_ids_queryset = RealmAuditLog.objects.filter(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        extra_data__contains={"property": "zulip_update_announcements_level"},
+    ).values_list("extra_data__zulip_update_announcements_message_ids", flat=True)
+    for message_ids in message_ids_queryset:
+        zulip_update_announcements_message_ids.extend(message_ids)
+
+    if len(zulip_update_announcements_message_ids) == 0:
+        return
+
+    target_message = Message.objects.filter(
+        id__in=zulip_update_announcements_message_ids, content=old_content
+    ).first()
+
+    if target_message is None:
+        return
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    updated_content = get_zulip_update_announcements_message_for_level(level)
+
+    # Doesn't support editing messages by bots.
+    check_update_message(
+        sender,
+        target_message.id,
+        content=updated_content,
+    )
+
+
+def update_zulip_update_announcement_content(level: int, old_content: str) -> None:
+    realms = Realm.objects.filter(zulip_update_announcements_level__gte=level)
+    for realm in realms:
+        try:
+            update_announcement_content_for_realm(realm, level, old_content)
+        except Exception as e:
+            logging.exception(e)
