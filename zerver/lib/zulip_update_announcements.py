@@ -170,7 +170,7 @@ viewer]({view_images_help_url})."""
 
 We make many improvements to Zulip beyond what we can share here. Learn about
 additional feature highlights, and other Zulip project updates since December
-2024, in the [blog post]({blog_post_9_0_url}) announcing today's release of
+2023, in the [blog post]({blog_post_9_0_url}) announcing today's release of
 Zulip Server 9.0.
 """
                 if settings.CORPORATE_ENABLED
