@@ -142,6 +142,12 @@
 .modal__btn:focus,
 .modal__btn:hover {
     transform: scale(1.05);
+    /* The extremely subtle 1.05 scale can cause
+       a gap to appear between the outline and
+       button background color; this negative
+       offset preserves the scale effect, but also
+       covers any tiny gaps owing to subtle scaling. */
+    outline-offset: -1px;
 }
 
 .dialog_exit_button {
