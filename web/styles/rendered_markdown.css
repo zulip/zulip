@@ -172,6 +172,13 @@
         display: inline-block;
     }
 
+    /* We show the default pointer for `@all` mention */
+    .user-mention:not([data-user-id="*"]) {
+        /* We have to explicitly mention this for compose box preview
+           where cursor is set to not-allowed */
+        cursor: pointer;
+    }
+
     .user-mention {
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-direct-mention);
