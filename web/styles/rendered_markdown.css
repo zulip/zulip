@@ -173,9 +173,6 @@
     }
 
     .user-mention {
-        /* We have to explicitly mention this for compose box preview
-           where cursor is set to not-allowed */
-        cursor: pointer;
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-direct-mention);
 
@@ -187,6 +184,13 @@
         &:hover {
             background-color: var(--color-background-text-hover-direct-mention);
         }
+    }
+
+    .user-mention,
+    .user-group-mention {
+        /* We have to explicitly mention this for compose box preview
+           where cursor is set to not-allowed */
+        cursor: pointer;
     }
 
     /* We show the same cursor as the parent element for `@all`

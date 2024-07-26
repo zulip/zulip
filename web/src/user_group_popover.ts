@@ -143,6 +143,13 @@ export function register_click_handlers(): void {
             toggle_user_group_info_popover(this, undefined);
         },
     );
+
+    // Note: Message feeds and drafts have their own direct event listeners
+    // that run before this one and call stopPropagation.
+    $("body").on("click", ".messagebox .user-group-mention", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        toggle_user_group_info_popover(this, undefined);
+    });
 }
 
 function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
