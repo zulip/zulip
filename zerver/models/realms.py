@@ -298,10 +298,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Who in the organization is allowed to create streams.
-    create_web_public_stream_policy = models.PositiveSmallIntegerField(
-        default=CreateWebPublicStreamPolicyEnum.OWNERS_ONLY
-    )
-
     can_create_public_channel_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
@@ -649,7 +645,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
-        create_web_public_stream_policy=int,
         default_code_block_language=str,
         default_language=str,
         delete_own_message_policy=int,
@@ -1188,6 +1183,12 @@ def get_corresponding_policy_value_for_group_setting(
     # If the group setting is not set to one of the role based groups
     # that the previous enum setting allowed, then just return the
     # enum value corresponding to largest group.
+    if group_setting_name == "can_create_web_public_channel_group":
+        # Largest group allowed to create web-public channels is
+        # moderators group.
+        assert valid_policy_enums == Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES
+        return Realm.POLICY_MODERATORS_ONLY
+
     assert valid_policy_enums == Realm.COMMON_POLICY_TYPES
     return Realm.POLICY_MEMBERS_ONLY
 

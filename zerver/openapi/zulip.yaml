@@ -4298,13 +4298,6 @@ paths:
                                             **Changes**: New in Zulip 10.0 (feature level 280). Previously
                                             `realm_create_web_public_stream_policy` field used to control
                                             the permission to create web-public channels.
-                                    create_web_public_stream_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can create web public channels in this organization.
-
-                                        **Changes**: New in Zulip 5.0 (feature level 103).
                                     default_code_block_language:
                                       type: string
                                       description: |
@@ -4409,8 +4402,8 @@ paths:
 
                                         Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
                                         [server setting][server-settings] is enabled on the Zulip
-                                        server. See also the `create_web_public_stream_policy` realm
-                                        setting.
+                                        server. See also the `can_create_web_public_channel_group`
+                                        realm setting.
 
                                         [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 
@@ -9719,7 +9712,7 @@ paths:
                     to be enabled on the Zulip server in question, the organization
                     to have enabled the `enable_spectator_access` realm setting, and
                     the current use to have permission under the organization's
-                    `create_web_public_stream_policy` realm setting.
+                    `can_create_web_public_channel_group` realm setting.
 
                     [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 
@@ -15535,22 +15528,27 @@ paths:
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_create_web_public_stream_policy:
                         type: integer
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Has no effect and should not be displayed in settings UI
-                          unless the Zulip server has the `WEB_PUBLIC_STREAMS_ENABLED`
-                          server-level setting enabled and the organization has enabled
-                          the `enable_spectator_access` realm setting.
+                          A deprecated representation of a superset of the users who
+                          have permission to create web-public channels in the
+                          organization, available for backwards-compatibility. Clients
+                          should use `can_create_web_public_channel_group` instead.
 
-                          The [policy][permission-level] for which users can create web
-                          public channels in this organization. Allowed
-                          values are:
+                          It is an enum with the following possible values, corresponding
+                          to roles/system groups:
 
                           - 2 = Admins only
                           - 4 = Admins and moderators only
                           - 6 = Nobody
                           - 7 = Owners only
+
+                          **Changes**: Deprecated in Zulip 10.0 (feature level 280) and
+                          replaced by `realm_can_create_web_public_channel_group`, which
+                          supports finer resolution of configurations, resulting in this
+                          property being inaccurate following that transition.
 
                           **Changes**: Added in Zulip 5.0 (feature level 103).
 
@@ -15786,7 +15784,7 @@ paths:
 
                           Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
                           [server setting][server-settings] is enabled on the Zulip
-                          server. See also the `create_web_public_stream_policy` realm
+                          server. See also the `can_create_web_public_channel_group` realm
                           setting.
 
                           **Changes**: New in Zulip 5.0 (feature level 109).
@@ -18943,7 +18941,7 @@ paths:
                     to be enabled on the Zulip server in question, the organization
                     to have enabled the `enable_spectator_access` realm setting, and
                     the current use to have permission under the organization's
-                    `create_web_public_stream_policy` realm setting.
+                    `can_create_web_public_channel_group` realm setting.
 
                     [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 

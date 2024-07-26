@@ -303,6 +303,13 @@ def fetch_initial_state_data(
                 realm, "can_create_private_channel_group", Realm.COMMON_POLICY_TYPES
             )
         )
+        state["realm_create_web_public_stream_policy"] = (
+            get_corresponding_policy_value_for_group_setting(
+                realm,
+                "can_create_web_public_channel_group",
+                Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
+            )
+        )
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
@@ -1287,6 +1294,13 @@ def apply_event(
                         )
                         state["can_create_private_streams"] = user_profile.has_permission(key)
                     else:
+                        state["realm_create_web_public_stream_policy"] = (
+                            get_corresponding_policy_value_for_group_setting(
+                                user_profile.realm,
+                                "can_create_web_public_channel_group",
+                                Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
+                            )
+                        )
                         state["can_create_web_public_streams"] = user_profile.has_permission(key)
 
                     state["can_create_streams"] = (
