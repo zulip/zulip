@@ -124,7 +124,6 @@ export function get_org_type_dropdown_options() {
 }
 
 const simple_dropdown_properties = [
-    "realm_create_web_public_stream_policy",
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
     "realm_add_custom_emoji_policy",
@@ -363,7 +362,7 @@ function set_digest_emails_weekday_visibility() {
 
 function set_create_web_public_stream_dropdown_visibility() {
     settings_components.change_element_block_display_property(
-        "id_realm_create_web_public_stream_policy",
+        "id_realm_can_create_web_public_channel_group",
         realm.server_web_public_streams_enabled &&
             realm.zulip_plan_is_not_limited &&
             realm.realm_enable_spectator_access,
@@ -506,6 +505,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_can_access_all_users_group":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_create_web_public_channel_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,

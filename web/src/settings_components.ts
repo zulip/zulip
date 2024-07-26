@@ -210,7 +210,6 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 type simple_dropdown_realm_settings = Pick<
     typeof realm,
     | "realm_create_private_stream_policy"
-    | "realm_create_web_public_stream_policy"
     | "realm_invite_to_stream_policy"
     | "realm_user_group_edit_policy"
     | "realm_add_custom_emoji_policy"
@@ -479,6 +478,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["can_mention_group", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
+    ["realm_can_create_web_public_channel_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
 ]);
@@ -793,6 +793,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_access_all_users_group":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_create_web_public_channel_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
@@ -988,6 +989,7 @@ export function populate_data_for_realm_settings_request(
                 const realm_group_settings_using_new_api_format = new Set([
                     "can_create_private_channel_group",
                     "can_create_public_channel_group",
+                    "can_create_web_public_channel_group",
                     "direct_message_initiator_group",
                     "direct_message_permission_group",
                 ]);
