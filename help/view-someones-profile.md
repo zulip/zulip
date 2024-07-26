@@ -58,6 +58,19 @@ Additional tabs showing:
 
 {end_tabs}
 
+## Share someone's profile
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{!right-sidebar-view-profile.md!}
+
+1. Click on the **link** (<i class="zulip-icon zulip-icon-link"></i>)
+   icon to the right of their name to copy the URL for their profile.
+
+{end_tabs}
+
 ## Related articles
 
 * [Edit your profile](/help/edit-your-profile)
