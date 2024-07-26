@@ -285,7 +285,11 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        navigate.to_end();
+        // Since it take a few milliseconds for this button complete disappear transition,
+        // it is possible for user to click it before it hides when switching narrows.
+        if (narrow_state.is_message_feed_visible()) {
+            navigate.to_end();
+        }
     });
 
     $("body").on("click", ".message_row", function () {
