@@ -441,17 +441,17 @@ test("marked", () => {
         {
             input: "Stream Wildcard mention: @**all**\nStream Wildcard silent mention: @_**all**",
             expected:
-                '<p>Stream Wildcard mention: <span class="user-mention" data-user-id="*">@all</span><br>\nStream Wildcard silent mention: <span class="user-mention silent" data-user-id="*">all</span></p>',
+                '<p>Stream Wildcard mention: <span class="user-mention channel-wildcard-mention" data-user-id="*">@all</span><br>\nStream Wildcard silent mention: <span class="user-mention channel-wildcard-mention silent" data-user-id="*">all</span></p>',
         },
         {
             input: "> Stream Wildcard mention in quote: @**all**\n\n> Another stream wildcard mention in quote: @_**all**",
             expected:
-                '<blockquote>\n<p>Stream Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another stream wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+                '<blockquote>\n<p>Stream Wildcard mention in quote: <span class="user-mention channel-wildcard-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another stream wildcard mention in quote: <span class="user-mention channel-wildcard-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
         },
         {
             input: "```quote\nStream Wildcard mention in quote: @**all**\n```\n\n```quote\nAnother stream wildcard mention in quote: @_**all**\n```",
             expected:
-                '<blockquote>\n<p>Stream Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another stream wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+                '<blockquote>\n<p>Stream Wildcard mention in quote: <span class="user-mention channel-wildcard-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another stream wildcard mention in quote: <span class="user-mention channel-wildcard-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
         },
         {
             input: "Topic Wildcard mention: @**topic**\nTopic Wildcard silent mention: @_**topic**",

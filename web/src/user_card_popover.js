@@ -580,6 +580,10 @@ function register_click_handlers() {
         toggle_user_card_popover_for_message(this, user, message.sender_id, true);
     });
 
+    // Note: Message feeds and drafts have their own direct event listeners
+    // that run before this one and call stopPropagation.
+    $("body").on("click", ".messagebox .user-mention", unsaved_message_user_mention_event_handler);
+
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
