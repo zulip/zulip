@@ -181,7 +181,7 @@ function update_url() {
 // API callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response) {
     if (response.responseJSON?.msg) {
-        const status_code = response.statusCode().status;
+        const status_code = response.status;
         set_results_notice(`Result: (${status_code}) ${response.responseJSON.msg}`, "warning");
     } else {
         // If the response is not a JSON response, then it is probably
