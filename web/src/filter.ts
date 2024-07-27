@@ -35,7 +35,7 @@ type IconData = {
       }
 );
 
-type Part =
+type Part = {phrase?: string | undefined} & (
     | {
           type: "plain_text";
           content: string;
@@ -63,7 +63,8 @@ type Part =
           type: "user_pill";
           operator: string;
           users: ValidOrInvalidUser[];
-      };
+      }
+);
 
 type ValidOrInvalidUser =
     | {valid_user: true; user_pill_context: UserPillItem}
@@ -791,9 +792,60 @@ export class Filter {
         return [...parts, ...more_parts];
     }
 
+    // Generates a descriptive phrase based on the type and operand of a given part
+    static generateDescription(part: Part): string | undefined {
+        switch (part.type) {
+            case "plain_text":
+                return part.content;
+            case "channel_topic":
+                return $t({defaultMessage: "channel {channel} > {topic}"}, part);
+            case "invalid_has":
+                return $t({defaultMessage: "invalid {operand} operand for has operator"}, part);
+            case "prefix_for_operator":
+                part.operand +=
+                    part.operand === "link" ||
+                    part.operand === "image" ||
+                    part.operand === "attachment" ||
+                    part.operand === "reaction"
+                        ? "s"
+                        : "";
+                return $t({defaultMessage: "{prefix_for_operator} {operand}"}, part);
+            case "is_operator":
+                switch (part.operand) {
+                    case "mentioned": {
+                        return $t({defaultMessage: "{verb}@-mentions"}, part);
+                    }
+                    case "starred":
+                    case "alerted":
+                    case "unread": {
+                        return $t({defaultMessage: "{verb}{operand} messages"}, part);
+                    }
+                    case "dm":
+                    case "private": {
+                        return $t({defaultMessage: "{verb}direct messages"}, part);
+                    }
+                    case "resolved": {
+                        return $t({defaultMessage: "{verb}topics marked as resolved"}, part);
+                    }
+                    case "followed": {
+                        return $t({defaultMessage: "{verb}followed topics"}, part);
+                    }
+                }
+                return $t({defaultMessage: "invalid {operand} operand for is operator"}, part);
+
+            default:
+                return undefined;
+        }
+    }
+
     static search_description_as_html(terms: NarrowTerm[]): string {
+        const parts = Filter.parts_for_describe(terms);
+        const updatedParts: Part[] = parts.map((part) => {
+            const phrase = Filter.generateDescription(part);
+            return {...part, phrase};
+        });
         return render_search_description({
-            parts: Filter.parts_for_describe(terms),
+            parts: updatedParts,
         });
     }
 
