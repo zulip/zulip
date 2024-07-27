@@ -18,7 +18,30 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 10.0
+
+Feature levels 278-279 are reserved for future use in 9.x maintenance
+releases.
+
 ## Changes in Zulip 9.0
+
+**Feature level 277**
+
+No changes; feature level used for Zulip 9.0 release.
+
+**Feature level 276**
+
+* [Markdown message formatting](/api/message-formatting#image-previews):
+  Image preview elements not contain a `data-original-dimensions`
+  attribute containing the dimensions of the original image.
+
+**Feature level 275**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_animate_image_previews` setting, which controls how
+  animated images should be played in the web/desktop app message feed.
 
 **Feature level 274**
 

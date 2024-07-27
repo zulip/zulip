@@ -731,7 +731,9 @@ class InviteUserTest(InviteUserBase):
         self.login("iago")
         invitee = self.nonreg_email("alice")
         response = self.invite(invitee, ["Denmark"], invite_as=10)
-        self.assert_json_error(response, "Invalid invite_as")
+        self.assert_json_error(
+            response, "Invalid invite_as: Value error, Not in the list of possible values"
+        )
 
     def test_successful_invite_user_as_guest_from_normal_account(self) -> None:
         self.login("hamlet")
@@ -2953,4 +2955,6 @@ class MultiuseInviteTest(ZulipTestCase):
                 "invite_expires_in_minutes": 2 * 24 * 60,
             },
         )
-        self.assert_json_error(result, "Invalid invite_as")
+        self.assert_json_error(
+            result, "Invalid invite_as: Value error, Not in the list of possible values"
+        )

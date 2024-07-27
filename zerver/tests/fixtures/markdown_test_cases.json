@@ -408,7 +408,7 @@
     {
       "name": "inline_image",
       "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring",
-      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
+      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://external-content.zulipcdn.net/external_content/56c362a24201593891955ff526b3b412c0f9fcd2/68747470733a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67\"></a></div>",
       "backend_only_rendering": true,
       "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
     },
@@ -422,34 +422,34 @@
     {
       "name": "two_inline_images",
       "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring\nZulip logo: https://zulip.com/static/images/logo/zulip-icon-128x128.png",
-      "expected_output": "<p>Google logo today: <a href=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\">https:\/\/www.google.com\/images\/srpr\/logo4w.png<\/a><br>\nKinda boring<br>\nZulip logo: <a href=\"https:\/\/zulip.com\/static\/images\/logo\/zulip-icon-128x128.png\">https:\/\/zulip.com\/static\/images\/logo\/zulip-icon-128x128.png<\/a><\/p>\n<div class=\"message_inline_image\"><a href=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\"><img data-src-fullsize=\"\/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"\/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"><\/a><\/div><div class=\"message_inline_image\"><a href=\"https:\/\/zulip.com\/static\/images\/logo\/zulip-icon-128x128.png\"><img data-src-fullsize=\"\/thumbnail?url=https%3A%2F%2Fzulip.com%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=full\" src=\"\/thumbnail?url=https%3A%2F%2Fzulip.com%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=thumbnail\"><\/a><\/div>",
+      "expected_output": "<p>Google logo today: <a href=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\">https:\/\/www.google.com\/images\/srpr\/logo4w.png<\/a><br>\nKinda boring<br>\nZulip logo: <a href=\"https:\/\/zulip.com\/static\/images\/logo\/zulip-icon-128x128.png\">https:\/\/zulip.com\/static\/images\/logo\/zulip-icon-128x128.png<\/a><\/p>\n<div class=\"message_inline_image\"><a href=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\"><img src=\"https://external-content.zulipcdn.net/external_content/56c362a24201593891955ff526b3b412c0f9fcd2/68747470733a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67\"><\/a><\/div><div class=\"message_inline_image\"><a href=\"https:\/\/zulip.com\/static\/images\/logo\/zulip-icon-128x128.png\"><img src=\"https://external-content.zulipcdn.net/external_content/213b3c6f660b53018c3cb27d48d34f0940a74954/68747470733a2f2f7a756c69702e636f6d2f7374617469632f696d616765732f6c6f676f2f7a756c69702d69636f6e2d313238783132382e706e67\"><\/a><\/div>",
       "backend_only_rendering": true,
       "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\nZulip logo: https:\/\/zulip.com\/static\/images\/logo\/zulip-icon-128x128.png\n"
     },
     {
       "name": "deduplicate_inline_previews",
       "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boringGoogle logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring",
-      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
+      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://external-content.zulipcdn.net/external_content/56c362a24201593891955ff526b3b412c0f9fcd2/68747470733a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67\"></a></div>",
       "backend_only_rendering": true,
       "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boringGoogle logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
     },
     {
       "name": "bulleted_list_inlining",
       "input": "* Google?\n* Google. https://www.google.com/images/srpr/logo4w.png\n* Google!",
-      "expected_output": "<ul>\n<li>Google?</li>\n<li>Google. <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div></li>\n<li>Google!</li>\n</ul>",
+      "expected_output": "<ul>\n<li>Google?</li>\n<li>Google. <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://external-content.zulipcdn.net/external_content/56c362a24201593891955ff526b3b412c0f9fcd2/68747470733a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67\"></a></div></li>\n<li>Google!</li>\n</ul>",
       "backend_only_rendering": true,
       "text_content": "\nGoogle?\nGoogle. https://www.google.com/images/srpr/logo4w.png\nGoogle!\n"
     },
     {
       "name": "only_inline_image",
       "input": "https://www.google.com/images/srpr/logo4w.png",
-      "expected_output": "<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
+      "expected_output": "<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://external-content.zulipcdn.net/external_content/56c362a24201593891955ff526b3b412c0f9fcd2/68747470733a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67\"></a></div>",
       "backend_only_rendering": true
     },
     {
       "name": "only_named_inline_image",
       "input": "[Google link](https://www.google.com/images/srpr/logo4w.png)",
-      "expected_output": "<p><a href=\"https://www.google.com/images/srpr/logo4w.png\">Google link</a></p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"Google link\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
+        "expected_output": "<p><a href=\"https://www.google.com/images/srpr/logo4w.png\">Google link</a></p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"Google link\"><img src=\"https://external-content.zulipcdn.net/external_content/56c362a24201593891955ff526b3b412c0f9fcd2/68747470733a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67\"></a></div>",
       "backend_only_rendering": true,
       "text_content": "Google link\n"
     },
@@ -993,9 +993,9 @@
     {
       "name": "spoiler_with_inline_image",
       "input": "```spoiler header\nContent http://example.com/image.png\n```",
-      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img data-src-fullsize=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=full\" src=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=thumbnail\"></a></div></div></div>",
-      "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>",
-      "text_content": "header (…)\n"
+        "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img src=\"https://external-content.zulipcdn.net/external_content/25fef3bfd3a93e0266153205ea66a83c53d310b4/687474703a2f2f6578616d706c652e636f6d2f696d6167652e706e67\"></a></div></div></div>",
+        "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>",
+        "text_content": "header (…)\n"
     },
     {
       "name": "embedded_link_inside_Bold",

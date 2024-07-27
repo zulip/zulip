@@ -2,7 +2,6 @@
 
 import autosize from "autosize";
 import $ from "jquery";
-import _ from "lodash";
 
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
@@ -15,13 +14,9 @@ import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
-import {$t_html} from "./i18n";
-import * as loading from "./loading";
-import * as markdown from "./markdown";
 import * as message_events from "./message_events";
 import * as onboarding_steps from "./onboarding_steps";
 import * as people from "./people";
-import * as rendered_markdown from "./rendered_markdown";
 import * as scheduled_messages from "./scheduled_messages";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
@@ -71,7 +66,7 @@ export function show_preview_area() {
     $("#compose .undo_markdown_preview").trigger("focus");
     $("#compose .preview_message_area").show();
 
-    render_and_show_preview(
+    compose_ui.render_and_show_preview(
         $("#compose .markdown_preview_spinner"),
         $("#compose .preview_content"),
         content,
@@ -332,62 +327,6 @@ export function do_post_send_tasks() {
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger("compose_finished.zulip");
-}
-
-export function render_and_show_preview($preview_spinner, $preview_content_box, content) {
-    function show_preview(rendered_content, raw_content) {
-        // content is passed to check for status messages ("/me ...")
-        // and will be undefined in case of errors
-        let rendered_preview_html;
-        if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
-            // Handle previews of /me messages
-            rendered_preview_html =
-                "<p><strong>" +
-                _.escape(current_user.full_name) +
-                "</strong>" +
-                rendered_content.slice("<p>/me".length);
-        } else {
-            rendered_preview_html = rendered_content;
-        }
-
-        $preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
-        rendered_markdown.update_elements($preview_content_box);
-    }
-
-    if (content.length === 0) {
-        show_preview($t_html({defaultMessage: "Nothing to preview"}));
-    } else {
-        if (markdown.contains_backend_only_syntax(content)) {
-            const $spinner = $preview_spinner.expectOne();
-            loading.make_indicator($spinner);
-        } else {
-            // For messages that don't appear to contain syntax that
-            // is only supported by our backend Markdown processor, we
-            // render using the frontend Markdown processor (but still
-            // render server-side to ensure the preview is accurate;
-            // if the `markdown.contains_backend_only_syntax` logic is
-            // wrong, users will see a brief flicker of the locally
-            // echoed frontend rendering before receiving the
-            // authoritative backend rendering from the server).
-            markdown.render(content);
-        }
-        channel.post({
-            url: "/json/messages/render",
-            data: {content},
-            success(response_data) {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview(response_data.rendered, content);
-            },
-            error() {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
-            },
-        });
-    }
 }
 
 function schedule_message_to_custom_date() {

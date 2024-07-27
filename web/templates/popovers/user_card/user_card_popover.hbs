@@ -2,7 +2,7 @@
     <div class="popover-menu-user-header">
         <div class="popover-menu-user-avatar-container">
             <img class="popover-menu-user-avatar{{#if user_is_guest}} guest-avatar{{/if}}" src="{{user_avatar}}" />
-            {{#if is_active }}
+            {{#if (and is_active (not is_bot))}}
                 <div class="popover-menu-user-presence user_circle {{user_circle_class}} hidden-for-spectators" data-presence-indicator-user-id="{{user_id}}"></div>
             {{/if}}
         </div>
@@ -16,8 +16,8 @@
             <div class="popover-menu-user-type">
                 {{#if is_bot}}
                     {{#if bot_owner}}
-                        <div class="bot_owner" data-tippy-content="{{ bot_owner.full_name }}">{{t "Bot owner" }}:
-                            <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
+                        <div class="bot_owner" data-tippy-content="{{ bot_owner.full_name }}">{{t "Owner" }}:
+                            <span class="bot-owner-name view_bot_owner_user_profile" data-user-id='{{ bot_owner.user_id }}'>
                                 {{bot_owner.full_name}}
                             </span>
                         </div>
@@ -127,7 +127,7 @@
             {{#if user_email}}
                 <li role="none" class="popover-menu-list-item text-item user-card-popover-email-field hidden-for-spectators">
                     <span class="user_popover_email">{{ user_email }}</span>
-                    <a role="menuitem" tabindex="0" id="popover-menu-copy-email" class="popover-menu-link tippy-zulip-tooltip hide_copy_icon" aria-label="{{t 'Copy email'}}" data-tippy-content="{{t 'Copy email' }}" data-clipboard-text="{{ user_email }}">
+                    <a role="menuitem" tabindex="0" id="popover-menu-copy-email" class="popover-menu-link hide_copy_icon" aria-label="{{t 'Copy email'}}" data-tippy-content="{{t 'Copy email' }}" data-clipboard-text="{{ user_email }}">
                         <i class="popover-menu-icon zulip-icon zulip-icon-copy hide" aria-hidden="true"></i>
                     </a>
                 </li>
@@ -211,7 +211,11 @@
                 <li role="none" class="popover-menu-list-item link-item">
                     <a role="menuitem" class="sidebar-popover-mute-user popover-menu-link hidden-for-spectators" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
-                        <span class="popover-menu-label">{{t "Mute this user" }}</span>
+                        {{#if is_bot}}
+                            <span class="popover-menu-label">{{t "Mute this bot" }}</span>
+                        {{else}}
+                            <span class="popover-menu-label">{{t "Mute this user" }}</span>
+                        {{/if}}
                     </a>
                 </li>
             {{/if}}
@@ -219,7 +223,11 @@
                 <li role="none" class="popover-menu-list-item link-item">
                     <a role="menuitem" class="sidebar-popover-unmute-user popover-menu-link hidden-for-spectators" tabindex="0">
                         <i class="popover-menu-icon fa fa-eye" aria-hidden="true"></i>
-                        <span class="popover-menu-label">{{t "Unmute this user" }}</span>
+                        {{#if is_bot}}
+                            <span class="popover-menu-label">{{t "Unmute this bot" }}</span>
+                        {{else}}
+                            <span class="popover-menu-label">{{t "Unmute this user" }}</span>
+                        {{/if}}
                     </a>
                 </li>
             {{/if}}

@@ -1258,7 +1258,7 @@ label.preferences-radio-choice-label {
             cursor: not-allowed;
         }
 
-        &:checked + span {
+        &:checked + .preferences-radio-choice-text {
             font-weight: 600;
         }
     }

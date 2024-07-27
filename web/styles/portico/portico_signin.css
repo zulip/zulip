@@ -297,7 +297,8 @@ html {
     top: 0;
 
     .top-links a,
-    .header-main .logo span {
+    /* specificity to override the color of `.light` */
+    .header-main .logo .portico-header-text {
         color: hsl(0deg 0% 27%);
     }
 }

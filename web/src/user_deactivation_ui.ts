@@ -2,6 +2,7 @@ import $ from "jquery";
 import {z} from "zod";
 
 import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
+import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
 import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
@@ -13,13 +14,25 @@ import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as people from "./people";
 import {invite_schema} from "./settings_invites";
-import {realm} from "./state_data";
+import {current_user, realm} from "./state_data";
 
 export function confirm_deactivation(
     user_id: number,
     handle_confirm: () => void,
     loading_spinner: boolean,
 ): void {
+    if (user_id === current_user.user_id) {
+        const html_body = render_confirm_deactivate_own_user();
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Deactivate your account"}),
+            html_body,
+            on_click: handle_confirm,
+            help_link: "/help/deactivate-your-account",
+            loading_spinner,
+        });
+        return;
+    }
+
     // Knowing the number of invites requires making this request. If the request fails,
     // we won't have the accurate number of invites. So, we don't show the modal if the
     // request fails.
@@ -78,6 +91,7 @@ export function confirm_deactivation(
                 on_click: handle_confirm,
                 post_render: set_email_field_visibility,
                 loading_spinner,
+                focus_submit_on_open: true,
             });
         },
     });

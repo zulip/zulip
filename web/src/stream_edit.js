@@ -20,6 +20,7 @@ import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
+import {postprocess_content} from "./postprocess_content";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
@@ -38,7 +39,6 @@ import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
-import * as util from "./util";
 
 export function setup_subscriptions_tab_hash(tab_key_value) {
     if ($("#subscription_overlay .right").hasClass("show")) {
@@ -132,7 +132,7 @@ export function update_stream_description(sub) {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
     $edit_container.find("input.description").val(sub.description);
     const html = render_stream_description({
-        rendered_description: util.clean_user_content_links(sub.rendered_description),
+        rendered_description: postprocess_content(sub.rendered_description),
     });
     $edit_container.find(".stream-description").html(html);
 }

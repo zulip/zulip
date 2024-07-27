@@ -32,6 +32,11 @@ function call_hooks(func_list: Hook[]): void {
     }
 }
 
+export function any_active_or_animating(): boolean {
+    const $active_modal = $(".micromodal");
+    return $active_modal.hasClass("modal--open") || $active_modal.hasClass("modal--opening");
+}
+
 export function any_active(): boolean {
     return $(".micromodal").hasClass("modal--open");
 }

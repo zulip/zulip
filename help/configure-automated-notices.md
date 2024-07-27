@@ -83,11 +83,12 @@ Zulip announces new features and other important product changes via automated
 messages. This is designed to help users discover new features they may find
 useful, including new configuration options.
 
-These announcements are posted to the “Zulip updates” topic in the channel selected by
-organization administrators. You can read update messages whenever it's
-convenient, or [mute](/help/mute-a-topic) the topic if you are not interested.
-If you organization does not want to receive these announcements, they can be
-disabled.
+These announcements are posted to the “Zulip updates” topic in the
+channel selected by organization administrators (usually 1-2x a month
+on Zulip Cloud). You can read update messages whenever it's
+convenient, or [mute](/help/mute-a-topic) the topic if you are not
+interested. If you organization does not want to receive these
+announcements, they can be disabled.
 
 On self-hosted Zulip servers, announcement messages are shipped with the Zulip
 server version that includes the new feature or product change. You may thus

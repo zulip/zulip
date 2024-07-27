@@ -19,6 +19,7 @@ import * as compose_ui from "./compose_ui";
 import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
+import {is_overlay_hash} from "./hash_parser";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -89,7 +90,7 @@ class PopoverMenu {
             return;
         }
 
-        const $items = $("li:not(.divider):visible a:visible", $popover);
+        const $items = $("[tabindex='0']", $popover).filter(":visible");
 
         popover_items_handle_keyboard_with_overrides(key, $items);
     }
@@ -100,15 +101,21 @@ export const message_user_card = new PopoverMenu();
 export const user_card = new PopoverMenu();
 
 function popover_items_handle_keyboard_with_overrides(key, $items) {
-    /* Variant of popover_items_handle_keyboard */
+    /* Variant of popover_items_handle_keyboard for focusing on the
+       user card popover menu options first, instead of other tabbable
+       buttons and links which can be distracting. */
+
     if (!$items) {
         return;
     }
 
     const index = $items.index($items.filter(":focus"));
 
-    if (key === "enter" && index >= 0 && index < $items.length) {
-        $items[index].click();
+    if (index === -1) {
+        const first_menu_option_index = $items.index(
+            $items.filter(".link-item .popover-menu-link"),
+        );
+        $items.eq(first_menu_option_index).trigger("focus");
         return;
     }
 
@@ -327,6 +334,7 @@ function show_user_card_popover(
                 if (on_mount) {
                     on_mount(instance);
                 }
+                const $popover = $(instance.popper);
                 // Note: We pass the normal-size avatar in initial rendering, and
                 // then query the server to replace it with the medium-size
                 // avatar.  The purpose of this double-fetch approach is to take
@@ -334,7 +342,7 @@ function show_user_card_popover(
                 // low-resolution image cached and thus display a low-resolution
                 // avatar rather than a blank area during the network delay for
                 // fetching the medium-size one.
-                load_medium_avatar(user, $(".popover-menu-user-avatar"));
+                load_medium_avatar(user, $popover.find(".popover-menu-user-avatar"));
                 init_email_clipboard();
                 init_email_tooltip(user);
             },
@@ -480,7 +488,9 @@ function get_user_card_popover_for_message_items() {
         return undefined;
     }
 
-    return $("li:not(.divider):visible a:not(.hide_copy_icon)", $popover);
+    // Return only the popover menu options that are visible, and not the
+    // copy buttons or the link items in the custom profile fields.
+    return $(".link-item .popover-menu-link", $popover).filter(":visible");
 }
 
 // Functions related to the user card popover in the user sidebar.
@@ -635,7 +645,15 @@ function register_click_handlers() {
 
     $("body").on("click", ".user-card-popover-actions .view_full_user_profile", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        browser_history.go_to_location(`user/${user_id}`);
+        const current_hash = window.location.hash;
+        // If any overlay is already open, we want the user profile to behave
+        // as a modal rather than an overlay.
+        if (is_overlay_hash(current_hash)) {
+            const user = people.get_by_user_id(user_id);
+            user_profile.show_user_profile(user);
+        } else {
+            browser_history.go_to_location(`user/${user_id}`);
+        }
         e.stopPropagation();
         e.preventDefault();
     });
@@ -670,6 +688,15 @@ function register_click_handlers() {
         const mention = people.get_mention_syntax(name, user_id, !is_active);
         compose_ui.insert_syntax_and_focus(mention);
         message_user_card.hide();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".view_bot_owner_user_profile", (e) => {
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const user = people.get_by_user_id(user_id);
+        const $target = $(e.currentTarget).closest(".popover-menu-user-type");
+        toggle_user_card_popover($target, user);
         e.stopPropagation();
         e.preventDefault();
     });

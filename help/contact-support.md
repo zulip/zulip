@@ -56,6 +56,12 @@ Usually within one business day.
   aren't sure where to start.
     * Response time: Usually within one week.
 
+* To **share feedback privately**, contact
+  [feedback@zulip.com](mailto:feedback@zulip.com). This works well if you'd like
+  to include details about your organization that shouldn't be posted in public.
+    * Response time: Usually within 1-3 business days.
+
+
 Your feedback helps us make Zulip better for everyone! Please reach out if you
 have questions, suggestions, or just want to brainstorm how to make Zulip work
 for your organization.

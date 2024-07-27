@@ -72,11 +72,6 @@ p {
         position: relative;
         z-index: 1;
         margin-bottom: 5px;
-
-        > * {
-            display: inline-block;
-            vertical-align: top;
-        }
     }
 }
 

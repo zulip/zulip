@@ -222,6 +222,9 @@ function show_add_default_streams_modal(): void {
         loading_spinner: true,
         on_click: add_default_streams,
         post_render: default_stream_post_render,
+        on_shown() {
+            $("#select_default_stream_0_widget").trigger("focus");
+        },
     });
 }
 
