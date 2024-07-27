@@ -292,7 +292,7 @@ function send_all_fixture_messages() {
     const url = $("#URL").val();
     const integration = get_selected_integration_name();
     if (integration === "") {
-        set_results_notice("You have to select an integration first.");
+        set_results_notice("You have to select an integration first.", "warning");
         return;
     }
 
