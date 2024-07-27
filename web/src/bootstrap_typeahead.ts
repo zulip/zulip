@@ -455,6 +455,19 @@ export class Typeahead<ItemType extends string | object> {
                     }
                     return [0, gap];
                 },
+                onShow(instance) {
+                    if (input_element.type === "textarea") {
+                        // Since we use an offset which can partially hide typeahead
+                        // at certain caret positions, we need to push it back into
+                        // view once we have rendered the typeahead. The movement
+                        // feels like an animation to the user.
+                        setTimeout(() => {
+                            // This detects any overflows by default and adjusts
+                            // the placement of typeahead.
+                            void instance.popperInstance?.update();
+                        }, 0);
+                    }
+                },
                 // We have event handlers to hide the typeahead, so we
                 // don't want tippy to hide it for us.
                 hideOnClick: false,
