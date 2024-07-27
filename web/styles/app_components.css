@@ -798,6 +798,10 @@ div.overlay {
         white-space: nowrap;
     }
 
+    th.actions {
+        padding-right: 1em;
+    }
+
     & th,
     td {
         padding: 4px 5px;
