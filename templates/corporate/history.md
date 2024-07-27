@@ -197,6 +197,11 @@ badge](https://www.capterra.com/p/197945/Zulip/).
 
 ## Major server releases and product announcements
 
+- July 2024: [Zulip Server 9.0
+  released](https://blog.zulip.com/2024/07/25/zulip-9-0-released/), with over
+  5300 new commits. 124 people contributed commits to Zulip since the 8.0
+  release.
+
 - December 2023: [Zulip Server 8.0
   released](https://blog.zulip.com/2023/12/15/zulip-8-0-released/), with over
   4700 new commits. 116 people contributed commits to Zulip since the 7.0

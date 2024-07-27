@@ -231,6 +231,9 @@ export function set_up(settings_panel: SettingsPanel): void {
         .prop("checked", true);
 
     $container
+        .find(".setting_web_animate_image_previews")
+        .val(settings_object.web_animate_image_previews);
+    $container
         .find(".setting_web_stream_unreads_count_display_policy")
         .val(settings_object.web_stream_unreads_count_display_policy);
 

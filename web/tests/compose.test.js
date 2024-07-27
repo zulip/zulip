@@ -688,6 +688,8 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         function test_post_success(success_callback) {
             const resp = {
+                msg: "",
+                result: "success",
                 rendered: "Server: foobarfoobar",
             };
             success_callback(resp);

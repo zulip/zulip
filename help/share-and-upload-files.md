@@ -126,5 +126,5 @@ This limit can be changed by the server administrator.
 
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [View images and videos](/help/view-images-and-videos)
-* [Block image and link previews](/help/allow-image-link-previews)
+* [Image, video and website previews](/help/allow-image-link-previews)
 * [Animated GIFs](/help/animated-gifs-from-giphy)

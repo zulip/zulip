@@ -1102,10 +1102,12 @@ def get_realm_by_id(realm_id: int) -> Realm:
 
 
 def get_realm_with_settings(realm_id: int) -> Realm:
-    # Prefetch all the settings that can be set to anonymous groups.
+    # Prefetch the following settings:
+    # * All the settings that can be set to anonymous groups.
     # This also prefetches can_access_all_users_group setting,
     # even when it cannot be set to anonymous groups because
     # the setting is used when fetching users in the realm.
+    # * Announcements streams.
     return Realm.objects.select_related(
         "can_access_all_users_group",
         "can_access_all_users_group__named_user_group",
@@ -1117,6 +1119,9 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "direct_message_initiator_group__named_user_group",
         "direct_message_permission_group",
         "direct_message_permission_group__named_user_group",
+        "new_stream_announcements_stream",
+        "signup_announcements_stream",
+        "zulip_update_announcements_stream",
     ).get(id=realm_id)
 
 

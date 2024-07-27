@@ -366,33 +366,30 @@ def update_user_message_flags(
 def do_update_embedded_data(
     user_profile: UserProfile,
     message: Message,
-    content: str | None,
-    rendering_result: MessageRenderingResult,
+    rendered_content: str | MessageRenderingResult,
 ) -> None:
-    timestamp = timezone_now()
+    ums = UserMessage.objects.filter(message=message.id)
+    update_fields = ["rendered_content"]
+    if isinstance(rendered_content, MessageRenderingResult):
+        update_user_message_flags(rendered_content, ums)
+        message.rendered_content = rendered_content.rendered_content
+        message.rendered_content_version = markdown_version
+        update_fields.append("rendered_content_version")
+    else:
+        message.rendered_content = rendered_content
+    message.save(update_fields=update_fields)
+
+    update_message_cache([message])
     event: dict[str, Any] = {
         "type": "update_message",
         "user_id": None,
-        "edit_timestamp": datetime_to_timestamp(timestamp),
+        "edit_timestamp": datetime_to_timestamp(timezone_now()),
         "message_id": message.id,
+        "message_ids": [message.id],
+        "content": message.content,
+        "rendered_content": message.rendered_content,
         "rendering_only": True,
     }
-    changed_messages = [message]
-    rendered_content: str | None = None
-
-    ums = UserMessage.objects.filter(message=message.id)
-
-    if content is not None:
-        update_user_message_flags(rendering_result, ums)
-        rendered_content = rendering_result.rendered_content
-        message.rendered_content = rendered_content
-        message.rendered_content_version = markdown_version
-        event["content"] = content
-        event["rendered_content"] = rendered_content
-
-    message.save(update_fields=["content", "rendered_content"])
-
-    event["message_ids"] = update_message_cache(changed_messages)
 
     def user_info(um: UserMessage) -> dict[str, Any]:
         return {

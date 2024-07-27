@@ -745,6 +745,13 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
             event.stopPropagation();
             paste_html = maybe_transform_html(paste_html, paste_text);
             const text = paste_handler_converter(paste_html);
+            if (trimmed_paste_text !== text) {
+                // Pasting formatted text is a two-step process: First
+                // we paste unformatted text, then overwrite it with
+                // formatted text, so that undo restores the
+                // pre-formatting syntax.
+                add_text_and_select(trimmed_paste_text, $textarea);
+            }
             compose_ui.insert_and_scroll_into_view(text, $textarea);
         }
     }

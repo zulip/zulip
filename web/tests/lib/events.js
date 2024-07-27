@@ -1023,6 +1023,27 @@ exports.fixtures = {
         value: 2,
     },
 
+    user_settings__web_animate_image_previews_always: {
+        type: "user_settings",
+        op: "update",
+        property: "web_animate_image_previews",
+        value: "always",
+    },
+
+    user_settings__web_animate_image_previews_never: {
+        type: "user_settings",
+        op: "update",
+        property: "web_animate_image_previews",
+        value: "never",
+    },
+
+    user_settings__web_animate_image_previews_on_hover: {
+        type: "user_settings",
+        op: "update",
+        property: "web_animate_image_previews",
+        value: "on_hover",
+    },
+
     user_settings__web_channel_default_view: {
         type: "user_settings",
         op: "update",

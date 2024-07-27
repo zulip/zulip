@@ -44,7 +44,9 @@
         display: flex;
         align-items: center;
 
-        & > * {
+        .recent-view-table-link,
+        .recent-view-table-unread-count,
+        & > .zulip-icon {
             outline: 0;
         }
 
@@ -121,6 +123,10 @@
     .table_fix_head table th {
         padding: 8px;
         text-align: left;
+
+        &[data-sort] {
+            padding-right: var(--table-header-sortable-column-padding-right);
+        }
     }
 
     #recent_view_filter_buttons {

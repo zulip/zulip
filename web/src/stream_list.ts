@@ -30,11 +30,11 @@ import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
 import * as topic_list from "./topic_list";
+import * as topic_list_data from "./topic_list_data";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread";
 import {user_settings} from "./user_settings";
-import * as user_topics from "./user_topics";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -864,20 +864,13 @@ export function set_event_handlers({
         let topics = stream_topic_history.get_recent_topic_names(stream_id);
 
         const navigate_to_stream = (): void => {
-            let destination_url;
-
-            const top_unmuted_topic = topics.find(
-                (topic) => !user_topics.is_topic_muted(stream_id, topic),
-            );
-            const muted_topics = topics.find((topic) =>
-                user_topics.is_topic_muted(stream_id, topic),
-            );
-
-            if (top_unmuted_topic) {
-                destination_url = hash_util.by_stream_topic_url(stream_id, top_unmuted_topic);
-                browser_history.go_to_location(destination_url);
-            } else if (muted_topics) {
-                destination_url = hash_util.by_stream_topic_url(stream_id, muted_topics);
+            const topic_list_info = topic_list_data.get_list_info(stream_id, false, "");
+            const topic_item = topic_list_info.items[0];
+            if (topic_item !== undefined) {
+                const destination_url = hash_util.by_stream_topic_url(
+                    stream_id,
+                    topic_item.topic_name,
+                );
                 browser_history.go_to_location(destination_url);
             } else {
                 on_stream_click(stream_id, "sidebar");

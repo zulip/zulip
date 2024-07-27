@@ -56,7 +56,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
                 realm,
                 url_embed_data=url_embed_data,
             )
-            do_update_embedded_data(message.sender, message, message.content, rendering_result)
+            do_update_embedded_data(message.sender, message, rendering_result)
 
     @override
     def timer_expired(

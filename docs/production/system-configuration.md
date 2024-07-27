@@ -167,6 +167,14 @@ immutable, this serves only as a potential additional limit on the
 size of the contents on disk; `s3_disk_cache_size` is expected to be
 the primary control for cache sizing.
 
+#### `thumbnail_workers`
+
+How many image-thumbnailing workers to run. Defaults to 1; adding more
+workers can prevent the image-thumbnailing queue backlogging when
+large numbers of very large image files are uploaded at once. (When
+backlogged, image previews for images that have not yet been
+thumbnailed will appear as loading spinners).
+
 #### `nameserver`
 
 When the [S3 storage backend][s3-backend] is in use, downloads from S3 are

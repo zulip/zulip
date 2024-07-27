@@ -1,5 +1,10 @@
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.typed_endpoint_validators import check_int_in, check_string_in, check_url
+from zerver.lib.typed_endpoint_validators import (
+    check_int_in,
+    check_string_in,
+    check_url,
+    to_non_negative_int_or_none,
+)
 
 
 class ValidatorTestCase(ZulipTestCase):
@@ -17,3 +22,14 @@ class ValidatorTestCase(ZulipTestCase):
         check_url("https://example.com")
         with self.assertRaisesRegex(ValueError, "Not a URL"):
             check_url("https://127.0.0..:5000")
+
+    def test_to_non_negative_int_or_none(self) -> None:
+        self.assertEqual(to_non_negative_int_or_none("3"), 3)
+        self.assertEqual(to_non_negative_int_or_none("-3"), None)
+        self.assertEqual(to_non_negative_int_or_none("a"), None)
+        self.assertEqual(to_non_negative_int_or_none("3.5"), None)
+        self.assertEqual(to_non_negative_int_or_none("3.0"), None)
+        self.assertEqual(to_non_negative_int_or_none("3.1"), None)
+        self.assertEqual(to_non_negative_int_or_none("3.9"), None)
+        self.assertEqual(to_non_negative_int_or_none("3.5"), None)
+        self.assertEqual(to_non_negative_int_or_none("foo"), None)

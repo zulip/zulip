@@ -179,14 +179,20 @@
 
     /*
     Height of the search box, which appears in the header.
-    On very short screens, the search box's height becomes
-    the height of its parent (i.e. the header height).
     */
-    --search-box-height: 28px;
+    --search-box-height: 32px;
     --search-box-width: 150px;
 
     @media (width < $md_min) {
         --search-box-width: 40px;
+    }
+
+    /*
+        On very short screens, the search box's height becomes
+        is reduced to fit the available space.
+    */
+    @media (height < $short_navbar_cutoff_height) {
+        --search-box-height: 28px;
     }
 
     /*
@@ -493,6 +499,13 @@
     */
     --popover-tippy-arrow-before-offset: -6.5px;
 
+    /*
+    Padding used in headers for sortable columns in table to make sure
+    that the arrow is visible completely for different screen widths,
+    languages and font-size including when hovering over the header.
+    */
+    --table-header-sortable-column-padding-right: 1em;
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
@@ -641,6 +654,7 @@
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(0deg 0% 43%);
     --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
+    --color-text-user-card-secondary: var(--grey-550);
     --color-text-url: hsl(200deg 100% 40%);
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
@@ -686,17 +700,26 @@
     --color-tab-picker-icon: hsl(200deg 100% 40%);
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
-    --color-copy-btn: color-mix(in srgb, var(--grey-600) 70%, transparent);
+    /* hsl(229deg 9% 36%) corresponds to --grey-600.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent);
     --color-copy-btn-hover: var(--green-600);
+    /* hsl(144deg 84% 22%) corresponds to --green-600.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
     --color-copy-btn-bg-hover: color-mix(
-        in srgb,
-        var(--green-600) 8%,
+        in oklch,
+        hsl(144deg 84% 22%) 8%,
         transparent
     );
     --color-copy-btn-active: var(--green-500);
+    /* hsl(146deg 90% 27%) corresponds to --green-500.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
     --color-copy-btn-bg-active: color-mix(
-        in srgb,
-        var(--green-500) 12%,
+        in oklch,
+        hsl(146deg 90% 27%) 12%,
         transparent
     );
 
@@ -1034,6 +1057,7 @@
     --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
     --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
     --color-text-sidebar-popover-menu: hsl(236deg 33% 90%);
+    --color-text-user-card-secondary: var(--grey-400);
     /* 75% opacity of --color-text-default against --color-background.
        We use color-mix here to avoid defining a separate, compounding
        `opacity` property, and also to preserve a record of the
@@ -1083,17 +1107,26 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
-    --color-copy-btn: color-mix(in srgb, var(--grey-300) 70%, transparent);
+    /* hsl(229deg 9% 65%) corresponds to --grey-350.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 65%) 70%, transparent);
     --color-copy-btn-hover: var(--green-300);
+    /* hsl(144deg 84% 22%) corresponds to --green-600.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
     --color-copy-btn-bg-hover: color-mix(
-        in srgb,
-        var(--green-600) 8%,
+        in oklch,
+        hsl(144deg 84% 22%) 8%,
         transparent
     );
     --color-copy-btn-active: var(--green-300);
+    /* hsl(139deg 54% 40%) corresponds to --green-400.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
     --color-copy-btn-bg-active: color-mix(
-        in srgb,
-        var(--green-400) 17%,
+        in oklch,
+        hsl(139deg 54% 40%) 17%,
         transparent
     );
 

@@ -6,6 +6,8 @@ import render_edit_content_button from "../templates/edit_content_button.hbs";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as rows from "./rows";
+import * as thumbnail from "./thumbnail";
+import {user_settings} from "./user_settings";
 
 let $current_message_hover;
 export function message_unhover() {
@@ -72,6 +74,40 @@ export function initialize() {
         const $row = $(this).closest(".message_row");
         $row.removeClass("sender_info_hovered");
     });
+
+    $("#main_div").on(
+        "mouseover",
+        '.message-list div.message_inline_image img[data-animated="true"]',
+        function () {
+            if (user_settings.web_animate_image_previews !== "on_hover") {
+                return;
+            }
+            const $img = $(this);
+            $img.closest(".message_inline_image").removeClass(
+                "message_inline_animated_image_still",
+            );
+            $img.attr(
+                "src",
+                $img.attr("src").replace(/\/[^/]+$/, "/" + thumbnail.animated_format.name),
+            );
+        },
+    );
+
+    $("#main_div").on(
+        "mouseout",
+        '.message-list div.message_inline_image img[data-animated="true"]',
+        function () {
+            if (user_settings.web_animate_image_previews !== "on_hover") {
+                return;
+            }
+            const $img = $(this);
+            $img.closest(".message_inline_image").addClass("message_inline_animated_image_still");
+            $img.attr(
+                "src",
+                $img.attr("src").replace(/\/[^/]+$/, "/" + thumbnail.preferred_format.name),
+            );
+        },
+    );
 
     function handle_video_preview_mouseenter($elem) {
         // Set image height and css vars for play button position, if not done already
