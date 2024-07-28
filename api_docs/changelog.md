@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 285**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): Added
+  `detached_uploads` to the response, indicating which uploaded files
+  are now only accessible via message edit history.
+
 **Feature level 284**
 
 * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),

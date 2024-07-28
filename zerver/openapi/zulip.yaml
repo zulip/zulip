@@ -6009,7 +6009,18 @@ paths:
                 contentType: application/json
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                    example: {"result": "success", "msg": ""}
         "400":
           description: Bad request.
           content:
@@ -7976,7 +7987,48 @@ paths:
                 contentType: application/json
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      detached_uploads:
+                        type: array
+                        description: |
+                          Details on all files uploaded by the acting user whose only references
+                          were removed when editing this message. Clients should ask the acting user
+                          if they wish to delete the uploaded files returned in this response,
+                          which might otherwise remain visible only in message edit history.
+
+                          Note that [access to message edit
+                          history](/help/disable-message-edit-history) is configurable; this detail
+                          may be important in presenting the question clearly to users.
+
+                          New in Zulip 10.0 (feature level 285).
+                        items:
+                          $ref: "#/components/schemas/Attachments"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "detached_uploads":
+                          [
+                            {
+                              "id": 3,
+                              "name": "1253601-1.jpg",
+                              "path_id": "2/5d/BD5NRptFxPDKY3RUKwhhup8r/1253601-1.jpg",
+                              "size": 1339060,
+                              "create_time": 1687984706000,
+                              "messages": [],
+                            },
+                          ],
+                      }
         "400":
           description: Bad request.
           content:

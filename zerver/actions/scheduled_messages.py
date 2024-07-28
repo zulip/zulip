@@ -223,9 +223,10 @@ def edit_scheduled_message(
         )
         scheduled_message_object.content = send_request.message.content
         scheduled_message_object.rendered_content = rendering_result.rendered_content
-        scheduled_message_object.has_attachment = check_attachment_reference_change(
+        attachment_reference_change = check_attachment_reference_change(
             scheduled_message_object, rendering_result
         )
+        scheduled_message_object.has_attachment = attachment_reference_change.did_attachment_change
 
     if deliver_at is not None:
         # User has updated the scheduled message's send timestamp.

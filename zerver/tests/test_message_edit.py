@@ -16,7 +16,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, NamedUserGroup, Realm, UserProfile, UserTopic
+from zerver.models import Attachment, Message, NamedUserGroup, Realm, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import EditTopicPolicyEnum, WildcardMentionPolicyEnum, get_realm
 from zerver.models.streams import get_stream
@@ -1659,3 +1659,168 @@ class EditMessageTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
+
+    def test_remove_attachment_while_editing(self) -> None:
+        # Try editing a message and removing an linked attachment that's
+        # uploaded by us. Users should be able to detach their own attachments
+        CONST_UPLOAD_PATH_PREFIX = "/user_uploads/"
+        user_profile = self.example_user("hamlet")
+        file1 = self.create_attachment_helper(user_profile)
+
+        content = f"Init message [attachment1.txt]({file1})"
+        self.login("hamlet")
+
+        # Create two messages referencing the same attachment.
+        original_msg_id = self.send_stream_message(
+            user_profile,
+            "Denmark",
+            topic_name="editing",
+            content=content,
+        )
+
+        attachments = Attachment.objects.filter(messages__in=[original_msg_id])
+        self.assert_length(attachments, 1)
+        path_id_set = CONST_UPLOAD_PATH_PREFIX + attachments[0].path_id
+        self.assertEqual(path_id_set, file1)
+
+        msg_id = self.send_stream_message(
+            user_profile,
+            "Denmark",
+            topic_name="editing",
+            content=content,
+        )
+
+        attachments = Attachment.objects.filter(messages__in=[msg_id])
+        self.assert_length(attachments, 1)
+        path_id_set = CONST_UPLOAD_PATH_PREFIX + attachments[0].path_id
+        self.assertEqual(path_id_set, file1)
+
+        # Try editing first message and removing one reference to the attachment.
+        result = self.client_patch(
+            f"/json/messages/{original_msg_id}",
+            {
+                "content": "Try editing a message with an attachment",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_uploads"], 0)
+
+        # Try editing second message, the only reference to the attachment now
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "Try editing a message with an attachment",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_uploads"], 1)
+        actual_path_id_set = (
+            CONST_UPLOAD_PATH_PREFIX + result_content["detached_uploads"][0]["path_id"]
+        )
+
+        self.assertEqual(actual_path_id_set, file1)
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "Try editing a message with no attachments",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_uploads"], 0)
+
+    def test_remove_another_user_attachment_while_editing(self) -> None:
+        # Try editing a message and removing an linked attachment that's
+        # uploaded by another user. Users should not be able to detach another
+        # user's attachments.
+
+        user_profile = self.example_user("hamlet")
+        file1 = self.create_attachment_helper(user_profile)
+
+        content = f"Init message [attachment1.txt]({file1})"
+
+        # Send a message with attachment using another user profile.
+        msg_id = self.send_stream_message(
+            user_profile,
+            "Denmark",
+            topic_name="editing",
+            content=content,
+        )
+        self.check_message(msg_id, topic_name="editing", content=content)
+        attachments = Attachment.objects.filter(messages__in=[msg_id])
+        self.assert_length(attachments, 1)
+
+        # Send a message referencing to the attachment uploaded by another user.
+        self.login("iago")
+        msg_id = self.send_stream_message(
+            self.example_user("iago"),
+            "Denmark",
+            topic_name="editing",
+            content=content,
+        )
+        self.check_message(msg_id, topic_name="editing", content=content)
+        attachments = Attachment.objects.filter(messages__in=[msg_id])
+        self.assert_length(attachments, 1)
+
+        # Try editing the message and removing the reference to the attachment.
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "Try editing a message with an attachment uploaded by another user",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_uploads"], 0)
+
+    def test_remove_another_user_deleted_attachment_while_editing(self) -> None:
+        # Try editing a message and removing an linked attachment that's been
+        # uploaded and deleted by the original user. Users should not be able
+        # to detach another user's attachments.
+
+        user_profile = self.example_user("hamlet")
+        file1 = self.create_attachment_helper(user_profile)
+
+        content = f"Init message [attachment1.txt]({file1})"
+
+        # Send messages with the attachment on both users
+        original_msg_id = self.send_stream_message(
+            user_profile,
+            "Denmark",
+            topic_name="editing",
+            content=content,
+        )
+        self.check_message(original_msg_id, topic_name="editing", content=content)
+        attachments = Attachment.objects.filter(messages__in=[original_msg_id])
+        self.assert_length(attachments, 1)
+
+        msg_id = self.send_stream_message(
+            self.example_user("iago"),
+            "Denmark",
+            topic_name="editing",
+            content=content,
+        )
+        self.check_message(msg_id, topic_name="editing", content=content)
+        attachments = Attachment.objects.filter(messages__in=[msg_id])
+        self.assert_length(attachments, 1)
+
+        # Delete the message reference from the attachment uploader
+        self.login("hamlet")
+        result = self.client_delete(f"/json/messages/{original_msg_id}")
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+
+        # Try editing the message and removing the reference of the now deleted attachment.
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "Try editing a message with an attachment uploaded by another user",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_uploads"], 0)
