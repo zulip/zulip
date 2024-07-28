@@ -16,6 +16,7 @@ import orjson
 import responses
 from django.apps import apps
 from django.conf import settings
+from django.core.files.uploadedfile import UploadedFile
 from django.core.mail import EmailMessage
 from django.core.signals import got_request_exception
 from django.db import connection, transaction
@@ -76,6 +77,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
+from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.common import (
@@ -2026,6 +2028,14 @@ Output:
             mock.patch("zerver.views.upload.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
         ):
             yield
+
+    def create_attachment_helper(self, user: UserProfile) -> str:
+        with tempfile.NamedTemporaryFile() as attach_file:
+            attach_file.write(b"Hello, World!")
+            attach_file.flush()
+            with open(attach_file.name, "rb") as fp:
+                file_path = upload_message_attachment_from_request(UploadedFile(fp), user)
+                return file_path
 
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):

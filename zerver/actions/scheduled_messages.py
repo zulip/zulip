@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Sequence
 from datetime import datetime, timedelta
+from typing import Any
 
 from django.conf import settings
 from django.db import transaction
@@ -13,7 +14,11 @@ from zerver.actions.message_send import (
     do_send_messages,
     internal_send_private_message,
 )
-from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
+from zerver.actions.uploads import (
+    AttachmentChangeResult,
+    check_attachment_reference_change,
+    do_claim_attachments,
+)
 from zerver.lib.addressee import Addressee
 from zerver.lib.display_recipient import get_recipient_ids
 from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
@@ -136,9 +141,10 @@ def edit_scheduled_message(
     message_content: str | None,
     deliver_at: datetime | None,
     realm: Realm,
-) -> None:
+) -> list[dict[str, Any]]:
     with transaction.atomic():
         scheduled_message_object = access_scheduled_message(sender, scheduled_message_id)
+        attachment_reference_change = AttachmentChangeResult(False, [])
 
         # Handles the race between us initiating this transaction and user sending us the edit request.
         if scheduled_message_object.delivered is True:
@@ -222,10 +228,12 @@ def edit_scheduled_message(
             )
             scheduled_message_object.content = send_request.message.content
             scheduled_message_object.rendered_content = rendering_result.rendered_content
-            scheduled_message_object.has_attachment = check_attachment_reference_change(
+            attachment_reference_change = check_attachment_reference_change(
                 scheduled_message_object, rendering_result
             )
-
+            scheduled_message_object.has_attachment = (
+                attachment_reference_change.did_attachment_change
+            )
         if deliver_at is not None:
             # User has updated the scheduled message's send timestamp.
             scheduled_message_object.scheduled_timestamp = deliver_at
@@ -243,6 +251,8 @@ def edit_scheduled_message(
         scheduled_message_object.save()
 
     notify_update_scheduled_message(sender, scheduled_message_object)
+
+    return attachment_reference_change.detached_attachments
 
 
 def notify_remove_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:

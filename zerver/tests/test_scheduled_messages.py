@@ -728,3 +728,85 @@ class ScheduledMessageTest(ZulipTestCase):
             [scheduled_message.id],
         )
         self.assertEqual(scheduled_message.has_attachment, True)
+
+    def test_edit_scheduled_message_can_detach_attachment(self) -> None:
+        # Try editing a scheduled message and removing an linked attachment that's
+        # uploaded by us. Users should be able to detach their own attachments
+        CONST_UPLOAD_PATH_PREFIX = "/user_uploads/"
+        verona_stream_id = self.get_stream_id("Verona")
+        user_profile = self.example_user("hamlet")
+        file1 = self.create_attachment_helper(user_profile)
+
+        content = f"Init message [attachment1.txt]({file1})"
+        self.login("hamlet")
+
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        # Send a message with an attachment
+        self.do_schedule_message("stream", verona_stream_id, content, scheduled_delivery_timestamp)
+        scheduled_message = self.last_scheduled_message()
+
+        path_id = re.sub(r"/user_uploads/", "", file1)
+        attachments = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(
+            list(attachments.scheduled_messages.all().values_list("id", flat=True)),
+            [scheduled_message.id],
+        )
+        self.assertEqual(scheduled_message.has_attachment, True)
+
+        # Try editing the message and removing the only reference to the attachment
+        result = self.client_patch(
+            f"/json/scheduled_messages/{scheduled_message.id}",
+            {"content": "Try editing a scheduled message with an attachment"},
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_files"], 1)
+        actual_path_id_set = (
+            CONST_UPLOAD_PATH_PREFIX + result_content["detached_files"][0]["path_id"]
+        )
+        self.assertEqual(actual_path_id_set, file1)
+
+    def test_edit_scheduled_message_cannot_detach_another_user_attachment(self) -> None:
+        # Try editing a scheduled message and removing an linked attachment that's
+        # uploaded by another user. Users should not be able to detach another user's
+        # attachments.
+        user_profile = self.example_user("hamlet")
+        file1 = self.create_attachment_helper(user_profile)
+        verona_stream_id = self.get_stream_id("Verona")
+
+        content = f"Init message [attachment1.txt]({file1})"
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        # Send a message with attachment using another user profile.
+        original_msg_id = self.send_stream_message(
+            user_profile,
+            "Denmark",
+            topic_name="editing",
+            content=content,
+        )
+        original_attachments = Attachment.objects.filter(messages__in=[original_msg_id])
+        self.assert_length(original_attachments, 1)
+
+        # Send a scheduled message referencing to the attachment uploaded by another user.
+        self.login("iago")
+        self.do_schedule_message("stream", verona_stream_id, content, scheduled_delivery_timestamp)
+        scheduled_message = self.last_scheduled_message()
+
+        path_id = re.sub(r"/user_uploads/", "", file1)
+        attachments = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(
+            list(attachments.scheduled_messages.all().values_list("id", flat=True)),
+            [scheduled_message.id],
+        )
+        self.assertEqual(scheduled_message.has_attachment, True)
+
+        # Try editing the scheduled message and removing the reference to the attachment uploaded
+        # by another user.
+        result = self.client_patch(
+            f"/json/scheduled_messages/{scheduled_message.id}",
+            {"content": "Try editing a message with an attachment uploaded by another user"},
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_files"], 0)
