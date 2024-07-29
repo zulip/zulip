@@ -83,7 +83,7 @@
             cursor: pointer;
         }
 
-        > div {
+        > .message_control_button {
             opacity: 1;
             visibility: visible;
         }
