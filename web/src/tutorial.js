@@ -18,7 +18,7 @@ export function initialize() {
             [
                 {
                     operator: "dm",
-                    operand: people.WELCOME_BOT.user_id,
+                    operand: people.WELCOME_BOT.email,
                 },
             ],
             {trigger: "sidebar"},
