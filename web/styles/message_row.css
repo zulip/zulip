@@ -430,7 +430,7 @@
         text-align: center;
         color: var(--color-message-action-visible);
 
-        & i {
+        & .message-controls-icon {
             vertical-align: middle;
             /* TODO: Math for these values, possibly with variables.
                In short, the icon body is 16px square; the current
