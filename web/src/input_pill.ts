@@ -29,7 +29,6 @@ export type InputPillItem<ItemType> = {
 } & ItemType;
 
 export type InputPillConfig = {
-    show_user_status_emoji?: boolean;
     exclude_inaccessible_users?: boolean;
 };
 
@@ -70,13 +69,6 @@ type InputPillStore<ItemType> = {
 
 type InputPillRenderingDetails = {
     display_value: string;
-    has_image: boolean;
-    img_src?: string | undefined;
-    deactivated: boolean | undefined;
-    has_status?: boolean;
-    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined;
-    should_add_guest_user_indicator: boolean | undefined;
-    user_id?: number | undefined;
     group_id?: number | undefined;
     has_stream?: boolean;
     stream?: StreamSubscription;
@@ -178,37 +170,17 @@ export function create<ItemType>(
             if (store.generate_pill_html !== undefined) {
                 pill_html = store.generate_pill_html(item);
             } else {
-                const has_image = item.img_src !== undefined;
-
                 const opts: InputPillRenderingDetails = {
                     display_value: item.display_value,
-                    has_image,
-                    deactivated: item.deactivated,
-                    should_add_guest_user_indicator: item.should_add_guest_user_indicator,
                 };
 
-                if (item.user_id) {
-                    opts.user_id = item.user_id;
-                }
                 if (item.group_id) {
                     opts.group_id = item.group_id;
-                }
-
-                if (has_image) {
-                    opts.img_src = item.img_src;
                 }
 
                 if (item.type === "stream" && item.stream) {
                     opts.has_stream = true;
                     opts.stream = item.stream;
-                }
-
-                if (store.pill_config?.show_user_status_emoji === true) {
-                    const has_status = item.status_emoji_info !== undefined;
-                    if (has_status) {
-                        opts.status_emoji_info = item.status_emoji_info;
-                    }
-                    opts.has_status = has_status;
                 }
                 pill_html = render_input_pill(opts);
             }

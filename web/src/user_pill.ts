@@ -1,3 +1,5 @@
+import render_input_pill from "../templates/input_pill.hbs";
+
 import * as blueslip from "./blueslip";
 import type {InputPillConfig, InputPillContainer, InputPillItem} from "./input_pill";
 import * as input_pill from "./input_pill";
@@ -159,6 +161,30 @@ export function append_user(user: User, pills: UserPillWidget | CombinedPillCont
     }
 }
 
+export function generate_pill_html(
+    item: InputPillItem<UserPill>,
+    show_user_status_emoji = false,
+): string {
+    let status_emoji_info;
+    let has_status;
+    if (show_user_status_emoji) {
+        has_status = item.status_emoji_info !== undefined;
+        if (has_status) {
+            status_emoji_info = item.status_emoji_info;
+        }
+    }
+    return render_input_pill({
+        display_value: item.display_value,
+        has_image: item.img_src !== undefined,
+        deactivated: item.deactivated,
+        should_add_guest_user_indicator: item.should_add_guest_user_indicator,
+        user_id: item.user_id,
+        img_src: item.img_src,
+        has_status,
+        status_emoji_info,
+    });
+}
+
 export function create_pills(
     $pill_container: JQuery,
     pill_config?: InputPillConfig | undefined,
@@ -168,6 +194,7 @@ export function create_pills(
         pill_config,
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,
+        generate_pill_html,
     });
     return pills;
 }

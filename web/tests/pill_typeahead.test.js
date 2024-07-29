@@ -139,7 +139,6 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
     });
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
-        assert.equal(typeof data.has_image, "boolean");
         return html;
     });
     let input_pill_typeahead_called = false;
@@ -231,7 +230,6 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
     });
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
-        assert.equal(typeof data.has_image, "boolean");
         return html;
     });
     let input_pill_typeahead_called = false;
@@ -319,7 +317,6 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     override_typeahead_helper(override_rewire);
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
-        assert.equal(typeof data.has_image, "boolean");
         return html;
     });
     let input_pill_typeahead_called = false;
