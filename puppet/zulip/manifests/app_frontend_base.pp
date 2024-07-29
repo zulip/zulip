@@ -240,15 +240,7 @@ class zulip::app_frontend_base {
     content => template('zulip/logrotate/zulip.template.erb'),
   }
 
-  file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":
-    require => Package[$zulip::common::nagios_plugins],
-    recurse => true,
-    purge   => true,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_app_frontend',
-  }
+  zulip::nagios_plugins {'zulip_app_frontend': }
 
   # This cron job does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
   zulip::cron { 'fetch-tor-exit-nodes':
