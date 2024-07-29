@@ -11,8 +11,6 @@ set_global("document", {});
 class ClipboardEvent {}
 set_global("ClipboardEvent", ClipboardEvent);
 
-const example_img_link = "http://example.com/example.png";
-
 mock_esm("../src/ui_util", {
     place_caret_at_end: noop,
 });
@@ -23,24 +21,10 @@ set_global("getSelection", () => ({
 
 const input_pill = zrequire("input_pill");
 
-function pill_html(value, img_src, status_emoji_info) {
-    const has_image = img_src !== undefined;
-    const has_status = status_emoji_info !== undefined;
-
+function pill_html(value) {
     const opts = {
         display_value: value,
-        has_image,
-        has_status,
     };
-
-    if (has_image) {
-        opts.img_src = img_src;
-    }
-
-    if (has_status) {
-        opts.status_emoji_info = status_emoji_info;
-    }
-
     return require("../templates/input_pill.hbs")(opts);
 }
 
@@ -58,24 +42,17 @@ run_test("basics", ({mock_template}) => {
         $container,
         create_item_from_text: noop,
         get_text_from_item: noop,
-        pill_config: {
-            show_user_status_emoji: true,
-        },
     });
-    const status_emoji_info = {emoji_code: "5"};
 
     // type for a pill can be any string but it needs to be
     // defined while creating any pill.
     const item = {
         display_value: "JavaScript",
-        language: "js",
         type: "language",
-        img_src: example_img_link,
-        status_emoji_info,
     };
 
     let inserted_before;
-    const expected_html = pill_html("JavaScript", example_img_link, status_emoji_info);
+    const expected_html = pill_html("JavaScript");
 
     $pill_input.before = ($elem) => {
         inserted_before = true;
@@ -94,7 +71,6 @@ function set_up() {
             display_value: "BLUE",
             description: "color of the sky",
             type: "color",
-            img_src: example_img_link,
         },
 
         red: {
@@ -172,10 +148,7 @@ run_test("copy from pill", ({mock_template}) => {
 });
 
 run_test("paste to input", ({mock_template}) => {
-    mock_template("input_pill.hbs", true, (data, html) => {
-        assert.equal(typeof data.has_image, "boolean");
-        return html;
-    });
+    mock_template("input_pill.hbs", true, (_data, html) => html);
 
     const info = set_up();
     const config = info.config;
@@ -219,10 +192,7 @@ run_test("paste to input", ({mock_template}) => {
 });
 
 run_test("arrows on pills", ({mock_template}) => {
-    mock_template("input_pill.hbs", true, (data, html) => {
-        assert.equal(typeof data.has_image, "boolean");
-        return html;
-    });
+    mock_template("input_pill.hbs", true, (_data, html) => html);
 
     const info = set_up();
     const config = info.config;
@@ -413,11 +383,7 @@ run_test("insert_remove", ({mock_template}) => {
     assert.ok(created);
     assert.ok(!removed);
 
-    assert.deepEqual(inserted_html, [
-        pill_html("BLUE", example_img_link),
-        pill_html("RED"),
-        pill_html("YELLOW"),
-    ]);
+    assert.deepEqual(inserted_html, [pill_html("BLUE"), pill_html("RED"), pill_html("YELLOW")]);
 
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 
@@ -568,7 +534,6 @@ run_test("misc things", () => {
     widget.appendValidatedData({
         display_value: "This item has no type.",
         language: "js",
-        img_src: example_img_link,
     });
 
     // click on container
