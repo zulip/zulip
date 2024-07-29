@@ -375,11 +375,11 @@
     }
 
     .recent-view-topic-header {
-        width: 35%;
+        width: 32%;
     }
 
     .recent-view-unread-header {
-        width: 5%;
+        width: 8%;
 
         .zulip-icon-unread {
             position: relative;
@@ -421,6 +421,17 @@
 
     .recent_topic_name {
         width: 40%;
+        gap: 5px;
+
+        .flex_container {
+            .left_part {
+                flex: 4;
+            }
+
+            .right_part {
+                flex: 1;
+            }
+        }
 
         & a {
             word-break: break-word;
