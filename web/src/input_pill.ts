@@ -16,7 +16,6 @@ import * as ui_util from "./ui_util";
 export type InputPillItem<ItemType> = {
     display_value: string;
     type: string;
-    group_id?: number;
     // Used for search pills
     operator?: string;
     stream?: StreamSubscription;
@@ -63,7 +62,6 @@ type InputPillStore<ItemType> = {
 
 type InputPillRenderingDetails = {
     display_value: string;
-    group_id?: number | undefined;
     has_stream?: boolean;
     stream?: StreamSubscription;
 };
@@ -167,10 +165,6 @@ export function create<ItemType>(
                 const opts: InputPillRenderingDetails = {
                     display_value: item.display_value,
                 };
-
-                if (item.group_id) {
-                    opts.group_id = item.group_id;
-                }
 
                 if (item.type === "stream" && item.stream) {
                     opts.has_stream = true;

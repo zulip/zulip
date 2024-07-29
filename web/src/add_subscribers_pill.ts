@@ -1,5 +1,10 @@
+import assert from "minimalistic-assert";
+
+import render_input_pill from "../templates/input_pill.hbs";
+
 import * as blueslip from "./blueslip";
 import * as input_pill from "./input_pill";
+import type {InputPillItem} from "./input_pill";
 import * as keydown_util from "./keydown_util";
 import type {User} from "./people";
 import * as pill_typeahead from "./pill_typeahead";
@@ -61,6 +66,22 @@ function set_up_pill_typeahead({
     pill_typeahead.set_up_combined($pill_container.find(".input"), pill_widget, opts);
 }
 
+function generate_pill_html(item: InputPillItem<CombinedPill>): string {
+    if (item.type === "user_group") {
+        return render_input_pill({
+            display_value: item.display_value,
+            group_id: item.group_id,
+        });
+    } else if (item.type === "user") {
+        return user_pill.generate_pill_html(item);
+    }
+    assert(item.type === "stream");
+    return render_input_pill({
+        ...item,
+        has_stream: true,
+    });
+}
+
 export function create({
     $pill_container,
     get_potential_subscribers,
@@ -72,6 +93,7 @@ export function create({
         $container: $pill_container,
         create_item_from_text,
         get_text_from_item,
+        generate_pill_html,
     });
     function get_users(): User[] {
         const potential_subscribers = get_potential_subscribers();
@@ -116,6 +138,7 @@ export function create_without_add_button({
         $container: $pill_container,
         create_item_from_text,
         get_text_from_item,
+        generate_pill_html,
     });
     function get_users(): User[] {
         const potential_subscribers = get_potential_subscribers();
