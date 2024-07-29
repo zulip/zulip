@@ -1,6 +1,9 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_input_pill from "../templates/input_pill.hbs";
+import render_search_user_pill from "../templates/search_user_pill.hbs";
+
 import {Filter} from "./filter";
 import * as input_pill from "./input_pill";
 import type {InputPillContainer} from "./input_pill";
@@ -9,6 +12,7 @@ import type {User} from "./people";
 import type {NarrowTerm} from "./state_data";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
+import * as util from "./util";
 
 export type SearchUserPill = {
     type: "search_user";
@@ -70,6 +74,25 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         get_text_from_item: get_search_string_from_item,
         split_text_on_comma: false,
         convert_to_pill_on_enter: false,
+        generate_pill_html(item) {
+            if (item.type === "search_user") {
+                return render_search_user_pill(item);
+            }
+            // For search pills, we don't need to use + instead
+            // of spaces in the pill, since there is visual separation
+            // of pills. We also chose to add a space after the colon
+            // after the search operator.
+            // TODO: Ideally we wouldn't store a display value in a
+            // non-display format, but we currently use `display_value`
+            // not only for visual representation but also for parsing
+            // the value a pill represents.
+            // In the future we should change all input pills to have
+            // a `value` as well as a `display_value`.
+            let display_value = item.display_value.replaceAll("+", " ");
+            display_value = display_value.replace(":", ": ");
+            display_value = util.robust_url_decode(display_value).trim();
+            return render_input_pill({display_value});
+        },
     });
     // We don't automatically create pills on paste. When the user
     // presses enter, we validate the input then.
