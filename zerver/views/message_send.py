@@ -171,10 +171,9 @@ def send_message_backend(
                 message_to = [stream_indicator]
         else:
             message_to = extract_private_recipients(req_to)
-    
     if recipient_type_name != "stream" and len(message_to) > 50:
         raise ValueError("Cannot send a message to more than 50 recipients")
-    
+
     # Temporary hack: We're transitioning `forged` from accepting
     # `yes` to accepting `true` like all of our normal booleans.
     forged = forged_str is not None and forged_str in ["yes", "true"]
