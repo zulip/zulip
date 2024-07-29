@@ -163,10 +163,6 @@
     }
 
     /* Mentions and alert words */
-    .user-mention-me :not(.silent) {
-        background-color: hsl(112deg 88% 87%);
-    }
-
     .user-group-mention,
     .user-mention,
     .topic-mention {
