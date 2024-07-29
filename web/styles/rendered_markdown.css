@@ -637,6 +637,7 @@
 
         .message_embed_image {
             display: inline-block;
+            padding: 5px;
             width: 70px;
             height: 70px;
             background-size: cover;
@@ -676,12 +677,6 @@
     &.rtl .message_embed {
         border-left: unset;
         border-right: 3px solid hsl(0deg 0% 93%);
-    }
-
-    .message_embed > * {
-        display: inherit;
-        padding: 5px;
-        border: none;
     }
 
     & a {
