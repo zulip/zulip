@@ -50,6 +50,7 @@ import * as spectators from "./spectators";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
+import {get_latest_message_id_in_topic} from "./stream_topic_history";
 import * as submessage from "./submessage";
 import * as topic_generator from "./topic_generator";
 import * as typing_events from "./typing_events";
@@ -82,7 +83,7 @@ export function changehash(newhash, trigger) {
     if (browser_history.state.changing_hash) {
         // If we retargeted the narrow operation because a message was moved,
         // we want to have the current narrow hash in the browser history.
-        if (trigger === "retarget message location") {
+        if (trigger === "retarget message location" || trigger === "hash change") {
             window.location.replace(newhash);
         }
         return;
@@ -104,7 +105,11 @@ export function changehash(newhash, trigger) {
 }
 
 export function update_hash_to_match_filter(filter, trigger) {
-    if (browser_history.state.changing_hash && trigger !== "retarget message location") {
+    if (
+        browser_history.state.changing_hash &&
+        trigger !== "retarget message location" &&
+        trigger !== "hash change"
+    ) {
         return;
     }
     const new_hash = hash_util.search_terms_to_hash(filter.terms());
@@ -322,6 +327,28 @@ export function show(raw_terms, opts) {
         raw_terms = [{operator: "in", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
+
+    // If the filter is in channel topic narrow, then we try to add a `with`
+    // term to it using the last locally available message of channel and
+    // topic.
+    //
+    // If no message exists locally, we leave it so that it can be
+    // updated after the messages are fetched.
+    if (filter.is_in_channel_topic_narrow()) {
+        const channel_id = stream_data.get_stream_id(filter.operands("channel")[0]);
+        const topic = filter.operands("topic")[0];
+        const last_msg_id = get_latest_message_id_in_topic(channel_id, topic);
+
+        // It is important to verify if the message id is integer or not since it
+        // is likely that stream topic history may have float values in case the
+        // message id is not updated from local message id.
+        if (last_msg_id === undefined) {
+            filter.narrow_requires_hash_change = true;
+        } else {
+            filter.adjust_with_operand_to_message(last_msg_id);
+        }
+    }
+
     filter.try_adjusting_for_moved_with_target();
 
     if (!opts.force_rerender && try_rendering_locally_for_same_narrow(filter, opts)) {
@@ -664,6 +691,17 @@ export function show(raw_terms, opts) {
                     cont() {
                         if (message_lists.current !== msg_list) {
                             return;
+                        }
+
+                        // After fetching the messages, if we have a channel topic narrow, we try
+                        // to add `with` term to it, with the last message of the list as operand.
+                        //
+                        // If the message list is empty, we leave the narrow as it is.
+                        const last_msg_id = msg_list.view.last_rendered_message()?.id;
+                        if (last_msg_id !== undefined && filter.is_in_channel_topic_narrow()) {
+                            filter.adjust_with_operand_to_message(last_msg_id);
+                        } else {
+                            filter.narrow_requires_hash_change = false;
                         }
 
                         if (filter.narrow_requires_hash_change) {
