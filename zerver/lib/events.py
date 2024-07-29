@@ -312,6 +312,7 @@ def fetch_initial_state_data(
                 realm, realm_authentication_methods_dict
             )
         )
+        state["realm_default_description"] = Realm.DEFAULT_REALM_DESCRIPTION
 
         # We pretend these features are disabled because anonymous
         # users can't access them.  In the future, we may want to move

@@ -15559,6 +15559,14 @@ paths:
                           The [organization language][org-lang] for automated messages and invitation emails.
 
                           [org-lang]: /help/configure-organization-language
+                      realm_default_description:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The default description of the organization.
+
+                          **Changes**: New in Zulip 9.0 (feature level 272).
                       realm_description:
                         type: string
                         description: |

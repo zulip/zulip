@@ -73,8 +73,8 @@ def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
         # Very high entropy realm names are suspicious
         warning_flags.append("random-realm-name")
 
-    if not realm.description:
-        warning_flags.append("no-realm-description")
+    if realm.description == Realm.DEFAULT_REALM_DESCRIPTION:
+        warning_flags.append("default-realm-description")
 
     if realm.icon_source == Realm.ICON_FROM_GRAVATAR:
         warning_flags.append("no-realm-icon")

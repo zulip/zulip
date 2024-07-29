@@ -140,6 +140,7 @@ class HomeTest(ZulipTestCase):
         "realm_default_code_block_language",
         "realm_default_external_accounts",
         "realm_default_language",
+        "realm_default_description",
         "realm_default_stream_groups",
         "realm_default_streams",
         "realm_delete_own_message_policy",

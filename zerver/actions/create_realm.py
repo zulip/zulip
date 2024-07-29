@@ -183,7 +183,7 @@ def do_create_realm(
     name: str,
     *,
     emails_restricted_to_domains: bool | None = None,
-    description: str | None = None,
+    description: str | None = Realm.DEFAULT_REALM_DESCRIPTION,
     invite_required: bool | None = None,
     plan_type: int | None = None,
     org_type: int | None = None,

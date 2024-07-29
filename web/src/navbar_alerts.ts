@@ -121,9 +121,11 @@ export function check_profile_incomplete(): boolean {
     // Eventually, we might also check realm.realm_icon_source,
     // but it feels too aggressive to ask users to do change that
     // since their organization might not have a logo yet.
+    const {realm_description, realm_default_description} = realm;
     if (
-        realm.realm_description === "" ||
-        /^Organization imported from [A-Za-z]+[!.]$/.test(realm.realm_description)
+        realm_description === "" ||
+        realm_description === realm_default_description ||
+        /^Organization imported from [A-Za-z]+[!.]$/.test(realm_description)
     ) {
         return true;
     }

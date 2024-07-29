@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 277  # Last bumped for Zulip 9.0
+API_FEATURE_LEVEL = 280  # Last bumped for `realm_default_description`
 
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision

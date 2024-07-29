@@ -272,6 +272,7 @@ const realm_schema = z.object({
     realm_create_web_public_stream_policy: z.number(),
     realm_date_created: z.number(),
     realm_default_code_block_language: z.string(),
+    realm_default_description: z.string(),
     realm_default_external_accounts: z.record(
         z.string(),
         z.object({
