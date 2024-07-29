@@ -116,7 +116,7 @@ THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
 # some reason marks one of the above formats as such (because they are
 # no longer fuzzed, for instance).
 #
-# Note that only libvips >= 8.13 (Uubntu 24.04 or later, Debian 12 or
+# Note that only libvips >= 8.13 (Ubuntu 24.04 or later, Debian 12 or
 # later) supports this!  These are no-ops on earlier versions of libvips.
 pyvips.operation_block_set("VipsForeignLoad", True)
 pyvips.operation_block_set("VipsForeignLoadHeif", False)  # image/avif, image/heic
