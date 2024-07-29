@@ -16,7 +16,7 @@ import * as util from "./util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
-export type InputPillItem<T> = {
+export type InputPillItem<ItemType> = {
     display_value: string;
     type: string;
     img_src?: string;
@@ -28,41 +28,41 @@ export type InputPillItem<T> = {
     // Used for search pills
     operator?: string;
     stream?: StreamSubscription;
-} & T;
+} & ItemType;
 
 export type InputPillConfig = {
     show_user_status_emoji?: boolean;
     exclude_inaccessible_users?: boolean;
 };
 
-type InputPillCreateOptions<T> = {
+type InputPillCreateOptions<ItemType> = {
     $container: JQuery;
     pill_config?: InputPillConfig | undefined;
     split_text_on_comma?: boolean;
     convert_to_pill_on_enter?: boolean;
     create_item_from_text: (
         text: string,
-        existing_items: InputPillItem<T>[],
+        existing_items: InputPillItem<ItemType>[],
         pill_config?: InputPillConfig | undefined,
-    ) => InputPillItem<T> | undefined;
-    get_text_from_item: (item: InputPillItem<T>) => string;
+    ) => InputPillItem<ItemType> | undefined;
+    get_text_from_item: (item: InputPillItem<ItemType>) => string;
 };
 
-type InputPill<T> = {
-    item: InputPillItem<T>;
+type InputPill<ItemType> = {
+    item: InputPillItem<ItemType>;
     $element: JQuery;
 };
 
-type InputPillStore<T> = {
+type InputPillStore<ItemType> = {
     onTextInputHook?: () => void;
-    pills: InputPill<T>[];
-    pill_config: InputPillCreateOptions<T>["pill_config"];
+    pills: InputPill<ItemType>[];
+    pill_config: InputPillCreateOptions<ItemType>["pill_config"];
     $parent: JQuery;
     $input: JQuery;
-    create_item_from_text: InputPillCreateOptions<T>["create_item_from_text"];
-    get_text_from_item: InputPillCreateOptions<T>["get_text_from_item"];
+    create_item_from_text: InputPillCreateOptions<ItemType>["create_item_from_text"];
+    get_text_from_item: InputPillCreateOptions<ItemType>["get_text_from_item"];
     onPillCreate?: () => void;
-    onPillRemove?: (pill: InputPill<T>, trigger: RemovePillTrigger) => void;
+    onPillRemove?: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void;
     createPillonPaste?: () => void;
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
@@ -83,28 +83,32 @@ type InputPillRenderingDetails = {
 };
 
 // These are the functions that are exposed to other modules.
-export type InputPillContainer<T> = {
+export type InputPillContainer<ItemType> = {
     appendValue: (text: string) => void;
-    appendValidatedData: (item: InputPillItem<T>) => void;
-    getByElement: (element: HTMLElement) => InputPill<T> | undefined;
-    items: () => InputPillItem<T>[];
+    appendValidatedData: (item: InputPillItem<ItemType>) => void;
+    getByElement: (element: HTMLElement) => InputPill<ItemType> | undefined;
+    items: () => InputPillItem<ItemType>[];
     onPillCreate: (callback: () => void) => void;
-    onPillRemove: (callback: (pill: InputPill<T>, trigger: RemovePillTrigger) => void) => void;
+    onPillRemove: (
+        callback: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void,
+    ) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
     clear: (quiet?: boolean) => void;
     clear_text: () => void;
     getCurrentText: () => string | null;
     is_pending: () => boolean;
-    _get_pills_for_testing: () => InputPill<T>[];
+    _get_pills_for_testing: () => InputPill<ItemType>[];
 };
 
 export type RemovePillTrigger = "close" | "backspace" | "clear";
 
-export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T> {
+export function create<ItemType>(
+    opts: InputPillCreateOptions<ItemType>,
+): InputPillContainer<ItemType> {
     // a stateful object of this `pill_container` instance.
     // all unique instance information is stored in here.
-    const store: InputPillStore<T> = {
+    const store: InputPillStore<ItemType> = {
         pills: [],
         pill_config: opts.pill_config,
         $parent: opts.$container,
@@ -159,7 +163,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
-        appendValidatedData(item: InputPillItem<T>) {
+        appendValidatedData(item: InputPillItem<ItemType>) {
             if (!item.display_value) {
                 blueslip.error("no display_value returned");
                 return;
@@ -225,7 +229,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 }
                 pill_html = render_input_pill(opts);
             }
-            const payload: InputPill<T> = {
+            const payload: InputPill<ItemType> = {
                 item,
                 $element: $(pill_html),
             };
@@ -574,7 +578,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
     }
 
     // the external, user-accessible prototype.
-    const prototype: InputPillContainer<T> = {
+    const prototype: InputPillContainer<ItemType> = {
         appendValue: funcs.appendPill.bind(funcs),
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
