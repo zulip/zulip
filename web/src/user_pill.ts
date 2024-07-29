@@ -1,6 +1,7 @@
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
+import type {EmojiRenderingDetails} from "./emoji";
 import type {InputPillConfig, InputPillContainer, InputPillItem} from "./input_pill";
 import * as input_pill from "./input_pill";
 import type {User} from "./people";
@@ -16,6 +17,10 @@ export type UserPill = {
     type: "user";
     user_id?: number;
     email: string;
+    img_src?: string;
+    deactivated?: boolean;
+    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
+    should_add_guest_user_indicator?: boolean;
 };
 
 export type UserPillWidget = InputPillContainer<UserPill>;

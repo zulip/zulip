@@ -6,7 +6,6 @@ import assert from "minimalistic-assert";
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
-import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
 import type {SearchUserPill} from "./search_pill";
 import type {StreamSubscription} from "./sub_store";
@@ -17,11 +16,6 @@ import * as ui_util from "./ui_util";
 export type InputPillItem<ItemType> = {
     display_value: string;
     type: string;
-    img_src?: string;
-    deactivated?: boolean;
-    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
-    should_add_guest_user_indicator?: boolean;
-    user_id?: number;
     group_id?: number;
     // Used for search pills
     operator?: string;
