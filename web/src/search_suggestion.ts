@@ -971,8 +971,8 @@ class Attacher {
 }
 
 export function get_search_result(
-    query_from_pills: string,
-    query_from_text: string,
+    pill_search_terms: NarrowTerm[],
+    text_search_terms: NarrowTerm[],
     add_current_filter = false,
 ): Suggestion[] {
     let suggestion_line: SuggestionLine;
@@ -980,8 +980,6 @@ export function get_search_result(
     // search_terms correspond to the terms for the query in the input.
     // This includes the entire query entered in the searchbox.
     // terms correspond to the terms for the entire query entered in the searchbox.
-    const pill_search_terms = Filter.parse(query_from_pills);
-    const text_search_terms = Filter.parse(query_from_text);
     let all_search_terms = [...pill_search_terms, ...text_search_terms];
 
     // `last` will always be a text term, not a pill term. If there is no
@@ -1101,14 +1099,14 @@ export function get_search_result(
 }
 
 export function get_suggestions(
-    query_from_pills: string,
-    query_from_text: string,
+    pill_search_terms: NarrowTerm[],
+    text_search_terms: NarrowTerm[],
     add_current_filter = false,
 ): {
     strings: string[];
     lookup_table: Map<string, Suggestion>;
 } {
-    const result = get_search_result(query_from_pills, query_from_text, add_current_filter);
+    const result = get_search_result(pill_search_terms, text_search_terms, add_current_filter);
     return finalize_search_result(result);
 }
 

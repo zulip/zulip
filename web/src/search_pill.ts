@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import {Filter} from "./filter";
 import * as input_pill from "./input_pill";
@@ -34,6 +35,9 @@ type SearchPill =
           type: "search";
           display_value: string;
           description_html: string;
+          operator: string;
+          operand: string;
+          negated: boolean | undefined;
       }
     | SearchUserPill;
 
@@ -41,7 +45,9 @@ export type SearchPillWidget = InputPillContainer<SearchPill>;
 
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_terms = Filter.parse(search_string);
-    if (!search_terms.every((term) => Filter.is_valid_search_term(term))) {
+    assert(search_terms.length === 1);
+    const search_term = search_terms[0]!;
+    if (!Filter.is_valid_search_term(search_term)) {
         // This will cause pill validation to fail and trigger a shake animation.
         return undefined;
     }
@@ -50,6 +56,9 @@ export function create_item_from_search_string(search_string: string): SearchPil
         display_value: search_string,
         type: "search",
         description_html,
+        operator: search_term.operator,
+        operand: search_term.operand,
+        negated: search_term.negated,
     };
 }
 
@@ -156,8 +165,16 @@ export function set_search_bar_contents(
     }
 }
 
-export function get_current_search_string_for_widget(pill_widget: SearchPillWidget): string {
-    const items = pill_widget.items();
-    const search_strings = items.map((item) => item.display_value);
-    return search_strings.join(" ");
+function get_search_operand(item: SearchPill): string {
+    if (item.type === "search_user") {
+        return item.users.map((user) => user.email).join(",");
+    }
+    return item.operand;
+}
+
+export function get_current_search_pill_terms(pill_widget: SearchPillWidget): NarrowTerm[] {
+    return pill_widget.items().map((item) => ({
+        ...item,
+        operand: get_search_operand(item),
+    }));
 }
