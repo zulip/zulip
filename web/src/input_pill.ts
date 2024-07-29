@@ -4,7 +4,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
-import render_search_user_pill from "../templates/search_user_pill.hbs";
 
 import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
@@ -12,7 +11,6 @@ import * as keydown_util from "./keydown_util";
 import type {SearchUserPill} from "./search_pill";
 import type {StreamSubscription} from "./sub_store";
 import * as ui_util from "./ui_util";
-import * as util from "./util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
@@ -46,6 +44,7 @@ type InputPillCreateOptions<ItemType> = {
         pill_config?: InputPillConfig | undefined,
     ) => InputPillItem<ItemType> | undefined;
     get_text_from_item: (item: InputPillItem<ItemType>) => string;
+    generate_pill_html?: (item: InputPillItem<ItemType>) => string;
 };
 
 type InputPill<ItemType> = {
@@ -61,6 +60,7 @@ type InputPillStore<ItemType> = {
     $input: JQuery;
     create_item_from_text: InputPillCreateOptions<ItemType>["create_item_from_text"];
     get_text_from_item: InputPillCreateOptions<ItemType>["get_text_from_item"];
+    generate_pill_html: InputPillCreateOptions<ItemType>["generate_pill_html"];
     onPillCreate?: () => void;
     onPillRemove?: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void;
     createPillonPaste?: () => void;
@@ -117,6 +117,7 @@ export function create<ItemType>(
         get_text_from_item: opts.get_text_from_item,
         split_text_on_comma: opts.split_text_on_comma ?? true,
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
+        generate_pill_html: opts.generate_pill_html,
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -174,31 +175,13 @@ export function create<ItemType>(
                 return;
             }
             let pill_html;
-            if (item.type === "search_user") {
-                pill_html = render_search_user_pill(item);
+            if (store.generate_pill_html !== undefined) {
+                pill_html = store.generate_pill_html(item);
             } else {
                 const has_image = item.img_src !== undefined;
 
-                let display_value = item.display_value;
-                // For search pills, we don't need to use + instead
-                // of spaces in the pill, since there is visual separation
-                // of pills. We also chose to add a space after the colon
-                // after the search operator.
-                //
-                // TODO: Ideally this code would live in search files, when
-                // we generate `item.display_value`, but we currently use
-                // `display_value` not only for visual representation but
-                // also for parsing the value a pill represents.
-                // In the future we should change all input pills to have
-                // a `value` as well as a `display_value`.
-                if (item.type === "search") {
-                    display_value = display_value.replaceAll("+", " ");
-                    display_value = display_value.replace(":", ": ");
-                    display_value = util.robust_url_decode(display_value).trim();
-                }
-
                 const opts: InputPillRenderingDetails = {
-                    display_value,
+                    display_value: item.display_value,
                     has_image,
                     deactivated: item.deactivated,
                     should_add_guest_user_indicator: item.should_add_guest_user_indicator,
