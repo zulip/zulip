@@ -39,14 +39,12 @@ type NarrowSearchOptions = {
 
 type OnNarrowSearch = (terms: NarrowTerm[], options: NarrowSearchOptions) => void;
 
-function full_search_query_in_text(): string {
+function full_search_query_in_terms(): NarrowTerm[] {
     assert(search_pill_widget !== null);
     return [
-        search_pill.get_current_search_string_for_widget(search_pill_widget),
-        get_search_bar_text(),
-    ]
-        .join(" ")
-        .trim();
+        ...search_pill.get_current_search_pill_terms(search_pill_widget),
+        ...Filter.parse(get_search_bar_text()),
+    ];
 }
 
 function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): string {
@@ -57,12 +55,11 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
         return get_search_bar_text();
     }
 
-    const search_query = full_search_query_in_text();
-    if (search_query === "") {
+    const terms = full_search_query_in_terms();
+    if (terms.length === 0) {
         exit_search({keep_search_narrow_open: true});
         return "";
     }
-    const terms = Filter.parse(search_query);
     // Reset the search bar to display as many pills as possible for `terms`.
     // We do this in case some of these terms haven't been pillified yet
     // because convert_to_pill_on_enter is false.
@@ -98,8 +95,7 @@ function narrow_to_search_contents_with_search_bar_open(): void {
     if (!validate_text_terms()) {
         return;
     }
-    const search_query = full_search_query_in_text();
-    const terms = Filter.parse(search_query);
+    const terms = full_search_query_in_terms();
     on_narrow_search(terms, {trigger: "search"});
 
     // We want to keep the search bar open here, not show the
@@ -165,13 +161,12 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                 search_input_has_changed = true;
             }
             assert(search_pill_widget !== null);
-            const query_from_pills =
-                search_pill.get_current_search_string_for_widget(search_pill_widget);
+            const pill_terms = search_pill.get_current_search_pill_terms(search_pill_widget);
             const add_current_filter =
-                query_from_pills === "" && narrow_state.filter() !== undefined;
+                pill_terms.length === 0 && narrow_state.filter() !== undefined;
             const suggestions = search_suggestion.get_suggestions(
-                query_from_pills,
-                query,
+                pill_terms,
+                Filter.parse(query),
                 add_current_filter,
             );
             // Update our global search_map hash
