@@ -24,12 +24,21 @@ import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
 import {current_user, realm} from "./state_data";
 import * as stream_events from "./stream_events";
+import * as user_group_edit from "./user_group_edit";
 import * as user_profile from "./user_profile";
 
 export const update_person = function update(person) {
-    const person_obj = people.maybe_get_user_by_id(person.user_id);
+    let ignore_missing_user = false;
+    if (person.is_active === false && !settings_data.user_can_access_all_other_users()) {
+        // Server sends "realm_user/update" event when deactivating a user
+        // to guests even when they cannot access the deactivated user so
+        // that the clients can update the groups data to not include
+        // deactivated users in members list.
+        ignore_missing_user = true;
+    }
+    const person_obj = people.maybe_get_user_by_id(person.user_id, ignore_missing_user);
 
-    if (!person_obj) {
+    if (!ignore_missing_user && !person_obj) {
         blueslip.error("Got update_person event for unexpected user", {user_id: person.user_id});
         return;
     }
@@ -173,6 +182,14 @@ export const update_person = function update(person) {
     }
 
     if (Object.hasOwn(person, "is_active")) {
+        if (person_obj === undefined || person_obj.is_inaccessible_user) {
+            // This means that the current user cannot access the user
+            // who is deactivated (we do not send reactivation events
+            // to users who cannot access the reactivated user).
+            // So, we just update the group members list here.
+            user_group_edit.remove_deactivated_user_from_all_groups(person.user_id);
+        }
+
         if (person.is_active) {
             people.add_active_user(person_obj);
             settings_users.update_view_on_reactivate(person.user_id);
