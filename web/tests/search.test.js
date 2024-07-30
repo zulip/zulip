@@ -52,11 +52,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         return html;
     });
 
-    let expected_suggestion_parts = [];
-    mock_template("search_description.hbs", false, (data, html) => {
-        assert.deepStrictEqual(data.parts, expected_suggestion_parts);
-        return html;
-    });
     let expected_pill_display_value = "";
     let input_pill_displayed = false;
     mock_template("input_pill.hbs", true, (data, html) => {
@@ -234,13 +229,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                     operand: "ver",
                 },
             ];
-            expected_suggestion_parts = [
-                {
-                    operand: "ver",
-                    prefix_for_operator: "search for",
-                    type: "prefix_for_operator",
-                },
-            ];
             expected_pill_display_value = null;
             _setup(terms);
             input_pill_displayed = false;
@@ -253,13 +241,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                 {
                     negated: false,
                     operator: "channel",
-                    operand: "Verona",
-                },
-            ];
-            expected_suggestion_parts = [
-                {
-                    type: "prefix_for_operator",
-                    prefix_for_operator: "channel",
                     operand: "Verona",
                 },
             ];
@@ -370,13 +351,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             negated: false,
             operator: "search",
             operand: "ver",
-        },
-    ];
-    expected_suggestion_parts = [
-        {
-            operand: "ver",
-            prefix_for_operator: "search for",
-            type: "prefix_for_operator",
         },
     ];
     expected_pill_display_value = "ver";

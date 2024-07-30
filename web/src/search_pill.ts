@@ -34,7 +34,6 @@ type SearchPill =
     | {
           type: "search";
           display_value: string;
-          description_html: string;
           operator: string;
           operand: string;
           negated: boolean | undefined;
@@ -51,11 +50,9 @@ export function create_item_from_search_string(search_string: string): SearchPil
         // This will cause pill validation to fail and trigger a shake animation.
         return undefined;
     }
-    const description_html = Filter.search_description_as_html(search_terms);
     return {
         display_value: search_string,
         type: "search",
-        description_html,
         operator: search_term.operator,
         operand: search_term.operand,
         negated: search_term.negated,
