@@ -4,7 +4,8 @@ import * as input_pill from "./input_pill";
 import {set_up_stream} from "./pill_typeahead";
 import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
-import type {CombinedPillItem} from "./typeahead_helper";
+import type {StreamPill} from "./stream_pill";
+import type {CombinedPill} from "./typeahead_helper";
 
 type SetUpPillTypeaheadConfig = {
     pill_widget: stream_pill.StreamPillWidget;
@@ -13,8 +14,8 @@ type SetUpPillTypeaheadConfig = {
 
 function create_item_from_stream_name(
     stream_name: string,
-    current_items: CombinedPillItem[],
-): input_pill.InputPillItem<stream_pill.StreamPill> | undefined {
+    current_items: CombinedPill[],
+): StreamPill | undefined {
     const stream_prefix_required = false;
     const get_allowed_streams = stream_data.get_invite_stream_data;
     const show_stream_sub_count = false;

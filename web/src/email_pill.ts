@@ -1,7 +1,8 @@
-import type {InputPillConfig, InputPillContainer, InputPillItem} from "./input_pill";
+import type {InputPillConfig, InputPillContainer} from "./input_pill";
 import * as input_pill from "./input_pill";
 
 type EmailPill = {
+    type: "email";
     email: string;
 };
 
@@ -11,8 +12,8 @@ const email_regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function create_item_from_email(
     email: string,
-    current_items: InputPillItem<EmailPill>[],
-): InputPillItem<EmailPill> | undefined {
+    current_items: EmailPill[],
+): EmailPill | undefined {
     if (!email_regex.test(email)) {
         return undefined;
     }
@@ -28,7 +29,7 @@ export function create_item_from_email(
     };
 }
 
-export function get_email_from_item(item: InputPillItem<EmailPill>): string {
+export function get_email_from_item(item: EmailPill): string {
     return item.email;
 }
 

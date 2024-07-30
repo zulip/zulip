@@ -1,7 +1,7 @@
 import {$t_html} from "./i18n";
-import type {InputPillContainer, InputPillItem} from "./input_pill";
+import type {InputPillContainer} from "./input_pill";
 import * as people from "./people";
-import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 import type {UserGroup} from "./user_groups";
 import * as user_groups from "./user_groups";
 
@@ -28,8 +28,8 @@ export function display_pill(group: UserGroup): string {
 
 export function create_item_from_group_name(
     group_name: string,
-    current_items: CombinedPillItem[],
-): InputPillItem<UserGroupPill> | undefined {
+    current_items: CombinedPill[],
+): UserGroupPill | undefined {
     group_name = group_name.trim();
     const group = user_groups.get_user_group_from_name(group_name);
     if (!group) {
@@ -47,7 +47,7 @@ export function create_item_from_group_name(
     };
 }
 
-export function get_group_name_from_item(item: InputPillItem<UserGroupPill>): string {
+export function get_group_name_from_item(item: UserGroupPill): string {
     return item.group_name;
 }
 

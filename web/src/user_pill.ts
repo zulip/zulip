@@ -2,12 +2,12 @@ import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
-import type {InputPillConfig, InputPillContainer, InputPillItem} from "./input_pill";
+import type {InputPillConfig, InputPillContainer} from "./input_pill";
 import * as input_pill from "./input_pill";
 import type {User} from "./people";
 import * as people from "./people";
 import {realm} from "./state_data";
-import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 import * as user_status from "./user_status";
 
 // This will be used for pills for things like composing
@@ -30,9 +30,9 @@ export type UserPillData = {type: "user"; user: User};
 
 export function create_item_from_email(
     email: string,
-    current_items: CombinedPillItem[],
+    current_items: CombinedPill[],
     pill_config?: InputPillConfig | undefined,
-): InputPillItem<UserPill> | undefined {
+): UserPill | undefined {
     // For normal Zulip use, we need to validate the email for our realm.
     const user = people.get_by_email(email);
 
@@ -68,7 +68,7 @@ export function create_item_from_email(
 
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
 
-    const item: InputPillItem<UserPill> = {
+    const item: UserPill = {
         type: "user",
         full_name: user.full_name,
         user_id: user.user_id,
@@ -92,7 +92,7 @@ export function create_item_from_email(
     return item;
 }
 
-export function get_email_from_item(item: InputPillItem<UserPill>): string {
+export function get_email_from_item(item: UserPill): string {
     return item.email;
 }
 
@@ -105,7 +105,7 @@ export function append_person(opts: {
     const avatar_url = people.small_avatar_url_for_person(person);
     const status_emoji_info = user_status.get_status_emoji(opts.person.user_id);
 
-    const pill_data: InputPillItem<UserPill> = {
+    const pill_data: UserPill = {
         type: "user",
         full_name: person.full_name,
         user_id: person.user_id,
@@ -169,10 +169,7 @@ export function get_display_value_from_item(item: UserPill): string {
     return item.full_name ?? item.email;
 }
 
-export function generate_pill_html(
-    item: InputPillItem<UserPill>,
-    show_user_status_emoji = false,
-): string {
+export function generate_pill_html(item: UserPill, show_user_status_emoji = false): string {
     let status_emoji_info;
     let has_status;
     if (show_user_status_emoji) {
