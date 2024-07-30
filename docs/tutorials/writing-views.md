@@ -251,7 +251,7 @@ function is such that all user input validation happens in the view
 code (i.e. all 400 type errors are thrown there), and the actions code
 is responsible for atomically executing the change (this is usually
 signalled by having the actions function have a name starting with
-`do_`. So in most cases, errors in an actions function will be the
+`do_`). So in most cases, errors in an actions function will be the
 result of an operational problem (e.g., lost connection to the
 database) and lead to a 500 error. If an actions function is
 responsible for validation as well, it should have a name starting
