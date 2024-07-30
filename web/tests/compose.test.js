@@ -653,6 +653,9 @@ test_ui("on_events", ({override, override_rewire}) => {
 
     (function test_markdown_preview_compose_clicked() {
         // Tests setup
+        $("textarea#compose-textarea").set_height(50);
+        $("#compose .preview_message_area").css = noop;
+
         function setup_visibilities() {
             $("#compose .markdown_preview").show();
             $("#compose .undo_markdown_preview").hide();
