@@ -633,11 +633,6 @@ h4.user_group_setting_subsection_title {
             margin-right: 5px;
         }
 
-        .top-bar > div {
-            display: inline-block;
-            vertical-align: top;
-        }
-
         .top-bar .stream-name,
         .top-bar .group-name-wrapper {
             font-weight: 600;
@@ -646,11 +641,6 @@ h4.user_group_setting_subsection_title {
         .bottom-bar {
             margin-top: 2px;
             line-height: 1.5;
-        }
-
-        .bottom-bar > div {
-            display: inline-block;
-            vertical-align: bottom;
         }
     }
 
