@@ -13,6 +13,7 @@ from sentry_sdk import capture_exception
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.topic import check_access_based_on_can_access_stream_topics_group
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -26,6 +27,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.streams import get_stream_by_id_in_realm
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
@@ -191,6 +193,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     recipient_ids = []
     for sub in all_stream_subs:
         stream_subscription_logs = all_stream_subscription_logs[sub["recipient__type_id"]]
+        stream = get_stream_by_id_in_realm(sub["recipient__type_id"], user_profile.realm)
         if stream_subscription_logs[-1].event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
             assert stream_subscription_logs[-1].event_last_message_id is not None
             if (
@@ -200,6 +203,11 @@ def add_missing_messages(user_profile: UserProfile) -> None:
                 # We are going to short circuit this iteration as its no use
                 # iterating since user unsubscribed before soft-deactivation
                 continue
+
+        if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+            user_profile, stream
+        ):
+            continue
         recipient_ids.append(sub["recipient_id"])
 
     new_stream_msgs = (

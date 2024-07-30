@@ -4,6 +4,7 @@ from unittest import mock
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.lib.mention import stream_wildcards
 from zerver.lib.soft_deactivation import (
     add_missing_messages,
@@ -23,12 +24,14 @@ from zerver.models import (
     AlertWord,
     Client,
     Message,
+    NamedUserGroup,
     RealmAuditLog,
     Stream,
     UserActivity,
     UserMessage,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -324,7 +327,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(12):
             reactivate_user_if_soft_deactivated(long_term_idle_user)
         self.assertFalse(long_term_idle_user.long_term_idle)
         self.assertEqual(
@@ -385,7 +388,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(10):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 1)
@@ -401,7 +404,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(11):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 1)
@@ -425,7 +428,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_count = len(idle_user_msg_list)
         for sent_message in sent_message_list:
             self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(10):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 2)
@@ -456,7 +459,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_count = len(idle_user_msg_list)
         for sent_message in sent_message_list:
             self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(10):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 2)
@@ -490,7 +493,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].id, sent_message_id)
         # There are no streams to fetch missing messages from, so
         # the Message.objects query will be avoided.
-        with self.assert_database_query_count(3):
+        with self.assert_database_query_count(8):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         # No new UserMessage rows should have been created.
@@ -516,7 +519,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_count = len(idle_user_msg_list)
         for sent_message in sent_message_list:
             self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(11):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 2)
@@ -524,6 +527,37 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             self.assertEqual(idle_user_msg_list.pop(), sent_message)
         long_term_idle_user.refresh_from_db()
         self.assertEqual(long_term_idle_user.last_active_message_id, sent_message_list[0].id)
+
+        # Test that add_missing_messages() does not add any `UserMessage` rows for users not in
+        # `can_access_stream_topics_group`.
+        stream_name = "support_stream"
+        support_stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(self.example_user("iago"), stream_name)
+
+        administrators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            support_stream,
+            "can_access_stream_topics_group",
+            administrators_user_group,
+            acting_user=sender,
+        )
+        sent_message_list = []
+        sent_message_list.append(send_fake_message("Test message 11", support_stream))
+        self.subscribe(self.example_user("hamlet"), stream_name)
+        sent_message_list.append(send_fake_message("Test message 12", support_stream))
+        sent_message_list.reverse()
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        for sent_message in sent_message_list:
+            self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
+        with self.assert_database_query_count(12):
+            add_missing_messages(long_term_idle_user)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assert_length(idle_user_msg_list, idle_user_msg_count + 0)
+        long_term_idle_user.refresh_from_db()
+        self.assertNotEqual(long_term_idle_user.last_active_message_id, sent_message_list[0].id)
 
     @mock.patch("zerver.lib.soft_deactivation.BULK_CREATE_BATCH_SIZE", 2)
     def test_add_missing_messages_pagination(self) -> None:
@@ -553,7 +587,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(14):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + num_new_messages)
