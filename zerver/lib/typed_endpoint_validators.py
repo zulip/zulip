@@ -69,6 +69,18 @@ def timezone_or_empty_validator() -> AfterValidator:
     return AfterValidator(lambda s: to_timezone_or_empty(s))
 
 
+def check_timezone(s: str) -> str:
+    try:
+        zoneinfo.ZoneInfo(canonicalize_timezone(s))
+    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
+        raise ValueError(_("Not a recognized time zone"))
+    return s
+
+
+def timezone_validator() -> AfterValidator:
+    return AfterValidator(lambda s: check_timezone(s))
+
+
 def to_non_negative_int_or_none(s: str) -> NonNegativeInt | None:
     try:
         i = int(s)

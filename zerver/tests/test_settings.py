@@ -407,39 +407,86 @@ class ChangeSettingsTest(ZulipTestCase):
         self.do_test_change_user_setting("timezone")
 
     def test_invalid_setting_value(self) -> None:
-        invalid_values_dict = dict(
-            default_language="invalid_de",
-            web_home_view="invalid_view",
-            emojiset="apple",
-            timezone="invalid_US/Mountain",
-            demote_inactive_streams=10,
-            web_mark_read_on_scroll_policy=10,
-            web_channel_default_view=10,
-            user_list_style=10,
-            web_animate_image_previews="invalid_value",
-            web_stream_unreads_count_display_policy=10,
-            color_scheme=10,
-            notification_sound="invalid_sound",
-            desktop_icon_count_display=10,
-        )
-
+        invalid_values: list[dict[str, Any]] = [
+            {
+                "setting_name": "default_language",
+                "value": "invalid_de",
+                "error_msg": "Invalid default_language",
+            },
+            {
+                "setting_name": "web_home_view",
+                "value": "invalid_view",
+                "error_msg": "Invalid web_home_view: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "emojiset",
+                "value": "apple",
+                "error_msg": "Invalid emojiset: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "timezone",
+                "value": "invalid_US/Mountain",
+                "error_msg": "Invalid timezone: Value error, Not a recognized time zone",
+            },
+            {
+                "setting_name": "demote_inactive_streams",
+                "value": 10,
+                "error_msg": "Invalid demote_inactive_streams: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_mark_read_on_scroll_policy",
+                "value": 10,
+                "error_msg": "Invalid web_mark_read_on_scroll_policy: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_channel_default_view",
+                "value": 10,
+                "error_msg": "Invalid web_channel_default_view: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "user_list_style",
+                "value": 10,
+                "error_msg": "Invalid user_list_style: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_animate_image_previews",
+                "value": "invalid_value",
+                "error_msg": "Invalid web_animate_image_previews: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_stream_unreads_count_display_policy",
+                "value": 10,
+                "error_msg": "Invalid web_stream_unreads_count_display_policy: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "color_scheme",
+                "value": 10,
+                "error_msg": "Invalid color_scheme: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "notification_sound",
+                "value": "invalid_sound",
+                "error_msg": "Invalid notification sound '\"invalid_sound\"'",
+            },
+            {
+                "setting_name": "desktop_icon_count_display",
+                "value": 10,
+                "error_msg": "Invalid desktop_icon_count_display: Value error, Not in the list of possible values",
+            },
+        ]
         self.login("hamlet")
-        for setting_name in invalid_values_dict:
-            invalid_value = invalid_values_dict.get(setting_name)
-            if isinstance(invalid_value, str):
-                invalid_value = orjson.dumps(invalid_value).decode()
+        for invalid_value in invalid_values:
+            if isinstance(invalid_value["value"], str):
+                invalid_value["value"] = orjson.dumps(invalid_value["value"]).decode()
 
-            req = {setting_name: invalid_value}
+            req = {invalid_value["setting_name"]: invalid_value["value"]}
             result = self.client_patch("/json/settings", req)
 
-            expected_error_msg = f"Invalid {setting_name}"
-            if setting_name == "notification_sound":
-                expected_error_msg = f"Invalid notification sound '{invalid_value}'"
-            elif setting_name == "timezone":
-                expected_error_msg = "timezone is not a recognized time zone"
-            self.assert_json_error(result, expected_error_msg)
+            self.assert_json_error(result, invalid_value["error_msg"])
             hamlet = self.example_user("hamlet")
-            self.assertNotEqual(getattr(hamlet, setting_name), invalid_value)
+            self.assertNotEqual(
+                getattr(hamlet, invalid_value["setting_name"]), invalid_value["value"]
+            )
 
     def do_change_emojiset(self, emojiset: str) -> "TestHttpResponse":
         self.login("hamlet")
@@ -454,7 +501,9 @@ class ChangeSettingsTest(ZulipTestCase):
 
         for emojiset in banned_emojisets:
             result = self.do_change_emojiset(emojiset)
-            self.assert_json_error(result, "Invalid emojiset")
+            self.assert_json_error(
+                result, "Invalid emojiset: Value error, Not in the list of possible values"
+            )
 
         for emojiset in valid_emojisets:
             result = self.do_change_emojiset(emojiset)
