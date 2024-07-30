@@ -25,6 +25,7 @@ import * as user_sort from "./user_sort";
 
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
+export const all_bots_list_dropdown_widget_name = "all_bots_list_select_bot_status";
 
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
@@ -46,7 +47,15 @@ const section = {
             role_code: 0,
         },
     },
-    bots: {},
+    bots: {
+        dropdown_widget_name: all_bots_list_dropdown_widget_name,
+        filters: {
+            text_search: "",
+            // 0 role_code signifies Active for our filter.
+            role_code: 0,
+            is_active: true,
+        },
+    },
 };
 
 function sort_bot_email(a, b) {
@@ -128,8 +137,12 @@ function failed_listing_users() {
     blueslip.error("Error while listing users for user_id", {user_id});
 }
 
-function add_value_to_filters(section, key, value) {
+function add_value_to_filters(section, key, value, is_active) {
     section.filters[key] = value;
+    if (is_active !== undefined) {
+        section.filters.is_active = is_active;
+    }
+
     // This hard_redraw will rerun the relevant predicate function
     // and in turn apply the new filters.
     section.list_widget.hard_redraw();
@@ -142,6 +155,22 @@ function role_selected_handler(event, dropdown, widget) {
     const role_code = Number($(event.currentTarget).attr("data-unique-id"));
     if (widget.widget_name === section.active.dropdown_widget_name) {
         add_value_to_filters(section.active, "role_code", role_code);
+    } else if (widget.widget_name === section.deactivated.dropdown_widget_name) {
+        add_value_to_filters(section.deactivated, "role_code", role_code);
+    }
+
+    dropdown.hide();
+    widget.render();
+}
+function status_selected_handler(event, dropdown, widget) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const role_code = Number($(event.currentTarget).attr("data-unique-id"));
+    const is_active = role_code !== 1;
+
+    if (widget.widget_name === section.bots.dropdown_widget_name) {
+        add_value_to_filters(section.bots, "role_code", role_code, is_active);
     } else if (widget.widget_name === section.deactivated.dropdown_widget_name) {
         add_value_to_filters(section.deactivated, "role_code", role_code);
     }
@@ -168,6 +197,25 @@ function create_role_filter_dropdown($events_container, widget_name) {
         get_options: get_roles,
         $events_container,
         item_click_callback: role_selected_handler,
+        default_id: "0",
+        tippy_props: {
+            offset: [0, 0],
+        },
+    }).setup();
+}
+function get_bot_status() {
+    return [
+        {unique_id: "0", is_active: true, name: $t({defaultMessage: "Active"})},
+        {unique_id: "1", is_active: false, name: $t({defaultMessage: "Deactivated"})},
+    ];
+}
+
+function create_status_filter_dropdown($events_container, widget_name) {
+    new dropdown_widget.DropdownWidget({
+        widget_name,
+        get_options: get_bot_status,
+        $events_container,
+        item_click_callback: status_selected_handler,
         default_id: "0",
         tippy_props: {
             offset: [0, 0],
@@ -308,15 +356,21 @@ section.bots.create_table = () => {
         modifier_html: render_admin_user_list,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id)}']`),
         filter: {
-            $element: $bots_table.closest(".settings-section").find(".search"),
-            predicate(item, value) {
+            predicate(item) {
                 if (!item) {
                     return false;
                 }
-                return (
-                    item.full_name.toLowerCase().includes(value) ||
-                    item.display_email.toLowerCase().includes(value)
-                );
+
+                const search_query = section.bots.filters.text_search.toLowerCase();
+                const filter_searches =
+                    item.full_name.toLowerCase().includes(search_query) ||
+                    item.display_email.toLowerCase().includes(search_query);
+
+                const filter_status = section.bots.filters.is_active
+                    ? item.is_active === section.bots.filters.is_active
+                    : item.is_active === section.bots.filters.is_active;
+
+                return filter_searches && filter_status;
             },
             onupdate: reset_scrollbar($bots_table),
         },
@@ -330,6 +384,7 @@ section.bots.create_table = () => {
         },
         $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
     });
+    section.bots.list_widget = bot_list_widget;
 
     loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
     $bots_table.show();
@@ -607,6 +662,7 @@ section.deactivated.handle_events = () => {
 section.bots.handle_events = () => {
     const $tbody = $("#admin_bots_table").expectOne();
 
+    handle_filter_change($tbody, section.bots);
     handle_bot_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
@@ -628,4 +684,5 @@ export function set_up_bots() {
         e.stopPropagation();
         settings_bots.add_a_new_bot();
     });
+    create_status_filter_dropdown($("#admin-bot-list"), section.bots.dropdown_widget_name);
 }
