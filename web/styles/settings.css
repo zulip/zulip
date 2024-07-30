@@ -1999,7 +1999,8 @@ $option_title_width: 180px;
         display: inline-block;
     }
 
-    .user_filters {
+    .user_filters,
+    .bot_filters {
         display: flex;
         flex-wrap: wrap;
         margin-top: auto;

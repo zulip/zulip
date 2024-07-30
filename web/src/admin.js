@@ -230,6 +230,7 @@ export function build_page() {
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
+        all_bots_list_dropdown_widget_name: settings_users.all_bots_list_dropdown_widget_name,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
