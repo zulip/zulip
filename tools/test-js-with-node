@@ -53,6 +53,7 @@ EXEMPT_FILES = make_set(
         "web/src/alert_words_ui.ts",
         "web/src/archive.js",
         "web/src/assets.d.ts",
+        "web/src/attachments.ts",
         "web/src/attachments_ui.ts",
         "web/src/audible_notifications.ts",
         "web/src/avatar.ts",
