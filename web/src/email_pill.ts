@@ -24,7 +24,6 @@ export function create_item_from_email(
 
     return {
         type: "email",
-        display_value: email,
         email,
     };
 }
@@ -52,6 +51,7 @@ export function create_pills(
         pill_config,
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,
+        get_display_value_from_item: get_email_from_item,
     });
     return pill_container;
 }

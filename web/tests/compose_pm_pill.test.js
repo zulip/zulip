@@ -114,7 +114,7 @@ run_test("pills", ({override, override_rewire}) => {
             assert.ok(get_by_email_called);
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, iago.user_id);
-            assert.equal(res.display_value, iago.full_name);
+            assert.equal(res.full_name, iago.full_name);
         })();
 
         (function test_deactivated_pill() {
@@ -124,7 +124,7 @@ run_test("pills", ({override, override_rewire}) => {
             assert.ok(get_by_email_called);
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, iago.user_id);
-            assert.equal(res.display_value, iago.full_name);
+            assert.equal(res.full_name, iago.full_name);
             assert.ok(res.deactivated);
             people.add_active_user(iago);
         })();

@@ -13,10 +13,7 @@ import * as ui_util from "./ui_util";
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
 export type InputPillItem<ItemType> = {
-    display_value: string;
     type: string;
-    // Used for search pills
-    operator?: string;
 } & ItemType;
 
 export type InputPillConfig = {
@@ -34,6 +31,7 @@ type InputPillCreateOptions<ItemType> = {
         pill_config?: InputPillConfig | undefined,
     ) => InputPillItem<ItemType> | undefined;
     get_text_from_item: (item: InputPillItem<ItemType>) => string;
+    get_display_value_from_item: (item: InputPillItem<ItemType>) => string;
     generate_pill_html?: (item: InputPillItem<ItemType>) => string;
 };
 
@@ -50,16 +48,13 @@ type InputPillStore<ItemType> = {
     $input: JQuery;
     create_item_from_text: InputPillCreateOptions<ItemType>["create_item_from_text"];
     get_text_from_item: InputPillCreateOptions<ItemType>["get_text_from_item"];
+    get_display_value_from_item: InputPillCreateOptions<ItemType>["get_display_value_from_item"];
     generate_pill_html: InputPillCreateOptions<ItemType>["generate_pill_html"];
     onPillCreate?: () => void;
     onPillRemove?: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void;
     createPillonPaste?: () => void;
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
-};
-
-type InputPillRenderingDetails = {
-    display_value: string;
 };
 
 // These are the functions that are exposed to other modules.
@@ -95,6 +90,7 @@ export function create<ItemType>(
         $input: opts.$container.find(".input").expectOne(),
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
+        get_display_value_from_item: opts.get_display_value_from_item,
         split_text_on_comma: opts.split_text_on_comma ?? true,
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
         generate_pill_html: opts.generate_pill_html,
@@ -134,7 +130,7 @@ export function create<ItemType>(
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
 
-            if (!item?.display_value) {
+            if (!item) {
                 store.$input.addClass("shake");
                 return undefined;
             }
@@ -145,11 +141,6 @@ export function create<ItemType>(
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
         appendValidatedData(item: InputPillItem<ItemType>) {
-            if (!item.display_value) {
-                blueslip.error("no display_value returned");
-                return;
-            }
-
             if (!item.type) {
                 blueslip.error("no type defined for the item");
                 return;
@@ -158,10 +149,9 @@ export function create<ItemType>(
             if (store.generate_pill_html !== undefined) {
                 pill_html = store.generate_pill_html(item);
             } else {
-                const opts: InputPillRenderingDetails = {
-                    display_value: item.display_value,
-                };
-                pill_html = render_input_pill(opts);
+                pill_html = render_input_pill({
+                    display_value: store.get_display_value_from_item(item),
+                });
             }
             const payload: InputPill<ItemType> = {
                 item,
@@ -258,13 +248,6 @@ export function create<ItemType>(
             }
             assert(user_idx !== undefined);
             user_pill_container.users.splice(user_idx, 1);
-            const sign = user_pill_container.negated ? "-" : "";
-            const search_string =
-                sign +
-                user_pill_container.operator +
-                ":" +
-                user_pill_container.users.map((user) => user.email).join(",");
-            user_pill_container.display_value = search_string;
 
             // Remove the user pill from the DOM.
             const $user_pill = $(store.pills[container_idx]!.$element.children(".pill")[user_idx]!);

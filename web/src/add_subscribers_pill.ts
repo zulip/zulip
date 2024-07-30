@@ -66,10 +66,20 @@ function set_up_pill_typeahead({
     pill_typeahead.set_up_combined($pill_container.find(".input"), pill_widget, opts);
 }
 
+function get_display_value_from_item(item: InputPillItem<CombinedPill>): string {
+    if (item.type === "user_group") {
+        return user_group_pill.display_pill(user_groups.get_user_group_from_id(item.group_id));
+    } else if (item.type === "stream") {
+        return stream_pill.get_display_value_from_item(item);
+    }
+    assert(item.type === "user");
+    return user_pill.get_display_value_from_item(item);
+}
+
 function generate_pill_html(item: InputPillItem<CombinedPill>): string {
     if (item.type === "user_group") {
         return render_input_pill({
-            display_value: item.display_value,
+            display_value: get_display_value_from_item(item),
             group_id: item.group_id,
         });
     } else if (item.type === "user") {
@@ -79,6 +89,7 @@ function generate_pill_html(item: InputPillItem<CombinedPill>): string {
     return render_input_pill({
         ...item,
         has_stream: true,
+        display_value: get_display_value_from_item(item),
     });
 }
 
@@ -93,6 +104,7 @@ export function create({
         $container: $pill_container,
         create_item_from_text,
         get_text_from_item,
+        get_display_value_from_item,
         generate_pill_html,
     });
     function get_users(): User[] {
@@ -138,6 +150,7 @@ export function create_without_add_button({
         $container: $pill_container,
         create_item_from_text,
         get_text_from_item,
+        get_display_value_from_item,
         generate_pill_html,
     });
     function get_users(): User[] {

@@ -28,18 +28,18 @@ const germany = {
     invite_only: true,
 };
 
-peer_data.set_subscribers(denmark.stream_id, [1, 2, 3, 77]);
+peer_data.set_subscribers(denmark.stream_id, [1, 2, 77]);
 peer_data.set_subscribers(sweden.stream_id, [1, 2, 3, 4, 5]);
 
 const denmark_pill = {
     type: "stream",
-    display_value: "Denmark: 3 users",
     stream: denmark,
+    show_subscriber_count: true,
 };
 const sweden_pill = {
     type: "stream",
-    display_value: "translated: Sweden: 5 users",
     stream: sweden,
+    show_subscriber_count: true,
 };
 
 const subs = [denmark, sweden, germany];
@@ -80,6 +80,19 @@ run_test("create_item", () => {
     test_create_item("  #sweden", [], sweden_pill);
     test_create_item("#test", [], undefined);
     test_create_item("#germany", [], undefined, true, stream_data.get_invite_stream_data);
+});
+
+run_test("display_value", () => {
+    assert.deepEqual(
+        stream_pill.get_display_value_from_item(denmark_pill),
+        "translated: Denmark: 3 users",
+    );
+    assert.deepEqual(
+        stream_pill.get_display_value_from_item(sweden_pill),
+        "translated: Sweden: 5 users",
+    );
+    sweden_pill.show_subscriber_count = false;
+    assert.deepEqual(stream_pill.get_display_value_from_item(sweden_pill), "Sweden");
 });
 
 run_test("get_stream_id", () => {
