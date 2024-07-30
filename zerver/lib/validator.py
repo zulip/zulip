@@ -29,7 +29,6 @@ for any particular type of object.
 """
 
 import re
-import zoneinfo
 from collections.abc import Collection, Container, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -44,7 +43,6 @@ from pydantic.functional_validators import ModelWrapValidatorHandler
 from typing_extensions import override
 
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
-from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileFieldData, Validator
 
 ResultT = TypeVar("ResultT")
@@ -114,17 +112,6 @@ def check_string_fixed_length(length: int) -> Validator[str]:
 
 def check_long_string(var_name: str, val: object) -> str:
     return check_capped_string(500)(var_name, val)
-
-
-def check_timezone(var_name: str, val: object) -> str:
-    s = check_string(var_name, val)
-    try:
-        zoneinfo.ZoneInfo(canonicalize_timezone(s))
-    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
-        raise ValidationError(
-            _("{var_name} is not a recognized time zone").format(var_name=var_name)
-        )
-    return s
 
 
 def check_date(var_name: str, val: object) -> str:

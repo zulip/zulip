@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from typing import Any
+from typing import Annotated, Any
 
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
@@ -13,6 +13,7 @@ from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
+from pydantic import Json
 
 from confirmation.models import (
     Confirmation,
@@ -45,18 +46,16 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.rate_limiter import RateLimitedUser
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sounds import get_available_notification_sounds
-from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import (
-    check_bool,
-    check_int,
-    check_int_in,
-    check_string_in,
-    check_timezone,
+from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
+from zerver.lib.typed_endpoint_validators import (
+    check_int_in_validator,
+    check_string_in_validator,
+    timezone_validator,
 )
+from zerver.lib.upload import upload_avatar_image
 from zerver.models import EmailChangeStatus, RealmUserDefault, UserBaseSettings, UserProfile
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
 from zerver.views.auth import redirect_to_deactivation_notice
@@ -223,120 +222,111 @@ def check_information_density_setting_values(
 
 
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def json_change_settings(
     request: HttpRequest,
     user_profile: UserProfile,
-    full_name: str | None = REQ(default=None),
-    email: str | None = REQ(default=None),
-    old_password: str | None = REQ(default=None),
-    new_password: str | None = REQ(default=None),
-    twenty_four_hour_time: bool | None = REQ(json_validator=check_bool, default=None),
-    dense_mode: bool | None = REQ(json_validator=check_bool, default=None),
-    web_mark_read_on_scroll_policy: int | None = REQ(
-        json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
-        default=None,
-    ),
-    web_channel_default_view: int | None = REQ(
-        json_validator=check_int_in(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES),
-        default=None,
-    ),
-    starred_message_counts: bool | None = REQ(json_validator=check_bool, default=None),
-    receives_typing_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    fluid_layout_width: bool | None = REQ(json_validator=check_bool, default=None),
-    high_contrast_mode: bool | None = REQ(json_validator=check_bool, default=None),
-    color_scheme: int | None = REQ(
-        json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
-    ),
-    web_font_size_px: int | None = REQ(json_validator=check_int, default=None),
-    web_line_height_percent: int | None = REQ(json_validator=check_int, default=None),
-    translate_emoticons: bool | None = REQ(json_validator=check_bool, default=None),
-    display_emoji_reaction_users: bool | None = REQ(json_validator=check_bool, default=None),
-    default_language: str | None = REQ(default=None),
-    web_home_view: str | None = REQ(
-        str_validator=check_string_in(web_home_view_options), default=None
-    ),
-    web_escape_navigates_to_home_view: bool | None = REQ(json_validator=check_bool, default=None),
-    left_side_userlist: bool | None = REQ(json_validator=check_bool, default=None),
-    emojiset: str | None = REQ(str_validator=check_string_in(emojiset_choices), default=None),
-    demote_inactive_streams: int | None = REQ(
-        json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
-    ),
-    web_stream_unreads_count_display_policy: int | None = REQ(
-        json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
-        default=None,
-    ),
-    timezone: str | None = REQ(str_validator=check_timezone, default=None),
-    email_notifications_batching_period_seconds: int | None = REQ(
-        json_validator=check_int, default=None
-    ),
-    enable_drafts_synchronization: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_stream_desktop_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_stream_email_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_stream_push_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_stream_audible_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    wildcard_mentions_notify: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_followed_topic_desktop_notifications: bool | None = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_followed_topic_email_notifications: bool | None = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_followed_topic_push_notifications: bool | None = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_followed_topic_audible_notifications: bool | None = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_followed_topic_wildcard_mentions_notify: bool | None = REQ(
-        json_validator=check_bool, default=None
-    ),
-    notification_sound: str | None = REQ(default=None),
-    enable_desktop_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_sounds: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_offline_email_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_offline_push_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_online_push_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_digest_emails: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_login_emails: bool | None = REQ(json_validator=check_bool, default=None),
-    enable_marketing_emails: bool | None = REQ(json_validator=check_bool, default=None),
-    message_content_in_email_notifications: bool | None = REQ(
-        json_validator=check_bool, default=None
-    ),
-    pm_content_in_desktop_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    desktop_icon_count_display: int | None = REQ(
-        json_validator=check_int_in(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES), default=None
-    ),
-    realm_name_in_email_notifications_policy: int | None = REQ(
-        json_validator=check_int_in(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
-        default=None,
-    ),
-    automatically_follow_topics_policy: int | None = REQ(
-        json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
-        default=None,
-    ),
-    automatically_unmute_topics_in_muted_streams_policy: int | None = REQ(
-        json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
-        default=None,
-    ),
-    automatically_follow_topics_where_mentioned: bool | None = REQ(
-        json_validator=check_bool, default=None
-    ),
-    presence_enabled: bool | None = REQ(json_validator=check_bool, default=None),
-    enter_sends: bool | None = REQ(json_validator=check_bool, default=None),
-    send_private_typing_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    send_stream_typing_notifications: bool | None = REQ(json_validator=check_bool, default=None),
-    send_read_receipts: bool | None = REQ(json_validator=check_bool, default=None),
-    user_list_style: int | None = REQ(
-        json_validator=check_int_in(UserProfile.USER_LIST_STYLE_CHOICES), default=None
-    ),
-    web_animate_image_previews: str | None = REQ(
-        str_validator=check_string_in(web_animate_image_previews_options), default=None
-    ),
-    email_address_visibility: int | None = REQ(
-        json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
-    ),
-    web_navigate_to_sent_message: bool | None = REQ(json_validator=check_bool, default=None),
+    *,
+    full_name: str | None = None,
+    email: str | None = None,
+    old_password: str | None = None,
+    new_password: str | None = None,
+    twenty_four_hour_time: Json[bool] | None = None,
+    dense_mode: Json[bool] | None = None,
+    web_mark_read_on_scroll_policy: Annotated[
+        Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
+    ]
+    | None = None,
+    web_channel_default_view: Annotated[
+        Json[int], check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)
+    ]
+    | None = None,
+    starred_message_counts: Json[bool] | None = None,
+    receives_typing_notifications: Json[bool] | None = None,
+    fluid_layout_width: Json[bool] | None = None,
+    high_contrast_mode: Json[bool] | None = None,
+    color_scheme: Annotated[Json[int], check_int_in_validator(UserProfile.COLOR_SCHEME_CHOICES)]
+    | None = None,
+    web_font_size_px: Json[int] | None = None,
+    web_line_height_percent: Json[int] | None = None,
+    translate_emoticons: Json[bool] | None = None,
+    display_emoji_reaction_users: Json[bool] | None = None,
+    default_language: str | None = None,
+    web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
+    web_escape_navigates_to_home_view: Json[bool] | None = None,
+    left_side_userlist: Json[bool] | None = None,
+    emojiset: Annotated[str, check_string_in_validator(emojiset_choices)] | None = None,
+    demote_inactive_streams: Annotated[
+        Json[int], check_int_in_validator(UserProfile.DEMOTE_STREAMS_CHOICES)
+    ]
+    | None = None,
+    web_stream_unreads_count_display_policy: Annotated[
+        Json[int],
+        check_int_in_validator(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
+    ]
+    | None = None,
+    timezone: Annotated[str, timezone_validator()] | None = None,
+    email_notifications_batching_period_seconds: Json[int] | None = None,
+    enable_drafts_synchronization: Json[bool] | None = None,
+    enable_stream_desktop_notifications: Json[bool] | None = None,
+    enable_stream_email_notifications: Json[bool] | None = None,
+    enable_stream_push_notifications: Json[bool] | None = None,
+    enable_stream_audible_notifications: Json[bool] | None = None,
+    wildcard_mentions_notify: Json[bool] | None = None,
+    enable_followed_topic_desktop_notifications: Json[bool] | None = None,
+    enable_followed_topic_email_notifications: Json[bool] | None = None,
+    enable_followed_topic_push_notifications: Json[bool] | None = None,
+    enable_followed_topic_audible_notifications: Json[bool] | None = None,
+    enable_followed_topic_wildcard_mentions_notify: Json[bool] | None = None,
+    notification_sound: str | None = None,
+    enable_desktop_notifications: Json[bool] | None = None,
+    enable_sounds: Json[bool] | None = None,
+    enable_offline_email_notifications: Json[bool] | None = None,
+    enable_offline_push_notifications: Json[bool] | None = None,
+    enable_online_push_notifications: Json[bool] | None = None,
+    enable_digest_emails: Json[bool] | None = None,
+    enable_login_emails: Json[bool] | None = None,
+    enable_marketing_emails: Json[bool] | None = None,
+    message_content_in_email_notifications: Json[bool] | None = None,
+    pm_content_in_desktop_notifications: Json[bool] | None = None,
+    desktop_icon_count_display: Annotated[
+        Json[int], check_int_in_validator(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES)
+    ]
+    | None = None,
+    realm_name_in_email_notifications_policy: Annotated[
+        Json[int],
+        check_int_in_validator(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
+    ]
+    | None = None,
+    automatically_follow_topics_policy: Annotated[
+        Json[int],
+        check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
+    ]
+    | None = None,
+    automatically_unmute_topics_in_muted_streams_policy: Annotated[
+        Json[int],
+        check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
+    ]
+    | None = None,
+    automatically_follow_topics_where_mentioned: Json[bool] | None = None,
+    presence_enabled: Json[bool] | None = None,
+    enter_sends: Json[bool] | None = None,
+    send_private_typing_notifications: Json[bool] | None = None,
+    send_stream_typing_notifications: Json[bool] | None = None,
+    send_read_receipts: Json[bool] | None = None,
+    user_list_style: Annotated[
+        Json[int], check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)
+    ]
+    | None = None,
+    web_animate_image_previews: Annotated[
+        str, check_string_in_validator(web_animate_image_previews_options)
+    ]
+    | None = None,
+    email_address_visibility: Annotated[
+        Json[int], check_int_in_validator(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)
+    ]
+    | None = None,
+    web_navigate_to_sent_message: Json[bool] | None = None,
 ) -> HttpResponse:
     # UserProfile object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a
@@ -485,7 +475,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
 
 # We don't use @human_users_only here, because there are use cases for
 # a bot regenerating its own API key.
-@has_request_variables
+@typed_endpoint_without_parameters
 def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     new_api_key = do_regenerate_api_key(user_profile, user_profile)
     json_result = dict(
