@@ -83,7 +83,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.streams import get_stream_by_id_in_realm
-from zerver.models.users import get_system_bot
+from zerver.models.users import active_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -1403,5 +1403,32 @@ def check_update_message(
             "urls": list(links_for_embed),
         }
         queue_json_publish("embed_links", event_data)
+
+    # Update stream active status after we have successfully moved the
+    # messages. We only update the new stream here and let the daily
+    # cron job handle updating the old stream. User might still want
+    # to interact with the old stream and keeping it placed in the same
+    # position in the left sidebar might help user.
+    if stream_id is not None and new_stream is not None and not new_stream.is_recently_active:
+        date_days_ago = timezone_now() - timedelta(days=Stream.LAST_ACTIVITY_DAYS_BEFORE_FOR_ACTIVE)
+        is_stream_active = Message.objects.filter(
+            date_sent__gte=date_days_ago,
+            recipient__type=Recipient.STREAM,
+            realm=user_profile.realm,
+            recipient__type_id=stream_id,
+        ).exists()
+
+        if is_stream_active != new_stream.is_recently_active:
+            new_stream.is_recently_active = is_stream_active
+            new_stream.save(update_fields=["is_recently_active"])
+            event = dict(
+                type="stream",
+                op="update",
+                property="is_recently_active",
+                value=is_stream_active,
+                stream_id=stream_id,
+                name=new_stream.name,
+            )
+            send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
     return updated_message_result
