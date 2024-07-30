@@ -241,21 +241,17 @@ export function build_stream_list(force_rerender: boolean): void {
     //
     // Within the first two sections, muted streams are sorted to the
     // bottom; we skip that for dormant streams to simplify discovery.
-    const streams = stream_data.subscribed_stream_ids();
-    const $parent = $("#stream_filters");
-    if (streams.length === 0) {
-        $parent.empty();
-        return;
-    }
-
+    //
     // The main logic to build the list is in stream_list_sort.ts, and
     // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
+    const streams = stream_data.subscribed_stream_ids();
     const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
     }
 
+    const $parent = $("#stream_filters");
     const elems = [];
 
     function add_sidebar_li(stream_id: number): void {
