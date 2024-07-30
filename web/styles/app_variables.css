@@ -468,6 +468,9 @@
     */
     --max-unmaximized-compose-height: 40vh;
 
+    /* Maximum height of the message-edit and preview areas. */
+    --max-message-edit-height: 24em;
+
     /*
     Line height of the message buttons in compose box. Here it's necessary
     to control this value uniformly and precisely to avoid issues with

@@ -1360,10 +1360,6 @@ textarea.new_message_textarea {
 
 .preview_message_area {
     padding: 5px;
-    /* the maximum height the textarea gets to. */
-    max-height: 308px;
-    /* the minimum height the textarea collapses to. */
-    min-height: 42px;
     overflow: auto;
 
     border-radius: 3px 3px 0 0;
