@@ -3,11 +3,12 @@
 import copy
 import logging
 import time
-from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Sequence
 from typing import Any
 
 from django.conf import settings
 from django.utils.translation import gettext as _
+from typing_extensions import NotRequired, TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
@@ -1639,6 +1640,20 @@ def apply_event(
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
 
+class ClientCapabilities(TypedDict):
+    # This field was accidentally made required when it was added in v2.0.0-781;
+    # this was not realized until after the release of Zulip 2.1.2. (It remains
+    # required to help ensure backwards compatibility of client code.)
+    notification_settings_null: bool
+    # Any new fields of `client_capabilities` should be optional. Add them here.
+    bulk_message_deletion: NotRequired[bool]
+    user_avatar_url_field_optional: NotRequired[bool]
+    stream_typing_notifications: NotRequired[bool]
+    user_settings_object: NotRequired[bool]
+    linkifier_url_template: NotRequired[bool]
+    user_list_incomplete: NotRequired[bool]
+
+
 def do_events_register(
     user_profile: UserProfile | None,
     realm: Realm,
@@ -1652,7 +1667,7 @@ def do_events_register(
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    client_capabilities: Mapping[str, bool] = {},
+    client_capabilities: ClientCapabilities = ClientCapabilities(notification_settings_null=False),
     narrow: Collection[NarrowTerm] = [],
     fetch_event_types: Collection[str] | None = None,
     spectator_requested_language: str | None = None,

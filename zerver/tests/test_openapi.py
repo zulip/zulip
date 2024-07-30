@@ -318,7 +318,8 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         val = 6
         for t in types:
             if isinstance(t, tuple):
-                return t  # e.g. (list, dict) or (list, str)
+                # e.g. (list, dict) or (list, str)
+                return t  # nocoverage
             v = priority.get(t, 6)
             if v < val:
                 val = v
@@ -343,8 +344,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         elif origin in [list, abc.Sequence]:
             [st] = get_args(t)
             return (list, self.get_standardized_argument_type(st))
-        elif origin in [dict, abc.Mapping]:
-            return dict
         raise AssertionError(f"Unknown origin {origin}")
 
     def render_openapi_type_exception(
