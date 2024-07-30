@@ -1101,7 +1101,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(51), self.assert_memcached_count(14):
+        with self.assert_database_query_count(52), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -1829,3 +1829,29 @@ class MessageMoveStreamTest(ZulipTestCase):
             ),
             True,
         )
+
+    def test_move_message_update_stream_active_status(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        # Delete all messages in new stream and mark it as inactive.
+        Message.objects.filter(recipient__type_id=new_stream.id, realm=user_profile.realm).delete()
+
+        new_stream.is_recently_active = False
+        new_stream.save()
+        self.assertFalse(new_stream.is_recently_active)
+
+        # Move the message to new stream should make active again.
+        result = self.client_patch(
+            f"/json/messages/{msg_id_later}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_later",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+        self.assert_json_success(result)
+
+        new_stream.refresh_from_db()
+        self.assertTrue(new_stream.is_recently_active)
