@@ -8,7 +8,6 @@ import render_input_pill from "../templates/input_pill.hbs";
 import * as blueslip from "./blueslip";
 import * as keydown_util from "./keydown_util";
 import type {SearchUserPill} from "./search_pill";
-import type {StreamSubscription} from "./sub_store";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
@@ -18,7 +17,6 @@ export type InputPillItem<ItemType> = {
     type: string;
     // Used for search pills
     operator?: string;
-    stream?: StreamSubscription;
 } & ItemType;
 
 export type InputPillConfig = {
@@ -62,8 +60,6 @@ type InputPillStore<ItemType> = {
 
 type InputPillRenderingDetails = {
     display_value: string;
-    has_stream?: boolean;
-    stream?: StreamSubscription;
 };
 
 // These are the functions that are exposed to other modules.
@@ -165,11 +161,6 @@ export function create<ItemType>(
                 const opts: InputPillRenderingDetails = {
                     display_value: item.display_value,
                 };
-
-                if (item.type === "stream" && item.stream) {
-                    opts.has_stream = true;
-                    opts.stream = item.stream;
-                }
                 pill_html = render_input_pill(opts);
             }
             const payload: InputPill<ItemType> = {
