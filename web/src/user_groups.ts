@@ -96,8 +96,11 @@ export function get_user_group_from_name(name: string): UserGroup | undefined {
     return user_group_name_dict.get(name);
 }
 
-export function get_realm_user_groups(): UserGroup[] {
+export function get_realm_user_groups(include_system_groups = false): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
+    if (include_system_groups) {
+        return user_groups;
+    }
     return user_groups.filter((group) => !group.is_system_group);
 }
 
