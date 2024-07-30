@@ -64,7 +64,7 @@ from zerver.lib.remote_server import (
     RealmCountDataForAnalytics,
     RealmDataForAnalytics,
 )
-from zerver.lib.request import RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -73,6 +73,7 @@ from zerver.lib.typed_endpoint import (
     JsonBodyPayload,
     RequiredStringConstraint,
     typed_endpoint,
+    typed_endpoint_without_parameters,
 )
 from zerver.lib.typed_endpoint_validators import check_string_fixed_length
 from zerver.lib.types import RemoteRealmDictValue
@@ -113,7 +114,7 @@ def validate_bouncer_token_request(token: str, kind: int) -> None:
 
 @csrf_exempt
 @require_post
-@has_request_variables
+@typed_endpoint_without_parameters
 def deactivate_remote_server(
     request: HttpRequest,
     remote_server: RemoteZulipServer,
@@ -1391,7 +1392,7 @@ def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
     return 0
 
 
-@has_request_variables
+@typed_endpoint_without_parameters
 def remote_server_check_analytics(request: HttpRequest, server: RemoteZulipServer) -> HttpResponse:
     result = {
         "last_realm_count_id": get_last_id_from_server(server, RemoteRealmCount),
