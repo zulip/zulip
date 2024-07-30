@@ -178,6 +178,8 @@
 
 .custom-user-url-field {
     display: flex;
+    /* Maintain space between URL and copy icon. */
+    gap: 3px;
     overflow: hidden;
 
     .custom-profile-fields-link {
@@ -187,13 +189,18 @@
     }
 
     .copy-custom-field-url {
+        /* Don't flex; preserve 20px space for icon. */
+        flex: 0 0 20px;
+        /* Make button a flex item to center icon. */
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background-color: transparent;
         border: 0;
         padding: 0;
 
         #clipboard_image {
-            /* Adjust margin to align the copy icon */
-            margin: -2px 0 0 6px;
+            margin: 0;
 
             &:hover path {
                 fill: hsl(204deg 100% 40%);
