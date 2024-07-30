@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 303**
+
+* [`GET /events`](/api/get-events): User reactivation event is not sent
+  to users who cannot access the reactivated user anymore.
+
 **Feature level 302**
 
 * [`GET /users/{email}`](/api/get-user-by-email): Changed the `email`

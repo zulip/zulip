@@ -3118,6 +3118,22 @@ class NormalActionsTest(BaseAction):
         check_subscription_peer_remove("events[4]", events[4])
         check_stream_delete("events[5]", events[5])
 
+        self.set_up_db_for_testing_user_access()
+        # Test that guest users receive event only
+        # if they can access the reactivated user.
+        user_profile = self.example_user("cordelia")
+        do_deactivate_user(user_profile, acting_user=None)
+
+        self.user_profile = self.example_user("polonius")
+        with self.verify_action(num_events=0, state_change_expected=False) as events:
+            do_reactivate_user(user_profile, acting_user=None)
+
+        user_profile = self.example_user("shiva")
+        do_deactivate_user(user_profile, acting_user=None)
+        with self.verify_action(num_events=1) as events:
+            do_reactivate_user(user_profile, acting_user=None)
+        check_realm_user_update("events[0]", events[0], "is_active")
+
     def test_do_deactivate_realm(self) -> None:
         realm = self.user_profile.realm
 

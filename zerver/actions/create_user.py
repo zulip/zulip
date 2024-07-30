@@ -37,6 +37,7 @@ from zerver.lib.users import (
     format_user_row,
     get_api_key,
     get_data_for_inaccessible_user,
+    get_user_ids_who_can_access_user,
     user_access_restricted_in_realm,
     user_profile_to_user_row,
 )
@@ -59,7 +60,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
+from zerver.models.users import bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 MAX_NUM_RECENT_MESSAGES = 1000
@@ -724,7 +725,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)
     )
-    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
     if user_profile.is_bot:
         event = dict(
