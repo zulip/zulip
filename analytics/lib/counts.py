@@ -768,6 +768,7 @@ def count_realm_active_humans_query(realm: Realm | None) -> QueryFn:
                     AND end_time = %(time_end)s
     ) active_usercount
     JOIN zerver_userprofile ON active_usercount.user_id = zerver_userprofile.id
+     AND active_usercount.realm_id = zerver_userprofile.realm_id
     JOIN (
             SELECT DISTINCT ON (modified_user_id)
                     modified_user_id, event_type
