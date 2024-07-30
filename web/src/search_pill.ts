@@ -18,7 +18,7 @@ export type SearchUserPill = {
     operator: string;
     negated: boolean;
     users: {
-        display_value: string;
+        full_name: string;
         user_id: number;
         email: string;
         img_src: string;
@@ -95,7 +95,7 @@ function append_user_pill(
         operator,
         negated,
         users: users.map((user) => ({
-            display_value: user.full_name,
+            full_name: user.full_name,
             user_id: user.user_id,
             email: user.email,
             img_src: people.small_avatar_url_for_person(user),
