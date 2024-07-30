@@ -610,13 +610,18 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When a user is deactivated or reactivated.
+                                        When a user is deactivated or reactivated. Only users
+                                        who can access the deactivated or reactivated user
+                                        receive this event.
 
-                                        **Changes**: New in Zulip 8.0 (feature level
-                                        222). Previously the server sent a `realm_user` event with
-                                        `op` field set to `remove` when deactivating a user and a
-                                        `realm_user` event with `op` field set to `add` when
-                                        reactivating a user.
+                                        **Changes**: Prior to Zulip 10.0 (feature level 303),
+                                        event for reactivation was also sent to users who
+                                        cannot access the reactivated user.
+
+                                        New in Zulip 8.0 (feature level 222). Previously the server
+                                        sent a `realm_user` event with `op` field set to `remove`
+                                        when deactivating a user and a `realm_user` event with `op`
+                                        field set to `add` when reactivating a user.
                                       properties:
                                         user_id:
                                           type: integer
