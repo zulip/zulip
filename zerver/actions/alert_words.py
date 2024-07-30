@@ -18,6 +18,7 @@ def do_add_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) ->
     notify_alert_words(user_profile, words)
 
 
+@transaction.atomic(savepoint=False)
 def do_remove_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> None:
     words = remove_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, words)
