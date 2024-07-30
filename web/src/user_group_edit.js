@@ -801,6 +801,21 @@ export function update_empty_left_panel_message() {
     $(".no-groups-to-show").show();
 }
 
+export function remove_deactivated_user_from_all_groups(user_id) {
+    const all_user_groups = user_groups.get_realm_user_groups(true);
+
+    for (const user_group of all_user_groups) {
+        if (user_groups.is_direct_member_of(user_id, user_group.id)) {
+            user_groups.remove_members(user_group.id, [user_id]);
+        }
+
+        // update members list if currently rendered.
+        if (overlays.groups_open() && is_editing_group(user_group.id)) {
+            user_group_edit_members.update_member_list_widget(user_group);
+        }
+    }
+}
+
 export function setup_page(callback) {
     function initialize_components() {
         group_list_toggler = components.toggle({

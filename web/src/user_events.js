@@ -24,6 +24,7 @@ import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
 import {current_user, realm} from "./state_data";
 import * as stream_events from "./stream_events";
+import * as user_group_edit from "./user_group_edit";
 import * as user_profile from "./user_profile";
 
 export const update_person = function update(person) {
@@ -179,6 +180,7 @@ export const update_person = function update(person) {
         } else {
             people.deactivate(person_obj);
             stream_events.remove_deactivated_user_from_all_streams(person.user_id);
+            user_group_edit.remove_deactivated_user_from_all_groups(person.user_id);
             settings_users.update_view_on_deactivate(person.user_id);
             buddy_list.maybe_remove_user_id({user_id: person.user_id});
         }
