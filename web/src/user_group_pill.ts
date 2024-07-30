@@ -18,7 +18,7 @@ export type UserGroupPillData = UserGroup & {
     is_silent?: boolean;
 };
 
-function display_pill(group: UserGroup): string {
+export function display_pill(group: UserGroup): string {
     const group_members = get_group_members(group);
     return $t_html(
         {defaultMessage: "{group_name}: {group_size, plural, one {# user} other {# users}}"},
@@ -42,7 +42,6 @@ export function create_item_from_group_name(
 
     return {
         type: "user_group",
-        display_value: display_pill(group),
         group_id: group.id,
         group_name: group.name,
     };
@@ -76,7 +75,6 @@ function get_group_members(user_group: UserGroup): number[] {
 export function append_user_group(group: UserGroup, pill_widget: CombinedPillContainer): void {
     pill_widget.appendValidatedData({
         type: "user_group",
-        display_value: display_pill(group),
         group_id: group.id,
         group_name: group.name,
     });

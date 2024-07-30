@@ -42,12 +42,13 @@ run_test("basics", ({mock_template}) => {
         $container,
         create_item_from_text: noop,
         get_text_from_item: noop,
+        get_display_value_from_item: (item) => item.language,
     });
 
     // type for a pill can be any string but it needs to be
     // defined while creating any pill.
     const item = {
-        display_value: "JavaScript",
+        language: "JavaScript",
         type: "language",
     };
 
@@ -68,19 +69,19 @@ run_test("basics", ({mock_template}) => {
 function set_up() {
     const items = {
         blue: {
-            display_value: "BLUE",
+            color_name: "BLUE",
             description: "color of the sky",
             type: "color",
         },
 
         red: {
-            display_value: "RED",
+            color_name: "RED",
             type: "color",
             description: "color of stop signs",
         },
 
         yellow: {
-            display_value: "YELLOW",
+            color_name: "YELLOW",
             type: "color",
             description: "color of bananas",
         },
@@ -99,7 +100,8 @@ function set_up() {
     const config = {
         $container,
         create_item_from_text,
-        get_text_from_item: (item) => item.display_value,
+        get_text_from_item: (item) => item.color_name,
+        get_display_value_from_item: (item) => item.color_name,
     };
 
     return {
@@ -403,7 +405,7 @@ run_test("insert_remove", ({mock_template}) => {
 
     const pills = widget._get_pills_for_testing();
     for (const pill of pills) {
-        pill.$element.remove = set_colored_removed_func(pill.item.display_value);
+        pill.$element.remove = set_colored_removed_func(pill.item.color_name);
     }
 
     let key_handler = $container.get_on_handler("keydown", ".input");
@@ -527,12 +529,8 @@ run_test("misc things", () => {
     assert.ok(shake_class_removed);
 
     // bad data
-    blueslip.expect("error", "no display_value returned");
-    widget.appendValidatedData("this-has-no-item-attribute");
-
     blueslip.expect("error", "no type defined for the item");
     widget.appendValidatedData({
-        display_value: "This item has no type.",
         language: "js",
     });
 
@@ -566,8 +564,9 @@ run_test("appendValue/clear", ({mock_template}) => {
 
     const config = {
         $container,
-        create_item_from_text: (s) => ({type: "color", display_value: s}),
-        get_text_from_item: /* istanbul ignore next */ (s) => s.display_value,
+        create_item_from_text: (s) => ({type: "color", color_name: s}),
+        get_text_from_item: /* istanbul ignore next */ (s) => s.color_name,
+        get_display_value_from_item: (s) => s.color_name,
     };
 
     $pill_input.before = noop;
@@ -587,7 +586,7 @@ run_test("appendValue/clear", ({mock_template}) => {
     const removed_colors = [];
     for (const pill of pills) {
         pill.$element.remove = () => {
-            removed_colors.push(pill.item.display_value);
+            removed_colors.push(pill.item.color_name);
         };
     }
 

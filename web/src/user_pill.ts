@@ -17,6 +17,7 @@ export type UserPill = {
     type: "user";
     user_id?: number;
     email: string;
+    full_name: string | undefined;
     img_src?: string;
     deactivated?: boolean;
     status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
@@ -46,7 +47,7 @@ export function create_item_from_email(
             // is the email itself.
             return {
                 type: "user",
-                display_value: email,
+                full_name: undefined,
                 email,
             };
         }
@@ -67,11 +68,9 @@ export function create_item_from_email(
 
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
 
-    // We must supply display_value for the widget to work.  Everything
-    // else is for our own use in callbacks.
     const item: InputPillItem<UserPill> = {
         type: "user",
-        display_value: user.full_name,
+        full_name: user.full_name,
         user_id: user.user_id,
         email: user.email,
         img_src: avatar_url,
@@ -108,7 +107,7 @@ export function append_person(opts: {
 
     const pill_data: InputPillItem<UserPill> = {
         type: "user",
-        display_value: person.full_name,
+        full_name: person.full_name,
         user_id: person.user_id,
         email: person.email,
         img_src: avatar_url,
@@ -166,6 +165,10 @@ export function append_user(user: User, pills: UserPillWidget | CombinedPillCont
     }
 }
 
+export function get_display_value_from_item(item: UserPill): string {
+    return item.full_name ?? item.email;
+}
+
 export function generate_pill_html(
     item: InputPillItem<UserPill>,
     show_user_status_emoji = false,
@@ -179,7 +182,7 @@ export function generate_pill_html(
         }
     }
     return render_input_pill({
-        display_value: item.display_value,
+        display_value: get_display_value_from_item(item),
         has_image: item.img_src !== undefined,
         deactivated: item.deactivated,
         should_add_guest_user_indicator: item.should_add_guest_user_indicator,
@@ -199,6 +202,7 @@ export function create_pills(
         pill_config,
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,
+        get_display_value_from_item,
         generate_pill_html,
     });
     return pills;

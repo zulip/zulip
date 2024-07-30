@@ -22,6 +22,7 @@ export function initialize_pill(): UserPillWidget {
         pill_config,
         create_item_from_text: user_pill.create_item_from_email,
         get_text_from_item: user_pill.get_email_from_item,
+        get_display_value_from_item: user_pill.get_display_value_from_item,
         generate_pill_html: (item: InputPillItem<UserPill>) =>
             user_pill.generate_pill_html(item, true),
     });

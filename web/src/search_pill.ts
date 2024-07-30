@@ -16,11 +16,6 @@ import type {UserStatusEmojiInfo} from "./user_status";
 export type SearchUserPill = {
     type: "search_user";
     operator: string;
-    // TODO: It would be nice if we just call this `search_string` instead of
-    // `display_value`, because we don't actually display this value for user
-    // pills, but `display_value` is needed to hook into the generic input pill
-    // logic and it would be a decent amount of work to change that.
-    display_value: string;
     negated: boolean;
     users: {
         display_value: string;
@@ -36,7 +31,6 @@ export type SearchUserPill = {
 type SearchPill =
     | {
           type: "search";
-          display_value: string;
           operator: string;
           operand: string;
           negated: boolean | undefined;
@@ -54,7 +48,6 @@ export function create_item_from_search_string(search_string: string): SearchPil
         return undefined;
     }
     return {
-        display_value: search_string,
         type: "search",
         operator: search_term.operator,
         operand: search_term.operand,
@@ -83,6 +76,7 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
                 display_value,
             });
         },
+        get_display_value_from_item: get_search_string_from_item,
     });
     // We don't automatically create pills on paste. When the user
     // presses enter, we validate the input then.
@@ -96,12 +90,9 @@ function append_user_pill(
     operator: string,
     negated: boolean,
 ): void {
-    const sign = negated ? "-" : "";
-    const search_string = sign + operator + ":" + users.map((user) => user.email).join(",");
     const pill_data: SearchUserPill = {
         type: "search_user",
         operator,
-        display_value: search_string,
         negated,
         users: users.map((user) => ({
             display_value: user.full_name,
