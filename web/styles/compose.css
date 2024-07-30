@@ -826,7 +826,7 @@
 
 textarea.new_message_textarea {
     display: table-cell;
-    padding: 5px;
+    padding: 5px 5px 0;
     height: 1.5em;
     max-height: 22em;
     margin: 0;
@@ -1359,7 +1359,7 @@ textarea.new_message_textarea {
 }
 
 .preview_message_area {
-    padding: 5px;
+    padding: 5px 5px 0;
     overflow: auto;
 
     border-radius: 3px 3px 0 0;
