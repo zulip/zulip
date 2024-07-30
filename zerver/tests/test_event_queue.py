@@ -155,7 +155,9 @@ class MissedMessageHookTest(ZulipTestCase):
         return access_client_descriptor(user.id, queue_id)
 
     def destroy_event_queue(self, user: UserProfile, queue_id: str) -> None:
-        result = self.tornado_call(cleanup_event_queue, user, {"queue_id": queue_id})
+        # Ignore this when running mypy, since mypy expects queue_id to be specified when calling the function
+        # but it is actually extracted from the request body using the typed_endpoint decorator.
+        result = self.tornado_call(cleanup_event_queue, user, {"queue_id": queue_id})  # type: ignore[arg-type]
         self.assert_json_success(result)
 
     def assert_maybe_enqueue_notifications_call_args(
