@@ -20,3 +20,7 @@ export const attachment_api_response_schema = z.object({
     attachments: attachments_schema,
     upload_space_used: z.number(),
 });
+
+export const detached_uploads_api_response_schema = z.object({
+    detached_uploads: attachments_schema,
+});
