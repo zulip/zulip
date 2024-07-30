@@ -681,7 +681,7 @@
 }
 
 .message_edit_content {
-    max-height: 24em;
+    max-height: var(--max-message-edit-height);
     width: 100%;
     min-width: 206px;
     min-height: 52px;
@@ -775,6 +775,10 @@ of the base style defined for a read-only textarea in dark mode. */
     .edit-controls {
         margin-left: 0;
         margin-top: 0;
+    }
+
+    .preview_message_area {
+        max-height: var(--max-message-edit-height);
     }
 }
 
