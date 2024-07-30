@@ -349,13 +349,6 @@
         }
     }
 
-    & > .spoiler-block:last-child {
-        /* A spoiler block at the end of a message, or as
-           a message's only content, gets the same bottom
-           margin as other elements. */
-        margin-bottom: var(--markdown-interelement-space-px);
-    }
-
     /* embedded link previews */
     .message_inline_image_title {
         font-weight: bold;
@@ -894,18 +887,6 @@
             max-width: 100%;
             margin-top: 10px;
         }
-    }
-}
-
-.preview_content.rendered_markdown {
-    /*  Ensure that the first child and last child
-    don't have blank area at the top and bottom respectively. */
-    & > :first-child {
-        margin-top: 0;
-    }
-
-    & > :last-child:not(.message_inline_image) {
-        margin-bottom: 0;
     }
 }
 
