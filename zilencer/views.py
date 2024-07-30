@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
 from django.db.models import Model
+from django.db.models.constants import OnConflict
 from django.http import HttpRequest, HttpResponse
 from django.utils.crypto import constant_time_compare
 from django.utils.timezone import now as timezone_now
@@ -796,20 +797,28 @@ def batch_create_table_data(
     row_objects: list[ModelT],
 ) -> None:
     # We ignore previously-existing data, in case it was truncated and
-    # re-created on the remote server.  `ignore_conflicts=True`
-    # cannot return the ids, or count thereof, of the new inserts,
-    # (see https://code.djangoproject.com/ticket/0138) so we rely on
-    # having a lock to accurately count them before and after.  This
-    # query is also well-indexed.
-    before_count = model._default_manager.filter(server=server).count()
-    model._default_manager.bulk_create(row_objects, batch_size=1000, ignore_conflicts=True)
-    after_count = model._default_manager.filter(server=server).count()
-    inserted_count = after_count - before_count
-    if inserted_count < len(row_objects):
+    # re-created on the remote server.  Because the existing
+    # `bulk_create(..., ignore_conflicts=True)` cannot yet return the
+    # ids, or count thereof, of the new inserts, (see
+    # https://code.djangoproject.com/ticket/30138), we reach in and
+    # call _insert with `returning_fields` in batches ourselves.
+    inserted_count = 0
+    expected_count = len(row_objects)
+    fields = [f for f in model._meta.fields if f.concrete and not f.generated and f.name != "id"]
+    while row_objects:
+        to_insert, row_objects = row_objects[:1000], row_objects[1000:]
+        result = model._default_manager._insert(  # type:ignore[attr-defined]  # This is a private method
+            to_insert,
+            fields=fields,
+            returning_fields=[model._meta.get_field("id")],
+            on_conflict=OnConflict.IGNORE,
+        )
+        inserted_count += len(result)
+    if inserted_count < expected_count:
         logging.warning(
             "Dropped %d duplicated rows while saving %d rows of %s for server %s/%s",
-            len(row_objects) - inserted_count,
-            len(row_objects),
+            expected_count - inserted_count,
+            expected_count,
             model._meta.db_table,
             server.hostname,
             server.uuid,
