@@ -581,7 +581,8 @@ export function initialize() {
     // This handler isn't part of the normal edit interface; it's the convenient
     // checkmark in the subscriber list.
     $("#channels_overlay_container").on("click", ".sub_unsub_button", (e) => {
-        if ($(e.currentTarget).hasClass("disabled")) {
+        const $target = $(e.currentTarget);
+        if ($target.hasClass("disabled")) {
             // We do not allow users to subscribe themselves to private streams.
             return;
         }
@@ -593,7 +594,14 @@ export function initialize() {
                 sub.stream_id,
             )}']`,
         );
-        stream_settings_components.sub_or_unsub(sub, $stream_row);
+
+        // If subscribe button on right-side panel is clicked, prevent
+        // displaying loading spinner in the stream row.
+        if ($target.hasClass("subscribe-button")) {
+            stream_settings_components.sub_or_unsub(sub);
+        } else {
+            stream_settings_components.sub_or_unsub(sub, $stream_row);
+        }
 
         if (!sub.subscribed) {
             open_edit_panel_for_row($stream_row);
