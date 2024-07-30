@@ -4,7 +4,6 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
 set_global("document", {});
@@ -505,11 +504,9 @@ run_test("exit button on pill", ({mock_template}) => {
 run_test("misc things", () => {
     const info = set_up();
 
-    const config = info.config;
     const $container = info.$container;
     const $pill_input = info.$pill_input;
-
-    const widget = input_pill.create(config);
+    input_pill.create(info.config);
 
     // animation
     const animation_end_handler = $container.get_on_handler("animationend", ".input");
@@ -527,12 +524,6 @@ run_test("misc things", () => {
 
     animation_end_handler.call(input_stub);
     assert.ok(shake_class_removed);
-
-    // bad data
-    blueslip.expect("error", "no type defined for the item");
-    widget.appendValidatedData({
-        language: "js",
-    });
 
     // click on container
     const container_click_handler = $container.get_on_handler("click");

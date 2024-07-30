@@ -1,11 +1,11 @@
 import assert from "minimalistic-assert";
 
 import {$t} from "./i18n";
-import type {InputPillContainer, InputPillItem} from "./input_pill";
+import type {InputPillContainer} from "./input_pill";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
-import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 
 export type StreamPill = {
     type: "stream";
@@ -27,11 +27,11 @@ function format_stream_name_and_subscriber_count(sub: StreamSubscription): strin
 
 export function create_item_from_stream_name(
     stream_name: string,
-    current_items: CombinedPillItem[],
+    current_items: CombinedPill[],
     stream_prefix_required = true,
     get_allowed_streams: () => StreamSubscription[] = stream_data.get_unsorted_subs,
     show_subscriber_count = true,
-): InputPillItem<StreamPill> | undefined {
+): StreamPill | undefined {
     stream_name = stream_name.trim();
     if (stream_prefix_required) {
         if (!stream_name.startsWith("#")) {
@@ -65,7 +65,7 @@ export function create_item_from_stream_name(
     };
 }
 
-export function get_stream_name_from_item(item: InputPillItem<StreamPill>): string {
+export function get_stream_name_from_item(item: StreamPill): string {
     return item.stream.name;
 }
 

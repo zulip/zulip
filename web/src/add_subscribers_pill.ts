@@ -4,20 +4,19 @@ import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
 import * as input_pill from "./input_pill";
-import type {InputPillItem} from "./input_pill";
 import * as keydown_util from "./keydown_util";
 import type {User} from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as stream_pill from "./stream_pill";
-import type {CombinedPill, CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 
 function create_item_from_text(
     text: string,
-    current_items: CombinedPillItem[],
-): CombinedPillItem | undefined {
+    current_items: CombinedPill[],
+): CombinedPill | undefined {
     const funcs = [
         stream_pill.create_item_from_stream_name,
         user_group_pill.create_item_from_group_name,
@@ -32,7 +31,7 @@ function create_item_from_text(
     return undefined;
 }
 
-function get_text_from_item(item: CombinedPillItem): string {
+function get_text_from_item(item: CombinedPill): string {
     let text: string;
     switch (item.type) {
         case "stream":
@@ -66,7 +65,7 @@ function set_up_pill_typeahead({
     pill_typeahead.set_up_combined($pill_container.find(".input"), pill_widget, opts);
 }
 
-function get_display_value_from_item(item: InputPillItem<CombinedPill>): string {
+function get_display_value_from_item(item: CombinedPill): string {
     if (item.type === "user_group") {
         return user_group_pill.display_pill(user_groups.get_user_group_from_id(item.group_id));
     } else if (item.type === "stream") {
@@ -76,7 +75,7 @@ function get_display_value_from_item(item: InputPillItem<CombinedPill>): string 
     return user_pill.get_display_value_from_item(item);
 }
 
-function generate_pill_html(item: InputPillItem<CombinedPill>): string {
+function generate_pill_html(item: CombinedPill): string {
     if (item.type === "user_group") {
         return render_input_pill({
             display_value: get_display_value_from_item(item),

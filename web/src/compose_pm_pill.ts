@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import type {InputPillConfig, InputPillItem} from "./input_pill";
+import type {InputPillConfig} from "./input_pill";
 import * as input_pill from "./input_pill";
 import type {User} from "./people";
 import * as people from "./people";
@@ -23,8 +23,7 @@ export function initialize_pill(): UserPillWidget {
         create_item_from_text: user_pill.create_item_from_email,
         get_text_from_item: user_pill.get_email_from_item,
         get_display_value_from_item: user_pill.get_display_value_from_item,
-        generate_pill_html: (item: InputPillItem<UserPill>) =>
-            user_pill.generate_pill_html(item, true),
+        generate_pill_html: (item: UserPill) => user_pill.generate_pill_html(item, true),
     });
 
     return pill;

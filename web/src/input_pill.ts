@@ -5,16 +5,11 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
-import * as blueslip from "./blueslip";
 import * as keydown_util from "./keydown_util";
 import type {SearchUserPill} from "./search_pill";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
-
-export type InputPillItem<ItemType> = {
-    type: string;
-} & ItemType;
 
 export type InputPillConfig = {
     exclude_inaccessible_users?: boolean;
@@ -27,16 +22,16 @@ type InputPillCreateOptions<ItemType> = {
     convert_to_pill_on_enter?: boolean;
     create_item_from_text: (
         text: string,
-        existing_items: InputPillItem<ItemType>[],
+        existing_items: ItemType[],
         pill_config?: InputPillConfig | undefined,
-    ) => InputPillItem<ItemType> | undefined;
-    get_text_from_item: (item: InputPillItem<ItemType>) => string;
-    get_display_value_from_item: (item: InputPillItem<ItemType>) => string;
-    generate_pill_html?: (item: InputPillItem<ItemType>) => string;
+    ) => ItemType | undefined;
+    get_text_from_item: (item: ItemType) => string;
+    get_display_value_from_item: (item: ItemType) => string;
+    generate_pill_html?: (item: ItemType) => string;
 };
 
 type InputPill<ItemType> = {
-    item: InputPillItem<ItemType>;
+    item: ItemType;
     $element: JQuery;
 };
 
@@ -60,9 +55,9 @@ type InputPillStore<ItemType> = {
 // These are the functions that are exposed to other modules.
 export type InputPillContainer<ItemType> = {
     appendValue: (text: string) => void;
-    appendValidatedData: (item: InputPillItem<ItemType>) => void;
+    appendValidatedData: (item: ItemType) => void;
     getByElement: (element: HTMLElement) => InputPill<ItemType> | undefined;
-    items: () => InputPillItem<ItemType>[];
+    items: () => ItemType[];
     onPillCreate: (callback: () => void) => void;
     onPillRemove: (
         callback: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void,
@@ -78,7 +73,7 @@ export type InputPillContainer<ItemType> = {
 
 export type RemovePillTrigger = "close" | "backspace" | "clear";
 
-export function create<ItemType>(
+export function create<ItemType extends {type: string}>(
     opts: InputPillCreateOptions<ItemType>,
 ): InputPillContainer<ItemType> {
     // a stateful object of this `pill_container` instance.
@@ -140,11 +135,7 @@ export function create<ItemType>(
 
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
-        appendValidatedData(item: InputPillItem<ItemType>) {
-            if (!item.type) {
-                blueslip.error("no type defined for the item");
-                return;
-            }
+        appendValidatedData(item: ItemType) {
             let pill_html;
             if (store.generate_pill_html !== undefined) {
                 pill_html = store.generate_pill_html(item);
@@ -230,7 +221,7 @@ export function create<ItemType>(
             // TODO: Figure out how to get this typed correctly.
             // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
             const user_pill_container = store.pills[container_idx]!
-                .item as unknown as InputPillItem<SearchUserPill>;
+                .item as unknown as SearchUserPill;
 
             // If there's only one user in this pill, delete the whole pill.
             if (user_pill_container.users.length === 1) {
