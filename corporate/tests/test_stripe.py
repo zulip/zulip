@@ -228,23 +228,36 @@ def normalize_fixture_data(
         ("txn", 24),
         ("invst", 26),
         ("rcpt", 31),
+        ("seti", 24),
+        ("pm", 24),
+        ("setatt", 24),
+        ("bpc", 24),
+        ("bps", 24),
     ]
-    # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
-    pattern_translations = {
-        rf"{prefix}_[A-Za-z0-9]{{{length}}}": f"{prefix}_NORMALIZED%0{length - 10}d"
-        for prefix, length in id_lengths
-    }
+
     # We'll replace "invoice_prefix": "A35BC4Q" with something like "invoice_prefix": "NORMA01"
+    pattern_translations = {
+        r'"invoice_prefix": "([A-Za-z0-9]{7,8})"': "NORMA%02d",
+        r'"fingerprint": "([A-Za-z0-9]{16})"': "NORMALIZED%06d",
+        r'"number": "([A-Za-z0-9]{7,8}-[A-Za-z0-9]{4})"': "NORMALI-%04d",
+        r'"address": "([A-Za-z0-9]{9}-test_[A-Za-z0-9]{12})"': "000000000-test_NORMALIZED%02d",
+        r'"client_secret": "([\w]+)"': "NORMALIZED-%d",
+        r'"url": "https://billing.stripe.com/p/session/test_([\w]+)"': "NORMALIZED-%d",
+        r'"url": "https://checkout.stripe.com/c/pay/cs_test_([\w#%]+)"': "NORMALIZED-%d",
+        r'"hosted_invoice_url": "https://invoice.stripe.com/i/acct_[\w]+/test_[\w,]+\?s=[\w]+"': '"hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED-%d?s=ap"',
+        r'"invoice_pdf": "https://pay.stripe.com/invoice/acct_[\w]+/test_[\w,]+/pdf\?s=[\w]+"': '"invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED-%d/pdf?s=ap"',
+        r'"id": "([\w]+)"': "NORMALIZED-%d",
+        # Don't use (..) notation, since the matched strings may be small integers that will also match
+        # elsewhere in the file
+        r'"realm_id": "[0-9]+"': '"realm_id": "%d"',
+        r'"account_name": "[\w\s]+"': '"account_name": "NORMALIZED-%d"',
+    }
+
+    # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
     pattern_translations.update(
         {
-            r'"invoice_prefix": "([A-Za-z0-9]{7,8})"': "NORMA%02d",
-            r'"fingerprint": "([A-Za-z0-9]{16})"': "NORMALIZED%06d",
-            r'"number": "([A-Za-z0-9]{7,8}-[A-Za-z0-9]{4})"': "NORMALI-%04d",
-            r'"address": "([A-Za-z0-9]{9}-test_[A-Za-z0-9]{12})"': "000000000-test_NORMALIZED%02d",
-            # Don't use (..) notation, since the matched strings may be small integers that will also match
-            # elsewhere in the file
-            r'"realm_id": "[0-9]+"': '"realm_id": "%d"',
-            r'"account_name": "[\w\s]+"': '"account_name": "NORMALIZED-%d"',
+            rf"{prefix}_[A-Za-z0-9]{{{length}}}": f"{prefix}_NORMALIZED%0{length - 10}d"
+            for prefix, length in id_lengths
         }
     )
     # Normalizing across all timestamps still causes a lot of variance run to run, which is
@@ -269,7 +282,7 @@ def normalize_fixture_data(
         file_content = re.sub(r'(?<="risk_score": )(\d+)', "0", file_content)
         file_content = re.sub(r'(?<="times_redeemed": )(\d+)', "0", file_content)
         file_content = re.sub(
-            r'(?<="idempotency-key": )"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f-]*)"',
+            r'(?<="idempotency_key": )"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"',
             '"00000000-0000-0000-0000-000000000000"',
             file_content,
         )
