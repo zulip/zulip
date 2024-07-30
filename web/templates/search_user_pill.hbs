@@ -7,7 +7,7 @@
         <div class="pill{{#if deactivated}} deactivated-pill{{/if}}" data-user-id="{{this.user_id}}">
             <img class="pill-image" src="{{this.img_src}}" />
             <span class="pill-label">
-                <span class="pill-value">{{ this.display_value }}</span>
+                <span class="pill-value">{{ this.full_name }}</span>
                 {{~#if this.should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
                 {{~#if deactivated}}&nbsp;({{t 'deactivated'}}){{~/if~}}
                 {{~#if this.status_emoji_info~}}
