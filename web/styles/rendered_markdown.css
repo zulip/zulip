@@ -215,15 +215,19 @@
 
     /* Timestamps */
     & time {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 3px;
         background: hsl(0deg 0% 93%);
         border-radius: 3px;
         padding: 0 0.2em;
         box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
         white-space: nowrap;
-        margin-left: 2px;
-        margin-right: 2px;
-        display: inline-block;
-        margin-bottom: 1px;
+        margin: 0 2px 1px;
+
+        .fa-clock-o {
+            align-self: center;
+        }
     }
 
     /* LaTeX styling */
