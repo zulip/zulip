@@ -156,6 +156,7 @@ export function open_settings_overlay() {
         on_close() {
             browser_history.exit_overlay();
             flatpickr.close_all();
+            settings_panel_menu.mobile_deactivate_section();
         },
     });
 }
