@@ -18,7 +18,9 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
+from pydantic import Json
 from requests_oauthlib import OAuth2Session
+from typing_extensions import TypedDict
 
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.decorator import zulip_login_required
@@ -26,11 +28,10 @@ from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.partial import partial
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.url_encoding import append_url_query_string
-from zerver.lib.validator import check_bool, check_dict, check_string
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
 
@@ -99,27 +100,35 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
     return redirect(authorization_url)
 
 
+class StateDictRealm(TypedDict):
+    realm: str
+    sid: str
+
+
+class StateDict(TypedDict):
+    sid: str
+
+
 @never_cache
-@has_request_variables
+@typed_endpoint
 def complete_zoom_user(
     request: HttpRequest,
-    state: dict[str, str] = REQ(
-        json_validator=check_dict([("realm", check_string)], value_validator=check_string)
-    ),
+    *,
+    code: str,
+    state: Json[StateDictRealm],
 ) -> HttpResponse:
     if get_subdomain(request) != state["realm"]:
         return redirect(urljoin(get_realm(state["realm"]).url, request.get_full_path()))
-    return complete_zoom_user_in_realm(request)
+    return complete_zoom_user_in_realm(request, code=code, state=state)
 
 
 @zulip_login_required
-@has_request_variables
+@typed_endpoint
 def complete_zoom_user_in_realm(
     request: HttpRequest,
-    code: str = REQ(),
-    state: dict[str, str] = REQ(
-        json_validator=check_dict([("sid", check_string)], value_validator=check_string)
-    ),
+    *,
+    code: str,
+    state: Json[StateDict],
 ) -> HttpResponse:
     assert request.user.is_authenticated
 
@@ -142,11 +151,12 @@ def complete_zoom_user_in_realm(
     return render(request, "zerver/close_window.html")
 
 
-@has_request_variables
+@typed_endpoint
 def make_zoom_video_call(
     request: HttpRequest,
     user: UserProfile,
-    is_video_call: bool = REQ(json_validator=check_bool, default=True),
+    *,
+    is_video_call: Json[bool] = True,
 ) -> HttpResponse:
     oauth = get_zoom_session(user)
     if not oauth.authorized:
@@ -188,14 +198,14 @@ def make_zoom_video_call(
 
 @csrf_exempt
 @require_POST
-@has_request_variables
+@typed_endpoint_without_parameters
 def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def get_bigbluebutton_url(
-    request: HttpRequest, user_profile: UserProfile, meeting_name: str = REQ()
+    request: HttpRequest, user_profile: UserProfile, *, meeting_name: str
 ) -> HttpResponse:
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
@@ -223,8 +233,8 @@ def get_bigbluebutton_url(
 # meeting to the Zulip organization it was created in.
 @zulip_login_required
 @never_cache
-@has_request_variables
-def join_bigbluebutton(request: HttpRequest, bigbluebutton: str = REQ()) -> HttpResponse:
+@typed_endpoint
+def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpResponse:
     assert request.user.is_authenticated
 
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
