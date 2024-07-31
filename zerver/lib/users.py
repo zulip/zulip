@@ -7,7 +7,6 @@ from email.headerregistry import Address
 from operator import itemgetter
 from typing import Any, TypedDict
 
-import dateutil.parser as date_parser
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
@@ -510,18 +509,18 @@ def format_user_row(
         full_name=row["full_name"],
         timezone=canonicalize_timezone(row["timezone"]),
         is_active=row["is_active"],
-        date_joined=row["date_joined"].isoformat(),
+        # Only send day level precision date_joined data to spectators.
+        date_joined=row["date_joined"].date().isoformat()
+        if acting_user is None
+        else row["date_joined"].isoformat(timespec="minutes"),
         delivery_email=delivery_email,
     )
 
     if acting_user is None:
         # Remove data about other users which are not useful to spectators
         # or can reveal personal information about a user.
-        # Only send day level precision date_joined data to spectators.
         del result["is_billing_admin"]
         del result["timezone"]
-        assert isinstance(result["date_joined"], str)
-        result["date_joined"] = str(date_parser.parse(result["date_joined"]).date())
 
     # Zulip clients that support using `GET /avatar/{user_id}` as a
     # fallback if we didn't send an avatar URL in the user object pass
