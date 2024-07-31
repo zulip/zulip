@@ -25,7 +25,6 @@ normal_queues = [
     "thumbnail",
     "user_activity",
     "user_activity_interval",
-    "user_presence",
 ]
 
 mobile_notification_shards = int(
