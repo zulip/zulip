@@ -3,20 +3,20 @@
 A date picker will appear once you type `<time`.
 
 ```
-Our next meeting is scheduled for <time:2020-05-28T13:30:00+05:30>
+Our next meeting is scheduled for <time:2024-08-06T17:00:00+01:00>.
 ```
 
 !!! tip ""
 
     You can also use other formats such as UNIX timestamps or human readable
-    dates, for example, `<time:May 28 2020, 1:30 PM IST>`.
+    dates, for example, `<time:August 06 2024, 5:00 PM BST>`.
 
 ### What it looks like
 
 A person in San Francisco will see:
 
-> Our next meeting is scheduled for *Thu, May 28 2020, 1:00 AM*.
+![Global time San Francisco example](/static/images/help/global-time-example-sf.png)
 
-While someone in India will see:
+While someone in London will see:
 
-> Our next meeting is scheduled for *Thu, May 28 2020, 1:30 PM*.
+![Global time London example](/static/images/help/global-time-example-london.png)
