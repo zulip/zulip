@@ -167,12 +167,13 @@ releases, and do not support them in production.
 The Zulip server project uses GitHub projects and labels to structure
 communication about priorities:
 
-- We use GitHub projects to track goals for major releases (e.g., [Zulip 9.0
-  priorities](https://github.com/orgs/zulip/projects/9/)). The project board
-  should be seen a list of priorities being _considered_ for the release, not a
-  guarantee that features will be included. As the release date approaches,
-  features that will not make it into the release are dropped from the project
-  board on an ongoing basis.
+- We use a [GitHub project
+  board](https://github.com/orgs/zulip/projects/9/views/13) to publicly track
+  goals for major releases. The items with the "Done" status will be included in
+  the next major release. Otherwise, the project board should be seen a list of
+  priorities being _considered_ for the release, not a guarantee that features
+  will be included. As the release date approaches, features that will not make
+  it into the release are dropped from the project board on an ongoing basis.
 
 - The [high priority][label-high] label tags issues that we consider important.
   It is reviewed in the planning stage of the release cycle to identify
