@@ -194,16 +194,12 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".fa-exclamation-triangle",
+        target: ".unsubscribed_icon",
         placement: "right",
         appendTo: () => document.body,
-        onShow(instance) {
-            instance.setContent("You are not currently subscribed to this channel.");
-        },
         onHidden(instance) {
             instance.destroy();
         },
-        maxWidth: 320,
     });
 
     // Variant of .tippy-left-sidebar-tooltip configuration. Here
