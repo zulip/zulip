@@ -93,10 +93,8 @@ export class SettingsPanelMenu {
         const section = this.current_tab;
         const user_settings_tab = this.current_user_settings_tab;
 
-        if (two_column_mode()) {
-            // In one column mode want to show the settings list, not the first settings section.
-            this.activate_section_or_default(section, user_settings_tab);
-        }
+        const activate_section_for_mobile = two_column_mode();
+        this.activate_section_or_default(section, user_settings_tab, activate_section_for_mobile);
         this.$curr_li.trigger("focus");
     }
 
@@ -167,7 +165,7 @@ export class SettingsPanelMenu {
         this.current_user_settings_tab = tab;
     }
 
-    activate_section_or_default(section, user_settings_tab) {
+    activate_section_or_default(section, user_settings_tab, activate_section_for_mobile = true) {
         popovers.hide_all();
         if (!section) {
             // No section is given so we display the default.
@@ -215,9 +213,11 @@ export class SettingsPanelMenu {
 
         scroll_util.reset_scrollbar($("#settings_content"));
 
-        const $settings_overlay_container = $("#settings_overlay_container");
-        $settings_overlay_container.find(".right").addClass("show");
-        $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
+        if (activate_section_for_mobile) {
+            const $settings_overlay_container = $("#settings_overlay_container");
+            $settings_overlay_container.find(".right").addClass("show");
+            $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
+        }
 
         set_settings_header(section);
     }
