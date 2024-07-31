@@ -333,11 +333,22 @@ class MarkdownImageMetadata:
 
 
 def get_user_upload_previews(
-    realm_id: int, content: str
+    realm_id: int,
+    content: str,
+    lock: bool = False,
+    path_ids: list[str] | None = None,
 ) -> dict[str, MarkdownImageMetadata | None]:
-    matches = re.findall(r"/user_uploads/(\d+/[/\w.-]+)", content)
+    if path_ids is None:
+        path_ids = re.findall(r"/user_uploads/(\d+/[/\w.-]+)", content)
+    if not path_ids:
+        return {}
+
     upload_preview_data: dict[str, MarkdownImageMetadata | None] = {}
-    for image_attachment in ImageAttachment.objects.filter(realm_id=realm_id, path_id__in=matches):
+
+    image_attachments = ImageAttachment.objects.filter(realm_id=realm_id, path_id__in=path_ids)
+    if lock:
+        image_attachments = image_attachments.select_for_update()
+    for image_attachment in image_attachments:
         if image_attachment.thumbnail_metadata == []:
             # Image exists, and header of it parsed as a valid image,
             # but has not been thumbnailed yet; we will render a
@@ -379,10 +390,11 @@ def rewrite_thumbnailed_images(
     rendered_content: str,
     images: dict[str, MarkdownImageMetadata | None],
     to_delete: set[str] | None = None,
-) -> str | None:
+) -> tuple[str | None, set[str]]:
     if not images and not to_delete:
-        return None
+        return None, set()
 
+    remaining_thumbnails = set()
     parsed_message = BeautifulSoup(rendered_content, "html.parser")
 
     changed = False
@@ -419,7 +431,7 @@ def rewrite_thumbnailed_images(
             # This happens routinely when a message contained multiple
             # unthumbnailed images, and only one of those images just
             # completed thumbnailing.
-            pass
+            remaining_thumbnails.add(path_id)
         else:
             changed = True
             del image_tag["class"]
@@ -432,6 +444,6 @@ def rewrite_thumbnailed_images(
 
     if changed:
         # The formatter="html5" means we do not produce self-closing tags
-        return parsed_message.encode(formatter="html5").decode().strip()
+        return parsed_message.encode(formatter="html5").decode().strip(), remaining_thumbnails
     else:
-        return None
+        return None, remaining_thumbnails

@@ -68,6 +68,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import access_stream_for_send_message, ensure_stream, subscribed_to_stream
 from zerver.lib.string_validation import check_stream_name
+from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
@@ -864,7 +865,31 @@ def do_send_messages(
             send_request.message, send_request.rendering_result.potential_attachment_path_ids
         ):
             send_request.message.has_attachment = True
-            send_request.message.save(update_fields=["has_attachment"])
+            update_fields = ["has_attachment"]
+
+            # Lock the ImageAttachment rows that we pulled when rendering
+            # outside of the transaction; they may be out of date now, and we
+            # need to post-process the rendered_content to swap out the
+            # spinner.  We would ideally take a `FOR SHARE` lock here
+            # (https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-ROWS),
+            # which would block UPDATEs but not other `FOR SHARE`, but Django
+            # does not support this yet: (https://code.djangoproject.com/ticket/10088)
+            assert send_request.message.rendered_content is not None
+            if send_request.rendering_result.thumbnail_spinners:
+                previews = get_user_upload_previews(
+                    send_request.message.realm_id,
+                    send_request.message.content,
+                    lock=True,
+                    path_ids=list(send_request.rendering_result.thumbnail_spinners),
+                )
+                new_rendered_content = rewrite_thumbnailed_images(
+                    send_request.message.rendered_content, previews
+                )[0]
+                if new_rendered_content is not None:
+                    send_request.message.rendered_content = new_rendered_content
+                    update_fields.append("rendered_content")
+
+            send_request.message.save(update_fields=update_fields)
 
     ums: list[UserMessageLite] = []
     for send_request in send_message_requests:

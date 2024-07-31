@@ -118,6 +118,7 @@ class MessageRenderingResult:
     links_for_preview: set[str]
     user_ids_with_alert_words: set[int]
     potential_attachment_path_ids: list[str]
+    thumbnail_spinners: set[str]
 
 
 @dataclass
@@ -2625,6 +2626,7 @@ def do_convert(
         links_for_preview=set(),
         user_ids_with_alert_words=set(),
         potential_attachment_path_ids=[],
+        thumbnail_spinners=set(),
     )
 
     _md_engine.zulip_message = message
@@ -2683,9 +2685,10 @@ def do_convert(
 
         # Post-process the result with the rendered image previews:
         if user_upload_previews is not None:
-            content_with_thumbnails = rewrite_thumbnailed_images(
+            content_with_thumbnails, thumbnail_spinners = rewrite_thumbnailed_images(
                 rendering_result.rendered_content, user_upload_previews
             )
+            rendering_result.thumbnail_spinners = thumbnail_spinners
             if content_with_thumbnails is not None:
                 rendering_result.rendered_content = content_with_thumbnails
 
