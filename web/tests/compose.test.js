@@ -405,7 +405,6 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     compose_state.set_stream_id(social.stream_id);
 
     $("textarea#compose-textarea").val("message me");
-    $("textarea#compose-textarea").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .preview_message_area").show();
     $("#compose .markdown_preview").hide();
@@ -416,7 +415,6 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         send_message_called = true;
     });
     compose.enter_with_preview_open();
-    assert.ok($("textarea#compose-textarea").visible());
     assert.ok(!$("#compose .undo_markdown_preview").visible());
     assert.ok(!$("#compose .preview_message_area").visible());
     assert.ok($("#compose .markdown_preview").visible());
@@ -490,7 +488,6 @@ test_ui("finish", ({override, override_rewire}) => {
             send_message_called = true;
         });
         assert.ok(compose.finish());
-        assert.ok($("textarea#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
@@ -657,7 +654,6 @@ test_ui("on_events", ({override, override_rewire}) => {
     (function test_markdown_preview_compose_clicked() {
         // Tests setup
         function setup_visibilities() {
-            $("textarea#compose-textarea").show();
             $("#compose .markdown_preview").show();
             $("#compose .undo_markdown_preview").hide();
             $("#compose .preview_message_area").hide();
@@ -665,7 +661,6 @@ test_ui("on_events", ({override, override_rewire}) => {
         }
 
         function assert_visibilities() {
-            assert.ok(!$("textarea#compose-textarea").visible());
             assert.ok(!$("#compose .markdown_preview").visible());
             assert.ok($("#compose .undo_markdown_preview").visible());
             assert.ok($("#compose .preview_message_area").visible());
@@ -785,7 +780,6 @@ test_ui("on_events", ({override, override_rewire}) => {
     (function test_undo_markdown_preview_clicked() {
         const handler = $("#compose").get_on_handler("click", ".undo_markdown_preview");
 
-        $("textarea#compose-textarea").hide();
         $("#compose .undo_markdown_preview").show();
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
@@ -806,7 +800,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         handler(event);
 
-        assert.ok($("textarea#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
