@@ -37,6 +37,9 @@ importers:
       '@formatjs/intl':
         specifier: ^2.0.0
         version: 2.10.4(typescript@5.5.2)
+      '@gfx/zopfli':
+        specifier: ^1.0.15
+        version: 1.0.15
       '@giphy/js-components':
         specifier: ^5.13.0
         version: 5.13.0(@babel/core@7.24.9)
@@ -88,6 +91,9 @@ importers:
       colord:
         specifier: ^2.9.3
         version: 2.9.3
+      compression-webpack-plugin:
+        specifier: ^11.1.0
+        version: 11.1.0(webpack@5.93.0(webpack-cli@5.1.4))
       core-js:
         specifier: ^3.37.0
         version: 3.37.1
@@ -1784,6 +1790,10 @@ packages:
 
   '@gar/promisify@1.1.3':
     resolution: {integrity: sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==}
+
+  '@gfx/zopfli@1.0.15':
+    resolution: {integrity: sha512-7mBgpi7UD82fsff5ThQKet0uBTl4BYerQuc+/qA1ELTwWEiIedRTcD3JgiUu9wwZ2kytW8JOb165rSdAt8PfcQ==}
+    engines: {node: '>= 8'}
 
   '@giphy/js-analytics@5.0.0':
     resolution: {integrity: sha512-jBZG6OqyMWB6meLi8Sz3iLplXYnhkbj+DJhS4ChmRX8Y6UA7i5dbbsUN/So1s7tTjhZOvu0rxA6rWJE73S1FvQ==}
@@ -3554,6 +3564,12 @@ packages:
   compressible@2.0.18:
     resolution: {integrity: sha512-AF3r7P5dWxL8MxyITRMlORQNaOA2IkAFaTr4k7BUumjPtRpGDTZpl0Pb1XCO6JeDCBdp126Cgs9sMxqSjgYyRg==}
     engines: {node: '>= 0.6'}
+
+  compression-webpack-plugin@11.1.0:
+    resolution: {integrity: sha512-zDOQYp10+upzLxW+VRSjEpRRwBXJdsb5lBMlRxx1g8hckIFBpe3DTI0en2w7h+beuq89576RVzfiXrkdPGrHhA==}
+    engines: {node: '>= 18.12.0'}
+    peerDependencies:
+      webpack: ^5.1.0
 
   compression@1.7.4:
     resolution: {integrity: sha512-jaSIDzP9pZVS4ZfQ+TzvtiWhdpFhE2RDHz8QJkpX9SIpLq88VueF5jJw6t+6CUQcAoA6t+x89MLrWAqpfDE8iQ==}
@@ -10709,6 +10725,10 @@ snapshots:
 
   '@gar/promisify@1.1.3': {}
 
+  '@gfx/zopfli@1.0.15':
+    dependencies:
+      base64-js: 1.5.1
+
   '@giphy/js-analytics@5.0.0':
     dependencies:
       '@giphy/js-types': 5.1.0
@@ -12792,6 +12812,12 @@ snapshots:
   compressible@2.0.18:
     dependencies:
       mime-db: 1.53.0
+
+  compression-webpack-plugin@11.1.0(webpack@5.93.0(webpack-cli@5.1.4)):
+    dependencies:
+      schema-utils: 4.2.0
+      serialize-javascript: 6.0.2
+      webpack: 5.93.0(webpack-cli@5.1.4)
 
   compression@1.7.4:
     dependencies:

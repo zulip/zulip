@@ -2,6 +2,9 @@
 
 import path from "path";
 
+import type {ZopfliOptions} from "@gfx/zopfli";
+import {gzip} from "@gfx/zopfli";
+import CompressionPlugin from "compression-webpack-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
@@ -217,6 +220,11 @@ const config = (
                 template: "html/5xx.html",
                 chunks: ["error-styles"],
                 publicPath: production ? "/static/webpack-bundles/" : "/webpack/",
+            }),
+            new CompressionPlugin<ZopfliOptions>({
+                // Use zopfli to write pre-compressed versions of text files
+                test: /\.(js|css|html)$/,
+                algorithm: gzip,
             }),
         ],
         devServer: {
