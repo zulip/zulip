@@ -1,39 +1,59 @@
+import {z} from "zod";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_notifications from "./compose_notifications";
 import * as message_lists from "./message_lists";
+import type {MessageList, RenderInfo} from "./message_lists";
 import * as message_store from "./message_store";
+import type {Message} from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as unread_ops from "./unread_ops";
 import * as util from "./util";
 
-// TODO: Move this function to 'message_util.ts' once #30702 is merged.
-export function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) {
-    const ids = [];
+const msg_match_narrow_api_response_schema = z.object({
+    messages: z.record(
+        z.string(),
+        z.object({
+            match_content: z.string(),
+            match_subject: z.string(),
+        }),
+    ),
+});
+
+export function maybe_add_narrowed_messages(
+    messages: Message[],
+    msg_list: MessageList,
+    callback: (messages: Message[], msg_list: MessageList) => RenderInfo | undefined,
+    attempt = 1,
+): void {
+    const ids: number[] = [];
 
     for (const elem of messages) {
         ids.push(elem.id);
     }
 
-    channel.get({
+    void channel.get({
         url: "/json/messages/matches_narrow",
         data: {
             msg_ids: JSON.stringify(ids),
             narrow: JSON.stringify(narrow_state.public_search_terms()),
         },
         timeout: 5000,
-        success(data) {
+        success(raw_data) {
+            const data = msg_match_narrow_api_response_schema.parse(raw_data);
+
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
                 // We unnarrowed or moved to Recent Conversations in the meantime.
                 return;
             }
 
-            let new_messages = [];
-            const elsewhere_messages = [];
+            let new_messages: Message[] = [];
+            const elsewhere_messages: Message[] = [];
 
             for (const elem of messages) {
                 if (Object.hasOwn(data.messages, elem.id)) {
-                    util.set_match_data(elem, data.messages[elem.id]);
+                    util.set_match_data(elem, data.messages[elem.id]!);
                     new_messages.push(elem);
                 } else {
                     elsewhere_messages.push(elem);
