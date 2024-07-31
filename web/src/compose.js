@@ -39,7 +39,6 @@ export function clear_private_stream_alert() {
 }
 
 export function clear_preview_area() {
-    $("textarea#compose-textarea").show();
     $("textarea#compose-textarea").trigger("focus");
     $("#compose .undo_markdown_preview").hide();
     $("#compose .preview_message_area").hide();
@@ -60,7 +59,6 @@ export function show_preview_area() {
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
     const content = $("textarea#compose-textarea").val();
-    $("textarea#compose-textarea").hide();
     $("#compose .markdown_preview").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .undo_markdown_preview").trigger("focus");
