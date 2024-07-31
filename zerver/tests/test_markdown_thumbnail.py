@@ -4,13 +4,22 @@ from unittest.mock import patch
 import pyvips
 
 from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_send import check_message, do_send_messages
+from zerver.lib.addressee import Addressee
 from zerver.lib.camo import get_camo_url
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, read_test_image_file
 from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.upload import upload_message_attachment
-from zerver.models import ArchivedAttachment, ArchivedMessage, Attachment, ImageAttachment, Message
+from zerver.models import (
+    ArchivedAttachment,
+    ArchivedMessage,
+    Attachment,
+    Client,
+    ImageAttachment,
+    Message,
+)
 from zerver.models.clients import get_client
 from zerver.worker.thumbnail import ensure_thumbnails
 
@@ -333,4 +342,43 @@ class MarkdownThumbnailTest(ZulipTestCase):
         self.assert_message_content_is(
             private_message_id,
             f'<p>This <a href="/user_uploads/{path_id}">image</a> is private</p>\n{rendered_thumb}',
+        )
+
+    def test_thumbnail_race(self) -> None:
+        """Test what happens when thumbnailing happens between rendering and sending"""
+        path_id = self.upload_image("img.png")
+
+        self.assert_length(ImageAttachment.objects.get(path_id=path_id).thumbnail_metadata, 0)
+
+        # Render, but do not send, the message referencing the image.
+        # This will render as a spinner, since the thumbnail has not
+        # been generated yet.
+        send_request = check_message(
+            self.example_user("othello"),
+            Client.objects.get_or_create(name="test suite")[0],
+            Addressee.for_stream_name("Verona", "test"),
+            f"[image](/user_uploads/{path_id})",
+        )
+        expected = (
+            f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+        )
+        self.assertEqual(send_request.message.rendered_content, expected)
+
+        # Thumbnail the image.  The message does not exist yet, so
+        # nothing is re-written.
+        ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
+
+        # Send the message; this should re-check the ImageAttachment
+        # data, find the thumbnails, and update the rendered_content
+        # to no longer contain a spinner.
+        message_id = do_send_messages([send_request])[0].message_id
+
+        rendered_thumb = (
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+        )
+        self.assert_message_content_is(
+            message_id, f'<p><a href="/user_uploads/{path_id}">image</a></p>\n{rendered_thumb}'
         )
