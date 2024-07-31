@@ -1,8 +1,8 @@
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_notifications from "./compose_notifications";
-import * as message_helper from "./message_helper";
 import * as message_lists from "./message_lists";
+import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as unread_ops from "./unread_ops";
 import * as util from "./util";
@@ -40,17 +40,25 @@ export function maybe_add_narrowed_messages(messages, msg_list, callback, attemp
                 }
             }
 
-            // This second call to process_new_message in the
-            // insert_new_messages code path is designed to replace
-            // our slightly stale message object with the latest copy
-            // from the message_store. This helps in very rare race
-            // conditions, where e.g. the current user's name was
+            // We replace our slightly stale message object with the
+            // latest copy from the message_store. This helps in very
+            // rare race conditions, where e.g. the current user's name was
             // edited in between when they sent the message and when
             // we hear back from the server and can echo the new
             // message.
-            new_messages = new_messages.map((message) =>
-                message_helper.process_new_message(message),
-            );
+            new_messages = new_messages.map((new_msg) => {
+                const cached_msg = message_store.get_cached_message(new_msg.id);
+                if (cached_msg !== undefined) {
+                    // Copy the match topic and content over from the new_msg to
+                    // cached_msg. Also unlike message_helper.process_new_message, we
+                    // are not checking if new_msg has match_topic, the upstream code
+                    // ensure that.
+                    util.set_match_data(cached_msg, new_msg);
+                    return cached_msg;
+                }
+
+                return new_msg;
+            });
 
             callback(new_messages, msg_list);
             unread_ops.process_visible();
