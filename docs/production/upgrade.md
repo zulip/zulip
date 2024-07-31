@@ -329,6 +329,9 @@ instructions for other supported platforms.
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
+   The `do-release-upgrade` tool will complete by prompting you to
+   restart the system; press `N`, as we will do so later.
+
 4. Next, we need to reinstall the current version of Zulip, which
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python and rewrite Zulip's
@@ -341,15 +344,20 @@ instructions for other supported platforms.
        /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
    ```
 
-   This will finish by restarting your Zulip server; you should now be
-   able to navigate to its URL and confirm everything is working
-   correctly.
-
 5. As root, upgrade the database to the latest version of PostgreSQL:
 
    ```bash
    /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
    ```
+
+6. As root, restart the server:
+
+   ```bash
+   reboot
+   ```
+
+You should now be able to navigate to your Zulip server's URL and
+confirm everything is working correctly.
 
 ### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
 
@@ -382,6 +390,9 @@ instructions for other supported platforms.
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
+   The `do-release-upgrade` tool will complete by prompting you to
+   restart the system; press `N`, as we will do so later.
+
 4. Next, we need to reinstall the current version of Zulip, which
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python and rewrite Zulip's
@@ -393,10 +404,6 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
        /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
    ```
-
-   This will finish by restarting your Zulip server; you should now be
-   able to navigate to its URL and confirm everything is working
-   correctly.
 
 5. As root, upgrade the database to the latest version of PostgreSQL:
 
@@ -413,7 +420,13 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
-7. [Upgrade from Ubuntu 20.04 to
+7. As root, restart the server:
+
+   ```bash
+   reboot
+   ```
+
+8. [Upgrade from Ubuntu 20.04 to
    22.04](#upgrading-from-ubuntu-2004-focal-to-2204-jammy), so that
    you are running a supported operating system.
 
