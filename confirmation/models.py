@@ -209,7 +209,7 @@ def confirmation_url(
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=CASCADE)
-    object_id = models.PositiveIntegerField(db_index=True)
+    object_id = models.PositiveBigIntegerField(db_index=True)
     content_object = GenericForeignKey("content_type", "object_id")
     date_sent = models.DateTimeField(db_index=True)
     confirmation_key = models.CharField(max_length=40, db_index=True)
