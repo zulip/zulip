@@ -4568,7 +4568,7 @@ msgstr "خطا در ارسال پیام به کانال {channel_name}، از ط
 
 #: zerver/lib/email_mirror.py:422
 msgid "Email with no subject"
-msgstr ""
+msgstr "ایمیل بدون موضوع"
 
 #: zerver/lib/email_notifications.py:130 zerver/lib/email_notifications.py:152
 msgid "Open Zulip to see the spoiler content"
@@ -5540,7 +5540,7 @@ msgstr "نامعتبر {var_name}: {msg}"
 #: zerver/lib/typed_endpoint.py:384
 #, python-brace-format
 msgid "{var_name} field is missing: {msg}"
-msgstr ""
+msgstr "فیلد {var_name} پیدا نشد: {msg}"
 
 #: zerver/lib/typed_endpoint_validators.py:31
 #: zerver/lib/typed_endpoint_validators.py:37
@@ -6469,7 +6469,7 @@ msgstr "**{policy}** کانال ساخته شده توسط {user_name}. **شرح
 #: zerver/views/streams.py:972
 #, python-brace-format
 msgid "{property} is not a boolean"
-msgstr ""
+msgstr "{property} یک مقدار بولی نیست"
 
 #: zerver/views/streams.py:975
 #, python-brace-format

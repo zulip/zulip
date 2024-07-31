@@ -4578,7 +4578,7 @@ msgstr "Ошибка отправки сообщения в канал {channel_
 
 #: zerver/lib/email_mirror.py:422
 msgid "Email with no subject"
-msgstr ""
+msgstr "Письмо без темы"
 
 #: zerver/lib/email_notifications.py:130 zerver/lib/email_notifications.py:152
 msgid "Open Zulip to see the spoiler content"
@@ -5550,7 +5550,7 @@ msgstr "Неверное {var_name}: {msg}"
 #: zerver/lib/typed_endpoint.py:384
 #, python-brace-format
 msgid "{var_name} field is missing: {msg}"
-msgstr ""
+msgstr "поле {var_name} отсутствует: {msg}"
 
 #: zerver/lib/typed_endpoint_validators.py:31
 #: zerver/lib/typed_endpoint_validators.py:37
@@ -6479,7 +6479,7 @@ msgstr "**{policy}** канала создана пользователем {use
 #: zerver/views/streams.py:972
 #, python-brace-format
 msgid "{property} is not a boolean"
-msgstr ""
+msgstr "{property} не является булевым значением"
 
 #: zerver/views/streams.py:975
 #, python-brace-format

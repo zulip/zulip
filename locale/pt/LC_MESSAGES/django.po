@@ -7,6 +7,7 @@
 # Andrei Bernardo Simoni <andrei_simoni@hotmail.com>, 2021
 # André Lopes Pereira <andrelopespereira@gmail.com>, 2018-2019
 # André Lopes Pereira <andrelopespereira@gmail.com>, 2018
+# Everton Pereira, 2024
 # Juno Takano <juno@newen.pub>, 2019
 # Leonardo Pimenta, 2024
 # Rafael Patronilo <rafael.patronilo@hotmail.com>, 2020
@@ -637,7 +638,7 @@ msgstr "Não se preocupe"
 #: templates/corporate/billing/billing.html:512
 #: templates/corporate/billing/billing.html:540
 msgid "Downgrade"
-msgstr ""
+msgstr "Rebaixar"
 
 #: templates/corporate/billing/billing.html:455
 #: templates/corporate/billing/billing.html:484
@@ -733,11 +734,11 @@ msgstr "Você pode tentar de novo em %(retry_after)s segundos."
 
 #: templates/corporate/billing/upgrade.html:5
 msgid "Upgrade"
-msgstr ""
+msgstr "Atualizar"
 
 #: templates/corporate/billing/upgrade.html:284
 msgid "Convert demo organization before upgrading."
-msgstr ""
+msgstr "Converter a organização de demonstração antes de atualizar."
 
 #: templates/corporate/billing/upgrade.html:361
 msgid "Send invoice and start free trial"
@@ -1059,7 +1060,7 @@ msgstr "Ilimitado"
 #: templates/corporate/comparison_table_integrated.html:1593
 #: templates/corporate/comparison_table_integrated.html:1604
 msgid "Supported"
-msgstr ""
+msgstr "Suportado"
 
 #: templates/corporate/comparison_table_integrated.html:230
 #: templates/corporate/comparison_table_integrated.html:244
@@ -1227,7 +1228,7 @@ msgstr "Ingressar como usuário"
 #: templates/corporate/development-community.html:33
 #: templates/corporate/development-community.html:58
 msgid "Join as a self-hoster"
-msgstr ""
+msgstr "Ingressar como um auto-hospedador"
 
 #: templates/corporate/development-community.html:36
 #: templates/corporate/development-community.html:61
@@ -2033,7 +2034,7 @@ msgstr "Notificação de desativação de conta em %(realm_name)s"
 msgid ""
 "\n"
 "Your Zulip account on %(realm_url)s has been deactivated, and you will no longer be able to log in.\n"
-msgstr ""
+msgstr "\nSua conta do Zulip em %(realm_url)s foi desativada e você não poderá mais fazer login.\n"
 
 #: templates/zerver/emails/digest.html:27 templates/zerver/emails/digest.txt:8
 msgid "New channels"
@@ -2089,20 +2090,20 @@ msgstr "Seu endereço de e-mail %(email)s tem contas com as seguintes organizaç
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
-msgstr ""
+msgstr "Seu endereço de e-mail %(email)s tem contas nas seguintes organizações do Zulip hospedadas por%(external_host)s:"
 
 #: templates/zerver/emails/find_team.html:24
 #, python-format
 msgid ""
 "If you have trouble logging in, you can <a "
 "href=\"%(help_reset_password_link)s\">reset your password</a>."
-msgstr ""
+msgstr "Se tiver problema ao fazer log in, você pode <a href=\"%(help_reset_password_link)s\">redefinir sua senha</a>."
 
 #: templates/zerver/emails/find_team.html:28
 #: templates/zerver/emails/find_team.txt:21
 #: templates/zerver/emails/find_team.txt:28
 msgid "You have requested a list of Zulip accounts for this email address."
-msgstr ""
+msgstr "Você solicitou uma lista de contas do Zulip para este endereço de e-mail."
 
 #: templates/zerver/emails/find_team.html:30
 #: templates/zerver/emails/find_team.txt:21
@@ -2115,7 +2116,7 @@ msgstr "Infelizmente, nenhuma conta Zulip Cloud foi encontrada."
 msgid ""
 "Unfortunately, no accounts were found in Zulip organizations hosted by "
 "%(external_host)s."
-msgstr ""
+msgstr "Infelizmente, nenhuma conta foi encontrada em organizações do Zulip hospedadas por%(external_host)s."
 
 #: templates/zerver/emails/find_team.html:37
 #, python-format
@@ -2123,14 +2124,14 @@ msgid ""
 "You can <a href = \"%(find_accounts_link)s\" >check for accounts</a> with "
 "another email, or <a href =\"%(help_logging_in_link)s\">try another way</a> "
 "to find your account."
-msgstr ""
+msgstr "Você pode <a href = \"%(find_accounts_link)s\" >verificar contas</a> com outro e-mail ou <a href =\"%(help_logging_in_link)s\">tentar outra maneira</a> de encontrar sua conta."
 
 #: templates/zerver/emails/find_team.html:38
 #: templates/zerver/emails/find_team.txt:26
 #: templates/zerver/emails/find_team.txt:34
 msgid ""
 "If you do not recognize this request, you can safely ignore this email."
-msgstr ""
+msgstr "Se você não reconhecer esta solicitação, pode ignorar este e-mail com segurança."
 
 #: templates/zerver/emails/find_team.subject.txt:2
 msgid "Your Zulip accounts"
@@ -2150,7 +2151,7 @@ msgstr "Se tiver problema ao fazer log in, você pode redefinir sua senha."
 msgid ""
 "You can check for accounts with another email (%(find_accounts_link)s), or "
 "try another way to find your account (%(help_logging_in_link)s)."
-msgstr ""
+msgstr "Você pode verificar contas com outro e-mail (%(find_accounts_link)s ), ou tentar outra maneira de encontrar sua conta (%(help_logging_in_link)s )."
 
 #: templates/zerver/emails/invitation.html:9
 #: templates/zerver/emails/invitation.txt:1
@@ -2162,7 +2163,7 @@ msgstr "Olá,"
 msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
-msgstr ""
+msgstr "%(referrer_name)squer que você se junte a eles no Zulip &mdash; a ferramenta de comunicação em equipe projetada para a produtividade."
 
 #: templates/zerver/emails/invitation.html:15
 #: templates/zerver/emails/invitation_reminder.html:13
@@ -2172,7 +2173,7 @@ msgstr "Para começar, clique no botão abaixo."
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
 msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
-msgstr ""
+msgstr "%(referrer_full_name)s convidou você para ingressar em%(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
@@ -2196,7 +2197,7 @@ msgstr "Olá novamente,"
 msgid ""
 "This is a friendly reminder that %(referrer_name)s wants you to join them on"
 " Zulip &mdash; the team communication tool designed for productivity."
-msgstr ""
+msgstr "Este é um lembrete amigável que %(referrer_name)s quer que você se junte a eles no Zulip &mdash; a ferramenta de comunicação corporativa projetada para produtividade."
 
 #: templates/zerver/emails/invitation_reminder.html:18
 #: templates/zerver/emails/invitation_reminder.txt:8
@@ -2210,7 +2211,7 @@ msgid ""
 "    This invitation expires in two days. If the invitation expires,\n"
 "    you'll need to ask %(referrer_name)s for another one.\n"
 "    "
-msgstr ""
+msgstr "\n    Este convite expira dentro de dois dias. Se o convite expirar,\n    vai precisar de pedir outro a %(referrer_name)s.\n    "
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
@@ -2237,14 +2238,14 @@ msgstr "Este convite expira em dois dias. Se o convite expirar, você precisará
 msgid ""
 "If you have any questions, please contact this Zulip server's administrators"
 " at <a href=\"mailto:%(email)s\">%(email)s</a>."
-msgstr ""
+msgstr "Se você tiver alguma dúvida, por favor entre em contato com os administradores deste servidor Zulip em <a href=\"mailto:%(email)s\">%(email)s</a>."
 
 #: templates/zerver/emails/macros.html:18
 #, python-format
 msgid ""
 "Do you have questions or feedback to share? <a "
 "href=\"mailto:%(email)s\">Contact us</a> — we'd love to help!"
-msgstr ""
+msgstr "Você tem perguntas ou feedback para compartilhar? <a href=\"mailto:%(email)s\">Entre em contato conosco</a> — adoraríamos ajudar!"
 
 #: templates/zerver/emails/missed_message.html:17
 #, python-format
@@ -2252,7 +2253,7 @@ msgid ""
 "This email does not include message content because your organization has "
 "disabled <a class=\"content_disabled_help_link\" "
 "href=\"%(help_url)s\">message content appearing in email notifications</a>."
-msgstr ""
+msgstr "Este e-mail não inclui o conteúdo da mensagem porque sua organização desativou a <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">exibição de conteúdo nas notificações de e-mail</a>."
 
 #: templates/zerver/emails/missed_message.html:19
 #, python-format
@@ -2260,7 +2261,7 @@ msgid ""
 "This email does not include message content because you have disabled <a "
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
 "content appearing in email notifications</a>."
-msgstr ""
+msgstr "Este e-mail não inclui o conteúdo da mensagem porque você desativou a <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">exibição de conteúdo nas notificações de e-mail</a>."
 
 #: templates/zerver/emails/missed_message.html:29
 #: templates/zerver/emails/missed_message.txt:25
@@ -2272,7 +2273,7 @@ msgstr "Você está recebendo isto porque foi mencionado pessoalmente."
 #, python-format
 msgid ""
 "You are receiving this because @%(mentioned_user_group_name)s was mentioned."
-msgstr ""
+msgstr "Você está recebendo isso porque @%(mentioned_user_group_name)s foi mencionado."
 
 #: templates/zerver/emails/missed_message.html:33
 #: templates/zerver/emails/missed_message.html:37
@@ -2282,14 +2283,14 @@ msgstr ""
 msgid ""
 "You are receiving this because all topic participants were mentioned in "
 "#%(channel_name)s > %(topic_name)s."
-msgstr ""
+msgstr "Você está recebendo isto porque todos os participantes do tópico foram mencionados em #%(channel_name)s > %(topic_name)s."
 
 #: templates/zerver/emails/missed_message.html:35
 #: templates/zerver/emails/missed_message.txt:31
 msgid ""
 "You are receiving this because you have wildcard mention notifications "
 "enabled for topics you follow."
-msgstr ""
+msgstr "Você está recebendo isto porque você ativou notificações de menção global para tópicos que você segue."
 
 #: templates/zerver/emails/missed_message.html:39
 #: templates/zerver/emails/missed_message.txt:35
@@ -2311,7 +2312,7 @@ msgstr "Você está recebendo isso porque você tem notificações de e-mail hab
 msgid ""
 "You are receiving this because you have email notifications enabled for "
 "#%(channel_name)s."
-msgstr ""
+msgstr "Você está recebendo isto porque você ativou notificações por e-mail para #%(channel_name)s."
 
 #: templates/zerver/emails/missed_message.html:46
 #, python-format
@@ -2319,14 +2320,14 @@ msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
-msgstr ""
+msgstr "Responda este e-mail, <a href=\"%(narrow_url)s\">veja no Zulip %(realm_name)s </a>, ou <a href=\"%(notif_url)s\">gerencie suas preferências de e-mail</a>."
 
 #: templates/zerver/emails/missed_message.html:48
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">View or reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr ""
+msgstr "<a href=\"%(narrow_url)s\">Veja ou responda no Zulip %(realm_name)s </a>, ou <a href=\"%(notif_url)s\">gerencie suas preferências de e-mail</a>."
 
 #: templates/zerver/emails/missed_message.html:50
 #, python-format
@@ -2341,7 +2342,7 @@ msgid ""
 "\n"
 "    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
 "    "
-msgstr ""
+msgstr "\n    Não responda a este e-mail. Este servidor Zulip não está configurado para aceitar e-mails recebidos. (<a href=\"%(url)s\">ajuda</a>).\n    "
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
@@ -2570,11 +2571,11 @@ msgstr ""
 #: templates/zerver/emails/onboarding_zulip_topics.txt:14
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
-msgstr ""
+msgstr "Desinscrever de e-mails de boas vindas para %(realm_name)s"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.subject.txt:1
 msgid "Choosing the chat app for your team"
-msgstr ""
+msgstr "Escolhendo o aplicativo de chat para sua equipe"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:1
 msgid ""
