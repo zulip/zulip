@@ -1899,11 +1899,11 @@ msgid ""
 "We received a request to add the email address %(new_email)s to your Zulip "
 "demo organization account on %(realm_url)s. To confirm this update and set a"
 " password for this account, please click below:"
-msgstr ""
+msgstr "لقد وصلنا طلبك بإضافة عنوان البريد الإلكتروني %(new_email)s إلى حساب منظمة زوليب التجريبية الخاص بك على %(realm_url)s. لتأكيد هذا و تعيين كلمة مرور لهذا الحساب, من فضلك اضغط أدناه:"
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:11
 msgid "Confirm and set password"
-msgstr ""
+msgstr "تأكيد و تعيين كلمة مرور"
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:13
 #: templates/zerver/emails/confirm_new_email.html:13
@@ -2031,7 +2031,7 @@ msgstr ""
 msgid ""
 "\n"
 "Your Zulip account on %(realm_url)s has been deactivated, and you will no longer be able to log in.\n"
-msgstr ""
+msgstr "\nتم تعطيل حساب زوليب الخاص بك على %(realm_url)s, و لن تستطيع تسجيل الدخول بعد الآن\n"
 
 #: templates/zerver/emails/digest.html:27 templates/zerver/emails/digest.txt:8
 msgid "New channels"
@@ -2053,7 +2053,7 @@ msgstr "ملخص Zulip ل %(realm_name)s"
 #: templates/zerver/emails/digest.txt:12
 #, python-format
 msgid "Click here to log in to Zulip and catch up: %(organization_url)s."
-msgstr ""
+msgstr "اضغط هنا لتسجيل الدخول إلى زوليب: %(organization_url)s"
 
 #: templates/zerver/emails/digest.txt:15
 msgid "Manage email preferences:"
@@ -2242,7 +2242,7 @@ msgstr ""
 msgid ""
 "Do you have questions or feedback to share? <a "
 "href=\"mailto:%(email)s\">Contact us</a> — we'd love to help!"
-msgstr ""
+msgstr "هل لديك أسئلة أو تعليق؟ <a href=\"mailto:%(email)s\">اتصل بنا</a>  — نحب أن نساعد!"
 
 #: templates/zerver/emails/missed_message.html:17
 #, python-format
@@ -2263,14 +2263,14 @@ msgstr "لا يتضمن هذا البريد الإلكتروني محتوى ال
 #: templates/zerver/emails/missed_message.html:29
 #: templates/zerver/emails/missed_message.txt:25
 msgid "You are receiving this because you were personally mentioned."
-msgstr ""
+msgstr "أنت تتلقى هذا لأنه تم الإشارة إليك بشكل شخصي"
 
 #: templates/zerver/emails/missed_message.html:31
 #: templates/zerver/emails/missed_message.txt:27
 #, python-format
 msgid ""
 "You are receiving this because @%(mentioned_user_group_name)s was mentioned."
-msgstr ""
+msgstr "أنت تتلقى هذا لأنه تم الإشارة إلى %(mentioned_user_group_name)s@"
 
 #: templates/zerver/emails/missed_message.html:33
 #: templates/zerver/emails/missed_message.html:37
@@ -4776,7 +4776,7 @@ msgstr ""
 
 #: zerver/lib/exceptions.py:536
 msgid "Direct messages are disabled in this organization."
-msgstr ""
+msgstr "الرسائل المابشرة معطلة في هذه المنظمة"
 
 #: zerver/lib/exceptions.py:538
 msgid "This conversation does not include any users who can authorize it."
@@ -5364,7 +5364,7 @@ msgstr ""
 #: zerver/lib/streams.py:441 zerver/lib/streams.py:507
 #: zerver/views/streams.py:375 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
-msgstr ""
+msgstr "مُعرف قناة غير صالح"
 
 #: zerver/lib/streams.py:483
 msgid "Channel name already in use."

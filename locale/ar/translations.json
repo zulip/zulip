@@ -13,7 +13,7 @@
   "/dark (Switch to the dark theme)": "/dark (قم بالتبديل إلى الوضع المظلم)",
   "/light (Switch to light theme)": "/light (التبديل إلى المظهر الفاتح)",
   "/me (Action message)": "أنا (رسالة فعل)/",
-  "/poll (Create a poll)": "استبيان (أنشئ استبيان)/",
+  "/poll (Create a poll)": "استطلاع (أنشئ استطلاع)/",
   "/todo (Create a collaborative to-do list)": "عمل المهام (أنشئ قائمة مهام تعاونية )/",
   "1 day": "يوم واحد",
   "1 hour": "ساعة واحدة",
@@ -41,14 +41,15 @@
   "<z-link>Click here</z-link> to learn about exporting private channels and direct messages.": "<z-link>اضغط هنا</z-link>لتعلم إخراج القنوات الخاصة و الرسائل المباشرة",
   "<z-link>Learn more.</z-link>": "<z-link>اعرف المزيد</z-link>",
   "<z-link>Upgrade</z-link> for more space.": "<z-link>ترقية</z-link> لمزيد من المساحة.",
-  "<z-user></z-user> will have the same role, channel subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "<z-user></z-user>سيكون له نفس الدور والاشتراكات في الغرفة وعضويات مجموعة المستخدمين والإعدادات والأذونات الأخرى كما كان قبل التعطيل.",
+  "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and channel subscriptions.": "<z-user></z-user> سيكون له نفس الخصائص قبل التعطيل, بما في ذلك, الدور, المالك و مشتركين القناة",
+  "<z-user></z-user> will have the same role, channel subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "<z-user></z-user> سيكون له نفس  الدور, مشتركين القناة, عضويات المجموعات, و إعدادات أخرى و أذونات, كما الحال قبل التعطيل",
   "@{name} (guest)": "{name}@ (ضيف)",
   "A Topic Move already in progress.": "  نقل موضوع في الوقت الحالي.",
   "A channel with this name already exists.": "قناة بهذا الاسم بالفعل موجودة",
   "A deactivated bot cannot send messages, access data, or take any other action.": "لا يمكن للروبوت المعطل إرسال الرسائل، أو الوصول إلى البيانات، أو القيام بأي إجراء آخر.",
   "A deactivated emoji will remain visible in existing messages and emoji reactions, but cannot be used on new messages.": "سيبقى الرمز التعبيري المُعطل مرئيًا في الرسائل الموجودة مسبقًا وردود فعل الرموز التعبيرية، ولكن لا يمكن استخدامه في الرسائل الجديدة.",
   "A language is marked as 100% translated only if every string in the web, desktop, and mobile apps is translated, including administrative UI and error messages.": "يتم تمييز اللغة على أنها مترجمة بنسبة 100٪ فقط إذا تمت ترجمة كل النصوص في تطبيقات الويب وسطح المكتب والجوال ، بما في ذلك واجهة المستخدم الإدارية ورسائل الخطأ.",
-  "A poll must be an entire message.": "الاستبيان يجيب أن يكون رسالة كاملة",
+  "A poll must be an entire message.": "الاستطلاع يجيب أن يكون رسالة كاملة",
   "A user group with this name already exists.": "مجموعة بهذا الاسم بالفعل موجودة",
   "A wide image (200×25 pixels) for the upper left corner of the app.": "صورة عريضة (200x25) للزاوية اليسرى العليا من التطبيق",
   "API documentation": "وثائق الـ API ",
@@ -86,7 +87,7 @@
   "Add channel": "أضف قناة",
   "Add channels": "أضف قنوات",
   "Add code playground": "إضافة مكان تجربة الشِفرة",
-  "Add default channels": "أضف قنوات أساسية",
+  "Add default channels": "أضف قنوات افتراضية",
   "Add email": "أضف بريد إلكتروني",
   "Add emoji": "أضف رمز تعبيري",
   "Add emoji reaction": "إضافة رد فعل تعبيري",
@@ -98,7 +99,7 @@
   "Add members. Use usergroup or #channelname to bulk add members.": "أضف أعضاء. استخدم مجموعة المستخدمين أو #اسم القناة لإضافة أكثر من مستخدم في نفس الوقت",
   "Add one or more users": "أضف مستخدما واحدا أو أكثر",
   "Add option": "أضف اختيار",
-  "Add poll": "أضف استبيان",
+  "Add poll": "أضف استطلاع",
   "Add question": "إضافة سؤال",
   "Add subscribers": "إضافة المشتركين",
   "Add subscribers to": "أضف مشتركين إلى",
@@ -132,14 +133,14 @@
   "Alerted messages": "رسائل التنبيه",
   "All channels": "جميع القنوات",
   "All groups": "جميع المجموعات",
-  "All messages including muted channels": "جميع الرسائل بما في ذلك القنوات الصامتة",
+  "All messages including muted channels": "جميع الرسائل بما في ذلك القنوات المكتومة",
   "All roles": "جميع الأدوار",
   "All time": "All time",
   "All topics": "جميع المواضيع",
-  "All unmuted topics": "جميع المواضيع الغير صامتة",
+  "All unmuted topics": "جميع المواضيع الغير مكتومة",
   "All unread messages": "جميع الرسائل الغير مقروءة",
   "All users will need to log in again at your new organization URL.": "جميع المستخدمين سيحتاجون إلى تسجيل الدخول مرة أخرى على URL أو رابط منظمتك الجديد",
-  "All your messages except those in muted channels and topics.": "جميع رسائلك باستثناء الرسائل الموجودة في القنوات و المواضيع الصامتة",
+  "All your messages except those in muted channels and topics.": "جميع رسائلك باستثناء الرسائل الموجودة في القنوات المكتومة و المواضيع المكتومة",
   "All your messages.": "جميع رسائلك",
   "Allow creating web-public channels (visible to anyone on the Internet)": "اسمح بإنشاء قنوات مرئية, (أي مرئية لأي شخص علي الانترنت)",
   "Allow message content in message notification emails": "السماح بمحتوى الرسالة في رسائل إشعارات البريد الإلكتروني",
@@ -154,13 +155,13 @@
   "Already subscribed users:": "المستخدمون المشتركون بالفعل:",
   "Already subscribed.": "بالفعل مشترك",
   "Always": "دائما",
-  "An API key can be used to programmatically access a Zulip account. Anyone with access to your API key has the ability to read your messages, send messages on your behalf, and otherwise impersonate you on Zulip, so you should guard your API key as carefully as you guard your password. <br /> We recommend creating bots and using the bots' accounts and API keys to access the Zulip API, unless the task requires access to your account.": "يمكن استخدام مفتاح الـ API للوصول برمجيًا إلى حساب \"زوليب\". يتمتع أي شخص لديه الوصول إلى مفتاح الـ API الخاص بك بالقدرة على قراءة رسائلك وإرسال الرسائل نيابةً عنك وينتحل شخصيتك على \"زوليب\"، لذلك يجب عليك حماية مفتاح الـ API الخاص بك بعناية كما تحمي كلمة مرورك.<br /> نوصي بإنشاء روبوتات واستخدام حسابات الروبوتات ومفاتيح الـ API للوصول إلى الـ API الخاص بـ \"زوليب\"، ما لم تتطلب المهمة الوصول إلى حسابك.",
+  "An API key can be used to programmatically access a Zulip account. Anyone with access to your API key has the ability to read your messages, send messages on your behalf, and otherwise impersonate you on Zulip, so you should guard your API key as carefully as you guard your password. <br /> We recommend creating bots and using the bots' accounts and API keys to access the Zulip API, unless the task requires access to your account.": " واجهة برمجة التطبيقات = API\nيمكن استخدام مفتاح واجهة برمجة التطبيقات للوصول برمجيًا إلى حساب زوليب. يتمتع أي شخص لديه الوصول إلى مفتاح واجهة برمجة التطبيقات الخاص بك بالقدرة على قراءة رسائلك وإرسال الرسائل نيابةً عنك وانتحال شخصيتك على زوليب، لذلك يجب عليك حماية  هذا المفتاح بعناية كما تحمي كلمة مرورك.<br /> نوصي بإنشاء روبوتات واستخدام حسابات الروبوتات وهذه المفاتيح للوصول إلى واجهة برمجة التطبيقات الخاص بـ زوليب، ما لم تتطلب المهمة الوصول إلى حسابك.",
   "An hour ago": "قبل ساعة",
   "An unknown error occurred.": "حدث خطأ غير معروف.",
   "Announce new channel in": "أعلن عن القناة الجديدة في",
   "Any organization administrator can conduct an export.": "يمكن لأي مسؤول في المنظمة إجراء عملية تصدير.",
   "Any time": "في أي وقت",
-  "Anyone can add more options after the poll is posted.": "أي شخص يستطيع إضافة اختيارات أخرى بعد نشر هذا الاستبيان",
+  "Anyone can add more options after the poll is posted.": "أي شخص يستطيع إضافة اختيارات أخرى بعد نشر هذا استطلاع",
   "Anyone on the internet can view messages; members of your organization can join.": "أي شخص علي الانترنت يستطيع رؤية الرسائل; أعضاء منظمتك يمكنهم الانضمام",
   "App theme": "لون التطبيق",
   "April": "نيسان",
@@ -181,7 +182,7 @@
   "Are you sure you want to revoke the invitation to <strong>{email}</strong>?": "هل أنت متأكد أنك تريد إلغاء الدعوة الموجهة إلى <strong>{email}</strong>؟",
   "Are you sure you want to revoke this invitation link created by <strong>{referred_by}</strong>?": "هل أنت متأكد أنك تريد إلغاء رابط الدعوة الذي أنشأه <strong>{referred_by}</strong>؟",
   "Are you sure you want to revoke this invitation link?": "هل أنت متأكد أنك تريد إبطال رابط الدعوة هذا؟",
-  "Are you sure you want to send @-mention notifications to the <strong>{subscriber_count}</strong> users subscribed to #{channel_name}? If not, please edit your message to remove the <strong>@{wildcard_mention}</strong> mention.": "",
+  "Are you sure you want to send @-mention notifications to the <strong>{subscriber_count}</strong> users subscribed to #{channel_name}? If not, please edit your message to remove the <strong>@{wildcard_mention}</strong> mention.": "هل أنت متأكد من إرسال إشعارات الإشارة-@  إلى <strong>{subscriber_count}</strong> مستخدم مشتركين في {channel_name}#؟ إن لم يكن كذلك من فضلك قم بتعديل رسالتك لإزالة إشارة<strong>{wildcard_mention}@</strong>",
   "Are you sure you want to unstar all messages in <stream-topic></stream-topic>?  This action cannot be undone.": "هل أنت متأكد من أنك تريد إلغاء نجمة جميع الرسائل الموجودة في<stream-topic></stream-topic>؟ لا يمكن التراجع عن هذا الإجراء بعد القيام به.",
   "Are you sure you want to unstar all starred messages?  This action cannot be undone.": "هل أنت متأكد أنك تريد إلغاء النجمة عن جميع الرسائل المميزة بنجمة؟ لا يمكن التراجع عن هذا الإجراء بعد القيام به.",
   "Ask me later": "اسالني لاحقا",
@@ -206,8 +207,10 @@
   "Avatar from Gravatar": "الصورة الرمزية من Gravatar",
   "Back to channels": "عودة إلى القنوات",
   "Back to settings": "عودة إلي الاعدادات",
-  "Because the original owner of this bot <z-bot-owner></z-bot-owner> is deactivated, you will become the owner for this bot.": "",
-  "Because you are the only organization owner, you cannot deactivate your account.": "",
+  "Because the original owner of this bot <z-bot-owner></z-bot-owner> is deactivated, you will become the owner for this bot.": "لأن المالك الأصلي لهذا البوت <z-bot-owner></z-bot-owner> تم تعطيله, ستصبح أنت المالك لهذا البوت",
+  "Because you are removing the last subscriber from a private channel, it will be automatically <z-link>archived</z-link>.": "لأنك تقوم بإزالة المشترك الأخير من قناة خاصة, ستصبح القناة تلقائياً <z-link>مؤرشفة</z-link>",
+  "Because you are the only organization owner, you cannot deactivate your account.": "لأنك مالك المنظمة الوحيد, لا يمكنك تعطيل حسابك",
+  "Because you are the only subscriber, this channel will be automatically <z-link>archived</z-link>.": "لأنك المشترك الوحيد, ستصبح هذه القناة تلقائياً <z-link>مؤرشفة</z-link>",
   "Billing": "الفواتير",
   "Bold": "عريض",
   "Bot": "بوت",
@@ -228,7 +231,7 @@
   "Call provider": "مزود خدمة الكالمة",
   "Cancel": "إلغاء",
   "Cancel compose": "إلغاء التأليف",
-  "Cancel compose and save draft": "إلغاء التأليف وحفظ المسودة",
+  "Cancel compose and save draft": "إلغاء و حفظ كمسودة",
   "Cannot join group {name}": "لا يمكن الإنضمام إلى مجموعة {name}",
   "Cannot leave group {name}": "لا يمكن مغادرة المجموعة {name}",
   "Cannot save invalid Jitsi server URL.": "رابط خادم جيتسي غير صالح, لا يمكن حفظه",
@@ -279,107 +282,109 @@
   "Clear status": "امسح الحالة",
   "Clear topic": "امسح الموضوع",
   "Clear your status": "امسح حالتك",
-  "Click <z-icon-inbox></z-icon-inbox> <b>Inbox</b> in the left sidebar.": "",
-  "Click <z-icon-recent></z-icon-recent> <b>Recent conversations</b> in the left sidebar.": "",
+  "Click <z-icon-inbox></z-icon-inbox> <b>Inbox</b> in the left sidebar.": "اضغط <z-icon-inbox></z-icon-inbox>الصندوق الوارد <b></b> في الشريط اليساري",
+  "Click <z-icon-recent></z-icon-recent> <b>Recent conversations</b> in the left sidebar.": "اضغط <z-icon-recent></z-icon-recent> <b>المحادثات الحديثة</b> في الشريط اليساري",
   "Click here to reveal.": "انقر هنا للكشف.",
-  "Click on <z-stream></z-stream> at the top of your Zulip window.": "",
-  "Click on a conversation to view it. To return here, you can:": "",
-  "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "",
+  "Click on <z-stream></z-stream> at the top of your Zulip window.": "اضغط علي <z-stream></z-stream>في الجزء العلوي من نافذة زوليب",
+  "Click on a conversation to view it. To return here, you can:": "اضغط على المحادثة لرؤيتها. للرجوع هنا, يمكنك:",
+  "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "اضغط على أيقونة قلم الرصاص (<z-pencil-icon></z-pencil-icon>) لتعديل و جدولة الرسالة",
   "Click to view or download.": "انقر للعرض أو التحميل.",
   "Close": "اغلاق",
   "Close modal": "إغلاق مشروط",
   "Close this dialog window": "أغلق نافذة الحوار هذه",
-  "Code": "",
+  "Code": "كود",
   "Code playgrounds": "مكان تجربة الشِفرة",
-  "Code playgrounds are interactive in-browser development environments, that are designed to make it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks> that are tagged with a programming language will have a button visible on hover that allows users to open the code block on the code playground site.": "",
-  "Collapse compose box": "",
+  "Code playgrounds are interactive in-browser development environments, that are designed to make it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks> that are tagged with a programming language will have a button visible on hover that allows users to open the code block on the code playground site.": "ملاعب الكود هي عبارة عن بيئات تطوير في المتصفح, صممت لجعل عملية تعديل و تصحيح أخطاء الكود سهلة, <z-link-code-blocks>حواجز الكود</z-link-code-blocks> اللتي عليها علامة بلغة برمجة سيكون لديها زر مرئي عند تمرير المؤشر فوقه, يسمح لك هذ الزر بفتح الكود في موقع ملاعب الكود ",
+  "Collapse compose box": "تقليص المساحة",
   "Collapse direct messages": "تصغير الرسائل المباشرة",
   "Collapse message": "طي الرسالة",
-  "Collapse views": "",
+  "Collapse views": "تقليص المشاهد",
   "Collapse/show selected message": "طي/ إظهار الرسالة المحددة ",
-  "Combined feed": "",
+  "Combined feed": "الموجز المشترك",
   "Community": "مجتمع",
   "Commuting": "التنقل",
   "Compact": "المدمج",
-  "Compact mode": "",
+  "Compact mode": "الوضع المضغوط",
   "Complete": "اكتمل",
-  "Complete your <z-link>organization profile</z-link>, which is displayed on your organization's registration and login pages.": "",
+  "Complete your <z-link>organization profile</z-link>, which is displayed on your organization's registration and login pages.": "أكمل <z-link>عرض حساب منظمتك</z-link>, الذي يتم عرضه في صفحات التسجيل و تسجيل الدخول الخاصة بمنظمتك",
   "Compose message": "اكتب رسالة",
   "Compose your message here": "اكتب رسالتك هنا",
   "Compose your message here...": "ألّف رسالتك هنا...",
   "Composing messages": "تأليف الرسائل",
-  "Configure new channel settings": "",
-  "Configure new group settings": "",
-  "Configure regular expression patterns that will be used to automatically transform any matching text in Zulip messages and topics into links.": "",
+  "Configure how Zulip notifies you about new messages. In muted channels, channel notification settings apply only to unmuted topics.": "اختر كيف يقوم زوليب بإرسال إشعارات الرسائل الجديدة لك. في القنوات المكتومة, إعدادات إشعارات القناة تنطبق فقط علي المواضيع الغير مكتومة",
+  "Configure new channel settings": "اضبط إعدادات القناة الجديدة",
+  "Configure new group settings": "اضبط إعدادات المجموعة الجديدة",
+  "Configure regular expression patterns that will be used to automatically transform any matching text in Zulip messages and topics into links.": "اضبط التعابيير النمطية اللتي ستستخدم لتحويل تلقائياً أي نص مطابق في رسائل زوليب و المواضيع إلى روابط",
   "Configure the <z-link>default personal preference settings</z-link> for new users joining your organization.": "أنشئ<z-link> إعدادات التفضيلات الشخصية الافتراضية</z-link> للمستخدمين الجدد الذين ينضمون إلى مؤسستك.",
   "Configure the authentication methods for your organization.": "أنشئ طرق المصادقة لمؤسستك.",
-  "Configure the default channels new users are subscribed to when joining your organization.": "أنشئ الغرف الافتراضية التي يشترك فيها المستخدمون الجدد عند الانضمام إلى مؤسستك.",
-  "Configure topic notifications": "",
+  "Configure the default channels new users are subscribed to when joining your organization.": "اختر القنوات اللتي سيشارك فيها المستخدمين الجدد بشكل تلقائي عند الانضمام إلى منظمتك",
+  "Configure topic notifications": "إعداد إشعارات الموضوع",
   "Confirm": "تأكيد",
-  "Confirm changing access permissions": "",
-  "Consider <z-link>searching all public channels that you can view</z-link>.": "",
-  "Consider <z-link>searching all public channels</z-link>.": "اعتبر<z-link> البحث في جميع الغرف العامة</z-link> .",
-  "Contact a moderator to resolve this topic.": "",
-  "Contact a moderator to unresolve this topic.": "",
+  "Confirm changing access permissions": "تأكيد تغيير إذن الوصول",
+  "Consider <z-link>searching all public channels that you can view</z-link>.": "خذ بعين الاعتبار <z-link>البحث في جميع القنوات العامة اللتي يمكنك رؤيتها</z-link>",
+  "Consider <z-link>searching all public channels</z-link>.": "خذ بعين الاعتبار <z-link>البحث في جميع القنوات العامة</z-link>",
+  "Contact a moderator to resolve this topic.": "اتصل بمشرف لإنهاء هذا الموضوع",
+  "Contact a moderator to unresolve this topic.": "اتصل بمشرف لجعل هذا الموضوع غير منتهي",
   "Contact support": "اتصل بالدعم",
   "Continue": "استمر",
-  "Continue to add members": "",
-  "Continue to add subscribers": "",
-  "Convert": "",
+  "Continue to add members": "أكمل لإضافة الأعضاء",
+  "Continue to add subscribers": "أكمل لإضافة المشتركين",
+  "Convert": "تحويل",
   "Convert emoticons before sending (<code>:)</code> becomes 😃)": "تحويل الرموز قبل الإرسال (<code>:)</code> تصبح 😃)",
   "Cookie Bot": "بوت ملفات تعريف الارتباط",
   "Copied!": "نسخ!",
-  "Copy URL": "",
-  "Copy address": "",
+  "Copy URL": "نسخ الرابط",
+  "Copy address": "نسخ العنوان",
   "Copy and close": "نسخ وإغلاق",
   "Copy code": "نسخ الشِفرة",
-  "Copy email": "",
+  "Copy email": "نسخ البريد الإلكتروني",
   "Copy link": "نسخ الرابط",
-  "Copy link to channel": "",
+  "Copy link to channel": "نسخ رابط القناة",
   "Copy link to message": "نسخ الرابط للرسالة",
-  "Copy link to profile": "",
+  "Copy link to profile": "نسخ رابط الملف الشخصي",
   "Copy link to topic": "نسخ رابط الموضوع",
   "Copy mention syntax": "نسخ سياق الإشارة",
   "Copy version": "نسخ الإصدار",
   "Copy zuliprc": "نسخ zuliprc",
-  "Could not resolve topic": "",
-  "Could not unresolve topic": "",
+  "Could not resolve topic": "تعذر إنهاء الموضوع",
+  "Could not unresolve topic": "تعذر جعل الموضوع غير منتهي",
   "Create": "إنشاء",
-  "Create a channel": "إنشاء غرفة",
-  "Create a poll": "",
-  "Create a user group": "",
-  "Create channel": "إنشاء غرفة",
-  "Create link": "",
-  "Create new channel": "إنشاء تيار جديد",
-  "Create new user group": "",
+  "Create a channel": "أنشئ قناة",
+  "Create a poll": "أنشئ استطلاع",
+  "Create a user group": "أنشئ مجموعة",
+  "Create channel": "أنشئ قناة",
+  "Create link": "أنشئ رابط",
+  "Create new channel": "أنشئ قناة جديدة",
+  "Create new user group": "أنشئ مجموعة جديدة",
   "Create user group": "إنشاء مجموعة مستخدمين",
-  "Created by <z-user></z-user> on <z-stream-date-created></z-stream-date-created>.": "",
-  "Created on <z-stream-date-created></z-stream-date-created>.": "",
-  "Creating channel...": "جارٍ إنشاء الغرفة...",
+  "Created by <z-user></z-user> on <z-stream-date-created></z-stream-date-created>.": "أنشئت بواسطة <z-user></z-user> بتاريخ <z-stream-date-created></z-stream-date-created>",
+  "Created on <z-stream-date-created></z-stream-date-created>.": "أنشئت بتاريخ<z-stream-date-created></z-stream-date-created>",
+  "Creating channel...": "إنشاء القناة...",
   "Creating group...": "جارٍ إنشاء المجموعة...",
-  "Creating link…": "",
-  "Currently viewing all direct messages.": "",
-  "Currently viewing the entire channel.": "جارٍ عرض كل الغرفة.",
-  "Currently viewing your combined feed.": "",
+  "Creating link…": "إنشاء الرابط...",
+  "Currently viewing all direct messages.": "حالياً يتم عرض جميع الرسائل المباشرة",
+  "Currently viewing the entire channel.": "حالياً يتم عرض القناة كاملة",
+  "Currently viewing your combined feed.": "حالياً يتم عرض الموجز المشترك",
   "Custom": "مخصص",
-  "Custom URL": "",
+  "Custom URL": "رابط مخصص",
   "Custom emoji": "الرموز التعبيرية المخصصة",
   "Custom language: {query}": "لغة مخصصة: {query}",
   "Custom linkifier added!": "تمت إضافة رابط مخصص!",
   "Custom playground added!": "تمت إضافة مكان تجربة مخصص!",
   "Custom profile fields": "حقول الملف الشخصي المخصصة",
   "Custom time": "وقت مخصص",
+  "Cycle between channel views": "بدل بشكل دائري بين مشاهد القناة",
   "DIRECT MESSAGES": "الرسائل المباشرة",
-  "DM": "",
-  "DMs and mentions": "",
-  "DMs, mentions, and alerts": "",
-  "DMs, mentions, and followed topics": "",
+  "DM": "الرسائل المباشرة",
+  "DMs and mentions": "الرسائل المباشرة و الإشارات",
+  "DMs, mentions, and alerts": "الرسائل المباشرة, الإشارات و التنبيهات",
+  "DMs, mentions, and followed topics": "الرسائل المباشرة, الإشارات و المواضيع المتبوعة",
   "Dark": "المضلم",
   "Dark theme": "الوضع المظلم",
   "Dark theme logo": "شعار الوضع المضلم",
   "Data exports": "تصدير البيانات",
-  "Date muted": "تاريخ الوضع الصامت",
-  "Date updated": "",
+  "Date muted": "تاريخ كتم الصوت",
+  "Date updated": "تاريخ التحديث",
   "Date uploaded": "تاريخ الرفع",
   "Day of the week to send digests": "يوم من الأسبوع لإرسال الموجزات",
   "Deactivate": "تعطيل",
@@ -390,33 +395,36 @@
   "Deactivate user": "تعطيل المستخدم",
   "Deactivate your account": "تعطيل حسابك",
   "Deactivate {name}?": "تعطيل {name}؟",
-  "Deactivated": "",
+  "Deactivated": "معطل",
   "Deactivated users": "المستخدمون المعطّلون",
   "December": "كانون الاول",
-  "Default": "",
-  "Default channel for new users": "",
-  "Default channels": "الغرف الافتراضية",
+  "Default": "افتراضي",
+  "Default channel for new users": "القنوات الافتراضية للمستخدمين الجدد",
+  "Default channels": "القنوات الافتراضية",
+  "Default channels for new users cannot be made private.": "القنوات الافتراضية للمستخدمين الجدد لا يمكن جعلها خاصة",
+  "Default channels for this organization": "القنوات الافتراضية لهذه المنظمة",
+  "Default for channel": "الافتراضي للقناة",
   "Default is {language}. Use 'text' to disable highlighting.": "الافتراضي هو {language}. استخدم \"النص\" لإلغاء التمييز.",
-  "Default language for code blocks": "اللغة الافتراضية لقطع الشِفرة البرمجية",
+  "Default language for code blocks": "اللغة الافتراضية لقِطَع الكود البرمجي",
   "Default user settings": "إعدادات المستخدم الافتراضية",
   "Delay before sending message notification emails": "التأخير قبل إرسال إشعارات رسائل البريد الإلكتروني",
   "Delay period (minutes)": "فترة التأخير (بالدقائق)",
   "Delete": "حذف",
   "Delete all drafts": "حذف كل المسودات",
-  "Delete all selected drafts": "",
+  "Delete all selected drafts": "حذف كل المسودات المحددة",
   "Delete code playground?": "حذف مكان تجربة الشِفرة؟",
   "Delete custom profile field?": "حذف حقل الملف الشخصي المخصص؟",
   "Delete data export?": " حذف تصدير البيانات؟",
   "Delete draft": "حذف المسودة",
   "Delete file?": "حذف الملف؟",
-  "Delete group": "",
+  "Delete group": "حذف المجموعة",
   "Delete icon": "حذف الرمز",
   "Delete linkifier?": "حذف الرابط؟",
   "Delete logo": "حذف الشعار",
   "Delete message": "حذف رسالة",
   "Delete message?": "حذف الرسالة؟",
   "Delete profile picture": "حذف صورة الملف الشخصي",
-  "Delete scheduled message": "",
+  "Delete scheduled message": "حذف الرسالة المجدولة",
   "Delete selected draft": "حذف المسودة المحددة",
   "Delete topic": "حذف موضوع",
   "Delete {user_group_name}?": "حذف {user_group_name}؟",
@@ -426,39 +434,39 @@
   "Deleted successfully!": "حذف بنجاح!",
   "Deleting a message permanently removes it for everyone.": "سيؤدي حذف الرسالة إلى إزالتها نهائيًا للجميع.",
   "Deleting a topic will immediately remove it and its messages for everyone. Other users may find this confusing, especially if they had received an email or push notification related to the deleted messages.": "سيؤدي حذف الموضوع إلى إزالته وإزالة رسائله على الفور للجميع. قد يجد المستخدمون الآخرون هذا الأمر محيرًا ، خاصةً إذا كانوا قد تلقوا بريدًا إلكترونيًا أو إشعارًا فوريًا يتعلق بالرسائل المحذوفة.",
-  "Demote inactive channels": "تخفيض الغرف غير النشطة",
+  "Demote inactive channels": "تخفيض القنوات غير النشطة",
   "Depending on the size of your organization, an export can take anywhere from seconds to an hour.": "بناءً على حجم مؤسستك ، يمكن أن يستغرق التصدير من ثانية إلى ساعة.",
   "Deprecation notice": "إشعار الإيقاف",
   "Description": "وصف",
-  "Deselect draft": "",
+  "Deselect draft": "إلغاء تحديد المسودة",
   "Desktop": "سطح المكتب",
   "Desktop & mobile apps": "تطبيقات سطح المكتب والأجهزة المحمولة",
   "Desktop message notifications": "إشعارات رسائل سطح المكتب",
   "Detailed keyboard shortcuts documentation": "توثيق مفصل لاختصارات لوحة المفاتيح",
   "Detailed message formatting documentation": "توثيق مفصل لتنسيق الرسالة",
-  "Detailed search filters documentation": "",
+  "Detailed search filters documentation": "وثيقة فلترة البحث الدقيقة",
   "Direct message": "رسالة مباشرة",
-  "Direct message feed": "",
-  "Direct message permissions": "",
-  "Direct message to me": "",
+  "Direct message feed": "موجز الرسائل المباشرة",
+  "Direct message permissions": "أذونات الرسائل المباشرة",
+  "Direct message to me": "أرسل لي رسالة مباشرة",
   "Direct messages": "الرسائل المباشرة",
-  "Direct messages are disabled in this organization.": "",
-  "Direct messages disabled": "",
-  "Disable": "",
-  "Disable notifications?": "",
+  "Direct messages are disabled in this organization.": "الرسائل المباشرة معطلة في هذه المنظمة",
+  "Direct messages disabled": "الرسائل المباشرة معطلة",
+  "Disable": "تعطيل",
+  "Disable notifications?": "تعطيل الإشعارات؟",
   "Disabled": "معطل",
   "Discard": "تجاهل",
-  "Dismiss": "",
-  "Dismiss failed message": "",
-  "Dismiss for a week": "طرد لمدة أسبوع",
+  "Dismiss": "تجاهل",
+  "Dismiss failed message": "تجاهل الرسالة الفاشلة",
+  "Dismiss for a week": "تجاهل لمدة أسبوع",
   "Display availability to other users": "إظهار التوفر للمستخدمين الآخرين",
   "Display my availability to other users": "إظهار توفري للمستخدمين الآخرين",
   "Display names of reacting users when few users have reacted to a message": "إظهار اسماء المستخدمين المتفاعلين عندما يتفاعل عدد قليل من المستخدمين للرسالة",
-  "Display on user card": "",
-  "Display “(guest)” after names of guest users": "",
-  "Do you still want to move the latest {total_messages_allowed_to_move, plural, one {message} other {# messages}}?": "",
+  "Display on user card": "عرض على كارت المستخدم",
+  "Display “(guest)” after names of guest users": "عرض كلمة “(ضيف)”بعد اسم المستخدم الضيف",
+  "Do you still want to move the latest {total_messages_allowed_to_move, plural, one {message} other {# messages}}?": "هل مازلت تريد نقي آخر {total_messages_allowed_to_move, plural, one {message} other {# messages}} ؟",
   "Do you want to add everyone?": "هل تريد إضافة الجميع؟",
-  "Do you want to mark them all as read?": "",
+  "Do you want to mark them all as read?": "هل تريد تتميزهم كلهم بأنهم مقروئين؟",
   "Domain": "مجال",
   "Don’t allow disposable email addresses": "لا تسمح بعناوين البريد الإلكتروني المؤقتة",
   "Download": "تحميل",
@@ -475,17 +483,18 @@
   "Duration deletion is allowed after posting (minutes)": "يسمح بحذف المدة بعد النشر (بالدقائق)",
   "Duration editing is allowed after posting (minutes)": "يسمح بتعديل المدة بعد النشر (بالدقائق)",
   "EDITED": "تم تعديله",
-  "Each conversation is <b>labeled with a topic</b> by the person started it.": "",
+  "Each conversation is <b>labeled with a topic</b> by the person started it.": "كل محادثة <b>تصنف تبع موضوع</b> من قِبَلِ الشخص الذي بدأها",
   "Edit": "تعديل",
-  "Edit #{channel_name}": "",
-  "Edit and reschedule message": "",
+  "Edit #{channel_name}": "تعديل {channel_name}#",
+  "Edit and reschedule message": "تعديل و إعادة جدولة الرسالة",
   "Edit bot": "تعديل البوت",
+  "Edit channel name and description": "تعديل اسم القناة و وصفها",
   "Edit custom profile field": "تعديل حقل الملف الشخصي المخصص",
   "Edit linkfiers": "تعديل الروابط",
   "Edit message": "تعديل الرسالة",
-  "Edit profile": "",
+  "Edit profile": "تعديل الملف الشخصي",
   "Edit selected draft": "تعديل المسودة المحددة",
-  "Edit selected message or view source": "",
+  "Edit selected message or view source": "تعديل الرسالة المحددة أو شاهد المصدر",
   "Edit status": "تعديل الحالة",
   "Edit topic": "تعديل الموضوع",
   "Edit user": "تعديل المستخدم",
@@ -496,17 +505,17 @@
   "Education (for-profit)": "التعليم (الربحي)",
   "Education (non-profit)": "التعليم (غير الربحي)",
   "Effect": "تأثير",
-  "Either this user does not exist, or you do not have access to their profile.": "",
+  "Either this user does not exist, or you do not have access to their profile.": "إما هذا المستخدم غير موجود أو أنت لا تملك صلاحية الوصول إلي ملفه الشخصي",
   "Email": "بريد الالكتروني",
   "Email address changes are disabled in this organization.": "تم تعطيل التغييرات على عنوان البريد الإلكتروني في هذه المنظمة.",
-  "Email footers (e.g., signature)": "",
-  "Email invitation": "",
+  "Email footers (e.g., signature)": "ذيل البريد الإلكتروني (على سبيل المثال، التوقيع)",
+  "Email invitation": "دعوة البريد الإلكتروني",
   "Email message notifications": "إشعارات رسائل البريد الإلكتروني",
   "Email notifications": "إشعارات البريد الالكتروني",
   "Emails (one on each line or comma-separated)": "رسائل البريد الإلكتروني (واحدة في كل سطر أو مفصولة بفواصل)",
-  "Emoji": "",
+  "Emoji": "ايموجي",
   "Emoji name": "اسم من الرموز التعبيرية",
-  "Emoji reactions to your messages.": "",
+  "Emoji reactions to your messages.": "ردود فعل الايموجي على رسائلك",
   "Emoji set changed successfully!": "تم تغيير مجموعة الرموز التعبيرية بنجاح!",
   "Emoji theme": "موضوع الرموز التعبيرية",
   "Enable message edit history": "تفعيل سجل تعديل الرسائل",
@@ -516,56 +525,57 @@
   "End of results from your <z-link>history</z-link>.": "نهاية النتائج من <z-link>سجلك</z-link> .",
   "Endpoint URL": "عنوان URL لنقطة النهاية",
   "Enter sends when composing a message": "اضغط على ارسال عند إنشاء رسالة",
-  "Enter to send choices": "",
+  "Enter to send choices": "اضخط انتر لإرسال الاختيارات",
   "Error": "خطأ",
   "Error adding subscription": "خطأ في إضافة الاشتراك",
-  "Error creating channel": "خطأ في إنشاء الغرفة",
+  "Error creating channel": "خطأ في إنشاء القناة",
   "Error creating user group.": "خطأ في إنشاء مجموعة مستخدمين.",
   "Error deleting message": "خطأ في حذف الرسالة",
-  "Error editing message": "",
-  "Error fetching message edit history.": "",
-  "Error in unsubscribing from #{channel_name}": "",
+  "Error editing message": "تعذر تعديل الرسالة",
+  "Error fetching message edit history.": "خطأ في جلب تاريخ تعديل الرسالة",
+  "Error in unsubscribing from #{channel_name}": "خطأ في إلغاء الاشتراك من {channel_name}#",
   "Error listing invites": "خطأ في عرض الدعوات",
   "Error moving topic": "خطأ في نقل موضوع",
   "Error removing alert word!": "خطأ في إزالة كلمة التنبيه!",
   "Error removing subscription": "خطأ في إزالة الاشتراك",
-  "Error removing user from #{channel_name}": "",
-  "Error removing user from this channel.": "خطأ في إزالة المستخدم من هذه الغرفة.",
+  "Error removing user from #{channel_name}": "خطأ في إزالة المستخدم من {channel_name}#",
+  "Error removing user from this channel.": "خطأ في ازالة المستخدم من هذه القناة",
   "Error removing user from this group.": "خطأ في ازالة مستخدم من هذه المجموعة. ",
   "Error saving edit": "خطأ في حفظ التعديل",
   "Error: Cannot deactivate the only organization owner.": "خطأ: لا يمكن تعطيل مالك المؤسسة الوحيد.",
   "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.": "خطأ: لا يمكن تعطيل المستخدم الوحيد. يمكنك تعطيل المنظمة بأكملها من خلال <z-link>إعدادات الملف التعريفي لمنظمتك</z-link> .",
-  "Escape key navigates to home view": "",
+  "Escape key navigates to home view": "مفتاح esc يأخذك إلى الواجة الأساسية",
   "Estimated messages per week": "الرسائل المقدرة في الأسبوع",
   "Event or conference": "حدث أو مؤتمر",
-  "Events to include:": "",
+  "Events to include:": "ادراج الأحداث التالية",
   "Everyone": "Everyone",
-  "Everyone on the internet": "",
-  "Everyone sees global times in their own time zone.": "",
+  "Everyone on the internet": "الجميع على الانترنت",
+  "Everyone sees global times in their own time zone.": "تحويل التوقيت العالمي إلى التوقيت المحلي لكل شخص",
   "Everyone sees this in their own time zone.": "يرى الجميع هذا في منطقتهم الزمنية.",
   "Exclude messages with topic <z-value></z-value>.": "استبعاد الرسائل التابعة لموضوع<z-value></z-value> .",
   "Exit search": "الخروج من البحث",
-  "Expand compose box": "",
-  "Expand direct messages": "",
-  "Expand message": "",
-  "Expand views": "",
+  "Expand compose box": "توسيع المساحة",
+  "Expand direct messages": "توسيع مساحة الرسالة المباشرة",
+  "Expand message": "توسيع الرسالة",
+  "Expand views": "تمديد المشاهد",
   "Expires at": "تنتهي الصلاحية في",
-  "Expires on {date} at {time}": "",
+  "Expires on {date} at {time}": "ينتهي يوم {date} الساعة {time}",
   "Export failed": "فشل التصدير",
   "Export organization": "تصدير المنظمة",
   "Export started. Check back in a few minutes.": "بدأ التصدير. عد للتحقق في غضون بضع دقائق.",
-  "Exports all users, settings, and all data visible in public channels.": "يصدر جميع المستخدمين والإعدادات وجميع البيانات المرئية في الغرف العامة.",
+  "Exports all users, settings, and all data visible in public channels.": "تصدير جميع المستخدمين, الإعدادات و جميع البيانات المرئية في القنوات العامة",
   "External account type": "نوع الحساب الخارجي",
   "External link": "رابط خارجي",
   "Failed": "باءت بالفشل",
+  "Failed adding one or more channels.": "فشل إضافة قناة أو أكثر",
   "Failed to create video call.": "فشل إنشاء مكالمة فيديو.",
   "Failed to generate preview": "فشل إنشاء المعاينة",
   "Failed to upload %'{file}'": "فشل الرفع ٪'{file}';",
   "Failed!": "باءت بالفشل!",
   "Failed: A custom emoji with this name already exists.": "فشل: يوجد بالفعل رمز تعبيري مخصص بهذا الاسم.",
   "Failed: Emoji name is required.": "فشل: اسم الرمز التعبيري مطلوب.",
-  "Failed: There is a default emoji with this name. Only administrators can override default emoji.": "",
-  "Failed: {error}": "",
+  "Failed: There is a default emoji with this name. Only administrators can override default emoji.": "فشل: هناك ايموجي افتراضي بهذا الاسم, فقط المديرون من يستطيعون تجاوز الايموجي الافتراضي",
+  "Failed: {error}": "خطأ: {error}",
   "February": "شباط",
   "Field choices": "خيارات الحقول",
   "File": "ملف",
@@ -573,61 +583,63 @@
   "File name: {filename}": "اسم الملف: {filename}",
   "File size must be at most {max_file_size} MiB.": "يجب ألا يتجاوز حجم الملف {max_file_size} ميغا بايت.",
   "File type is not supported.": "نوع الملف غير مدعوم.",
-  "Filter": "",
-  "Filter bots": "تصفية الروبوتات",
-  "Filter by category": "تصفية حسب الفئة",
-  "Filter channels": "تصفية الغرف",
-  "Filter code playgrounds": "تصفية أماكن تجربة الشِفرة",
-  "Filter deactivated users": "تصفية المستخدمين المعطلين",
-  "Filter default channels": "تصفية الغرف الافتراضية",
-  "Filter direct messages": "",
-  "Filter emoji": "تصفية الرموز التعبيرية",
-  "Filter events that will trigger notifications?": "",
-  "Filter exports": "تصفية الصادرات",
-  "Filter groups": "تصفية المجموعات",
-  "Filter invitations": "",
-  "Filter linkifiers": "وصلات التصفية",
-  "Filter members": "تصفية الأعضاء",
-  "Filter muted users": "تصفية المستخدمين المكتومين",
-  "Filter subscribers": "تصفية المشتركين",
-  "Filter topics": "تصفية المواضيع",
-  "Filter topics (t)": "تصفية المواضيع (t)",
-  "Filter uploaded files": "تصفية الملفات المرفوعة",
-  "Filter uploads": "تصفية المرفوعات",
-  "Filter users": "تصفية المستخدمين",
+  "Filter": "فلترة",
+  "Filter bots": "فلترة الروبوتات",
+  "Filter by category": "فلترة حسب الفئة",
+  "Filter channels": "فلترة القنوات",
+  "Filter code playgrounds": "فلترة أماكن تجربة الشِفرة",
+  "Filter deactivated users": "فلترة المستخدمين المعطلين",
+  "Filter default channels": "فلترة القنوات الافتراضية",
+  "Filter direct messages": "فلترة الرسائل المباشرة",
+  "Filter emoji": "فلترة الايموجي",
+  "Filter events that will trigger notifications?": "فلترة الأحداث اللتي ستؤدي إلى إشعارات",
+  "Filter exports": "فلترة الصادرات",
+  "Filter groups": "فلترة المجموعات",
+  "Filter invitations": "فلترة الدعوات",
+  "Filter linkifiers": " فلترة الروابط",
+  "Filter members": "فلترة الأعضاء",
+  "Filter muted users": "فلترة المستخدمين المكتومين",
+  "Filter subscribers": "فلترة المشتركين",
+  "Filter topics": "فلترة المواضيع",
+  "Filter topics (t)": "فلترة المواضيع (t)",
+  "Filter uploaded files": "فلترة الملفات المرفوعة",
+  "Filter uploads": "فلترة المرفوعات",
+  "Filter users": "فلترة المستخدمين",
   "First message": "الرسالة الأولى",
-  "First time? Read our <z-link>guidelines</z-link> for creating and naming channels.": "أول مرة؟ اقرأ<z-link> قواعدنا الإرشادية</z-link> لإنشاء وتسمية الغرف.",
+  "First time? Read our <z-link>guidelines</z-link> for creating and naming channels.": "أول مرة؟ اقرأ <z-link>قواعدنا الارشادية</z-link> لإنشاء و تسمية القنوات",
   "First time? Read our <z-link>guidelines</z-link> for creating user groups.": "أول مرة؟ اقرأ <z-link>قواعدنا الإرشادية </z-link> لإنشاء مجموعات المستخدمين.",
-  "Follow": "",
-  "Followed": "",
-  "Followed topics": "",
-  "Follows system settings.": "",
-  "For example, to configure a code playground for code blocks tagged as Rust, you can set:": "",
-  "For more examples and technical details, see the <z-link>help center documentation</z-link> on adding code playgrounds.": "",
-  "For more examples, see the <z-link>help center documentation</z-link> on adding linkifiers.": "",
+  "Follow": "اتبع",
+  "Followed": "متبوع",
+  "Followed topics": "المواضيع المتبوعة",
+  "Follows system settings.": "اتبع إعدادات النظام",
+  "For example, to configure a code playground for code blocks tagged as Rust, you can set:": "على سبيل المثال, لإنشاء ملعب كود لحواجز الكود اللتي عليها علامة لغة Rust, تستطيع ضبط",
+  "For more examples and technical details, see the <z-link>help center documentation</z-link> on adding code playgrounds.": "لأمثلة أكثر و تفاصيل تقنية, اقرأ <z-link>وثيقة مركز الدعم</z-link> لإضافة ملاعب الكود  ",
+  "For more examples, see the <z-link>help center documentation</z-link> on adding linkifiers.": "لأمثلة أكثر اقرأ <z-link>وثيقة مركز الدعم</z-link> لإضافة الروابط",
   "Forgot it?": "نسيت؟",
   "Forked from upstream at {zulip_merge_base}": "متشعب من المنبع في {zulip_merge_base}",
   "Friday": "الجمعة",
   "GIPHY attribution": "إسناد GIPHY",
   "GIPHY integration": "دمج GIPHY",
   "General": "عام",
-  "Generate URL for an integration": "",
-  "Generate email address": "",
+  "Generate URL for an integration": "إنتاج رابط للدمج",
+  "Generate channel email address": "إنتاج عنوان بريد إلكتروني للقناة",
+  "Generate email address": "إنتاج عنوان بريد إلكتروني",
   "Generate new API key": "إنشاء مفتاح API جديد",
   "Generic": "نوعي",
   "Get API key": "الحصول على مفتاح API",
   "Go back through viewing history": "عد للخلف داخل سجل المشاهدة",
   "Go forward through viewing history": "تقدم للامام داخل سجل المشاهدة",
   "Go invisible": "انتقل للوضع غير المرئي",
-  "Go to #{display_recipient}": "",
-  "Go to #{display_recipient} > {topic}": "",
-  "Go to all unmuted messages": "",
-  "Go to channel feed": "",
-  "Go to channel feed from topic view": "",
+  "Go to #{display_recipient}": "اذهب إلى {display_recipient}#",
+  "Go to #{display_recipient} > {topic}": "اذهب إلى {topic} < {display_recipient}# ",
+  "Go to all unmuted messages": "اذهب إلى جميع الرسائل الغير مكتومة",
+  "Go to channel feed": "اذهب إلى موجز القناة",
+  "Go to channel feed from topic view": "اذهب إلى موجز القناة من واجهة الموضوع",
+  "Go to channel settings": "اذهب إلى إعدادات القناة",
   "Go to conversation": "انتقل للمحادثة",
-  "Go to direct messages with {display_reply_to_for_tooltip}": "",
-  "Go to home view": "",
-  "Go to next unread direct message": "",
+  "Go to direct messages with {display_reply_to_for_tooltip}": "اذهب إلى الرسائل المباشرة عن طريق {display_reply_to_for_tooltip}",
+  "Go to home view": "اذهب إلى الواجهة الأساسية",
+  "Go to next unread direct message": "اذهب إلى الرسالة المباشرة الغير مقروءة التالية",
   "Go to next unread topic": "",
   "Go to the conversation you are composing to": "",
   "Go to topic or DM conversation": "",
@@ -666,12 +678,12 @@
   "In this conversation": "",
   "Inactive": "غير نشط",
   "Inactive bots": "روبوتات غير نشطة",
-  "Inbox": "",
+  "Inbox": "الصندوق الوارد",
   "Include DMs": "",
   "Include content of direct messages in desktop notifications": "",
   "Include message content in message notification emails": "تضمين محتوى الرسالة في رسائل البريد الإلكتروني للإشعارات",
   "Include organization name in subject of message notification emails": "تضمين اسم المؤسسة في موضوع رسائل البريد الإلكتروني للإشعارات",
-  "Information": "",
+  "Information": "معلومات",
   "Information density settings": "",
   "Initiate a search": "ابدأ بحث",
   "Insert new line": "أدخل سطر جديد",
@@ -680,35 +692,35 @@
   "Integrations": "إدماجات",
   "Interface": "واجهة المستخدم",
   "Invalid URL": "عنوان URL غير صالح",
-  "Invalid channel ID": "مُعرف غرفة غير صالح",
+  "Invalid channel ID": "مُعرف قناة غير صالح",
   "Invalid time format: {timestamp}": "تنسيق الوقت غير صالح: {timestamp}",
   "Invalid user": "مستخدم غير صالح",
-  "Invalid users": "",
+  "Invalid users": "مستخدمين غير صالحين",
   "Invitation expires after": "تنتهي الدعوة بعد",
-  "Invitation link": "",
+  "Invitation link": "رابط الدعوة",
   "Invitations": "الدعوات",
   "Invitations are required for joining this organization": "الدعوات مطلوبة للانضمام إلى هذه المنظمة",
   "Invite": "يدعو",
   "Invite link": "رابط الدعوة",
   "Invite users": "دعوة مستخدمين",
-  "Invite users to organization": "",
+  "Invite users to organization": "قم بدعوة مستخدمين للمنظمة",
   "Invited as": " مدعو كـ",
   "Invited at": "مدعو في",
   "Invited by": "مدعو من",
   "Invitee": "المدعو",
-  "Inviting…": "",
+  "Inviting…": "الدعوة ترسل...",
   "Italic": "مائل",
   "January": "كانون الثاني",
-  "Jitsi server URL": "",
-  "Join group": "",
-  "Join group {name}": "",
-  "Join video call.": "",
-  "Join voice call.": "",
+  "Jitsi server URL": "رابط خادم جيتسي",
+  "Join group": "انضم للمجموعة",
+  "Join group {name}": "انضم لمجموعة {name}",
+  "Join video call.": "انضم إلى مكالمة الفيديو",
+  "Join voice call.": "انضم إلى مكالمة الصوت",
   "Join {realm_name}": "انضم إلى {realm_name}",
   "Joined": "انضم",
   "Joined {date_joined}": "انضم {date_joined}",
-  "Joining and viewing messages requires being added by a subscriber": "",
-  "Joining and viewing messages requires being added by a subscriber; new subscribers cannot see messages sent before they joined": "",
+  "Joining and viewing messages requires being added by a subscriber": "الانضمام و رؤية الرسائل يتطلب إضافتك من قبل مشترك",
+  "Joining and viewing messages requires being added by a subscriber; new subscribers cannot see messages sent before they joined": "الانضمام و رؤية الرسائل يتطلب إضافتك من قبل مشترك; المشتركين الجدد لا يستطيعون رؤية الرسائل المرسولة قبل وقت انضمامهم",
   "Joining the organization": "الانضمام إلى المنظمة",
   "July": "تموز",
   "June": "حزيران",
@@ -723,14 +735,14 @@
   "Last 30 days": "آخر 30 يومًا",
   "Last 6 months": "آخر 6 أشهر",
   "Last active": "آخر نشاط",
-  "Last edited {last_edit_timestr}.": "",
+  "Last edited {last_edit_timestr}.": "آخر تعديل {last_edit_timestr} ",
   "Last message": "اخر رسالة",
   "Last modified": "آخر تعديل",
-  "Last moved {last_edit_timestr}.": "",
+  "Last moved {last_edit_timestr}.": "آخر نقل {last_edit_timestr} ",
   "Learn more": "معرفة المزيد",
-  "Learn more about emoji reactions <z-link>here</z-link>.": "",
-  "Leave group": "",
-  "Leave group {name}": "",
+  "Learn more about emoji reactions <z-link>here</z-link>.": "اعرف المزيد عن ردود فعل الايموجي <z-link>هنا</z-link>",
+  "Leave group": "مغادرة المجموعة",
+  "Leave group {name}": "مغادرة مجموعة {name}",
   "Leave {group_name}": "مغادرة {group_name}",
   "Let others see when I've read messages": "اسمح للآخرين برؤية قرائتي للرسائل",
   "Let recipients see when I'm typing direct messages": "",
@@ -752,23 +764,23 @@
   "MOVED": "انتقل",
   "Main menu": "",
   "Make <b>combined feed</b> my home view": "",
-  "Make <b>inbox</b> my home view": "",
+  "Make <b>inbox</b> my home view": "اجعل <b>الصندوق الوارد</b> الواجهة الأساسية",
   "Make <b>recent conversations</b> my home view": "",
-  "Make organization permanent": "",
+  "Make organization permanent": "اجعل المنظمة دائمة",
   "Manage bot": "إدارة الروبوت",
   "Manage this bot": "إدارة هذا الروبوت",
   "Manage this user": "إدارة هذا المستخدم",
   "Manage user": "إدارة المستخدم",
-  "Manage your API key": "",
+  "Manage your API key": "قم بإدارة مفتاح واجهة برمجة التطبيقات الخاص بك",
   "March": "آذار",
   "Mark all messages as read": "تمييز جميع الرسائل كمقروءة",
-  "Mark all messages as read?": "",
-  "Mark all messages as unread": "",
+  "Mark all messages as read?": "جعل جميع الرسائل مقروءة؟",
+  "Mark all messages as unread": "جعل جميع الرسائل غير مقروءة؟",
   "Mark as read": "تمييز كمقروء",
-  "Mark as resolved": "تمييز بتم الحل",
+  "Mark as resolved": "ميز الموضوع بأنه منتهي",
   "Mark as unread from here": "التمييز كغير مقروء من هنا",
   "Mark as unread from selected message": "التمييز كغير مقروء من الرسالة المختارة",
-  "Mark as unresolved": "تمييز بلم يتم الحل",
+  "Mark as unresolved": "ميز الموضوع بأنه غير منتهي",
   "Marking all messages as read…": "تمييز جميع الرسائل كمقروءة ...",
   "Math (LaTeX)": "",
   "Maximize compose box": "",
@@ -791,8 +803,8 @@
   "Message editing": "تعديل الرسالة",
   "Message formatting": "تنسيق الرسالة",
   "Message length shouldn't be greater than {max_length} characters.": "يجب ألا يزيد طول الرسالة عن {max_length} رمز.",
-  "Message moved": "",
-  "Message moved to <z-link>{stream_topic}</z-link>.": "",
+  "Message moved": "الرسائل المنقولة",
+  "Message moved to <z-link>{stream_topic}</z-link>.": "الرسائل نقلت إلى <z-link>{stream_topic}</z-link>",
   "Message retention": "الاحتفاظ بالرسائل",
   "Message retention period": "فترة الاحتفاظ بالرسائل",
   "Message {recipient_label}": "رسالة {recipient_label}",
@@ -801,11 +813,12 @@
   "Message-area font size (px)": "",
   "Message-area line height (%)": "",
   "Messages": "رسائل",
-  "Messages in topics you follow.": "",
-  "Messages in your view are faded to remind you that you are viewing a different conversation from the one you are composing to.": "",
-  "Messages sent by you": "",
-  "Messages sent by {sender}": "",
-  "Messages where you are mentioned.": "",
+  "Messages in all public channels": "الرسائل في جميع القنوات العامة",
+  "Messages in topics you follow.": "الرسائل في الموضوعات المتبوعة",
+  "Messages in your view are faded to remind you that you are viewing a different conversation from the one you are composing to.": "الرسائل في هذا المشهد باهتة لتذكيرك بأنك ترى محادثة مختلفة عن اللتي تقوم بإرسال إليها رسالة",
+  "Messages sent by you": "الرسائل اللتي أرسلتها أنت",
+  "Messages sent by {sender}": "الرسائل المرسولة بواسطة {sender}",
+  "Messages where you are mentioned.": "الرسائل اللتي تم الإشارة إليك فيها",
   "Messages will not be automatically marked as read because this is not a <z-conversation-view>conversation</z-conversation-view> view. <z-link>Change setting</z-link>": "",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "",
   "Mobile": "جوال",
@@ -816,28 +829,28 @@
   "Moderator": "الوسيط",
   "Moderators": "الوسطاء",
   "Monday": "الإثنين",
-  "Monday at {time}": "",
+  "Monday at {time}": "الاثنين الساعة {time}",
   "Move all messages in <strong>{topic_name}</strong>": "نقل كافة الرسائل إلى <strong>{topic_name}</strong>",
   "Move all messages in this topic": "نقل جميع الرسائل في هذا الموضوع",
   "Move message": "نقل الرسالة",
-  "Move messages": "",
-  "Move messages or topic": "",
-  "Move messages to:": "",
+  "Move messages": "نقل الرسائل",
+  "Move messages or topic": "نقل الرسائل أو الموضوع",
+  "Move messages to:": "نقل الرسائل إلى:",
   "Move only this message": "نقل هذه الرسالة فقط",
-  "Move some messages?": "",
+  "Move some messages?": "نقل بعض الرسائل؟",
   "Move this and all following messages in this topic": "نقل هذه الرسالة وجميع الرسائل التالية في هذا الموضوع",
   "Move topic": "نقل موضوع",
   "Moved by {full_name}": "تم النقل بواسطة {full_name}",
-  "Moving messages": "",
-  "Mute": "",
-  "Mute channel": "كتم الغرفة",
-  "Mute this bot": "",
+  "Moving messages": "نقل الرسائل",
+  "Mute": "صامت",
+  "Mute channel": "اجعل القناة صامتة",
+  "Mute this bot": "اجعل هذا البوت صامت",
   "Mute this user": "كتم هذا المستخدم",
   "Mute topic": "كتم الموضوع",
   "Mute user": "كتم المستخدم",
   "Muted": "مكتوم الصوت",
   "Muted user": "المستخدم المكتوم",
-  "Muted user (guest)": "",
+  "Muted user (guest)": "مستخدم مكتوم (ضيف)",
   "Muted users": "المستخدمين المكتومين",
   "Name": "اسم",
   "Name changes are disabled in this organization. Contact an administrator to change your name.": "تم تعطيل تغييرات الاسم في هذه المنظمة. اتصل بمسؤول لتغيير اسمك.",
@@ -849,7 +862,7 @@
   "Narrow to messages containing links.": "تضييق العرض للرسائل التي تحتوي على روابط.",
   "Narrow to messages containing uploads.": "تضييق العرض للرسائل التي تحتوي على تحميلات.",
   "Narrow to messages in followed topics.": "",
-  "Narrow to messages in resolved topics.": "تضييق العرض للرسائل في المواضيع التي تم حلها.",
+  "Narrow to messages in resolved topics.": "تضييق العرض للرسائل في المواضيع المنتهية.",
   "Narrow to messages on channel <z-value></z-value>.": "تضييق العرض على الرسائل في الغرفة <z-value></z-value>.",
   "Narrow to messages sent by <z-value></z-value>.": "تضييق العرض للرسائل المرسلة بواسطة <z-value></z-value>.",
   "Narrow to messages sent by you.": "تضييق العرض على الرسائل المرسلة من قبلك.",
@@ -865,11 +878,11 @@
   "Never ask on this computer": "لا تسأل أبدًا على هذا الكمبيوتر",
   "Never expires": "لا تنتهي أبدًا",
   "New": "جديد",
-  "New channel announcements": "إعلانات الغرفة الجديدة",
-  "New channel message": "رسالة تيار جديد",
-  "New channel notifications": "إشعارات الغرفة الجديدة",
+  "New channel announcements": "إعلانات قناة جديدة",
+  "New channel message": "رسالة قناة جديدة",
+  "New channel notifications": "إشعارات القناة الجديدة",
   "New direct message": "رسائلة مباشرة جديدة",
-  "New direct message from {sender_full_name}": "",
+  "New direct message from {sender_full_name}": "رسال مباشرة جديدة من {sender_full_name}",
   "New email": "بريد إلكتروني جديد",
   "New option": "خيار جديد",
   "New password": "كلمة مرور جديدة",
@@ -880,42 +893,43 @@
   "New user notifications": "إشعارات المستخدم الجديد",
   "Next message": "الرسالة التالية",
   "Next unread direct message": "الرسالة المباشرة الغير مقروءة التالية",
-  "Next unread followed topic": "",
+  "Next unread followed topic": "الموضوع المتبوع غير المقروء التالي",
   "Next unread topic": "الموضوع غير المقروء التالي",
-  "No active users.": "",
-  "No bots match your current filter.": "لا روبوتات تطابق تصفيتك الحالية.",
-  "No channel subscriptions.": "لا توجد اشتراكات للغرفة.",
-  "No channels": "لا غُرف",
-  "No channels to show.": "",
-  "No conversations match your filters.": "لا يوجد محادثات متوافقة مع هذه التصفيات.",
+  "No active users.": "لا يوجد مستخدمين نشطين",
+  "No bots match your current filter.": "لا روبوتات تطابق الفلترة الحالية.",
+  "No channel subscribers match your current filter.": "لا يوجد مشتركين في القناة مطابقين للفلترة الحالية",
+  "No channel subscriptions.": "لا يوجد اشتراكات في القناة",
+  "No channels": "لا يوجد قنوات",
+  "No channels to show.": "لا يوجد قنوات لعرضها",
+  "No conversations match your filters.": "لا يوجد محادثات متوافقة مع هذه الفلترة",
   "No custom emojis match your current filter.": "",
   "No custom profile field configured for this organization.": "",
   "No description.": "لا يوجد وصف.",
-  "No drafts selected": "",
+  "No drafts selected": "لم يتم تحديد مسودة",
   "No drafts.": "لا توجد مسودات.",
   "No group members match your current filter.": "",
   "No invitations match your current filter.": "",
   "No language set": "لم يتم تعيين لغة",
   "No linkifiers configured.": "",
   "No linkifiers match your current filter.": "",
-  "No matching results": "",
+  "No matching results": "لا يوجد نتائج مطابقة",
   "No matching users.": "لا يوجد مستخدمون مطابقون.",
   "No one has read this message yet.": "لم يقرأ أي أحد هذه الرسالة بعد.",
   "No owner": "لا يوجد مالك",
   "No playgrounds configured.": "لم يتم انشاء أماكن لتجربة الشِفرة.",
   "No playgrounds match your current filter.": "",
   "No restrictions": "لا يوجد قيود",
-  "No scheduled messages.": "",
-  "No search results.": "",
+  "No scheduled messages.": "لا يوجد رسائل مجدولة",
+  "No search results.": "لا يوجد نتائج بحث",
   "No status text": "",
-  "No topics are marked as resolved.": "لم يتم تمييز أي موضوع على أنه تم حله.",
-  "No topics match your current filter.": "لا يوجد موضوع يطابق تصفيتك الحالية.",
+  "No topics are marked as resolved.": "لم يتم تمييز أي موضوع على أنه منتهي.",
+  "No topics match your current filter.": "لا يوجد موضوع يطابق الفلترة الحالية.",
   "No uploaded files match your current filter.": "",
   "No user found": "",
   "No user group subscriptions.": "لا توجد اشتراكات لمجموعة المستخدمين.",
   "No user groups": "",
   "No user to subscribe.": "لا يوجد مستخدم للاشتراك.",
-  "No users match your current filter.": "لا يوجد مستخدمون يطابقون تصفيتك الحالية.",
+  "No users match your current filter.": "لا يوجد مستخدمون يطابقون الفلترة الحالية.",
   "No users match your filters.": "",
   "No users to add.": "",
   "No, I'll catch up.": "لا ، سوف ألحق بالركب.",
@@ -951,7 +965,7 @@
   "Once you leave this group, you will not be able to rejoin.": "عند مغادرة هذه المجموعة، لن تتمكن من الانضمام مرة أخرى.",
   "One or more of these users do not exist!": "واحد أو أكثر من هؤلاء المستخدمين غير موجود!",
   "Only 2 custom profile fields can be displayed on the user card.": "",
-  "Only in conversation views": "",
+  "Only in conversation views": "فقط في مشاهد المحادثات",
   "Only in image viewer": "",
   "Only organization administrators can edit these settings": "يمكن فقط لمسؤولي المنظمة التعديل على هذه الإعدادات",
   "Only organization administrators can edit these settings.": "يمكن لمسؤولي المؤسسة فقط تعديل هذه الإعدادات.",
@@ -1172,7 +1186,7 @@
   "Show more": "أظهر المزيد",
   "Show password": "عرض كلمة المرور",
   "Show previews of linked websites": "عرض معاينات من المواقع المرتبطة",
-  "Show previews of uploaded and linked images and videos": "",
+  "Show previews of uploaded and linked images and videos": "أعرض معاينة للصور و الفيديوهات المرفوعة",
   "Show starred message count": "إظهار عدد الرسائل المميزة بنجمة",
   "Show status text": "إظهار نص الحالة",
   "Show unread counts for": "",
@@ -1199,13 +1213,13 @@
   "Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <star-icon></star-icon>. <z-link>Learn more</z-link>": "",
   "Start a new topic or select one from the list.": "",
   "Start export of public data": "ابدأ في تصدير البيانات العامة",
-  "Start new conversation": "",
+  "Start new conversation": "ابدأ محادثة جديدة",
   "Status": "حالة",
   "Strikethrough": "",
   "Subject": "موضوع",
   "Subscribe": "الإشتراك",
   "Subscribe them": "اشترك معهم",
-  "Subscribe to <z-stream></z-stream>": "",
+  "Subscribe to <z-stream></z-stream>": "اشترك في <z-stream></z-stream>",
   "Subscribe to/unsubscribe from selected channel": "الاشتراك/إلغاء الاشتراك من الغرفة المحددة",
   "Subscribed": "مشترك",
   "Subscribed channels": "غرف الاشتراك",
@@ -1226,8 +1240,8 @@
   "The channel <b>#{channel_name}</b> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "",
   "The channel description cannot contain newline characters.": "لا يمكن أن يحتوي وصف الغرفة على سطر جديد.",
   "The group description cannot contain newline characters.": "لا يمكن أن يحتوي وصف المجموعة على رموز سطر جديد.",
-  "The recipient {recipient} is not valid.": "",
-  "The recipients {recipients} are not valid.": "",
+  "The recipient {recipient} is not valid.": "المستقبِل {recipient} غير صالح",
+  "The recipients {recipients} are not valid.": "المستقبِلين {recipients} غير صالحين",
   "The sender's email address": "",
   "The topic <z-topic-name>{topic_name}</z-topic-name> already exists in this channel. Are you sure you want to combine messages from these topics? This cannot be undone.": "",
   "The users you invite will be automatically added to <z-link>default channels</z-link> for this organization, as you do not have permission to configure which channels new users join.": "",
@@ -1240,7 +1254,7 @@
   "There are no exports.": "",
   "There are no invitations.": "",
   "There are no messages here.": "",
-  "There are no unread messages in your inbox.": "",
+  "There are no unread messages in your inbox.": "لا يوجد رسائل غير مقروئة في الصندوق الوارد",
   "There are no user groups you can view in this organization.": "",
   "There is a default emoji with this name. Do you want to override it with a custom emoji? The name <code>:{emoji_name}:</code> will no longer work to access the default emoji.": "",
   "They administer the following bots:": "يديرون الروبوتات التالية:",
@@ -1320,7 +1334,7 @@
   "Topics I send a message to": "",
   "Topics I start": "",
   "Topics are required in this organization.": "",
-  "Topics marked as resolved": "تم تمييز المواضيع على أنه تم حلها",
+  "Topics marked as resolved": "المواضيع المنتهية",
   "Tuesday": "الثلاثاء",
   "Turn off invisible mode": "ايقاف تشغيل الوضع غير المرئي",
   "Two factor authentication": "المصادقة الثنائية",
@@ -1348,7 +1362,7 @@
   "Unread": "غير مقروء",
   "Unread count badge (appears in desktop sidebar and browser tab)": "شارة عدد غير المقروءة (تظهر في الشريط الجانبي لسطح المكتب وعلامة تبويب المتصفح)",
   "Unread messages": "",
-  "Unresolve topic": "موضوع غير محلول",
+  "Unresolve topic": "اجعل الموضوع غير منتهي",
   "Unstar all messages": "إلغاء النجمة عن جميع الرسائل",
   "Unstar all messages in topic": "إلغاء النجمة عن جميع الرسائل في الموضوع",
   "Unstar messages in topic": "إلغاء نجمة الرسائل في الموضوع",
@@ -1399,7 +1413,7 @@
   "Users": "Users",
   "Users can always disable their personal read receipts.": "يمكن للمستخدمين تعطيل مؤشرات القراءة الشخصية دائمًا.",
   "Users join as": "",
-  "VIEWS": "",
+  "VIEWS": "المناظر",
   "Vacationing": "اجازة",
   "Version {zulip_version}": "الإصدار {zulip_version}",
   "View all subscribers": "",
@@ -1439,7 +1453,7 @@
   "Week of {date}": "أسبوع {date}",
   "Welcome back!": "",
   "Welcome to <b>recent conversations</b>!": "",
-  "Welcome to your <b>inbox</b>!": "",
+  "Welcome to your <b>inbox</b>!": "أهلا بك في <b>الصندوق الوارد</b>",
   "What pronouns should people use to refer to you?": "ما هي الضمائر التي يجب أن يستخدمها الناس للإشارة إليك؟",
   "When you deactivate <z-user></z-user>, they will be immediately logged out.": "عندما تلغي التنشيط <z-user></z-user>، سيتم تسجيل خروجهم على الفور.",
   "Where to send notifications": "",
@@ -1487,7 +1501,7 @@
   "You are not allowed to start direct message conversations.": "",
   "You are not currently subscribed to this channel.": "أنت غير مشترك حاليا في هذه الغرفة.",
   "You are not subscribed to <z-stream-name></z-stream-name>.": "",
-  "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.": "أنت ترسل رسالة إلى موضوع تم حله. يمكنك الإرسال والموضوع كما هو أو إلغاء حل الموضوع أولاً.",
+  "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.": "أنت ترسل رسالة إلى موضوع منتهي. يمكنك الإرسال والموضوع كما هو أو إلغاء إنهاء الموضوع أولاً.",
   "You are using an old version of the Zulip desktop app with known security bugs.": "أنت تستخدم إصدارًا قديمًا من تطبيق \"زوليب\" لسطح المكتب مع أخطاء أمنية معروفة.",
   "You are viewing all the bots in this organization.": "",
   "You aren't following any topics.": "",
@@ -1580,7 +1594,7 @@
   "Zulip Server {display_version} (modified)": "",
   "Zulip Server {display_version} (patched)": "",
   "Zulip lets you follow topics you are interested in, and mute topics you want to ignore. You can also <z-automatically-follow>automatically follow</z-automatically-follow> topics you start or participate in, and topics where you're mentioned.": "",
-  "Zulip needs to send email to confirm users' addresses and send notifications.": "يحتاج \"زوليب\" إرسال بريد إلكتروني لتأكيد عناوين المستخدمين وإرسال الإشعارات.",
+  "Zulip needs to send email to confirm users' addresses and send notifications.": "يحتاج زوليب إلى إرسال بريد إلكتروني لتأكيد عناوين المستخدمين وإرسال الإشعارات.",
   "Zulip needs your permission to <z-link>enable desktop notifications.</z-link>": "\"زوليب\" يحتاج إلى إذنك <z-link>لتمكين إشعارات سطح المكتب.</z-link>",
   "Zulip update announcements": "",
   "Zulip's translations are contributed by our amazing community of volunteer translators. If you'd like to help, see the <z-link>Zulip translation guidelines</z-link>.": "ساهم مجتمع المترجمين المتطوعين لدينا في ترجمة \"زوليب\". إذا كنت ترغب في المساعدة، فراجع ملف<z-link>إرشادات ترجمة \"زوليب\"</z-link>.",
