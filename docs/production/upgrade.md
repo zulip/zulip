@@ -344,6 +344,10 @@ instructions for other supported platforms.
        /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
    ```
 
+   This process may show a dialog about a "pending kernel upgrade",
+   which can safely be ignored. It may also prompt about "daemons
+   using outdated libraries"; you should select "cancel".
+
 5. As root, upgrade the database to the latest version of PostgreSQL:
 
    ```bash
