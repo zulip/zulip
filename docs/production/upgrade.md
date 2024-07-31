@@ -329,13 +329,7 @@ instructions for other supported platforms.
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
-4. As root, upgrade the database to the latest version of PostgreSQL:
-
-   ```bash
-   /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
-   ```
-
-5. Next, we need to reinstall the current version of Zulip, which
+4. Next, we need to reinstall the current version of Zulip, which
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python and rewrite Zulip's
    full-text search indexes to work with the upgraded dictionary
@@ -350,6 +344,12 @@ instructions for other supported platforms.
    This will finish by restarting your Zulip server; you should now be
    able to navigate to its URL and confirm everything is working
    correctly.
+
+5. As root, upgrade the database to the latest version of PostgreSQL:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
+   ```
 
 ### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
 
@@ -382,13 +382,7 @@ instructions for other supported platforms.
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
-4. As root, upgrade the database to the latest version of PostgreSQL:
-
-   ```bash
-   /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
-   ```
-
-5. Next, we need to reinstall the current version of Zulip, which
+4. Next, we need to reinstall the current version of Zulip, which
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python and rewrite Zulip's
    full-text search indexes to work with the upgraded dictionary
@@ -403,6 +397,12 @@ instructions for other supported platforms.
    This will finish by restarting your Zulip server; you should now be
    able to navigate to its URL and confirm everything is working
    correctly.
+
+5. As root, upgrade the database to the latest version of PostgreSQL:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
+   ```
 
 6. Finally, Ubuntu 20.04 has a different version of the low-level
    glibc library, which affects how PostgreSQL orders text data (known
