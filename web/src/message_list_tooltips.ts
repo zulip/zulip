@@ -331,11 +331,17 @@ export function initialize(): void {
         },
         onShow(instance) {
             const $elem = $(instance.reference);
-            const edited_notice_str = $elem.attr("data-tippy-content");
+            assert(message_lists.current !== undefined);
+            const message_id = Number($elem.closest(".message_row").attr("data-message-id"));
+            const message_container = message_lists.current.view.message_containers.get(message_id);
+            assert(message_container !== undefined);
+            const last_edit_timestr =
+                message_lists.current.view._get_msg_timestring(message_container);
             instance.setContent(
                 parse_html(
                     render_message_edit_notice_tooltip({
-                        edited_notice_str,
+                        message_container,
+                        last_edit_timestr,
                         realm_allow_edit_history: realm.realm_allow_edit_history,
                     }),
                 ),

@@ -20,7 +20,7 @@ type AllVisibilityPolicies = {
 };
 
 // TODO/TypeScript: Move this to message_list_view.js when it's migrated to TypeScript.
-type MessageContainer = {
+export type MessageContainer = {
     background_color: string;
     date_divider_html?: string;
     edited_alongside_sender: boolean;

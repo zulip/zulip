@@ -65,7 +65,7 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
-function analyze_edit_history(message, last_edit_timestr) {
+function analyze_edit_history(message, last_edit_timestamp) {
     // Returns a dict of booleans that describe the message's history:
     //   * edited: if the message has had its content edited
     //   * moved: if the message has had its stream/topic edited
@@ -107,7 +107,7 @@ function analyze_edit_history(message, last_edit_timestr) {
                 moved = true;
             }
         }
-    } else if (last_edit_timestr !== undefined) {
+    } else if (last_edit_timestamp !== undefined) {
         // When the edit_history is disabled for the organization, we do not receive the edit_history
         // variable in the message object. In this case, we will check if the last_edit_timestr is
         // available or not. Since we don't have the edit_history, we can't determine if the message
@@ -420,26 +420,24 @@ export class MessageListView {
         //   * `edited_in_left_col`      -- when label appears in left column.
         //   * `edited_alongside_sender` -- when label appears alongside sender info.
         //   * `edited_status_msg`       -- when label appears for a "/me" message.
-        const last_edit_timestr = this._get_msg_timestring(message_container);
-        const edit_history_details = analyze_edit_history(message_container.msg, last_edit_timestr);
+        const last_edit_timestamp = message_container.msg.last_edit_timestamp;
+        const edit_history_details = analyze_edit_history(
+            message_container.msg,
+            last_edit_timestamp,
+        );
 
-        if (
-            last_edit_timestr === undefined ||
-            !(edit_history_details.moved || edit_history_details.edited)
-        ) {
+        if (!(edit_history_details.moved || edit_history_details.edited)) {
             // For messages whose edit history at most includes
             // resolving topics, we don't display an EDITED/MOVED
             // notice at all. (The message actions popover will still
             // display an edit history option, so you can see when it
             // was marked as resolved if you need to).
-            delete message_container.last_edit_timestr;
             message_container.edited_in_left_col = false;
             message_container.edited_alongside_sender = false;
             message_container.edited_status_msg = false;
             return;
         }
 
-        message_container.last_edit_timestr = last_edit_timestr;
         message_container.moved = edit_history_details.moved && !edit_history_details.edited;
         message_container.modified = true;
     }
