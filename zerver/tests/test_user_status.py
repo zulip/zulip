@@ -183,7 +183,10 @@ class UserStatusTest(ZulipTestCase):
         with self.capture_send_event_calls(expected_num_events=num_events) as events:
             result = self.client_post("/json/users/me/status", payload)
         self.assert_json_success(result)
-        self.assertEqual(events[0]["event"], expected_event)
+        if num_events == 1:
+            self.assertEqual(events[0]["event"], expected_event)
+        else:
+            self.assertEqual(events[2]["event"], expected_event)
 
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")

@@ -1676,13 +1676,13 @@ class NormalActionsTest(BaseAction):
                 client_id=client.id,
             )
 
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], not away_val)
         check_user_status(
-            "events[0]",
-            events[0],
+            "events[2]",
+            events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_user_settings_update("events[1]", events[1])
-        check_update_global_notifications("events[2]", events[2], not away_val)
         check_presence(
             "events[3]",
             events[3],
@@ -1704,13 +1704,13 @@ class NormalActionsTest(BaseAction):
                 client_id=client.id,
             )
 
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], not away_val)
         check_user_status(
-            "events[0]",
-            events[0],
+            "events[2]",
+            events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_user_settings_update("events[1]", events[1])
-        check_update_global_notifications("events[2]", events[2], not away_val)
         check_presence(
             "events[3]",
             events[3],
@@ -1732,9 +1732,9 @@ class NormalActionsTest(BaseAction):
                 client_id=client.id,
             )
 
-        check_user_status("events[0]", events[0], {"away"})
-        check_user_settings_update("events[1]", events[1])
-        check_update_global_notifications("events[2]", events[2], not away_val)
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], not away_val)
+        check_user_status("events[2]", events[2], {"away"})
         check_presence(
             "events[3]",
             events[3],
