@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 280  # Last bumped for can_create_web_public_channel_group
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (290, 0)  # bumped 2024-08-12 for upgrading starlight to latest version.
+PROVISION_VERSION = (290, 1)  # bumped 2024-08-12 to add zopfli compression
