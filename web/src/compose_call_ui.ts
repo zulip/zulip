@@ -70,7 +70,7 @@ export function generate_and_insert_audio_or_video_call_link(
             is_video_call: !is_audio_call,
         };
 
-        const make_zoom_call: () => void = () => {
+        const make_zoom_call = (): void => {
             const xhr = channel.post({
                 url: "/json/calls/zoom/create",
                 data: request,

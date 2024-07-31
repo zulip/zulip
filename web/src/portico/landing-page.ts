@@ -53,7 +53,7 @@ export function path_parts(): string[] {
     return window.location.pathname.split("/").filter((chunk) => chunk !== "");
 }
 
-const apps_events: () => void = function () {
+const apps_events = function (): void {
     const info: Record<UserOS, VersionInfo> = {
         windows: {
             alt: "Windows",
@@ -168,7 +168,7 @@ const apps_events: () => void = function () {
     update_page();
 };
 
-const events: () => void = function () {
+const events = function (): void {
     if (path_parts().includes("apps")) {
         apps_events();
     }
@@ -291,7 +291,7 @@ $(document).on("click", ".comparison-tab", function (this: HTMLElement) {
         // on subheaders of interest (those about to be sticky)
         let previous_entry_y = 0;
 
-        const isScrollingUp: () => boolean = () => {
+        const isScrollingUp = (): boolean => {
             let is_scrolling_up = true;
             if (window.scrollY > previous_y_position) {
                 is_scrolling_up = false;

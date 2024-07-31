@@ -424,8 +424,7 @@ export function show_from_selected_message(): void {
     const $message_selected = $(".selected_message");
     let $message = $message_selected;
     // This is a function to satisfy eslint unicorn/no-array-callback-reference
-    const media_classes: () => string = () =>
-        ".message_inline_image img, .message_inline_image video";
+    const media_classes = (): string => ".message_inline_image img, .message_inline_image video";
     let $media = $message.find<HTMLMediaElement>(media_classes());
     let $prev_traverse = false;
 

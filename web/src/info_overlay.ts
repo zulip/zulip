@@ -24,13 +24,12 @@ import {user_settings} from "./user_settings";
 export let toggler: Toggle | undefined;
 
 function format_usage_html(...keys: string[]): string {
-    const get_formatted_keys: () => string = () => keys.map((key) => `<kbd>${key}</kbd>`).join("+");
     return $t_html(
         {
             defaultMessage: "(or <key-html></key-html>)",
         },
         {
-            "key-html": get_formatted_keys,
+            "key-html": () => keys.map((key) => `<kbd>${key}</kbd>`).join("+"),
         },
     );
 }
