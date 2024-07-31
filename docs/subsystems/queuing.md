@@ -83,7 +83,7 @@ apt and then run:
 
 ```bash
 amqp-delete-queue --username=zulip --password='...' --server=localhost \
-   --queue=user_presence
+   --queue=user_activity
 ```
 
 with the RabbitMQ password from `/etc/zulip/zulip-secrets.conf`.
