@@ -313,10 +313,8 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
    ```
 
-3. Switch to the root user and upgrade the operating system using the
-   OS's standard tooling. E.g., for Ubuntu, this means running
-   `do-release-upgrade` and following the prompts until it completes
-   successfully:
+3. Switch to the root user and upgrade the operating system, following
+   the prompts until it completes successfully:
 
    ```bash
    sudo -i # Or otherwise get a root shell
@@ -378,10 +376,8 @@ confirm everything is working correctly.
    /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
    ```
 
-3. Switch to the root user and upgrade the operating system using the
-   OS's standard tooling. E.g., for Ubuntu, this means running
-   `do-release-upgrade` and following the prompts until it completes
-   successfully:
+3. Switch to the root user and upgrade the operating system, following
+   the prompts until it completes successfully:
 
    ```bash
    sudo -i # Or otherwise get a root shell
