@@ -42,10 +42,10 @@ header
       <li data-tab-key="desktop-web" tabindex="0">Desktop/Web</li>
     </ul>
     <div class="blocks">
-      <div data-tab-key="ios" markdown="1"></p>
+      <div class="tab-content" data-tab-key="ios" markdown="1"></p>
         <p>iOS instructions</p>
       <p></div>
-      <div data-tab-key="desktop-web" markdown="1"></p>
+      <div class="tab-content" data-tab-key="desktop-web" markdown="1"></p>
         <p>Desktop/browser instructions</p>
       <p></div>
     </div>
@@ -60,10 +60,10 @@ header
       <li data-tab-key="android" tabindex="0">Android</li>
     </ul>
     <div class="blocks">
-      <div data-tab-key="desktop-web" markdown="1"></p>
+      <div class="tab-content" data-tab-key="desktop-web" markdown="1"></p>
         <p>Desktop/browser instructions</p>
       <p></div>
-      <div data-tab-key="android" markdown="1"></p>
+      <div class="tab-content" data-tab-key="android" markdown="1"></p>
         <p>Android instructions</p>
       <p></div>
     </div>
@@ -77,7 +77,7 @@ header
       <li data-tab-key="instructions-for-all-platforms" tabindex="0">Instructions for all platforms</li>
     </ul>
     <div class="blocks">
-      <div data-tab-key="instructions-for-all-platforms" markdown="1"></p>
+      <div class="tab-content" data-tab-key="instructions-for-all-platforms" markdown="1"></p>
         <p>Instructions for all platforms</p>
       <p></div>
     </div>
