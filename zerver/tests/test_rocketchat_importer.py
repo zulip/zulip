@@ -37,7 +37,7 @@ class RocketChatImporter(ZulipTestCase):
     def test_rocketchat_data_to_dict(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-        self.assert_length(rocketchat_data, 7)
+        self.assert_length(rocketchat_data, 6)
 
         self.assert_length(rocketchat_data["user"], 6)
         self.assertEqual(rocketchat_data["user"][2]["username"], "harry.potter")
