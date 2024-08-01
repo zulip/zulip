@@ -551,8 +551,8 @@ input[type="checkbox"] {
     }
 }
 
-.organization-settings-parent > div:first-of-type {
-    margin-top: 10px;
+.organization-settings-parent {
+    padding-top: 10px;
 }
 
 #id_org_profile_preview {
@@ -563,8 +563,8 @@ input[type="checkbox"] {
     margin-bottom: 20px;
 }
 
-.inline-block.organization-permissions-parent div:first-of-type {
-    margin-top: 10px;
+.inline-block.organization-permissions-parent {
+    padding-top: 10px;
 }
 
 .language_selection_widget .language_selection_button {
