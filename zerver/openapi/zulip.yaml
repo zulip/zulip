@@ -9741,6 +9741,13 @@ paths:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
                   $ref: "#/components/schemas/CanRemoveSubscribersGroupId"
+                send_notification_to_new_users:
+                  description: |
+                    This parameter determines whether the users newly added to a channel are sent
+                    a Notification Bot DM to let them know that they have been added to the channel.
+                  type: boolean
+                  default: true
+                  example: true
               required:
                 - subscriptions
             encoding:
