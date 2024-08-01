@@ -67,6 +67,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
+        ("confirmation", "0011_alter_confirmation_expiry_date"),
         ("zerver", "0382_create_role_based_system_groups"),
     ]
 
