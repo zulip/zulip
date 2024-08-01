@@ -198,6 +198,9 @@ _Released 2024-07-25_
 
 #### Upgrade notes for 9.0
 
+- Servers running Ubuntu 20.04 must [upgrade their operating system to Ubuntu
+  22.04](../production/upgrade.md#upgrading-the-operating-system)
+  before upgrading to Zulip 9.0.
 - This release introduces a new [Zulip updates](https://zulip.com/help/configure-automated-notices#zulip-update-announcements) feature, which
   announces significant product changes and new features via automated
   messages to a configurable channel. Generally, these announcements will
