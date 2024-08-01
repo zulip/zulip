@@ -32,6 +32,7 @@ import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import {hide_all} from "./popovers";
 import * as rows from "./rows";
+import * as settings_panel_menu from "./settings_panel_menu";
 import * as sidebar_ui from "./sidebar_ui";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
@@ -795,6 +796,12 @@ function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
         user_profile.show_user_profile(user, "manage-profile-tab");
+    });
+
+    $("body").on("click", ".edit-your-profile", () => {
+        hide_all();
+        window.location.hash = "#settings/profile";
+        settings_panel_menu.mobile_activate_section();
     });
 
     new ClipboardJS(".copy-custom-profile-field-link", {

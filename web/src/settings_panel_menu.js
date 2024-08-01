@@ -19,6 +19,12 @@ export function mobile_deactivate_section() {
     $settings_overlay_container.find(".settings-header.mobile").removeClass("slide-left");
 }
 
+export function mobile_activate_section() {
+    const $settings_overlay_container = $("#settings_overlay_container");
+    $settings_overlay_container.find(".right").addClass("show");
+    $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
+}
+
 function two_column_mode() {
     return $("#settings_overlay_container").css("--single-column") === undefined;
 }
@@ -214,9 +220,7 @@ export class SettingsPanelMenu {
         scroll_util.reset_scrollbar($("#settings_content"));
 
         if (activate_section_for_mobile) {
-            const $settings_overlay_container = $("#settings_overlay_container");
-            $settings_overlay_container.find(".right").addClass("show");
-            $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
+            mobile_activate_section();
         }
 
         set_settings_header(section);
