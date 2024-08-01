@@ -92,7 +92,7 @@ Zulip’s topic-based threading model solves the problems described above:
   members in two major ways. First, they can easily browse what
   conversations happened while they were away from the community, and
   prioritize which conversations to read now, skip, or read later
-  (e.g. on the weekend). Second, Zulip makes it easy for them to have
+  (e.g., on the weekend). Second, Zulip makes it easy for them to have
   public conversations with participation from other community members
   (potentially split over hours, days, or weeks as needed), allowing
   them to fully participate in the work of the community.

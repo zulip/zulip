@@ -33,11 +33,11 @@ create_zulip_test
 # This next line can be simplified to "-n0" once we fix our app (and tests) with 0 messages.
 ./manage.py populate_db --test-suite -n30 --threads=1 \
     --max-topics=3 \
-    --huddles=0 --personals=0 --percent-huddles=0 --percent-personals=0
+    --direct-message-groups=0 --personals=0 --percent-direct-message-groups=0 --percent-personals=0
 
 ./manage.py dumpdata \
     zerver.UserProfile zerver.Stream zerver.Recipient \
-    zerver.Subscription zerver.Message zerver.Huddle zerver.Realm \
+    zerver.Subscription zerver.Message zerver.DirectMessageGroup zerver.Realm \
     zerver.UserMessage zerver.Client \
     zerver.DefaultStream >zerver/tests/fixtures/messages.json
 

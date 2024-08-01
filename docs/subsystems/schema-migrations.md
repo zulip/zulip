@@ -49,7 +49,7 @@ migrations.
   migration that exists on the release branch. This should be
   followed, on `main`, by a migration which merges the two resulting
   tips; you can make such a merge with `manage.py makemigrations --merge`.
-- **Large tables**: For our very largest tables (e.g. Message and
+- **Large tables**: For our very largest tables (e.g., Message and
   UserMessage), we often need to take precautions when adding columns
   to the table, performing data backfills, or building indexes. We
   have a `zerver/lib/migrate.py` library to help with adding columns
@@ -63,7 +63,7 @@ migrations.
 - **Atomicity**. By default, each Django migration is run atomically
   inside a transaction. This can be problematic if one wants to do
   something in a migration that touches a lot of data and would best
-  be done in batches of e.g. 1000 objects (e.g. a `Message` or
+  be done in batches of, for example, 1000 objects (e.g., a `Message` or
   `UserMessage` table change). There is a [useful Django
   feature][migrations-non-atomic] that makes it possible to add
   `atomic=False` at the top of a `Migration` class and thus not have
@@ -130,7 +130,7 @@ migrations.
     to do lots of small batches, potentially with a brief sleep in
     between, so that we don't block other operations from finishing.
   - **Rerunnability/idempotency**. Good migrations are ones where if
-    operational concerns (e.g. it taking down the Zulip server for
+    operational concerns (e.g., it taking down the Zulip server for
     users) interfere with it finishing, it's easy to restart the
     migration without doing a bunch of hand investigation. Ideally,
     the migration can even continue where it left off, without needing
@@ -144,7 +144,7 @@ migrations.
     2. Second, do a migration to copy values from the old column to
        the new column, to ensure that the two data stores agree.
     3. Third, a commit that stops writing to the old field.
-    4. Any cleanup work, e.g. if the old field were a column, we'd do
+    4. Any cleanup work, e.g., if the old field were a column, we'd do
        a migration to remove it entirely here.
 
     This multi-step process is how most migrations on large database

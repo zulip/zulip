@@ -1,6 +1,6 @@
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Optional, Set
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -20,19 +20,26 @@ from zerver.actions.message_send import (
     extract_stream_indicator,
     internal_prep_private_message,
     internal_prep_stream_message_by_name,
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message,
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import (
+    DirectMessageInitiationError,
+    DirectMessagePermissionError,
+    JsonableError,
+)
 from zerver.lib.message import get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.per_request_cache import flush_per_request_caches
@@ -60,8 +67,8 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import PrivateMessagePolicyEnum, WildcardMentionPolicyEnum, get_realm
-from zerver.models.recipients import get_or_create_huddle
+from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
 from zerver.views.message_send import InvalidMirrorInputError
@@ -69,7 +76,7 @@ from zerver.views.message_send import InvalidMirrorInputError
 
 class MessagePOSTTest(ZulipTestCase):
     def _send_and_verify_message(
-        self, user: UserProfile, stream_name: str, error_msg: Optional[str] = None
+        self, user: UserProfile, stream_name: str, error_msg: str | None = None
     ) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(user, stream_name)
@@ -713,14 +720,14 @@ class MessagePOSTTest(ZulipTestCase):
 
             msg = self.get_last_message()
             self.assertEqual("Test message", msg.content)
-            huddle = get_or_create_huddle(
+            direct_message_group = get_or_create_direct_message_group(
                 [
                     self.example_user("hamlet").id,
                     self.example_user("othello").id,
                     self.example_user("cordelia").id,
                 ]
             )
-            self.assertEqual(msg.recipient_id, huddle.recipient_id)
+            self.assertEqual(msg.recipient_id, direct_message_group.recipient_id)
 
     def test_personal_message_copying_self(self) -> None:
         """
@@ -967,9 +974,9 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Message must have recipients")
 
-    def test_mirrored_huddle(self) -> None:
+    def test_mirrored_direct_message_group(self) -> None:
         """
-        Sending a mirrored huddle message works
+        Sending a mirrored group direct message works
         """
         result = self.api_post(
             self.mit_user("starnine"),
@@ -1042,9 +1049,9 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "User not authorized for this query")
 
-    def test_duplicated_mirrored_huddle(self) -> None:
+    def test_duplicated_mirrored_direct_message_group(self) -> None:
         """
-        Sending two mirrored huddles in the row return the same ID
+        Sending two mirrored direct message groups in the row return the same ID
         """
         msg = {
             "type": "direct",
@@ -1763,7 +1770,7 @@ class StreamMessagesTest(ZulipTestCase):
             ).flags.is_private.is_set
         )
 
-    def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> Set[int]:
+    def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> set[int]:
         with self.capture_send_event_calls(expected_num_events=1) as events:
             self.send_stream_message(
                 user,
@@ -1787,7 +1794,7 @@ class StreamMessagesTest(ZulipTestCase):
             user_profile=cordelia,
         ).delete()
 
-        def mention_cordelia() -> Set[int]:
+        def mention_cordelia() -> set[int]:
             content = "test @**Cordelia, Lear's daughter** rules"
 
             user_ids = self._send_stream_message(
@@ -2111,9 +2118,11 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(cordelia, "test_stream")
         do_set_realm_property(cordelia.realm, "wildcard_mention_policy", 10, acting_user=None)
         content = "@**all** test wildcard mention"
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=16):
-            with self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"):
-                self.send_stream_message(cordelia, "test_stream", content)
+        with (
+            mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=16),
+            self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"),
+        ):
+            self.send_stream_message(cordelia, "test_stream", content)
 
     def test_user_group_mention_restrictions(self) -> None:
         iago = self.example_user("iago")
@@ -2325,7 +2334,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         self.assert_stream_message(non_ascii_stream_name, topic_name="hümbüǵ", content="hümbüǵ")
 
-    def test_get_raw_unread_data_for_huddle_messages(self) -> None:
+    def test_get_raw_unread_data_for_group_direct_messages(self) -> None:
         users = [
             self.example_user("hamlet"),
             self.example_user("cordelia"),
@@ -2334,8 +2343,8 @@ class StreamMessagesTest(ZulipTestCase):
             self.example_user("othello"),
         ]
 
-        message1_id = self.send_huddle_message(users[0], users, "test content 1")
-        message2_id = self.send_huddle_message(users[0], users, "test content 2")
+        message1_id = self.send_group_direct_message(users[0], users, "test content 1")
+        message2_id = self.send_group_direct_message(users[0], users, "test content 2")
 
         msg_data = get_raw_unread_data(users[1])
 
@@ -2412,26 +2421,168 @@ class PersonalMessageSendTest(ZulipTestCase):
             receiver=self.example_user("othello"),
         )
 
-    def test_private_message_policy(self) -> None:
+    def test_direct_message_initiator_group_setting(self) -> None:
         """
-        Tests that PrivateMessagePolicyEnum.DISABLED works correctly.
+        Tests that direct_message_initiator_group_setting works correctly.
         """
         user_profile = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+        admin = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        realm = user_profile.realm
+        direct_message_group_1 = [user_profile, admin, polonius]
+        direct_message_group_2 = [user_profile, admin, polonius, cordelia]
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
         self.login_user(user_profile)
-        do_set_realm_property(
-            user_profile.realm,
-            "private_message_policy",
-            PrivateMessagePolicyEnum.DISABLED,
+        self.send_personal_message(user_profile, polonius)
+        do_change_realm_permission_group_setting(
+            realm,
+            "direct_message_initiator_group",
+            administrators_system_group,
             acting_user=None,
         )
-        with self.assertRaises(JsonableError):
-            self.send_personal_message(user_profile, self.example_user("cordelia"))
+
+        # We can send to Polonius because we'd previously messaged him.
+        self.send_personal_message(user_profile, polonius)
+        # Tests if we can send messages to self irrespective of the value of the setting.
+        self.send_personal_message(user_profile, user_profile)
+
+        # We cannot send to users with whom we does not have any direct message conversation.
+        with self.assertRaises(DirectMessageInitiationError) as direct_message_initiation_error:
+            self.send_personal_message(user_profile, cordelia)
+        self.assertEqual(
+            str(direct_message_initiation_error.exception),
+            "You do not have permission to initiate direct message conversations.",
+        )
+        with self.assertRaises(DirectMessageInitiationError):
+            self.send_personal_message(user_profile, admin)
+
+        # Have the administrator send a message, and verify that allows the user to reply.
+        self.send_personal_message(admin, user_profile)
+        with self.assert_database_query_count(16):
+            self.send_personal_message(user_profile, admin)
+
+        # Tests that user cannot initiate direct message thread in groups.
+        with self.assertRaises(DirectMessageInitiationError):
+            self.send_group_direct_message(user_profile, direct_message_group_1)
+
+        # Have the administrator send a message to the direct message group, and verify
+        # that allows the user to reply.
+        self.send_group_direct_message(admin, direct_message_group_1)
+        with self.assert_database_query_count(20):
+            self.send_group_direct_message(user_profile, direct_message_group_1)
+
+        # We cannot sent to `direct_message_group_2` as no message has been sent to this group yet.
+        with self.assertRaises(DirectMessageInitiationError):
+            self.send_group_direct_message(user_profile, direct_message_group_2)
 
         bot_profile = self.create_test_bot("testbot", user_profile)
         notification_bot = get_system_bot("notification-bot@zulip.com", user_profile.realm_id)
+        # Tests if messages to and from bots are allowed irrespective of the value of the setting.
         self.send_personal_message(user_profile, notification_bot)
         self.send_personal_message(user_profile, bot_profile)
         self.send_personal_message(bot_profile, user_profile)
+
+        # Tests if the permission works when the setting is set to a combination of
+        # groups and users.
+        user_group = self.create_or_update_anonymous_group_for_setting(
+            [user_profile],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "direct_message_initiator_group",
+            user_group,
+            acting_user=None,
+        )
+        self.send_personal_message(user_profile, cordelia)
+
+    def test_direct_message_permission_group_setting(self) -> None:
+        """
+        Tests that direct_message_permission_group_setting works correctly.
+        """
+        user_profile = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        polonius = self.example_user("polonius")
+        admin = self.example_user("iago")
+        realm = user_profile.realm
+        direct_message_group = [user_profile, cordelia, admin]
+        direct_message_group_without_admin = [user_profile, cordelia, polonius]
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        self.login_user(user_profile)
+        do_change_realm_permission_group_setting(
+            realm,
+            "direct_message_permission_group",
+            administrators_system_group,
+            acting_user=None,
+        )
+        # Tests if the user is allowed to send to administrators.
+        with self.assert_database_query_count(16):
+            self.send_personal_message(user_profile, admin)
+        self.send_personal_message(admin, user_profile)
+        # Tests if we can send messages to self irrespective of the value of the setting.
+        self.send_personal_message(user_profile, user_profile)
+
+        # We cannot send direct messages unless one of the recipient is in the
+        # `direct_message_permission_group` (in this case, the
+        # `administrators_system_group`).
+        with self.assertRaises(DirectMessagePermissionError) as direct_message_permission_error:
+            self.send_personal_message(user_profile, cordelia)
+        self.assertEqual(
+            str(direct_message_permission_error.exception),
+            "This conversation does not include any users who can authorize it.",
+        )
+
+        # We can send to this direct message group as it has administrator as one of the
+        # recipient.
+        with self.assert_database_query_count(24):
+            self.send_group_direct_message(user_profile, direct_message_group)
+        self.send_group_direct_message(admin, direct_message_group)
+
+        # But this one does not have an administrator. So, it should throw an error.
+        with self.assertRaises(DirectMessagePermissionError):
+            self.send_group_direct_message(user_profile, direct_message_group_without_admin)
+
+        bot_profile = self.create_test_bot("testbot", user_profile)
+        notification_bot = get_system_bot("notification-bot@zulip.com", user_profile.realm_id)
+        # Tests if messages to and from bots are allowed irrespective of the value of the setting.
+        self.send_personal_message(user_profile, notification_bot)
+        self.send_personal_message(user_profile, bot_profile)
+        self.send_personal_message(bot_profile, user_profile)
+
+        # Tests if the permission works when the setting is set to a combination of
+        # groups and users.
+        user_group = self.create_or_update_anonymous_group_for_setting(
+            [user_profile],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "direct_message_permission_group",
+            user_group,
+            acting_user=None,
+        )
+        self.send_personal_message(user_profile, cordelia)
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "direct_message_permission_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+        with self.assertRaises(DirectMessagePermissionError) as direct_message_permission_error:
+            self.send_personal_message(user_profile, cordelia)
+        self.assertEqual(
+            str(direct_message_permission_error.exception),
+            "Direct messages are disabled in this organization.",
+        )
 
     def test_non_ascii_personal(self) -> None:
         """
@@ -2580,7 +2731,7 @@ class InternalPrepTest(ZulipTestCase):
         )
 
         with self.assertLogs(level="ERROR") as m:
-            internal_send_huddle_message(
+            internal_send_group_direct_message(
                 realm=realm,
                 sender=cordelia,
                 emails=[hamlet.email, othello.email],
@@ -2678,7 +2829,15 @@ class InternalPrepTest(ZulipTestCase):
         Test that a user can send a direct message to themselves and to a bot in a DM disabled organization
         """
         sender = self.example_user("hamlet")
-        sender.realm.private_message_policy = PrivateMessagePolicyEnum.DISABLED
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=sender.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            sender.realm,
+            "direct_message_permission_group",
+            nobody_system_group,
+            acting_user=None,
+        )
         sender.realm.save()
 
         #  Create a non-bot user
@@ -2840,23 +2999,24 @@ class TestCrossRealmPMs(ZulipTestCase):
         # (We don't particularly need this feature, but since users can
         # already individually send direct messages to cross-realm bots,
         # we shouldn't prevent them from sending multiple bots at once.
-        # We may revisit this if it's a nuisance for huddles.)
-        self.send_huddle_message(user1, [notification_bot, support_bot])
+        # We may revisit this if it's a nuisance for direct message
+        # groups.)
+        self.send_group_direct_message(user1, [notification_bot, support_bot])
         assert_message_received(notification_bot, user1)
         assert_message_received(support_bot, user1)
 
         # Prevent old loophole where I could send direct messages to other
         # users as long as I copied a cross-realm bot from the same realm.
         with assert_invalid_user():
-            self.send_huddle_message(user1, [user3, support_bot])
+            self.send_group_direct_message(user1, [user3, support_bot])
 
         # Users on three different realms can't send direct messages to
         # each other, even if one of the users is a cross-realm bot.
         with assert_invalid_user():
-            self.send_huddle_message(user1, [user2, notification_bot])
+            self.send_group_direct_message(user1, [user2, notification_bot])
 
         with assert_invalid_user():
-            self.send_huddle_message(notification_bot, [user1, user2])
+            self.send_group_direct_message(notification_bot, [user1, user2])
 
         # Users on the different realms cannot send direct messages to
         # each other.
@@ -2871,7 +3031,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # Users on three different realms cannot send direct messages
         # to each other.
         with assert_invalid_user():
-            self.send_huddle_message(user1, [user2, user3])
+            self.send_group_direct_message(user1, [user2, user3])
 
 
 class TestAddressee(ZulipTestCase):
@@ -3116,7 +3276,7 @@ class CheckMessageTest(ZulipTestCase):
         # after; this should send an error to the bot owner that the
         # stream doesn't exist
         assert sender.last_reminder is not None
-        sender.last_reminder = sender.last_reminder - timedelta(hours=1)
+        sender.last_reminder -= timedelta(hours=1)
         sender.save(update_fields=["last_reminder"])
         ret = check_message(sender, client, addressee, message_content)
 

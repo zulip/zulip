@@ -121,7 +121,7 @@ Here are some example action methods that tests may use for data setup:
 
 ### Testing code that accesses the filesystem
 
-Some tests need to access the filesystem (e.g. `test_upload.py` tests
+Some tests need to access the filesystem (e.g., `test_upload.py` tests
 for `LocalUploadBackend` and the data import tests). Doing
 this correctly requires care to avoid problems like:
 
@@ -142,7 +142,7 @@ To avoid these problems, you can do the following:
   avoid conflicts with other tests run later by the same test process.
 
 Our common testing infrastructure handles some of this for you,
-e.g. it replaces `settings.LOCAL_UPLOADS_DIR` for each test process
+e.g., it replaces `settings.LOCAL_UPLOADS_DIR` for each test process
 with a unique path under `/var/<uuid>/test-backend`. And
 `UploadSerializeMixin` manages some of the cleanup work for
 `test_upload.py`.
@@ -252,7 +252,7 @@ foo.qux = 42
 ```
 
 is _not_ going to throw any errors. Our mock silently accepts all these calls and records them.
-`Mock` also implements methods for us to access and assert its records, e.g.
+`Mock` also implements methods for us to access and assert its records, e.g.,
 
 ```python
 foo.bar.assert_called_with('quux')

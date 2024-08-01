@@ -21,9 +21,11 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import (
     DEFAULT_AVATAR_SIZE,
-    DEFAULT_EMOJI_SIZE,
     MEDIUM_AVATAR_SIZE,
+    THUMBNAIL_OUTPUT_FORMATS,
+    BadImageError,
     resize_avatar,
+    resize_emoji,
 )
 from zerver.lib.upload import (
     all_message_attachments,
@@ -46,9 +48,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
@@ -67,9 +67,7 @@ class S3Test(ZulipTestCase):
     def test_save_attachment_contents(self) -> None:
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         path_id = re.sub(r"/user_uploads/", "", url)
         output = BytesIO()
@@ -90,7 +88,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(user_profile.realm, internal_realm)
 
         url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile, zulip_realm
+            "dummy.txt", "text/plain", b"zulip!", user_profile, zulip_realm
         )
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
@@ -100,9 +98,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment(
-            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-        )
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
 
         path_id = re.sub(r"/user_uploads/", "", url)
         self.assertIsNotNone(bucket.Object(path_id).get())
@@ -117,9 +113,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 5):
-            url = upload_message_attachment(
-                "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-            )
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
             path_id = re.sub(r"/user_uploads/", "", url)
             self.assertIsNotNone(bucket.Object(path_id).get())
             path_ids.append(path_id)
@@ -152,11 +146,25 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 5):
-            url = upload_message_attachment(
-                "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
-            )
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
             path_ids.append(re.sub(r"/user_uploads/", "", url))
+
+        # Put an image in, which gets thumbnailed
+        with self.captureOnCommitCallbacks(execute=True):
+            url = upload_message_attachment(
+                "img.png", "image/png", read_test_image_file("img.png"), user_profile
+            )
+            image_path_id = re.sub(r"/user_uploads/", "", url)
+            path_ids.append(image_path_id)
+
         found_paths = [r[0] for r in all_message_attachments()]
+        self.assertEqual(sorted(found_paths), sorted(path_ids))
+
+        found_paths = [r[0] for r in all_message_attachments(include_thumbnails=True)]
+        for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS:
+            if thumbnail_format.animated:
+                continue
+            path_ids.append(f"thumbnail/{image_path_id}/{thumbnail_format!s}")
         self.assertEqual(sorted(found_paths), sorted(path_ids))
 
     @use_s3_backend
@@ -173,8 +181,10 @@ class S3Test(ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
         self.assertIn("uri", response_dict)
+        self.assertIn("url", response_dict)
         base = "/user_uploads/"
-        url = response_dict["uri"]
+        url = response_dict["url"]
+        self.assertEqual(response_dict["uri"], url)
         self.assertEqual(base, url[: len(base)])
 
         # In development, this is just a redirect
@@ -283,7 +293,7 @@ class S3Test(ZulipTestCase):
         medium_path_id = path_id + "-medium.png"
 
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_avatar_image(image_file, user_profile)
+            zerver.lib.upload.upload_avatar_image(image_file, user_profile, future=False)
         test_image_data = read_test_image_file("img.png")
         test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
 
@@ -319,9 +329,9 @@ class S3Test(ZulipTestCase):
         target_path_id = user_avatar_path(target_user_profile)
         self.assertNotEqual(source_path_id, target_path_id)
 
-        source_image_key = bucket.Object(source_path_id)
-        target_image_key = bucket.Object(target_path_id)
-        self.assertEqual(target_image_key.key, target_path_id)
+        source_image_key = bucket.Object(source_path_id + ".png")
+        target_image_key = bucket.Object(target_path_id + ".png")
+        self.assertEqual(target_image_key.key, target_path_id + ".png")
         self.assertEqual(source_image_key.content_type, target_image_key.content_type)
         source_image_data = source_image_key.get()["Body"].read()
         target_image_data = target_image_key.get()["Body"].read()
@@ -354,13 +364,12 @@ class S3Test(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         base_file_path = user_avatar_path(user_profile)
-        # Bug: This should have + ".png", but the implementation is wrong.
-        file_path = base_file_path
+        file_path = base_file_path + ".png"
         original_file_path = base_file_path + ".original"
         medium_file_path = base_file_path + "-medium.png"
 
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_avatar_image(image_file, user_profile)
+            zerver.lib.upload.upload_avatar_image(image_file, user_profile, future=False)
 
         key = bucket.Object(original_file_path)
         image_data = key.get()["Body"].read()
@@ -385,9 +394,10 @@ class S3Test(ZulipTestCase):
 
         user = self.example_user("hamlet")
 
-        avatar_path_id = user_avatar_path(user)
-        avatar_original_image_path_id = avatar_path_id + ".original"
-        avatar_medium_path_id = avatar_path_id + "-medium.png"
+        avatar_base_path = user_avatar_path(user)
+        avatar_path_id = avatar_base_path + ".png"
+        avatar_original_image_path_id = avatar_base_path + ".original"
+        avatar_medium_path_id = avatar_base_path + "-medium.png"
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_USER)
         self.assertIsNotNone(bucket.Object(avatar_path_id))
@@ -412,7 +422,9 @@ class S3Test(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.upload_realm_icon_image(image_file, user_profile)
+            zerver.lib.upload.upload_backend.upload_realm_icon_image(
+                image_file, user_profile, content_type="image/png"
+            )
 
         original_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.original")
         original_key = bucket.Object(original_path_id)
@@ -431,7 +443,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         with get_test_image_file("img.png") as image_file:
             zerver.lib.upload.upload_backend.upload_realm_logo_image(
-                image_file, user_profile, night
+                image_file, user_profile, night, "image/png"
             )
 
         original_path_id = os.path.join(
@@ -484,21 +496,55 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        emoji_name = "emoji.png"
-        with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_emoji_image(image_file, emoji_name, user_profile)
+        emoji_name = "animated_img.gif"
+        with get_test_image_file(emoji_name) as image_file:
+            zerver.lib.upload.upload_emoji_image(image_file, emoji_name, user_profile, "image/gif")
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_name,
         )
         original_key = bucket.Object(emoji_path + ".original")
-        self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
+        self.assertEqual(read_test_image_file(emoji_name), original_key.get()["Body"].read())
 
-        resized_data = bucket.Object(emoji_path).get()["Body"].read()
-        resized_image = pyvips.Image.new_from_buffer(resized_data, "")
-        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.height)
-        self.assertEqual(DEFAULT_EMOJI_SIZE, resized_image.width)
+        self.assertEqual(os.path.splitext(emoji_path)[1], ".gif")
+        bucket_data = bucket.Object(emoji_path).get()
+        self.assertEqual(bucket_data["ContentType"], "image/gif")
+        resized_image = pyvips.Image.new_from_buffer(bucket_data["Body"].read(), "")
+        self.assertEqual(resized_image.get("vips-loader"), "gifload_buffer")
+
+        still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_filename_without_extension=os.path.splitext(emoji_name)[0],
+        )
+        self.assertEqual(os.path.splitext(still_path)[1], ".png")
+        bucket_data = bucket.Object(still_path).get()
+        self.assertEqual(bucket_data["ContentType"], "image/png")
+        still_image = pyvips.Image.new_from_buffer(bucket_data["Body"].read(), "")
+        self.assertEqual(still_image.get("vips-loader"), "pngload_buffer")
+
+    @use_s3_backend
+    def test_upload_emoji_non_image(self) -> None:
+        create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        emoji_name = "emoji.png"
+        with get_test_image_file("text.txt") as image_file:
+            with patch("zerver.lib.upload.resize_emoji", side_effect=resize_emoji) as resize_mock:
+                with self.assertRaises(BadImageError):
+                    # We trust the content-type and fail when we try to load the image
+                    zerver.lib.upload.upload_emoji_image(
+                        image_file, emoji_name, user_profile, "image/png"
+                    )
+                resize_mock.assert_called_once()
+
+            with patch("zerver.lib.upload.resize_emoji", side_effect=resize_emoji) as resize_mock:
+                with self.assertRaises(BadImageError):
+                    # We trust the content-type and abort before trying to load
+                    zerver.lib.upload.upload_emoji_image(
+                        image_file, emoji_name, user_profile, "text/plain"
+                    )
+                resize_mock.assert_not_called()
 
     @use_s3_backend
     def test_tarball_upload_and_deletion(self) -> None:

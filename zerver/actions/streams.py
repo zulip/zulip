@@ -1,6 +1,7 @@
 import hashlib
 from collections import defaultdict
-from typing import Any, Collection, Dict, Iterable, List, Mapping, Optional, Set, Tuple
+from collections.abc import Collection, Iterable, Mapping
+from typing import Any, TypeAlias
 
 from django.conf import settings
 from django.db import transaction
@@ -9,7 +10,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from django_stubs_ext import ValuesQuerySet
-from typing_extensions import TypeAlias
 
 from zerver.actions.default_streams import (
     do_remove_default_stream,
@@ -73,7 +73,7 @@ from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 def send_user_remove_events_on_stream_deactivation(
-    stream: Stream, subscribed_users: List[UserProfile]
+    stream: Stream, subscribed_users: list[UserProfile]
 ) -> None:
     guest_subscribed_users = [user for user in subscribed_users if user.is_guest]
 
@@ -90,7 +90,7 @@ def send_user_remove_events_on_stream_deactivation(
     )
 
     subscriber_ids = {user.id for user in subscribed_users}
-    inaccessible_user_dict: Dict[int, Set[int]] = defaultdict(set)
+    inaccessible_user_dict: dict[int, set[int]] = defaultdict(set)
     for guest_user in guest_subscribed_users:
         users_accessible_by_guest = (
             {guest_user.id}
@@ -111,7 +111,7 @@ def send_user_remove_events_on_stream_deactivation(
 
 
 @transaction.atomic(savepoint=False)
-def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) -> None:
+def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> None:
     # If the stream is already deactivated, this is a no-op
     if stream.deactivated is True:
         raise JsonableError(_("Channel is already deactivated"))
@@ -212,7 +212,7 @@ def deactivated_streams_by_old_name(realm: Realm, stream_name: str) -> QuerySet[
     fixed_length_prefix = ".......!DEACTIVATED:"
     truncated_name = stream_name[0 : Stream.MAX_NAME_LENGTH - len(fixed_length_prefix)]
 
-    old_names: List[str] = [
+    old_names: list[str] = [
         ("!" * bang_length + "DEACTIVATED:" + stream_name)[: Stream.MAX_NAME_LENGTH]
         for bang_length in range(1, 21)
     ]
@@ -233,9 +233,7 @@ def deactivated_streams_by_old_name(realm: Realm, stream_name: str) -> QuerySet[
 
 
 @transaction.atomic(savepoint=False)
-def do_unarchive_stream(
-    stream: Stream, new_name: str, *, acting_user: Optional[UserProfile]
-) -> None:
+def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfile | None) -> None:
     realm = stream.realm
     if not stream.deactivated:
         raise JsonableError(_("Channel is not currently deactivated"))
@@ -316,7 +314,7 @@ def do_unarchive_stream(
         )
 
 
-def bulk_delete_cache_keys(message_ids_to_clear: List[int]) -> None:
+def bulk_delete_cache_keys(message_ids_to_clear: list[int]) -> None:
     while len(message_ids_to_clear) > 0:
         batch = message_ids_to_clear[0:5000]
 
@@ -328,7 +326,7 @@ def bulk_delete_cache_keys(message_ids_to_clear: List[int]) -> None:
 
 def merge_streams(
     realm: Realm, stream_to_keep: Stream, stream_to_destroy: Stream
-) -> Tuple[int, int, int]:
+) -> tuple[int, int, int]:
     recipient_to_destroy = stream_to_destroy.recipient
     recipient_to_keep = stream_to_keep.recipient
     assert recipient_to_keep is not None
@@ -394,7 +392,7 @@ def merge_streams(
 
 
 def get_subscriber_ids(
-    stream: Stream, requesting_user: Optional[UserProfile] = None
+    stream: Stream, requesting_user: UserProfile | None = None
 ) -> ValuesQuerySet[Subscription, int]:
     subscriptions_query = get_subscribers_query(stream, requesting_user)
     return subscriptions_query.values_list("user_profile_id", flat=True)
@@ -402,10 +400,10 @@ def get_subscriber_ids(
 
 def send_subscription_add_events(
     realm: Realm,
-    sub_info_list: List[SubInfo],
-    subscriber_dict: Dict[int, Set[int]],
+    sub_info_list: list[SubInfo],
+    subscriber_dict: dict[int, set[int]],
 ) -> None:
-    info_by_user: Dict[int, List[SubInfo]] = defaultdict(list)
+    info_by_user: dict[int, list[SubInfo]] = defaultdict(list)
     for sub_info in sub_info_list:
         info_by_user[sub_info.user.id].append(sub_info)
 
@@ -414,7 +412,7 @@ def send_subscription_add_events(
 
     # We generally only have a few streams, so we compute subscriber
     # data in its own loop.
-    stream_subscribers_dict: Dict[int, List[int]] = {}
+    stream_subscribers_dict: dict[int, list[int]] = {}
     for sub_info in sub_info_list:
         stream = sub_info.stream
         if stream.id not in stream_subscribers_dict:
@@ -425,7 +423,7 @@ def send_subscription_add_events(
             stream_subscribers_dict[stream.id] = subscribers
 
     for user_id, sub_infos in info_by_user.items():
-        sub_dicts: List[APISubscriptionDict] = []
+        sub_dicts: list[APISubscriptionDict] = []
         for sub_info in sub_infos:
             stream = sub_info.stream
             stream_subscribers = stream_subscribers_dict[stream.id]
@@ -480,9 +478,9 @@ def send_subscription_add_events(
 @transaction.atomic(savepoint=False)
 def bulk_add_subs_to_db_with_logging(
     realm: Realm,
-    acting_user: Optional[UserProfile],
-    subs_to_add: List[SubInfo],
-    subs_to_activate: List[SubInfo],
+    acting_user: UserProfile | None,
+    subs_to_add: list[SubInfo],
+    subs_to_activate: list[SubInfo],
 ) -> None:
     Subscription.objects.bulk_create(info.sub for info in subs_to_add)
     sub_ids = [info.sub.id for info in subs_to_activate]
@@ -514,9 +512,9 @@ def bulk_add_subs_to_db_with_logging(
 
 def send_stream_creation_events_for_previously_inaccessible_streams(
     realm: Realm,
-    stream_dict: Dict[int, Stream],
-    altered_user_dict: Dict[int, Set[int]],
-    altered_guests: Set[int],
+    stream_dict: dict[int, Stream],
+    altered_user_dict: dict[int, set[int]],
+    altered_guests: set[int],
 ) -> None:
     stream_ids = set(altered_user_dict.keys())
     recent_traffic = get_streams_traffic(stream_ids, realm)
@@ -547,8 +545,8 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
 def send_peer_subscriber_events(
     op: str,
     realm: Realm,
-    stream_dict: Dict[int, Stream],
-    altered_user_dict: Dict[int, Set[int]],
+    stream_dict: dict[int, Stream],
+    altered_user_dict: dict[int, set[int]],
     subscriber_peer_info: SubscriberPeerInfo,
 ) -> None:
     # Send peer_add/peer_remove events to other users who are tracking the
@@ -588,7 +586,7 @@ def send_peer_subscriber_events(
     subscriber_dict = subscriber_peer_info.subscribed_ids
 
     if public_stream_ids:
-        user_streams: Dict[int, Set[int]] = defaultdict(set)
+        user_streams: dict[int, set[int]] = defaultdict(set)
 
         non_guest_user_ids = set(active_non_guest_user_ids(realm.id))
 
@@ -643,9 +641,9 @@ def send_peer_subscriber_events(
 
 def send_user_creation_events_on_adding_subscriptions(
     realm: Realm,
-    altered_user_dict: Dict[int, Set[int]],
-    altered_streams_dict: Dict[UserProfile, Set[int]],
-    subscribers_of_altered_user_subscriptions: Dict[int, Set[int]],
+    altered_user_dict: dict[int, set[int]],
+    altered_streams_dict: dict[UserProfile, set[int]],
+    subscribers_of_altered_user_subscriptions: dict[int, set[int]],
 ) -> None:
     altered_users = list(altered_streams_dict.keys())
     non_guest_user_ids = active_non_guest_user_ids(realm.id)
@@ -655,8 +653,8 @@ def send_user_creation_events_on_adding_subscriptions(
     altered_stream_ids = altered_user_dict.keys()
     subscribers_dict = get_users_for_streams(set(altered_stream_ids))
 
-    subscribers_user_id_map: Dict[int, UserProfile] = {}
-    subscriber_ids_dict: Dict[int, Set[int]] = defaultdict(set)
+    subscribers_user_id_map: dict[int, UserProfile] = {}
+    subscriber_ids_dict: dict[int, set[int]] = defaultdict(set)
     for stream_id, subscribers in subscribers_dict.items():
         for user in subscribers:
             subscriber_ids_dict[stream_id].add(user.id)
@@ -666,7 +664,7 @@ def send_user_creation_events_on_adding_subscriptions(
 
     for user in altered_users:
         streams_for_user = altered_streams_dict[user]
-        subscribers_in_altered_streams: Set[int] = set()
+        subscribers_in_altered_streams: set[int] = set()
         for stream_id in streams_for_user:
             subscribers_in_altered_streams |= subscriber_ids_dict[stream_id]
 
@@ -700,7 +698,7 @@ def send_user_creation_events_on_adding_subscriptions(
                 notify_created_user(accessible_user, [user.id])
 
 
-SubT: TypeAlias = Tuple[List[SubInfo], List[SubInfo]]
+SubT: TypeAlias = tuple[list[SubInfo], list[SubInfo]]
 
 
 @transaction.atomic(savepoint=False)
@@ -711,7 +709,7 @@ def bulk_add_subscriptions(
     color_map: Mapping[str, str] = {},
     from_user_creation: bool = False,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> SubT:
     users = list(users)
     user_ids = [user.id for user in users]
@@ -727,15 +725,15 @@ def bulk_add_subscriptions(
     recipient_id_to_stream = {stream.recipient_id: stream for stream in streams}
 
     recipient_color_map = {}
-    recipient_ids_set: Set[int] = set()
+    recipient_ids_set: set[int] = set()
     for stream in streams:
         assert stream.recipient_id is not None
         recipient_ids_set.add(stream.recipient_id)
-        color: Optional[str] = color_map.get(stream.name, None)
+        color: str | None = color_map.get(stream.name, None)
         if color is not None:
             recipient_color_map[stream.recipient_id] = color
 
-    used_colors_for_user_ids: Dict[int, Set[str]] = get_used_colors_for_user_ids(user_ids)
+    used_colors_for_user_ids: dict[int, set[str]] = get_used_colors_for_user_ids(user_ids)
 
     existing_subs = Subscription.objects.filter(
         user_profile_id__in=user_ids,
@@ -743,20 +741,20 @@ def bulk_add_subscriptions(
         recipient_id__in=recipient_ids,
     )
 
-    subs_by_user: Dict[int, List[Subscription]] = defaultdict(list)
+    subs_by_user: dict[int, list[Subscription]] = defaultdict(list)
     for sub in existing_subs:
         subs_by_user[sub.user_profile_id].append(sub)
 
-    already_subscribed: List[SubInfo] = []
-    subs_to_activate: List[SubInfo] = []
-    subs_to_add: List[SubInfo] = []
+    already_subscribed: list[SubInfo] = []
+    subs_to_activate: list[SubInfo] = []
+    subs_to_add: list[SubInfo] = []
     for user_profile in users:
         my_subs = subs_by_user[user_profile.id]
 
         # Make a fresh set of all new recipient ids, and then we will
         # remove any for which our user already has a subscription
         # (and we'll re-activate any subscriptions as needed).
-        new_recipient_ids: Set[int] = recipient_ids_set.copy()
+        new_recipient_ids: set[int] = recipient_ids_set.copy()
 
         for sub in my_subs:
             if sub.recipient_id in new_recipient_ids:
@@ -789,9 +787,9 @@ def bulk_add_subscriptions(
         # We can return early if users are already subscribed to all the streams.
         return ([], already_subscribed)
 
-    altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
-    altered_guests: Set[int] = set()
-    altered_streams_dict: Dict[UserProfile, Set[int]] = defaultdict(set)
+    altered_user_dict: dict[int, set[int]] = defaultdict(set)
+    altered_guests: set[int] = set()
+    altered_streams_dict: dict[UserProfile, set[int]] = defaultdict(set)
     for sub_info in subs_to_add + subs_to_activate:
         altered_user_dict[sub_info.stream.id].add(sub_info.user.id)
         altered_streams_dict[sub_info.user].add(sub_info.stream.id)
@@ -862,8 +860,8 @@ def bulk_add_subscriptions(
 
 def send_peer_remove_events(
     realm: Realm,
-    streams: List[Stream],
-    altered_user_dict: Dict[int, Set[int]],
+    streams: list[Stream],
+    altered_user_dict: dict[int, set[int]],
 ) -> None:
     subscriber_peer_info = bulk_get_subscriber_peer_info(
         realm=realm,
@@ -888,19 +886,19 @@ def notify_subscriptions_removed(
     send_event_on_commit(realm, event, [user_profile.id])
 
 
-SubAndRemovedT: TypeAlias = Tuple[
-    List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]
+SubAndRemovedT: TypeAlias = tuple[
+    list[tuple[UserProfile, Stream]], list[tuple[UserProfile, Stream]]
 ]
 
 
 def send_subscription_remove_events(
     realm: Realm,
-    users: List[UserProfile],
-    streams: List[Stream],
-    removed_subs: List[Tuple[UserProfile, Stream]],
+    users: list[UserProfile],
+    streams: list[Stream],
+    removed_subs: list[tuple[UserProfile, Stream]],
 ) -> None:
-    altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
-    streams_by_user: Dict[int, List[Stream]] = defaultdict(list)
+    altered_user_dict: dict[int, set[int]] = defaultdict(set)
+    streams_by_user: dict[int, list[Stream]] = defaultdict(list)
     for user, stream in removed_subs:
         streams_by_user[user.id].append(stream)
         altered_user_dict[stream.id].add(user.id)
@@ -941,9 +939,9 @@ def send_subscription_remove_events(
 
 
 def send_user_remove_events_on_removing_subscriptions(
-    realm: Realm, altered_user_dict: Dict[UserProfile, Set[int]]
+    realm: Realm, altered_user_dict: dict[UserProfile, set[int]]
 ) -> None:
-    altered_stream_ids: Set[int] = set()
+    altered_stream_ids: set[int] = set()
     altered_users = list(altered_user_dict.keys())
     for stream_ids in altered_user_dict.values():
         altered_stream_ids |= stream_ids
@@ -958,11 +956,9 @@ def send_user_remove_events_on_removing_subscriptions(
     subscribers_dict = get_user_ids_for_streams(altered_stream_ids)
 
     for user in altered_users:
-        users_in_unsubscribed_streams: Set[int] = set()
+        users_in_unsubscribed_streams: set[int] = set()
         for stream_id in altered_user_dict[user]:
-            users_in_unsubscribed_streams = (
-                users_in_unsubscribed_streams | subscribers_dict[stream_id]
-            )
+            users_in_unsubscribed_streams |= subscribers_dict[stream_id]
 
         users_who_can_access_altered_user = (
             set(non_guest_user_ids)
@@ -1006,7 +1002,7 @@ def bulk_remove_subscriptions(
     users: Iterable[UserProfile],
     streams: Iterable[Stream],
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> SubAndRemovedT:
     users = list(users)
     streams = list(streams)
@@ -1022,10 +1018,10 @@ def bulk_remove_subscriptions(
 
     existing_subs_by_user = get_bulk_stream_subscriber_info(users, streams)
 
-    def get_non_subscribed_subs() -> List[Tuple[UserProfile, Stream]]:
+    def get_non_subscribed_subs() -> list[tuple[UserProfile, Stream]]:
         stream_ids = {stream.id for stream in streams}
 
-        not_subscribed: List[Tuple[UserProfile, Stream]] = []
+        not_subscribed: list[tuple[UserProfile, Stream]] = []
 
         for user_profile in users:
             user_sub_stream_info = existing_subs_by_user[user_profile.id]
@@ -1084,7 +1080,7 @@ def bulk_remove_subscriptions(
     send_subscription_remove_events(realm, users, streams, removed_sub_tuples)
 
     if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
-        altered_user_dict: Dict[UserProfile, Set[int]] = defaultdict(set)
+        altered_user_dict: dict[UserProfile, set[int]] = defaultdict(set)
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
@@ -1110,7 +1106,7 @@ def do_change_subscription_property(
     property_name: str,
     value: Any,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     database_property_name = property_name
     database_value = value
@@ -1548,7 +1544,7 @@ def do_change_stream_description(
 
 
 def send_change_stream_message_retention_days_notification(
-    user_profile: UserProfile, stream: Stream, old_value: Optional[int], new_value: Optional[int]
+    user_profile: UserProfile, stream: Stream, old_value: int | None, new_value: int | None
 ) -> None:
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = silent_mention_syntax_for_user(user_profile)
@@ -1596,7 +1592,7 @@ def send_change_stream_message_retention_days_notification(
 
 
 def do_change_stream_message_retention_days(
-    stream: Stream, acting_user: UserProfile, message_retention_days: Optional[int] = None
+    stream: Stream, acting_user: UserProfile, message_retention_days: int | None = None
 ) -> None:
     old_message_retention_days_value = stream.message_retention_days
 
@@ -1637,7 +1633,7 @@ def do_change_stream_group_based_setting(
     setting_name: str,
     user_group: UserGroup,
     *,
-    acting_user: Optional[UserProfile] = None,
+    acting_user: UserProfile | None = None,
 ) -> None:
     old_user_group = getattr(stream, setting_name)
     old_user_group_id = None

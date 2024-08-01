@@ -7,8 +7,14 @@
 1. Click **Create channel** on the right, or click the **plus**
    (<i class="fa fa-plus"></i>) icon in the upper right.
 
-1. Fill out the requested info, and click **Create** in the bottom right corner
-   of the create channel panel.
+1. Fill out the requested information.
+
+1. _(optional)_ Click on **Advanced configurations** to review and update
+   additional channel settings.
+
+1. Click **Continue to add subscribers**.
+
+1. Add users who will be subscribed to the channel, and click **Create**.
 
 !!! warn ""
 

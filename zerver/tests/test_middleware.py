@@ -1,5 +1,4 @@
 import time
-from typing import List
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
@@ -38,11 +37,10 @@ class SlowQueryTest(ZulipTestCase):
 
     def test_slow_query_log(self) -> None:
         self.log_data["time_started"] = time.time() - self.SLOW_QUERY_TIME
-        with self.assertLogs(
-            "zulip.slow_queries", level="INFO"
-        ) as slow_query_logger, self.assertLogs(
-            "zulip.requests", level="INFO"
-        ) as middleware_normal_logger:
+        with (
+            self.assertLogs("zulip.slow_queries", level="INFO") as slow_query_logger,
+            self.assertLogs("zulip.requests", level="INFO") as middleware_normal_logger,
+        ):
             write_log_line(
                 self.log_data,
                 path="/some/endpoint/",
@@ -65,8 +63,8 @@ class OpenGraphTest(ZulipTestCase):
         self,
         path: str,
         title: str,
-        in_description: List[str],
-        not_in_description: List[str],
+        in_description: list[str],
+        not_in_description: list[str],
         status_code: int = 200,
     ) -> None:
         response = self.client_get(path)

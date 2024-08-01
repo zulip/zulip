@@ -38,7 +38,8 @@ import json
 import os
 import re
 import subprocess
-from typing import Any, Collection, Dict, Iterator, List, Mapping
+from collections.abc import Collection, Iterator, Mapping
+from typing import Any
 
 from django.core.management.base import CommandParser
 from django.core.management.commands import makemessages
@@ -54,7 +55,7 @@ strip_whitespace_left = re.compile(
 )
 
 regexes = [
-    r"{{~?#tr}}([\s\S]*?)(?:~?{{/tr}}|{{#\*inline )",  # '.' doesn't match '\n' by default
+    r"{{~?#tr}}([\s\S]*?)(?:~?{{/tr}}|{{~?#\*inline )",  # '.' doesn't match '\n' by default
     r'{{~?\s*t "([\s\S]*?)"\W*~?}}',
     r"{{~?\s*t '([\s\S]*?)'\W*~?}}",
     r'\(t "([\s\S]*?)"\)',
@@ -111,8 +112,8 @@ class Command(makemessages.Command):
         frontend_source: str,
         frontend_output: str,
         frontend_namespace: str,
-        locale: List[str],
-        exclude: List[str],
+        locale: list[str],
+        exclude: list[str],
         all: bool,
         **options: Any,
     ) -> None:
@@ -164,8 +165,8 @@ class Command(makemessages.Command):
             template.templatize = old_templatize
             template.constant_re = old_constant_re
 
-    def extract_strings(self, data: str) -> List[str]:
-        translation_strings: List[str] = []
+    def extract_strings(self, data: str) -> list[str]:
+        translation_strings: list[str] = []
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 match = match.strip()
@@ -181,8 +182,8 @@ class Command(makemessages.Command):
         data = singleline_js_comment.sub("", data)
         return data
 
-    def get_translation_strings(self) -> List[str]:
-        translation_strings: List[str] = []
+    def get_translation_strings(self) -> list[str]:
+        translation_strings: list[str] = []
         dirname = self.get_template_dir()
 
         for dirpath, dirnames, filenames in os.walk(dirname):
@@ -255,8 +256,8 @@ class Command(makemessages.Command):
             yield os.path.join(path, self.get_namespace())
 
     def get_new_strings(
-        self, old_strings: Mapping[str, str], translation_strings: List[str], locale: str
-    ) -> Dict[str, str]:
+        self, old_strings: Mapping[str, str], translation_strings: list[str], locale: str
+    ) -> dict[str, str]:
         """
         Missing strings are removed, new strings are added and already
         translated strings are not touched.
@@ -271,8 +272,8 @@ class Command(makemessages.Command):
 
         return new_strings
 
-    def write_translation_strings(self, translation_strings: List[str]) -> None:
-        for locale, output_path in zip(self.get_locales(), self.get_output_paths()):
+    def write_translation_strings(self, translation_strings: list[str]) -> None:
+        for locale, output_path in zip(self.get_locales(), self.get_output_paths(), strict=False):
             self.stdout.write(f"[frontend] processing locale {locale}")
             try:
                 with open(output_path) as reader:

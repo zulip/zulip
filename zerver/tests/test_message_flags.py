@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Optional, Set
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
-def check_flags(flags: List[str], expected: Set[str]) -> None:
+def check_flags(flags: list[str], expected: set[str]) -> None:
     """
     The has_alert_word flag can be ignored for most tests.
     """
@@ -280,9 +280,9 @@ class UnreadCountTests(ZulipTestCase):
         def race_creation(
             *,
             user_id: int,
-            message_ids: List[int],
-            flagattr: Optional[int] = None,
-            flag_target: Optional[int] = None,
+            message_ids: list[int],
+            flagattr: int | None = None,
+            flag_target: int | None = None,
         ) -> None:
             UserMessage.objects.create(
                 user_profile_id=user_id, message_id=message_ids[0], flags=DEFAULT_HISTORICAL_FLAGS
@@ -732,9 +732,10 @@ class FixUnreadTests(ZulipTestCase):
         assert_unread(um_unsubscribed_id)
 
         # fix unsubscribed
-        with connection.cursor() as cursor, self.assertLogs(
-            "zulip.fix_unreads", "INFO"
-        ) as info_logs:
+        with (
+            connection.cursor() as cursor,
+            self.assertLogs("zulip.fix_unreads", "INFO") as info_logs,
+        ):
             fix_unsubscribed(cursor, user)
 
         self.assertEqual(info_logs.output[0], "INFO:zulip.fix_unreads:get recipients")
@@ -782,7 +783,7 @@ class FixUnreadTests(ZulipTestCase):
 
 
 class PushNotificationMarkReadFlowsTest(ZulipTestCase):
-    def get_mobile_push_notification_ids(self, user_profile: UserProfile) -> List[int]:
+    def get_mobile_push_notification_ids(self, user_profile: UserProfile) -> list[int]:
         return list(
             UserMessage.objects.filter(
                 user_profile=user_profile,
@@ -945,7 +946,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             self.subscribe(hamlet, stream_name)
             self.subscribe(cordelia, stream_name)
 
-        all_message_ids: Set[int] = set()
+        all_message_ids: set[int] = set()
         message_ids = {}
 
         tups = [
@@ -1010,22 +1011,22 @@ class GetUnreadMsgsTest(ZulipTestCase):
             ),
         )
 
-    def test_raw_unread_huddle(self) -> None:
+    def test_raw_unread_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
         prospero = self.example_user("prospero")
 
-        huddle1_message_ids = [
-            self.send_huddle_message(
+        direct_message_group1_message_ids = [
+            self.send_group_direct_message(
                 cordelia,
                 [hamlet, othello],
             )
             for i in range(3)
         ]
 
-        huddle2_message_ids = [
-            self.send_huddle_message(
+        direct_message_group2_message_ids = [
+            self.send_group_direct_message(
                 cordelia,
                 [hamlet, prospero],
             )
@@ -1036,18 +1037,20 @@ class GetUnreadMsgsTest(ZulipTestCase):
             user_profile=hamlet,
         )
 
-        huddle_dict = raw_unread_data["huddle_dict"]
+        direct_message_group_dict = raw_unread_data["huddle_dict"]
 
         self.assertEqual(
-            set(huddle_dict.keys()),
-            set(huddle1_message_ids) | set(huddle2_message_ids),
+            set(direct_message_group_dict.keys()),
+            set(direct_message_group1_message_ids) | set(direct_message_group2_message_ids),
         )
 
-        huddle_string = ",".join(str(uid) for uid in sorted([cordelia.id, hamlet.id, othello.id]))
+        direct_message_group_string = ",".join(
+            str(uid) for uid in sorted([cordelia.id, hamlet.id, othello.id])
+        )
 
         self.assertEqual(
-            huddle_dict[huddle1_message_ids[0]],
-            dict(user_ids_string=huddle_string),
+            direct_message_group_dict[direct_message_group1_message_ids[0]],
+            dict(user_ids_string=direct_message_group_string),
         )
 
     def test_raw_unread_personal(self) -> None:
@@ -1205,7 +1208,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             content="hello",
         )
 
-        huddle_message_id = self.send_huddle_message(
+        group_direct_message_id = self.send_group_direct_message(
             sender,
             [user_profile, othello],
             "hello3",
@@ -1260,13 +1263,17 @@ class GetUnreadMsgsTest(ZulipTestCase):
             unread_stream["unread_message_ids"], [unmuted_topic_muted_stream_message_id]
         )
 
-        huddle_string = ",".join(
+        direct_message_group_string = ",".join(
             str(uid) for uid in sorted([sender_id, user_profile.id, othello.id])
         )
 
-        unread_huddle = result["huddles"][0]
-        self.assertEqual(unread_huddle["user_ids_string"], huddle_string)
-        self.assertEqual(unread_huddle["unread_message_ids"], [huddle_message_id])
+        unread_direct_message_group = result["huddles"][0]
+        self.assertEqual(
+            unread_direct_message_group["user_ids_string"], direct_message_group_string
+        )
+        self.assertEqual(
+            unread_direct_message_group["unread_message_ids"], [group_direct_message_id]
+        )
 
         self.assertEqual(result["mentions"], [])
 
@@ -1432,7 +1439,7 @@ class MessageAccessTests(ZulipTestCase):
         self.assert_json_error(result, "Invalid message flag operation: 'bogus'")
 
     def change_star(
-        self, messages: List[int], add: bool = True, **kwargs: Any
+        self, messages: list[int], add: bool = True, **kwargs: Any
     ) -> "TestHttpResponse":
         return self.client_post(
             "/json/messages/flags",
@@ -1720,11 +1727,11 @@ class MessageAccessTests(ZulipTestCase):
     def assert_bulk_access(
         self,
         user: UserProfile,
-        message_ids: List[int],
+        message_ids: list[int],
         stream: Stream,
         bulk_access_messages_count: int,
         bulk_access_stream_messages_query_count: int,
-    ) -> List[Message]:
+    ) -> list[Message]:
         with self.assert_database_query_count(bulk_access_messages_count):
             messages = [
                 Message.objects.select_related("recipient").get(id=message_id)
@@ -2497,13 +2504,13 @@ class MarkUnreadTest(ZulipTestCase):
             )
             self.assertTrue(um.flags.read)
 
-    def test_huddle_messages_unread(self) -> None:
+    def test_group_direct_messages_unread(self) -> None:
         sender = self.example_user("cordelia")
         receiver = self.example_user("hamlet")
         user1 = self.example_user("othello")
         message_ids = [
-            # self.send_huddle_message(sender, receiver, content="Hello") for i in range(4)
-            self.send_huddle_message(sender, [receiver, user1])
+            # self.send_group_direct_message(sender, receiver, content="Hello") for i in range(4)
+            self.send_group_direct_message(sender, [receiver, user1])
             for i in range(4)
         ]
         self.login("hamlet")
@@ -2558,13 +2565,13 @@ class MarkUnreadTest(ZulipTestCase):
             )
             self.assertTrue(um.flags.read)
 
-    def test_huddle_messages_unread_mention(self) -> None:
+    def test_group_direct_messages_unread_mention(self) -> None:
         sender = self.example_user("cordelia")
         receiver = self.example_user("hamlet")
         user1 = self.example_user("othello")
         message_ids = [
-            # self.send_huddle_message(sender, receiver, content="Hello") for i in range(4)
-            self.send_huddle_message(
+            # self.send_group_direct_message(sender, receiver, content="Hello") for i in range(4)
+            self.send_group_direct_message(
                 from_user=sender, to_users=[receiver, user1], content="@**King Hamlet**"
             )
             for i in range(4)

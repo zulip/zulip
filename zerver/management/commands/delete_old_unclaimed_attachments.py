@@ -9,6 +9,7 @@ from typing_extensions import override
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.attachments import get_old_unclaimed_attachments
 from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
+from zerver.lib.thumbnail import split_thumbnail_path
 from zerver.lib.upload import all_message_attachments, delete_message_attachments
 from zerver.models import ArchivedAttachment, Attachment
 
@@ -61,22 +62,26 @@ class Command(ZulipBaseCommand):
 
         if options["for_real"]:
             do_delete_old_unclaimed_attachments(delta_weeks)
-            print("")
+            print()
             print("Unclaimed files deleted.")
 
         if options["clean_up_storage"]:
-            print("")
+            print()
             self.clean_attachment_upload_backend(dry_run=not options["for_real"])
 
         if not options["for_real"]:
-            print("")
+            print()
             raise CommandError("This was a dry run. Pass -f to actually delete.")
 
     def clean_attachment_upload_backend(self, dry_run: bool = True) -> None:
         cutoff = timezone_now() - timedelta(minutes=5)
         print(f"Removing extra files in storage black-end older than {cutoff.isoformat()}")
         to_delete = []
-        for path_id, modified_at in all_message_attachments():
+        for file_path, modified_at in all_message_attachments(include_thumbnails=True):
+            if file_path.startswith("thumbnail/"):
+                path_id = split_thumbnail_path(file_path)[0]
+            else:
+                path_id = file_path
             if Attachment.objects.filter(path_id=path_id).exists():
                 continue
             if ArchivedAttachment.objects.filter(path_id=path_id).exists():
@@ -86,10 +91,10 @@ class Command(ZulipBaseCommand):
                 # make the database entry, so must give some leeway to
                 # recently-added files which do not have DB rows.
                 continue
-            print(f"* {path_id} modified at {modified_at}")
+            print(f"* {file_path} modified at {modified_at}")
             if dry_run:
                 continue
-            to_delete.append(path_id)
+            to_delete.append(file_path)
             if len(to_delete) > 1000:
                 delete_message_attachments(to_delete)
                 to_delete = []

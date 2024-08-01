@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import requests
 from typing_extensions import override
@@ -10,11 +10,11 @@ class OutgoingSession(requests.Session):
         self,
         role: str,
         timeout: float,
-        headers: Optional[Dict[str, str]] = None,
-        max_retries: Optional[Union[int, Retry]] = None,
+        headers: dict[str, str] | None = None,
+        max_retries: int | Retry | None = None,
     ) -> None:
         super().__init__()
-        retry: Optional[Retry] = Retry(total=0)
+        retry: Retry | None = Retry(total=0)
         if max_retries is not None:
             if isinstance(max_retries, Retry):
                 retry = max_retries
@@ -31,7 +31,7 @@ class OutgoingHTTPAdapter(requests.adapters.HTTPAdapter):
     role: str
     timeout: float
 
-    def __init__(self, role: str, timeout: float, max_retries: Optional[Retry]) -> None:
+    def __init__(self, role: str, timeout: float, max_retries: Retry | None) -> None:
         self.role = role
         self.timeout = timeout
         super().__init__(max_retries=max_retries)
@@ -43,5 +43,5 @@ class OutgoingHTTPAdapter(requests.adapters.HTTPAdapter):
         return super().send(*args, **kwargs)
 
     @override
-    def proxy_headers(self, proxy: str) -> Dict[str, str]:
+    def proxy_headers(self, proxy: str) -> dict[str, str]:
         return {"X-Smokescreen-Role": self.role}

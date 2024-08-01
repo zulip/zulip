@@ -4,11 +4,11 @@ import hashlib
 import os
 import subprocess
 import sys
-from typing import Iterable, List
+from collections.abc import Iterable
 
 
-def expand_reqs_helper(fpath: str) -> List[str]:
-    result: List[str] = []
+def expand_reqs_helper(fpath: str) -> list[str]:
+    result: list[str] = []
 
     with open(fpath) as f:
         for line in f:
@@ -20,7 +20,7 @@ def expand_reqs_helper(fpath: str) -> List[str]:
     return result
 
 
-def expand_reqs(fpath: str) -> List[str]:
+def expand_reqs(fpath: str) -> list[str]:
     """
     Returns a sorted list of unique dependencies specified by the requirements file `fpath`.
     Removes comments from the output and recursively visits files specified inside `fpath`.

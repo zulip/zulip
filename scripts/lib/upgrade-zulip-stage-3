@@ -14,7 +14,6 @@ import shutil
 import subprocess
 import sys
 import time
-from typing import Literal, Optional
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -29,7 +28,6 @@ from scripts.lib.zulip_tools import (
     assert_running_as_root,
     get_config,
     get_config_file,
-    get_zulip_pwent,
     listening_publicly,
     parse_version_from,
     run_psql_as_postgres,
@@ -110,19 +108,15 @@ if args.from_git:
     logging.info("Caching Zulip Git version...")
     subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 
-from version import ZULIP_MERGE_BASE as NEW_ZULIP_MERGE_BASE
 from version import ZULIP_VERSION as NEW_ZULIP_VERSION
 
 old_version = parse_version_from(DEPLOYMENTS_DIR + "/current")
 logging.info("Upgrading from %s to %s, in %s", old_version, NEW_ZULIP_VERSION, deploy_path)
-old_merge_base = (
-    parse_version_from(DEPLOYMENTS_DIR + "/current", merge_base=True) if args.from_git else ""
-)
 
 # Check if rabbitmq port 25672 is listening on anything except 127.0.0.1
 rabbitmq_dist_listen = listening_publicly(25672)
 # Check the erlang magic cookie size
-cookie_size: Optional[int] = None
+cookie_size: int | None = None
 if os.path.exists("/var/lib/rabbitmq/.erlang.cookie"):
     with open("/var/lib/rabbitmq/.erlang.cookie") as cookie_fh:
         cookie_size = len(cookie_fh.readline())
@@ -381,44 +375,6 @@ if not args.skip_puppet and IS_SERVER_UP:
         sys.exit(1)
 
 
-def run_hooks(kind: Literal["pre-deploy", "post-deploy"]) -> None:
-    # Updates to the above literal to add a new hook type should
-    # adjust puppet's `app_frontend_base.pp` as well.
-    path = f"/etc/zulip/hooks/{kind}.d"
-    if not os.path.exists(path):
-        return
-    # Pass in, via environment variables, the old/new "version
-    # string" (which is a `git describe` output)
-    env = os.environ.copy()
-    env["ZULIP_OLD_VERSION"] = old_version
-    env["ZULIP_NEW_VERSION"] = NEW_ZULIP_VERSION
-
-    # preexec_fn=su_to_zulip normally handles this, but our explicit
-    # env overrides that
-    env["HOME"] = get_zulip_pwent().pw_dir
-
-    def resolve_version_string(version: str) -> str:
-        return subprocess.check_output(
-            ["git", "rev-parse", version], cwd=deploy_path, preexec_fn=su_to_zulip, text=True
-        ).strip()
-
-    if args.from_git:
-        # If we have a git repo, we also resolve those `git describe`
-        # values to full commit hashes, as well as provide the
-        # merge-base of the old/new commits with mainline.
-        env["ZULIP_OLD_COMMIT"] = resolve_version_string(old_version)
-        env["ZULIP_NEW_COMMIT"] = resolve_version_string(NEW_ZULIP_VERSION)
-        env["ZULIP_OLD_MERGE_BASE_COMMIT"] = resolve_version_string(old_merge_base)
-        env["ZULIP_NEW_MERGE_BASE_COMMIT"] = resolve_version_string(NEW_ZULIP_MERGE_BASE)
-    for script_name in sorted(f for f in os.listdir(path) if f.endswith(".hook")):
-        subprocess.check_call(
-            [os.path.join(path, script_name)],
-            cwd=deploy_path,
-            preexec_fn=su_to_zulip,
-            env=env,
-        )
-
-
 if args.skip_restart:
     logging.info("Successfully configured in %s!", deploy_path)
 else:
@@ -427,7 +383,7 @@ else:
     # steps that happen between here and the "Restarting Zulip" line
     # below.
 
-    run_hooks("pre-deploy")
+    subprocess.check_call(["./scripts/lib/run_hooks.py", "pre-deploy"])
 
     if rabbitmq_dist_listen:
         shutdown_server()
@@ -478,7 +434,7 @@ else:
 
     logging.info("Upgrade complete!")
 
-    run_hooks("post-deploy")
+    subprocess.check_call(["./scripts/lib/run_hooks.py", "post-deploy"])
 
     if not args.skip_client_reloads:
         subprocess.check_call(["./scripts/reload-clients"], preexec_fn=su_to_zulip)

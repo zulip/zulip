@@ -2,7 +2,7 @@ import logging
 from collections import Counter
 from datetime import datetime, timezone
 from email.headerregistry import Address
-from typing import Any, Dict, List, Optional, Type, TypedDict, TypeVar, Union
+from typing import Annotated, Any, TypedDict, TypeVar
 from uuid import UUID
 
 import orjson
@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
 from django.db.models import Model
+from django.db.models.constants import OnConflict
 from django.http import HttpRequest, HttpResponse
 from django.utils.crypto import constant_time_compare
 from django.utils.timezone import now as timezone_now
@@ -21,7 +22,6 @@ from dns import resolver as dns_resolver
 from dns.exception import DNSException
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints
 from pydantic.functional_validators import AfterValidator
-from typing_extensions import Annotated
 
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
@@ -64,7 +64,7 @@ from zerver.lib.remote_server import (
     RealmCountDataForAnalytics,
     RealmDataForAnalytics,
 )
-from zerver.lib.request import RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -73,6 +73,7 @@ from zerver.lib.typed_endpoint import (
     JsonBodyPayload,
     RequiredStringConstraint,
     typed_endpoint,
+    typed_endpoint_without_parameters,
 )
 from zerver.lib.typed_endpoint_validators import check_string_fixed_length
 from zerver.lib.types import RemoteRealmDictValue
@@ -113,7 +114,7 @@ def validate_bouncer_token_request(token: str, kind: int) -> None:
 
 @csrf_exempt
 @require_post
-@has_request_variables
+@typed_endpoint_without_parameters
 def deactivate_remote_server(
     request: HttpRequest,
     remote_server: RemoteZulipServer,
@@ -142,7 +143,7 @@ def register_remote_server(
     hostname: Annotated[str, StringConstraints(max_length=RemoteZulipServer.HOSTNAME_MAX_LENGTH)],
     contact_email: str,
     new_org_key: Annotated[
-        Optional[str],
+        str | None,
         RequiredStringConstraint,
         AfterValidator(lambda s: check_string_fixed_length(s, RemoteZulipServer.API_KEY_LENGTH)),
     ] = None,
@@ -247,12 +248,12 @@ def register_remote_push_device(
     request: HttpRequest,
     server: RemoteZulipServer,
     *,
-    user_id: Optional[Json[int]] = None,
-    user_uuid: Optional[str] = None,
-    realm_uuid: Optional[str] = None,
+    user_id: Json[int] | None = None,
+    user_uuid: str | None = None,
+    realm_uuid: str | None = None,
     token: Annotated[str, RequiredStringConstraint],
     token_kind: Json[int],
-    ios_app_id: Optional[ApnsAppId] = None,
+    ios_app_id: ApnsAppId | None = None,
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     if token_kind == RemotePushDeviceToken.APNS and ios_app_id is None:
@@ -261,7 +262,7 @@ def register_remote_push_device(
     if user_id is None and user_uuid is None:
         raise JsonableError(_("Missing user_id or user_uuid"))
     if user_id is not None and user_uuid is not None:
-        kwargs: Dict[str, object] = {"user_uuid": user_uuid, "user_id": None}
+        kwargs: dict[str, object] = {"user_uuid": user_uuid, "user_id": None}
         # Delete pre-existing user_id registration for this user+device to avoid
         # duplication. Further down, uuid registration will be created.
         RemotePushDeviceToken.objects.filter(
@@ -310,9 +311,9 @@ def unregister_remote_push_device(
     *,
     token: Annotated[str, RequiredStringConstraint],
     token_kind: Json[int],
-    user_id: Optional[Json[int]] = None,
-    user_uuid: Optional[str] = None,
-    realm_uuid: Optional[str] = None,
+    user_id: Json[int] | None = None,
+    user_uuid: str | None = None,
+    realm_uuid: str | None = None,
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
@@ -333,9 +334,9 @@ def unregister_all_remote_push_devices(
     request: HttpRequest,
     server: RemoteZulipServer,
     *,
-    user_id: Optional[Json[int]] = None,
-    user_uuid: Optional[str] = None,
-    realm_uuid: Optional[str] = None,
+    user_id: Json[int] | None = None,
+    user_uuid: str | None = None,
+    realm_uuid: str | None = None,
 ) -> HttpResponse:
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
 
@@ -348,8 +349,8 @@ def unregister_all_remote_push_devices(
 def update_remote_realm_last_request_datetime_helper(
     request: HttpRequest,
     server: RemoteZulipServer,
-    realm_uuid: Optional[str],
-    user_uuid: Optional[str],
+    realm_uuid: str | None,
+    user_uuid: str | None,
 ) -> None:
     if realm_uuid is not None:
         assert user_uuid is not None
@@ -360,8 +361,8 @@ def update_remote_realm_last_request_datetime_helper(
 
 
 def delete_duplicate_registrations(
-    registrations: List[RemotePushDeviceToken], server_id: int, user_id: int, user_uuid: str
-) -> List[RemotePushDeviceToken]:
+    registrations: list[RemotePushDeviceToken], server_id: int, user_id: int, user_uuid: str
+) -> list[RemotePushDeviceToken]:
     """
     When migrating to support registration by UUID, we introduced a bug where duplicate
     registrations for the same device+user could be created - one by user_id and one by
@@ -422,8 +423,8 @@ class TestNotificationPayload(BaseModel):
     token_kind: int
     user_id: int
     user_uuid: str
-    realm_uuid: Optional[str] = None
-    base_payload: Dict[str, Any]
+    realm_uuid: str | None = None
+    base_payload: dict[str, Any]
 
     model_config = ConfigDict(extra="forbid")
 
@@ -469,7 +470,7 @@ def remote_server_send_test_notification(
 
 def get_remote_realm_helper(
     request: HttpRequest, server: RemoteZulipServer, realm_uuid: str, user_uuid: str
-) -> Optional[RemoteRealm]:
+) -> RemoteRealm | None:
     """
     Tries to fetch RemoteRealm for the given realm_uuid and server. Otherwise,
     returns None and logs what happened using request and user_uuid args to make
@@ -518,15 +519,15 @@ class PushNotificationsDisallowedError(JsonableError):
 
 
 class RemoteServerNotificationPayload(BaseModel):
-    user_id: Optional[int] = None
-    user_uuid: Optional[str] = None
-    realm_uuid: Optional[str] = None
-    gcm_payload: Dict[str, Any] = {}
-    apns_payload: Dict[str, Any] = {}
-    gcm_options: Dict[str, Any] = {}
+    user_id: int | None = None
+    user_uuid: str | None = None
+    realm_uuid: str | None = None
+    gcm_payload: dict[str, Any] = {}
+    apns_payload: dict[str, Any] = {}
+    gcm_options: dict[str, Any] = {}
 
-    android_devices: List[str] = []
-    apple_devices: List[str] = []
+    android_devices: list[str] = []
+    apple_devices: list[str] = []
 
 
 @typed_endpoint
@@ -585,8 +586,8 @@ def remote_server_notify_push(
     if apple_devices and user_id is not None and user_uuid is not None:
         apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
 
-    remote_queue_latency: Optional[str] = None
-    sent_time: Optional[Union[float, int]] = gcm_payload.get(
+    remote_queue_latency: str | None = None
+    sent_time: float | int | None = gcm_payload.get(
         # TODO/compatibility: This could be a lot simpler if not for pre-5.0 Zulip servers
         # that had an older format. Future implementation:
         #     "time", apns_payload["custom"]["zulip"].get("time")
@@ -642,7 +643,7 @@ def remote_server_notify_push(
     # this for notifications generated natively on the server.  We
     # apply this to remote-server pushes in case they predate that
     # commit.
-    def truncate_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    def truncate_payload(payload: dict[str, Any]) -> dict[str, Any]:
         MAX_MESSAGE_IDS = 200
         if payload and payload.get("event") == "remove" and payload.get("zulip_message_ids"):
             ids = [int(id) for id in payload["zulip_message_ids"].split(",")]
@@ -680,7 +681,7 @@ def remote_server_notify_push(
         increment=android_successfully_delivered + apple_successfully_delivered,
     )
 
-    remote_realm_dict: Optional[RemoteRealmDictValue] = None
+    remote_realm_dict: RemoteRealmDictValue | None = None
     if remote_realm is not None:
         do_increment_logging_stat(
             remote_realm,
@@ -713,15 +714,15 @@ def remote_server_notify_push(
 
 
 class DevicesToCleanUpDict(TypedDict):
-    android_devices: List[str]
-    apple_devices: List[str]
+    android_devices: list[str]
+    apple_devices: list[str]
 
 
 def get_deleted_devices(
     user_identity: UserPushIdentityCompat,
     server: RemoteZulipServer,
-    android_devices: List[str],
-    apple_devices: List[str],
+    android_devices: list[str],
+    apple_devices: list[str],
 ) -> DevicesToCleanUpDict:
     """The remote server sends us a list of (tokens of) devices that it
     believes it has registered. However some of them may have been
@@ -756,7 +757,7 @@ def get_deleted_devices(
 def validate_incoming_table_data(
     server: RemoteZulipServer,
     model: Any,
-    rows: List[Dict[str, Any]],
+    rows: list[dict[str, Any]],
     *,
     is_count_stat: bool,
 ) -> None:
@@ -793,24 +794,32 @@ ModelT = TypeVar("ModelT", bound=Model)
 
 def batch_create_table_data(
     server: RemoteZulipServer,
-    model: Type[ModelT],
-    row_objects: List[ModelT],
+    model: type[ModelT],
+    row_objects: list[ModelT],
 ) -> None:
     # We ignore previously-existing data, in case it was truncated and
-    # re-created on the remote server.  `ignore_conflicts=True`
-    # cannot return the ids, or count thereof, of the new inserts,
-    # (see https://code.djangoproject.com/ticket/0138) so we rely on
-    # having a lock to accurately count them before and after.  This
-    # query is also well-indexed.
-    before_count = model._default_manager.filter(server=server).count()
-    model._default_manager.bulk_create(row_objects, batch_size=1000, ignore_conflicts=True)
-    after_count = model._default_manager.filter(server=server).count()
-    inserted_count = after_count - before_count
-    if inserted_count < len(row_objects):
+    # re-created on the remote server.  Because the existing
+    # `bulk_create(..., ignore_conflicts=True)` cannot yet return the
+    # ids, or count thereof, of the new inserts, (see
+    # https://code.djangoproject.com/ticket/30138), we reach in and
+    # call _insert with `returning_fields` in batches ourselves.
+    inserted_count = 0
+    expected_count = len(row_objects)
+    fields = [f for f in model._meta.fields if f.concrete and not f.generated and f.name != "id"]
+    while row_objects:
+        to_insert, row_objects = row_objects[:1000], row_objects[1000:]
+        result = model._default_manager._insert(  # type:ignore[attr-defined]  # This is a private method
+            to_insert,
+            fields=fields,
+            returning_fields=[model._meta.get_field("id")],
+            on_conflict=OnConflict.IGNORE,
+        )
+        inserted_count += len(result)
+    if inserted_count < expected_count:
         logging.warning(
             "Dropped %d duplicated rows while saving %d rows of %s for server %s/%s",
-            len(row_objects) - inserted_count,
-            len(row_objects),
+            expected_count - inserted_count,
+            expected_count,
             model._meta.db_table,
             server.hostname,
             server.uuid,
@@ -818,8 +827,8 @@ def batch_create_table_data(
 
 
 def ensure_devices_set_remote_realm(
-    android_devices: List[RemotePushDeviceToken],
-    apple_devices: List[RemotePushDeviceToken],
+    android_devices: list[RemotePushDeviceToken],
+    apple_devices: list[RemotePushDeviceToken],
     remote_realm: RemoteRealm,
 ) -> None:
     devices_to_update = []
@@ -832,7 +841,7 @@ def ensure_devices_set_remote_realm(
 
 
 def update_remote_realm_data_for_server(
-    server: RemoteZulipServer, server_realms_info: List[RealmDataForAnalytics]
+    server: RemoteZulipServer, server_realms_info: list[RealmDataForAnalytics]
 ) -> None:
     reported_uuids = [realm.uuid for realm in server_realms_info]
     all_registered_remote_realms_for_server = list(RemoteRealm.objects.filter(server=server))
@@ -988,7 +997,7 @@ def update_remote_realm_data_for_server(
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
-    email_dict: Dict[str, Any] = {
+    email_dict: dict[str, Any] = {
         "template_prefix": "zerver/emails/internal_billing_notice",
         "to_emails": [BILLING_SUPPORT_EMAIL],
         "from_address": FromAddress.tokenized_no_reply_address(),
@@ -1000,7 +1009,7 @@ def update_remote_realm_data_for_server(
 
 def get_human_user_realm_uuids(
     server: RemoteZulipServer,
-) -> List[UUID]:
+) -> list[UUID]:
     query = RemoteRealm.objects.filter(
         server=server,
         realm_deactivated=False,
@@ -1142,13 +1151,13 @@ def remote_server_post_analytics(
     request: HttpRequest,
     server: RemoteZulipServer,
     *,
-    realm_counts: Json[List[RealmCountDataForAnalytics]],
-    installation_counts: Json[List[InstallationCountDataForAnalytics]],
-    realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None,
-    realms: Optional[Json[List[RealmDataForAnalytics]]] = None,
-    version: Optional[Json[str]] = None,
-    merge_base: Optional[Json[str]] = None,
-    api_feature_level: Optional[Json[int]] = None,
+    realm_counts: Json[list[RealmCountDataForAnalytics]],
+    installation_counts: Json[list[InstallationCountDataForAnalytics]],
+    realmauditlog_rows: Json[list[RealmAuditLogDataForAnalytics]] | None = None,
+    realms: Json[list[RealmDataForAnalytics]] | None = None,
+    version: Json[str] | None = None,
+    merge_base: Json[str] | None = None,
+    api_feature_level: Json[int] | None = None,
 ) -> HttpResponse:
     # Lock the server, preventing this from racing with other
     # duplicate submissions of the data
@@ -1295,7 +1304,7 @@ def remote_server_post_analytics(
     can_push_values = set()
 
     # Return details on exactly the set of remote realm the client told us about.
-    remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
+    remote_realm_dict: dict[str, RemoteRealmDictValue] = {}
     remote_human_realm_count = len(
         [
             remote_realm
@@ -1329,8 +1338,8 @@ def remote_server_post_analytics(
 
 
 def build_realm_id_to_remote_realm_dict(
-    server: RemoteZulipServer, realms: Optional[List[RealmDataForAnalytics]]
-) -> Dict[int, RemoteRealm]:
+    server: RemoteZulipServer, realms: list[RealmDataForAnalytics] | None
+) -> dict[int, RemoteRealm]:
     if realms is None:
         return {}
 
@@ -1344,7 +1353,7 @@ def build_realm_id_to_remote_realm_dict(
 
 
 def fix_remote_realm_foreign_keys(
-    server: RemoteZulipServer, realms: List[RealmDataForAnalytics]
+    server: RemoteZulipServer, realms: list[RealmDataForAnalytics]
 ) -> None:
     """
     Finds the RemoteRealmCount and RemoteRealmAuditLog entries without .remote_realm
@@ -1383,7 +1392,7 @@ def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
     return 0
 
 
-@has_request_variables
+@typed_endpoint_without_parameters
 def remote_server_check_analytics(request: HttpRequest, server: RemoteZulipServer) -> HttpResponse:
     result = {
         "last_realm_count_id": get_last_id_from_server(server, RemoteRealmCount),

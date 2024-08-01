@@ -8,7 +8,8 @@ import shlex
 import subprocess
 import sys
 import tempfile
-from typing import TYPE_CHECKING, Iterator, List, Type, cast
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, cast
 from unittest import mock
 
 if TYPE_CHECKING:
@@ -117,13 +118,11 @@ not_yet_fully_covered = [
     "zerver/tornado/sharding.py",
     "zerver/tornado/views.py",
     # Data import files; relatively low priority
-    "zerver/data_import/sequencer.py",
     "zerver/data_import/slack.py",
     "zerver/data_import/import_util.py",
     # Webhook integrations with incomplete coverage
     "zerver/webhooks/greenhouse/view.py",
     "zerver/webhooks/jira/view.py",
-    "zerver/webhooks/solano/view.py",
     "zerver/webhooks/teamcity/view.py",
     "zerver/webhooks/travis/view.py",
     "zerver/webhooks/zapier/view.py",
@@ -154,7 +153,7 @@ enforce_fully_covered = sorted(
 FAILED_TEST_PATH = "var/last_test_failure.json"
 
 
-def get_failed_tests() -> List[str]:
+def get_failed_tests() -> list[str]:
     try:
         with open(FAILED_TEST_PATH, "rb") as f:
             return orjson.loads(f.read())
@@ -167,11 +166,13 @@ def get_failed_tests() -> List[str]:
 def block_internet() -> Iterator[None]:
     # Monkey-patching - responses library raises requests.ConnectionError when access to an unregistered URL
     # is attempted. We want to replace that with our own exception, so that it propagates all the way:
-    with mock.patch.object(responses, "ConnectionError", new=ZulipInternetBlockedError):
+    with (
+        mock.patch.object(responses, "ConnectionError", new=ZulipInternetBlockedError),
         # We'll run all tests in this context manager. It'll cause an error to be raised (see above comment),
         # if any code attempts to access the internet.
-        with responses.RequestsMock():
-            yield
+        responses.RequestsMock(),
+    ):
+        yield
 
 
 class ZulipInternetBlockedError(Exception):
@@ -418,7 +419,7 @@ def main() -> None:
 
     # isinstance check cannot be used with types. This can potentially improved by supporting
     # dynamic resolution of the test runner type with the django-stubs mypy plugin.
-    TestRunner = cast("Type[Runner]", get_runner(settings))
+    TestRunner = cast("type[Runner]", get_runner(settings))
 
     if options.processes:
         parallel = options.processes

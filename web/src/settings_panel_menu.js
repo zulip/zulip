@@ -59,7 +59,7 @@ export class SettingsPanelMenu {
             values: [
                 {label: $t({defaultMessage: "Users"}), key: "active"},
                 {
-                    label: $t({defaultMessage: "Deactivated users"}),
+                    label: $t({defaultMessage: "Deactivated"}),
                     key: "deactivated",
                 },
                 {label: $t({defaultMessage: "Invitations"}), key: "invitations"},
@@ -108,7 +108,7 @@ export class SettingsPanelMenu {
             // We need to re-register these handlers since they are
             // destroyed once the settings modal closes.
             this.org_user_settings_toggler.register_event_handlers();
-            this.set_key_handlers(this.org_user_settings_toggler, $("#admin-user-list"));
+            this.set_key_handlers(this.org_user_settings_toggler, $(".org-user-settings-switcher"));
         }
     }
 

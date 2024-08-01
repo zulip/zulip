@@ -1,8 +1,7 @@
-from typing import List
-
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.actions.realm_linkifiers import (
     check_reorder_linkifiers,
@@ -12,9 +11,8 @@ from zerver.actions.realm_linkifiers import (
 )
 from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError, ValidationFailureError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_int, check_list
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import RealmFilter, UserProfile
 from zerver.models.linkifiers import linkifiers_for_realm
 
@@ -26,12 +24,13 @@ def list_linkifiers(request: HttpRequest, user_profile: UserProfile) -> HttpResp
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def create_linkifier(
     request: HttpRequest,
     user_profile: UserProfile,
-    pattern: str = REQ(),
-    url_template: str = REQ(),
+    *,
+    pattern: str,
+    url_template: str,
 ) -> HttpResponse:
     try:
         linkifier_id = do_add_linkifier(
@@ -57,13 +56,14 @@ def delete_linkifier(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def update_linkifier(
     request: HttpRequest,
     user_profile: UserProfile,
-    filter_id: int,
-    pattern: str = REQ(),
-    url_template: str = REQ(),
+    *,
+    filter_id: PathOnly[int],
+    pattern: str,
+    url_template: str,
 ) -> HttpResponse:
     try:
         do_update_linkifier(
@@ -81,11 +81,12 @@ def update_linkifier(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def reorder_linkifiers(
     request: HttpRequest,
     user_profile: UserProfile,
-    ordered_linkifier_ids: List[int] = REQ(json_validator=check_list(check_int)),
+    *,
+    ordered_linkifier_ids: Json[list[int]],
 ) -> HttpResponse:
     check_reorder_linkifiers(user_profile.realm, ordered_linkifier_ids, acting_user=user_profile)
     return json_success(request)

@@ -90,7 +90,7 @@ requests to those services, but the Django-based database libraries we
 use in most of our codebase don't support that, and in any case,
 our architecture doesn't require Tornado to do that).
 
-The parts that are activated relatively rarely (e.g. when people type or
+The parts that are activated relatively rarely (e.g., when people type or
 click on something) are processed by the Django application server.
 
 There is detailed documentation on the
@@ -120,9 +120,9 @@ For more details on the frontend, see our documentation on
 nginx is the front-end web server to all Zulip traffic; it serves static
 assets and proxies to Django and Tornado. It handles HTTP requests
 according to the rules laid down in the many config files found in
-`zulip/puppet/zulip/files/nginx/`.
+`puppet/zulip/files/nginx/` and `puppet/zulip/templates/nginx/`.
 
-`zulip/puppet/zulip/files/nginx/zulip-include-frontend/app` is the most
+`puppet/zulip/files/nginx/zulip-include-frontend/app` is the most
 important of these files. It explains what happens when requests come in
 from outside.
 
@@ -150,7 +150,7 @@ We use [supervisord](http://supervisord.org/) to start server processes,
 restart them automatically if they crash, and direct logging.
 
 The config file is
-`zulip/puppet/zulip/templates/supervisor/zulip.conf.template.erb`. This
+`puppet/zulip/templates/supervisor/zulip.conf.template.erb`. This
 is where Tornado and Django are set up, as well as a number of background
 processes that process event queues. We use event queues for the kinds
 of tasks that are best run in the background because they are
@@ -164,7 +164,7 @@ memcached is used to cache database model
 objects. `zerver/lib/cache.py` and `zerver/lib/cache_helpers.py`
 manage putting things into memcached, and invalidating the cache when
 values change. The memcached configuration is in
-`puppet/zulip/files/memcached.conf`. See our
+`puppet/zulip/templates/memcached.conf.template.erb`. See our
 [caching guide](../subsystems/caching.md) to learn how this works in
 detail.
 
@@ -173,12 +173,11 @@ detail.
 Redis is used for a few very short-term data stores, primarily
 our rate-limiting system.
 
-Redis is configured in `zulip/puppet/zulip/files/redis` and it's a
-pretty standard configuration except for the last line, which turns off
-persistence:
+Redis is configured in `puppet/zulip/templates/zulip-redis.template.erb` and
+the main contents are the following, which turns off persistence:
 
 ```text
-# Zulip-specific configuration: disable saving to disk.
+# Disable saving to disk to optimize performance
 save ""
 ```
 
@@ -206,17 +205,17 @@ materialize:
 ### RabbitMQ
 
 RabbitMQ is a queueing system. Its config files live in
-`zulip/puppet/zulip/files/rabbitmq`. Initial configuration happens in
-`zulip/scripts/setup/configure-rabbitmq`.
+`puppet/zulip/files/rabbitmq`. Initial configuration happens in
+`scripts/setup/configure-rabbitmq`.
 
-We use RabbitMQ for queuing expensive work (e.g. sending emails
+We use RabbitMQ for queuing expensive work (e.g., sending emails
 triggered by a message, push notifications, some analytics, etc.) that
 require reliable delivery but which we don't want to do on the main
 thread. It's also used for communication between the application server
 and the Tornado push system.
 
 Two simple wrappers around `pika` (the Python RabbitMQ client) are in
-`zulip/zerver/lib/queue.py`. There's an asynchronous client for use in
+`zerver/lib/queue.py`. There's an asynchronous client for use in
 Tornado and a more general client for use elsewhere. Most of the
 processes started by Supervisor are queue processors that continually
 pull things out of a RabbitMQ queue and handle them; they are defined
@@ -250,15 +249,15 @@ to create the actual database with its schema.
 Nagios is an optional component used for notifications to the system
 administrator, e.g., in case of outages.
 
-`zulip/puppet/zulip/manifests/nagios.pp` installs Nagios plugins from
+`puppet/zulip/manifests/nagios_plugins.pp` installs Nagios plugins from
 `puppet/zulip/files/nagios_plugins/`.
 
 This component is intended to install Nagios plugins intended to be run
 on a Nagios server; most of the Zulip Nagios plugins are intended to be
 run on the Zulip servers themselves, and are included with the relevant
-component of the Zulip server (e.g.
-`puppet/zulip/manifests/postgresql_backups.pp` installs a few under
-`/usr/lib/nagios/plugins/zulip_backups`).
+component of the Zulip server (e.g.,
+`puppet/zulip/manifests/app_frontend_base.pp` installs a few under
+`/usr/lib/nagios/plugins/zulip_app_frontend`).
 
 ## Glossary
 

@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from email.headerregistry import Address
 from functools import lru_cache, reduce
 from operator import or_
-from typing import Any, Dict, Set, Tuple
+from typing import Any
 
 import orjson
 from django.core.management.base import CommandError
@@ -17,7 +17,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
 from zerver.models import AbstractUserMessage, Attachment, Message, Recipient, Stream, UserProfile
-from zerver.models.recipients import get_or_create_huddle
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.users import get_user_by_delivery_email
 
 
@@ -176,10 +176,12 @@ This is most often used for legal compliance.
                     recipient=user_b.recipient, sender=user_a
                 )
             else:
-                huddle = get_or_create_huddle([user.id for user in user_profiles])
-                limits &= Q(recipient=huddle.recipient)
+                direct_message_group = get_or_create_direct_message_group(
+                    [user.id for user in user_profiles]
+                )
+                limits &= Q(recipient=direct_message_group.recipient)
 
-        attachments_written: Set[str] = set()
+        attachments_written: set[str] = set()
         messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
         print(f"Exporting {len(messages_query)} messages...")
 
@@ -194,7 +196,7 @@ This is most often used for legal compliance.
             return f"{recip_str} > {subject}"
 
         @lru_cache(maxsize=1000)
-        def format_recipient(recipient_id: int) -> Tuple[str, bool]:
+        def format_recipient(recipient_id: int) -> tuple[str, bool]:
             recipient = Recipient.objects.get(id=recipient_id)
 
             if recipient.type == Recipient.STREAM:
@@ -211,7 +213,7 @@ This is most often used for legal compliance.
 
             return ", ".join(format_sender(e[0], e[1]) for e in users), False
 
-        def transform_message(message: Message) -> Dict[str, str]:
+        def transform_message(message: Message) -> dict[str, str]:
             row = {
                 "id": str(message.id),
                 "timestamp (UTC)": message.date_sent.astimezone(timezone.utc).strftime(

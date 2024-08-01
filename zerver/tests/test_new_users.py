@@ -1,8 +1,8 @@
+import zoneinfo
+from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
-from typing import Sequence
 
 import time_machine
-import zoneinfo
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
@@ -16,7 +16,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import Message, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_huddle_user_ids
+from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
@@ -342,7 +342,7 @@ class TestNotifyNewUser(ZulipTestCase):
                 )
                 # Group DM
                 self.assertEqual(
-                    set(get_huddle_user_ids(message.recipient)),
+                    set(get_direct_message_group_user_ids(message.recipient)),
                     expected_group_direct_message_user_ids,
                 )
             self.assertIn(

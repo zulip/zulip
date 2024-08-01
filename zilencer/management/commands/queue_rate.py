@@ -1,6 +1,6 @@
 import csv
 from timeit import timeit
-from typing import Any, Union
+from typing import Any
 
 from django.core.management.base import CommandParser
 from typing_extensions import override
@@ -53,7 +53,7 @@ class Command(ZulipBaseCommand):
 
             for prefetch in options["prefetches"]:
                 print(f"Queue size {count}, prefetch {prefetch}...")
-                worker: Union[NoopWorker, BatchNoopWorker] = NoopWorker(count, options["slow"])
+                worker: NoopWorker | BatchNoopWorker = NoopWorker(count, options["slow"])
                 if options["batch"]:
                     worker = BatchNoopWorker(count, options["slow"])
                     if prefetch > 0 and prefetch < worker.batch_size:

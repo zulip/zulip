@@ -113,7 +113,7 @@ UI, though they may access it via the Zulip API.
 
 * Name
 * Avatar
-* Role (e.g. Administrator)
+* Role (e.g., Administrator)
 * Join date
 
 The following additional information is not available in the UI for

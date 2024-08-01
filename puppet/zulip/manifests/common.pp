@@ -50,28 +50,28 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version'   => '2.4.13',
-      'goversion' => '1222',
+      'version'   => '2.5.1',
+      'goversion' => '1225',
       'sha256'    => {
-        'amd64'   => '3fbe4dbd16b533eecfb68dbcd988eab185a07bd9b41b8b070287637df4d3d7b6',
-        'aarch64' => 'c5a2d9664a57e172551adac4bbd96898af0c11822b74c641ea8af62c3c5c4dab',
+        'amd64'   => '6b66a926fb6f3e93db63069eef79682b540618d4976ce7e1b917f3ae3e8b986e',
+        'aarch64' => 'cee9b1dc3a62efb104d8aa73d5dcee41c161cec1aeeee0f0004a76819e3a117f',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.22.3',
+      'version' => '1.22.5',
       'sha256'  => {
-        'amd64'   => '8920ea521bad8f6b7bc377b4824982e011c19af27df88a815e3586ea895f1b36',
-        'aarch64' => '6c33e52a5b26e7aa021b94475587fce80043a727a54ceb0eee2f9fc160646434',
+        'amd64'   => '904b924d435eaea086515bc63235b192ea441bd8c9b198c507e85009e6e4c7f0',
+        'aarch64' => '8d21325bfcf431be3660527c1a39d3d9ad71535fabdf5041c826e44e31642b5a',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => '065ad0e4c5495caa7d0c979a7bb229da240cc3f8',
+      'version' => '85c4c64e1e01b899456d42459966a106f66c7cd5',
       # Source code, so arch-invariant sha256
-      'sha256'  => '2ca4fb5ccc9fd9c6942eaa5b405099925e03e46ffbc711b76d72ec621d052663',
+      'sha256'  => 'f8cc99cb708cbd549e06099628ef286a5fdda73bb327d8c140d3014441bfefc2',
     },
 
     # https://github.com/wal-g/wal-g/releases
@@ -97,28 +97,28 @@ class zulip::common {
 
     # https://release-registry.services.sentry.io/apps/sentry-cli/latest
     'sentry-cli' => {
-      'version' => '2.32.1',
+      'version' => '2.33.0',
       'sha256'  => {
-        'amd64'   => '59238a42faea26e01cea3f0c9482a3bb2d1e5f200e3f9929820a11ab0eac5253',
-        'aarch64' => '4ac86ade7ff15391dfb7c2f3f24a2d05a2e43097f45f5c882043905aadd6060a',
+        'amd64'   => '652fe25aef94870b7a266a97e9c1cab3b6f09b1b9629e9729ffc18358c1fc0e7',
+        'aarch64' => '10b142d6aa67e0f678a15bee4e7b8699b0305f3c813f9cfbf67ec112b7a01a90',
       },
     },
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '11.0.0',
+      'version' => '11.1.0',
       'sha256'  => {
-        'amd64'   => '97c70aa4fd11aa75bbb575d7d48764cb3a6c3356b53f34c7750c0dd7e006204d',
-        'aarch64' => '24c05394013da1b35039102dd3950ae515b871920655d815d26c78c1f0f559bf',
+        'amd64'   => '33822a0b275ea4f216c9a3bdda53d1dba668e3e9873dc52104bc565bcbd8d856',
+        'aarch64' => '80b36751c29593b8fdb72906bd05f8833631dd826b8447bcdc9ba9bb0f6122aa',
       },
     },
 
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
-      'version' => '1.8.1',
+      'version' => '1.8.2',
       'sha256'  => {
-        'amd64'   => 'fbadb376afa7c883f87f70795700a8a200f7fd45412532cc1938a24d41078011',
-        'aarch64' => '3b5c4765e429d73d0ec83fcd14af39087025e1f7073422fa24be8f4fa3d3bb96',
+        'amd64'   => '6809dd0b3ec45fd6e992c19071d6b5253aed3ead7bf0686885a51d85c6643c66',
+        'aarch64' => '627382b9723c642411c33f48861134ebe893e70a63bcc8b3fc0619cd0bfac4be',
       },
     },
 
@@ -139,28 +139,28 @@ class zulip::common {
 
     # https://github.com/ncabatoff/process-exporter/releases
     'process_exporter' => {
-      'version' => '0.8.2',
+      'version' => '0.8.3',
       'sha256'  => {
-        'amd64'   => '1fde5cc65ed9e9c27fc3b0f19afff3f5526bff3351ddc4429499e25ef75728a4',
-        'aarch64' => 'af88c3d74c2db9316d30b7127f2278339303a9af923b0748f13c7c8d6cf401b5',
+        'amd64'   => '249db36771a4e66eaacca0ce31294de200df30eaf59a190c46639b98c5815969',
+        'aarch64' => 'dc40582d4779d8df8356cad56b130a7c909c4df07d62e7852fa5d5cb6d12ee50',
       }
     },
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.52.0',
+      'version' => '2.53.1',
       'sha256'  => {
-        'amd64'   => '7f31c5d6474bbff3e514e627e0b7a7fbbd4e5cea3f315fd0b76cad50be4c1ba3',
-        'aarch64' => 'b503c0f552e381d7d3f84dfd275166bf07c74f99c428ffed69447d4ab3259901',
+        'amd64'   => '2234aa0f66d9f9b854144f6faaaed72a316df7a680d9dad7cb48e49a6fa5332c',
+        'aarch64' => 'a7f28c83c3c943b953a9d00860bd3f2422464fb7c27a3c4037ef1ce2a41592b5',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.59.0',
+      'version' => '1.62.0',
       'sha256'  => {
-        'amd64'   => '7ad805a21d9423a721e6a0c48190d14b9f18a11507ee3eafbf84df11c71c3b4d',
-        'aarch64' => '5b70c854fe7ec8cf9eaf32db74ca8ab8be6396f1acb61b1505439c2f93df7019',
+        'amd64'   => 'a09f92a6b366e37c654e50522c7b80e4a625396b2499fd42cf17e1aa91e56d5e',
+        'aarch64' => 'da7a75ed4a3fe5c01ebb6192a2172b85b79dd7c06cb6e69aa927362454c69788',
       },
     },
 
@@ -175,10 +175,10 @@ class zulip::common {
 
     # https://vector.dev/download/
     'vector' => {
-      'version' => '0.38.0',
+      'version' => '0.39.0',
       'sha256'  => {
-        'amd64'   => '86bd28eadebd55937455364f8a10aa1f4bd66154bc8fe06cb5c6e63475c081a7',
-        'aarch64' => 'f06c3a403f9ad1eecf050aa6e901efe8a157f49c0a465b213f1e78eb9f8393ce',
+        'amd64'   => '95c242a440e905bd36b8b5f803b7e546a5bd0ae1b6ffb4082e00bcd73d5b0dd4',
+        'aarch64' => '6a67df30ab657bc84a1a3e7024592c9d78869bf86b8c23aafe09ecdb28cfdf01',
       },
     },
   }

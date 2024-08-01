@@ -58,19 +58,19 @@ class SponsorshipRequestDict(TypedDict):
 @dataclass
 class SponsorshipData:
     sponsorship_pending: bool = False
-    monthly_discounted_price: Optional[int] = None
-    annual_discounted_price: Optional[int] = None
-    original_monthly_plan_price: Optional[int] = None
-    original_annual_plan_price: Optional[int] = None
-    minimum_licenses: Optional[int] = None
-    required_plan_tier: Optional[int] = None
-    latest_sponsorship_request: Optional[SponsorshipRequestDict] = None
+    monthly_discounted_price: int | None = None
+    annual_discounted_price: int | None = None
+    original_monthly_plan_price: int | None = None
+    original_annual_plan_price: int | None = None
+    minimum_licenses: int | None = None
+    required_plan_tier: int | None = None
+    latest_sponsorship_request: SponsorshipRequestDict | None = None
 
 
 @dataclass
 class NextPlanData:
     plan: Union["CustomerPlan", "CustomerPlanOffer", None] = None
-    estimated_revenue: Optional[int] = None
+    estimated_revenue: int | None = None
 
 
 @dataclass
@@ -78,24 +78,24 @@ class PlanData:
     customer: Optional["Customer"] = None
     current_plan: Optional["CustomerPlan"] = None
     next_plan: Union["CustomerPlan", "CustomerPlanOffer", None] = None
-    licenses: Optional[int] = None
-    licenses_used: Optional[int] = None
-    next_billing_cycle_start: Optional[datetime] = None
+    licenses: int | None = None
+    licenses_used: int | None = None
+    next_billing_cycle_start: datetime | None = None
     is_legacy_plan: bool = False
     has_fixed_price: bool = False
     is_current_plan_billable: bool = False
-    stripe_customer_url: Optional[str] = None
-    warning: Optional[str] = None
-    annual_recurring_revenue: Optional[int] = None
-    estimated_next_plan_revenue: Optional[int] = None
+    stripe_customer_url: str | None = None
+    warning: str | None = None
+    annual_recurring_revenue: int | None = None
+    estimated_next_plan_revenue: int | None = None
 
 
 @dataclass
 class MobilePushData:
     total_mobile_users: int
     push_notification_status: PushNotificationsEnabledStatus
-    uncategorized_mobile_users: Optional[int] = None
-    mobile_pushes_forwarded: Optional[int] = None
+    uncategorized_mobile_users: int | None = None
+    mobile_pushes_forwarded: int | None = None
     last_mobile_push_sent: str = ""
 
 
@@ -193,9 +193,9 @@ def get_annual_invoice_count(billing_schedule: int) -> int:
 def get_next_plan_data(
     billing_session: BillingSession,
     customer: Customer,
-    current_plan: Optional[CustomerPlan] = None,
+    current_plan: CustomerPlan | None = None,
 ) -> NextPlanData:
-    plan_offer: Optional[CustomerPlanOffer] = None
+    plan_offer: CustomerPlanOffer | None = None
 
     # A customer can have a CustomerPlanOffer with or without a current plan.
     if customer.required_plan_tier:
@@ -230,7 +230,7 @@ def get_next_plan_data(
 
 
 def get_plan_data_for_support_view(
-    billing_session: BillingSession, user_count: Optional[int] = None, stale_user_data: bool = False
+    billing_session: BillingSession, user_count: int | None = None, stale_user_data: bool = False
 ) -> PlanData:
     customer = billing_session.get_customer()
     plan = None
@@ -307,7 +307,7 @@ def get_plan_data_for_support_view(
     return plan_data
 
 
-def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -> MobilePushData:
+def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> MobilePushData:
     if isinstance(remote_entity, RemoteZulipServer):
         total_users = (
             RemotePushDeviceToken.objects.filter(server=remote_entity)

@@ -7,8 +7,9 @@ from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_em
 from zerver.decorator import require_member_or_admin
 from zerver.lib.emoji import check_remove_custom_emoji, check_valid_emoji_name, name_to_codepoint
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.upload import get_file_info
 from zerver.models import RealmEmoji, UserProfile
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 
@@ -22,9 +23,9 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def upload_emoji(
-    request: HttpRequest, user_profile: UserProfile, emoji_name: str = REQ(path_only=True)
+    request: HttpRequest, user_profile: UserProfile, *, emoji_name: PathOnly[str]
 ) -> HttpResponse:
     emoji_name = emoji_name.strip().replace(" ", "_")
     valid_built_in_emoji = name_to_codepoint.keys()
@@ -51,7 +52,8 @@ def upload_emoji(
             )
         )
 
-    check_add_realm_emoji(user_profile.realm, emoji_name, user_profile, emoji_file)
+    _filename, content_type = get_file_info(emoji_file)
+    check_add_realm_emoji(user_profile.realm, emoji_name, user_profile, emoji_file, content_type)
     return json_success(request)
 
 

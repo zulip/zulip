@@ -3,7 +3,6 @@ import argparse
 import os
 import subprocess
 import sys
-from typing import List
 
 from zulint import lister
 
@@ -72,7 +71,7 @@ if not python_files and not pyi_files:
     print("There are no files to run mypy on.")
     sys.exit(0)
 
-mypy_args: List[str] = []
+mypy_args: list[str] = []
 # --no-error-summary is a mypy flag that comes after all dmypy options
 if args.use_daemon:
     mypy_args += ["run", "--"]
@@ -82,7 +81,7 @@ mypy_args += ["--", *python_files, *pyi_files]
 rc = subprocess.call([mypy_command, *mypy_args])
 
 if rc != 0:
-    print("")
+    print()
     print("See https://zulip.readthedocs.io/en/latest/testing/mypy.html for debugging tips.")
 
 sys.exit(rc)

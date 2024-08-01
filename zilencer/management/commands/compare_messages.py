@@ -23,7 +23,7 @@ class Command(ZulipBaseCommand):
         total_count = 0
         changed_count = 0
         with open(options["dump1"]) as dump1, open(options["dump2"]) as dump2:
-            for line1, line2 in zip(dump1, dump2):
+            for line1, line2 in zip(dump1, dump2, strict=False):
                 m1 = orjson.loads(line1)
                 m2 = orjson.loads(line2)
                 total_count += 1

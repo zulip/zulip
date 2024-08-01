@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, Union
+from typing import Any
 
 from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now as timezone_now
@@ -92,7 +92,7 @@ from zerver.models.streams import get_stream
 
 
 class TestRealmAuditLog(ZulipTestCase):
-    def check_role_count_schema(self, role_counts: Dict[str, Any]) -> None:
+    def check_role_count_schema(self, role_counts: dict[str, Any]) -> None:
         for key in [
             UserProfile.ROLE_REALM_ADMINISTRATOR,
             UserProfile.ROLE_MEMBER,
@@ -772,9 +772,10 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_change_user_settings(self) -> None:
         user = self.example_user("hamlet")
-        value: Union[bool, int, str]
+        value: bool | int | str
         test_values = dict(
             default_language="de",
+            web_animate_image_previews="on_hover",
             web_home_view="all_messages",
             emojiset="twitter",
             notification_sound="ding",
@@ -1029,13 +1030,19 @@ class TestRealmAuditLog(ZulipTestCase):
             # check in upload_emoji, we need to make this request via
             # that helper rather than via the API.
             realm_emoji = check_add_realm_emoji(
-                realm=user.realm, name="test_emoji", author=user, image_file=img_file
+                realm=user.realm,
+                name="test_emoji",
+                author=user,
+                image_file=img_file,
+                content_type="image/png",
             )
 
         added_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=get_emoji_url(get_emoji_file_name("img.png", realm_emoji.id), user.realm_id),
+            source_url=get_emoji_url(
+                get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
+            ),
             deactivated=False,
             author_id=user.id,
             still_url=None,
@@ -1063,7 +1070,9 @@ class TestRealmAuditLog(ZulipTestCase):
         deactivated_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=get_emoji_url(get_emoji_file_name("img.png", realm_emoji.id), user.realm_id),
+            source_url=get_emoji_url(
+                get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
+            ),
             deactivated=True,
             author_id=user.id,
             still_url=None,

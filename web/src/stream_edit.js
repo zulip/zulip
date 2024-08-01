@@ -20,6 +20,7 @@ import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
+import {postprocess_content} from "./postprocess_content";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
@@ -38,7 +39,6 @@ import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
-import * as util from "./util";
 
 export function setup_subscriptions_tab_hash(tab_key_value) {
     if ($("#subscription_overlay .right").hasClass("show")) {
@@ -132,7 +132,7 @@ export function update_stream_description(sub) {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
     $edit_container.find("input.description").val(sub.description);
     const html = render_stream_description({
-        rendered_description: util.clean_user_content_links(sub.rendered_description),
+        rendered_description: postprocess_content(sub.rendered_description),
     });
     $edit_container.find(".stream-description").html(html);
 }
@@ -228,13 +228,11 @@ function setup_dropdown(sub, slim_sub) {
             );
         },
         $events_container: $("#subscription_overlay .subscription_settings"),
-        tippy_props: {
-            placement: "bottom-start",
-        },
         default_id: sub.can_remove_subscribers_group,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
+            $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
         },
     });
     settings_components.set_dropdown_setting_widget(
@@ -756,12 +754,8 @@ export function initialize() {
             const sub = sub_store.get(stream_id);
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
-            for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-                settings_org.discard_stream_property_element_changes(elem, sub);
-            }
+            settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
-            const $save_btn_controls = $(e.target).closest(".save-button-controls");
-            settings_components.change_save_button_state($save_btn_controls, "discarded");
         },
     );
 }

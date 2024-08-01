@@ -21,6 +21,7 @@ const settings_config = zrequire("settings_config");
 const settings_data = mock_esm("../src/settings_data");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("/compose_recipient");
+const user_groups = zrequire("user_groups");
 
 const me = {
     email: "me@example.com",
@@ -39,6 +40,7 @@ const bob = {
     email: "bob@example.com",
     user_id: 32,
     full_name: "Bob",
+    is_admin: true,
 };
 
 const social_sub = {
@@ -64,6 +66,29 @@ const welcome_bot = {
 
 people.add_cross_realm_user(welcome_bot);
 
+const nobody = {
+    name: "role:nobody",
+    id: 1,
+    members: new Set([]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+const everyone = {
+    name: "role:everyone",
+    id: 2,
+    members: new Set([30]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+const admin = {
+    name: "role:administrators",
+    id: 3,
+    members: new Set([32]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
+user_groups.initialize({realm_user_groups: [nobody, everyone, admin]});
 function test_ui(label, f) {
     // The sloppy_$ flag lets us reuse setup from prior tests.
     run_test(label, (helpers) => {
@@ -148,6 +173,8 @@ test_ui("validate", ({mock_template}) => {
     add_content_to_compose_box();
     compose_state.private_message_recipient("");
     let pm_recipient_error_rendered = false;
+    realm.realm_direct_message_permission_group = everyone.id;
+    realm.realm_direct_message_initiator_group = everyone.id;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_private_message_recipient);
         assert.equal(
@@ -167,6 +194,16 @@ test_ui("validate", ({mock_template}) => {
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
 
+    realm.realm_direct_message_initiator_group = admin.id;
+    assert.ok(compose_validate.validate());
+    assert.ok(!pm_recipient_error_rendered);
+
+    realm.realm_direct_message_permission_group = admin.id;
+    assert.ok(compose_validate.validate());
+    assert.ok(!pm_recipient_error_rendered);
+
+    realm.realm_direct_message_initiator_group = everyone.id;
+    realm.realm_direct_message_permission_group = everyone.id;
     people.deactivate(bob);
     let deactivated_user_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {

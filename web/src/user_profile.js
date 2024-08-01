@@ -25,6 +25,7 @@ import {csrf_token} from "./csrf";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
+import {get_current_hash_category} from "./hash_parser";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
@@ -163,9 +164,6 @@ function render_user_profile_subscribe_widget() {
         get_options: get_user_unsub_streams,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
-        tippy_props: {
-            placement: "bottom-start",
-        },
     };
     user_profile_subscribe_widget =
         user_profile_subscribe_widget || new dropdown_widget.DropdownWidget(opts);
@@ -395,7 +393,14 @@ export function hide_user_profile() {
 function on_user_profile_hide() {
     user_streams_list_widget = undefined;
     user_profile_subscribe_widget = undefined;
-    browser_history.exit_overlay();
+    const base = get_current_hash_category();
+    // After closing the user profile, if the hash consists of `#user`
+    // it means that it acts as an overlay rather than a modal (when
+    // no other overlay is in the background). Hence, we also need to
+    // update the hash when we close it.
+    if (base === "user") {
+        browser_history.exit_overlay();
+    }
 }
 
 function show_manage_user_tab(target) {
@@ -654,7 +659,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
                 avatar_widget.clear();
                 hide_button_spinner($submit_btn);
                 original_values = get_current_values($("#bot-edit-form"));
-                toggle_submit_button($("#edit-user-form"));
+                toggle_submit_button($("#bot-edit-form"));
                 ui_report.success(
                     $t_html({defaultMessage: "Saved"}),
                     $("#user-profile-modal .save-success"),
@@ -683,6 +688,11 @@ export function show_edit_bot_info_modal(user_id, $container) {
 
         function get_options() {
             const user_ids = people.get_realm_active_human_user_ids();
+            if (!user_ids.includes(bot.bot_owner_id)) {
+                // Always include the current bot owner in
+                // options, even if the owner is deactivated.
+                user_ids.push(bot.bot_owner_id);
+            }
             return user_ids.map((user_id) => ({
                 name: people.get_full_name(user_id),
                 unique_id: user_id,
@@ -703,9 +713,6 @@ export function show_edit_bot_info_modal(user_id, $container) {
             get_options,
             item_click_callback,
             $events_container: $("#bot-edit-form"),
-            tippy_props: {
-                placement: "bottom-start",
-            },
             default_id: owner_id,
             unique_id_type: dropdown_widget.DataTypes.NUMBER,
         });

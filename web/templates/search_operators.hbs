@@ -4,7 +4,7 @@
             <table class="table table-striped table-rounded table-bordered help-table">
                 <thead>
                     <tr>
-                        <th>{{t "Filter" }}</th>
+                        <th id="search-operators-first-header">{{t "Filter" }}</th>
                         <th>{{t "Effect" }}</th>
                     </tr>
                 </thead>
@@ -63,7 +63,11 @@
                     <tr>
                         <td class="operator">channels:public</td>
                         <td class="definition">
-                            {{t 'Search all public channels in the organization.'}}
+                            {{#if can_access_all_public_channels }}
+                            {{t 'Search all public channels.'}}
+                            {{else}}
+                            {{t 'Search all public channels that you can view.'}}
+                            {{/if}}
                         </td>
                     </tr>
                     <tr>

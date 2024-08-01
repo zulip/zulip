@@ -5,7 +5,7 @@ import subprocess
 import sys
 import time
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List
+from typing import Any
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -22,9 +22,9 @@ normal_queues = [
     "missedmessage_emails",
     "missedmessage_mobile_notifications",
     "outgoing_webhooks",
+    "thumbnail",
     "user_activity",
     "user_activity_interval",
-    "user_presence",
 ]
 
 mobile_notification_shards = int(
@@ -43,14 +43,14 @@ states = {
     3: "UNKNOWN",
 }
 
-MAX_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
+MAX_SECONDS_TO_CLEAR: defaultdict[str, int] = defaultdict(
     lambda: 30,
     deferred_work=600,
     digest_emails=1200,
     missedmessage_mobile_notifications=120,
     embed_links=60,
 )
-CRITICAL_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
+CRITICAL_SECONDS_TO_CLEAR: defaultdict[str, int] = defaultdict(
     lambda: 60,
     deferred_work=900,
     missedmessage_mobile_notifications=180,
@@ -60,8 +60,8 @@ CRITICAL_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
 
 
 def analyze_queue_stats(
-    queue_name: str, stats: Dict[str, Any], queue_count_rabbitmqctl: int
-) -> Dict[str, Any]:
+    queue_name: str, stats: dict[str, Any], queue_count_rabbitmqctl: int
+) -> dict[str, Any]:
     now = int(time.time())
     if stats == {}:
         return dict(status=UNKNOWN, name=queue_name, message="invalid or no stats data")
@@ -117,7 +117,7 @@ WARN_COUNT_THRESHOLD_DEFAULT = 10
 CRITICAL_COUNT_THRESHOLD_DEFAULT = 50
 
 
-def check_other_queues(queue_counts_dict: Dict[str, int]) -> List[Dict[str, Any]]:
+def check_other_queues(queue_counts_dict: dict[str, int]) -> list[dict[str, Any]]:
     """Do a simple queue size check for queues whose workers don't publish stats files."""
 
     results = []
@@ -161,13 +161,18 @@ def check_rabbitmq_queues() -> None:
         [os.path.join(ZULIP_PATH, "scripts/get-django-setting"), "QUEUE_STATS_DIR"],
         text=True,
     ).strip()
-    queue_stats: Dict[str, Dict[str, Any]] = {}
+    queue_stats: dict[str, dict[str, Any]] = {}
+
     check_queues = normal_queues
     if mobile_notification_shards > 1:
+        # For sharded queue workers, where there's a separate queue
+        # for each shard, we need to make sure none of those are
+        # backlogged.
         check_queues += [
             f"missedmessage_mobile_notifications_shard{d}"
             for d in range(1, mobile_notification_shards + 1)
         ]
+
     queues_to_check = set(check_queues).intersection(set(queues_with_consumers))
     for queue in queues_to_check:
         fn = queue + ".stats"

@@ -4,19 +4,49 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const {current_user} = require("./lib/zpage_params");
 
 const user_topics = zrequire("user_topics");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const pmc = zrequire("pm_conversations");
 
+const alice = {
+    user_id: 1,
+    email: "alice@example.com",
+    full_name: "Alice",
+};
+
+const isaac = {
+    user_id: 2,
+    email: "isaac@example.com",
+    full_name: "Isaac",
+};
+
+const alex = {
+    user_id: 3,
+    email: "alex@example.com",
+    full_name: "Alex",
+};
+
+const me = {
+    user_id: 15,
+    email: "me@example.com",
+    full_name: "Me",
+};
+
+people.add_active_user(alice);
+people.add_active_user(isaac);
+people.add_active_user(alex);
+people.add_active_user(me);
+
 const params = {
     recent_private_conversations: [
-        {user_ids: [1], max_message_id: 100},
-        {user_ids: [3], max_message_id: 99},
-        {user_ids: [1, 2], max_message_id: 98},
-        {user_ids: [1, 2, 3], max_message_id: 97},
-        {user_ids: [15], max_message_id: 96}, // self
+        {user_ids: [alice.user_id], max_message_id: 100},
+        {user_ids: [alex.user_id], max_message_id: 99},
+        {user_ids: [alice.user_id, isaac.user_id], max_message_id: 98},
+        {user_ids: [alice.user_id, isaac.user_id, alex.user_id], max_message_id: 97},
+        {user_ids: [me.user_id], max_message_id: 96}, // self
     ],
 };
 
@@ -25,7 +55,7 @@ function test(label, f) {
         pmc.clear_for_testing();
         user_topics.set_user_topics([]);
         muted_users.set_muted_users([]);
-        people.initialize_current_user(15);
+        people.initialize_current_user(me.user_id);
         f({override});
     });
 }
@@ -100,4 +130,25 @@ test("muted_users", () => {
         {user_ids_string: "15", max_message_id: 96},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2,3", "15"]);
+});
+
+test("has_conversation", () => {
+    current_user.user_id = me.user_id;
+    pmc.recent.initialize(params);
+
+    // Tests if `has_conversation` returns `true` when there are previous
+    // messages in the conversation.
+    assert.ok(pmc.recent.has_conversation("1"));
+    assert.ok(pmc.recent.has_conversation("15"));
+    assert.ok(pmc.recent.has_conversation("1,2"));
+    assert.ok(pmc.recent.has_conversation("1,2,15"));
+    // Check that we canonicalize to sorted order. This isn't
+    // functionality we rely on, but seems worth testing.
+    assert.ok(pmc.recent.has_conversation("2,1,15"));
+
+    // Since the current filter does not match the DM view, there may be
+    // messages in the conversation which are not fetched yet.
+    assert.ok(!pmc.recent.has_conversation("1,3"));
+    assert.ok(!pmc.recent.has_conversation("2"));
+    assert.ok(!pmc.recent.has_conversation("72"));
 });

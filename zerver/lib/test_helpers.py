@@ -4,24 +4,10 @@ import os
 import re
 import sys
 import time
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    Optional,
-    Tuple,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import IO, TYPE_CHECKING, Any, TypeVar, Union, cast
 from unittest import mock
 from unittest.mock import patch
 
@@ -51,6 +37,7 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
+from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Client, Message, RealmUserDefault, Subscription, UserMessage, UserProfile
 from zerver.models.clients import clear_client_cache, get_client
@@ -85,23 +72,72 @@ class MockLDAP(fakeldap.MockLDAP):
 def stub_event_queue_user_events(
     event_queue_return: Any, user_events_return: Any
 ) -> Iterator[None]:
-    with mock.patch("zerver.lib.events.request_event_queue", return_value=event_queue_return):
-        with mock.patch("zerver.lib.events.get_user_events", return_value=user_events_return):
-            yield
+    with (
+        mock.patch("zerver.lib.events.request_event_queue", return_value=event_queue_return),
+        mock.patch("zerver.lib.events.get_user_events", return_value=user_events_return),
+    ):
+        yield
+
+
+class activate_push_notification_service(override_settings):  # noqa: N801
+    """
+    Activating the push notification service involves a few different settings
+    that are logically related, and ordinarily set correctly in computed_settings.py
+    based on the admin-configured settings.
+    Having tests deal with overriding all the necessary settings every time they
+    want to simulate using the push notification service would be too
+    cumbersome, so we provide a convenient helper.
+    Can be used as either a context manager or a decorator applied to a test method
+    or class, just like original override_settings.
+    """
+
+    def __init__(
+        self, zulip_services_url: str | None = None, submit_usage_statistics: bool = False
+    ) -> None:
+        if zulip_services_url is None:
+            zulip_services_url = settings.ZULIP_SERVICES_URL
+        assert zulip_services_url is not None
+
+        # Ordinarily the ANALYTICS_DATA_UPLOAD_LEVEL setting is computed based on these
+        # ZULIP_SERVICE_* configured settings; but because these settings here won't get
+        # processed through computed_settings, we need to set ANALYTICS_DATA_UPLOAD_LEVEL
+        # manually.
+        # The logic here is:
+        # (1) If the currently active ANALYTICS_DATA_UPLOAD_LEVEL is lower than what's
+        #     demanded to enable push notifications, then we need to override it to
+        #     this minimum level (i.e. BILLING).
+        # (2) Otherwise, the test must have already somehow set up a higher level
+        #     of data upload, so we should leave it alone.
+        if settings.ANALYTICS_DATA_UPLOAD_LEVEL < AnalyticsDataUploadLevel.BILLING:
+            analytics_data_upload_level = AnalyticsDataUploadLevel.BILLING
+        else:  # nocoverage
+            analytics_data_upload_level = settings.ANALYTICS_DATA_UPLOAD_LEVEL
+
+        # Finally, the data upload level can be elevated by the submit_usage_statistics
+        # argument.
+        if submit_usage_statistics:
+            analytics_data_upload_level = AnalyticsDataUploadLevel.ALL
+
+        super().__init__(
+            ZULIP_SERVICES_URL=zulip_services_url,
+            ANALYTICS_DATA_UPLOAD_LEVEL=analytics_data_upload_level,
+            ZULIP_SERVICE_PUSH_NOTIFICATIONS=True,
+            ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS=submit_usage_statistics,
+        )
 
 
 @contextmanager
-def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
-    cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
+def cache_tries_captured() -> Iterator[list[tuple[str, str | list[str], str | None]]]:
+    cache_queries: list[tuple[str, str | list[str], str | None]] = []
 
     orig_get = cache.cache_get
     orig_get_many = cache.cache_get_many
 
-    def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def my_cache_get(key: str, cache_name: str | None = None) -> dict[str, Any] | None:
         cache_queries.append(("get", key, cache_name))
         return orig_get(key, cache_name)
 
-    def my_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Dict[str, Any]:
+    def my_cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
         cache_queries.append(("getmany", keys, cache_name))
         return orig_get_many(keys, cache_name)
 
@@ -110,16 +146,16 @@ def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Op
 
 
 @contextmanager
-def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
-    cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
+def simulated_empty_cache() -> Iterator[list[tuple[str, str | list[str], str | None]]]:
+    cache_queries: list[tuple[str, str | list[str], str | None]] = []
 
-    def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def my_cache_get(key: str, cache_name: str | None = None) -> dict[str, Any] | None:
         cache_queries.append(("get", key, cache_name))
         return None
 
     def my_cache_get_many(
-        keys: List[str], cache_name: Optional[str] = None
-    ) -> Dict[str, Any]:  # nocoverage -- simulated code doesn't use this
+        keys: list[str], cache_name: str | None = None
+    ) -> dict[str, Any]:  # nocoverage -- simulated code doesn't use this
         cache_queries.append(("getmany", keys, cache_name))
         return {}
 
@@ -136,15 +172,15 @@ class CapturedQuery:
 @contextmanager
 def queries_captured(
     include_savepoints: bool = False, keep_cache_warm: bool = False
-) -> Iterator[List[CapturedQuery]]:
+) -> Iterator[list[CapturedQuery]]:
     """
     Allow a user to capture just the queries executed during
     the with statement.
     """
 
-    queries: List[CapturedQuery] = []
+    queries: list[CapturedQuery] = []
 
-    def cursor_execute(self: TimeTrackingCursor, sql: Query, vars: Optional[Params] = None) -> None:
+    def cursor_execute(self: TimeTrackingCursor, sql: Query, vars: Params | None = None) -> None:
         start = time.time()
         try:
             return super(TimeTrackingCursor, self).execute(sql, vars)
@@ -246,7 +282,7 @@ def avatar_disk_path(
     avatar_disk_path = os.path.join(
         settings.LOCAL_AVATARS_DIR,
         avatar_url_path.split("/")[-2],
-        avatar_url_path.split("/")[-1].split("?")[0],
+        avatar_url_path.split("/")[-1],
     )
     if original:
         return avatar_disk_path.replace(".png", ".original")
@@ -258,7 +294,7 @@ def make_client(name: str) -> Client:
     return client
 
 
-def find_key_by_email(address: str) -> Optional[str]:
+def find_key_by_email(address: str) -> str | None:
     from django.core.mail import outbox
 
     key_regex = re.compile(r"accounts/do_confirm/([a-z0-9]{24})>")
@@ -298,7 +334,7 @@ def get_subscription(stream_name: str, user_profile: UserProfile) -> Subscriptio
     )
 
 
-def get_user_messages(user_profile: UserProfile) -> List[Message]:
+def get_user_messages(user_profile: UserProfile) -> list[Message]:
     query = (
         UserMessage.objects.select_related("message")
         .filter(user_profile=user_profile)
@@ -330,12 +366,12 @@ class HostRequestMock(HttpRequest):
     def __init__(
         self,
         post_data: Mapping[str, Any] = {},
-        user_profile: Union[UserProfile, None] = None,
-        remote_server: Optional[RemoteZulipServer] = None,
+        user_profile: UserProfile | None = None,
+        remote_server: RemoteZulipServer | None = None,
         host: str = settings.EXTERNAL_HOST,
-        client_name: Optional[str] = None,
-        meta_data: Optional[Dict[str, Any]] = None,
-        tornado_handler: Optional[AsyncDjangoHandler] = None,
+        client_name: str | None = None,
+        meta_data: dict[str, Any] | None = None,
+        tornado_handler: AsyncDjangoHandler | None = None,
         path: str = "",
     ) -> None:
         self.host = host
@@ -377,12 +413,12 @@ class HostRequestMock(HttpRequest):
 
 
 INSTRUMENTING = os.environ.get("TEST_INSTRUMENT_URL_COVERAGE", "") == "TRUE"
-INSTRUMENTED_CALLS: List[Dict[str, Any]] = []
+INSTRUMENTED_CALLS: list[dict[str, Any]] = []
 
 UrlFuncT = TypeVar("UrlFuncT", bound=Callable[..., HttpResponseBase])  # TODO: make more specific
 
 
-def append_instrumentation_data(data: Dict[str, Any]) -> None:
+def append_instrumentation_data(data: dict[str, Any]) -> None:
     INSTRUMENTED_CALLS.append(data)
 
 
@@ -393,7 +429,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     else:
 
         def wrapper(
-            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: Union[bool, str]
+            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: bool | str
         ) -> HttpResponseBase:
             start = time.time()
             result = f(self, url, info, **kwargs)
@@ -438,7 +474,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         from zproject.urls import urlpatterns, v1_api_and_json_patterns
 
         # Find our untested urls.
-        pattern_cnt: Dict[str, int] = collections.defaultdict(int)
+        pattern_cnt: dict[str, int] = collections.defaultdict(int)
 
         def re_strip(r: str) -> str:
             assert r.startswith(r"^")
@@ -448,7 +484,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                 assert r.endswith(r"\Z")
                 return r[1:-2]
 
-        def find_patterns(patterns: List[Any], prefixes: List[str]) -> None:
+        def find_patterns(patterns: list[Any], prefixes: list[str]) -> None:
             for pattern in patterns:
                 find_pattern(pattern, prefixes)
 
@@ -463,7 +499,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                 url = url[len("http://testserver:9080/") :]
             return url
 
-        def find_pattern(pattern: Any, prefixes: List[str]) -> None:
+        def find_pattern(pattern: Any, prefixes: list[str]) -> None:
             if isinstance(pattern, type(URLResolver)):
                 return  # nocoverage -- shouldn't actually happen
 
@@ -569,13 +605,17 @@ def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     @override_settings(LOCAL_AVATARS_DIR=None)
     @override_settings(LOCAL_FILES_DIR=None)
     def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
-        with mock.patch("zerver.lib.upload.upload_backend", S3UploadBackend()):
+        backend = S3UploadBackend()
+        with (
+            mock.patch("zerver.lib.upload.upload_backend", backend),
+            mock.patch("zerver.worker.thumbnail.upload_backend", backend),
+        ):
             return method(*args, **kwargs)
 
     return new_method
 
 
-def create_s3_buckets(*bucket_names: str) -> List[Bucket]:
+def create_s3_buckets(*bucket_names: str) -> list[Bucket]:
     session = boto3.session.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
     s3 = session.resource("s3")
     buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]
@@ -601,7 +641,7 @@ def use_db_models(
         DefaultStream = apps.get_model("zerver", "DefaultStream")
         DefaultStreamGroup = apps.get_model("zerver", "DefaultStreamGroup")
         EmailChangeStatus = apps.get_model("zerver", "EmailChangeStatus")
-        Huddle = apps.get_model("zerver", "Huddle")
+        DirectMessageGroup = apps.get_model("zerver", "DirectMessageGroup")
         Message = apps.get_model("zerver", "Message")
         MultiuseInvite = apps.get_model("zerver", "MultiuseInvite")
         OnboardingStep = apps.get_model("zerver", "OnboardingStep")
@@ -645,7 +685,7 @@ def use_db_models(
             DefaultStream=DefaultStream,
             DefaultStreamGroup=DefaultStreamGroup,
             EmailChangeStatus=EmailChangeStatus,
-            Huddle=Huddle,
+            DirectMessageGroup=DirectMessageGroup,
             Message=Message,
             MultiuseInvite=MultiuseInvite,
             UserTopic=UserTopic,
@@ -705,7 +745,7 @@ def create_dummy_file(filename: str) -> str:
     return filepath
 
 
-def zulip_reaction_info() -> Dict[str, str]:
+def zulip_reaction_info() -> dict[str, str]:
     return dict(
         emoji_name="zulip",
         emoji_code="zulip",
@@ -725,8 +765,8 @@ def mock_queue_publish(
     # crash in production.
     def verify_serialize(
         queue_name: str,
-        event: Dict[str, object],
-        processor: Optional[Callable[[object], None]] = None,
+        event: dict[str, object],
+        processor: Callable[[object], None] | None = None,
     ) -> None:
         marshalled_event = orjson.loads(orjson.dumps(event))
         assert marshalled_event == event
@@ -751,3 +791,8 @@ def ratelimit_rule(
 
     with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
         yield
+
+
+def consume_response(response: HttpResponseBase) -> None:
+    assert response.streaming
+    collections.deque(response, maxlen=0)

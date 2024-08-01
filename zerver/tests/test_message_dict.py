@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -72,7 +72,7 @@ class MessageDictTest(ZulipTestCase):
 
         def get_send_message_payload(
             msg_id: int, apply_markdown: bool, client_gravatar: bool
-        ) -> Dict[str, Any]:
+        ) -> dict[str, Any]:
             msg = reload_message(msg_id)
             wide_dict = MessageDict.wide_dict(msg)
 
@@ -85,7 +85,7 @@ class MessageDictTest(ZulipTestCase):
 
         def get_fetch_payload(
             msg_id: int, apply_markdown: bool, client_gravatar: bool
-        ) -> Dict[str, Any]:
+        ) -> dict[str, Any]:
             msg = reload_message(msg_id)
             unhydrated_dict = MessageDict.messages_to_encoded_cache_helper([msg])[0]
             # The next step mutates the dict in place
@@ -260,7 +260,7 @@ class MessageDictTest(ZulipTestCase):
             msg_id = self.send_stream_message(sender, "Denmark", "hello world", topic_name, realm)
             return Message.objects.get(id=msg_id)
 
-        def assert_topic_links(links: List[Dict[str, str]], msg: Message) -> None:
+        def assert_topic_links(links: list[dict[str, str]], msg: Message) -> None:
             dct = MessageDict.messages_to_encoded_cache_helper([msg])[0]
             self.assertEqual(dct[TOPIC_LINKS], links)
 
@@ -348,7 +348,7 @@ class MessageHydrationTest(ZulipTestCase):
 
     def test_hydrate_pm_recipient_info(self) -> None:
         cordelia = self.example_user("cordelia")
-        display_recipient: List[UserDisplayRecipient] = [
+        display_recipient: list[UserDisplayRecipient] = [
             dict(
                 email="aaron@example.com",
                 full_name="Aaron Smith",
@@ -524,7 +524,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
     def _verify_display_recipient(
         self,
         display_recipient: DisplayRecipientT,
-        expected_recipient_objects: List[UserProfile],
+        expected_recipient_objects: list[UserProfile],
     ) -> None:
         for user_profile in expected_recipient_objects:
             recipient_dict: UserDisplayRecipient = {
@@ -581,14 +581,14 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         self.assertEqual(messages[0]["display_recipient"], "Verona")
         self.assertEqual(messages[1]["display_recipient"], "Denmark")
 
-    def test_display_recipient_huddle(self) -> None:
+    def test_display_recipient_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         iago = self.example_user("iago")
         message_ids = [
-            self.send_huddle_message(hamlet, [cordelia, othello], "test"),
-            self.send_huddle_message(cordelia, [hamlet, othello, iago], "test"),
+            self.send_group_direct_message(hamlet, [cordelia, othello], "test"),
+            self.send_group_direct_message(cordelia, [hamlet, othello, iago], "test"),
         ]
 
         messages = messages_for_ids(
@@ -619,11 +619,11 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         self.subscribe(hamlet, "Scotland")
 
         message_ids = [
-            self.send_huddle_message(hamlet, [cordelia, othello], "test"),
+            self.send_group_direct_message(hamlet, [cordelia, othello], "test"),
             self.send_stream_message(cordelia, "Verona", content="test"),
             self.send_personal_message(hamlet, cordelia, "test"),
             self.send_stream_message(cordelia, "Denmark", content="test"),
-            self.send_huddle_message(cordelia, [hamlet, othello, iago], "test"),
+            self.send_group_direct_message(cordelia, [hamlet, othello, iago], "test"),
             self.send_personal_message(cordelia, othello, "test"),
         ]
 

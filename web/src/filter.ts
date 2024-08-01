@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_search_description from "../templates/search_description.hbs";
 
+import * as blueslip from "./blueslip";
 import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
@@ -294,12 +295,14 @@ export class Filter {
     _sorted_term_types?: string[] = undefined;
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
+    requires_adjustment_for_moved_with_target?: boolean;
+    narrow_requires_hash_change: boolean;
 
     constructor(terms: NarrowTerm[]) {
-        this._terms = this.fix_terms(terms);
-        if (this.has_operator("channel")) {
-            this._sub = stream_data.get_sub_by_name(this.operands("channel")[0]!);
-        }
+        this._terms = terms;
+        this.setup_filter(terms);
+        this.requires_adjustment_for_moved_with_target = this.has_operator("with");
+        this.narrow_requires_hash_change = false;
     }
 
     static canonicalize_operator(operator: string): string {
@@ -386,6 +389,38 @@ export class Filter {
             operator,
             operand,
         };
+    }
+
+    static ensure_channel_topic_terms(orig_terms: NarrowTerm[]): NarrowTerm[] {
+        // In presence of `with` term without channel or topic terms in the narrow, the
+        // narrow is populated with the channel and toipic terms through this operation,
+        // so that `with` can be used as a standalone operator to target conversation.
+        const with_term = orig_terms.find((term: NarrowTerm) => term.operator === "with");
+
+        if (!with_term) {
+            return orig_terms;
+        }
+
+        const updated_terms = [...orig_terms];
+        let channel_term = updated_terms.find(
+            (term: NarrowTerm) => Filter.canonicalize_operator(term.operator) === "channel",
+        );
+        let topic_term = updated_terms.find(
+            (term: NarrowTerm) => Filter.canonicalize_operator(term.operator) === "topic",
+        );
+
+        if (!topic_term) {
+            topic_term = {operator: "topic", operand: ""};
+            const with_index = updated_terms.indexOf(with_term);
+            updated_terms.splice(with_index, 0, topic_term);
+        }
+
+        if (!channel_term) {
+            channel_term = {operator: "channel", operand: ""};
+            const topic_index = updated_terms.indexOf(topic_term);
+            updated_terms.splice(topic_index, 0, channel_term);
+        }
+        return updated_terms;
     }
 
     /* We use a variant of URI encoding which looks reasonably
@@ -481,6 +516,53 @@ export class Filter {
         return terms;
     }
 
+    static is_valid_search_term(term: NarrowTerm): boolean {
+        switch (term.operator) {
+            case "has":
+                return ["image", "link", "attachment", "reaction"].includes(term.operand);
+            case "is":
+                return [
+                    "dm",
+                    "private",
+                    "starred",
+                    "mentioned",
+                    "alerted",
+                    "unread",
+                    "resolved",
+                    "followed",
+                ].includes(term.operand);
+            case "in":
+                return ["home", "all"].includes(term.operand);
+            case "id":
+            case "near":
+            case "with":
+                return Number.isInteger(Number(term.operand));
+            case "channel":
+            case "stream":
+                return stream_data.get_sub(term.operand) !== undefined;
+            case "channels":
+            case "streams":
+                return term.operand === "public";
+            case "topic":
+                return true;
+            case "sender":
+            case "from":
+            case "dm":
+            case "pm":
+            case "pm-with":
+            case "dm-including":
+            case "pm-including":
+                return term.operand
+                    .split(",")
+                    .every((email) => people.get_by_email(email) !== undefined);
+            case "search":
+                return true;
+            default:
+                blueslip.error("Unexpected search term operator: " + term.operator);
+                return false;
+        }
+    }
+
     /* Convert a list of search terms to a string.
    Each operator is a key-value pair like
 
@@ -529,6 +611,7 @@ export class Filter {
             "channels-public",
             "channel",
             "topic",
+            "with",
             "dm",
             "dm-including",
             "sender",
@@ -585,7 +668,7 @@ export class Filter {
 
             // Note: We hack around using this in "describe" below.
             case "has":
-                return verb + "messages with one or more";
+                return verb + "messages with";
 
             case "id":
                 return verb + "message ID";
@@ -726,6 +809,73 @@ export class Filter {
         return true;
     }
 
+    static adjusted_terms_if_moved(raw_terms: NarrowTerm[], message: Message): NarrowTerm[] | null {
+        // In case of narrow containing non-stream messages, we replace the
+        // channel/topic/dm operators with singular dm operator corresponding
+        // to the message if it contains `with` operator.
+        if (message.type !== "stream") {
+            const contains_with_operator = raw_terms.some((term) => term.operator === "with");
+
+            if (!contains_with_operator) {
+                return null;
+            }
+            const conversation_terms = new Set(["channel", "topic", "dm"]);
+            const filtered_terms = raw_terms.filter((term) => {
+                const operator = Filter.canonicalize_operator(term.operator);
+                return !conversation_terms.has(operator);
+            });
+
+            assert(typeof message.display_recipient !== "string");
+            const dm_participants = message.display_recipient.map((user) => user.email);
+            const dm_operand = dm_participants.join(",");
+
+            const dm_conversation_terms = [{operator: "dm", operand: dm_operand, negated: false}];
+            return [...dm_conversation_terms, ...filtered_terms];
+        }
+
+        assert(typeof message.display_recipient === "string");
+        assert(typeof message.topic === "string");
+
+        const adjusted_terms = [];
+        let terms_changed = false;
+
+        raw_terms = Filter.ensure_channel_topic_terms(raw_terms);
+
+        for (const term of raw_terms) {
+            const adjusted_term = {...term};
+            if (
+                Filter.canonicalize_operator(term.operator) === "channel" &&
+                !util.lower_same(term.operand, message.display_recipient)
+            ) {
+                adjusted_term.operand = message.display_recipient;
+                terms_changed = true;
+            }
+
+            if (
+                Filter.canonicalize_operator(term.operator) === "topic" &&
+                !util.lower_same(term.operand, message.topic)
+            ) {
+                adjusted_term.operand = message.topic;
+                terms_changed = true;
+            }
+
+            adjusted_terms.push(adjusted_term);
+        }
+
+        if (!terms_changed) {
+            return null;
+        }
+
+        return adjusted_terms;
+    }
+
+    setup_filter(terms: NarrowTerm[]): void {
+        this._terms = this.fix_terms(terms);
+        if (this.has_operator("channel")) {
+            this._sub = stream_data.get_sub_by_name(this.operands("channel")[0]!);
+        }
+    }
+
     equals(filter: Filter, excluded_operators?: string[]): boolean {
         return _.isEqual(
             filter.sorted_terms(excluded_operators),
@@ -781,6 +931,15 @@ export class Filter {
     has_negated_operand(operator: string, operand: string): boolean {
         return this._terms.some(
             (term) => term.negated && term.operator === operator && term.operand === operand,
+        );
+    }
+
+    has_operand_case_insensitive(operator: string, operand: string): boolean {
+        return this._terms.some(
+            (term) =>
+                !term.negated &&
+                term.operator === operator &&
+                term.operand.toLowerCase() === operand.toLowerCase(),
         );
     }
 
@@ -843,6 +1002,7 @@ export class Filter {
             "channels-web-public",
             "not-channels-web-public",
             "near",
+            "with",
         ]);
 
         for (const term of term_types) {
@@ -877,6 +1037,10 @@ export class Filter {
         // it is limited by the user's message history. Therefore, we check "channel"
         // and "topic" together to ensure that the current filter will return all the
         // messages of a conversation.
+        if (_.isEqual(term_types, ["channel", "topic", "with"])) {
+            return true;
+        }
+
         if (_.isEqual(term_types, ["channel", "topic"])) {
             return true;
         }
@@ -1062,7 +1226,7 @@ export class Filter {
                 zulip_icon = "hashtag";
                 break;
             case "is-dm":
-                icon = "envelope";
+                zulip_icon = "user";
                 break;
             case "is-starred":
                 zulip_icon = "star-filled";
@@ -1071,7 +1235,7 @@ export class Filter {
                 zulip_icon = "at-sign";
                 break;
             case "dm":
-                icon = "envelope";
+                zulip_icon = "user";
                 break;
             case "is-resolved":
                 icon = "check";
@@ -1094,6 +1258,7 @@ export class Filter {
         const term_types = this.sorted_term_types();
         if (
             (term_types.length === 3 && _.isEqual(term_types, ["channel", "topic", "near"])) ||
+            (term_types.length === 3 && _.isEqual(term_types, ["channel", "topic", "with"])) ||
             (term_types.length === 2 && _.isEqual(term_types, ["channel", "topic"])) ||
             (term_types.length === 1 && _.isEqual(term_types, ["channel"]))
         ) {
@@ -1276,15 +1441,27 @@ export class Filter {
     fix_terms(terms: NarrowTerm[]): NarrowTerm[] {
         terms = this._canonicalize_terms(terms);
         terms = this._fix_redundant_is_private(terms);
+        terms = this._fix_redundant_with_dm(terms);
         return terms;
     }
 
     _fix_redundant_is_private(terms: NarrowTerm[]): NarrowTerm[] {
+        // Every DM is a DM, so drop `is:dm` if on a DM conversation.
         if (!terms.some((term) => Filter.term_type(term) === "dm")) {
             return terms;
         }
 
         return terms.filter((term) => Filter.term_type(term) !== "is-dm");
+    }
+
+    _fix_redundant_with_dm(terms: NarrowTerm[]): NarrowTerm[] {
+        // Because DMs can't move, the `with` operator is a noop on a
+        // DM conversation.
+        if (terms.some((term) => Filter.term_type(term) === "dm")) {
+            return terms.filter((term) => Filter.term_type(term) !== "with");
+        }
+
+        return terms;
     }
 
     _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowTerm[] {
@@ -1309,7 +1486,9 @@ export class Filter {
     }
 
     sorted_term_types(): string[] {
-        if (this._sorted_term_types === undefined) {
+        // We need to rebuild the sorted_term_types if at all our narrow
+        // is updated (through `with` operator).
+        if (this._sorted_term_types === undefined || this.narrow_requires_hash_change) {
             this._sorted_term_types = this._build_sorted_term_types();
         }
         return this._sorted_term_types;
@@ -1397,7 +1576,11 @@ export class Filter {
 
     is_conversation_view(): boolean {
         const term_type = this.sorted_term_types();
-        if (_.isEqual(term_type, ["channel", "topic"]) || _.isEqual(term_type, ["dm"])) {
+        if (
+            _.isEqual(term_type, ["channel", "topic", "with"]) ||
+            _.isEqual(term_type, ["channel", "topic"]) ||
+            _.isEqual(term_type, ["dm"])
+        ) {
             return true;
         }
         return false;
@@ -1425,5 +1608,78 @@ export class Filter {
             // not narrowed to starred messages
             !this.has_operand("is", "starred")
         );
+    }
+
+    try_adjusting_for_moved_with_target(message?: Message): void {
+        // If we have the message named in a `with` operator
+        // available, either via parameter or message_store,
+        if (!this.requires_adjustment_for_moved_with_target) {
+            return;
+        }
+
+        if (!message) {
+            const message_id = Number.parseInt(this.operands("with")[0]!, 10);
+            message = message_store.get(message_id);
+        }
+
+        if (!message) {
+            return;
+        }
+
+        const adjusted_terms = Filter.adjusted_terms_if_moved(this._terms, message);
+        if (adjusted_terms) {
+            // If the narrow terms are adjusted, then we need to update the
+            // hash user entered, to point to the updated narrow.
+            this.narrow_requires_hash_change = true;
+            this.setup_filter(adjusted_terms);
+        }
+        this.requires_adjustment_for_moved_with_target = false;
+    }
+
+    can_newly_match_moved_messages(new_channel: string, new_topic: string): boolean {
+        // Checks if any of the operators on this Filter object have
+        // the property that it's possible for their true value to
+        // change as a result of messages being moved into the
+        // channel/topic pair provided in the parameters.
+        if (this.has_operand_case_insensitive("channel", new_channel)) {
+            return true;
+        }
+
+        if (this.has_operand_case_insensitive("topic", new_topic)) {
+            return true;
+        }
+
+        const term_types = this.sorted_term_types();
+        const can_match_moved_msg_term_types = new Set([
+            // For some of these operators, we could return `false`
+            // with more analysis of either the pre-move location,
+            // user_topic metadata, etc.
+            //
+            // It might be worth the effort for the more common views,
+            // such as the Combined Feed, but some of these operators
+            // are very unlikely to be used in practice.
+            "not-channel",
+            "not-topic",
+            "is-followed",
+            "not-is-followed",
+            "is-resolved",
+            "not-is-resolved",
+            "channels-public",
+            "not-channels-public",
+            "is-muted",
+            "not-is-muted",
+            "in-home",
+            "not-in-home",
+            "in-all",
+            "not-in-all",
+        ]);
+
+        for (const term of term_types) {
+            if (can_match_moved_msg_term_types.has(term)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -508,18 +508,7 @@ run_test("exit button on pill", ({mock_template}) => {
         pill.$element.remove = noop;
     }
 
-    let next_pill_focused = false;
-
-    const $next_pill_stub = {
-        trigger(type) {
-            if (type === "focus") {
-                next_pill_focused = true;
-            }
-        },
-    };
-
     const $curr_pill_stub = {
-        next: () => $next_pill_stub,
         [0]: "<pill-stub BLUE>",
     };
 
@@ -528,6 +517,9 @@ run_test("exit button on pill", ({mock_template}) => {
             closest(sel) {
                 assert.equal(sel, ".pill");
                 return $curr_pill_stub;
+            },
+            parents() {
+                return [];
             },
         }),
     };
@@ -538,8 +530,6 @@ run_test("exit button on pill", ({mock_template}) => {
     const exit_click_handler = $container.get_on_handler("click", ".exit");
 
     exit_click_handler.call(exit_button_stub, e);
-
-    assert.ok(next_pill_focused);
 
     assert.deepEqual(widget.items(), [items.red]);
 });

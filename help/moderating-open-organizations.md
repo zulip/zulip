@@ -54,7 +54,8 @@ problematic behavior.
 * Create a [default channel](/help/set-default-channels-for-new-users)
   for announcements where [only admins can
   post](/help/channel-posting-policy).
-* Restrict who can [send direct messages](/help/restrict-direct-messages).
+* Configure who can [authorize and start](/help/restrict-direct-messages) direct
+  message conversations.
 
 ## Response
 

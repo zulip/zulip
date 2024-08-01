@@ -1,17 +1,20 @@
-from typing import Dict, Optional, Sequence
+from collections.abc import Sequence
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
-from zerver.models import Huddle, Recipient, UserProfile
-from zerver.models.recipients import get_huddle_hash, get_or_create_huddle
+from zerver.models import DirectMessageGroup, Recipient, UserProfile
+from zerver.models.recipients import (
+    get_direct_message_group_hash,
+    get_or_create_direct_message_group,
+)
 from zerver.models.users import is_cross_realm_bot_email
 
 
 def get_recipient_from_user_profiles(
     recipient_profiles: Sequence[UserProfile],
     forwarded_mirror_message: bool,
-    forwarder_user_profile: Optional[UserProfile],
+    forwarder_user_profile: UserProfile | None,
     sender: UserProfile,
     create: bool = True,
 ) -> Recipient:
@@ -45,28 +48,31 @@ def get_recipient_from_user_profiles(
             type_id=user_profile.id,
         )
 
-    # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
+    # Otherwise, we need a direct message group. Make sure the sender
+    # is included in the group direct messages
     recipient_profiles_map[sender.id] = sender
 
     user_ids = list(recipient_profiles_map)
     if create:
-        huddle = get_or_create_huddle(user_ids)
+        direct_message_group = get_or_create_direct_message_group(user_ids)
     else:
-        # We intentionally let the Huddle.DoesNotExist escape, in the
-        # case that there is no such huddle, and the user passed
-        # create=False
-        huddle = Huddle.objects.get(huddle_hash=get_huddle_hash(user_ids))
+        # We intentionally let the DirectMessageGroup.DoesNotExist escape,
+        # in the case that there is no such direct message group, and the
+        # user passed create=False
+        direct_message_group = DirectMessageGroup.objects.get(
+            huddle_hash=get_direct_message_group_hash(user_ids)
+        )
     return Recipient(
-        id=huddle.recipient_id,
+        id=direct_message_group.recipient_id,
         type=Recipient.DIRECT_MESSAGE_GROUP,
-        type_id=huddle.id,
+        type_id=direct_message_group.id,
     )
 
 
 def validate_recipient_user_profiles(
     user_profiles: Sequence[UserProfile], sender: UserProfile, allow_deactivated: bool = False
 ) -> Sequence[UserProfile]:
-    recipient_profiles_map: Dict[int, UserProfile] = {}
+    recipient_profiles_map: dict[int, UserProfile] = {}
 
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same realm.
@@ -96,7 +102,7 @@ def validate_recipient_user_profiles(
 def recipient_for_user_profiles(
     user_profiles: Sequence[UserProfile],
     forwarded_mirror_message: bool,
-    forwarder_user_profile: Optional[UserProfile],
+    forwarder_user_profile: UserProfile | None,
     sender: UserProfile,
     *,
     allow_deactivated: bool = False,

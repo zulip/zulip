@@ -19,6 +19,7 @@ const settings_data = mock_esm("../src/settings_data", {
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const user_groups = zrequire("user_groups");
 
 const welcome_bot = {
     email: "welcome-bot@example.com",
@@ -58,6 +59,23 @@ function initialize() {
 
     people._add_user(unknown_user);
 }
+
+const nobody = {
+    name: "role:nobody",
+    id: 1,
+    members: new Set([]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+const everyone = {
+    name: "role:everyone",
+    id: 2,
+    members: new Set([30]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
+user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
 function test_people(label, f) {
     run_test(label, (helpers) => {
@@ -757,6 +775,47 @@ test_people("filtered_users", () => {
     assert.ok(filtered_people.has(noah.user_id));
 });
 
+test_people("dm_matches_search_string", () => {
+    people.add_active_user(charles);
+    people.add_active_user(maria);
+    people.add_active_user(ashton);
+    people.add_active_user(linus);
+    people.add_active_user(noah);
+    people.add_active_user(plain_noah);
+
+    let result = people.dm_matches_search_string([ashton], "a");
+    assert.ok(result);
+    // Maria's email starts with `a`.
+    result = people.dm_matches_search_string([maria], "a");
+    assert.ok(result);
+    // Neither Charles' full name or email start with `a`.
+    result = people.dm_matches_search_string([charles], "a");
+    assert.ok(!result);
+
+    // Empty search terms should always return true
+    result = people.dm_matches_search_string([charles], "");
+    assert.ok(result);
+    result = people.dm_matches_search_string([charles, maria, noah], "");
+    assert.ok(result);
+
+    // Match with email.
+    result = people.dm_matches_search_string([linus], "ltorv");
+    assert.ok(result);
+
+    // Test filtering of names with diacritics. This should match
+    // Nöôáàh by ignoring diacritics, and also match Nooaah.
+    result = people.dm_matches_search_string([noah], "noOa");
+    assert.ok(result);
+    result = people.dm_matches_search_string([plain_noah], "noOa");
+    assert.ok(result);
+
+    // This should match ëmerson, but not emerson.
+    result = people.dm_matches_search_string([noah], "ëm");
+    assert.ok(result);
+    result = people.dm_matches_search_string([plain_noah], "ëm");
+    assert.ok(!result);
+});
+
 test_people("multi_user_methods", () => {
     people.add_active_user(emp401);
     people.add_active_user(emp402);
@@ -1442,6 +1501,17 @@ test_people("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.full_name, charles.full_name);
     assert.ok(!user.is_inaccessible_user);
     assert.equal(user.email, charles.email);
+});
+
+test_people("user_can_initiate_direct_message_thread", () => {
+    people.add_active_user(welcome_bot);
+    realm.realm_direct_message_initiator_group = nobody.id;
+    assert.ok(!people.user_can_initiate_direct_message_thread("32"));
+    // Can send if only bots and self are present.
+    assert.ok(people.user_can_initiate_direct_message_thread("4,30"));
+
+    realm.realm_direct_message_initiator_group = everyone.id;
+    assert.ok(people.user_can_initiate_direct_message_thread("32"));
 });
 
 // reset to native Date()

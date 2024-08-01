@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 from urllib.parse import urlsplit
 
 from django.conf import settings
@@ -55,7 +54,7 @@ def is_root_domain_available() -> bool:
     return not Realm.objects.filter(string_id=Realm.SUBDOMAIN_FOR_ROOT_DOMAIN).exists()
 
 
-def is_static_or_current_realm_url(url: str, realm: Optional[Realm]) -> bool:
+def is_static_or_current_realm_url(url: str, realm: Realm | None) -> bool:
     assert settings.STATIC_URL is not None
     split_url = urlsplit(url)
     split_static_url = urlsplit(settings.STATIC_URL)

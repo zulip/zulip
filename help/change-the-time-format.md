@@ -1,7 +1,7 @@
 # Change the time format
 
 Based on your preference, Zulip can display times either in a 12-hour
-format (e.g. 5:00 PM) or a 24-hour format (e.g. 17:00).
+format (e.g., 5:00 PM) or a 24-hour format (e.g., 17:00).
 
 ### Change the time format
 

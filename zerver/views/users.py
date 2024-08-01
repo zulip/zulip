@@ -1,5 +1,6 @@
+from collections.abc import Mapping
 from email.headerregistry import Address
-from typing import Any, Dict, List, Mapping, Optional, TypeAlias, Union
+from typing import Annotated, Any, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -8,7 +9,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 from pydantic import AfterValidator, BaseModel, Json, StringConstraints
-from typing_extensions import Annotated
 
 from zerver.actions.bots import (
     do_change_bot_owner,
@@ -57,7 +57,7 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
     typed_endpoint_without_parameters,
 )
-from zerver.lib.typed_endpoint_validators import check_int_in, check_url
+from zerver.lib.typed_endpoint_validators import check_int_in_validator, check_url
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
@@ -98,11 +98,8 @@ from zproject.backends import check_password_strength
 
 RoleParamType: TypeAlias = Annotated[
     int,
-    AfterValidator(
-        lambda x: check_int_in(
-            x,
-            UserProfile.ROLE_TYPES,
-        )
+    check_int_in_validator(
+        UserProfile.ROLE_TYPES,
     ),
 ]
 
@@ -118,9 +115,8 @@ def deactivate_user_backend(
     user_profile: UserProfile,
     *,
     user_id: PathOnly[int],
-    deactivation_notification_comment: Optional[
-        Annotated[str, StringConstraints(max_length=2000)]
-    ] = None,
+    deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
+    | None = None,
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
@@ -161,7 +157,7 @@ def _deactivate_user_profile_backend(
     user_profile: UserProfile,
     target: UserProfile,
     *,
-    deactivation_notification_comment: Optional[str],
+    deactivation_notification_comment: str | None,
 ) -> HttpResponse:
     do_deactivate_user(target, acting_user=user_profile)
 
@@ -197,7 +193,7 @@ def reactivate_user_backend(
 
 class ProfileDataElement(BaseModel):
     id: int
-    value: Optional[Union[str, List[int]]]
+    value: str | list[int] | None
 
 
 @typed_endpoint
@@ -206,9 +202,9 @@ def update_user_backend(
     user_profile: UserProfile,
     *,
     user_id: PathOnly[int],
-    full_name: Optional[str] = None,
-    role: Optional[Json[RoleParamType]] = None,
-    profile_data: Optional[Json[List[ProfileDataElement]]] = None,
+    full_name: str | None = None,
+    role: Json[RoleParamType] | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
 ) -> HttpResponse:
     target = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
@@ -236,7 +232,7 @@ def update_user_backend(
         check_change_full_name(target, full_name, user_profile)
 
     if profile_data is not None:
-        clean_profile_data: List[ProfileDataElementUpdateDict] = []
+        clean_profile_data: list[ProfileDataElementUpdateDict] = []
         for entry in profile_data:
             assert isinstance(entry.id, int)
             assert not isinstance(entry.value, int)
@@ -258,7 +254,7 @@ def update_user_backend(
 
 def avatar(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     email_or_id: str,
     medium: bool = False,
 ) -> HttpResponse:
@@ -297,7 +293,7 @@ def avatar(
                 int(email_or_id), realm
             )
 
-        url: Optional[str] = None
+        url: str | None = None
         if maybe_user_profile.is_authenticated and not check_can_access_user(
             avatar_user_profile, maybe_user_profile
         ):
@@ -319,12 +315,12 @@ def avatar(
 
 
 def avatar_medium(
-    request: HttpRequest, maybe_user_profile: Union[UserProfile, AnonymousUser], email_or_id: str
+    request: HttpRequest, maybe_user_profile: UserProfile | AnonymousUser, email_or_id: str
 ) -> HttpResponse:
     return avatar(request, maybe_user_profile, email_or_id, medium=True)
 
 
-def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
+def get_stream_name(stream: Stream | None) -> str | None:
     if stream:
         return stream.name
     return None
@@ -337,15 +333,15 @@ def patch_bot_backend(
     user_profile: UserProfile,
     *,
     bot_id: PathOnly[int],
-    full_name: Optional[str] = None,
-    role: Optional[Json[RoleParamType]] = None,
-    bot_owner_id: Optional[Json[int]] = None,
-    config_data: Optional[Json[Dict[str, str]]] = None,
-    service_payload_url: Optional[Json[Annotated[str, AfterValidator(check_url)]]] = None,
+    full_name: str | None = None,
+    role: Json[RoleParamType] | None = None,
+    bot_owner_id: Json[int] | None = None,
+    config_data: Json[dict[str, str]] | None = None,
+    service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     service_interface: Json[int] = 1,
-    default_sending_stream: Optional[str] = None,
-    default_events_register_stream: Optional[str] = None,
-    default_all_public_streams: Optional[Json[bool]] = None,
+    default_sending_stream: str | None = None,
+    default_events_register_stream: str | None = None,
+    default_all_public_streams: Json[bool] | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
@@ -361,7 +357,7 @@ def patch_bot_backend(
 
         do_change_user_role(bot, role, acting_user=user_profile)
 
-    if bot_owner_id is not None:
+    if bot_owner_id is not None and bot.bot_owner_id != bot_owner_id:
         try:
             owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)
         except UserProfile.DoesNotExist:
@@ -377,7 +373,7 @@ def patch_bot_backend(
 
     if default_sending_stream is not None:
         if default_sending_stream == "":
-            stream: Optional[Stream] = None
+            stream: Stream | None = None
         else:
             (stream, sub) = access_stream_by_name(user_profile, default_sending_stream)
         do_change_default_sending_stream(bot, stream, acting_user=user_profile)
@@ -455,16 +451,16 @@ def add_bot_backend(
     short_name_raw: Annotated[str, ApiParamConfig("short_name")],
     bot_type: Json[int] = UserProfile.DEFAULT_BOT,
     payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
-    service_name: Optional[str] = None,
-    config_data: Optional[Json[Mapping[str, str]]] = None,
+    service_name: str | None = None,
+    config_data: Json[Mapping[str, str]] | None = None,
     interface_type: Json[int] = Service.GENERIC,
     default_sending_stream_name: Annotated[
-        Optional[str], ApiParamConfig("default_sending_stream")
+        str | None, ApiParamConfig("default_sending_stream")
     ] = None,
     default_events_register_stream_name: Annotated[
-        Optional[str], ApiParamConfig("default_events_register_stream")
+        str | None, ApiParamConfig("default_events_register_stream")
     ] = None,
-    default_all_public_streams: Optional[Json[bool]] = None,
+    default_all_public_streams: Json[bool] | None = None,
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}
@@ -554,7 +550,7 @@ def add_bot_backend(
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
-        upload_avatar_image(user_file, bot_profile)
+        upload_avatar_image(user_file, bot_profile, future=False)
 
     if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
         assert isinstance(service_name, str)
@@ -596,7 +592,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     )
     bot_profiles = bot_profiles.order_by("date_joined")
 
-    def bot_info(bot_profile: UserProfile) -> Dict[str, Any]:
+    def bot_info(bot_profile: UserProfile) -> dict[str, Any]:
         default_sending_stream = get_stream_name(bot_profile.default_sending_stream)
         default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
 
@@ -622,8 +618,8 @@ def get_user_data(
     user_profile: UserProfile,
     include_custom_profile_fields: bool,
     client_gravatar: bool,
-    target_user: Optional[UserProfile] = None,
-) -> Dict[str, Any]:
+    target_user: UserProfile | None = None,
+) -> dict[str, Any]:
     """
     The client_gravatar field here is set to True by default assuming that clients
     can compute their own gravatars, which saves bandwidth. This is more important of
@@ -642,7 +638,7 @@ def get_user_data(
     )
 
     if target_user is not None:
-        data: Dict[str, Any] = {"user": members[target_user.id]}
+        data: dict[str, Any] = {"user": members[target_user.id]}
     else:
         data = {"members": [members[k] for k in members]}
 
@@ -653,7 +649,7 @@ def get_user_data(
 def get_members_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_id: Optional[int] = None,
+    user_id: int | None = None,
     *,
     include_custom_profile_fields: Json[bool] = False,
     client_gravatar: Json[bool] = True,

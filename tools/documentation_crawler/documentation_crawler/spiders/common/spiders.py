@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from typing import Callable, Iterator, List, Optional, Union
+from collections.abc import Callable, Iterator
 from urllib.parse import urlsplit
 
 import scrapy
@@ -58,12 +58,12 @@ ZULIP_SERVER_GITHUB_DIRECTORY_PATH_PREFIX = "/zulip/zulip/tree/main"
 
 
 class BaseDocumentationSpider(scrapy.Spider):
-    name: Optional[str] = None
+    name: str | None = None
     # Exclude domain address.
-    deny_domains: List[str] = []
-    start_urls: List[str] = []
-    deny: List[str] = []
-    file_extensions: List[str] = ["." + ext for ext in IGNORED_EXTENSIONS]
+    deny_domains: list[str] = []
+    start_urls: list[str] = []
+    deny: list[str] = []
+    file_extensions: list[str] = ["." + ext for ext in IGNORED_EXTENSIONS]
     tags = ("a", "area", "img")
     attrs = ("href", "src")
 
@@ -155,7 +155,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         if url.startswith("http://localhost:9981/plans"):
             return
 
-        callback: Callable[[Response], Optional[Iterator[Request]]] = self.parse
+        callback: Callable[[Response], Iterator[Request] | None] = self.parse
         dont_filter = False
         method = "GET"
         if self._is_external_url(url):
@@ -233,7 +233,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         request.dont_filter = True
         yield request
 
-    def error_callback(self, failure: Failure) -> Optional[Union[Failure, Iterator[Request]]]:
+    def error_callback(self, failure: Failure) -> Failure | Iterator[Request] | None:
         if isinstance(failure.value, HttpError):
             response = failure.value.response
             # Hack: The filtering above does not catch this URL,

@@ -13,11 +13,11 @@ See puppet/kandra/files/cron.d/zephyr-mirror for the crontab details.
 import os
 import sys
 import time
-from typing import Dict, NoReturn
+from typing import NoReturn
 
 RESULTS_FILE = "/var/lib/nagios_state/check-mirroring-results"
 
-states: Dict[str, int] = {
+states: dict[str, int] = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,

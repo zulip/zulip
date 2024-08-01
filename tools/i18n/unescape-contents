@@ -4,7 +4,7 @@ import argparse
 import html
 import json
 import sys
-from typing import Dict, NamedTuple
+from typing import NamedTuple
 
 
 class CLIArgs(NamedTuple):
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     args = parse_args()
     print(f"unescaping file {args.filename}", file=sys.stderr)
 
-    json_data: Dict[str, str] = {}
+    json_data: dict[str, str] = {}
 
     with open(args.filename) as source:
         json_data = json.load(source)

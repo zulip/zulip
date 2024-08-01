@@ -103,7 +103,9 @@ export function build_page() {
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:
             settings_config.web_mark_read_on_scroll_policy_values,
+        web_channel_default_view_values: settings_config.web_channel_default_view_values,
         user_list_style_values: settings_config.user_list_style_values,
+        web_animate_image_previews_values: settings_config.web_animate_image_previews_values,
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
         color_scheme_values: settings_config.color_scheme_values,
@@ -118,8 +120,9 @@ export function build_page() {
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         show_push_notifications_tooltip:
             settings_config.all_notifications(user_settings).show_push_notifications_tooltip,
-        display_settings: settings_config.get_all_preferences(),
+        information_section_checkbox_group: settings_config.information_section_checkbox_group,
         information_density_settings: settings_config.get_information_density_preferences(),
+        settings_render_only: settings_config.get_settings_render_only(),
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_can_change_email: settings_data.user_can_change_email(),

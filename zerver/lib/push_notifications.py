@@ -5,22 +5,11 @@ import base64
 import copy
 import logging
 import re
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from email.headerregistry import Address
 from functools import cache
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Optional, TypeAlias, Union
 
 import lxml.html
 import orjson
@@ -36,7 +25,7 @@ from firebase_admin import exceptions as firebase_exceptions
 from firebase_admin import initialize_app as firebase_initialize_app
 from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.realm_settings import (
@@ -47,7 +36,7 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import access_message_and_usermessage, huddle_users
+from zerver.lib.message import access_message_and_usermessage, direct_message_group_users
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.remote_server import (
     record_push_notifications_recently_working,
@@ -114,7 +103,7 @@ class UserPushIdentityCompat:
     may be represented either by an id or uuid.
     """
 
-    def __init__(self, user_id: Optional[int] = None, user_uuid: Optional[str] = None) -> None:
+    def __init__(self, user_id: int | None = None, user_uuid: str | None = None) -> None:
         assert user_id is not None or user_uuid is not None
         self.user_id = user_id
         self.user_uuid = user_uuid
@@ -169,7 +158,7 @@ def has_apns_credentials() -> bool:
 
 
 @cache
-def get_apns_context() -> Optional[APNsContext]:
+def get_apns_context() -> APNsContext | None:
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
     import aioapns
@@ -259,13 +248,13 @@ def send_apple_push_notification(
     if apns_context is None:
         logger.debug(
             "APNs: Dropping a notification because nothing configured.  "
-            "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE)."
+            "Set ZULIP_SERVICES_URL (or APNS_CERT_FILE)."
         )
         return 0
 
     if remote:
         assert settings.ZILENCER_ENABLED
-        DeviceTokenClass: Type[AbstractPushDeviceToken] = RemotePushDeviceToken
+        DeviceTokenClass: type[AbstractPushDeviceToken] = RemotePushDeviceToken
     else:
         DeviceTokenClass = PushDeviceToken
 
@@ -298,7 +287,7 @@ def send_apple_push_notification(
         devices = [device for device in devices if device.ios_app_id is not None]
 
     async def send_all_notifications() -> (
-        Iterable[Tuple[DeviceToken, Union[aioapns.common.NotificationResult, BaseException]]]
+        Iterable[tuple[DeviceToken, aioapns.common.NotificationResult | BaseException]]
     ):
         requests = [
             aioapns.NotificationRequest(
@@ -313,7 +302,7 @@ def send_apple_push_notification(
             *(apns_context.apns.send_notification(request) for request in requests),
             return_exceptions=True,
         )
-        return zip(devices, results)
+        return zip(devices, results, strict=False)
 
     results = apns_context.loop.run_until_complete(send_all_notifications())
 
@@ -390,7 +379,7 @@ def has_fcm_credentials() -> bool:  # nocoverage
 
 # This is purely used in testing
 def send_android_push_notification_to_user(
-    user_profile: UserProfile, data: Dict[str, Any], options: Dict[str, Any]
+    user_profile: UserProfile, data: dict[str, Any], options: dict[str, Any]
 ) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM))
     send_android_push_notification(
@@ -398,7 +387,7 @@ def send_android_push_notification_to_user(
     )
 
 
-def parse_fcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
+def parse_fcm_options(options: dict[str, Any], data: dict[str, Any]) -> str:
     """
     Parse FCM options, supplying defaults, and raising an error if invalid.
 
@@ -446,8 +435,8 @@ def parse_fcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 def send_android_push_notification(
     user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
-    data: Dict[str, Any],
-    options: Dict[str, Any],
+    data: dict[str, Any],
+    options: dict[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
 ) -> int:
     """
@@ -466,7 +455,7 @@ def send_android_push_notification(
     if not fcm_app:
         logger.debug(
             "Skipping sending a FCM push notification since "
-            "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_FCM_CREDENTIALS_PATH are both unset"
+            "ZULIP_SERVICE_PUSH_NOTIFICATIONS and ANDROID_FCM_CREDENTIALS_PATH are both unset"
         )
         return 0
 
@@ -504,7 +493,7 @@ def send_android_push_notification(
 
     if remote:
         assert settings.ZILENCER_ENABLED
-        DeviceTokenClass: Type[AbstractPushDeviceToken] = RemotePushDeviceToken
+        DeviceTokenClass: type[AbstractPushDeviceToken] = RemotePushDeviceToken
     else:
         DeviceTokenClass = PushDeviceToken
 
@@ -540,7 +529,7 @@ def send_android_push_notification(
 
 
 def uses_notification_bouncer() -> bool:
-    return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+    return settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS is True
 
 
 def sends_notifications_directly() -> bool:
@@ -549,9 +538,9 @@ def sends_notifications_directly() -> bool:
 
 def send_notifications_to_bouncer(
     user_profile: UserProfile,
-    apns_payload: Dict[str, Any],
-    gcm_payload: Dict[str, Any],
-    gcm_options: Dict[str, Any],
+    apns_payload: dict[str, Any],
+    gcm_payload: dict[str, Any],
+    gcm_options: dict[str, Any],
     android_devices: Sequence[DeviceToken],
     apple_devices: Sequence[DeviceToken],
 ) -> None:
@@ -655,7 +644,7 @@ def send_notifications_to_bouncer(
 
 
 def add_push_device_token(
-    user_profile: UserProfile, token_str: str, kind: int, ios_app_id: Optional[str] = None
+    user_profile: UserProfile, token_str: str, kind: int, ios_app_id: str | None = None
 ) -> None:
     logger.info(
         "Registering push device: %d %r %d %r", user_profile.id, token_str, kind, ios_app_id
@@ -913,8 +902,8 @@ def get_mobile_push_content(rendered_content: str) -> str:
         )
         return remaining_text.strip() == ":"
 
-    def get_collapsible_status_array(elements: List[lxml.html.HtmlElement]) -> List[bool]:
-        collapsible_status: List[bool] = [
+    def get_collapsible_status_array(elements: list[lxml.html.HtmlElement]) -> list[bool]:
+        collapsible_status: list[bool] = [
             element.tag == "blockquote" or is_user_said_paragraph(element) for element in elements
         ]
         return collapsible_status
@@ -945,7 +934,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
     return plain_text
 
 
-def truncate_content(content: str) -> Tuple[str, bool]:
+def truncate_content(content: str) -> tuple[str, bool]:
     # We use Unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
     # of three dots as this saves two extra characters for textual
     # content. This function will need to be updated to handle Unicode
@@ -955,9 +944,9 @@ def truncate_content(content: str) -> Tuple[str, bool]:
     return content[:200] + "…", True
 
 
-def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
+def get_base_payload(user_profile: UserProfile) -> dict[str, Any]:
     """Common fields for all notification payloads."""
-    data: Dict[str, Any] = {}
+    data: dict[str, Any] = {}
 
     # These will let the app support logging into multiple realms and servers.
     data["server"] = settings.EXTERNAL_HOST
@@ -973,10 +962,10 @@ def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
 def get_message_payload(
     user_profile: UserProfile,
     message: Message,
-    mentioned_user_group_id: Optional[int] = None,
-    mentioned_user_group_name: Optional[str] = None,
+    mentioned_user_group_id: int | None = None,
+    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Common fields for `message` payloads, for all platforms."""
     data = get_base_payload(user_profile)
 
@@ -1006,7 +995,7 @@ def get_message_payload(
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         data["recipient_type"] = "private"
-        data["pm_users"] = huddle_users(message.recipient.id)
+        data["pm_users"] = direct_message_group_users(message.recipient.id)
     else:  # Recipient.PERSONAL
         data["recipient_type"] = "private"
 
@@ -1032,7 +1021,7 @@ def get_apns_alert_subtitle(
     message: Message,
     trigger: str,
     user_profile: UserProfile,
-    mentioned_user_group_name: Optional[str] = None,
+    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> str:
     """
@@ -1068,7 +1057,7 @@ def get_apns_alert_subtitle(
 
 
 def get_apns_badge_count(
-    user_profile: UserProfile, read_messages_ids: Optional[Sequence[int]] = []
+    user_profile: UserProfile, read_messages_ids: Sequence[int] | None = []
 ) -> int:
     # NOTE: We have temporarily set get_apns_badge_count to always
     # return 0 until we can debug a likely mobile app side issue with
@@ -1077,7 +1066,7 @@ def get_apns_badge_count(
 
 
 def get_apns_badge_count_future(
-    user_profile: UserProfile, read_messages_ids: Optional[Sequence[int]] = []
+    user_profile: UserProfile, read_messages_ids: Sequence[int] | None = []
 ) -> int:
     # Future implementation of get_apns_badge_count; unused but
     # we expect to use this once we resolve client-side bugs.
@@ -1099,10 +1088,10 @@ def get_message_payload_apns(
     user_profile: UserProfile,
     message: Message,
     trigger: str,
-    mentioned_user_group_id: Optional[int] = None,
-    mentioned_user_group_name: Optional[str] = None,
+    mentioned_user_group_id: int | None = None,
+    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
     zulip_data = get_message_payload(
         user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
@@ -1132,10 +1121,10 @@ def get_message_payload_apns(
 def get_message_payload_gcm(
     user_profile: UserProfile,
     message: Message,
-    mentioned_user_group_id: Optional[int] = None,
-    mentioned_user_group_name: Optional[str] = None,
+    mentioned_user_group_id: int | None = None,
+    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """A `message` payload + options, for Android via FCM."""
     data = get_message_payload(
         user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
@@ -1169,8 +1158,8 @@ def get_message_payload_gcm(
 
 def get_remove_payload_gcm(
     user_profile: UserProfile,
-    message_ids: List[int],
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    message_ids: list[int],
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """A `remove` payload + options, for Android via FCM."""
     gcm_payload = get_base_payload(user_profile)
     gcm_payload.update(
@@ -1184,7 +1173,7 @@ def get_remove_payload_gcm(
     return gcm_payload, gcm_options
 
 
-def get_remove_payload_apns(user_profile: UserProfile, message_ids: List[int]) -> Dict[str, Any]:
+def get_remove_payload_apns(user_profile: UserProfile, message_ids: list[int]) -> dict[str, Any]:
     zulip_data = get_base_payload(user_profile)
     zulip_data.update(
         event="remove",
@@ -1197,7 +1186,7 @@ def get_remove_payload_apns(user_profile: UserProfile, message_ids: List[int]) -
     return apns_data
 
 
-def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]) -> None:
+def handle_remove_push_notification(user_profile_id: int, message_ids: list[int]) -> None:
     """This should be called when a message that previously had a
     mobile push notification executed is read.  This triggers a push to the
     mobile app, when the message is read on the server, to remove the
@@ -1279,7 +1268,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         ).update(flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification))
 
 
-def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
+def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any]) -> None:
     """
     missed_message is the event received by the
     zerver.worker.missedmessage_mobile_notifications.PushNotificationWorker.consume function.
@@ -1450,7 +1439,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 def send_test_push_notification_directly_to_devices(
     user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
-    base_payload: Dict[str, Any],
+    base_payload: dict[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     payload = copy.deepcopy(base_payload)
@@ -1485,7 +1474,7 @@ def send_test_push_notification_directly_to_devices(
     )
 
 
-def send_test_push_notification(user_profile: UserProfile, devices: List[PushDeviceToken]) -> None:
+def send_test_push_notification(user_profile: UserProfile, devices: list[PushDeviceToken]) -> None:
     base_payload = get_base_payload(user_profile)
     if uses_notification_bouncer():
         for device in devices:

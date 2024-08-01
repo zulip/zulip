@@ -33,6 +33,17 @@ async function expect_home(page: Page): Promise<void> {
     ]);
 }
 
+async function expect_verona_stream_top_topic(page: Page): Promise<void> {
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    await common.check_messages_sent(page, message_list_id, [
+        ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
+    ]);
+    assert.strictEqual(await page.title(), "#Verona > test - Zulip Dev - Zulip");
+}
+
 async function expect_verona_stream(page: Page): Promise<void> {
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
@@ -169,6 +180,8 @@ async function search_and_check(
     await page.click(".search_icon");
     await page.waitForSelector(".navbar-search.expanded", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", search_str, item_to_select);
+    // Enter to trigger search
+    await page.keyboard.press("Enter");
     await check(page);
     assert.strictEqual(await page.title(), expected_narrow_title);
     await un_narrow(page);
@@ -179,6 +192,8 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
     await page.click(".search_icon");
     await page.waitForSelector(".navbar-search.expanded", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", str, item);
+    // Enter to trigger search
+    await page.keyboard.press("Enter");
     await page.waitForSelector(".empty_feed_notice", {visible: true});
     const expect_message = "You haven't received any messages sent by Email Gateway yet.";
     assert.strictEqual(
@@ -186,35 +201,6 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
         expect_message,
     );
     await common.get_current_msg_list_id(page, true);
-    await un_narrow(page);
-    await expect_home(page);
-}
-
-async function expect_non_existing_user(page: Page): Promise<void> {
-    await common.get_current_msg_list_id(page, true);
-    await page.waitForSelector(".empty_feed_notice", {visible: true});
-    const expected_message = "This user does not exist!";
-    assert.strictEqual(
-        await common.get_text_from_selector(page, ".empty_feed_notice"),
-        expected_message,
-    );
-}
-
-async function expect_non_existing_users(page: Page): Promise<void> {
-    await common.get_current_msg_list_id(page, true);
-    await page.waitForSelector(".empty_feed_notice", {visible: true});
-    const expected_message = "One or more of these users do not exist!";
-    assert.strictEqual(
-        await common.get_text_from_selector(page, ".empty_feed_notice"),
-        expected_message,
-    );
-}
-
-async function search_non_existing_user(page: Page, str: string, item: string): Promise<void> {
-    await page.click(".search_icon");
-    await page.waitForSelector(".navbar-search.expanded", {visible: true});
-    await common.select_item_via_typeahead(page, "#search_query", str, item);
-    await expect_non_existing_user(page);
     await un_narrow(page);
     await expect_home(page);
 }
@@ -269,24 +255,6 @@ async function search_tests(page: Page): Promise<void> {
     );
 
     await search_silent_user(page, "sender:emailgateway@zulip.com", "");
-
-    await search_non_existing_user(page, "sender:dummyuser@zulip.com", "");
-
-    await search_and_check(
-        page,
-        "dm:dummyuser@zulip.com",
-        "",
-        expect_non_existing_user,
-        "Invalid user - Zulip Dev - Zulip",
-    );
-
-    await search_and_check(
-        page,
-        "dm:dummyuser@zulip.com,dummyuser2@zulip.com",
-        "",
-        expect_non_existing_users,
-        "Invalid users - Zulip Dev - Zulip",
-    );
 }
 
 async function expect_all_direct_messages(page: Page): Promise<void> {
@@ -313,8 +281,8 @@ async function expect_all_direct_messages(page: Page): Promise<void> {
 async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<void> {
     console.log("Narrowing with left sidebar");
 
-    await page.click((await get_stream_li(page, "Verona")) + " a");
-    await expect_verona_stream(page);
+    await page.click((await get_stream_li(page, "Verona")) + " .stream-name");
+    await expect_verona_stream_top_topic(page);
 
     await page.click("#left-sidebar-navigation-list .top_left_all_messages a");
     await expect_home(page);
@@ -347,16 +315,16 @@ async function test_search_venice(page: Page): Promise<void> {
     await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
 
     await page.click("#streams_header .left-sidebar-title");
-    await page.waitForSelector(".input-append.notdisplayed");
+    await page.waitForSelector(".stream_search_section.notdisplayed");
 }
 
 async function test_stream_search_filters_stream_list(page: Page): Promise<void> {
     console.log("Filter streams using left side bar");
 
-    await page.waitForSelector(".input-append.notdisplayed"); // Stream filter box invisible initially
+    await page.waitForSelector(".stream_search_section.notdisplayed"); // Stream filter box invisible initially
     await page.click("#streams_header .left-sidebar-title");
 
-    await page.waitForSelector("#streams_list .input-append.notdisplayed", {hidden: true});
+    await page.waitForSelector("#streams_list .stream_search_section.notdisplayed", {hidden: true});
 
     // assert streams exist by waiting till they're visible
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
@@ -424,7 +392,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Venice"), {hidden: true});
     await page.click(await get_stream_li(page, "Verona"));
-    await expect_verona_stream(page);
+    await expect_verona_stream_top_topic(page);
     assert.strictEqual(
         await common.get_text_from_selector(page, ".stream-list-filter"),
         "",

@@ -1,6 +1,6 @@
 import base64
 import struct
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in
 # https://github.com/davidben/webathena, which has the following
@@ -101,7 +101,7 @@ def der_encode_octet_string(val: bytes) -> bytes:
     return der_encode_tlv(0x04, val)
 
 
-def der_encode_sequence(tlvs: List[Optional[bytes]], tagged: bool = True) -> bytes:
+def der_encode_sequence(tlvs: list[bytes | None], tagged: bool = True) -> bytes:
     body = []
     for i, tlv in enumerate(tlvs):
         # Missing optional elements represented as None.
@@ -114,7 +114,7 @@ def der_encode_sequence(tlvs: List[Optional[bytes]], tagged: bool = True) -> byt
     return der_encode_tlv(0x30, b"".join(body))
 
 
-def der_encode_ticket(tkt: Dict[str, Any]) -> bytes:
+def der_encode_ticket(tkt: dict[str, Any]) -> bytes:
     return der_encode_tlv(
         0x61,  # Ticket
         der_encode_sequence(
@@ -155,7 +155,7 @@ def ccache_counted_octet_string(data: bytes) -> bytes:
     return struct.pack("!I", len(data)) + data
 
 
-def ccache_principal(name: Dict[str, str], realm: str) -> bytes:
+def ccache_principal(name: dict[str, str], realm: str) -> bytes:
     header = struct.pack("!II", name["nameType"], len(name["nameString"]))
     return (
         header
@@ -164,13 +164,13 @@ def ccache_principal(name: Dict[str, str], realm: str) -> bytes:
     )
 
 
-def ccache_key(key: Dict[str, str]) -> bytes:
+def ccache_key(key: dict[str, str]) -> bytes:
     return struct.pack("!H", key["keytype"]) + ccache_counted_octet_string(
         base64.b64decode(key["keyvalue"])
     )
 
 
-def flags_to_uint32(flags: List[str]) -> int:
+def flags_to_uint32(flags: list[str]) -> int:
     ret = 0
     for i, v in enumerate(flags):
         if v:
@@ -178,7 +178,7 @@ def flags_to_uint32(flags: List[str]) -> int:
     return ret
 
 
-def ccache_credential(cred: Dict[str, Any]) -> bytes:
+def ccache_credential(cred: dict[str, Any]) -> bytes:
     out = ccache_principal(cred["cname"], cred["crealm"])
     out += ccache_principal(cred["sname"], cred["srealm"])
     out += ccache_key(cred["key"])
@@ -199,7 +199,7 @@ def ccache_credential(cred: Dict[str, Any]) -> bytes:
     return out
 
 
-def make_ccache(cred: Dict[str, Any]) -> bytes:
+def make_ccache(cred: dict[str, Any]) -> bytes:
     # Do we need a DeltaTime header? The ccache I get just puts zero
     # in there, so do the same.
     out = struct.pack(

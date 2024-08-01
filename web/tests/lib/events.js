@@ -374,6 +374,7 @@ exports.fixtures = {
                 Google: {enabled: true, available: true},
             },
             can_create_public_channel_group: 3,
+            direct_message_permission_group: 3,
         },
     },
 
@@ -1022,6 +1023,34 @@ exports.fixtures = {
         value: 2,
     },
 
+    user_settings__web_animate_image_previews_always: {
+        type: "user_settings",
+        op: "update",
+        property: "web_animate_image_previews",
+        value: "always",
+    },
+
+    user_settings__web_animate_image_previews_never: {
+        type: "user_settings",
+        op: "update",
+        property: "web_animate_image_previews",
+        value: "never",
+    },
+
+    user_settings__web_animate_image_previews_on_hover: {
+        type: "user_settings",
+        op: "update",
+        property: "web_animate_image_previews",
+        value: "on_hover",
+    },
+
+    user_settings__web_channel_default_view: {
+        type: "user_settings",
+        op: "update",
+        property: "web_channel_default_view",
+        value: 1,
+    },
+
     user_settings__web_escape_navigates_to_home_view: {
         type: "user_settings",
         op: "update",
@@ -1069,6 +1098,13 @@ exports.fixtures = {
         op: "update",
         property: "web_mark_read_on_scroll_policy",
         value: 1,
+    },
+
+    user_settings__web_navigate_to_sent_message: {
+        type: "user_settings",
+        op: "update",
+        property: "web_navigate_to_sent_message",
+        value: false,
     },
 
     user_settings__web_stream_unreads_count_display_policy: {

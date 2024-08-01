@@ -2,13 +2,14 @@ import hashlib
 import logging
 import os
 import smtplib
+from collections.abc import Callable, Mapping
 from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any
 
 import backoff
 import css_inline
@@ -69,7 +70,7 @@ class FromAddress:
 
     @staticmethod
     def security_email_from_name(
-        language: Optional[str] = None, user_profile: Optional[UserProfile] = None
+        language: str | None = None, user_profile: UserProfile | None = None
     ) -> str:
         if language is None:
             assert user_profile is not None
@@ -83,14 +84,14 @@ class FromAddress:
 
 def build_email(
     template_prefix: str,
-    to_user_ids: Optional[List[int]] = None,
-    to_emails: Optional[List[str]] = None,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    reply_to_email: Optional[str] = None,
-    language: Optional[str] = None,
+    to_user_ids: list[int] | None = None,
+    to_emails: list[str] | None = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    reply_to_email: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
-    realm: Optional[Realm] = None,
+    realm: Realm | None = None,
 ) -> EmailMultiAlternatives:
     # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_ids is None) ^ (to_emails is None)
@@ -140,7 +141,7 @@ def build_email(
         inliner = get_inliner_instance()
         return inliner.inline(template)
 
-    def render_templates() -> Tuple[str, str, str]:
+    def render_templates() -> tuple[str, str, str]:
         email_subject = (
             loader.render_to_string(
                 template_prefix + ".subject.txt", context=context, using="Jinja2_plaintext"
@@ -244,17 +245,17 @@ class NoEmailArgumentError(CommandError):
 # migration to change or remove any emails in ScheduledEmail.
 def send_email(
     template_prefix: str,
-    to_user_ids: Optional[List[int]] = None,
-    to_emails: Optional[List[str]] = None,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    reply_to_email: Optional[str] = None,
-    language: Optional[str] = None,
+    to_user_ids: list[int] | None = None,
+    to_emails: list[str] | None = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    reply_to_email: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
-    realm: Optional[Realm] = None,
-    connection: Optional[BaseEmailBackend] = None,
+    realm: Realm | None = None,
+    connection: BaseEmailBackend | None = None,
     dry_run: bool = False,
-    request: Optional[HttpRequest] = None,
+    request: HttpRequest | None = None,
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -282,7 +283,7 @@ def send_email(
     if request is not None:
         cause = f" (triggered from {request.META['REMOTE_ADDR']})"
 
-    logging_recipient: Union[str, List[str]] = mail.to
+    logging_recipient: str | list[str] = mail.to
     if realm is not None:
         logging_recipient = f"{mail.to} in {realm.string_id}"
 
@@ -310,7 +311,7 @@ def send_email(
 
 
 @backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
-def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
+def initialize_connection(connection: BaseEmailBackend | None = None) -> BaseEmailBackend:
     if not connection:
         connection = get_connection()
         assert connection is not None
@@ -347,11 +348,11 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
 def send_future_email(
     template_prefix: str,
     realm: Realm,
-    to_user_ids: Optional[List[int]] = None,
-    to_emails: Optional[List[str]] = None,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    language: Optional[str] = None,
+    to_user_ids: list[int] | None = None,
+    to_emails: list[str] | None = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
     delay: timedelta = timedelta(0),
 ) -> None:
@@ -404,9 +405,9 @@ def send_future_email(
 def send_email_to_admins(
     template_prefix: str,
     realm: Realm,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    language: Optional[str] = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
 ) -> None:
     admins = realm.get_human_admin_users()
@@ -424,9 +425,9 @@ def send_email_to_admins(
 def send_email_to_billing_admins_and_realm_owners(
     template_prefix: str,
     realm: Realm,
-    from_name: Optional[str] = None,
-    from_address: Optional[str] = None,
-    language: Optional[str] = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    language: str | None = None,
     context: Mapping[str, Any] = {},
 ) -> None:
     send_email(
@@ -449,7 +450,7 @@ def clear_scheduled_invitation_emails(email: str) -> None:
 
 
 @transaction.atomic(savepoint=False)
-def clear_scheduled_emails(user_id: int, email_type: Optional[int] = None) -> None:
+def clear_scheduled_emails(user_id: int, email_type: int | None = None) -> None:
     # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
     # execution of this function (or something else) from deleting them before we access
     # the .users attribute.
@@ -470,7 +471,7 @@ def clear_scheduled_emails(user_id: int, email_type: Optional[int] = None) -> No
             item.delete()
 
 
-def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
+def handle_send_email_format_changes(job: dict[str, Any]) -> None:
     # Reformat any jobs that used the old to_email
     # and to_user_ids argument formats.
     if "to_email" in job:
@@ -506,7 +507,7 @@ def deliver_scheduled_emails(email: ScheduledEmail) -> None:
     email.delete()
 
 
-def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
+def get_header(option: str | None, header: str | None, name: str) -> str:
     if option and header:
         raise DoubledEmailArgumentError(name)
     if not option and not header:
@@ -517,10 +518,10 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
 def custom_email_sender(
     markdown_template_path: str,
     dry_run: bool,
-    subject: Optional[str] = None,
+    subject: str | None = None,
     from_address: str = FromAddress.SUPPORT,
-    from_name: Optional[str] = None,
-    reply_to: Optional[str] = None,
+    from_name: str | None = None,
+    reply_to: str | None = None,
     **kwargs: Any,
 ) -> Callable[..., None]:
     with open(markdown_template_path) as f:
@@ -547,21 +548,23 @@ def custom_email_sender(
     rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
 
     # And then extend it with our standard email headers.
-    with open(html_template_path, "w") as f:
-        with open(markdown_email_base_template_path) as base_template:
-            # We use an ugly string substitution here, because we want to:
-            #  1. Only run Jinja once on the supplied content
-            #  2. Allow the supplied content to have jinja interpolation in it
-            #  3. Have that interpolation happen in the context of
-            #     each individual email we send, so the contents can
-            #     vary user-to-user
-            f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
+    with (
+        open(html_template_path, "w") as f,
+        open(markdown_email_base_template_path) as base_template,
+    ):
+        # We use an ugly string substitution here, because we want to:
+        #  1. Only run Jinja once on the supplied content
+        #  2. Allow the supplied content to have jinja interpolation in it
+        #  3. Have that interpolation happen in the context of
+        #     each individual email we send, so the contents can
+        #     vary user-to-user
+        f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
 
     with open(subject_path, "w") as f:
         f.write(get_header(subject, parsed_email_template.get("subject"), "subject"))
 
     def send_one_email(
-        context: Dict[str, Any], to_user_id: Optional[int] = None, to_email: Optional[str] = None
+        context: dict[str, Any], to_user_id: int | None = None, to_email: str | None = None
     ) -> None:
         assert to_user_id is not None or to_email is not None
         with suppress(EmailNotDeliveredError):
@@ -583,8 +586,8 @@ def send_custom_email(
     users: QuerySet[UserProfile],
     *,
     dry_run: bool,
-    options: Dict[str, str],
-    add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
+    options: dict[str, str],
+    add_context: Callable[[dict[str, object], UserProfile], None] | None = None,
     distinct_email: bool = False,
 ) -> QuerySet[UserProfile]:
     """
@@ -609,7 +612,7 @@ def send_custom_email(
     else:
         users = users.order_by("id")
     for user_profile in users:
-        context: Dict[str, object] = {
+        context: dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,
             "realm_url": user_profile.realm.url,
@@ -631,8 +634,8 @@ def send_custom_server_email(
     remote_servers: QuerySet["RemoteZulipServer"],
     *,
     dry_run: bool,
-    options: Dict[str, str],
-    add_context: Optional[Callable[[Dict[str, object], "RemoteZulipServer"], None]] = None,
+    options: dict[str, str],
+    add_context: Callable[[dict[str, object], "RemoteZulipServer"], None] | None = None,
 ) -> None:
     assert settings.CORPORATE_ENABLED
     from corporate.lib.stripe import BILLING_SUPPORT_EMAIL

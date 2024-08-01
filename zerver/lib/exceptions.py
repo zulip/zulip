@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -53,6 +53,7 @@ class ErrorCode(Enum):
     REMOTE_REALM_SERVER_MISMATCH_ERROR = auto()
     PUSH_NOTIFICATIONS_DISALLOWED = auto()
     EXPECTATION_MISMATCH = auto()
+    SYSTEM_GROUP_REQUIRED = auto()
 
 
 class JsonableError(Exception):
@@ -94,13 +95,13 @@ class JsonableError(Exception):
     code: ErrorCode = ErrorCode.BAD_REQUEST
 
     # Override this in subclasses if providing structured data.
-    data_fields: List[str] = []
+    data_fields: list[str] = []
 
     # Optionally override this in subclasses to return a different HTTP status,
     # like 403 or 404.
     http_status_code: int = 400
 
-    def __init__(self, msg: Union[str, StrPromise]) -> None:
+    def __init__(self, msg: str | StrPromise) -> None:
         # `_msg` is an implementation detail of `JsonableError` itself.
         self._msg = msg
 
@@ -119,7 +120,7 @@ class JsonableError(Exception):
         return "{_msg}"
 
     @property
-    def extra_headers(self) -> Dict[str, Any]:
+    def extra_headers(self) -> dict[str, Any]:
         return {}
 
     #
@@ -134,7 +135,7 @@ class JsonableError(Exception):
         return self.msg_format().format(**format_data)
 
     @property
-    def data(self) -> Dict[str, Any]:
+    def data(self) -> dict[str, Any]:
         return dict(((f, getattr(self, f)) for f in self.data_fields), code=self.code.name)
 
     @override
@@ -146,7 +147,7 @@ class UnauthorizedError(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED
     http_status_code: int = 401
 
-    def __init__(self, msg: Optional[str] = None, www_authenticate: Optional[str] = None) -> None:
+    def __init__(self, msg: str | None = None, www_authenticate: str | None = None) -> None:
         if msg is None:
             msg = _("Not logged in: API authentication or user session required")
         super().__init__(msg)
@@ -159,7 +160,7 @@ class UnauthorizedError(JsonableError):
 
     @property
     @override
-    def extra_headers(self) -> Dict[str, Any]:
+    def extra_headers(self) -> dict[str, Any]:
         extra_headers_dict = super().extra_headers
         extra_headers_dict["WWW-Authenticate"] = self.www_authenticate
         return extra_headers_dict
@@ -194,7 +195,7 @@ class StreamWithIDDoesNotExistError(JsonableError):
 class IncompatibleParametersError(JsonableError):
     data_fields = ["parameters"]
 
-    def __init__(self, parameters: List[str]) -> None:
+    def __init__(self, parameters: list[str]) -> None:
         self.parameters = ", ".join(parameters)
 
     @staticmethod
@@ -234,7 +235,7 @@ class RateLimitedError(JsonableError):
     code = ErrorCode.RATE_LIMIT_HIT
     http_status_code = 429
 
-    def __init__(self, secs_to_freedom: Optional[float] = None) -> None:
+    def __init__(self, secs_to_freedom: float | None = None) -> None:
         self.secs_to_freedom = secs_to_freedom
 
     @staticmethod
@@ -244,7 +245,7 @@ class RateLimitedError(JsonableError):
 
     @property
     @override
-    def extra_headers(self) -> Dict[str, Any]:
+    def extra_headers(self) -> dict[str, Any]:
         extra_headers_dict = super().extra_headers
         if self.secs_to_freedom is not None:
             extra_headers_dict["Retry-After"] = self.secs_to_freedom
@@ -253,7 +254,7 @@ class RateLimitedError(JsonableError):
 
     @property
     @override
-    def data(self) -> Dict[str, Any]:
+    def data(self) -> dict[str, Any]:
         data_dict = super().data
         data_dict["retry-after"] = self.secs_to_freedom
 
@@ -419,7 +420,7 @@ class UnsupportedWebhookEventTypeError(WebhookError):
     http_status_code = 200
     data_fields = ["webhook_name", "event_type"]
 
-    def __init__(self, event_type: Optional[str]) -> None:
+    def __init__(self, event_type: str | None) -> None:
         super().__init__()
         self.event_type = event_type
 
@@ -507,16 +508,35 @@ class InvitationError(JsonableError):
     def __init__(
         self,
         msg: str,
-        errors: List[Tuple[str, str, bool]],
+        errors: list[tuple[str, str, bool]],
         sent_invitations: bool,
         license_limit_reached: bool = False,
         daily_limit_reached: bool = False,
     ) -> None:
         self._msg: str = msg
-        self.errors: List[Tuple[str, str, bool]] = errors
+        self.errors: list[tuple[str, str, bool]] = errors
         self.sent_invitations: bool = sent_invitations
         self.license_limit_reached: bool = license_limit_reached
         self.daily_limit_reached: bool = daily_limit_reached
+
+
+class DirectMessageInitiationError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to initiate direct message conversations.")
+
+
+class DirectMessagePermissionError(JsonableError):
+    def __init__(self, is_nobody_group: bool) -> None:
+        if is_nobody_group:
+            msg = _("Direct messages are disabled in this organization.")
+        else:
+            msg = _("This conversation does not include any users who can authorize it.")
+        super().__init__(msg)
 
 
 class AccessDeniedError(JsonableError):
@@ -669,3 +689,29 @@ class PreviousSettingValueMismatchedError(JsonableError):
     @override
     def msg_format() -> str:
         return _("'old' value does not match the expected value.")
+
+
+class SystemGroupRequiredError(JsonableError):
+    code = ErrorCode.SYSTEM_GROUP_REQUIRED
+    data_fields = ["setting_name"]
+
+    def __init__(self, setting_name: str) -> None:
+        self.setting_name = setting_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("'{setting_name}' must be a system user group.")
+
+
+class IncompatibleParameterValuesError(JsonableError):
+    data_fields = ["first_parameter", "second_parameter"]
+
+    def __init__(self, first_parameter: str, second_parameter: str) -> None:
+        self.first_parameter = first_parameter
+        self.second_parameter = second_parameter
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Incompatible values for '{first_parameter}' and '{second_parameter}'.")

@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from html.parser import HTMLParser
-from typing import Callable, Dict, List, Tuple
 
 from django.http import HttpRequest, HttpResponse
 from typing_extensions import override
@@ -72,7 +72,7 @@ class MLStripper(HTMLParser):
         self.reset()
         self.strict = False
         self.convert_charrefs = True
-        self.fed: List[str] = []
+        self.fed: list[str] = []
 
     @override
     def handle_data(self, d: str) -> None:
@@ -99,7 +99,7 @@ def get_topic_for_contacts(user: WildValue) -> str:
     return topic_name
 
 
-def get_company_created_message(payload: WildValue) -> Tuple[str, str]:
+def get_company_created_message(payload: WildValue) -> tuple[str, str]:
     body = COMPANY_CREATED.format(
         name=payload["data"]["item"]["name"].tame(check_string),
         user_count=payload["data"]["item"]["user_count"].tame(check_int),
@@ -108,14 +108,14 @@ def get_company_created_message(payload: WildValue) -> Tuple[str, str]:
     return ("Companies", body)
 
 
-def get_contact_added_email_message(payload: WildValue) -> Tuple[str, str]:
+def get_contact_added_email_message(payload: WildValue) -> tuple[str, str]:
     user = payload["data"]["item"]
     body = CONTACT_EMAIL_ADDED.format(email=user["email"].tame(check_string))
     topic_name = get_topic_for_contacts(user)
     return (topic_name, body)
 
 
-def get_contact_created_message(payload: WildValue) -> Tuple[str, str]:
+def get_contact_created_message(payload: WildValue) -> tuple[str, str]:
     contact = payload["data"]["item"]
     body = CONTACT_CREATED.format(
         name=contact.get("name").tame(check_none_or(check_string))
@@ -131,7 +131,7 @@ def get_contact_created_message(payload: WildValue) -> Tuple[str, str]:
     return (topic_name, body)
 
 
-def get_contact_signed_up_message(payload: WildValue) -> Tuple[str, str]:
+def get_contact_signed_up_message(payload: WildValue) -> tuple[str, str]:
     contact = payload["data"]["item"]
     body = CONTACT_SIGNED_UP.format(
         email=contact["email"].tame(check_string),
@@ -145,7 +145,7 @@ def get_contact_signed_up_message(payload: WildValue) -> Tuple[str, str]:
     return (topic_name, body)
 
 
-def get_contact_tag_created_message(payload: WildValue) -> Tuple[str, str]:
+def get_contact_tag_created_message(payload: WildValue) -> tuple[str, str]:
     body = CONTACT_TAG_CREATED.format(
         name=payload["data"]["item"]["tag"]["name"].tame(check_string)
     )
@@ -154,7 +154,7 @@ def get_contact_tag_created_message(payload: WildValue) -> Tuple[str, str]:
     return (topic_name, body)
 
 
-def get_contact_tag_deleted_message(payload: WildValue) -> Tuple[str, str]:
+def get_contact_tag_deleted_message(payload: WildValue) -> tuple[str, str]:
     body = CONTACT_TAG_DELETED.format(
         name=payload["data"]["item"]["tag"]["name"].tame(check_string)
     )
@@ -163,7 +163,7 @@ def get_contact_tag_deleted_message(payload: WildValue) -> Tuple[str, str]:
     return (topic_name, body)
 
 
-def get_conversation_admin_assigned_message(payload: WildValue) -> Tuple[str, str]:
+def get_conversation_admin_assigned_message(payload: WildValue) -> tuple[str, str]:
     body = CONVERSATION_ADMIN_ASSIGNED.format(
         name=payload["data"]["item"]["assignee"]["name"].tame(check_string)
     )
@@ -175,7 +175,7 @@ def get_conversation_admin_assigned_message(payload: WildValue) -> Tuple[str, st
 def get_conversation_admin_message(
     action: str,
     payload: WildValue,
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     assignee = payload["data"]["item"]["assignee"]
     user = payload["data"]["item"]["user"]
     body = CONVERSATION_ADMIN_TEMPLATE.format(
@@ -189,7 +189,7 @@ def get_conversation_admin_message(
 def get_conversation_admin_reply_message(
     action: str,
     payload: WildValue,
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     assignee = payload["data"]["item"]["assignee"]
     user = payload["data"]["item"]["user"]
     note = payload["data"]["item"]["conversation_parts"]["conversation_parts"][0]
@@ -203,7 +203,7 @@ def get_conversation_admin_reply_message(
     return (topic_name, body)
 
 
-def get_conversation_admin_single_created_message(payload: WildValue) -> Tuple[str, str]:
+def get_conversation_admin_single_created_message(payload: WildValue) -> tuple[str, str]:
     assignee = payload["data"]["item"]["assignee"]
     user = payload["data"]["item"]["user"]
     conversation_body = payload["data"]["item"]["conversation_message"]["body"].tame(check_string)
@@ -216,7 +216,7 @@ def get_conversation_admin_single_created_message(payload: WildValue) -> Tuple[s
     return (topic_name, body)
 
 
-def get_conversation_user_created_message(payload: WildValue) -> Tuple[str, str]:
+def get_conversation_user_created_message(payload: WildValue) -> tuple[str, str]:
     user = payload["data"]["item"]["user"]
     conversation_body = payload["data"]["item"]["conversation_message"]["body"].tame(check_string)
     content = strip_tags(conversation_body)
@@ -228,7 +228,7 @@ def get_conversation_user_created_message(payload: WildValue) -> Tuple[str, str]
     return (topic_name, body)
 
 
-def get_conversation_user_replied_message(payload: WildValue) -> Tuple[str, str]:
+def get_conversation_user_replied_message(payload: WildValue) -> tuple[str, str]:
     user = payload["data"]["item"]["user"]
     note = payload["data"]["item"]["conversation_parts"]["conversation_parts"][0]
     content = strip_tags(note["body"].tame(check_string))
@@ -241,13 +241,13 @@ def get_conversation_user_replied_message(payload: WildValue) -> Tuple[str, str]
     return (topic_name, body)
 
 
-def get_event_created_message(payload: WildValue) -> Tuple[str, str]:
+def get_event_created_message(payload: WildValue) -> tuple[str, str]:
     event = payload["data"]["item"]
     body = EVENT_CREATED.format(event_name=event["event_name"].tame(check_string))
     return ("Events", body)
 
 
-def get_user_created_message(payload: WildValue) -> Tuple[str, str]:
+def get_user_created_message(payload: WildValue) -> tuple[str, str]:
     user = payload["data"]["item"]
     body = USER_CREATED.format(
         name=user["name"].tame(check_string), email=user["email"].tame(check_string)
@@ -256,13 +256,13 @@ def get_user_created_message(payload: WildValue) -> Tuple[str, str]:
     return (topic_name, body)
 
 
-def get_user_deleted_message(payload: WildValue) -> Tuple[str, str]:
+def get_user_deleted_message(payload: WildValue) -> tuple[str, str]:
     user = payload["data"]["item"]
     topic_name = get_topic_for_contacts(user)
     return (topic_name, "User deleted.")
 
 
-def get_user_email_updated_message(payload: WildValue) -> Tuple[str, str]:
+def get_user_email_updated_message(payload: WildValue) -> tuple[str, str]:
     user = payload["data"]["item"]
     body = "User's email was updated to {}.".format(user["email"].tame(check_string))
     topic_name = get_topic_for_contacts(user)
@@ -272,7 +272,7 @@ def get_user_email_updated_message(payload: WildValue) -> Tuple[str, str]:
 def get_user_tagged_message(
     action: str,
     payload: WildValue,
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     user = payload["data"]["item"]["user"]
     tag = payload["data"]["item"]["tag"]
     topic_name = get_topic_for_contacts(user)
@@ -283,14 +283,14 @@ def get_user_tagged_message(
     return (topic_name, body)
 
 
-def get_user_unsubscribed_message(payload: WildValue) -> Tuple[str, str]:
+def get_user_unsubscribed_message(payload: WildValue) -> tuple[str, str]:
     user = payload["data"]["item"]
     body = "User unsubscribed from emails."
     topic_name = get_topic_for_contacts(user)
     return (topic_name, body)
 
 
-EVENT_TO_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Tuple[str, str]]] = {
+EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
     "company.created": get_company_created_message,
     "contact.added_email": get_contact_added_email_message,
     "contact.created": get_contact_created_message,

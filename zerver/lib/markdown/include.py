@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List, Match
+from re import Match
 from xml.etree.ElementTree import Element
 
 from markdown import Extension, Markdown
@@ -27,7 +27,7 @@ class IncludeExtension(Extension):
 
 
 class IncludeBlockProcessor(BlockProcessor):
-    RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.M)
+    RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
 
     def __init__(self, parser: BlockParser, base_path: str) -> None:
         super().__init__(parser)
@@ -50,7 +50,7 @@ class IncludeBlockProcessor(BlockProcessor):
         return "\n".join(lines)
 
     @override
-    def run(self, parent: Element, blocks: List[str]) -> None:
+    def run(self, parent: Element, blocks: list[str]) -> None:
         self.parser.state.set("include")
         self.parser.parseChunk(parent, self.RE.sub(self.expand_include, blocks.pop(0)))
         self.parser.state.reset()

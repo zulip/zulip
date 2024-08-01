@@ -156,9 +156,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
             get_options: get_options_for_integration_input_dropdown_widget,
             item_click_callback: integration_item_click_callback,
             $events_container: $("#generate-integration-url-modal"),
-            tippy_props: {
-                placement: "bottom-start",
-            },
             default_id: default_integration_option.unique_id,
             unique_id_type: dropdown_widget.DataTypes.STRING,
         });
@@ -194,9 +191,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
             get_options: get_options_for_stream_dropdown_widget,
             item_click_callback: stream_item_click_callback,
             $events_container: $("#generate-integration-url-modal"),
-            tippy_props: {
-                placement: "bottom-start",
-            },
             default_id: direct_messages_option.unique_id,
             unique_id_type: dropdown_widget.DataTypes.NUMBER,
         });
@@ -284,5 +278,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
             return;
         },
         post_render: generate_integration_url_post_render,
+        on_shown() {
+            $("#integration-name_widget").trigger("focus");
+        },
     });
 }

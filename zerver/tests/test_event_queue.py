@@ -1,5 +1,6 @@
 import time
-from typing import Any, Callable, Collection, Dict, List
+from collections.abc import Callable, Collection
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -132,7 +133,7 @@ class MissedMessageHookTest(ZulipTestCase):
         self,
         view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
         user_profile: UserProfile,
-        post_data: Dict[str, Any],
+        post_data: dict[str, Any],
     ) -> HttpResponse:
         request = HostRequestMock(post_data, user_profile, tornado_handler=dummy_handler)
         return view_func(request, user_profile)
@@ -154,7 +155,9 @@ class MissedMessageHookTest(ZulipTestCase):
         return access_client_descriptor(user.id, queue_id)
 
     def destroy_event_queue(self, user: UserProfile, queue_id: str) -> None:
-        result = self.tornado_call(cleanup_event_queue, user, {"queue_id": queue_id})
+        # Ignore this when running mypy, since mypy expects queue_id to be specified when calling the function
+        # but it is actually extracted from the request body using the typed_endpoint decorator.
+        result = self.tornado_call(cleanup_event_queue, user, {"queue_id": queue_id})  # type: ignore[arg-type]
         self.assert_json_success(result)
 
     def assert_maybe_enqueue_notifications_call_args(
@@ -172,7 +175,7 @@ class MissedMessageHookTest(ZulipTestCase):
         )
         self.assertEqual(args_dict, expected_args_dict)
 
-    def change_subscription_properties(self, properties: Dict[str, bool]) -> None:
+    def change_subscription_properties(self, properties: dict[str, bool]) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         sub = Subscription.objects.get(
             user_profile=self.user_profile,
@@ -1299,7 +1302,7 @@ class EventQueueTest(ZulipTestCase):
             * concatenate the messages
         """
 
-        def umfe(timestamp: int, messages: List[int]) -> Dict[str, Any]:
+        def umfe(timestamp: int, messages: list[int]) -> dict[str, Any]:
             return dict(
                 type="update_message_flags",
                 operation="add",

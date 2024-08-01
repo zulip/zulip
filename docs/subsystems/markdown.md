@@ -146,11 +146,11 @@ At a backend code level, these are controlled by the `message_realm`
 object and other arguments passed into `do_convert` (`sent_by_bot`,
 `translate_emoticons`, `mention_data`, etc.). Because
 Python-Markdown doesn't support directly passing arguments into the
-Markdown processor, our logic attaches these data to the Markdown
-processor object via e.g. `_md_engine.zulip_db_data`, and then
-individual Markdown rules can access the data from there.
+Markdown processor, our logic attaches the data to the Markdown
+processor object via, for example, `_md_engine.zulip_db_data`, and
+then individual Markdown rules can access the data from there.
 
-For non-message contexts (e.g. an organization's profile (aka the
+For non-message contexts (e.g., an organization's profile (aka the
 thing on the right-hand side of the login page), channel descriptions,
 or rendering custom profile fields), one needs to just pass in a
 `message_realm` (see, for example, `zulip_default_context` for the
@@ -166,7 +166,7 @@ Markdown, not newer Markdown variants like CommonMark.
 Markdown is great for group chat for the same reason it's been
 successful in products ranging from blogs to wikis to bug trackers:
 it's close enough to how people try to express themselves when writing
-plain text (e.g. emails) that it helps more than getting in the way.
+plain text (e.g., emails) that it helps more than getting in the way.
 
 The main issue for using Markdown in instant messaging is that the
 Markdown standard syntax used in a lot of wikis/blogs has nontrivial
@@ -212,7 +212,7 @@ accurate.
 
 - Allow only `*` syntax for italics, not `_`. This resolves an issue where
   people were using `_` and hitting it by mistake too often. Asterisks
-  surrounded by spaces won't trigger italics, either (e.g. with stock Markdown
+  surrounded by spaces won't trigger italics, either (e.g., with stock Markdown
   `You should use char * instead of void * there` would produce undesired
   results).
 

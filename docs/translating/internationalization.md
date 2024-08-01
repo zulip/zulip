@@ -13,7 +13,7 @@ principles are important in how we think about internationalization:
   tagged for translation in both [HTML templates](#html-templates) and
   code, and our linters attempt to enforce this. There are some
   exceptions: we don't tag strings in Zulip's landing pages
-  (e.g. /features/) and other documentation (e.g. /help/) for
+  (e.g., /features/) and other documentation (e.g., /help/) for
   translation at this time (though we do aim for those pages to be
   usable with tools like Google Translate).
 - Translating all the strings in Zulip for a language and maintaining
@@ -41,12 +41,12 @@ their style guidelines.
 There are a few critical details about human language that are important
 to understand when implementing an internationalized application:
 
-- **Punctuation** varies between languages (e.g. Japanese doesn't use
+- **Punctuation** varies between languages (e.g., Japanese doesn't use
   `.`s at the end of sentences). This means that you should always
   include end-of-sentence symbols like `.` and `?` inside the
   to-be-translated strings, so that translators can correctly
   translate the content.
-- **Word order** varies between languages (e.g. some languages put
+- **Word order** varies between languages (e.g., some languages put
   subjects before verbs, others the other way around). This means
   that **concatenating translatable strings** produces broken results
   (more details with examples are below).
@@ -63,7 +63,7 @@ to understand when implementing an internationalized application:
   find your string.
 
 There's a lot of other interesting differences that are important for
-i18n (e.g. Zulip has a "full name" field rather than "first name" and
+i18n (e.g., Zulip has a "full name" field rather than "first name" and
 "last name" because different cultures order the surnames and given
 names differently), but the above issues are likely to be relevant to
 most people working on Zulip.
@@ -172,7 +172,7 @@ from django.utils.translation import gettext as _
 Zulip expects all the error messages to be translatable as well. To
 ensure this, the error message passed to `JsonableError`
 should always be a literal string enclosed by `_()`
-function, e.g.:
+function, for example:
 
 ```python
 JsonableError(_('English text'))
@@ -180,7 +180,7 @@ JsonableError(_('English text'))
 
 If you're declaring a user-facing string at top level or in a class, you need to
 use `gettext_lazy` instead, to ensure that the translation happens at
-request-processing time when Django knows what language to use, e.g.:
+request-processing time when Django knows what language to use, for example:
 
 ```python
 from zproject.backends import check_password_strength, email_belongs_to_ldap

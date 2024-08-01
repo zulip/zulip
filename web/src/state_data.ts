@@ -179,6 +179,14 @@ const one_time_notice_schema = z.object({
     type: z.literal("one_time_notice"),
 });
 
+export const thumbnail_format_schema = z.object({
+    name: z.string(),
+    max_width: z.number(),
+    max_height: z.number(),
+    format: z.string(),
+    animated: z.boolean(),
+});
+
 /* We may introduce onboarding step of types other than 'one time notice'
 in future. Earlier, we had 'hotspot' and 'one time notice' as the two
 types. We can simply do:
@@ -189,17 +197,17 @@ export const onboarding_step_schema = one_time_notice_schema;
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
-    avatar_url: NOT_TYPED_YET,
-    avatar_url_medium: NOT_TYPED_YET,
-    can_create_private_streams: NOT_TYPED_YET,
-    can_create_public_streams: NOT_TYPED_YET,
-    can_create_streams: NOT_TYPED_YET,
-    can_create_web_public_streams: NOT_TYPED_YET,
-    can_invite_others_to_realm: NOT_TYPED_YET,
-    can_subscribe_other_users: NOT_TYPED_YET,
+    avatar_url: z.string().nullish(),
+    avatar_url_medium: z.string().nullish(),
+    can_create_private_streams: z.boolean(),
+    can_create_public_streams: z.boolean(),
+    can_create_streams: z.boolean(),
+    can_create_web_public_streams: z.boolean(),
+    can_invite_others_to_realm: z.boolean(),
+    can_subscribe_other_users: z.boolean(),
     delivery_email: z.string(),
-    email: NOT_TYPED_YET,
-    full_name: NOT_TYPED_YET,
+    email: z.string(),
+    full_name: z.string(),
     has_zoom_token: z.boolean(),
     is_admin: z.boolean(),
     is_billing_admin: z.boolean(),
@@ -278,6 +286,8 @@ const realm_schema = z.object({
     realm_description: z.string(),
     realm_digest_emails_enabled: NOT_TYPED_YET,
     realm_digest_weekday: NOT_TYPED_YET,
+    realm_direct_message_initiator_group: z.number(),
+    realm_direct_message_permission_group: z.number(),
     realm_disallow_disposable_email_addresses: z.boolean(),
     realm_domains: z.array(
         z.object({
@@ -345,7 +355,6 @@ const realm_schema = z.object({
         }),
     ),
     realm_presence_disabled: z.boolean(),
-    realm_private_message_policy: z.number(),
     realm_push_notifications_enabled: z.boolean(),
     realm_push_notifications_enabled_end_timestamp: NOT_TYPED_YET,
     realm_require_unique_names: z.boolean(),
@@ -373,6 +382,7 @@ const realm_schema = z.object({
         stream: z.record(group_permission_setting_schema),
         group: z.record(group_permission_setting_schema),
     }),
+    server_thumbnail_formats: z.array(thumbnail_format_schema),
     server_typing_started_expiry_period_milliseconds: z.number(),
     server_typing_started_wait_period_milliseconds: z.number(),
     server_typing_stopped_wait_period_milliseconds: z.number(),

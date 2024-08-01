@@ -1,6 +1,6 @@
 import time
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -218,7 +218,12 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_toggling_boolean_user_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""
         boolean_settings = (
-            s for s in UserProfile.property_types if UserProfile.property_types[s] is bool
+            s
+            for s in UserProfile.property_types
+            if UserProfile.property_types[s] is bool
+            # Dense mode can't be toggled without changing other settings too.
+            # This setting is tested in test_changing_information_density_settings.
+            and s not in ["dense_mode"]
         )
         for user_setting in boolean_settings:
             self.check_for_toggle_param_patch("/json/settings", user_setting)
@@ -314,9 +319,12 @@ class ChangeSettingsTest(ZulipTestCase):
             )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
-        with self.settings(
-            LDAP_APPEND_DOMAIN="example.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
-        ), self.assertLogs("zulip.ldap", "DEBUG") as debug_log:
+        with (
+            self.settings(
+                LDAP_APPEND_DOMAIN="example.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
+            ),
+            self.assertLogs("zulip.ldap", "DEBUG") as debug_log,
+        ):
             result = self.client_patch(
                 "/json/settings",
                 dict(
@@ -343,14 +351,16 @@ class ChangeSettingsTest(ZulipTestCase):
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
     def do_test_change_user_setting(self, setting_name: str) -> None:
-        test_changes: Dict[str, Any] = dict(
+        test_changes: dict[str, Any] = dict(
             default_language="de",
             web_home_view="all_messages",
             emojiset="google",
             timezone="America/Denver",
             demote_inactive_streams=2,
             web_mark_read_on_scroll_policy=2,
+            web_channel_default_view=2,
             user_list_style=2,
+            web_animate_image_previews="on_hover",
             web_stream_unreads_count_display_policy=2,
             web_font_size_px=14,
             web_line_height_percent=122,
@@ -375,6 +385,7 @@ class ChangeSettingsTest(ZulipTestCase):
             "user_list_style",
             "color_scheme",
             "web_mark_read_on_scroll_policy",
+            "web_channel_default_view",
             "web_stream_unreads_count_display_policy",
         ]:
             data = {setting_name: test_value}
@@ -396,37 +407,86 @@ class ChangeSettingsTest(ZulipTestCase):
         self.do_test_change_user_setting("timezone")
 
     def test_invalid_setting_value(self) -> None:
-        invalid_values_dict = dict(
-            default_language="invalid_de",
-            web_home_view="invalid_view",
-            emojiset="apple",
-            timezone="invalid_US/Mountain",
-            demote_inactive_streams=10,
-            web_mark_read_on_scroll_policy=10,
-            user_list_style=10,
-            web_stream_unreads_count_display_policy=10,
-            color_scheme=10,
-            notification_sound="invalid_sound",
-            desktop_icon_count_display=10,
-        )
-
+        invalid_values: list[dict[str, Any]] = [
+            {
+                "setting_name": "default_language",
+                "value": "invalid_de",
+                "error_msg": "Invalid default_language",
+            },
+            {
+                "setting_name": "web_home_view",
+                "value": "invalid_view",
+                "error_msg": "Invalid web_home_view: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "emojiset",
+                "value": "apple",
+                "error_msg": "Invalid emojiset: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "timezone",
+                "value": "invalid_US/Mountain",
+                "error_msg": "Invalid timezone: Value error, Not a recognized time zone",
+            },
+            {
+                "setting_name": "demote_inactive_streams",
+                "value": 10,
+                "error_msg": "Invalid demote_inactive_streams: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_mark_read_on_scroll_policy",
+                "value": 10,
+                "error_msg": "Invalid web_mark_read_on_scroll_policy: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_channel_default_view",
+                "value": 10,
+                "error_msg": "Invalid web_channel_default_view: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "user_list_style",
+                "value": 10,
+                "error_msg": "Invalid user_list_style: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_animate_image_previews",
+                "value": "invalid_value",
+                "error_msg": "Invalid web_animate_image_previews: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_stream_unreads_count_display_policy",
+                "value": 10,
+                "error_msg": "Invalid web_stream_unreads_count_display_policy: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "color_scheme",
+                "value": 10,
+                "error_msg": "Invalid color_scheme: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "notification_sound",
+                "value": "invalid_sound",
+                "error_msg": "Invalid notification sound '\"invalid_sound\"'",
+            },
+            {
+                "setting_name": "desktop_icon_count_display",
+                "value": 10,
+                "error_msg": "Invalid desktop_icon_count_display: Value error, Not in the list of possible values",
+            },
+        ]
         self.login("hamlet")
-        for setting_name in invalid_values_dict:
-            invalid_value = invalid_values_dict.get(setting_name)
-            if isinstance(invalid_value, str):
-                invalid_value = orjson.dumps(invalid_value).decode()
+        for invalid_value in invalid_values:
+            if isinstance(invalid_value["value"], str):
+                invalid_value["value"] = orjson.dumps(invalid_value["value"]).decode()
 
-            req = {setting_name: invalid_value}
+            req = {invalid_value["setting_name"]: invalid_value["value"]}
             result = self.client_patch("/json/settings", req)
 
-            expected_error_msg = f"Invalid {setting_name}"
-            if setting_name == "notification_sound":
-                expected_error_msg = f"Invalid notification sound '{invalid_value}'"
-            elif setting_name == "timezone":
-                expected_error_msg = "timezone is not a recognized time zone"
-            self.assert_json_error(result, expected_error_msg)
+            self.assert_json_error(result, invalid_value["error_msg"])
             hamlet = self.example_user("hamlet")
-            self.assertNotEqual(getattr(hamlet, setting_name), invalid_value)
+            self.assertNotEqual(
+                getattr(hamlet, invalid_value["setting_name"]), invalid_value["value"]
+            )
 
     def do_change_emojiset(self, emojiset: str) -> "TestHttpResponse":
         self.login("hamlet")
@@ -441,7 +501,9 @@ class ChangeSettingsTest(ZulipTestCase):
 
         for emojiset in banned_emojisets:
             result = self.do_change_emojiset(emojiset)
-            self.assert_json_error(result, "Invalid emojiset")
+            self.assert_json_error(
+                result, "Invalid emojiset: Value error, Not in the list of possible values"
+            )
 
         for emojiset in valid_emojisets:
             result = self.do_change_emojiset(emojiset)
@@ -474,11 +536,11 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login("hamlet")
 
         result = self.client_patch(
-            "/json/settings/display", dict(color_scheme=UserProfile.COLOR_SCHEME_NIGHT)
+            "/json/settings/display", dict(color_scheme=UserProfile.COLOR_SCHEME_DARK)
         )
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
-        self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
+        self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_DARK)
 
     def test_changing_setting_using_notification_setting_endpoint(self) -> None:
         """
@@ -494,6 +556,109 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.enable_stream_desktop_notifications, True)
+
+    def test_changing_information_density_settings(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.dense_mode = True
+        hamlet.web_font_size_px = 14
+        hamlet.web_line_height_percent = 122
+        hamlet.save()
+        self.login("hamlet")
+
+        data: dict[str, str | int] = {"web_font_size_px": 16}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
+        )
+
+        data = {"web_font_size_px": 16, "dense_mode": orjson.dumps(False).decode()}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_font_size_px, 16)
+        self.assertEqual(hamlet.dense_mode, False)
+
+        data = {"web_font_size_px": 20}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_font_size_px, 20)
+        self.assertEqual(hamlet.dense_mode, False)
+
+        # Check dense_mode is still false when both the
+        # settings are set to legacy values.
+        data = {"web_font_size_px": 14}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_font_size_px, 14)
+        self.assertEqual(hamlet.web_line_height_percent, 122)
+        self.assertEqual(hamlet.dense_mode, False)
+
+        data = {"dense_mode": orjson.dumps(True).decode()}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_font_size_px, 14)
+        self.assertEqual(hamlet.dense_mode, True)
+
+        data = {"web_line_height_percent": 140}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
+        )
+
+        data = {"web_line_height_percent": 140, "dense_mode": orjson.dumps(False).decode()}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_line_height_percent, 140)
+        self.assertEqual(hamlet.dense_mode, False)
+
+        data = {"web_line_height_percent": 130}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_line_height_percent, 130)
+        self.assertEqual(hamlet.dense_mode, False)
+
+        # Check dense_mode is still false when both the
+        # settings are set to legacy values.
+        data = {"web_line_height_percent": 122}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_font_size_px, 14)
+        self.assertEqual(hamlet.web_line_height_percent, 122)
+        self.assertEqual(hamlet.dense_mode, False)
+
+        data = {"dense_mode": orjson.dumps(True).decode(), "web_font_size_px": 16}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
+        )
+
+        data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
+        )
+
+        data = {
+            "dense_mode": orjson.dumps(True).decode(),
+            "web_font_size_px": 14,
+            "web_line_height_percent": 122,
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.web_font_size_px, 14)
+        self.assertEqual(hamlet.web_line_height_percent, 122)
+        self.assertEqual(hamlet.dense_mode, True)
 
 
 class UserChangesTest(ZulipTestCase):

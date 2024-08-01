@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 from urllib.parse import quote, urlsplit
 
 import re2
@@ -28,7 +28,9 @@ def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
     return base_url + pm_slug
 
 
-def huddle_narrow_url(*, user: UserProfile, display_recipient: List[UserDisplayRecipient]) -> str:
+def direct_message_group_narrow_url(
+    *, user: UserProfile, display_recipient: list[UserDisplayRecipient]
+) -> str:
     realm = user.realm
     other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
     pm_slug = ",".join(str(user_id) for user_id in sorted(other_user_ids)) + "-group"
@@ -46,7 +48,7 @@ def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
     return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{hash_util_encode(topic_name)}"
 
 
-def near_message_url(realm: Realm, message: Dict[str, Any]) -> str:
+def near_message_url(realm: Realm, message: dict[str, Any]) -> str:
     if message["type"] == "stream":
         url = near_stream_message_url(
             realm=realm,
@@ -61,7 +63,7 @@ def near_message_url(realm: Realm, message: Dict[str, Any]) -> str:
     return url
 
 
-def near_stream_message_url(realm: Realm, message: Dict[str, Any]) -> str:
+def near_stream_message_url(realm: Realm, message: dict[str, Any]) -> str:
     message_id = str(message["id"])
     stream_id = message["stream_id"]
     stream_name = message["display_recipient"]
@@ -83,7 +85,7 @@ def near_stream_message_url(realm: Realm, message: Dict[str, Any]) -> str:
     return full_url
 
 
-def near_pm_message_url(realm: Realm, message: Dict[str, Any]) -> str:
+def near_pm_message_url(realm: Realm, message: dict[str, Any]) -> str:
     message_id = str(message["id"])
     str_user_ids = [str(recipient["id"]) for recipient in message["display_recipient"]]
 

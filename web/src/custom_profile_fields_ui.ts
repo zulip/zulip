@@ -189,26 +189,29 @@ export function initialize_custom_date_type_fields(element_id: string): void {
 }
 
 export function initialize_custom_pronouns_type_fields(element_id: string): void {
-    const commonly_used_pronouns = [
-        $t({defaultMessage: "he/him"}),
-        $t({defaultMessage: "she/her"}),
-        $t({defaultMessage: "they/them"}),
-    ];
-    const bootstrap_typeahead_input = {
-        $element: $(element_id).find<HTMLInputElement>("input.pronouns_type_field"),
-        type: "input" as const,
-    };
-    new Typeahead(bootstrap_typeahead_input, {
-        items: 3,
-        helpOnEmptyStrings: true,
-        source() {
-            return commonly_used_pronouns;
-        },
-        sorter(items, query) {
-            return bootstrap_typeahead.defaultSorter(items, query);
-        },
-        highlighter_html(item) {
-            return typeahead_helper.render_typeahead_item({primary: item});
-        },
-    });
+    $(element_id)
+        .find<HTMLInputElement>(".pronouns_type_field")
+        .each((_index, pronoun_field) => {
+            const commonly_used_pronouns = [
+                $t({defaultMessage: "he/him"}),
+                $t({defaultMessage: "she/her"}),
+                $t({defaultMessage: "they/them"}),
+            ];
+            const bootstrap_typeahead_input = {
+                $element: $(pronoun_field),
+                type: "input" as const,
+            };
+            new Typeahead(bootstrap_typeahead_input, {
+                helpOnEmptyStrings: true,
+                source() {
+                    return commonly_used_pronouns;
+                },
+                sorter(items, query) {
+                    return bootstrap_typeahead.defaultSorter(items, query);
+                },
+                highlighter_html(item) {
+                    return typeahead_helper.render_typeahead_item({primary: item});
+                },
+            });
+        });
 }

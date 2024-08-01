@@ -37,7 +37,7 @@ def fix_email_gateway_attachment_owner(
     if len(orphan_attachments) == 0:
         return
 
-    print("")
+    print()
     print(f"Found {len(orphan_attachments)} email gateway attachments to reattach")
     for attachment in orphan_attachments:
         # We look for the message posted by "Internal" at the same

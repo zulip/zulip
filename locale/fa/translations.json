@@ -1,14 +1,13 @@
 {
-  "#{stream_name}: {sub_count} users": "",
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' از بیشینه‌ی اندازه‌ی فایل برای پیوست‌ها رد داده است({variable} MB).",
   "(attached file)": "(فایل پیوست)",
   "(forever)": "(تاهمیشه)",
   "(hidden)": "(پنهان)",
   "(no topic)": "(موضوعی وجود ندارد)",
   "(or <key-html></key-html>)": "(یا <key-html></key-html>)",
-  "(to you and {other_participant_names})": "",
-  "(to you and {participants_count} more)": "",
-  "(to you)": "",
+  "(to you and {other_participant_names})": "(برای شما و {other_participant_names})",
+  "(to you and {participants_count} more)": "(برای شما و {participants_count} نفر دیگر)",
+  "(to you)": "(برای شما)",
   "(you)": "(شما)",
   "({message_retention_days} days)": "({message_retention_days} روز)",
   "/dark (Switch to the dark theme)": "/تیره (جابجایی با تم تیره)",
@@ -40,9 +39,8 @@
   "<strong>{name}</strong> is not subscribed to this channel. They will not be notified unless you subscribe them.": "<strong>{name}</strong> مشترک این کانال نیست. آن‌ها مطلع نخواهند شد مگر آنکه آنها را مشترک کنید.",
   "<strong>{username}</strong> has {number_of_invites_by_user} unexpired invitations.": "<strong>{username}</strong> دارای {number_of_invites_by_user} دعوتنامه منقضی نشده است.",
   "<z-link>Click here</z-link> to learn about exporting private channels and direct messages.": "<z-link>اینجا کلیک کنید</z-link> تا در مورد خروجی گرفتن از کانال‌های  خصوصی و پیام‌های مستقیم بیشتر بدانید.",
+  "<z-link>Learn more.</z-link>": "<z-link>یادگیری بیشتر.</z-link>",
   "<z-link>Upgrade</z-link> for more space.": "<z-link>ارتقا</z-link> برای فضای بیشتر.",
-  "<z-shortcut></z-shortcut> to add a new line": "<z-shortcut></z-shortcut> برای اضافه کردن یک خط جدید",
-  "<z-shortcut></z-shortcut> to send": "<z-shortcut>فرستادن</z-shortcut>",
   "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and channel subscriptions.": "<z-user></z-user> همان ویژگی‌هایی را خواهد داشت که قبل از غیرفعال شده داشته،‌شامل نقش‌ها، مالک یا مشترک کانال‌ها بودن",
   "<z-user></z-user> will have the same role, channel subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "<z-user></z-user> همان نقش را خواهد داشت، اشتراک در کانال‌ها، عضویت در گروه‌ها و سایر تنظیمات و مجوزها همانند آنچه قبل از غیرفعال کردن، بوده‌است.",
   "@{name} (guest)": "@{name} (مهمان)",
@@ -97,14 +95,14 @@
   "Add global time": "اضافه کردن زمان جهانی",
   "Add linkifier": "افزودن پیونددهنده",
   "Add members": "اضافه کردن اعضا",
-  "Add members to {group_name}": "",
+  "Add members to {group_name}": "اضافه کردن اعضا به {group_name}",
   "Add members. Use usergroup or #channelname to bulk add members.": "اضافه کردن اعضا. از نام گروه یا #نام‌کانال برای اضافه کردن دسته‌جمعی اعضا استفاده کنید.",
   "Add one or more users": "اضافه کردن یک یا چند کاربر",
   "Add option": "افزودن گزینه",
   "Add poll": "اضافه کردن نظرسنجی",
   "Add question": "افزودن پرسش",
   "Add subscribers": "اضافه کردن اعضا",
-  "Add subscribers to": "",
+  "Add subscribers to": "اضافه کردن مشترکین به",
   "Add subscribers. Use usergroup or #channelname to bulk add subscribers.": "اضافه کردن مشترک. از نام گروه یا #نام‌کانال برای اضافه کردن دسته‌جمعی مشترکین استفاده کنید.",
   "Add task": "افزودن وظیفه",
   "Add todo task list title": "اضافه کردن عنوان برای لیست کارها",
@@ -114,6 +112,7 @@
   "Added successfully!": "با موفقیت اضافه شد!",
   "Added successfully.": "با موفقیت اضافه شد.",
   "Administrator": "مدیر",
+  "Administrators": "ادمین‌ها",
   "Administrators and moderators this Zulip organization will be able to see this email address.": "ادمین‌‌ها و مدیران این سازمان زولیپ می‌توانند این آدرس ایمیل را ببینند.",
   "Administrators can delete any message.": "ادمین‌ها می‌توانند هر پیامی را پاک کنند.",
   "Administrators of this Zulip organization will be able to see this email address.": "ادمین‌های این سازمان زولیپ می‌توانند این آدرس ایمیل را ببینند.",
@@ -124,8 +123,7 @@
   "Admins, moderators and members": "ادمین‌ها، مدیران و اعضا",
   "Admins, moderators and members, but only admins can add generic bots": "ادمین‌ها، مدیران و اعضا، اما فقط ادمین‌ها می‌توانند ربات‌های عمومی اضافه کنند",
   "Admins, moderators, members and guests": "ادمین‌ها، مدیران، اعضا و مهمان‌ها",
-  "Advanced": "پیشرفته",
-  "Advanced configurations": "",
+  "Advanced configurations": "پیکربندی پیشرفته",
   "Advertise organization in the Zulip communities directory": "تبلیغ سازمان در پوشه انجمن‌های زولیپ",
   "Alert word": "کلمه هشداردهنده",
   "Alert word \"{alert_word}\" removed successfully!": "کلمه دارای اخطار \"{alert_word}\" با موفقیت حذف شد!",
@@ -143,7 +141,7 @@
   "All unread messages": "تمام پیام‌های خوانده نشده",
   "All users will need to log in again at your new organization URL.": "تمام کاربران لازم است که دوباره در آدرس جدید سازمان شما لاگین کنند.",
   "All your messages except those in muted channels and topics.": "تمام پیام‌های شما به غیر از آن‌ها که در کانال‌ها و موضوعات بی‌صدا شده هستند.",
-  "All your messages.": "",
+  "All your messages.": "تمام پیام‌های شما.",
   "Allow creating web-public channels (visible to anyone on the Internet)": "اجازه ایجاد کانال‌های عمومی وب (قابل مشاهده برای هر کسی در اینترنت)",
   "Allow message content in message notification emails": "اجازه نمایش محتوای پیام در ایمیل‌های اطلاع‌رسانی پیام",
   "Allow message editing": "اجازه ویرایش پیام",
@@ -164,8 +162,8 @@
   "Any organization administrator can conduct an export.": "هر ادمین سازمان می‌تواند یک خروجی تهیه کند. ",
   "Any time": "هر زمان",
   "Anyone can add more options after the poll is posted.": "هر کسی می‌تواند بعد از پست کردن نظرسنجی، گزینه‌ها را اضافه کند.",
-  "Anyone on the internet can view messages; members of your organization can join.": "",
-  "App theme": "",
+  "Anyone on the internet can view messages; members of your organization can join.": "هر کسی در اینترنت می‌توان پیام‌ها را ببیند؛ اعضای سازمان شما می‌توانند وارد شوند.",
+  "App theme": "زمینه اپ",
   "April": "آوریل",
   "Archive <z-link></z-link>?": "آرشیو <z-link></z-link>؟",
   "Archive channel": "آرشیو کردن کانال",
@@ -200,6 +198,7 @@
   "Automatic theme": "تم‌های خودکار",
   "Automatically follow topics": "دنبال کردن موضوعات به صورت خودکار",
   "Automatically follow topics where I'm mentioned": "موضوعاتی که در آنها به من اشاره شده است، به صورت خودکار دنبال کن",
+  "Automatically go to conversation where you sent a message": "به صورت اتوماتیک به مکالمه‌ای می‌روید که در آن پیامی فرستاده‌اید",
   "Automatically mark messages as read": "به صورت خودکار پیام‌ها را به خوانده‌شده تبدیل کن",
   "Automatically unmute topics in muted channels": "به صورت خودکار، در کانال‌های بی‌صدا شده، موضوعات را صدادار کن",
   "Available on Zulip Cloud Standard. <z-link-upgrade>Upgrade</z-link-upgrade> or <z-link-sponsorship>request sponsorship</z-link-sponsorship> to access.": "در زولیپ ابری استاندارد در دسترس است. <z-link-upgrade>ارتقا</z-link-upgrade> یا <z-link-sponsorship>درخواست اسپانسرشدن</z-link-sponsorship> برای دسترسی.",
@@ -207,7 +206,7 @@
   "Avatar changes are disabled in this organization": "تغییر آواتار در این سازمان غیرفعال شده است",
   "Avatar from Gravatar": "آواتار از روی گراواتار",
   "Back to channels": "بازگشت به کانال‌ها",
-  "Back to settings": "",
+  "Back to settings": "بازگشت به تنظیمات",
   "Because the original owner of this bot <z-bot-owner></z-bot-owner> is deactivated, you will become the owner for this bot.": "به خاطر اینکه مالک اصلی این ربات <z-bot-owner></z-bot-owner> غیرفعال شده است، شما مالک این ربات خواهید شد.",
   "Because you are removing the last subscriber from a private channel, it will be automatically <z-link>archived</z-link>.": "به خاطر اینکه شما آخرین مشترک را از یک کانال خصوصی حذف کرده‌اید، این کانال به صورت خودکار <z-link>بایگانی</z-link> خواهد شد.",
   "Because you are the only organization owner, you cannot deactivate your account.": "به خاطر آنکه شما تنها مالک سازمان هستید، نمی‌توانید حساب کاربری خود را غیرفعال کنید.",
@@ -218,7 +217,6 @@
   "Bot email": "ایمیل ربات",
   "Bot email (a-z, 0-9, and dashes only)": "ایمیل ربات (تنها شامل حروف کوچک، اعداد 0-9 و خط تیره) ",
   "Bot is deactivated": "ربات غیرفعال شد",
-  "Bot owner": "مالک ربات",
   "Bot type": "نوع ربات",
   "Bots": "ربات‌ها",
   "Browse 1 more channel": "مرور 1 کانال بیشتر",
@@ -248,10 +246,14 @@
   "Change color": "تغییر رنگ",
   "Change email": "تغییر ایمیل",
   "Change group info": "تغییر اطلاعات گروه",
+  "Change language": "تغییر زبان",
   "Change password": "تغییر کلمه عبور",
   "Change setting": "تغییر تنظیم",
+  "Change your email": "تغییر ایمیل",
+  "Change your password": "تغییر کلمه عبور",
   "Channel": "کانال",
   "Channel <b><z-stream></z-stream></b> created!": "کانال <b><z-stream></z-stream></b> ساخته شد!",
+  "Channel <z-link>#{stream_name}</z-link> created!": "کانال <z-link>#{stream_name}</z-link> ایجاد شد!",
   "Channel ID": "شناسه کانال",
   "Channel color": "رنگ کانال",
   "Channel created recently": "کانال به تازگی ساخته شد",
@@ -259,6 +261,8 @@
   "Channel description": "توضیح کانال",
   "Channel details": "جزییات کانال",
   "Channel email address:": "آدرس ایمیل کانال:",
+  "Channel feed": "فیدهای کانال",
+  "Channel links in the left sidebar go to": "لینک‌های کانال‌های نوار کناری به اینجا می‌روند",
   "Channel name": "نام کانال",
   "Channel permissions": "مجوزهای کانال",
   "Channel settings": "تنظیمات کانال",
@@ -284,7 +288,6 @@
   "Click on <z-stream></z-stream> at the top of your Zulip window.": "بر روی <z-stream></z-stream> در بالای پنجره زولیپ کلیک کنید.",
   "Click on a conversation to view it. To return here, you can:": "روی یک مکالمه کلیک کنید تا آن را ببینید. برای برگشت به اینجا می‌توانید:",
   "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "بر روی آیکون مداد (<z-pencil-icon></z-pencil-icon>) کلیک کنید تا یک پیام را ویرایش و برنامه‌ریزی کنید.",
-  "Click to change notifications for this topic.": "برای تغییر اطلاع‌رسانی‌های این موضوع، کلیک کنید.",
   "Click to view or download.": "برای دیدن یا دانلود کردن کلیک کنید.",
   "Close": "بستن",
   "Close modal": "بستن پنجره",
@@ -292,7 +295,7 @@
   "Code": "کد",
   "Code playgrounds": "زمین بازی کد",
   "Code playgrounds are interactive in-browser development environments, that are designed to make it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks> that are tagged with a programming language will have a button visible on hover that allows users to open the code block on the code playground site.": "زمین بازی کد، یک محیط تعاملی درون مرورگر است که طراحی شده تا ویرایش و رفع‌عیب کدها را ساده‌تر کند. <z-link-code-blocks>تکه کدهای</z-link-code-blocks> زولیپ که با یک زبان برنامه‌نویسی برچسب‌گذاری شده‌اند با هاور کردن موس یک دکمه خواهند داشت که اجازه می‌دهد کاربر تکه کد مورد نظر را در زمین بازی کد، باز کند.",
-  "Collapse compose box": "",
+  "Collapse compose box": "بستن بخش نوشتن",
   "Collapse direct messages": "بستن پیام‌های مستقیم",
   "Collapse message": "بستن پیام",
   "Collapse views": "بستن صفحه‌ها",
@@ -301,6 +304,7 @@
   "Community": "انجمن",
   "Commuting": "در رفت و آمد",
   "Compact": "فشرده",
+  "Compact mode": "حالت فشرده",
   "Complete": "کامل",
   "Complete your <z-link>organization profile</z-link>, which is displayed on your organization's registration and login pages.": "<z-link>پروفایل سازمان</z-link> خود را تکمیل کنید که در صفحات ثبت نام و ورود به سیستم، سازمان شما نمایش داده شود.",
   "Compose message": "ایجاد پیام",
@@ -308,21 +312,23 @@
   "Compose your message here...": "پیام خود را اینجا بنویسید... ",
   "Composing messages": "نوشتن پیام‌ها",
   "Configure how Zulip notifies you about new messages. In muted channels, channel notification settings apply only to unmuted topics.": "نحوه اطلاع رسانی زولیپ به شما در مورد پیام های جدید را پیکربندی کنید. در کانال‌های بی‌صدا، تنظیمات اعلان کانال فقط برای موضوعات صدادار اعمال می‌شود.",
-  "Configure new channel settings": "",
-  "Configure new group settings": "",
+  "Configure new channel settings": "پیکربندی تنظبمات کانال جدید",
+  "Configure new group settings": "پیکربندی تنظیمات گروه جدید",
   "Configure regular expression patterns that will be used to automatically transform any matching text in Zulip messages and topics into links.": "الگوهای رگولار اکسپرشن را پیکربندی کنید که برای تبدیل خودکار هر متن منطبق در پیام‌ها و موضوعات زولیپ به پیوند، استفاده می‌شوند.",
   "Configure the <z-link>default personal preference settings</z-link> for new users joining your organization.": "<z-link>تنظیمات ولویت‌های شخصی پیش‌فرض</z-link> را برای کاربران جدیدی که به سازمان شما می‌پیوندند پیکربندی کنید.",
   "Configure the authentication methods for your organization.": "روش های احرازهویت برای سازمان خود را پیکربندی کنید.",
   "Configure the default channels new users are subscribed to when joining your organization.": "کانال‌های پیش فرض را برای عضویت کاربران جدیدی که به سازمان شما می پیوندند، پیکربندی کنید.",
+  "Configure topic notifications": "",
   "Confirm": "تایید",
   "Confirm changing access permissions": "تایید تغییرات در مجوزهای دسترسی",
+  "Consider <z-link>searching all public channels that you can view</z-link>.": "",
   "Consider <z-link>searching all public channels</z-link>.": " <z-link>جستجوی همه کانال‌ها</z-link> را در نظر بگیرید.",
   "Contact a moderator to resolve this topic.": "با یک مدیر برای حل کردن این موضوع، تماس بگیرید",
   "Contact a moderator to unresolve this topic.": "با یک مدیر برای علامت‌گذاری این موضوع به عنوان حل نشده، تماس بگیرید.",
   "Contact support": "تماس با پشتیبانی",
   "Continue": "ادامه",
-  "Continue to add members": "",
-  "Continue to add subscribers": "",
+  "Continue to add members": "ادامه دادن به افزودن اعضا",
+  "Continue to add subscribers": "ادامه دادن به افزودن مشترکین",
   "Convert": "ترجمه",
   "Convert emoticons before sending (<code>:)</code> becomes 😃)": "تغییر شکلک ها قبل از ارسال (<code>:)</code> تبدیل می شود به 😃)",
   "Cookie Bot": "ربات کوکی",
@@ -331,7 +337,9 @@
   "Copy address": "کپی کردن آدرس",
   "Copy and close": "کپی کردن و بستن",
   "Copy code": "کپی کردن کد",
+  "Copy email": "کپی کردن ایمیل",
   "Copy link": "رونوشت لینک",
+  "Copy link to channel": "کپی کردن لینک کانال",
   "Copy link to message": "کپی کردن لینک به پیام",
   "Copy link to profile": "کپی‌کردن لینک در پروفایل",
   "Copy link to topic": "کپی کردن لینک به موضوع",
@@ -345,7 +353,7 @@
   "Create a poll": "ساخت نظرسنجی",
   "Create a user group": "ساخت گروه کاربری",
   "Create channel": "ساخت کانال",
-  "Create invite link": "ساخت لینک دعوت",
+  "Create link": "ساخت لینک",
   "Create new channel": "ایجاد کانال جدید",
   "Create new user group": "ساخت گروه کاربری جدید",
   "Create user group": "ساخت گروه کاربری",
@@ -353,6 +361,7 @@
   "Created on <z-stream-date-created></z-stream-date-created>.": "ساخته شده در <z-stream-date-created></z-stream-date-created>.",
   "Creating channel...": "در حال ساخت کانال",
   "Creating group...": "ساخت گروه...",
+  "Creating link…": "در حال ساختن لینک...",
   "Currently viewing all direct messages.": "در حال مشاهده تمام پیام‌های مستقیم.",
   "Currently viewing the entire channel.": "در حال حاضر تمام کانال را مشاهده می‌کنید.",
   "Currently viewing your combined feed.": "در حال حاضر فیدهای ترکیبی را مشاهده می‌کنید.",
@@ -386,6 +395,7 @@
   "Deactivate user": "غیرفعال کردن کاربر",
   "Deactivate your account": "غیرفعال کردن حساب کاربری شما",
   "Deactivate {name}?": "غیرفعال کردن {name}؟",
+  "Deactivated": "غیرفعال شد",
   "Deactivated users": "کاربران غیرفعال",
   "December": "دسامبر",
   "Default": "پیش‌فرض",
@@ -400,15 +410,12 @@
   "Delay before sending message notification emails": "تأخیر قبل از ارسال ایمیل اطلاع رسانی هر پیام",
   "Delay period (minutes)": "دوره تاخیر (دقیقه)",
   "Delete": "حذف",
-  "Delete alert word": "حذف کلمه هشداردهنده",
   "Delete all drafts": "پاک کردن تمام پیش‌نویس‌ها",
   "Delete all selected drafts": "پاک کردن تمام پیش‌نویس‌های انتخاب شده",
   "Delete code playground?": "آیا زمین بازی کد پاک شود؟",
-  "Delete custom profile field": "پاک کردن فیلد سفارشی پروفایل",
   "Delete custom profile field?": "فیلد سفارشی پروفایل پاک شود؟",
   "Delete data export?": "خروجی داده‌ها پاک شود؟",
   "Delete draft": "حذف ذخیره موقت",
-  "Delete file": "حذف فایل",
   "Delete file?": "پاک کردن فایل؟",
   "Delete group": "پاک کردن گروه",
   "Delete icon": "حذف آیکون",
@@ -428,7 +435,6 @@
   "Deleting a message permanently removes it for everyone.": "پاک کردن یک پیام، برای همیشه آن را از دسترس همه خارج خواهد کرد.",
   "Deleting a topic will immediately remove it and its messages for everyone. Other users may find this confusing, especially if they had received an email or push notification related to the deleted messages.": "پاک کردن یک موضوع بلافاصله آن موضوع و تمام‌ پیام‌های افراد در آن موضوع را پاک خواهد کرد. سایر افراد ممکن است در این وضعیت گیج شوند مخصوصاً اگر ایمیل یا اعلان فشاری مرتبط با پیام‌های پاک شده داشته باشند.",
   "Demote inactive channels": "کانال‌های غیرفعال را کاهش دهید",
-  "Dense mode": "حالت متراکم",
   "Depending on the size of your organization, an export can take anywhere from seconds to an hour.": "بسته به اندازه سازمان شما، خروجی گرفتن می تواند از چند ثانیه تا یک ساعت طول بکشد. ",
   "Deprecation notice": "توجه به منسوخ شدن",
   "Description": "توضیحات",
@@ -441,6 +447,7 @@
   "Detailed search filters documentation": "مستندات دقیق فیلترهای جستجو",
   "Direct message": "پیام مستقیم",
   "Direct message feed": "فید پیام‌های مستقیم",
+  "Direct message permissions": "مجوزهای پیام مستقیم",
   "Direct message to me": "پیام مستقیم به خودم",
   "Direct messages": "پیام خصوصی",
   "Direct messages are disabled in this organization.": "پیام‌های مستقیم در این سازمان غیر فعال شده‌اند.",
@@ -465,7 +472,6 @@
   "Download": "دانلود",
   "Download botserverrc": "دانلود botserverrc",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "دانلود تنظیمات همه ربات‌های فعال با وبهوک خروجی در قالب Botserver زولیپ",
-  "Download file": "دانلود فایل",
   "Download the latest version.": "دانلود کردن آخرین نسخه.",
   "Download zuliprc": "دانلود zuliprc",
   "Download {filename}": "دانلود {filename}",
@@ -477,6 +483,7 @@
   "Duration deletion is allowed after posting (minutes)": "مدت زمان پاک کردن پس از ارسال پست مجاز شده است (دقیقه)",
   "Duration editing is allowed after posting (minutes)": "مدت زمان ویرایش پس از ارسال پست مجاز شده است (دقیقه)",
   "EDITED": "ویرایش شده",
+  "Each conversation is <b>labeled with a topic</b> by the person started it.": "هر مکالمه توسط شخص شروع کننده با <b>یک موضوع برچسب‌دار</b>  شده است.",
   "Edit": "ویرایش",
   "Edit #{channel_name}": "ویرایش #{channel_name}",
   "Edit and reschedule message": "ویرایش و برنامه‌ریزی دوباره پیام",
@@ -501,14 +508,14 @@
   "Either this user does not exist, or you do not have access to their profile.": "یا کاربر وجود ندارد یا شما مجوز دسترسی به پروفایل آن‌ها را ندارید.",
   "Email": "ایمیل",
   "Email address changes are disabled in this organization.": "تغییر آدرس ایمیل در این سازمان غیرفعال است.",
-  "Email copied": "ایمیل کپی شد",
   "Email footers (e.g., signature)": "پانویس‌های ایمیل (مثلاً امضا)",
+  "Email invitation": "دعوت ایمیلی",
   "Email message notifications": "اطلاع‌رسانی‌های ایمیلی پیام",
   "Email notifications": "اعلان‌های ایمیلی",
   "Emails (one on each line or comma-separated)": "ایمیل ها (هر کدام در یک خط یا جداشده با ویرگول)",
   "Emoji": "ایموجی",
   "Emoji name": "نام ایموجی",
-  "Emoji reactions to your messages.": "",
+  "Emoji reactions to your messages.": "واکنش‌های ایموجی به پیام‌های شما.",
   "Emoji set changed successfully!": "مجموعه ایموجی با موفقیت تغییر کرد!",
   "Emoji theme": "زمینه ایموجی",
   "Enable message edit history": "فعالسازی تاریخچه ویرایش پیام",
@@ -518,6 +525,7 @@
   "End of results from your <z-link>history</z-link>.": "پایان نتایج در <z-link>تاریخچه</z-link> شما.",
   "Endpoint URL": "URL پایانه",
   "Enter sends when composing a message": "هنگام نوشتن پیام، کلید Enter پیام را ارسال می‌کند",
+  "Enter to send choices": "Enter برای فرستادن گزینه‌ها",
   "Error": "خطا",
   "Error adding subscription": "خطا در افزودن عضویت",
   "Error creating channel": "خطا در ساخت کانال",
@@ -546,7 +554,7 @@
   "Everyone sees this in their own time zone.": "هرکس این را در منطقه زمانی خود مشاهده خواهد کرد.",
   "Exclude messages with topic <z-value></z-value>.": "پیام‌های دارای موضوع <z-value></z-value> را حذف کنید.",
   "Exit search": "خروج از جستجو",
-  "Expand compose box": "",
+  "Expand compose box": "بازکردن بخش نوشتن",
   "Expand direct messages": "گسترش دادن پیام مستقیم",
   "Expand message": "گسترش پیام",
   "Expand views": "بازکردن صفحه‌ها",
@@ -582,11 +590,12 @@
   "Filter code playgrounds": "فیلتر کردن زمین‌های بازی کد",
   "Filter deactivated users": "فیلتر کاربران غیرفعال",
   "Filter default channels": "فیلتر کردن کانال‌های پیش‌فرض",
+  "Filter direct messages": "فیلتر کردن پیام‌های مستقیم",
   "Filter emoji": "فیلتر کردن ایموجی",
   "Filter events that will trigger notifications?": "فیلتر کردن رویدادهایی که اطلاع‌رسانی را فعال می‌کنند؟",
   "Filter exports": "فیلتر خروجی ها",
   "Filter groups": "فیلتر کردن گروه‌ها",
-  "Filter invitations": "",
+  "Filter invitations": "فیلتر دعوتنامه‌ها",
   "Filter linkifiers": "فیلتر پیوند دهنده‌ها",
   "Filter members": "فیلتر کردن اعضا",
   "Filter muted users": "فیلتر کردن کاربران بی‌صدا شده",
@@ -615,9 +624,7 @@
   "Generate URL for an integration": "تولید آدرس عمومی برای یک ادغام",
   "Generate channel email address": "تولید آدرس ایمیل کانال",
   "Generate email address": "آدرس ایمیل عمومی",
-  "Generate invite link": "ایجاد لینک دعوت",
   "Generate new API key": "ایجاد کلید API جدید",
-  "Generating link...": "در حال ایجاد لینک ...",
   "Generic": "عمومی",
   "Get API key": "دریافت کلید API",
   "Go back through viewing history": "عقب رفتن در نمایش سابقه",
@@ -626,7 +633,8 @@
   "Go to #{display_recipient}": "برو به #{display_recipient}",
   "Go to #{display_recipient} > {topic}": "برو به #{display_recipient} > {topic}",
   "Go to all unmuted messages": "رفتن به تمام پیام‌های صدادار شده",
-  "Go to channel from topic view": "رفتن به کانال از طریق صفحه موضوع",
+  "Go to channel feed": "برو به فیدهای کانال",
+  "Go to channel feed from topic view": "رفتن به فید کانال‌ها از صفحه موضوعات",
   "Go to channel settings": "رفتن به تنظیمات کانال",
   "Go to conversation": "برو به مکالمه",
   "Go to direct messages with {display_reply_to_for_tooltip}": "برو به پیام مستقیم با {display_reply_to_for_tooltip}",
@@ -637,6 +645,7 @@
   "Go to topic or DM conversation": "برو به موضوع یا مکالمه پیام مستقیم",
   "Go to your direct message feed": "رفتن به فید پیام‌های مستقیم",
   "Go to your home view": "رفتن به صفحه خانه",
+  "Go to {message_recipient}": "برو به {message_recipient}",
   "Got it": "متوجه شدم",
   "Government": "دولت",
   "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena": "برای اجرای Zephyr موازی از طریق Webathena لازم است اجازه تیکت‌های Kerberos را به زولیپ بدهید.",
@@ -648,7 +657,7 @@
   "Header": "سرتیتیر",
   "Help center": "مرکز کمک‌رسانی",
   "Help menu": "منو کمک",
-  "Hide left sidebar": "",
+  "Hide left sidebar": "مخفی کردن نوار سمت چپ",
   "Hide muted message again": "دوباره پیام‌های بی‌صدا شده را پنهان کن",
   "Hide password": "مخفی کردن کلمه عبور",
   "Hide starred message count": "مخفی کردن تعداد پیام های ستاره دار",
@@ -658,7 +667,7 @@
   "Hint (up to 80 characters)": "اشاره (تا 80 حرف)",
   "Home view": "صفحه خانه",
   "How your account is displayed in Zulip.": "حساب کاربری شما در زولیپ چگونه نشان داده شود",
-  "However, it will no longer be subscribed to the private channels that you are not subscribed to.": "با این حال، دیگر در جریان‌های خصوصی که مشترک آنها نیستید، مشترک نخواهد شد.",
+  "However, it will no longer be subscribed to the private channels that you are not subscribed to.": "با این حال، دیگر در کانال‌های خصوصی که مشترک آنها نیستید، مشترک نخواهید شد.",
   "Humans": "افراد",
   "Idle": "بی کار",
   "If you don't know your password, you can <z-link>reset it</z-link>.": "اگر کلمه عبور خود را نمی‌دانید می‌توانید آن را <z-link>بازنشانی</z-link> کنید.",
@@ -666,7 +675,6 @@
   "Ignored deactivated users:": "کاربران غیرفعال شده‌ی نادیده گرفته شده:",
   "Image": "تصویر",
   "Important messages, tasks, and other useful references.": "پیام‌های مهم، فعالیت‌ها و منابع مفید دیگر.",
-  "In Zulip, a conversation is either a <z-link-direct-message>direct message</z-link-direct-message> thread, or a <z-link-channel-topic>topic in a channel</z-link-channel-topic>.": "در زولیپ، یک مکالمه، یا یک <z-link-direct-message>پیام مستقیم</z-link-direct-message> است یا یک <z-link-channel-topic>موضوع در یک کانال</z-link-channel-topic>.",
   "In a meeting": "در جلسه",
   "In muted channels, channel notification settings apply only to unmuted topics.": "در کانال‌های بی‌صدا شده، تنظیمات اطلاع‌رسانی کانال، فقط بر روی موضوعات صدادار اثر خواهد داشت.",
   "In this channel": "در این کانال",
@@ -679,6 +687,7 @@
   "Include message content in message notification emails": "محتوای پیام در ایمیل اطلاع‌رسانی پیام، وجود داشته باشد",
   "Include organization name in subject of message notification emails": "اضافه کردن نام سازمان در موضوع اعلان ایمیلی پیام ",
   "Includes muted channels and topics": "شامل کانال‌ها و موضوعات بی‌صدا شده",
+  "Information": "اطلاعات",
   "Information density settings": "تنظیمات حجم اطلاعات",
   "Initiate a search": "شروع یک جستجو",
   "Insert new line": "وارد کردن کاراکتر خط جدید",
@@ -692,6 +701,7 @@
   "Invalid user": "کاربر نامعتبر",
   "Invalid users": "کاربران نامعتبر",
   "Invitation expires after": "دعوتنامه پس از این زمان منقضی خواهد شد",
+  "Invitation link": "لینک دعوت",
   "Invitations": "دعوت‌ها",
   "Invitations are required for joining this organization": "برای عضو شدن در این سازمان، دعوتنامه نیاز است",
   "Invite": "دعوت کردن",
@@ -702,7 +712,7 @@
   "Invited at": "دعوت شده به",
   "Invited by": "دعوت شده توسط",
   "Invitee": "دعوت کننده",
-  "Inviting...": "در حال دعوت کردن ...",
+  "Inviting…": "در حال دعوت...",
   "Italic": "ایتالیک",
   "January": "ژانویه",
   "Jitsi server URL": "آدرس سرور Jitsi",
@@ -713,8 +723,8 @@
   "Join {realm_name}": "عضویت در {realm_name}",
   "Joined": "عضویت انجام شد",
   "Joined {date_joined}": "عضو شده در {date_joined}",
-  "Joining and viewing messages requires being added by a subscriber": "",
-  "Joining and viewing messages requires being added by a subscriber; new subscribers cannot see messages sent before they joined": "",
+  "Joining and viewing messages requires being added by a subscriber": "وارد شدن و مشاهده پیام‌ها، نیازمند اضافه شدن توسط یک مشترک است.",
+  "Joining and viewing messages requires being added by a subscriber; new subscribers cannot see messages sent before they joined": "وارد شده و مشاهده پیام‌ها نیازمند اضافه شدن توسط یک مشترک است؛ مشترکین جدید نمی‌توانند پیام‌های پیش از اشتراکشان را ببینند.",
   "Joining the organization": "پیوستن به سازمان",
   "July": "جولای",
   "June": "ژوئن",
@@ -734,7 +744,7 @@
   "Last modified": "آخرین تغییر",
   "Last moved {last_edit_timestr}.": "آخرین جابجایی {last_edit_timestr}.",
   "Learn more": "یادگیری بیشتر",
-  "Learn more about emoji reactions <z-link>here</z-link>.": "",
+  "Learn more about emoji reactions <z-link>here</z-link>.": "درباره واکنش‌های ایموجی در <z-link>اینجا</z-link> چیزهای بیشتری یاد بگیرید.",
   "Leave group": "ترک گروه",
   "Leave group {name}": "ترک گروه {name}",
   "Leave {group_name}": "ترک کردن {group_name}",
@@ -762,7 +772,7 @@
   "Main menu": "منو اصلی",
   "Make <b>combined feed</b> my home view": "صفحه <b>فیدهای ترکیبی</b> را به عنوان صفحه خانه قرار بده",
   "Make <b>inbox</b> my home view": "<b>صندوق ورودی</b> را صفحه خانه من کن",
-  "Make <b>recent conversations</b> my home view": "",
+  "Make <b>recent conversations</b> my home view": "تبدیل <b>مکالمات اخیر</b> به صفحه خانه من",
   "Make organization permanent": "سازمان را دائمی کنید",
   "Manage bot": "مدیریت ربات",
   "Manage this bot": "مدیریت این ربات",
@@ -780,12 +790,13 @@
   "Mark as unresolved": "تبدیل به حل‌نشده",
   "Marking all messages as read…": "در حال تبدیل همه پیام‌ها به خوانده شده ...",
   "Math (LaTeX)": "ریاضی (لاتکس)",
+  "Maximize compose box": "حداکثرکردن بخش نوشتن",
   "Maximum message length: {max_message_length} characters": "حداکثر طول پیام: {max_message_length} کاراکتر",
   "May": "می",
   "Me": "من",
   "Member": "عضو",
   "Members": "اعضا",
-  "Members of your organization can view messages and join": "",
+  "Members of your organization can view messages and join": "اعضای سازمان شما می‌توانند پیام‌ها را ببینند و وارد شوند",
   "Mention a time-zone-aware time": "یک زمان دارای ویژگی منطقه زمانی را ذکر کنید",
   "Mentioned in": "نامبرده شده در",
   "Mentions": "اشاره‌ها",
@@ -810,7 +821,8 @@
   "Message-area line height (%)": "ارتفاع خط فضای‌ پیام‌ها (%)",
   "Messages": "پبام ها",
   "Messages in all public channels": "پیام‌ها در تمام کانال‌های عمومی",
-  "Messages in topics you follow.": "",
+  "Messages in topics you follow.": "پیام‌ها در موضوعاتی که شما دنبال می‌کنید.",
+  "Messages in your view are faded to remind you that you are viewing a different conversation from the one you are composing to.": "پیام‌های در صفحه شما محو می‌شوند تا به شما یادآوری کنند که شما مکالمه‌ای متفاوت از آن که در آن پیام می‌دهید، مشاهده می‌کنید.",
   "Messages sent by you": "پیام‌های ارسال شده توسط شما",
   "Messages sent by {sender}": "پیام‌های ارسال شده توسط {sender}",
   "Messages where you are mentioned.": "پیام‌هایی که در آن‌ها به شما اشاره شده است.",
@@ -830,6 +842,7 @@
   "Move message": "جابجایی پیام",
   "Move messages": "جابجایی پیام‌ها",
   "Move messages or topic": "جابجا کردن پیام یا موضوع",
+  "Move messages to:": "جابجا کردن پیام به:",
   "Move only this message": "فقط این پیام را جابجا کن",
   "Move some messages?": "جابجا کردن تعدادی پیام؟",
   "Move this and all following messages in this topic": "جابجا کردن این پیام و پیام‌های ادامه در این موضوع",
@@ -838,6 +851,7 @@
   "Moving messages": "جابجایی پیام‌ها",
   "Mute": "بی‌صدا",
   "Mute channel": "بی‌صدا کردن کانال",
+  "Mute this bot": "",
   "Mute this user": "بی‌صدا کردن این کاربر",
   "Mute topic": "بی‌صدا کردن موضوع",
   "Mute user": "بی‌صدا کردن کاربر",
@@ -854,17 +868,18 @@
   "Narrow to messages containing images.": "محدود کردن به پیام های دارای عکس.",
   "Narrow to messages containing links.": "محدود کردن به پیام های دارای پیوند",
   "Narrow to messages containing uploads.": "محدود کردن به پیام های دارای بارگذاری.",
-  "Narrow to messages in followed topics.": "",
+  "Narrow to messages in followed topics.": "محدود کردن به پیام‌های موجود در موضوعات دنبال‌شده.",
   "Narrow to messages in resolved topics.": "محدود کردن به پیام‌های موجود در موضوعات حل‌شده.",
   "Narrow to messages on channel <z-value></z-value>.": "تمرکز کردن روی پیام‌های کانال <z-value></z-value>.",
   "Narrow to messages sent by <z-value></z-value>.": "محدود کردن به پیام‌های ارسال شده توسط <z-value></z-value>.",
   "Narrow to messages sent by you.": "محدود کردن به پیام های ارسال شده توسط شما",
   "Narrow to messages that mention you.": "محدود کردن به پیام هایی که به شما اشاره می کند.",
   "Narrow to messages with alert words.": "محدود کردن به پیام های همراه با کلمات هشداردهنده",
-  "Narrow to messages with emoji reactions.": "",
+  "Narrow to messages with emoji reactions.": "محدود کردن به پیام های دارای واکنش‌های ایموجی.",
   "Narrow to messages with topic <z-value></z-value>.": "محدود کردن به پیام‌ها با موضوع <z-value></z-value>.",
   "Narrow to starred messages.": "محدود کردن به پیام های ستاره دار.",
   "Narrow to unread messages.": "محدود کردن به پیام های خوانده نشده.",
+  "Narrow to {message_recipient}": "محدود کردن به {message_recipient}",
   "Navigation": "جهت یابی",
   "Never": "هرگز",
   "Never ask on this computer": "بر روی این رایانه دیگر نپرس",
@@ -876,7 +891,6 @@
   "New direct message": "پیام مستقیم جدید",
   "New direct message from {sender_full_name}": "پیام مستقیم جدید از {sender_full_name}",
   "New email": "ایمیل جدید",
-  "New message": "پیام جدید",
   "New option": "گزینه جدید",
   "New password": "کلمه عبور جدید",
   "New password is too weak": "کلمه عبور جدید بسیار ضعیف است",
@@ -893,7 +907,7 @@
   "No channel subscribers match your current filter.": "هیچ مشترک کانالی با فیلترهای شما منطبق نیست.",
   "No channel subscriptions.": "بدون اشتراک کانال",
   "No channels": "بدون کانال",
-  "No channels to show.": "",
+  "No channels to show.": "کانال برای نمایش‌دادن نیست.",
   "No conversations match your filters.": "هیچ مکالمه‌ای با فیلترهای شما منطبق نیست.",
   "No custom emojis match your current filter.": "هیچ ایموجی سفارشی با فیلتر جاری شما منطبق نیست.",
   "No custom profile field configured for this organization.": "برای این سازمان هیچ فیلد سفارشی پروفایل، پیکربندی نشده است.",
@@ -902,7 +916,7 @@
   "No drafts selected": "هیچ پیش‌نویسی انتخاب نشده است",
   "No drafts.": "بدون پیش نویس",
   "No group members match your current filter.": "هیچ عضو گروه با فلیتر فعلی شما منطبق نبود.",
-  "No invitations match your current filter.": "",
+  "No invitations match your current filter.": "هیچ دعوتی با فیلتر شما یافت نشد.",
   "No language set": "هیچ زبانی تعیین نشده",
   "No linkifiers configured.": "پیوند‌دهنده‌ای تنظیم نشده‌است.",
   "No linkifiers match your current filter.": "هیچ پیونددهنده با فیلتر فعلی شما منطبق نیست.",
@@ -932,9 +946,9 @@
   "Nobody in this Zulip organization will be able to see this email address.": "هیچکس در این سازمان زولیپ نمی‌تواند این آدرس ایمیل را ببیند.",
   "Non-profit (registered)": "غیرانتفاعی (ثبت شده)",
   "None": "هیچکدام",
-  "None of your messages have emoji reactions yet.": "",
+  "None of your messages have emoji reactions yet.": "هنوز هیچ‌کدام از پیام‌های شما واکنش ایموجی ندارند.",
   "None.": "هیچکدام",
-  "Not subscribed": "",
+  "Not subscribed": "مشترک نشده",
   "Note that any bots that you maintain will be disabled.": "توجه کنید هر رباتی که نگهداری می کنید غیرفعال خواهد شد.",
   "Note that organizations are limited to five exports per week.": "توجه داشته باشید که در هر سازمان حداکثر پنج خروجی در هفته می توانید بگیرید ",
   "Nothing to preview": "موردی برای پیش نمایش نیست",
@@ -943,6 +957,8 @@
   "Notification sound": "صدای اطلاع رسانی",
   "Notification triggers": "ماشه اطلاع رسانی",
   "Notifications": "اطلاع رسانی‌ها",
+  "Notifications are based on your configuration for <z-stream-name></z-stream-name>.": "",
+  "Notifications are based on your configuration for this channel.": "",
   "Notifications for @all/@everyone mentions": "اطلاع‌رسانی‌ها برای @همه/@کسانی که اشاره شده اند",
   "Notify channel": "اطلاع‌دادن به کانال",
   "Notify recipients": "به گیرندگان اطلاع بده",
@@ -953,13 +969,14 @@
   "Numbered list": "لیست شماره‌دار",
   "October": "اکتبر",
   "Old password": "کلمه عبور قبلی",
+  "On hover": "",
   "Once you leave this channel, you will not be able to rejoin.": "وقتی این کانال را ترک کنید، دوباره نمی‌توانید عضو آن شوید.",
   "Once you leave this group, you will not be able to rejoin.": "وقتی این گروه را ترک کنید، دوباره نمی‌توانید عضو آن شوید.",
   "One or more of these users do not exist!": "یک یا چند کاربر از این موارد وجود ندارند!",
   "Only 2 custom profile fields can be displayed on the user card.": "فقط 2 فیلد سفارشی پروفایل روی کارت کاربر قابل نمایش است.",
-  "Only channel members can add users to a private channel.": "فقط اعضای جریان می‌توانند به یک کانال خصوصی عضو اضافه کنند.",
-  "Only group members can add users to a group.": "فقط اعضای گروه می‌توانند عضو جدید به گروه اضافه کنند.",
+  "Only channel members can add users to a private channel.": "فقط اعضای کانال می‌توانند به یک کانال خصوصی عضو اضافه کنند.",
   "Only in conversation views": "فقط در صفحه‌های مکالمه",
+  "Only in image viewer": "",
   "Only organization administrators can edit these settings": "فقط ادمین‌های سازمان می‌توانند این تنظیمات را ویرایش کنند",
   "Only organization administrators can edit these settings.": "تنها ادمین‌های سازمان می توانند این تنظیمات را ویرایش کنند.",
   "Only organization owners can edit these settings.": "فقط مالکان سازمان می‌توانند این تنظیمات را ویرایش کنند.",
@@ -979,12 +996,10 @@
   "Options": "گزینه‌ها",
   "Organization": "سازمان",
   "Organization URL": "URL سازمان",
-  "Organization administrators": "ادمین‌های سازمان",
   "Organization administrators can reactivate deactivated users.": "ادمین‌های سازمان می‌توانند کاربران غیرفعال شده را دوباره فعال کنند.",
   "Organization description": "توضیحات سازمان",
   "Organization logo": "لوگو سازمان",
   "Organization name": "نام سازمان",
-  "Organization owners": "مالکان سازمان",
   "Organization permissions": "مجوزهای سازمان",
   "Organization profile": "پروفایل سازمان",
   "Organization profile picture": "تصویر پروفایل سازمان",
@@ -1023,6 +1038,7 @@
   "Pinned": "سنجاق شده",
   "Plan management": "مدیریت طرح",
   "Plans and pricing": "طرح ها و قیمت ها",
+  "Play animated images": "",
   "Play sound": "پخش کردن صدا",
   "Please <z-link-support>contact support</z-link-support> for an exception or <z-link-invite-help>add users with a reusable invite link</z-link-invite-help>.": "لطفاً برای یک استثنا <z-link-support>با پشتیبانی تماس بگیرید</z-link-support> یا <z-link-invite-help>کاربرانی با لینک دعوت چندبار مصرف اضافه کنید</z-link-invite-help>.",
   "Please ask a billing administrator to <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>, and try again.": "از یک ادمین صورت‌حساب بخواهید که <z-link-billing>تعداد مجوزها را افزایش دهد</z-link-billing> یا <z-link-help-page>کاربران غیرفعال را حذف کنید</z-link-help-page> و دوباره تلاش کنید.",
@@ -1037,6 +1053,8 @@
   "Political group": "گروه سیاسی",
   "Posted by {full_name}": "ارسال شده توسط {full_name}",
   "Preferences": "اولویت‌ها",
+  "Press <z-shortcut></z-shortcut> to add a new line": " فشار دادن <z-shortcut></z-shortcut> برای اضافه کردن یک خط جدید",
+  "Press <z-shortcut></z-shortcut> to send": "فشار دادن <z-shortcut></z-shortcut> برای ارسال",
   "Press > for list of topics": "برای لیست موضوعات < را فشار دهید ",
   "Prevent users from changing their avatar": "عدم اجازه تغییر آواتار به کاربران",
   "Prevent users from changing their email address": "عدم اجازه تغییر آدرس ایمیل به کاربران",
@@ -1060,7 +1078,7 @@
   "Quoted original email (in replies)": "ایمیل اصلی نقل قول شده (در پاسخ‌ها)",
   "React to selected message with": "واکنش نشان داد به پیام با",
   "Reactions": "واکنش‌ها",
-  "Reactions to your messages": "",
+  "Reactions to your messages": "واکنش‌ها به پیام‌های شما",
   "Reactivate": "فعالسازی مجدد",
   "Reactivate bot": "فعالسازی مجدد ربات",
   "Reactivate this bot": "دوباره فعال کردن این ربات",
@@ -1127,8 +1145,8 @@
   "Scroll up": "حرکت دادن به بالا",
   "Scrolling": "حرکت دادن",
   "Search": "جستجو",
-  "Search GIFs": "جستجوی گیف‌ها",
-  "Search all public channels in the organization.": "تمام کانال‌های عمومی در این سازمان را جستجو کن.",
+  "Search all public channels that you can view.": "",
+  "Search all public channels.": "",
   "Search filters": "جستجوی فیلترها",
   "Search for <z-value></z-value> in the topic or message content.": "جستجو برای <z-value></z-value> در موضوع یا محتوای پیام.",
   "Search people": "جستجوی افراد",
@@ -1136,7 +1154,6 @@
   "Search {total_user_count, plural, =1 {1 person} other {# people}}": "جستجو {total_user_count, plural, =1 {1 نفر} other {# نفر}}",
   "See how to configure email.": "ببینید چگونه ایمیل را پیکربندی کنید.",
   "Select a channel": "یک کانال را انتخاب کنید",
-  "Select a channel below or change topic name.": "یک کانال از پایین انتخاب کنید یا نام موضوع را عوض کنید.",
   "Select a channel to subscribe": "یک کانال را برای مشترک شدن انتخاب کنید",
   "Select all drafts": "انتخاب تمام پیش‌نویس‌ها",
   "Select an integration": "یک ادغام را انتخاب کنید",
@@ -1157,8 +1174,8 @@
   "Send direct message": "ارسال پیام مستقیم",
   "Send email notifications for new logins to my account": "ارسال اطلاع رسانی ایمیل برای ورودهای جدید به حساب کاربری من",
   "Send emails introducing Zulip to new users": "ارسال ایمیل برای معرفی زولیپ به کاربران جدید",
-  "Send invite email": "ارسال ایمیل دعوت",
   "Send me Zulip's low-traffic newsletter (a few emails a year)": "برای من خبرنامه کم ترافیک زولیپ را بفرست (چند ایمیل در سال)",
+  "Send me a direct message when my invitation is accepted": "وقتی دعوت‌نامه من پذیرفته شد برای من یک پیام مستقیم بفرست",
   "Send message": "ارسال پیام",
   "Send mobile notifications even if I'm online": "ارسال اطلاع‌رسانی‌های موبایلی حتی اگر من آنلاین بودم",
   "Send mobile notifications even if user is online": "ارسال اعلان موبایلی حتی وقتی کاربر آنلاین است",
@@ -1166,8 +1183,8 @@
   "Send weekly digest emails to inactive users": "ارسال ایمیل های خلاصه برای کاربران غیرفعال به صورت هفتگی",
   "Sending…": "در حال ارسال...",
   "Sent!": "ارسال شد! ",
+  "Sent! Your message is outside your current view.": "ارسال شد! پیام شما خارج از صفحه فعلی است.",
   "September": "سپتامبر",
-  "Set a status": "تعیین یک وضعیت",
   "Set status": "تعیین وضعیت",
   "Set up two factor authentication": "راه‌اندازی اعتبارسنجی دو مرحله‌ای",
   "Settings": "تنظیمات",
@@ -1178,7 +1195,7 @@
   "Show fewer": "نمایش کمتر",
   "Show images in thread": "نمایش تصاویر در موضوعات",
   "Show keyboard shortcuts": "نمایش میانبرهای صفحه کلید",
-  "Show left sidebar": "",
+  "Show left sidebar": "نمایش نوار سمت جپ",
   "Show less": "نمایش کمتر",
   "Show message sender's user card": "نمایش کارت کاربری فرستنده پیام",
   "Show more": "نمایش بیشتر",
@@ -1208,13 +1225,11 @@
   "Star selected message": "ستاره دار کردن پیام انتخاب شده",
   "Star this message": "ستاره‌دار کردن این پیام",
   "Starred messages": "پیام‌های ستاره دار",
-  "Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <star-icon></star-icon>. <z-link>Learn more</z-link>": "",
+  "Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <star-icon></star-icon>. <z-link>Learn more</z-link>": "ستاره‌دار کردن پیام‌ها روش خوبی است که پیام‌های مهم مانند فعالیت‌هایی که باید به آنها رجوع کنید یا منابع مهم را دنبال کنید. برای ستاره‌دار کردن یک پیام، روی آن بروید و <star-icon></star-icon> را کلیک کنید. <z-link>یادگیری بیشتر</z-link>",
   "Start a new topic or select one from the list.": "یک موضوع جدید شروع کنید یا از فهرست پایین یکی را انتخاب کنید.",
   "Start export of public data": "شروع خروجی گرفتن از داده‌های عمومی",
   "Start new conversation": "مکالمه جدید شروع کنید",
   "Status": "وضعیت",
-  "Stream <z-link>#{stream_name}</z-link> created!": "جریان <z-link>#{stream_name}</z-link> ایجادشد!",
-  "Streams": "جریان‌ها",
   "Strikethrough": "خط خورده",
   "Subject": "موضوع",
   "Subscribe": "عضویت",
@@ -1227,28 +1242,24 @@
   "Subscribed successfully!": "عضویت با موفقیت انجام شد!",
   "Subscriber count": "تعداد اعضا",
   "Subscribers": "اعضا",
+  "Subscribers preview": "پیش‌نمایش مشترکین",
   "Successfully subscribed user:": "کاربر‌ باموفقیت مشترک شده:",
   "Successfully subscribed users:": "کاربران با موفقیت عضو شده:",
   "Sunday": "یکشنبه",
   "Support Zulip": "پشتیبانی زولیپ",
   "Switch between tabs": "جابه جایی بین تب ها",
-  "Switch to dark theme": "تغییردادن به زمینه تیره",
-  "Switch to light theme": "تغییردادن به زمینه روشن",
   "System bot": "ربات سامانه",
   "Task already exists": "وظیفه هم اکنون وجود دارد",
   "Task list": "لیست وظایف",
-  "The <b>inbox</b> view provides an overview of your conversations with unread messages.": "صفحه <b>صندوق ورودی</b> یک نمای کلی از مکالمات دارای پیام خوانده نشده، نشان می‌دهد.",
-  "The <b>recent conversations</b> view provides an overview of all the ongoing conversations.": "صفحه <b>مکالمات اخیر</b> یک نمای کلی از مکالمات در جریان، نشان می‌دهد. ",
   "The administrators provided the following comment:": "ادمین‌ها نظر زیر را ارائه کرده‌اند:",
   "The basics": "پایه‌ها",
   "The channel <b>#{channel_name}</b> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "کانال <b>#{channel_name}</b> وجود ندارد. در <z-link>صفحه کانال‌های خود</z-link>، اشتراک‌های خود را مدیریت کنید.",
   "The channel description cannot contain newline characters.": "شرح کاتال نمی‌تواند شامل رفتن به خط بعد باشد.",
-  "The colored bars indicate which channel the conversation is in.": "نوارهای رنگی مشخص می‌کنند که مکالمه در کدام کانال است.",
   "The group description cannot contain newline characters.": "توضیحات گروه نمی‌تواند شامل سرخط رفتن باشد.",
   "The recipient {recipient} is not valid.": "گیرنده {recipient} معتبر نیست.",
   "The recipients {recipients} are not valid.": "گیرندگان {recipients} معتبر نیستند.",
   "The sender's email address": "آدرس ایمیل فرستنده",
-  "The topic <z-topic-name>{topic_name}</z-topic-name> already exists in this channel. Are you sure you want to combine messages from these topics? This cannot be undone.": "",
+  "The topic <z-topic-name>{topic_name}</z-topic-name> already exists in this channel. Are you sure you want to combine messages from these topics? This cannot be undone.": "موضوع <z-topic-name>{topic_name}</z-topic-name> در این کانال وجود دارد.آیا مطمئن هستید که می‌خواهید پیام‌های این موضوعات را با هم تجمیع کنید؟ این کار غیر قابل برگشت است.",
   "The users you invite will be automatically added to <z-link>default channels</z-link> for this organization, as you do not have permission to configure which channels new users join.": "کاربرانی که دعوت کرده‌اید به صورت اتوماتیک به <z-link>کانال‌های پیش‌فرض</z-link> این سازمان، اضافه می‌شوند، چرا که شما مجوز تنظیم کردن اینکه کاربران جدید به کدام کانال متصل شوند، ندارید.",
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "کلمه های عبورشان از سامانه های ما پاک می شود و هر رباتی که نگهداری می کنند غیرفعال خواهد شد.",
   "Theme": "زمینه",
@@ -1259,7 +1270,7 @@
   "There are no deactivated users.": "هیچ کاربر غیرفعال‌شده‌ای وجود ندارد.",
   "There are no default channels.": "هیچ کانال پیش‌فرضی وجود ندارد.",
   "There are no exports.": "خروجی وجود ندارد.",
-  "There are no invitations.": "",
+  "There are no invitations.": "دعوتنامه‌ای وجود ندارد.",
   "There are no messages here.": "اینجا هیچ پیامی نیست.",
   "There are no unread messages in your inbox.": "در صندوق ورودی شما هیچ پیام خوانده‌نشده‌ای وجود ندارد.",
   "There are no user groups you can view in this organization.": "در این سازمان هیچ گروه کاربری که شما بتوانید ببینید وجود ندارد.",
@@ -1278,12 +1289,13 @@
   "This channel has no subscribers.": "این کانال مشترکی ندارد.",
   "This channel has {sub_count, plural, =0 {no subscribers} one {# subscriber} other {# subscribers}}.": "این کانال {sub_count, plural, =0 {هیچ مشترکی ندارد} one {# مشترک دارد} other {# مشترک دارد}}.",
   "This content remains saved in your drafts.": "این محتوا در پیش‌نویس‌های شما محفوظ خواهد ماند.",
+  "This conversation does not include any users who can authorize it.": "این مکالمه شامل هیچ کاربری نمی شود که بتواند آن را مجاز کند.",
   "This conversation may have additional messages not shown in this view.": "این مکالمه ممکن است پیام‌های بیشتری داشته باشد که در اینجا نمایش داده نشود.",
   "This demo organization will be automatically deleted in {days_remaining} days, unless it's <z-link>converted into a permanent organization</z-link>.": "این سازمان آزمایشی به صورت خودکار بعد از  {days_remaining} روز حذف خواهد شد مگر آنکه به <z-link>یک سازمان دائمی تبدیل شود</z-link>.",
   "This feature is available on Zulip Cloud Plus. Upgrade to access.": "این ویژگی بر روی زولیپ ابری پلاس در دسترس است. ارتقا دهید تا دسترسی داشته باشید.",
   "This group has no members.": "این گروه هیچ عضوی ندارد.",
   "This is a <z-link-general>demo organization</z-link-general> and will be automatically deleted in {days_remaining} days, unless it's <z-link-convert>converted into a permanent organization</z-link-convert>.": "این یک <z-link-general>سازمان آزمایشی</z-link-general> است و  به صورت خودکار بعد از  {days_remaining} روز حذف خواهد شد مگر آنکه به <z-link-convert>یک سازمان دائمی تبدیل شود</z-link-convert>.",
-  "This is a test notification from Zulip.": "",
+  "This is a test notification from Zulip.": "این یک اعلان آزمایشی از طرف زولیپ است.",
   "This is not a <z-link>publicly accessible</z-link> conversation.": "این یک مکالمه با <z-link>دسترسی عمومی</z-link> نیست.",
   "This is your home view.": "اینجا صفحه خانه شماست.",
   "This message could not be sent at the scheduled time.": "این پیام نمی‌تواند در زمان برنامه‌ریزی شده ارسال شود.",
@@ -1306,7 +1318,7 @@
   "This profile field is required.": "این فیلد پروفایل ضروری است.",
   "This user does not exist!": "این کاربر وجود ندارد!",
   "This user has been deactivated.": "این کاربر غیرفعال شده است.",
-  "This view will show messages where you are mentioned.": "",
+  "This view will show messages where you are mentioned.": "این صفحه، پیام‌هایی را نشان می‌دهد که در آن‌ها به شما اشاره شده است.",
   "This will clear the <z-field-name></z-field-name> profile field for 1 user.": "این کار فیلد پروفایل <z-field-name></z-field-name> را برای 1 کاربر پاک خواهد کرد.",
   "This will clear the <z-field-name></z-field-name> profile field for <z-count></z-count> users.": "این کار فیلد پروفایل <z-field-name></z-field-name> را برای <z-count></z-count> کاربر پاک خواهد کرد.",
   "This will delete the <z-profile-field-name></z-profile-field-name> profile field for 1 user.": "این کار فیلد پروفایل <z-profile-field-name></z-profile-field-name> را برای 1 کاربر حذف خواهد کرد.",
@@ -1322,8 +1334,9 @@
   "Time zone": "منطقه زمانی",
   "Time's up!": "زمان به پایان رسیده است!",
   "Tip: You can also send \"/poll Some question\"": "نکته: شما می توانید از \"/poll سوال موردنظر\" برای پرسش سوال استفاده کنید",
-  "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a stream. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>": "",
+  "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>": "برای جلب توجه به یک پیام، می‌توانید به یک کاربر، گروه، موضوع درگیر یا تمام مشترکان کانال، اشاره کنید. علامت @ را در بخش نوشتن پیام تایپ کنید و از بین گزینه‌ها انتخاب کنید که به کدام موارد می‌خواهید اشاره کنید. <z-link>یادگیری بیشتر</z-link>",
   "To invite users, please <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>.": "برای دعوت کاربران لطفاً <z-link-billing>مجوزها را افزایش دهید</z-link-billing> یا <z-link-help-page>کاربران غیرفعال را حذف کنید</z-link-help-page>.",
+  "To make it easier to tell where your message will be sent, messages in conversations you are not composing to are faded.": "برای ساده‌کردن آنکه پیام شما به کجا ارسال می‌شود، پیام‌های مکالماتی که شما در آن‌ها مطلبی نمی‌نویسید، محو می‌شوند.",
   "To preserve your reading state, this view does not mark messages as read.": "برای محافظت از حالت خواندن شما، این صفحه پیام‌ها را به  خوانده‌شده تبدیل نمی‌کند.",
   "Today": "امروز",
   "Today at {time}": "امروز ساعت {time}",
@@ -1333,11 +1346,12 @@
   "Toggle the gear menu": "تغییر وضعیت منوی چرخ دنده‌ای",
   "Toggle topic mute": "بی‌صدا کردن موضوع",
   "Tomorrow at {time}": "فردا ساعت {time}",
+  "Top topic in the channel": "موضوعات برتر در کانال",
   "Topic": "موضوع",
   "Topic muted": "موضوع بی‌صدا شد",
   "Topic notifications": "اطلاع‌رسانی‌های موضوع",
   "Topic settings": "تنظیمات موضوع",
-  "Topic visibility": "",
+  "Topic visibility": "نمایش موضوعات",
   "Topics": "موضوعات",
   "Topics I participate in": "موضوعاتی که من در آن شرکت دارم",
   "Topics I send a message to": "موضوعاتی که من به آنها پیام فرستاده‌ام",
@@ -1363,6 +1377,7 @@
   "Unknown user": "کاربر ناشناس",
   "Unmute": "صدادار کردن",
   "Unmute channel": "صدادار کردن کانال",
+  "Unmute this bot": "",
   "Unmute this user": "صدادار کردن این کاربر",
   "Unmute topic": "صدادار کردن موضوع",
   "Unmuted": "صدادار شده",
@@ -1402,7 +1417,7 @@
   "Usage statistics": "آمار استفاده",
   "Use <z-button>Esc</z-button> to go to your home view.": "از <z-button>Esc</z-button> استفاده کنید و به صفحه خانه بروید.",
   "Use channel settings to unsubscribe from private channels.": "از تنظیمات کانال برای لغو اشتراک در کانال‌های خصوصی استفاده کنید.",
-  "Use channel settings to unsubscribe the last user from a private channel.": "از تنظیمات کانال برای لغو اشتراک آخرین کاربر از جریان خصوصی، استفاده کنید.",
+  "Use channel settings to unsubscribe the last user from a private channel.": "از تنظیمات کانال برای لغو اشتراک آخرین کاربر از کانال خصوصی، استفاده کنید.",
   "Use full width on wide screens": "استفاده از حالت تمام عرض در صفحه نمایش های عریض",
   "Use html encoding (not recommended)": "استفاده از رمزگذاری html (توصیه نمی شود)",
   "Use organization level settings {org_level_message_retention_setting}": "استفاده از تنظیمات در رده سازمانی {org_level_message_retention_setting}",
@@ -1451,7 +1466,7 @@
   "View scheduled messages": "مشاهده پیام‌های برنامه‌ریزی شده",
   "View user card": "مشاهده کارت کاربر",
   "View your profile": "نمایش پروفایل شما",
-  "Viewing the conversation where you sent your message. To go back, use the <b>back</b> button in your browser or desktop app.": "",
+  "Viewing the conversation where you sent your message. To go back, use the <b>back</b> button in your browser or desktop app.": "شما در حال مشاهده مکالمه‌ای هستید که در آن پیغامی فرستاده‌اید. برای برگشتن از دکمه <b>back</b> در مرورگر یا اپلیکیشن دسکتاپ، استفاده کنید",
   "Visual": "تصویری",
   "Visual desktop notifications": "اطلاع رسانی دیداری برای دسکتاپ",
   "Waiting period (days)": "دوره انتظار (برحسب روز)",
@@ -1477,6 +1492,7 @@
   "Who can add bots": "چه کسی می تواند ربات اضافه کند",
   "Who can add custom emoji": "چه کسی می تواند ایموجی سفارشی اضافه کند",
   "Who can add users to channels": "چی کسی می‌تواند کاربران را به کانال اضافه کند",
+  "Who can authorize a direct message conversation": "چه کسی می تواند یک مکالمه پیام مستقیم را مجاز کند",
   "Who can create and manage user groups": "چه کسی می‌تواند گروه‌های کاربری بسازد یا آنها را مدیریت کند",
   "Who can create private channels": "چه کسی می‌تواند کانال‌های خصوصی بسازد",
   "Who can create public channels": "چه کسی می‌تواند کانال‌های عمومی بسازد",
@@ -1489,8 +1505,8 @@
   "Who can notify a large number of users with a wildcard mention": "چه کسی می‌تواند به گروه بزرگی از کاربران با یک وایلدکارت، اشاره کند",
   "Who can post to the channel?": "چه کسی می‌تواند در این کانال پست ارسال کند؟",
   "Who can send email invitations to new users": "چه کسی می‌تواند دعوتنامه ایمیلی برای کاربران جدید بفرستد",
+  "Who can start a direct message conversation": "چه کسی می‌تواند یک مکالمه پیام مستقیم را شروع کند",
   "Who can unsubscribe others from this channel?": "چه کسی می‌تواند سایرین را از این کانال لغو اشتراک کند؟",
-  "Who can use direct messages": "چه کسی می‌تواند از پیام مستقیم استفاده کند",
   "Who can view all other users in the organization": "چه کسی می‌تواند تمام کاربران دیگر در سازمان را مشاهده کند",
   "Why not <z-link>start the conversation</z-link>?": "چرا <z-link>شروع مکالمه</z-link> را امتحان نکنید؟",
   "Word": "کلمه",
@@ -1511,14 +1527,15 @@
   "You and {recipients}": "شما و  {recipients}",
   "You are about to disable all notifications for direct messages, @&#8209;mentions and alerts, which may cause you to miss messages that require your timely attention. If you would like to temporarily disable all desktop notifications, consider <z-link>turning on \"Do not disturb\"</z-link> instead.": "شما در شرف غیرفعال کردن همه اعلان‌ها برای پیام‌های مستقیم، @&#8209;اشاره‌ها و هشدارها هستید که ممکن است باعث شود پیام‌هایی را که نیاز به توجه به موقع شما دارند، از دست بدهید. اگر می‌خواهید به طور موقت همه اعلان‌های دسک‌تاپ را غیرفعال کنید، به جای آن <z-link>«مزاحم نشوید» را روشن کنید</z-link>.",
   "You are not a member of any user groups.": "شما عضو هیچ گروه کاربری نیستید.",
-  "You are not allowed to send direct messages in this organization.": "شما اجازه ندارید در این سازمان پیام مستقیم بفرستید.",
+  "You are not allowed to add members to this group.": "شما اجازه ندارید به این گروع عضو اضافه کنید.",
+  "You are not allowed to start direct message conversations.": "شما اجازه ندارید که یک مکالمه پیام مستقیم را شروع کنید.",
   "You are not currently subscribed to this channel.": "شما در حال حاضر مشترک این کانال نیستید.",
+  "You are not subscribed to <z-stream-name></z-stream-name>.": "شما مشترک <z-stream-name></z-stream-name> نیستید.",
   "You are not subscribed to any channels.": "شما مشترک هیچ کانالی نشده‌اید.",
-  "You are not subscribed to channel <z-stream-name></z-stream-name>.": "شما در کانال <z-stream-name></z-stream-name> مشترک نشده‌اید.",
   "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.": "شما در حال فرستادن یک پیام به یک موضوع حل‌شده هستید. می‌توانید در همین وضعیت بفرستید یا ابتدا موضوع را تبدیل به حل‌نشده بکنید.",
   "You are using an old version of the Zulip desktop app with known security bugs.": "شما از نسخه قدیمی برنامه دسکتاپ زولیپ با اشکالات امنیتی شناخته‌شده استفاده می‌کنید.",
   "You are viewing all the bots in this organization.": "شما تمام ربات‌های این سازمان را مشاهده می‌کنید.",
-  "You aren't following any topics.": "",
+  "You aren't following any topics.": "شما هیج موضوعی را دنبال نمی‌کنید.",
   "You can <z-link-new-bot>add a new bot</z-link-new-bot> or <z-link-manage-bot>manage</z-link-manage-bot> your own bots.": "شما می‌توانید <z-link-new-bot>یک ربات جدید اضافه کنید</z-link-new-bot> یا <z-link-manage-bot>ربات‌های خود را مدیریت کنید</z-link-manage-bot>.",
   "You can <z-link>manage</z-link> your own bots.": "شما می‌توانید ربات‌های خود را <z-link>مدیریت</z-link> کنید.",
   "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.": "شما همچنین می‌توانید به کمک <z-link>دستور خط مارکدان</z-link> <z-link>جدول</z-link> بسازید.",
@@ -1526,7 +1543,7 @@
   "You can convert this demo organization to a permanent Zulip organization. All users and message history will be preserved.": "شما می‌توانید این سازمان آزمایشی را به یک سازمان دائمی زولیپ تبدیل کنید. تمام کاربران و تاریخچه پیام‌ها حفظ خواهد شد.",
   "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "شما می‌توانید با ایجاد اکانت زولیپ در این سازمان به طور کامل به این انجمن دسترسی داشته باشید و در گفتگوها شرکت کنید.",
   "You can no longer save changes to this message.": "دیگر نمی‌توانید تغییرات این پیام را ذخیره کنید.",
-  "You can only view channels that you are subscribed to.": "",
+  "You can only view channels that you are subscribed to.": "شما فقط کانال‌هایی را می‌توانید ببینید که مشترک آن هستید.",
   "You can only view or manage invitations that you sent.": "شما فقط می‌توانید دعوتنامه‌هایی را که خودتان فرستاده‌اید، مشاهده یا مدیریت کنید.",
   "You can reactivate deactivated users from <z-link>organization settings</z-link>.": "شما از بخش<z-link>تنظیمات سازمان</z-link> می‌توانید کاربران غیرفعال شده را دوباره فعال کنید.",
   "You can use email to send messages to Zulip channels.": "شما می‌توانید برای ارسال پیام در کانال‌های زولیپ از ایمیل استفاده کنید.",
@@ -1551,14 +1568,14 @@
   "You do not have permissions to create invite links in this organization.": "شما در این سازمان اجازه ندارید لینک‌های دعوت بسازید.",
   "You do not have permissions to send invite emails in this organization.": "شما در این سازمان اجازه ندارید ایمیل‌های دعوت بسازید.",
   "You don't have any direct message conversations yet.": "شما هنوز هیچ پیام مستقیمی ندارید.",
-  "You follow this topic": "شما این موضوع را دنبال می‌کنید",
+  "You follow this topic.": "",
   "You get": "شما دریافت می کنید",
   "You have <z-link>at least {unread_msgs_count}</z-link> unread messages.": "شما <z-link>حداقل  {unread_msgs_count}</z-link> پیام خوانده‌نشده دارید.",
   "You have <z-link>{scheduled_message_count, plural, =1 {1 scheduled message} other {# scheduled messages}}</z-link> for this conversation.": "شما <z-link>{scheduled_message_count, plural, =1 {1 scheduled message} other {# scheduled messages}}</z-link> پیام برنامه‌ریزی شده در این مکالمه دارید.",
   "You have <z-link>{unread_msgs_count}</z-link> unread messages.": "شما <z-link>{unread_msgs_count}</z-link> پیام خوانده نشده دارید. ",
   "You have mentions": "به شما اشاره شده است",
   "You have muted <z-stream-topic></z-stream-topic>.": "شما <z-stream-topic></z-stream-topic> را بی‌صدا کرده‌اید.",
-  "You have muted this topic": "شما این موضوع را بی‌صدا کرده‌اید",
+  "You have muted this topic.": "",
   "You have no active bots.": "ربات فعالی ندارید.",
   "You have no direct messages including {person} yet.": "شما هنوز هیچ پیام مستقیمی که شامل {person} باشد ندارید.",
   "You have no direct messages with these users yet.": "شما با این کاربران هنوز هیچ پیام مستقیمی نداشته‌اید.",
@@ -1574,22 +1591,21 @@
   "You have not muted any users yet.": "شما تا به حال هیچ کاربری را بی‌صدا نکرده‌اید.",
   "You have not sent any direct messages to yourself yet!": "شما هنوز هیچ پیام مستقیمی به خودتان نفرستاده‌اید!",
   "You have not uploaded any files.": "هیچ فایلی بارگذاری نکرده اید.",
-  "You have unmuted this topic": "شما این موضوع را صدادار کرده‌اید",
+  "You have unmuted this topic.": "",
   "You haven't received any messages sent by {person} yet.": "شما هنوز هیچ پیامی که از {person} ارسال شده باشد دریافت نکرده‌اید.",
   "You may want to <z-link>configure</z-link> your organization's login page prior to inviting users.": "شما ممکن است بخواهید صفحه ورود سازمان خود را قبل از دعوت سایر کاربران <z-link>ساختاربندی</z-link> کنید.",
   "You may want to <z-link>upload a profile picture</z-link> for your organization prior to inviting users.": "شما ممکن است بخواهید قبل از دعوت از سایر کاربران، یک <z-link>تصویر نمایه</z-link> برای سازمان خود آپلود کنید.",
   "You may want to configure <z-link-1>default new user settings</z-link-1> and <z-link-2>custom profile fields</z-link-2> prior to inviting users.": "شما ممکن است بخواهید قبل از دعوت از سایر کاربران، <z-link-1>تنظیمات پیش‌فرض جدید</z-link-1> و <z-link-2>فیلدهای سفارشی پروفایل</z-link-2> را ساختاربندی کنید.",
   "You might be interested in <z-link>recent conversations</z-link>.": "شما ممکن است به <z-link>مکالمه‌های اخیر</z-link> علاقمند باشید.",
   "You must <z-link>configure your email</z-link> to access this feature.": "شما باید <z-link>ایمیل خود را پیکربندی کنید</z-link> تا به این ویژگی دسترسی داشته‌ باشید.",
-  "You must be an organization administrator to create a channel without subscribing.": "برای ایجاد یک جریان بدون عضویت، باید یکی از ادمین‌های سازمان باشید.",
+  "You must be an organization administrator to create a channel without subscribing.": "برای ایجاد یک کانال بدون عضویت، باید یکی از ادمین‌های سازمان باشید.",
   "You must configure your email to access this feature.": "شما باید ایمیل خود را پیکربندی کنید تا به این ویژگی دسترسی داشته‌ باشید.",
   "You need to be running Zephyr mirroring in order to send messages!": "برای ارسال پیام نیاز به اجرای بازتاب Zephyr دارید!",
   "You searched for:": "جستجوی شما:",
-  "You subscribed to channel <z-stream-name></z-stream-name>.": "شما مشترک کانال <z-stream-name></z-stream-name> شده‌اید.",
+  "You subscribed to <z-stream-name></z-stream-name>.": "شما مشترک <z-stream-name></z-stream-name> شده‌اید.",
   "You type": "شما تایپ می کنید",
-  "You unsubscribed from channel <z-stream-name></z-stream-name>.": "شما دیگر مشترک کانال <z-stream-name></z-stream-name> نیستید.",
+  "You unsubscribed from <z-stream-name></z-stream-name>.": "شما اشتراک خود در <z-stream-name></z-stream-name> را لغو کرده‌اید.",
   "You will automatically follow topics that you have configured to both <z-follow>follow</z-follow> and <z-unmute>unmute</z-unmute>.": "شما به طور خودکار موضوعاتی را دنبال می‌کنید که پیکربندی کرده‌اید که <z-follow>هم آن‌ها را دنبال کنید</z-follow> و <z-unmute>هم صدادار باشند</z-unmute>.",
-  "You will get default notifications for this topic": "شما برای این موضوع اعلان‌های پیش‌فرض را دریافت خواهید کرد",
   "You will not receive notifications about new messages.": "شما اعلانی برای پیام‌های جدید دریافت نخواهید کرد.",
   "You will now see the channel you created. To go back to channel settings, you can:": "شما اکنون کانالی را که ساخته‌اید، می‌ببینید. برای برگشتن به تنظیمات کانال، می‌توانید:",
   "You're done!": "کامل شدید!",
@@ -1605,6 +1621,8 @@
   "Your question": "سوال شما",
   "Your status": "وضعیت شما",
   "Your time zone:": "منطقه زمانی شما:",
+  "You’ll see a list of <b>conversations</b> where you have <b>unread messages</b>, organized by channel.": "شما لیستی سازمان‌دهی شده توسط کانال‌ها، از <b>مکالمات اخیر</b> که در آن‌ها <b>پیام‌های خوانده نشده</b> دارید، می‌بینید.",
+  "You’ll see a list of <b>ongoing conversations</b>.": "شما فهرستی از <b>مکالمه‌های در جریان</b> را می‌بینید.",
   "Zoom to message in conversation context": "متمرکز شدن روی پیام در متن مکالمه ",
   "Zulip": "زولیپ",
   "Zulip Server dev environment": "محیط توسعه سرور زولیپ",
@@ -1621,8 +1639,6 @@
   "acme": "acme",
   "and {remaining_senders, plural, one {1 other} other {# others}}.": "و {remaining_senders, plural, one {1 other} other {# others}}.",
   "back to channels": "بازگشت به کانال‌ها",
-  "beta": "بتا",
-  "clear": "پاک کردن",
   "cookie": "کوکی",
   "deactivated": "غیرفعال‌شده",
   "deprecated": "منسوخ",
@@ -1638,12 +1654,12 @@
   "leafy green vegetable": "سبزیجات سبز برگ",
   "more conversations": "مکالمه‌های بیشتر",
   "she/her": "she/her",
-  "show all topics": "",
+  "show all topics": "نمایش تمام موضوعات",
   "they/them": "they/them",
   "{N, plural, one {# other user} other {# other users}}": "{N, plural, one {کاربر دیگر} other {# کاربران دیگر}}",
   "{N, plural, one {# participant} other {# participants}}": "{N, plural, one {# شرکت‌کننده} other {# شرکت‌کنندگان}}",
   "{N, plural, one {# subscriber} other {# subscribers}}": "{N, plural, one {# مشترک} other {# مشترکان}}",
-  "{N, plural, one {Delete this option?} other {Delete these options?}}": "{N, plural, one {} other {}}",
+  "{N, plural, one {Delete this option?} other {Delete these options?}}": "{N, plural, one {حذف این گزینه؟} other {حذف این گزینه‌ها؟}}",
   "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}": "{N, plural, one {انجام شد! {N} پیام به خوانده‌شده تبدیل شد.} other {انجام شد! {N} پیام به خوانده‌شده تبدیل شدند.}}",
   "{N, plural, one {Done! {N} message marked as unread.} other {Done! {N} messages marked as unread.}}": "{N, plural, one {انجام شد! {N} پیام به خوانده‌نشده تبدیل شد.} other {انجام شد! {N} پیام به خوانده‌نشده تبدیل شدند.}}",
   "{N, plural, one {User invited successfully.} other {Users invited successfully.}}": "{N, plural, one {کاربران با موفقیت دعوت شدند.} other {کاربر با موفقیت دعوت شد.}}",
@@ -1655,15 +1671,17 @@
   "{days_old} days ago": "{days_old} روز پیش",
   "{edited_at_time}": "{edited_at_time}",
   "{full_name} is typing…": "{full_name} درحال نوشتن...",
+  "{group_name}: {group_size, plural, one {# user} other {# users}}": "{group_name}: {group_size, plural, one {# کاربر} other {# کاربر}}",
   "{hours} hours ago": "{hours} ساعت پیش",
   "{messages_not_allowed_to_move, plural, one {# message} other {# messages}} will remain in the current topic.": "{messages_not_allowed_to_move, plural, one {# پیام} other {# پیام}} will remain in the current topic.",
   "{minutes} min to edit": "{minutes} دقیقه تا ویرایش",
   "{minutes} minutes ago": "{minutes} دقیقه پیش",
-  "{msg_count} messages from {sender_name}": "",
+  "{msg_count} messages from {sender_name}": "{msg_count} پیام از طرف {sender_name}",
   "{name} (guest)": "{name} (مهمان)",
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {این پیغام توسط {num_of_people} نفر <z-link>خوانده</z-link> شد:} other {این پیغام توسط {num_of_people} نفر <z-link>خوانده</z-link> شد:}}",
   "{seconds} sec to edit": "{seconds} ثانیه تا ویرایش",
   "{server_jitsi_server_url} (default)": "{server_jitsi_server_url} (پیش‌فرض)",
+  "{stream_name}: {sub_count} users": "{stream_name}: {sub_count} کاربر",
   "{user_time} local time": "{user_time} زمان محلی",
   "{username} [said]({link_to_message}):": "{username} [گفت]({link_to_message}):",
   "{username} reacted with {emoji_name}": "{username} با ایموجی {emoji_name} واکنش نشان‌داد"

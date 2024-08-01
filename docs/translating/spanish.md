@@ -3,14 +3,14 @@
 Use informal Spanish for translation:
 
 - Informal "you" (_tú_) instead of formal form _usted_. Many top software
-  companies (e.g. Google) use the informal one, because it's much more common in
+  companies (e.g., Google) use the informal one, because it's much more common in
   the daily language and avoids making translations look like they were written
   by machines.
 
-- Imperative, active, and continuous verbs, e.g. _manage streams_ -
+- Imperative, active, and continuous verbs, e.g., _manage streams_ -
   _gestionar canales_, not _gestión de canales_.
 
-- Not using reflexive _se_ e.g. _log out_ should be _salir_, not _salirse_,
+- Not using reflexive _se_ e.g., _log out_ should be _salir_, not _salirse_,
   whenever the infinitive form is possible without making the translation
   awkward.
 
@@ -20,7 +20,7 @@ Use informal Spanish for translation:
 
 - Balance common verbs and nouns with specific IT-related translations
   of English terms - this can be tricky, try to check how other
-  resources were translated (e.g. Gmail, Microsoft websites, Facebook)
+  resources were translated (e.g., Gmail, Microsoft websites, Facebook)
   to decide what wouldn't sound awkward / rude in Spanish.
 
 - Latest RAE rule ("solo" should

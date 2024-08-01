@@ -1,13 +1,13 @@
 import os
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, TypeAlias
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import URLResolver, path
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
 from django_stubs_ext import StrPromise
-from typing_extensions import TypeAlias
 
 from zerver.lib.storage import static_path
 
@@ -32,14 +32,14 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-OptionValidator: TypeAlias = Callable[[str, str], Optional[str]]
+OptionValidator: TypeAlias = Callable[[str, str], str | None]
 
-META_CATEGORY: Dict[str, StrPromise] = {
+META_CATEGORY: dict[str, StrPromise] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
     "bots": gettext_lazy("Interactive bots"),
 }
 
-CATEGORIES: Dict[str, StrPromise] = {
+CATEGORIES: dict[str, StrPromise] = {
     **META_CATEGORY,
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),
@@ -66,14 +66,14 @@ class Integration:
         self,
         name: str,
         client_name: str,
-        categories: List[str],
-        logo: Optional[str] = None,
-        secondary_line_text: Optional[str] = None,
-        display_name: Optional[str] = None,
-        doc: Optional[str] = None,
-        stream_name: Optional[str] = None,
+        categories: list[str],
+        logo: str | None = None,
+        secondary_line_text: str | None = None,
+        display_name: str | None = None,
+        doc: str | None = None,
+        stream_name: str | None = None,
         legacy: bool = False,
-        config_options: Sequence[Tuple[str, str, OptionValidator]] = [],
+        config_options: Sequence[tuple[str, str, OptionValidator]] = [],
     ) -> None:
         self.name = name
         self.client_name = client_name
@@ -112,7 +112,7 @@ class Integration:
     def is_enabled(self) -> bool:
         return True
 
-    def get_logo_path(self) -> Optional[str]:
+    def get_logo_path(self) -> str | None:
         logo_file_path_svg = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
         logo_file_path_png = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
         if os.path.isfile(static_path(logo_file_path_svg)):
@@ -122,14 +122,14 @@ class Integration:
 
         return None
 
-    def get_bot_avatar_path(self) -> Optional[str]:
+    def get_bot_avatar_path(self) -> str | None:
         if self.logo_path is not None:
             name = os.path.splitext(os.path.basename(self.logo_path))[0]
             return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
 
         return None
 
-    def get_logo_url(self) -> Optional[str]:
+    def get_logo_url(self) -> str | None:
         if self.logo_path is not None:
             return staticfiles_storage.url(self.logo_path)
 
@@ -145,11 +145,11 @@ class BotIntegration(Integration):
     def __init__(
         self,
         name: str,
-        categories: List[str],
-        logo: Optional[str] = None,
-        secondary_line_text: Optional[str] = None,
-        display_name: Optional[str] = None,
-        doc: Optional[str] = None,
+        categories: list[str],
+        logo: str | None = None,
+        secondary_line_text: str | None = None,
+        display_name: str | None = None,
+        doc: str | None = None,
     ) -> None:
         super().__init__(
             name,
@@ -186,18 +186,18 @@ class WebhookIntegration(Integration):
     def __init__(
         self,
         name: str,
-        categories: List[str],
-        client_name: Optional[str] = None,
-        logo: Optional[str] = None,
-        secondary_line_text: Optional[str] = None,
-        function: Optional[str] = None,
-        url: Optional[str] = None,
-        display_name: Optional[str] = None,
-        doc: Optional[str] = None,
-        stream_name: Optional[str] = None,
+        categories: list[str],
+        client_name: str | None = None,
+        logo: str | None = None,
+        secondary_line_text: str | None = None,
+        function: str | None = None,
+        url: str | None = None,
+        display_name: str | None = None,
+        doc: str | None = None,
+        stream_name: str | None = None,
         legacy: bool = False,
-        config_options: Sequence[Tuple[str, str, OptionValidator]] = [],
-        dir_name: Optional[str] = None,
+        config_options: Sequence[tuple[str, str, OptionValidator]] = [],
+        dir_name: str | None = None,
     ) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
@@ -242,7 +242,7 @@ class WebhookIntegration(Integration):
         return path(self.url, self.function)
 
 
-def split_fixture_path(path: str) -> Tuple[str, str]:
+def split_fixture_path(path: str) -> tuple[str, str]:
     path, fixture_name = os.path.split(path)
     fixture_name, _ = os.path.splitext(fixture_name)
     integration_name = os.path.split(os.path.dirname(path))[-1]
@@ -253,22 +253,22 @@ def split_fixture_path(path: str) -> Tuple[str, str]:
 class BaseScreenshotConfig:
     fixture_name: str
     image_name: str = "001.png"
-    image_dir: Optional[str] = None
-    bot_name: Optional[str] = None
+    image_dir: str | None = None
+    bot_name: str | None = None
 
 
 @dataclass
 class ScreenshotConfig(BaseScreenshotConfig):
     payload_as_query_param: bool = False
     payload_param_name: str = "payload"
-    extra_params: Dict[str, str] = field(default_factory=dict)
+    extra_params: dict[str, str] = field(default_factory=dict)
     use_basic_auth: bool = False
-    custom_headers: Dict[str, str] = field(default_factory=dict)
+    custom_headers: dict[str, str] = field(default_factory=dict)
 
 
 def get_fixture_and_image_paths(
     integration: Integration, screenshot_config: BaseScreenshotConfig
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     if isinstance(integration, WebhookIntegration):
         fixture_dir = os.path.join("zerver", "webhooks", integration.dir_name, "fixtures")
     else:
@@ -286,11 +286,11 @@ class HubotIntegration(Integration):
     def __init__(
         self,
         name: str,
-        categories: List[str],
-        display_name: Optional[str] = None,
-        logo: Optional[str] = None,
-        logo_alt: Optional[str] = None,
-        git_url: Optional[str] = None,
+        categories: list[str],
+        display_name: str | None = None,
+        logo: str | None = None,
+        logo_alt: str | None = None,
+        git_url: str | None = None,
         legacy: bool = False,
     ) -> None:
         if logo_alt is None:
@@ -326,7 +326,7 @@ class EmbeddedBotIntegration(Integration):
         super().__init__(name, client_name, *args, **kwargs)
 
 
-EMBEDDED_BOTS: List[EmbeddedBotIntegration] = [
+EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
     EmbeddedBotIntegration("converter", []),
     EmbeddedBotIntegration("encrypt", []),
     EmbeddedBotIntegration("helloworld", []),
@@ -335,7 +335,7 @@ EMBEDDED_BOTS: List[EmbeddedBotIntegration] = [
     EmbeddedBotIntegration("followup", []),
 ]
 
-WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
+WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("airbrake", ["monitoring"]),
     WebhookIntegration(
         "alertmanager",
@@ -472,7 +472,6 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         logo="images/integrations/logos/slack.svg",
     ),
     WebhookIntegration("slack", ["communication"]),
-    WebhookIntegration("solano", ["continuous-integration"], display_name="Solano Labs"),
     WebhookIntegration("sonarqube", ["continuous-integration"], display_name="SonarQube"),
     WebhookIntegration("sonarr", ["entertainment"], display_name="Sonarr"),
     WebhookIntegration("splunk", ["monitoring"], display_name="Splunk"),
@@ -491,10 +490,9 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
     WebhookIntegration("zabbix", ["monitoring"], display_name="Zabbix"),
-    WebhookIntegration("gci", ["misc"], display_name="Google Code-in", stream_name="gci"),
 ]
 
-INTEGRATIONS: Dict[str, Integration] = {
+INTEGRATIONS: dict[str, Integration] = {
     "asana": Integration(
         "asana", "asana", ["project-management"], doc="zerver/integrations/asana.md"
     ),
@@ -643,14 +641,14 @@ INTEGRATIONS: Dict[str, Integration] = {
     ),
 }
 
-BOT_INTEGRATIONS: List[BotIntegration] = [
+BOT_INTEGRATIONS: list[BotIntegration] = [
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
     BotIntegration(
         "xkcd", ["bots", "misc"], display_name="xkcd", logo="images/integrations/logos/xkcd.png"
     ),
 ]
 
-HUBOT_INTEGRATIONS: List[HubotIntegration] = [
+HUBOT_INTEGRATIONS: list[HubotIntegration] = [
     HubotIntegration(
         "assembla",
         ["version-control", "project-management"],
@@ -701,7 +699,7 @@ NO_SCREENSHOT_WEBHOOKS = {
 }
 
 
-DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
+DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "airbrake": [ScreenshotConfig("error_message.json")],
     "alertmanager": [
         ScreenshotConfig("alert.json", extra_params={"name": "topic", "desc": "description"})
@@ -750,7 +748,6 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "freshping": [ScreenshotConfig("freshping_check_unreachable.json")],
     "freshstatus": [ScreenshotConfig("freshstatus_incident_open.json")],
     "front": [ScreenshotConfig("inbound_message.json")],
-    "gci": [ScreenshotConfig("task_abandoned_by_student.json")],
     "gitea": [ScreenshotConfig("pull_request__merged.json")],
     "github": [ScreenshotConfig("push__1_commit.json")],
     "githubsponsors": [ScreenshotConfig("created.json")],
@@ -807,7 +804,6 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
         ScreenshotConfig("issue_assigned_to_team.json", "002.png"),
     ],
     "slack": [ScreenshotConfig("message_info.txt")],
-    "solano": [ScreenshotConfig("build_001.json")],
     "sonarqube": [ScreenshotConfig("error.json")],
     "sonarr": [ScreenshotConfig("sonarr_episode_grabbed.json")],
     "splunk": [ScreenshotConfig("search_one_result.json")],
@@ -849,7 +845,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
 }
 
 
-def get_all_event_types_for_integration(integration: Integration) -> Optional[List[str]]:
+def get_all_event_types_for_integration(integration: Integration) -> list[str] | None:
     integration = INTEGRATIONS[integration.name]
     if isinstance(integration, WebhookIntegration):
         if integration.name == "githubsponsors":

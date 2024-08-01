@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.conf import settings
 from django.db import transaction
@@ -55,7 +55,7 @@ def do_change_realm_subdomain(
     realm: Realm,
     new_subdomain: str,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
     add_deactivated_redirect: bool = True,
 ) -> None:
     """Changing a realm's subdomain is a highly disruptive operation,
@@ -67,7 +67,7 @@ def do_change_realm_subdomain(
     experience for clients.
     """
     old_subdomain = realm.subdomain
-    old_uri = realm.url
+    old_url = realm.url
     # If the realm had been a demo organization scheduled for
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
@@ -84,7 +84,7 @@ def do_change_realm_subdomain(
 
         # If a realm if being renamed multiple times, we should find all the placeholder
         # realms and reset their deactivated_redirect field to point to the new realm url
-        placeholder_realms = Realm.objects.filter(deactivated_redirect=old_uri, deactivated=True)
+        placeholder_realms = Realm.objects.filter(deactivated_redirect=old_url, deactivated=True)
         for placeholder_realm in placeholder_realms:
             do_add_deactivated_redirect(placeholder_realm, realm.url)
 
@@ -136,7 +136,7 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
 
 @transaction.atomic(savepoint=False)
 def set_default_for_realm_permission_group_settings(
-    realm: Realm, group_settings_defaults_for_org_types: Optional[Dict[str, Dict[int, str]]] = None
+    realm: Realm, group_settings_defaults_for_org_types: dict[str, dict[int, str]] | None = None
 ) -> None:
     system_groups_dict = get_role_based_system_groups_dict(realm)
 
@@ -182,19 +182,19 @@ def do_create_realm(
     string_id: str,
     name: str,
     *,
-    emails_restricted_to_domains: Optional[bool] = None,
-    description: Optional[str] = None,
-    invite_required: Optional[bool] = None,
-    plan_type: Optional[int] = None,
-    org_type: Optional[int] = None,
-    default_language: Optional[str] = None,
-    date_created: Optional[datetime] = None,
+    emails_restricted_to_domains: bool | None = None,
+    description: str | None = None,
+    invite_required: bool | None = None,
+    plan_type: int | None = None,
+    org_type: int | None = None,
+    default_language: str | None = None,
+    date_created: datetime | None = None,
     is_demo_organization: bool = False,
-    enable_read_receipts: Optional[bool] = None,
-    enable_spectator_access: Optional[bool] = None,
-    prereg_realm: Optional[PreregistrationRealm] = None,
-    how_realm_creator_found_zulip: Optional[str] = None,
-    how_realm_creator_found_zulip_extra_context: Optional[str] = None,
+    enable_read_receipts: bool | None = None,
+    enable_spectator_access: bool | None = None,
+    prereg_realm: PreregistrationRealm | None = None,
+    how_realm_creator_found_zulip: str | None = None,
+    how_realm_creator_found_zulip_extra_context: str | None = None,
 ) -> Realm:
     if string_id in [settings.SOCIAL_AUTH_SUBDOMAIN, settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN]:
         raise AssertionError(
@@ -206,7 +206,7 @@ def do_create_realm(
         logging.info("Server not yet initialized. Creating the internal realm first.")
         create_internal_realm()
 
-    kwargs: Dict[str, Any] = {}
+    kwargs: dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
     if description is not None:

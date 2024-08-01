@@ -1,7 +1,7 @@
 """Webhooks for external integrations."""
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import orjson
 from defusedxml.ElementTree import fromstring as xml_fromstring
@@ -10,16 +10,16 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
-from zerver.lib.request import has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str, str]:
+def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> tuple[str, str, str]:
     payload = xml_fromstring(request.body)
 
-    def get_text(attrs: List[str]) -> str:
+    def get_text(attrs: list[str]) -> str:
         start = payload
         try:
             for attr in attrs:
@@ -87,7 +87,7 @@ ALL_EVENT_TYPES = [
 ]
 
 
-def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str, str]:
+def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> tuple[str, str, str]:
     payload = orjson.loads(request.body)
 
     event_type = payload["kind"]
@@ -110,7 +110,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
     content = ""
     topic_name = f"#{story_id}: {story_name}"
 
-    def extract_comment(change: Dict[str, Any]) -> Optional[str]:
+    def extract_comment(change: dict[str, Any]) -> str | None:
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None
@@ -177,7 +177,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
 
 
 @webhook_view("Pivotal", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint_without_parameters
 def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     topic_name = content = None
     try:

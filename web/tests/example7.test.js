@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
+const {make_stream} = require("./lib/test_stream");
 const $ = require("./lib/zjquery");
 
 /*
@@ -66,12 +67,12 @@ const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
 const unread_ops = zrequire("unread_ops");
 
-const denmark_stream = {
+const denmark_stream = make_stream({
     color: "blue",
     name: "Denmark",
     stream_id: 101,
     subscribed: false,
-};
+});
 
 run_test("unread_ops", ({override}) => {
     stream_data.clear_subscriptions();

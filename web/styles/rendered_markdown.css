@@ -163,10 +163,6 @@
     }
 
     /* Mentions and alert words */
-    .user-mention-me :not(.silent) {
-        background-color: hsl(112deg 88% 87%);
-    }
-
     .user-group-mention,
     .user-mention,
     .topic-mention {
@@ -219,15 +215,19 @@
 
     /* Timestamps */
     & time {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 3px;
         background: hsl(0deg 0% 93%);
         border-radius: 3px;
         padding: 0 0.2em;
         box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
         white-space: nowrap;
-        margin-left: 2px;
-        margin-right: 2px;
-        display: inline-block;
-        margin-bottom: 1px;
+        margin: 0 2px 1px;
+
+        .fa-clock-o {
+            align-self: center;
+        }
     }
 
     /* LaTeX styling */
@@ -271,6 +271,13 @@
                    but shrinks so as to allow long multi-line
                    spoiler messages to wrap. */
                 flex: 1 1 auto;
+            }
+
+            time {
+                /* Time tag pushes the arrow out of view when overflow,
+                   adding white-space property prevents this by wrapping
+                   the element */
+                white-space: normal;
             }
         }
 
@@ -346,13 +353,6 @@
         }
     }
 
-    & > .spoiler-block:last-child {
-        /* A spoiler block at the end of a message, or as
-           a message's only content, gets the same bottom
-           margin as other elements. */
-        margin-bottom: var(--markdown-interelement-space-px);
-    }
-
     /* embedded link previews */
     .message_inline_image_title {
         font-weight: bold;
@@ -404,6 +404,10 @@
             display: block;
             height: 100%;
             width: 100%;
+        }
+
+        img.image-loading-placeholder {
+            content: url("../images/loading/loader-black.svg");
         }
     }
 
@@ -553,7 +557,8 @@
         float: none;
     }
 
-    .message_inline_video {
+    .message_inline_video,
+    .message_inline_animated_image_still {
         &:hover {
             &::after {
                 transform: scale(1);
@@ -629,6 +634,7 @@
 
         .message_embed_image {
             display: inline-block;
+            padding: 5px;
             width: 70px;
             height: 70px;
             background-size: cover;
@@ -668,12 +674,6 @@
     &.rtl .message_embed {
         border-left: unset;
         border-right: 3px solid hsl(0deg 0% 93%);
-    }
-
-    .message_embed > * {
-        display: inherit;
-        padding: 5px;
-        border: none;
     }
 
     & a {
@@ -894,18 +894,6 @@
     }
 }
 
-.preview_content.rendered_markdown {
-    /*  Ensure that the first child and last child
-    don't have blank area at the top and bottom respectively. */
-    & > :first-child {
-        margin-top: 0;
-    }
-
-    & > :last-child:not(.message_inline_image) {
-        margin-bottom: 0;
-    }
-}
-
 .codehilite {
     display: block !important;
     border: none !important;
@@ -951,4 +939,14 @@
 /* Search highlight used in both topics and rendered_markdown */
 .highlight {
     background-color: hsl(51deg 100% 79%);
+}
+
+/* For elements where we want to show as much markdown content we can
+   in a single line and then hide the overflowing part. */
+.single-line-rendered-markdown {
+    /* Any element which can `wrap` in the above defined elements. */
+    code,
+    .stream-topic {
+        white-space: nowrap;
+    }
 }

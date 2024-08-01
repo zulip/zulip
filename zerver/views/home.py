@@ -1,6 +1,5 @@
 import logging
 import secrets
-from typing import List, Optional, Tuple
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -21,7 +20,7 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
 
-def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
+def need_accept_tos(user_profile: UserProfile | None) -> bool:
     if user_profile is None:
         return False
 
@@ -101,14 +100,14 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
 
 
 def detect_narrowed_window(
-    request: HttpRequest, user_profile: Optional[UserProfile]
-) -> Tuple[List[NarrowTerm], Optional[Stream], Optional[str]]:
+    request: HttpRequest, user_profile: UserProfile | None
+) -> tuple[list[NarrowTerm], Stream | None, str | None]:
     """This function implements Zulip's support for a mini Zulip window
     that just handles messages from a single narrow"""
     if user_profile is None:
         return [], None, None
 
-    narrow: List[NarrowTerm] = []
+    narrow: list[NarrowTerm] = []
     narrow_stream = None
     narrow_topic_name = request.GET.get("topic")
 
@@ -126,7 +125,7 @@ def detect_narrowed_window(
     return narrow, narrow_stream, narrow_topic_name
 
 
-def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
+def update_last_reminder(user_profile: UserProfile | None) -> None:
     """Reset our don't-spam-users-with-email counter since the
     user has since logged in
     """

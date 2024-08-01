@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 import orjson
 from django.db import connection
@@ -30,7 +31,7 @@ where we'll want to support "subject" for a while.
 """
 
 
-def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
+def get_topic_from_message_info(message_info: dict[str, Any]) -> str:
     """
     Use this where you are getting dicts that are based off of messages
     that may come from the outside world, especially from third party
@@ -45,7 +46,7 @@ def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
     return message_info["subject"]
 
 
-def REQ_topic() -> Optional[str]:
+def REQ_topic() -> str | None:
     # REQ handlers really return a REQ, but we
     # lie to make the rest of the type matching work.
     return REQ(
@@ -119,7 +120,7 @@ def update_edit_history(
 ) -> None:
     message.last_edit_time = last_edit_time
     if message.edit_history is not None:
-        edit_history: List[EditHistoryEvent] = orjson.loads(message.edit_history)
+        edit_history: list[EditHistoryEvent] = orjson.loads(message.edit_history)
         edit_history.insert(0, edit_history_event)
     else:
         edit_history = [edit_history_event]
@@ -131,12 +132,12 @@ def update_messages_for_topic_edit(
     edited_message: Message,
     propagate_mode: str,
     orig_topic_name: str,
-    topic_name: Optional[str],
-    new_stream: Optional[Stream],
+    topic_name: str | None,
+    new_stream: Stream | None,
     old_stream: Stream,
     edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,
-) -> Tuple[QuerySet[Message], Callable[[], QuerySet[Message]]]:
+) -> tuple[QuerySet[Message], Callable[[], QuerySet[Message]]]:
     # Uses index: zerver_message_realm_recipient_upper_subject
     messages = Message.objects.filter(
         realm_id=old_stream.realm_id,
@@ -161,7 +162,7 @@ def update_messages_for_topic_edit(
         # to keep topics together.
         pass
 
-    update_fields: Dict[str, object] = {
+    update_fields: dict[str, object] = {
         "last_edit_time": last_edit_time,
         # We cast the `edit_history` column to jsonb (defaulting NULL
         # to `[]`), apply the `||` array concatenation operator to it,
@@ -215,8 +216,8 @@ def update_messages_for_topic_edit(
     return messages, propagate
 
 
-def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
-    canonical_topic_names: Dict[str, Tuple[int, str]] = {}
+def generate_topic_history_from_db_rows(rows: list[tuple[str, int]]) -> list[dict[str, Any]]:
+    canonical_topic_names: dict[str, tuple[int, str]] = {}
 
     # Sort rows by max_message_id so that if a topic
     # has many different casings, we use the most
@@ -235,7 +236,7 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
     return sorted(history, key=lambda x: -x["max_id"])
 
 
-def get_topic_history_for_public_stream(realm_id: int, recipient_id: int) -> List[Dict[str, Any]]:
+def get_topic_history_for_public_stream(realm_id: int, recipient_id: int) -> list[dict[str, Any]]:
     cursor = connection.cursor()
     # Uses index: zerver_message_realm_recipient_subject
     # Note that this is *case-sensitive*, so that we can display the
@@ -263,7 +264,7 @@ def get_topic_history_for_public_stream(realm_id: int, recipient_id: int) -> Lis
 
 def get_topic_history_for_stream(
     user_profile: UserProfile, recipient_id: int, public_history: bool
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     if public_history:
         return get_topic_history_for_public_stream(user_profile.realm_id, recipient_id)
 
@@ -296,7 +297,7 @@ def get_topic_history_for_stream(
     return generate_topic_history_from_db_rows(rows)
 
 
-def get_topic_resolution_and_bare_name(stored_name: str) -> Tuple[bool, str]:
+def get_topic_resolution_and_bare_name(stored_name: str) -> tuple[bool, str]:
     """
     Resolved topics are denoted only by a title change, not by a boolean toggle in a database column. This
     method inspects the topic name and returns a tuple of:
@@ -310,7 +311,7 @@ def get_topic_resolution_and_bare_name(stored_name: str) -> Tuple[bool, str]:
     return (False, stored_name)
 
 
-def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) -> Set[int]:
+def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) -> set[int]:
     """
     Users who either sent or reacted to the messages in the topic.
     The function is expensive for large numbers of messages in the topic.

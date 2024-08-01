@@ -151,7 +151,7 @@ guide][rtd-git-guide]. In brief, the steps are as follows.
 On your **local computer**:
 
 1. Open _Terminal_ (macOS/Linux) or _Git for BASH_.
-2. Change directory to where you cloned Zulip (e.g. `cd zulip`).
+2. Change directory to where you cloned Zulip (e.g., `cd zulip`).
 3. Use `git add` and `git commit` to stage and commit your changes (if you
    haven't already).
 4. Push your commits to GitHub with `git push origin branchname`.
@@ -282,7 +282,7 @@ Next, read the following to learn more about developing for Zulip:
 
 ## Using an nginx reverse proxy
 
-For some applications (e.g. developing an OAuth2 integration for
+For some applications (e.g., developing an OAuth2 integration for
 Facebook), you may need your Zulip development to have a valid SSL
 certificate. While `run-dev` doesn't support that, you can do this
 with an `nginx` reverse proxy sitting in front of `run-dev`.

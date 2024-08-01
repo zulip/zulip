@@ -3,7 +3,8 @@
 import contextlib
 import sys
 import time
-from typing import Any, Dict, Iterable, Optional, Sequence, Union
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
@@ -27,8 +28,8 @@ class MemcachedCollector(Collector):
         def gauge(
             name: str,
             doc: str,
-            value: Optional[Union[float, bytes]] = None,
-            labels: Optional[Sequence[str]] = None,
+            value: float | bytes | None = None,
+            labels: Sequence[str] | None = None,
         ) -> GaugeMetricFamily:
             return GaugeMetricFamily(
                 f"memcached_{name}", doc, float(value) if value else None, labels
@@ -37,7 +38,7 @@ class MemcachedCollector(Collector):
         def counter(
             name: str,
             doc: str,
-            labels: Optional[Iterable[str]] = None,
+            labels: Iterable[str] | None = None,
         ) -> CounterMetricFamily:
             return CounterMetricFamily(
                 f"memcached_{name}", doc, labels=list(labels) if labels is not None else None
@@ -46,8 +47,8 @@ class MemcachedCollector(Collector):
         def counter_value(
             name: str,
             doc: str,
-            value: Union[bytes, float],
-            labels: Optional[Dict[str, str]] = None,
+            value: bytes | float,
+            labels: dict[str, str] | None = None,
         ) -> CounterMetricFamily:
             if labels is None:
                 labels = {}
@@ -63,7 +64,7 @@ class MemcachedCollector(Collector):
             )
             return metric
 
-        cache: Dict[str, Any] = settings.CACHES["default"]
+        cache: dict[str, Any] = settings.CACHES["default"]
         client = None
         with contextlib.suppress(Exception):
             client = bmemcached.Client((cache["LOCATION"],), **cache["OPTIONS"])
@@ -73,7 +74,7 @@ class MemcachedCollector(Collector):
             return
 
         raw_stats = client.stats()
-        stats: Dict[str, bytes] = next(iter(raw_stats.values()))
+        stats: dict[str, bytes] = next(iter(raw_stats.values()))
 
         version_gauge = gauge(
             "version", "The version of this memcached server.", labels=["version"]
@@ -381,12 +382,13 @@ class MemcachedCollector(Collector):
 
         raw_stats = client.stats("sizes")
         sizes_stats = next(iter(raw_stats.values()))
-        if sizes_stats.get("sizes_status") == b"disabled" or sizes_stats == {}:
-            return
-        sizes = sorted([int(x) for x in sizes_stats])
-        yield gauge(
-            "item_max_bytes", "Largest item (rounded to 32 bytes) in bytes.", value=sizes[-1]
-        )
+        if sizes_stats.get("sizes_status") != b"disabled" and sizes_stats != {}:
+            sizes = sorted([int(x) for x in sizes_stats])
+            yield gauge(
+                "item_max_bytes", "Largest item (rounded to 32 bytes) in bytes.", value=sizes[-1]
+            )
+
+        client.disconnect_all()
 
 
 if __name__ == "__main__":

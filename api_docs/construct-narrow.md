@@ -47,56 +47,75 @@ for details.
 
 Clients should note that the `is:unread` filter takes advantage of the
 fact that there is a database index for unread messages, which can be an
-important optimization when fetching messages in certain cases (e.g.
+important optimization when fetching messages in certain cases (e.g.,
 when [adding the `read` flag to a user's personal
 messages](/api/update-message-flags-for-narrow)).
 
-**Changes**: In Zulip 9.0 (feature level 265), support was added for a
-new `is:followed` filter, matching messages in topics that the current
-user is [following](/help/follow-a-topic).
+## Changes
 
-In Zulip 9.0 (feature level 250), support was added for
-two filters related to stream messages: `channel` and `channels`. The
-`channel` operator is an alias for the `stream` operator. The `channels`
-operator is an alias for the `streams` operator. Both `channel` and
-`channels` return the same exact results as `stream` and `streams`
-respectively.
+* In Zulip 9.0 (feature level 271), support was added for a new filter
+  operator, `with`, which uses a [message ID](#message-ids) for its
+  operand, and is designed for creating permanent links to topics.
 
-In Zulip 9.0 (feature level 249), support was added for a new filter,
-`has:reaction`, which returns messages that have at least one [emoji
-reaction](/help/emoji-reactions).
+* In Zulip 9.0 (feature level 265), support was added for a new
+  `is:followed` filter, matching messages in topics that the current
+  user is [following](/help/follow-a-topic).
 
-In Zulip 7.0 (feature level 177), support was added
-for three filters related to direct messages: `is:dm`, `dm` and
-`dm-including`. The `dm` operator replaced and deprecated the
-`pm-with` operator. The `is:dm` filter replaced and deprecated
-the `is:private` filter. The `dm-including` operator replaced and
-deprecated the `group-pm-with` operator.
+* In Zulip 9.0 (feature level 250), support was added for two filters
+  related to stream messages: `channel` and `channels`. The `channel`
+  operator is an alias for the `stream` operator. The `channels`
+  operator is an alias for the `streams` operator. Both `channel` and
+  `channels` return the same exact results as `stream` and `streams`
+  respectively.
 
-The `dm-including` and `group-pm-with` operators return slightly
-different results. For example, `dm-including:1234` returns all
-direct messages (1-on-1 and group) that include the current user
-and the user with the unique user ID of `1234`. On the other hand,
-`group-pm-with:1234` returned only group direct messages that included
-the current user and the user with the unique user ID of `1234`.
+* In Zulip 9.0 (feature level 249), support was added for a new filter,
+  `has:reaction`, which returns messages that have at least one [emoji
+  reaction](/help/emoji-reactions).
 
-Both `dm` and `is:dm` are aliases of `pm-with` and `is:private`
-respectively, and return the same exact results that the deprecated
-filters did.
+* In Zulip 7.0 (feature level 177), support was added for three filters
+  related to direct messages: `is:dm`, `dm` and `dm-including`. The
+  `dm` operator replaced and deprecated the `pm-with` operator. The
+  `is:dm` filter replaced and deprecated the `is:private` filter. The
+  `dm-including` operator replaced and deprecated the `group-pm-with`
+  operator.
+
+    * The `dm-including` and `group-pm-with` operators return slightly
+      different results. For example, `dm-including:1234` returns all
+      direct messages (1-on-1 and group) that include the current user
+      and the user with the unique user ID of `1234`. On the other hand,
+      `group-pm-with:1234` returned only group direct messages that
+      included the current user and the user with the unique user ID of
+      `1234`.
+
+    * Both `dm` and `is:dm` are aliases of `pm-with` and `is:private`
+      respectively, and return the same exact results that the
+      deprecated filters did.
 
 ## Narrows that use IDs
 
 ### Message IDs
 
-The `near` and `id` operators, documented in the help center, use message
-IDs for their operands.
+The `near`, `id` and `with` operators use message IDs for their
+operands. The `near` and `id` operators are documented in the help
+center [here](/help/search-for-messages#search-by-message-id).
 
+The `with` operator is designed to be used for permanent links to topics,
+which means they should continue to work when the topic is
+[moved](/help/move-content-to-another-topic) or
+[resolved](/help/resolve-a-topic). If the message with the specified ID
+exists, and can be accessed by the user, then it will return messages
+with the `channel`/`topic`/`dm` operators corresponding to the current
+conversation containing that message, and replacing any such filters
+included in the narrow.
+
+* `with:12345`: Search for the conversation that contains the message
+  with ID `12345`.
 * `near:12345`: Search messages around the message with ID `12345`.
-* `id:12345`: Search for only message with ID `12345`.
+* `id:12345`: Search for only the message with ID `12345`.
 
-The message ID operand for the `id` operator may be encoded as either a
-number or a string. The message ID operand for the `near` operator must
-be encoded as a string.
+The message ID operand for the `with` and `id` operators may be encoded
+as either a number or a string. The message ID operand for the `near`
+operator must be encoded as a string.
 
 **Changes**: Prior to Zulip 8.0 (feature level 194), the message ID
 operand for the `id` operator needed to be encoded as a string.

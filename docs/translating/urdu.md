@@ -3,10 +3,10 @@
 Use semi-formal Urdu for translation:
 
 - Formal "you" (_آپ_) instead of informal form _تم_. Many top software
-  companies (e.g. Google, Facebook, Microsoft) use the formal one, because it's typically
+  companies (e.g., Google, Facebook, Microsoft) use the formal one, because it's typically
   considered rude to use the informal one without an established acquaintance with someone.
 
-- Imperative, active, and continuous verbs, e.g. _manage streams_ -
+- Imperative, active, and continuous verbs, e.g., _manage streams_ -
   _سٹریمس کی رہنمائ کریں_, not _سٹریمس کی رہنمائ_.
 
 - Warm and friendly phrasing whenever appropriate.
@@ -15,7 +15,7 @@ Use semi-formal Urdu for translation:
 
 - Balance common verbs and nouns with specific IT-related translations
   of English terms - this can be tricky, try to check how other
-  resources were translated (e.g. Gmail, Microsoft websites, Facebook)
+  resources were translated (e.g., Gmail, Microsoft websites, Facebook)
   to decide what wouldn't sound awkward/rude in Urdu.
 
 Some terms are very tricky to translate, so be sure to communicate

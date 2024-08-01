@@ -1,8 +1,8 @@
 # Webhooks for external integrations.
-from typing import Dict, List
+
+from typing import Annotated
 
 from django.http import HttpRequest, HttpResponse
-from typing_extensions import Annotated
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
@@ -22,7 +22,7 @@ def api_alertmanager_webhook(
     name_field: Annotated[str, ApiParamConfig("name")] = "instance",
     desc_field: Annotated[str, ApiParamConfig("desc")] = "alertname",
 ) -> HttpResponse:
-    topics: Dict[str, Dict[str, List[str]]] = {}
+    topics: dict[str, dict[str, list[str]]] = {}
 
     for alert in payload["alerts"]:
         labels = alert.get("labels", {})

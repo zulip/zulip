@@ -1,12 +1,13 @@
 import time
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Dict, List, Literal, Union
+from typing import Annotated, Any, Concatenate, Literal
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import BaseModel, ConfigDict
-from typing_extensions import Annotated, Concatenate, ParamSpec
+from typing_extensions import ParamSpec
 
 from zerver.lib.addressee import get_user_profiles_by_ids
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
@@ -25,15 +26,15 @@ class DraftData(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     type: Literal["private", "stream", ""]
-    to: List[int]
+    to: list[int]
     topic: str
     content: Annotated[str, RequiredStringConstraint()]
-    timestamp: Union[int, float, None] = None
+    timestamp: int | float | None = None
 
 
 def further_validated_draft_dict(
     draft_dict: DraftData, user_profile: UserProfile
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Take a DraftData object that was already validated by the @typed_endpoint
     decorator then further sanitize, validate, and transform it.
     Ultimately return this "further validated" draft dict.
@@ -96,7 +97,7 @@ def draft_endpoint(
     return draft_view_func
 
 
-def do_create_drafts(drafts: List[DraftData], user_profile: UserProfile) -> List[Draft]:
+def do_create_drafts(drafts: list[DraftData], user_profile: UserProfile) -> list[Draft]:
     """Create drafts in bulk for a given user based on the DraftData objects. Since
     currently, the only place this method is being used (apart from tests) is from
     the create_draft view, we assume that these are syntactically valid

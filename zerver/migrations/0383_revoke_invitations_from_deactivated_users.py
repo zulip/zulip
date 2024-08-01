@@ -1,5 +1,3 @@
-from typing import List
-
 from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
@@ -18,8 +16,8 @@ def revoke_invitations(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
     STATUS_REVOKED = 2
 
     def get_valid_invite_confirmations_generated_by_users(
-        user_ids: List[int],
-    ) -> List[int]:
+        user_ids: list[int],
+    ) -> list[int]:
         prereg_user_ids = (
             PreregistrationUser.objects.filter(referred_by_id__in=user_ids)
             .exclude(status=STATUS_REVOKED)
@@ -44,7 +42,7 @@ def revoke_invitations(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
 
         return confirmation_ids
 
-    print("")
+    print()
     for realm_id in Realm.objects.values_list("id", flat=True):
         deactivated_user_ids = UserProfile.objects.filter(
             is_active=False, realm_id=realm_id

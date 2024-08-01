@@ -1,10 +1,17 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
+
 import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as color_data from "./color_data";
 import * as compose_recipient from "./compose_recipient";
+import * as dialog_widget from "./dialog_widget";
+import * as hash_util from "./hash_util";
+import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
@@ -14,6 +21,7 @@ import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
 import * as settings_notifications from "./settings_notifications";
 import * as stream_color_events from "./stream_color_events";
+import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
@@ -109,6 +117,23 @@ export function update_property(stream_id, property, value, other_values) {
     }
 }
 
+function show_first_stream_created_modal(stream) {
+    dialog_widget.launch({
+        html_heading: $t_html(
+            {defaultMessage: "Channel <b><z-stream></z-stream></b> created!"},
+            {
+                "z-stream": () => render_inline_decorated_stream_name({stream}),
+            },
+        ),
+        html_body: render_first_stream_created_modal({stream}),
+        id: "first_stream_created_modal",
+        on_click() {},
+        html_submit_button: $t({defaultMessage: "Continue"}),
+        close_on_submit: true,
+        single_footer_button: true,
+    });
+}
+
 // Add yourself to a stream we already know about client-side.
 // It's likely we should be passing in the full sub object from the caller/backend,
 // but for now we just pass in the subscribers and color (things likely to be different).
@@ -146,9 +171,27 @@ export function mark_subscribed(sub, subscribers, color) {
     // update navbar if necessary
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 
+    if (stream_create.get_name() === sub.name) {
+        // In this case, we just created this channel using this very
+        // browser window. We redirect the user to that channel so
+        // they can use the channel that they just created.
+        //
+        // It's important that we do this here, not in
+        // add_sub_to_table, to avoid showing or flashing a subscriber
+        // bookend during the window that the client doesn't yet know
+        // that we're a subscriber to the new channel.
+        stream_create.reset_created_stream();
+        browser_history.go_to_location(hash_util.by_stream_url(sub.stream_id));
+
+        if (stream_create.should_show_first_stream_created_modal()) {
+            stream_create.set_first_stream_created_modal_shown();
+            show_first_stream_created_modal(sub);
+        }
+    }
+
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         assert(message_lists.current !== undefined);
-        message_lists.current.update_trailing_bookend();
+        message_lists.current.update_trailing_bookend(true);
         activity_ui.build_user_sidebar();
     }
 
@@ -181,7 +224,7 @@ export function mark_unsubscribed(sub) {
         // Update UI components if we just unsubscribed from the
         // currently viewed stream.
         assert(message_lists.current !== undefined);
-        message_lists.current.update_trailing_bookend();
+        message_lists.current.update_trailing_bookend(true);
 
         // This update would likely be better implemented by having it
         // disappear whenever no unread messages remain.

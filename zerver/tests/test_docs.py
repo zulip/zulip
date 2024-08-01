@@ -1,6 +1,7 @@
 import os
 import re
-from typing import TYPE_CHECKING, Any, Dict, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 from urllib.parse import urlsplit
 
@@ -254,7 +255,7 @@ class DocPageTest(ZulipTestCase):
         # Test the i18n version of one of these pages.
         self._test("/en/history/", ["Zulip released as open source!"])
         self._test("/values/", ["designed our company"])
-        self._test("/hello/", ["Zulip lets us move faster, connect with each"])
+        self._test("/hello/", ["remote and flexible work"])
         self._test("/communities/", ["Open communities directory"])
         self._test("/development-community/", ["Zulip development community"])
         self._test("/features/", ["Organized team chat solution"])
@@ -449,7 +450,7 @@ class IntegrationTest(ZulipTestCase):
             self.assertTrue(os.path.isfile(settings.DEPLOY_ROOT + path), integration.name)
 
     def test_api_url_view_subdomains_base(self) -> None:
-        context: Dict[str, Any] = {}
+        context: dict[str, Any] = {}
         add_api_url_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "testserver/api")
         self.assertEqual(context["api_url"], "http://testserver/api")
@@ -457,14 +458,14 @@ class IntegrationTest(ZulipTestCase):
 
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_api_url_view_subdomains_homepage_base(self) -> None:
-        context: Dict[str, Any] = {}
+        context: dict[str, Any] = {}
         add_api_url_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
         self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
     def test_api_url_view_subdomains_full(self) -> None:
-        context: Dict[str, Any] = {}
+        context: dict[str, Any] = {}
         request = HostRequestMock(host="mysubdomain.testserver")
         add_api_url_context(context, request)
         self.assertEqual(context["api_url_scheme_relative"], "mysubdomain.testserver/api")

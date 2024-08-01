@@ -142,7 +142,7 @@ processes to use][supervisor-minfds]; defaults to 40000. If your Zulip deploymen
 is very large (hundreds of thousands of concurrent users), your Django processes
 hit this limit and refuse connections to clients. Raising it above this default
 may require changing system-level limits, particularly if you are using a
-virtualized environment (e.g. Docker, or Proxmox LXC).
+virtualized environment (e.g., Docker, or Proxmox LXC).
 
 [supervisor-minfds]: http://supervisord.org/configuration.html?highlight=minfds#supervisord-section-values
 
@@ -166,6 +166,14 @@ use; the default is 30 days. Since the contents of the cache are
 immutable, this serves only as a potential additional limit on the
 size of the contents on disk; `s3_disk_cache_size` is expected to be
 the primary control for cache sizing.
+
+#### `thumbnail_workers`
+
+How many image-thumbnailing workers to run. Defaults to 1; adding more
+workers can prevent the image-thumbnailing queue backlogging when
+large numbers of very large image files are uploaded at once. (When
+backlogged, image previews for images that have not yet been
+thumbnailed will appear as loading spinners).
 
 #### `nameserver`
 
@@ -193,15 +201,15 @@ Defaults to 14 days.
 
 #### `katex_server`
 
-Set to a true value to run a separate service for [rendering math with
-LaTeX](https://zulip.com/help/latex). This is not necessary except on servers
-with users who send several math blocks in a single message; it will address
-issues with such messages occasionally failing to send, at cost of a small
-amount of increased memory usage.
+Set to a false value to disable the separate service for [rendering math with
+LaTeX](https://zulip.com/help/latex). Disabling this service will save a small
+amount of memory, at the cost of making math blocks significantly slower to
+render, to the point that using dozens of them in a single message may cause
+the message to fail to send.
 
 #### `katex_server_port`
 
-Set to the port number for the KaTeX server, if enabled; defaults to port 9700.
+Set to the port number for the KaTeX server; defaults to port 9700.
 
 ### `[postfix]`
 

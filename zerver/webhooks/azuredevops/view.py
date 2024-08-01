@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from collections.abc import Callable
 
 from django.http import HttpRequest, HttpResponse
 
@@ -139,7 +139,7 @@ def get_topic_based_on_event(payload: WildValue, event: str) -> str:
     return get_code_repository_name(payload)  # nocoverage
 
 
-def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]:
+def get_event_name(payload: WildValue, branches: str | None) -> str | None:
     event_name = payload["eventType"].tame(check_string)
     if event_name == "git.push" and branches is not None:
         branch = get_code_push_branch_name(payload)
@@ -158,7 +158,7 @@ def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]
     raise UnsupportedWebhookEventTypeError(event_name)
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], str]] = {
+EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {
     "git.push": get_code_push_commits_body,
     "git.pullrequest.created": get_code_pull_request_opened_body,
     "git.pullrequest.merged": get_code_pull_request_merged_body,
@@ -175,7 +175,7 @@ def api_azuredevops_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
 ) -> HttpResponse:
     event = get_event_name(payload, branches)
     if event is None:

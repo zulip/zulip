@@ -1,5 +1,3 @@
-from typing import Dict, List, Optional
-
 from django.db import transaction
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
@@ -13,8 +11,8 @@ from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
-def notify_linkifiers(realm: Realm, realm_linkifiers: List[LinkifierDict]) -> None:
-    event: Dict[str, object] = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
+def notify_linkifiers(realm: Realm, realm_linkifiers: list[LinkifierDict]) -> None:
+    event: dict[str, object] = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
@@ -28,7 +26,7 @@ def do_add_linkifier(
     pattern: str,
     url_template: str,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> int:
     pattern = pattern.strip()
     url_template = url_template.strip()
@@ -67,10 +65,10 @@ def do_add_linkifier(
 @transaction.atomic(durable=True)
 def do_remove_linkifier(
     realm: Realm,
-    pattern: Optional[str] = None,
-    id: Optional[int] = None,
+    pattern: str | None = None,
+    id: int | None = None,
     *,
-    acting_user: Optional[UserProfile] = None,
+    acting_user: UserProfile | None = None,
 ) -> None:
     if pattern is not None:
         realm_linkifier = RealmFilter.objects.get(realm=realm, pattern=pattern)
@@ -106,7 +104,7 @@ def do_update_linkifier(
     pattern: str,
     url_template: str,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     pattern = pattern.strip()
     url_template = url_template.strip()
@@ -137,7 +135,7 @@ def do_update_linkifier(
 
 @transaction.atomic(durable=True)
 def check_reorder_linkifiers(
-    realm: Realm, ordered_linkifier_ids: List[int], *, acting_user: Optional[UserProfile]
+    realm: Realm, ordered_linkifier_ids: list[int], *, acting_user: UserProfile | None
 ) -> None:
     """ordered_linkifier_ids should contain ids of all existing linkifiers.
     In the rare situation when any of the linkifier gets deleted that more ids

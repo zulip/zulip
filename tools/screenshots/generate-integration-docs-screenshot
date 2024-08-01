@@ -6,7 +6,7 @@ import base64
 import os
 import subprocess
 import sys
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 from urllib.parse import parse_qsl, urlencode
 
 SCREENSHOTS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -56,7 +56,7 @@ from zerver.models.realms import get_realm
 from zerver.models.users import get_user_by_delivery_email
 
 
-def create_integration_bot(integration: Integration, bot_name: Optional[str] = None) -> UserProfile:
+def create_integration_bot(integration: Integration, bot_name: str | None = None) -> UserProfile:
     realm = get_realm("zulip")
     owner = get_user_by_delivery_email("iago@zulip.com", realm)
     bot_email = f"{integration.name}-bot@example.com"
@@ -94,7 +94,7 @@ def create_integration_stream(integration: Integration, bot: UserProfile) -> Non
     bulk_add_subscriptions(realm, [stream], [bot, bot.bot_owner], acting_user=bot)
 
 
-def get_fixture_info(fixture_path: str) -> Tuple[Any, bool, str]:
+def get_fixture_info(fixture_path: str) -> tuple[Any, bool, str]:
     json_fixture = fixture_path.endswith(".json")
     _, fixture_name = split_fixture_path(fixture_path)
 
@@ -116,7 +116,7 @@ def get_integration(integration_name: str) -> Integration:
     return integration
 
 
-def get_requests_headers(integration_name: str, fixture_name: str) -> Dict[str, Any]:
+def get_requests_headers(integration_name: str, fixture_name: str) -> dict[str, Any]:
     headers = get_fixture_http_headers(integration_name, fixture_name)
 
     def fix_name(header: str) -> str:
@@ -126,7 +126,7 @@ def get_requests_headers(integration_name: str, fixture_name: str) -> Dict[str, 
     return {fix_name(k): v for k, v in headers.items()}
 
 
-def custom_headers(headers_json: str) -> Dict[str, str]:
+def custom_headers(headers_json: str) -> dict[str, str]:
     if not headers_json:
         return {}
     try:

@@ -3,36 +3,23 @@ import os
 import random
 import shutil
 from collections import defaultdict
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from collections.abc import Set as AbstractSet
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import (
-    AbstractSet,
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    Optional,
-    Protocol,
-    Set,
-    Tuple,
-    TypeVar,
-)
+from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
 import requests
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
-from typing_extensions import TypeAlias
 
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
     Attachment,
-    Huddle,
+    DirectMessageGroup,
     Message,
     Realm,
     RealmEmoji,
@@ -44,41 +31,41 @@ from zerver.models import (
 from zproject.backends import all_default_backend_names
 
 # stubs
-ZerverFieldsT: TypeAlias = Dict[str, Any]
+ZerverFieldsT: TypeAlias = dict[str, Any]
 
 
 class SubscriberHandler:
     def __init__(self) -> None:
-        self.stream_info: Dict[int, Set[int]] = {}
-        self.huddle_info: Dict[int, Set[int]] = {}
+        self.stream_info: dict[int, set[int]] = {}
+        self.direct_message_group_info: dict[int, set[int]] = {}
 
     def set_info(
         self,
-        users: Set[int],
-        stream_id: Optional[int] = None,
-        huddle_id: Optional[int] = None,
+        users: set[int],
+        stream_id: int | None = None,
+        direct_message_group_id: int | None = None,
     ) -> None:
         if stream_id is not None:
             self.stream_info[stream_id] = users
-        elif huddle_id is not None:
-            self.huddle_info[huddle_id] = users
+        elif direct_message_group_id is not None:
+            self.direct_message_group_info[direct_message_group_id] = users
         else:
-            raise AssertionError("stream_id or huddle_id is required")
+            raise AssertionError("stream_id or direct_message_group_id is required")
 
     def get_users(
-        self, stream_id: Optional[int] = None, huddle_id: Optional[int] = None
-    ) -> Set[int]:
+        self, stream_id: int | None = None, direct_message_group_id: int | None = None
+    ) -> set[int]:
         if stream_id is not None:
             return self.stream_info[stream_id]
-        elif huddle_id is not None:
-            return self.huddle_info[huddle_id]
+        elif direct_message_group_id is not None:
+            return self.direct_message_group_info[direct_message_group_id]
         else:
-            raise AssertionError("stream_id or huddle_id is required")
+            raise AssertionError("stream_id or direct_message_group_id is required")
 
 
 def build_zerver_realm(
     realm_id: int, realm_subdomain: str, time: float, other_product: str
-) -> List[ZerverFieldsT]:
+) -> list[ZerverFieldsT]:
     realm = Realm(
         id=realm_id,
         name=realm_subdomain,
@@ -108,7 +95,7 @@ def build_user_profile(
     short_name: str,
     timezone: str,
     is_bot: bool = False,
-    bot_type: Optional[int] = None,
+    bot_type: int | None = None,
 ) -> ZerverFieldsT:
     obj = UserProfile(
         avatar_source=avatar_source,
@@ -142,12 +129,13 @@ def build_avatar(
     email: str,
     avatar_url: str,
     timestamp: Any,
-    avatar_list: List[ZerverFieldsT],
+    avatar_list: list[ZerverFieldsT],
 ) -> None:
     avatar = dict(
         path=avatar_url,  # Save original avatar URL here, which is downloaded later
         realm_id=realm_id,
         content_type=None,
+        avatar_version=1,
         user_profile_id=zulip_user_id,
         last_modified=timestamp,
         user_profile_email=email,
@@ -157,12 +145,12 @@ def build_avatar(
     avatar_list.append(avatar)
 
 
-def make_subscriber_map(zerver_subscription: List[ZerverFieldsT]) -> Dict[int, Set[int]]:
+def make_subscriber_map(zerver_subscription: list[ZerverFieldsT]) -> dict[int, set[int]]:
     """
     This can be convenient for building up UserMessage
     rows.
     """
-    subscriber_map: Dict[int, Set[int]] = {}
+    subscriber_map: dict[int, set[int]] = {}
     for sub in zerver_subscription:
         user_id = sub["user_profile"]
         recipient_id = sub["recipient"]
@@ -174,12 +162,12 @@ def make_subscriber_map(zerver_subscription: List[ZerverFieldsT]) -> Dict[int, S
 
 
 def make_user_messages(
-    zerver_message: List[ZerverFieldsT],
-    subscriber_map: Dict[int, Set[int]],
+    zerver_message: list[ZerverFieldsT],
+    subscriber_map: dict[int, set[int]],
     is_pm_data: bool,
-    mention_map: Dict[int, Set[int]],
+    mention_map: dict[int, set[int]],
     wildcard_mention_map: Mapping[int, bool] = {},
-) -> List[ZerverFieldsT]:
+) -> list[ZerverFieldsT]:
     zerver_usermessage = []
 
     for message in zerver_message:
@@ -214,15 +202,15 @@ def build_subscription(recipient_id: int, user_id: int, subscription_id: int) ->
 
 
 class GetUsers(Protocol):
-    def __call__(self, stream_id: int = ..., huddle_id: int = ...) -> Set[int]: ...
+    def __call__(self, stream_id: int = ..., direct_message_group_id: int = ...) -> set[int]: ...
 
 
 def build_stream_subscriptions(
     get_users: GetUsers,
-    zerver_recipient: List[ZerverFieldsT],
-    zerver_stream: List[ZerverFieldsT],
-) -> List[ZerverFieldsT]:
-    subscriptions: List[ZerverFieldsT] = []
+    zerver_recipient: list[ZerverFieldsT],
+    zerver_stream: list[ZerverFieldsT],
+) -> list[ZerverFieldsT]:
+    subscriptions: list[ZerverFieldsT] = []
 
     stream_ids = {stream["id"] for stream in zerver_stream}
 
@@ -245,24 +233,26 @@ def build_stream_subscriptions(
     return subscriptions
 
 
-def build_huddle_subscriptions(
+def build_direct_message_group_subscriptions(
     get_users: GetUsers,
-    zerver_recipient: List[ZerverFieldsT],
-    zerver_huddle: List[ZerverFieldsT],
-) -> List[ZerverFieldsT]:
-    subscriptions: List[ZerverFieldsT] = []
+    zerver_recipient: list[ZerverFieldsT],
+    zerver_direct_message_group: list[ZerverFieldsT],
+) -> list[ZerverFieldsT]:
+    subscriptions: list[ZerverFieldsT] = []
 
-    huddle_ids = {huddle["id"] for huddle in zerver_huddle}
+    direct_message_group_ids = {
+        direct_message_group["id"] for direct_message_group in zerver_direct_message_group
+    }
 
     recipient_map = {
         recipient["id"]: recipient["type_id"]  # recipient_id -> stream_id
         for recipient in zerver_recipient
         if recipient["type"] == Recipient.DIRECT_MESSAGE_GROUP
-        and recipient["type_id"] in huddle_ids
+        and recipient["type_id"] in direct_message_group_ids
     }
 
-    for recipient_id, huddle_id in recipient_map.items():
-        user_ids = get_users(huddle_id=huddle_id)
+    for recipient_id, direct_message_group_id in recipient_map.items():
+        user_ids = get_users(direct_message_group_id=direct_message_group_id)
         for user_id in user_ids:
             subscription = build_subscription(
                 recipient_id=recipient_id,
@@ -274,8 +264,8 @@ def build_huddle_subscriptions(
     return subscriptions
 
 
-def build_personal_subscriptions(zerver_recipient: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
-    subscriptions: List[ZerverFieldsT] = []
+def build_personal_subscriptions(zerver_recipient: list[ZerverFieldsT]) -> list[ZerverFieldsT]:
+    subscriptions: list[ZerverFieldsT] = []
 
     personal_recipients = [
         recipient for recipient in zerver_recipient if recipient["type"] == Recipient.PERSONAL
@@ -307,8 +297,8 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
 def build_recipients(
     zerver_userprofile: Iterable[ZerverFieldsT],
     zerver_stream: Iterable[ZerverFieldsT],
-    zerver_huddle: Iterable[ZerverFieldsT] = [],
-) -> List[ZerverFieldsT]:
+    zerver_direct_message_group: Iterable[ZerverFieldsT] = [],
+) -> list[ZerverFieldsT]:
     """
     This function was only used HipChat import, this function may be
     required for future conversions. The Slack conversions do it more
@@ -339,8 +329,8 @@ def build_recipients(
         recipient_dict = model_to_dict(recipient)
         recipients.append(recipient_dict)
 
-    for huddle in zerver_huddle:
-        type_id = huddle["id"]
+    for direct_message_group in zerver_direct_message_group:
+        type_id = direct_message_group["id"]
         type = Recipient.DIRECT_MESSAGE_GROUP
         recipient = Recipient(
             type_id=type_id,
@@ -353,7 +343,7 @@ def build_recipients(
 
 
 def build_realm(
-    zerver_realm: List[ZerverFieldsT], realm_id: int, domain_name: str
+    zerver_realm: list[ZerverFieldsT], realm_id: int, domain_name: str
 ) -> ZerverFieldsT:
     realm = dict(
         zerver_client=[
@@ -386,14 +376,14 @@ def build_realm(
 
 
 def build_usermessages(
-    zerver_usermessage: List[ZerverFieldsT],
-    subscriber_map: Dict[int, Set[int]],
+    zerver_usermessage: list[ZerverFieldsT],
+    subscriber_map: dict[int, set[int]],
     recipient_id: int,
-    mentioned_user_ids: List[int],
+    mentioned_user_ids: list[int],
     message_id: int,
     is_private: bool,
     long_term_idle: AbstractSet[int] = set(),
-) -> Tuple[int, int]:
+) -> tuple[int, int]:
     user_ids = subscriber_map.get(recipient_id, set())
 
     user_messages_created = 0
@@ -482,11 +472,11 @@ def build_stream(
     return stream_dict
 
 
-def build_huddle(huddle_id: int) -> ZerverFieldsT:
-    huddle = Huddle(
-        id=huddle_id,
+def build_direct_message_group(direct_message_group_id: int) -> ZerverFieldsT:
+    direct_message_group = DirectMessageGroup(
+        id=direct_message_group_id,
     )
-    return model_to_dict(huddle)
+    return model_to_dict(direct_message_group)
 
 
 def build_message(
@@ -495,7 +485,7 @@ def build_message(
     date_sent: float,
     message_id: int,
     content: str,
-    rendered_content: Optional[str],
+    rendered_content: str | None,
     user_id: int,
     recipient_id: int,
     realm_id: int,
@@ -526,11 +516,11 @@ def build_message(
 
 def build_attachment(
     realm_id: int,
-    message_ids: Set[int],
+    message_ids: set[int],
     user_id: int,
     fileinfo: ZerverFieldsT,
     s3_path: str,
-    zerver_attachment: List[ZerverFieldsT],
+    zerver_attachment: list[ZerverFieldsT],
 ) -> None:
     """
     This function should be passed a 'fileinfo' dictionary, which contains
@@ -555,7 +545,7 @@ def build_attachment(
     zerver_attachment.append(attachment_dict)
 
 
-def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: List[str]) -> None:
+def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[str]) -> None:
     avatar_url = avatar_upload_item[0]
 
     image_path = os.path.join(avatar_dir, avatar_upload_item[1])
@@ -568,12 +558,12 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: List[s
 
 
 def process_avatars(
-    avatar_list: List[ZerverFieldsT],
+    avatar_list: list[ZerverFieldsT],
     avatar_dir: str,
     realm_id: int,
     threads: int,
     size_url_suffix: str = "",
-) -> List[ZerverFieldsT]:
+) -> list[ZerverFieldsT]:
     """
     This function gets the avatar of the user and saves it in the
     user's avatar directory with both the extensions '.png' and '.original'
@@ -584,7 +574,7 @@ def process_avatars(
     3. realm_id: Realm ID.
 
     We use this for Slack conversions, where avatars need to be
-    downloaded.  For simpler conversions see write_avatar_png.
+    downloaded.
     """
 
     logging.info("######### GETTING AVATARS #########\n")
@@ -592,7 +582,9 @@ def process_avatars(
     avatar_original_list = []
     avatar_upload_list = []
     for avatar in avatar_list:
-        avatar_hash = user_avatar_path_from_ids(avatar["user_profile_id"], realm_id)
+        avatar_hash = user_avatar_base_path_from_ids(
+            avatar["user_profile_id"], avatar["avatar_version"], realm_id
+        )
         avatar_url = avatar["path"]
         avatar_original = dict(avatar)
 
@@ -605,9 +597,11 @@ def process_avatars(
         # don't have it until we've downloaded the files anyway.
         avatar["path"] = image_path
         avatar["s3_path"] = image_path
+        avatar["content_type"] = "image/png"
 
         avatar_original["path"] = original_image_path
         avatar_original["s3_path"] = original_image_path
+        avatar_original["content_type"] = "image/png"
         avatar_original_list.append(avatar_original)
 
     # Run downloads in parallel
@@ -630,7 +624,7 @@ def wrapping_function(f: Callable[[ListJobData], None], item: ListJobData) -> No
 
 
 def run_parallel_wrapper(
-    f: Callable[[ListJobData], None], full_items: List[ListJobData], threads: int = 6
+    f: Callable[[ListJobData], None], full_items: list[ListJobData], threads: int = 6
 ) -> None:
     logging.info("Distributing %s items across %s threads", len(full_items), threads)
 
@@ -643,7 +637,7 @@ def run_parallel_wrapper(
                 logging.info("Finished %s items", count)
 
 
-def get_uploads(upload_dir: str, upload: List[str]) -> None:
+def get_uploads(upload_dir: str, upload: list[str]) -> None:
     upload_url = upload[0]
     upload_path = upload[1]
     upload_path = os.path.join(upload_dir, upload_path)
@@ -655,8 +649,8 @@ def get_uploads(upload_dir: str, upload: List[str]) -> None:
 
 
 def process_uploads(
-    upload_list: List[ZerverFieldsT], upload_dir: str, threads: int
-) -> List[ZerverFieldsT]:
+    upload_list: list[ZerverFieldsT], upload_dir: str, threads: int
+) -> list[ZerverFieldsT]:
     """
     This function downloads the uploads and saves it in the realm's upload directory.
     Required parameters:
@@ -691,7 +685,7 @@ def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> Zerv
     )
 
 
-def get_emojis(emoji_dir: str, upload: List[str]) -> None:
+def get_emojis(emoji_dir: str, upload: list[str]) -> None:
     emoji_url = upload[0]
     emoji_path = upload[1]
     upload_emoji_path = os.path.join(emoji_dir, emoji_path)
@@ -703,11 +697,11 @@ def get_emojis(emoji_dir: str, upload: List[str]) -> None:
 
 
 def process_emojis(
-    zerver_realmemoji: List[ZerverFieldsT],
+    zerver_realmemoji: list[ZerverFieldsT],
     emoji_dir: str,
     emoji_url_map: ZerverFieldsT,
     threads: int,
-) -> List[ZerverFieldsT]:
+) -> list[ZerverFieldsT]:
     """
     This function downloads the custom emojis and saves in the output emoji folder.
     Required parameters:
@@ -756,20 +750,20 @@ ExternalId = TypeVar("ExternalId")
 
 def long_term_idle_helper(
     message_iterator: Iterator[ZerverFieldsT],
-    user_from_message: Callable[[ZerverFieldsT], Optional[ExternalId]],
+    user_from_message: Callable[[ZerverFieldsT], ExternalId | None],
     timestamp_from_message: Callable[[ZerverFieldsT], float],
     zulip_user_id_from_user: Callable[[ExternalId], int],
     all_user_ids_iterator: Iterator[ExternalId],
-    zerver_userprofile: List[ZerverFieldsT],
-) -> Set[int]:
+    zerver_userprofile: list[ZerverFieldsT],
+) -> set[int]:
     """Algorithmically, we treat users who have sent at least 10 messages
     or have sent a message within the last 60 days as active.
     Everyone else is treated as long-term idle, which means they will
     have a slightly slower first page load when coming back to
     Zulip.
     """
-    sender_counts: Dict[ExternalId, int] = defaultdict(int)
-    recent_senders: Set[ExternalId] = set()
+    sender_counts: dict[ExternalId, int] = defaultdict(int)
+    recent_senders: set[ExternalId] = set()
     NOW = float(timezone_now().timestamp())
     for message in message_iterator:
         timestamp = timestamp_from_message(message)

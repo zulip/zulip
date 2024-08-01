@@ -4,7 +4,7 @@ When you're using Zulip and you reload, or narrow to a channel, how
 does Zulip decide where to place you?
 
 Conceptually, Zulip takes you to the place where you left off
-(e.g. the first unread message), not the most recent messages, to
+(e.g., the first unread message), not the most recent messages, to
 facilitate reviewing all the discussions that happened while you were
 away from your computer. The scroll position is then set to keep that
 message in view and away from both the top and bottom of the visible
@@ -53,7 +53,7 @@ channels.)
 
 ### Unnarrow: previous sequence
 
-When you unnarrow using e.g. the `a` key, you will automatically be
+When you unnarrow using, for example, the `a` key, you will automatically be
 taken to the same message that was selected in the Combined feed view before
 you narrowed, unless in the narrow you read new messages, in which
 case you will be jumped forward to the first unread and non-muted

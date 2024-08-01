@@ -1,5 +1,6 @@
+from collections.abc import Iterable, Sequence
 from email.headerregistry import Address
-from typing import Dict, Iterable, Optional, Sequence, Union, cast
+from typing import cast
 
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -40,8 +41,7 @@ def create_mirrored_message_users(
     sender_email = sender.strip().lower()
     referenced_users = {sender_email}
     if recipient_type_name == "private":
-        for email in recipients:
-            referenced_users.add(email.lower())
+        referenced_users.update(email.lower() for email in recipients)
 
     if client.name == "zephyr_mirror":
         user_check = same_realm_zephyr_user
@@ -128,16 +128,16 @@ def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     req_type: str = REQ("type", str_validator=check_string_in(Message.API_RECIPIENT_TYPES)),
-    req_to: Optional[str] = REQ("to", default=None),
-    req_sender: Optional[str] = REQ("sender", default=None, documentation_pending=True),
-    forged_str: Optional[str] = REQ("forged", default=None, documentation_pending=True),
-    topic_name: Optional[str] = REQ_topic(),
+    req_to: str | None = REQ("to", default=None),
+    req_sender: str | None = REQ("sender", default=None, documentation_pending=True),
+    forged_str: str | None = REQ("forged", default=None, documentation_pending=True),
+    topic_name: str | None = REQ_topic(),
     message_content: str = REQ("content"),
-    widget_content: Optional[str] = REQ(default=None, documentation_pending=True),
-    local_id: Optional[str] = REQ(default=None),
-    queue_id: Optional[str] = REQ(default=None),
-    time: Optional[float] = REQ(default=None, converter=to_float, documentation_pending=True),
-    read_by_sender: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    widget_content: str | None = REQ(default=None, documentation_pending=True),
+    local_id: str | None = REQ(default=None),
+    queue_id: str | None = REQ(default=None),
+    time: float | None = REQ(default=None, converter=to_float, documentation_pending=True),
+    read_by_sender: bool | None = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
@@ -153,7 +153,7 @@ def send_message_backend(
 
     # If req_to is None, then we default to an
     # empty list of recipients.
-    message_to: Union[Sequence[int], Sequence[str]] = []
+    message_to: Sequence[int] | Sequence[str] = []
 
     if req_to is not None:
         if recipient_type_name == "stream":
@@ -233,7 +233,7 @@ def send_message_backend(
         # automatically marked as read for yourself.
         read_by_sender = client.default_read_by_sender()
 
-    data: Dict[str, int] = {}
+    data: dict[str, int] = {}
     sent_message_result = check_send_message(
         sender,
         client,

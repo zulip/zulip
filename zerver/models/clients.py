@@ -1,5 +1,4 @@
 import hashlib
-from typing import Dict
 
 from django.conf import settings
 from django.db import models
@@ -43,14 +42,13 @@ class Client(models.Model):
                 "ios",
                 "android",
             )
-            or "desktop app" in sending_client
             # Since the vast majority of messages are sent by humans
             # in Zulip, treat test suite messages as such.
             or (sending_client == "test suite" and settings.TEST_SUITE)
         )
 
 
-get_client_cache: Dict[str, Client] = {}
+get_client_cache: dict[str, Client] = {}
 
 
 def clear_client_cache() -> None:  # nocoverage

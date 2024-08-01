@@ -4,25 +4,10 @@ import re
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from datetime import timedelta
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Collection,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
 
@@ -33,7 +18,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.core.signals import got_request_exception
-from django.db import connection
+from django.db import connection, transaction
 from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
@@ -64,6 +49,7 @@ from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscript
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
@@ -88,6 +74,7 @@ from zerver.lib.test_helpers import (
     instrument_url,
     queries_captured,
 )
+from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
@@ -197,17 +184,17 @@ class ZulipTestClient(TestClient):
 
 class ZulipTestCaseMixin(SimpleTestCase):
     # Ensure that the test system just shows us diffs
-    maxDiff: Optional[int] = None
+    maxDiff: int | None = None
     # This bypasses BAN_CONSOLE_OUTPUT for the test case when set.
     # Override this to verify if the given extra console output matches the
     # expectation.
-    expected_console_output: Optional[str] = None
+    expected_console_output: str | None = None
     client_class = ZulipTestClient
 
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.API_KEYS: Dict[str, str] = {}
+        self.API_KEYS: dict[str, str] = {}
 
         test_name = self.id()
         bounce_key_prefix_for_testing(test_name)
@@ -237,13 +224,14 @@ class ZulipTestCaseMixin(SimpleTestCase):
         return get_user(email, realm)
 
     @override
-    def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:  # nocoverage
+    def run(self, result: TestResult | None = None) -> TestResult | None:  # nocoverage
         if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
             return super().run(result)
         extra_output_finder = ExtraConsoleOutputFinder()
-        with tee_stderr_and_find_extra_console_output(
-            extra_output_finder
-        ), tee_stdout_and_find_extra_console_output(extra_output_finder):
+        with (
+            tee_stderr_and_find_extra_console_output(extra_output_finder),
+            tee_stdout_and_find_extra_console_output(extra_output_finder),
+        ):
             test_result = super().run(result)
         if extra_output_finder.full_extra_output and (
             test_result is None or test_result.wasSuccessful()
@@ -292,7 +280,19 @@ Output:
         token=r"[a-z0-9_]{24}"
     )
 
-    def set_http_headers(self, extra: Dict[str, str], skip_user_agent: bool = False) -> None:
+    @override
+    def assertEqual(self, first: Any, second: Any, msg: Any = "") -> None:
+        if isinstance(first, str) and isinstance(second, str):
+            if first != second:
+                raise AssertionError(
+                    "Actual and expected outputs do not match; showing diff.\n"
+                    + diff_strings(first, second)
+                    + str(msg)
+                )
+        else:
+            super().assertEqual(first, second, msg)
+
+    def set_http_headers(self, extra: dict[str, str], skip_user_agent: bool = False) -> None:
         if "subdomain" in extra:
             assert isinstance(extra["subdomain"], str)
             extra["HTTP_HOST"] = Realm.host_for_subdomain(extra["subdomain"])
@@ -326,7 +326,7 @@ Output:
         follow: bool = False,
         secure: bool = False,
         intentionally_undocumented: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -354,7 +354,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -410,7 +410,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         encoded = urlencode(info)
@@ -428,7 +428,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
@@ -452,7 +452,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -481,7 +481,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
@@ -498,7 +498,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
@@ -509,13 +509,13 @@ Output:
     def client_post(
         self,
         url: str,
-        info: Union[str, bytes, Mapping[str, Any]] = {},
+        info: str | bytes | Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
-        content_type: Optional[str] = None,
+        content_type: str | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
@@ -565,7 +565,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
-        headers: Optional[Mapping[str, Any]] = None,
+        headers: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -689,7 +689,7 @@ Output:
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, assert_json_error_msg)
 
-    def _get_page_params(self, result: "TestHttpResponse") -> Dict[str, Any]:
+    def _get_page_params(self, result: "TestHttpResponse") -> dict[str, Any]:
         """Helper for parsing page_params after fetching the web app's home view."""
         doc = lxml.html.document_fromstring(result.content)
         div = cast(lxml.html.HtmlMixin, doc).get_element_by_id("page-params")
@@ -699,7 +699,7 @@ Output:
         page_params = orjson.loads(page_params_json)
         return page_params
 
-    def _get_sentry_params(self, response: "TestHttpResponse") -> Optional[Dict[str, Any]]:
+    def _get_sentry_params(self, response: "TestHttpResponse") -> dict[str, Any] | None:
         doc = lxml.html.document_fromstring(response.content)
         try:
             script = cast(lxml.html.HtmlMixin, doc).get_element_by_id("sentry-params")
@@ -719,7 +719,7 @@ Output:
         self.assertEqual(page_params["is_spectator"], False)
 
     def login_with_return(
-        self, email: str, password: Optional[str] = None, **extra: str
+        self, email: str, password: str | None = None, **extra: str
     ) -> "TestHttpResponse":
         if password is None:
             password = initial_password(email)
@@ -815,20 +815,20 @@ Output:
     def submit_reg_form_for_user(
         self,
         email: str,
-        password: Optional[str],
+        password: str | None,
         realm_name: str = "Zulip Test",
         realm_subdomain: str = "zuliptest",
         from_confirmation: str = "",
-        full_name: Optional[str] = None,
+        full_name: str | None = None,
         timezone: str = "",
-        realm_in_root_domain: Optional[str] = None,
+        realm_in_root_domain: str | None = None,
         default_stream_groups: Sequence[str] = [],
         source_realm_id: str = "",
-        key: Optional[str] = None,
+        key: str | None = None,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         realm_default_language: str = "en",
-        enable_marketing_emails: Optional[bool] = None,
-        email_address_visibility: Optional[int] = None,
+        enable_marketing_emails: bool | None = None,
+        email_address_visibility: int | None = None,
         is_demo_organization: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -885,7 +885,7 @@ Output:
         realm_name: str,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         realm_default_language: str = "en",
-        realm_in_root_domain: Optional[str] = None,
+        realm_in_root_domain: str | None = None,
     ) -> "TestHttpResponse":
         payload = {
             "email": email,
@@ -905,9 +905,9 @@ Output:
         self,
         email_address: str,
         *,
-        url_pattern: Optional[str] = None,
-        email_subject_contains: Optional[str] = None,
-        email_body_contains: Optional[str] = None,
+        url_pattern: str | None = None,
+        email_subject_contains: str | None = None,
+        email_body_contains: str | None = None,
     ) -> str:
         from django.core.mail import outbox
 
@@ -982,7 +982,7 @@ Output:
         self,
         identifier: str,
         url: str,
-        info: Union[str, bytes, Mapping[str, Any]] = {},
+        info: str | bytes | Mapping[str, Any] = {},
         **extra: str,
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_uuid(identifier)
@@ -1016,7 +1016,7 @@ Output:
         self,
         user: UserProfile,
         url: str,
-        info: Union[str, bytes, Mapping[str, Any]] = {},
+        info: str | bytes | Mapping[str, Any] = {},
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -1062,7 +1062,7 @@ Output:
             **extra,
         )
 
-    def get_streams(self, user_profile: UserProfile) -> List[str]:
+    def get_streams(self, user_profile: UserProfile) -> list[str]:
         """
         Helper function to get the active stream names for a user
         """
@@ -1095,10 +1095,10 @@ Output:
         )
         return sent_message_result.message_id
 
-    def send_huddle_message(
+    def send_group_direct_message(
         self,
         from_user: UserProfile,
-        to_users: List[UserProfile],
+        to_users: list[UserProfile],
         content: str = "test content",
         *,
         read_by_sender: bool = True,
@@ -1125,7 +1125,7 @@ Output:
         stream_name: str,
         content: str = "test content",
         topic_name: str = "test",
-        recipient_realm: Optional[Realm] = None,
+        recipient_realm: Realm | None = None,
         *,
         allow_unsubscribed_sender: bool = False,
         read_by_sender: bool = True,
@@ -1165,12 +1165,12 @@ Output:
 
     def get_messages_response(
         self,
-        anchor: Union[int, str] = 1,
+        anchor: int | str = 1,
         num_before: int = 100,
         num_after: int = 100,
         use_first_unread_anchor: bool = False,
         include_anchor: bool = True,
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    ) -> dict[str, list[dict[str, Any]]]:
         post_params = {
             "anchor": anchor,
             "num_before": num_before,
@@ -1184,22 +1184,22 @@ Output:
 
     def get_messages(
         self,
-        anchor: Union[str, int] = 1,
+        anchor: str | int = 1,
         num_before: int = 100,
         num_after: int = 100,
         use_first_unread_anchor: bool = False,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data["messages"]
 
-    def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> List[UserProfile]:
+    def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> list[UserProfile]:
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient, active=True)
 
         return [subscription.user_profile for subscription in subscriptions]
 
-    def not_long_term_idle_subscriber_ids(self, stream_name: str, realm: Realm) -> Set[int]:
+    def not_long_term_idle_subscriber_ids(self, stream_name: str, realm: Realm) -> set[int]:
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
 
@@ -1214,8 +1214,8 @@ Output:
         self,
         result: Union["TestHttpResponse", HttpResponse],
         *,
-        ignored_parameters: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        ignored_parameters: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Successful POSTs return a 200 and JSON of the form {"result": "success",
         "msg": ""}.
@@ -1312,7 +1312,7 @@ Output:
         self.assertIn(substring, response.content.decode())
 
     def assert_in_success_response(
-        self, substrings: List[str], response: Union["TestHttpResponse", HttpResponse]
+        self, substrings: list[str], response: Union["TestHttpResponse", HttpResponse]
     ) -> None:
         self.assertEqual(response.status_code, 200)
         decoded = response.content.decode()
@@ -1320,14 +1320,14 @@ Output:
             self.assertIn(substring, decoded)
 
     def assert_not_in_success_response(
-        self, substrings: List[str], response: Union["TestHttpResponse", HttpResponse]
+        self, substrings: list[str], response: Union["TestHttpResponse", HttpResponse]
     ) -> None:
         self.assertEqual(response.status_code, 200)
         decoded = response.content.decode()
         for substring in substrings:
             self.assertNotIn(substring, decoded)
 
-    def assert_logged_in_user_id(self, user_id: Optional[int]) -> None:
+    def assert_logged_in_user_id(self, user_id: int | None) -> None:
         """
         Verifies the user currently logged in for the test client has the provided user_id.
         Pass None to verify no user is logged in.
@@ -1363,10 +1363,10 @@ Output:
     def make_stream(
         self,
         stream_name: str,
-        realm: Optional[Realm] = None,
+        realm: Realm | None = None,
         invite_only: bool = False,
         is_web_public: bool = False,
-        history_public_to_subscribers: Optional[bool] = None,
+        history_public_to_subscribers: bool | None = None,
     ) -> Stream:
         if realm is None:
             realm = get_realm("zulip")
@@ -1403,7 +1403,7 @@ Output:
 
     INVALID_STREAM_ID = 999999
 
-    def get_stream_id(self, name: str, realm: Optional[Realm] = None) -> int:
+    def get_stream_id(self, name: str, realm: Realm | None = None) -> int:
         if not realm:
             realm = get_realm("zulip")
         try:
@@ -1439,26 +1439,37 @@ Output:
     def common_subscribe_to_streams(
         self,
         user: UserProfile,
-        streams: Iterable[str],
+        subscriptions_raw: list[str] | list[dict[str, str]],
         extra_post_data: Mapping[str, Any] = {},
         invite_only: bool = False,
         is_web_public: bool = False,
         allow_fail: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
+        subscriptions: list[dict[str, str]] = []
+        for entry in subscriptions_raw:
+            if isinstance(entry, str):
+                subscriptions.append({"name": entry})
+            else:
+                subscriptions.append(entry)
+
         post_data = {
-            "subscriptions": orjson.dumps([{"name": stream} for stream in streams]).decode(),
+            "subscriptions": orjson.dumps(subscriptions).decode(),
             "is_web_public": orjson.dumps(is_web_public).decode(),
             "invite_only": orjson.dumps(invite_only).decode(),
         }
         post_data.update(extra_post_data)
-        result = self.api_post(
-            user,
-            "/api/v1/users/me/subscriptions",
-            post_data,
-            intentionally_undocumented=False,
-            **extra,
-        )
+        # We wrap the API call with a 'transaction.atomic()' context
+        # manager as it helps us with NOT rolling back the entire
+        # test transaction due to error responses.
+        with transaction.atomic():
+            result = self.api_post(
+                user,
+                "/api/v1/users/me/subscriptions",
+                post_data,
+                intentionally_undocumented=False,
+                **extra,
+            )
         if not allow_fail:
             self.assert_json_success(result)
         return result
@@ -1469,13 +1480,13 @@ Output:
 
         return "".join(sorted(f"        * {stream['name']}\n" for stream in subscribed_streams))
 
-    def check_user_subscribed_only_to_streams(self, user_name: str, streams: List[Stream]) -> None:
+    def check_user_subscribed_only_to_streams(self, user_name: str, streams: list[Stream]) -> None:
         streams = sorted(streams, key=lambda x: x.name)
         subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
 
         self.assert_length(subscribed_streams, len(streams))
 
-        for x, y in zip(subscribed_streams, streams):
+        for x, y in zip(subscribed_streams, streams, strict=False):
             self.assertEqual(x["name"], y.name)
 
     def resolve_topic_containing_message(
@@ -1502,7 +1513,7 @@ Output:
         self,
         user_profile: UserProfile,
         url: str,
-        payload: Union[str, Dict[str, Any]],
+        payload: str | dict[str, Any],
         **extra: str,
     ) -> Message:
         """
@@ -1571,9 +1582,13 @@ Output:
         This raises a failure inside of the try/except block of
         markdown.__init__.do_convert.
         """
-        with mock.patch(
-            "zerver.lib.markdown.unsafe_timeout", side_effect=subprocess.CalledProcessError(1, [])
-        ), self.assertLogs(level="ERROR"):  # For markdown_logger.exception
+        with (
+            mock.patch(
+                "zerver.lib.markdown.unsafe_timeout",
+                side_effect=subprocess.CalledProcessError(1, []),
+            ),
+            self.assertLogs(level="ERROR"),
+        ):  # For markdown_logger.exception
             yield
 
     def create_default_device(
@@ -1600,11 +1615,11 @@ Output:
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
-    def get_set(self, data: List[Dict[str, Any]], field: str) -> Set[str]:
+    def get_set(self, data: list[dict[str, Any]], field: str) -> set[str]:
         values = {r[field] for r in data}
         return values
 
-    def find_by_id(self, data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:
+    def find_by_id(self, data: list[dict[str, Any]], db_id: int) -> dict[str, Any]:
         [r] = (r for r in data if r["id"] == db_id)
         return r
 
@@ -1641,7 +1656,7 @@ Output:
         self.mock_initialize.return_value = self.mock_ldap
 
     def change_ldap_user_attr(
-        self, username: str, attr_name: str, attr_value: Union[str, bytes], binary: bool = False
+        self, username: str, attr_name: str, attr_value: str | bytes, binary: bool = False
     ) -> None:
         """
         Method for changing the value of an attribute of a user entry in the mock
@@ -1654,7 +1669,7 @@ Output:
         if binary:
             with open(attr_value, "rb") as f:
                 # attr_value should be a path to the file with the binary data
-                data: Union[str, bytes] = f.read()
+                data: str | bytes = f.read()
         else:
             data = attr_value
 
@@ -1793,7 +1808,7 @@ Output:
 
     def subscribe_realm_to_manual_license_management_plan(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
-    ) -> Tuple[CustomerPlan, LicenseLedger]:
+    ) -> tuple[CustomerPlan, LicenseLedger]:
         customer, _ = Customer.objects.get_or_create(realm=realm)
         plan = CustomerPlan.objects.create(
             customer=customer,
@@ -1815,7 +1830,7 @@ Output:
 
     def subscribe_realm_to_monthly_plan_on_manual_license_management(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int
-    ) -> Tuple[CustomerPlan, LicenseLedger]:
+    ) -> tuple[CustomerPlan, LicenseLedger]:
         return self.subscribe_realm_to_manual_license_management_plan(
             realm, licenses, licenses_at_next_renewal, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
@@ -1864,7 +1879,7 @@ Output:
 
     def get_maybe_enqueue_notifications_parameters(
         self, *, message_id: int, user_id: int, acting_user_id: int, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Returns a dictionary with the passed parameters, after filling up the
         missing data with default values, for testing what was passed to the
@@ -1980,7 +1995,7 @@ Output:
 
         self.send_personal_message(polonius, prospero)
         self.send_personal_message(shiva, polonius)
-        self.send_huddle_message(aaron, [polonius, zoe])
+        self.send_group_direct_message(aaron, [polonius, zoe])
 
         members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
         do_change_realm_permission_group_setting(
@@ -1989,9 +2004,9 @@ Output:
 
     def create_or_update_anonymous_group_for_setting(
         self,
-        direct_members: List[UserProfile],
-        direct_subgroups: List[NamedUserGroup],
-        existing_setting_group: Optional[UserGroup] = None,
+        direct_members: list[UserProfile],
+        direct_subgroups: list[NamedUserGroup],
+        existing_setting_group: UserGroup | None = None,
     ) -> UserGroup:
         realm = get_realm("zulip")
         if existing_setting_group is not None:
@@ -2004,27 +2019,37 @@ Output:
         user_group.direct_subgroups.set(direct_subgroups)
         return user_group
 
+    @contextmanager
+    def thumbnail_formats(self, *thumbnail_formats: ThumbnailFormat) -> Iterator[None]:
+        with (
+            mock.patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
+            mock.patch("zerver.views.upload.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
+        ):
+            yield
+
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     @contextmanager
     def capture_send_event_calls(
         self, expected_num_events: int
-    ) -> Iterator[List[Mapping[str, Any]]]:
-        lst: List[Mapping[str, Any]] = []
+    ) -> Iterator[list[Mapping[str, Any]]]:
+        lst: list[Mapping[str, Any]] = []
 
         # process_notification takes a single parameter called 'notice'.
         # lst.append takes a single argument called 'object'.
         # Some code might call process_notification using keyword arguments,
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
-        with mock.patch("zerver.tornado.event_queue.process_notification", lst.append):
+        with (
+            mock.patch("zerver.tornado.event_queue.process_notification", lst.append),
             # Some `send_event` calls need to be executed only after the current transaction
             # commits (using `on_commit` hooks). Because the transaction in Django tests never
             # commits (rather, gets rolled back after the test completes), such events would
             # never be sent in tests, and we would be unable to verify them. Hence, we use
             # this helper to make sure the `send_event` calls actually run.
-            with self.captureOnCommitCallbacks(execute=True):
-                yield lst
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            yield lst
 
         self.assert_length(lst, expected_num_events)
 
@@ -2069,16 +2094,16 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         return message_id
 
     @override
-    def send_huddle_message(
+    def send_group_direct_message(
         self,
         from_user: UserProfile,
-        to_users: List[UserProfile],
+        to_users: list[UserProfile],
         content: str = "test content",
         *,
         read_by_sender: bool = True,
         skip_capture_on_commit_callbacks: bool = False,
     ) -> int:
-        """This function is a wrapper on 'send_huddle_message',
+        """This function is a wrapper on 'send_group_direct_message',
         defined in 'ZulipTestCaseMixin' with an extra parameter
         'skip_capture_on_commit_callbacks'.
 
@@ -2087,12 +2112,12 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         because they already have 'self.captureOnCommitCallbacks'
         (See the comment in 'capture_send_event_calls').
 
-        For all other cases, we should call 'send_huddle_message' with
+        For all other cases, we should call 'send_group_direct_message' with
         'self.captureOnCommitCallbacks' for 'send_event_on_commit' or/and
         'queue_event_on_commit' to work.
         """
         if skip_capture_on_commit_callbacks:
-            message_id = super().send_huddle_message(
+            message_id = super().send_group_direct_message(
                 from_user,
                 to_users,
                 content,
@@ -2100,7 +2125,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
             )
         else:
             with self.captureOnCommitCallbacks(execute=True):
-                message_id = super().send_huddle_message(
+                message_id = super().send_group_direct_message(
                     from_user,
                     to_users,
                     content,
@@ -2115,7 +2140,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         stream_name: str,
         content: str = "test content",
         topic_name: str = "test",
-        recipient_realm: Optional[Realm] = None,
+        recipient_realm: Realm | None = None,
         *,
         allow_unsubscribed_sender: bool = False,
         read_by_sender: bool = True,
@@ -2158,7 +2183,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         return message_id
 
 
-def get_row_ids_in_all_tables() -> Iterator[Tuple[str, Set[int]]]:
+def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
     ignored_tables = {"django_session"}
 
@@ -2236,13 +2261,13 @@ class WebhookTestCase(ZulipTestCase):
       important for ensuring we document all fully supported event types.
     """
 
-    CHANNEL_NAME: Optional[str] = None
+    CHANNEL_NAME: str | None = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
-    WEBHOOK_DIR_NAME: Optional[str] = None
+    WEBHOOK_DIR_NAME: str | None = None
     # This last parameter is a workaround to handle webhooks that do not
     # name the main function api_{WEBHOOK_DIR_NAME}_webhook.
-    VIEW_FUNCTION_NAME: Optional[str] = None
+    VIEW_FUNCTION_NAME: str | None = None
 
     @property
     def test_user(self) -> UserProfile:
@@ -2308,9 +2333,9 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         self,
         user: UserProfile,
         fixture_name: str,
-        expected_topic: Optional[str] = None,
-        expected_message: Optional[str] = None,
-        content_type: Optional[str] = "application/json",
+        expected_topic: str | None = None,
+        expected_message: str | None = None,
+        content_type: str | None = "application/json",
         expect_noop: bool = False,
         **extra: str,
     ) -> None:
@@ -2327,9 +2352,9 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
     def check_webhook(
         self,
         fixture_name: str,
-        expected_topic_name: Optional[str] = None,
-        expected_message: Optional[str] = None,
-        content_type: Optional[str] = "application/json",
+        expected_topic_name: str | None = None,
+        expected_message: str | None = None,
+        content_type: str | None = "application/json",
         expect_noop: bool = False,
         **extra: str,
     ) -> None:
@@ -2412,7 +2437,7 @@ one or more new messages.
         expected_message: str,
         content_type: str = "application/json",
         *,
-        sender: Optional[UserProfile] = None,
+        sender: UserProfile | None = None,
         **extra: str,
     ) -> Message:
         """
@@ -2465,7 +2490,7 @@ one or more new messages.
 
         return url[:-1] if has_arguments else url
 
-    def get_payload(self, fixture_name: str) -> Union[str, Dict[str, str]]:
+    def get_payload(self, fixture_name: str) -> str | dict[str, str]:
         """
         Generally webhooks that override this should return dicts."""
         return self.get_body(fixture_name)
@@ -2491,8 +2516,8 @@ class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
         assert app_config is not None
         return app_config.name
 
-    migrate_from: Optional[str] = None
-    migrate_to: Optional[str] = None
+    migrate_from: str | None = None
+    migrate_to: str | None = None
 
     @override
     def setUp(self) -> None:
@@ -2500,8 +2525,8 @@ class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
         assert (
             self.migrate_from and self.migrate_to
         ), f"TestCase '{type(self).__name__}' must define migrate_from and migrate_to properties"
-        migrate_from: List[Tuple[str, str]] = [(self.app, self.migrate_from)]
-        migrate_to: List[Tuple[str, str]] = [(self.app, self.migrate_to)]
+        migrate_from: list[tuple[str, str]] = [(self.app, self.migrate_from)]
+        migrate_to: list[tuple[str, str]] = [(self.app, self.migrate_to)]
         executor = MigrationExecutor(connection)
         old_apps = executor.loader.project_state(migrate_from).apps
 
@@ -2521,7 +2546,7 @@ class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
         pass  # nocoverage
 
 
-def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: str) -> List[Message]:
+def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: str) -> list[Message]:
     query = UserMessage.objects.filter(
         user_profile=user_profile,
         message__recipient=stream.recipient,
@@ -2548,7 +2573,7 @@ class BouncerTestCase(ZulipTestCase):
         RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
         super().tearDown()
 
-    def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
+    def request_callback(self, request: PreparedRequest) -> tuple[int, ResponseHeaders, bytes]:
         kwargs = {}
         if isinstance(request.body, bytes):
             # send_json_to_push_bouncer sends the body as bytes containing json.
@@ -2556,15 +2581,15 @@ class BouncerTestCase(ZulipTestCase):
             kwargs = dict(content_type="application/json")
         else:
             assert isinstance(request.body, str) or request.body is None
-            params: Dict[str, List[str]] = parse_qs(request.body)
+            params: dict[str, list[str]] = parse_qs(request.body)
             # In Python 3, the values of the dict from `parse_qs` are
             # in a list, because there might be multiple values.
             # But since we are sending values with no same keys, hence
             # we can safely pick the first value.
             data = {k: v[0] for k, v in params.items()}
         assert request.url is not None  # allow mypy to infer url is present.
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
+        assert settings.ZULIP_SERVICES_URL is not None
+        local_url = request.url.replace(settings.ZULIP_SERVICES_URL, "")
         if request.method == "POST":
             result = self.uuid_post(self.server_uuid, local_url, data, subdomain="", **kwargs)
         elif request.method == "GET":
@@ -2572,13 +2597,13 @@ class BouncerTestCase(ZulipTestCase):
         return (result.status_code, result.headers, result.content)
 
     def add_mock_response(self) -> None:
-        # Match any endpoint with the PUSH_NOTIFICATION_BOUNCER_URL.
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + r".*")
+        # Match any endpoint with the ZULIP_SERVICES_URL.
+        assert settings.ZULIP_SERVICES_URL is not None
+        COMPILED_URL = re.compile(settings.ZULIP_SERVICES_URL + r".*")
         responses.add_callback(responses.POST, COMPILED_URL, callback=self.request_callback)
         responses.add_callback(responses.GET, COMPILED_URL, callback=self.request_callback)
 
-    def get_generic_payload(self, method: str = "register") -> Dict[str, Any]:
+    def get_generic_payload(self, method: str = "register") -> dict[str, Any]:
         user_id = 10
         token = "111222"
         token_kind = PushDeviceToken.FCM

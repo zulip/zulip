@@ -19,6 +19,7 @@ const compose_actions = mock_esm("../src/compose_actions");
 const compose_banner = mock_esm("../src/compose_banner");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 const compose_recipient = mock_esm("../src/compose_recipient");
+const compose_notifications = mock_esm("../src/compose_notifications");
 const message_fetch = mock_esm("../src/message_fetch");
 const message_list = mock_esm("../src/message_list");
 const message_lists = mock_esm("../src/message_lists", {
@@ -155,7 +156,7 @@ function stub_message_list() {
     };
 }
 
-run_test("basics", ({override}) => {
+run_test("basics", ({override, override_rewire}) => {
     stub_message_list();
     activity_ui.set_cursor_and_filter();
 
@@ -167,6 +168,7 @@ run_test("basics", ({override}) => {
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
     override(buddy_list, "populate", noop);
+    override_rewire(message_view, "try_rendering_locally_for_same_narrow", noop);
 
     const helper = test_helper({override});
     const terms = [{operator: "stream", operand: "Denmark"}];
@@ -206,10 +208,17 @@ run_test("basics", ({override}) => {
             cont: opts.cont,
             msg_list: opts.msg_list,
             anchor: 1000,
+            validate_filter_topic_post_fetch: false,
         });
 
         opts.cont();
     };
+
+    override(
+        compose_notifications,
+        "maybe_show_one_time_interleaved_view_messages_fading_banner",
+        noop,
+    );
 
     message_view.show(terms, {
         then_select_id: selected_id,

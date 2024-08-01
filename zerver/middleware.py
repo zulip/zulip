@@ -2,7 +2,8 @@ import cProfile
 import logging
 import tempfile
 import time
-from typing import Any, Callable, Dict, List, MutableMapping, Optional, Tuple
+from collections.abc import Callable, MutableMapping
+from typing import Annotated, Any, Concatenate
 from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
@@ -22,7 +23,7 @@ from django.utils.translation import gettext as _
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
 from sentry_sdk import set_tag
-from typing_extensions import Annotated, Concatenate, ParamSpec, override
+from typing_extensions import ParamSpec, override
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db_connections import reset_queries
@@ -126,9 +127,9 @@ def write_log_line(
     remote_ip: str,
     requester_for_logs: str,
     client_name: str,
-    client_version: Optional[str] = None,
+    client_version: str | None = None,
     status_code: int = 200,
-    error_content: Optional[bytes] = None,
+    error_content: bytes | None = None,
 ) -> None:
     time_delta = -1
     # A time duration of -1 means the StartLogRequests middleware
@@ -236,16 +237,16 @@ def parse_client(
     # not to document on every endpoint's individual parameters.
     *,
     req_client: Annotated[
-        Optional[str], ApiParamConfig("client", documentation_status=INTENTIONALLY_UNDOCUMENTED)
+        str | None, ApiParamConfig("client", documentation_status=INTENTIONALLY_UNDOCUMENTED)
     ] = None,
-) -> Tuple[str, Optional[str]]:
+) -> tuple[str, str | None]:
     # If the API request specified a client in the request content,
     # that has priority. Otherwise, extract the client from the
     # USER_AGENT.
     if req_client is not None:
         return req_client, None
     if "User-Agent" in request.headers:
-        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.headers["User-Agent"])
+        user_agent: dict[str, str] | None = parse_user_agent(request.headers["User-Agent"])
     else:
         user_agent = None
     if user_agent is None:
@@ -299,8 +300,8 @@ class LogRequests(MiddlewareMixin):
         self,
         request: HttpRequest,
         view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
-        args: List[object],
-        kwargs: Dict[str, Any],
+        args: list[object],
+        kwargs: dict[str, Any],
     ) -> None:
         request_notes = RequestNotes.get_notes(request)
         if request_notes.saved_response is not None:
@@ -363,9 +364,7 @@ class LogRequests(MiddlewareMixin):
 
 
 class JsonErrorHandler(MiddlewareMixin):
-    def process_exception(
-        self, request: HttpRequest, exception: Exception
-    ) -> Optional[HttpResponse]:
+    def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse | None:
         if isinstance(exception, MissingAuthenticationError):
             if "text/html" in request.headers.get("Accept", ""):
                 # If this looks like a request from a top-level page in a
@@ -426,8 +425,8 @@ class TagRequests(MiddlewareMixin):
         self,
         request: HttpRequest,
         view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
-        args: List[object],
-        kwargs: Dict[str, Any],
+        args: list[object],
+        kwargs: dict[str, Any],
     ) -> None:
         self.process_request(request)
 
@@ -498,7 +497,7 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
 
 class RateLimitMiddleware(MiddlewareMixin):
     def set_response_headers(
-        self, response: HttpResponseBase, rate_limit_results: List[RateLimitResult]
+        self, response: HttpResponseBase, rate_limit_results: list[RateLimitResult]
     ) -> None:
         # The limit on the action that was requested is the minimum of the limits that get applied:
         limit = min(result.entity.max_api_calls() for result in rate_limit_results)
@@ -536,7 +535,7 @@ class FlushDisplayRecipientCache(MiddlewareMixin):
 
 
 class HostDomainMiddleware(MiddlewareMixin):
-    def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
+    def process_request(self, request: HttpRequest) -> HttpResponse | None:
         # Match against ALLOWED_HOSTS, which is rather permissive;
         # failure will raise DisallowedHost, which is a 400.
         request.get_host()
@@ -631,8 +630,8 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
         self,
         request: HttpRequest,
         view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
-        args: List[object],
-        kwargs: Dict[str, Any],
+        args: list[object],
+        kwargs: dict[str, Any],
     ) -> None:
         proxy_state_header = request.headers.get("X-Proxy-Misconfiguration", "")
         # Our nginx configuration sets this header if:
@@ -717,7 +716,7 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
     the request when accessing SCIM endpoints.
     """
 
-    def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
+    def process_request(self, request: HttpRequest) -> HttpResponse | None:
         # Defensive assertion to ensure this can't accidentally get called on a request
         # to a non-SCIM endpoint.
         assert request.path.startswith(self.reverse_url)

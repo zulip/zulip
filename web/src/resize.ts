@@ -30,7 +30,7 @@ function get_new_heights(): {
         Number.parseInt($("#left-sidebar-navigation-area").css("marginTop"), 10) -
         Number.parseInt($("#left-sidebar-navigation-area").css("marginBottom"), 10) -
         ($("#left-sidebar-navigation-list").outerHeight(true) ?? 0) -
-        ($("#direct-messages-sticky-header").outerHeight(true) ?? 0);
+        ($("#direct-messages-section-header").outerHeight(true) ?? 0);
 
     // Don't let us crush the stream sidebar completely out of view
     stream_filters_max_height = Math.max(80, stream_filters_max_height);
@@ -110,18 +110,17 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
     const compose_non_textarea_height = compose_height - compose_textarea_height;
 
     // We ensure that the last message is not overlapped by compose box.
-    // TODO: Remove subtraction of 2 when we remove the margin in #29953
     $("textarea#compose-textarea").css(
         "max-height",
         // Because <textarea> max-height includes padding, we subtract
-        // 10 for the padding and 2 for the margin.
-        bottom_whitespace_height - compose_non_textarea_height - 2 - 10,
+        // 10 for the padding.
+        bottom_whitespace_height - compose_non_textarea_height - 10,
     );
     $("#preview_message_area").css(
         "max-height",
-        // Because <div> max-height doesn't include padding, we subtract
-        // 2 for the margin.
-        bottom_whitespace_height - compose_non_textarea_height - 2,
+        // Because <div> max-height doesn't include padding, we do not
+        // subtract anything.
+        bottom_whitespace_height - compose_non_textarea_height,
     );
     $("#scroll-to-bottom-button-container").css("bottom", compose_height);
     compose_ui.autosize_textarea($("#compose-textarea"));

@@ -1,4 +1,4 @@
-from typing import List, Pattern
+from re import Pattern
 
 import re2
 import uri_template
@@ -114,7 +114,7 @@ def get_linkifiers_cache_key(realm_id: int) -> str:
 
 @return_same_value_during_entire_request
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
-def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
+def linkifiers_for_realm(realm_id: int) -> list[LinkifierDict]:
     return [
         LinkifierDict(
             pattern=linkifier.pattern,

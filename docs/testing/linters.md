@@ -23,14 +23,12 @@ prevent common coding errors.
 We borrow some open source tools for much of our linting, and the links
 below will direct you to the official documentation for these projects.
 
-- [Black](https://github.com/psf/black)
 - [ESLint](https://eslint.org)
-- [isort](https://pycqa.github.io/isort/)
 - [mypy](http://mypy-lang.org/)
 - [Prettier](https://prettier.io/)
 - [Puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)
-- [ruff](https://github.com/astral-sh/ruff)
+- [Ruff](https://docs.astral.sh/ruff/)
 - [stylelint](https://github.com/stylelint/stylelint)
 
 Zulip also uses some home-grown code to perform tasks like validating
@@ -109,8 +107,8 @@ describes our test system in detail.
 Most of our lint checks get performed by `./tools/lint`. These include the
 following checks:
 
-- Check Python code with ruff.
-- Check Python formatting with Black and isort.
+- Check Python code with Ruff.
+- Check Python formatting with Ruff.
 - Check JavaScript and TypeScript code with ESLint.
 - Check CSS, JavaScript, TypeScript, and YAML formatting with Prettier.
 - Check Python code for custom Zulip rules.
@@ -131,7 +129,7 @@ The rest of this document pertains to the checks that occur in `./tools/lint`.
 
 Zulip has a script called `lint` that lives in our "tools" directory.
 It is the workhorse of our linting system, although in some cases it
-dispatches the heavy lifting to other components such as ruff,
+dispatches the heavy lifting to other components such as Ruff,
 eslint, and other home grown tools.
 
 You can find the source code [here](https://github.com/zulip/zulip/blob/main/tools/lint).
@@ -172,17 +170,16 @@ is the extent of our checking.
 Finally, we're checking line length in Python code (and hope to extend
 this to other parts of the codebase soon). You can use
 `#ignorelinelength` for special cases where a very long line makes
-sense (e.g. a link in a comment to an extremely long URL).
+sense (e.g., a link in a comment to an extremely long URL).
 
 #### Python code
 
-Our Python code is formatted using Black (using the options in the
-`[tool.black]` section of `pyproject.toml`) and isort (using the
-options in `.isort.cfg`). The `lint` script enforces this by running
-Black and isort in check mode, or in write mode with `--fix`.
+Our Python code is formatted using
+[Ruff](https://docs.astral.sh/ruff/) (using the options in the
+`[tool.ruff]` section of `pyproject.toml`). The `lint` script enforces
+this by running Ruff in check mode, or in write mode with `--fix`.
 
-The bulk of our Python linting gets outsourced to the "ruff" tool,
-which is configured in the `tool.ruff` section of `pyproject.toml`.
+The bulk of our Python linting also gets outsourced to Ruff.
 
 Zulip also has custom regex-based rules that it applies to Python code.
 Look for `python_rules` in the source code for `lint`. Note that we

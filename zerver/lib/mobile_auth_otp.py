@@ -15,7 +15,7 @@ def xor_hex_strings(bytes_a: str, bytes_b: str) -> str:
     """Given two hex strings of equal length, return a hex string with
     the bitwise xor of the two hex strings."""
     assert len(bytes_a) == len(bytes_b)
-    return "".join(f"{int(x, 16) ^ int(y, 16):x}" for x, y in zip(bytes_a, bytes_b))
+    return "".join(f"{int(x, 16) ^ int(y, 16):x}" for x, y in zip(bytes_a, bytes_b, strict=False))
 
 
 def ascii_to_hex(input_string: str) -> str:

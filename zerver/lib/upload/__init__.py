@@ -3,26 +3,30 @@ import logging
 import os
 import re
 import unicodedata
+from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple, Union
+from typing import IO, Any, BinaryIO
 from urllib.parse import unquote, urljoin
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.utils.translation import gettext as _
 
-from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.mime_types import guess_type
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.thumbnail import (
     MAX_EMOJI_GIF_FILE_SIZE_BYTES,
     MEDIUM_AVATAR_SIZE,
+    THUMBNAIL_ACCEPT_IMAGE_TYPES,
     BadImageError,
+    maybe_thumbnail,
     resize_avatar,
     resize_emoji,
 )
-from zerver.lib.upload.base import ZulipUploadBackend
+from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 from zerver.models.users import is_cross_realm_bot_email
 
@@ -41,7 +45,12 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
 
 
 def create_attachment(
-    file_name: str, path_id: str, user_profile: UserProfile, realm: Realm, file_size: int
+    file_name: str,
+    path_id: str,
+    content_type: str,
+    file_data: bytes,
+    user_profile: UserProfile,
+    realm: Realm,
 ) -> None:
     assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
         user_profile.delivery_email
@@ -51,14 +60,16 @@ def create_attachment(
         path_id=path_id,
         owner=user_profile,
         realm=realm,
-        size=file_size,
+        size=len(file_data),
+        content_type=content_type,
     )
+    maybe_thumbnail(attachment, file_data)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
 
 
-def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
+def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
 
@@ -118,38 +129,37 @@ def sanitize_name(value: str) -> str:
 
 def upload_message_attachment(
     uploaded_file_name: str,
-    uploaded_file_size: int,
     content_type: str,
     file_data: bytes,
     user_profile: UserProfile,
-    target_realm: Optional[Realm] = None,
+    target_realm: Realm | None = None,
 ) -> str:
     if target_realm is None:
         target_realm = user_profile.realm
     path_id = upload_backend.generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
-    upload_backend.upload_message_attachment(
-        path_id,
-        uploaded_file_size,
-        content_type,
-        file_data,
-        user_profile,
-        target_realm,
-    )
-    create_attachment(
-        uploaded_file_name,
-        path_id,
-        user_profile,
-        target_realm,
-        uploaded_file_size,
-    )
+    with transaction.atomic():
+        upload_backend.upload_message_attachment(
+            path_id,
+            content_type,
+            file_data,
+            user_profile,
+        )
+        create_attachment(
+            uploaded_file_name,
+            path_id,
+            content_type,
+            file_data,
+            user_profile,
+            target_realm,
+        )
     return f"/user_uploads/{path_id}"
 
 
 def claim_attachment(
     path_id: str,
-    message: Union[Message, ScheduledMessage],
+    message: Message | ScheduledMessage,
     is_message_realm_public: bool,
     is_message_web_public: bool = False,
 ) -> Attachment:
@@ -170,11 +180,11 @@ def claim_attachment(
 
 
 def upload_message_attachment_from_request(
-    user_file: UploadedFile, user_profile: UserProfile, user_file_size: int
+    user_file: UploadedFile, user_profile: UserProfile
 ) -> str:
     uploaded_file_name, content_type = get_file_info(user_file)
     return upload_message_attachment(
-        uploaded_file_name, user_file_size, content_type, user_file.read(), user_profile
+        uploaded_file_name, content_type, user_file.read(), user_profile
     )
 
 
@@ -186,12 +196,12 @@ def delete_message_attachment(path_id: str) -> bool:
     return upload_backend.delete_message_attachment(path_id)
 
 
-def delete_message_attachments(path_ids: List[str]) -> None:
+def delete_message_attachments(path_ids: list[str]) -> None:
     return upload_backend.delete_message_attachments(path_ids)
 
 
-def all_message_attachments() -> Iterator[Tuple[str, datetime]]:
-    return upload_backend.all_message_attachments()
+def all_message_attachments(include_thumbnails: bool = False) -> Iterator[tuple[str, datetime]]:
+    return upload_backend.all_message_attachments(include_thumbnails)
 
 
 # Avatar image uploads
@@ -206,8 +216,9 @@ def write_avatar_images(
     user_profile: UserProfile,
     image_data: bytes,
     *,
-    content_type: Optional[str],
-    backend: Optional[ZulipUploadBackend] = None,
+    content_type: str | None,
+    backend: ZulipUploadBackend | None = None,
+    future: bool = True,
 ) -> None:
     if backend is None:
         backend = upload_backend
@@ -216,6 +227,7 @@ def write_avatar_images(
         user_profile=user_profile,
         image_data=image_data,
         content_type=content_type,
+        future=future,
     )
 
     backend.upload_single_avatar_image(
@@ -223,6 +235,7 @@ def write_avatar_images(
         user_profile=user_profile,
         image_data=resize_avatar(image_data),
         content_type="image/png",
+        future=future,
     )
 
     backend.upload_single_avatar_image(
@@ -230,35 +243,57 @@ def write_avatar_images(
         user_profile=user_profile,
         image_data=resize_avatar(image_data, MEDIUM_AVATAR_SIZE),
         content_type="image/png",
+        future=future,
     )
 
 
 def upload_avatar_image(
     user_file: IO[bytes],
     user_profile: UserProfile,
-    content_type: Optional[str] = None,
-    backend: Optional[ZulipUploadBackend] = None,
+    content_type: str | None = None,
+    backend: ZulipUploadBackend | None = None,
+    future: bool = True,
 ) -> None:
     if content_type is None:
         content_type = guess_type(user_file.name)[0]
-    file_path = user_avatar_path(user_profile)
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+        raise BadImageError(_("Invalid image format"))
+    file_path = user_avatar_path(user_profile, future=future)
 
     image_data = user_file.read()
     write_avatar_images(
-        file_path, user_profile, image_data, content_type=content_type, backend=backend
+        file_path,
+        user_profile,
+        image_data,
+        content_type=content_type,
+        backend=backend,
+        future=future,
     )
 
 
 def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> None:
-    source_file_path = user_avatar_path(source_profile)
-    target_file_path = user_avatar_path(target_profile)
+    source_file_path = user_avatar_path(source_profile, future=False)
+    target_file_path = user_avatar_path(target_profile, future=True)
 
     image_data, content_type = upload_backend.get_avatar_contents(source_file_path)
-    write_avatar_images(target_file_path, target_profile, image_data, content_type=content_type)
+    write_avatar_images(
+        target_file_path, target_profile, image_data, content_type=content_type, future=True
+    )
 
 
 def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None:
     file_path = user_avatar_path(user_profile)
+
+    final_file_path = upload_backend.get_avatar_path(file_path, medium)
+
+    if settings.LOCAL_AVATARS_DIR is not None:
+        output_path = os.path.join(
+            settings.LOCAL_AVATARS_DIR,
+            final_file_path,
+        )
+
+        if os.path.isfile(output_path):
+            return
 
     image_data, _ = upload_backend.get_avatar_contents(file_path)
 
@@ -267,27 +302,34 @@ def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None
     else:
         resized_avatar = resize_avatar(image_data)
     upload_backend.upload_single_avatar_image(
-        upload_backend.get_avatar_path(file_path, medium),
+        final_file_path,
         user_profile=user_profile,
         image_data=resized_avatar,
         content_type="image/png",
+        future=False,
     )
 
 
-def delete_avatar_image(user_profile: UserProfile) -> None:
-    path_id = user_avatar_path(user_profile)
+def delete_avatar_image(user_profile: UserProfile, avatar_version: int) -> None:
+    path_id = user_avatar_base_path_from_ids(user_profile.id, avatar_version, user_profile.realm_id)
     upload_backend.delete_avatar_image(path_id)
 
 
 # Realm icon and logo uploads
 
 
-def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile) -> None:
-    upload_backend.upload_realm_icon_image(user_file, user_profile)
+def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile, content_type: str) -> None:
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+        raise BadImageError(_("Invalid image format"))
+    upload_backend.upload_realm_icon_image(user_file, user_profile, content_type)
 
 
-def upload_logo_image(user_file: IO[bytes], user_profile: UserProfile, night: bool) -> None:
-    upload_backend.upload_realm_logo_image(user_file, user_profile, night)
+def upload_logo_image(
+    user_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
+) -> None:
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+        raise BadImageError(_("Invalid image format"))
+    upload_backend.upload_realm_logo_image(user_file, user_profile, night, content_type)
 
 
 # Realm emoji uploads
@@ -297,11 +339,20 @@ def upload_emoji_image(
     emoji_file: IO[bytes],
     emoji_file_name: str,
     user_profile: UserProfile,
-    backend: Optional[ZulipUploadBackend] = None,
+    content_type: str,
+    backend: ZulipUploadBackend | None = None,
 ) -> bool:
     if backend is None:
         backend = upload_backend
-    content_type = guess_type(emoji_file_name)[0]
+
+    # Emoji are served in the format that they are uploaded, so must
+    # be _both_ an image format that we're willing to thumbnail, _and_
+    # a format which is widespread enough that we're willing to inline
+    # it.  The latter contains non-image formats, but the former
+    # limits to only images.
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES or content_type not in INLINE_MIME_TYPES:
+        raise BadImageError(_("Invalid image format"))
+
     emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
         realm_id=user_profile.realm_id,
         emoji_file_name=emoji_file_name,
@@ -315,7 +366,7 @@ def upload_emoji_image(
     if still_image_data is not None:
         if len(still_image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
             raise BadImageError(_("Image size exceeds limit"))
-    elif len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
+    elif len(resized_image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
         raise BadImageError(_("Image size exceeds limit"))
     backend.upload_single_emoji_image(emoji_path, content_type, user_profile, resized_image_data)
     if still_image_data is None:
@@ -325,27 +376,27 @@ def upload_emoji_image(
         realm_id=user_profile.realm_id,
         emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
     )
-    backend.upload_single_emoji_image(still_path, content_type, user_profile, still_image_data)
+    backend.upload_single_emoji_image(still_path, "image/png", user_profile, still_image_data)
     return True
 
 
 def get_emoji_file_content(
     session: OutgoingSession, emoji_url: str, emoji_id: int, logger: logging.Logger
-) -> bytes:  # nocoverage
+) -> tuple[bytes, str]:  # nocoverage
     original_emoji_url = emoji_url + ".original"
 
     logger.info("Downloading %s", original_emoji_url)
     response = session.get(original_emoji_url)
     if response.status_code == 200:
         assert isinstance(response.content, bytes)
-        return response.content
+        return response.content, response.headers["Content-Type"]
 
     logger.info("Error fetching emoji from URL %s", original_emoji_url)
     logger.info("Trying %s instead", emoji_url)
     response = session.get(emoji_url)
     if response.status_code == 200:
         assert isinstance(response.content, bytes)
-        return response.content
+        return response.content, response.headers["Content-Type"]
     logger.info("Error fetching emoji from URL %s", emoji_url)
     logger.error("Could not fetch emoji %s", emoji_id)
     raise AssertionError(f"Could not fetch emoji {emoji_id}")
@@ -366,7 +417,9 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
         if emoji_url.startswith("/"):
             emoji_url = urljoin(realm_emoji.realm.url, emoji_url)
 
-        emoji_file_content = get_emoji_file_content(session, emoji_url, realm_emoji.id, logger)
+        emoji_file_content, content_type = get_emoji_file_content(
+            session, emoji_url, realm_emoji.id, logger
+        )
 
         emoji_bytes_io = io.BytesIO(emoji_file_content)
 
@@ -375,7 +428,9 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
         assert user_profile is not None
 
         logger.info("Reuploading emoji %s", realm_emoji.id)
-        realm_emoji.is_animated = upload_emoji_image(emoji_bytes_io, emoji_filename, user_profile)
+        realm_emoji.is_animated = upload_emoji_image(
+            emoji_bytes_io, emoji_filename, user_profile, content_type
+        )
         realm_emoji.save(update_fields=["is_animated"])
 
 
@@ -383,12 +438,12 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
 
 
 def upload_export_tarball(
-    realm: Realm, tarball_path: str, percent_callback: Optional[Callable[[Any], None]] = None
+    realm: Realm, tarball_path: str, percent_callback: Callable[[Any], None] | None = None
 ) -> str:
     return upload_backend.upload_export_tarball(
         realm, tarball_path, percent_callback=percent_callback
     )
 
 
-def delete_export_tarball(export_path: str) -> Optional[str]:
+def delete_export_tarball(export_path: str) -> str | None:
     return upload_backend.delete_export_tarball(export_path)

@@ -1,7 +1,7 @@
 import os
 import subprocess
 from argparse import ArgumentParser
-from typing import Any, Dict
+from typing import Any
 
 import requests
 from django.conf import settings
@@ -58,16 +58,14 @@ class Command(ZulipBaseCommand):
             raise CommandError(
                 "Missing zulip_org_key; run scripts/setup/generate_secrets.py to generate."
             )
-        if settings.PUSH_NOTIFICATION_BOUNCER_URL is None:
-            if settings.DEVELOPMENT:
-                settings.PUSH_NOTIFICATION_BOUNCER_URL = (
-                    settings.EXTERNAL_URI_SCHEME + settings.EXTERNAL_HOST
-                )
-            else:
-                raise CommandError(
-                    "Please uncomment PUSH_NOTIFICATION_BOUNCER_URL "
-                    "in /etc/zulip/settings.py (remove the '#')"
-                )
+        if not settings.ZULIP_SERVICES_URL:
+            raise CommandError(
+                "ZULIP_SERVICES_URL is not set; was the default incorrectly overridden in /etc/zulip/settings.py?"
+            )
+        if not settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS:
+            raise CommandError(
+                "Please set ZULIP_SERVICE_PUSH_NOTIFICATIONS to True in /etc/zulip/settings.py"
+            )
 
         if options["deactivate"]:
             send_json_to_push_bouncer("POST", "server/deactivate", {})
@@ -100,7 +98,7 @@ class Command(ZulipBaseCommand):
             tos_prompt = input(
                 "Do you want to agree to the Zulip Terms of Service and proceed? [Y/n] "
             )
-            print("")
+            print()
             if not (
                 tos_prompt.lower() == "y" or tos_prompt.lower() == "" or tos_prompt.lower() == "yes"
             ):
@@ -128,6 +126,7 @@ class Command(ZulipBaseCommand):
                 subprocess.check_call(
                     [
                         "crudini",
+                        "--inplace",
                         "--set",
                         SECRETS_FILENAME,
                         "secrets",
@@ -137,16 +136,16 @@ class Command(ZulipBaseCommand):
                 )
             print("Mobile Push Notification Service registration successfully updated!")
 
-    def _request_push_notification_bouncer_url(self, url: str, params: Dict[str, Any]) -> Response:
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + url
+    def _request_push_notification_bouncer_url(self, url: str, params: dict[str, Any]) -> Response:
+        assert settings.ZULIP_SERVICES_URL is not None
+        registration_url = settings.ZULIP_SERVICES_URL + url
         session = PushBouncerSession()
         try:
             response = session.post(registration_url, data=params)
         except requests.RequestException:
             raise CommandError(
                 "Network error connecting to push notifications service "
-                f"({settings.PUSH_NOTIFICATION_BOUNCER_URL})",
+                f"({settings.ZULIP_SERVICES_URL})",
             )
         try:
             response.raise_for_status()

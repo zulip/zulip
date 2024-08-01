@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as dropdown_widget from "./dropdown_widget";
 import {$t_html} from "./i18n";
@@ -8,13 +9,17 @@ import type {UserGroup} from "./user_groups";
 
 export let active_group_id: number | undefined;
 
-export function setup_permissions_dropdown(group: UserGroup, for_group_creation: boolean): void {
+export function setup_permissions_dropdown(
+    group: UserGroup | undefined,
+    for_group_creation: boolean,
+): void {
     let widget_name: string;
     let default_id: number;
     if (for_group_creation) {
         widget_name = "new_group_can_mention_group";
         default_id = user_groups.get_user_group_from_name("role:everyone")!.id;
     } else {
+        assert(group !== undefined);
         widget_name = "can_mention_group";
         default_id = group.can_mention_group;
     }
@@ -32,6 +37,7 @@ export function setup_permissions_dropdown(group: UserGroup, for_group_creation:
             event.stopPropagation();
             can_mention_group_widget.render();
             if (!for_group_creation) {
+                assert(group !== undefined);
                 settings_components.save_discard_group_widget_status_handler(
                     $("#group_permission_settings"),
                     group,
@@ -39,13 +45,11 @@ export function setup_permissions_dropdown(group: UserGroup, for_group_creation:
             }
         },
         $events_container: $("#groups_overlay .group-permissions"),
-        tippy_props: {
-            placement: "bottom-start",
-        },
         default_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
+            $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
         },
     });
     if (for_group_creation) {
@@ -82,7 +86,7 @@ export const show_user_group_settings_pane = {
         set_active_group_id(group.id);
         $("#groups_overlay .user-group-info-title").text(group.name);
     },
-    create_user_group(container_name = "configure_user_group_settings", group_name: string) {
+    create_user_group(container_name = "configure_user_group_settings", group_name?: string) {
         $(".user_group_creation").hide();
         if (container_name === "configure_user_group_settings") {
             $("#groups_overlay .user-group-info-title").text(

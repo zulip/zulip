@@ -1,7 +1,6 @@
 import logging
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import List, Optional
 
 from django.conf import settings
 from django.db import transaction
@@ -11,7 +10,7 @@ from django.utils.translation import override as override_language
 
 from zerver.actions.message_send import (
     do_send_messages,
-    internal_prep_huddle_message,
+    internal_prep_group_direct_message,
     internal_prep_stream_message,
 )
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
@@ -29,7 +28,7 @@ class ZulipUpdateAnnouncement:
 
 # We don't translate the announcement message because they are quite unlikely to be
 # translated during the time between when we draft them and when they are published.
-zulip_update_announcements: List[ZulipUpdateAnnouncement] = [
+zulip_update_announcements: list[ZulipUpdateAnnouncement] = [
     ZulipUpdateAnnouncement(
         level=1,
         message="""
@@ -119,6 +118,75 @@ topic or go back to your [home view]({configure_home_view_help_url}).
             search_by_message_status_help_url="/help/search-for-messages#search-by-message-status",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=6,
+        message="""
+**Web and desktop updates**
+- You can now configure whether channel links in the left sidebar go to the most
+recent topic (default option), or to the channel feed. With the default
+configuration, you can access the feed from the channel menu.
+[Learn more]({channel_feed_help_url}).
+- You can also [configure]({automatically_go_to_conversation_help_url}) whether Zulip
+automatically takes you to the conversation to which you sent a message, if you
+aren't already viewing it (on by default).
+- You can now [filter]({find_a_dm_conversation_help_url}) direct message
+conversations in the left sidebar to conversations that include a specific
+person.
+""".format(
+            channel_feed_help_url="/help/channel-feed",
+            automatically_go_to_conversation_help_url="/help/mastering-the-compose-box#automatically-go-to-conversation-where-you-sent-a-message",
+            find_a_dm_conversation_help_url="/help/direct-messages#find-a-direct-message-conversation",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=7,
+        message="""
+**Web and desktop updates**
+- To make reading more comfortable, Zulip has been redesigned with a larger font
+size and line spacing. If you prefer to see more content at once, [enable
+compact mode]({settings_preferences_url}) to go back to the previous design.
+- The main search has been redesigned with pills for [search
+filters]({search_help_url}), making it easier to use.
+- Pasted [channel and topic URLs]({link_help_url}) are now automatically
+converted into nicely formatted links.
+""".format(
+            settings_preferences_url="/#settings/preferences",
+            search_help_url="/help/search-for-messages",
+            link_help_url="/help/link-to-a-message-or-conversation",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=8,
+        message=(
+            """
+- New image uploads now load much faster in all Zulip apps.
+- In the desktop and web apps, you can now [configure]({image_previews_help_url})
+previews of animated images to **always show** the animation, show it **when you
+hover** over the image with your mouse (default), or **not show** it at all. You can
+always see the animated image by opening it in the [image
+viewer]({view_images_help_url})."""
+            + (
+                """
+
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since December
+2023, in the [blog post]({blog_post_9_0_url}) announcing today's release of
+Zulip Server 9.0.
+"""
+                if settings.CORPORATE_ENABLED
+                else """
+
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_9_0_url}) to learn about additional
+feature highlights in Zulip Server 9.0, and other Zulip project updates.
+"""
+            )
+        ).format(
+            image_previews_help_url="/help/allow-image-link-previews",
+            view_images_help_url="/help/view-images-and-videos",
+            blog_post_9_0_url="https://blog.zulip.com/zulip-server-9-0",
+        ),
+    ),
 ]
 
 
@@ -145,7 +213,7 @@ def get_realms_behind_zulip_update_announcements_level(level: int) -> QuerySet[R
 
 def internal_prep_group_direct_message_for_old_realm(
     realm: Realm, sender: UserProfile
-) -> Optional[SendMessageRequest]:
+) -> SendMessageRequest | None:
     administrators = list(realm.get_human_admin_users())
     with override_language(realm.default_language):
         topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
@@ -174,12 +242,12 @@ configuration change), or [turn this feature off]({organization_settings_url}) a
             organization_settings_url="/#organization/organization-settings",
             move_content_another_stream_help_url="/help/move-content-to-another-channel",
         )
-    return internal_prep_huddle_message(
+    return internal_prep_group_direct_message(
         realm, sender, remove_single_newlines(content), recipient_users=administrators
     )
 
 
-def get_level_none_to_initial_auditlog(realm: Realm) -> Optional[RealmAuditLog]:
+def get_level_none_to_initial_auditlog(realm: Realm) -> RealmAuditLog | None:
     return RealmAuditLog.objects.filter(
         realm=realm,
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
@@ -203,7 +271,7 @@ def is_group_direct_message_sent_to_admins_within_days(realm: Realm, days: int) 
 
 def internal_prep_zulip_update_announcements_stream_messages(
     current_level: int, latest_level: int, sender: UserProfile, realm: Realm
-) -> List[Optional[SendMessageRequest]]:
+) -> list[SendMessageRequest | None]:
     message_requests = []
     stream = realm.zulip_update_announcements_stream
     assert stream is not None
@@ -227,7 +295,7 @@ def internal_prep_zulip_update_announcements_stream_messages(
 def send_messages_and_update_level(
     realm: Realm,
     new_zulip_update_announcements_level: int,
-    send_message_requests: List[Optional[SendMessageRequest]],
+    send_message_requests: list[SendMessageRequest | None],
 ) -> None:
     sent_message_ids = []
     if send_message_requests:

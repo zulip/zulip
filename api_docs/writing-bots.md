@@ -41,8 +41,8 @@ On this page you'll find:
 1. Run the command provided in the final output of the `provision` process to
    enter the new virtualenv. The command will be of the form `source .../activate`.
 
-1. You should now see the name of your virtualenv preceding your prompt e.g.,
-   `(zulip-api-py3-venv)`.
+1. You should now see the name of your virtualenv preceding your prompt (e.g.,
+   `(zulip-api-py3-venv)`).
 
 !!! tip ""
 
@@ -151,7 +151,7 @@ Response: stream: followup topic: foo_sender@zulip.com
 ```
 
 Note that the `-b` (aka `--bot-config-file`) argument is for an optional third party
-config file (e.g. ~/giphy.conf), which only applies to certain types of bots.
+config file (e.g., ~/giphy.conf), which only applies to certain types of bots.
 
 ## Bot API
 
@@ -208,7 +208,7 @@ handles user message.
 
 * message - a dictionary describing a Zulip message
 
-* bot_handler - used to interact with the server, e.g. to send a message
+* bot_handler - used to interact with the server, e.g., to send a message
 
 #### Return values
 
@@ -290,7 +290,7 @@ bot_handler.update_message(dict(
 ### bot_handler.storage
 
 A common problem when writing an interactive bot is that you want to
-be able to store a bit of persistent state for the bot (e.g. for an
+be able to store a bit of persistent state for the bot (e.g., for an
 RSVP bot, the RSVPs).  For a sufficiently complex bot, you want need
 your own database, but for simpler bots, we offer a convenient way for
 bot code to persistently store data.
@@ -382,7 +382,7 @@ every call to `put` and `get`, respectively.
 * key - the API key you created for the bot; this is how Zulip knows
   the request is from an authorized user.
 
-* email - the email address of the bot, e.g. `some-bot@zulip.com`
+* email - the email address of the bot, e.g., `some-bot@zulip.com`
 
 * site - your development environment URL; if you are working on a
   development environment hosted on your computer, use

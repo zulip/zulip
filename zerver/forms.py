@@ -1,7 +1,7 @@
 import logging
 import re
 from email.headerregistry import Address
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import DNS
 from django import forms
@@ -368,15 +368,15 @@ class ZulipPasswordResetForm(PasswordResetForm):
     @override
     def save(
         self,
-        domain_override: Optional[str] = None,
+        domain_override: str | None = None,
         subject_template_name: str = "registration/password_reset_subject.txt",
         email_template_name: str = "registration/password_reset_email.html",
         use_https: bool = False,
         token_generator: PasswordResetTokenGenerator = default_token_generator,
-        from_email: Optional[str] = None,
-        request: Optional[HttpRequest] = None,
-        html_email_template_name: Optional[str] = None,
-        extra_email_context: Optional[Dict[str, Any]] = None,
+        from_email: str | None = None,
+        request: HttpRequest | None = None,
+        html_email_template_name: str | None = None,
+        extra_email_context: dict[str, Any] | None = None,
     ) -> None:
         """
         If the email address has an account in the target realm,
@@ -483,7 +483,7 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
         return f"{type(self).__name__}:{self.email}"
 
     @override
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         return settings.RATE_LIMITING_RULES["password_reset_form_by_email"]
 
 
@@ -502,7 +502,7 @@ class OurAuthenticationForm(AuthenticationForm):
     logger = logging.getLogger("zulip.auth.OurAuthenticationForm")
 
     @override
-    def clean(self) -> Dict[str, Any]:
+    def clean(self) -> dict[str, Any]:
         username = self.cleaned_data.get("username")
         password = self.cleaned_data.get("password")
 
@@ -511,7 +511,7 @@ class OurAuthenticationForm(AuthenticationForm):
             subdomain = get_subdomain(self.request)
             realm = get_realm(subdomain)
 
-            return_data: Dict[str, Any] = {}
+            return_data: dict[str, Any] = {}
             try:
                 self.user_cache = authenticate(
                     request=self.request,
@@ -592,7 +592,7 @@ class AuthenticationTokenForm(TwoFactorAuthenticationTokenForm):
 
 class MultiEmailField(forms.Field):
     @override
-    def to_python(self, emails: Optional[str]) -> List[str]:
+    def to_python(self, emails: str | None) -> list[str]:
         """Normalize data to a list of strings."""
         if not emails:
             return []
@@ -600,7 +600,7 @@ class MultiEmailField(forms.Field):
         return [email.strip() for email in emails.split(",")]
 
     @override
-    def validate(self, emails: List[str]) -> None:
+    def validate(self, emails: list[str]) -> None:
         """Check if value consists only of valid emails."""
         super().validate(emails)
         for email in emails:
@@ -612,7 +612,7 @@ class FindMyTeamForm(forms.Form):
         help_text=_("Tip: You can enter multiple email addresses with commas between them.")
     )
 
-    def clean_emails(self) -> List[str]:
+    def clean_emails(self) -> list[str]:
         emails = self.cleaned_data["emails"]
         if len(emails) > 10:
             raise forms.ValidationError(_("Please enter at most 10 emails."))

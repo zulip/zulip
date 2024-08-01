@@ -6,7 +6,6 @@ import re
 import subprocess
 import sys
 import tempfile
-from typing import List
 
 import yaml
 
@@ -64,7 +63,7 @@ puppet_env["FACTER_zulip_conf_path"] = args.config
 puppet_env["FACTER_zulip_scripts_path"] = scripts_path
 
 
-def noop_would_change(puppet_cmd: List[str]) -> bool:
+def noop_would_change(puppet_cmd: list[str]) -> bool:
     # --noop does not work with --detailed-exitcodes; see
     # https://tickets.puppetlabs.com/browse/PUP-686
     try:

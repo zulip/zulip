@@ -1,5 +1,5 @@
 import re
-from typing import List, Match, Tuple
+from re import Match
 
 from bs4 import BeautifulSoup
 
@@ -73,6 +73,7 @@ IGNORED_PHRASES = [
     r"and",
     r"bot",
     r"e\.g\.",
+    r"email",
     r"enabled",
     r"signups",
     # Placeholders
@@ -245,7 +246,7 @@ def is_capitalized(safe_text: str) -> bool:
     return not any(DISALLOWED_REGEX.search(sentence.strip()) for sentence in sentences)
 
 
-def check_banned_words(text: str) -> List[str]:
+def check_banned_words(text: str) -> list[str]:
     lower_cased_text = text.lower()
     errors = []
     for word, reason in BANNED_WORDS.items():
@@ -266,7 +267,7 @@ def check_banned_words(text: str) -> List[str]:
     return errors
 
 
-def check_capitalization(strings: List[str]) -> Tuple[List[str], List[str], List[str]]:
+def check_capitalization(strings: list[str]) -> tuple[list[str], list[str], list[str]]:
     errors = []
     ignored = []
     banned_word_errors = []

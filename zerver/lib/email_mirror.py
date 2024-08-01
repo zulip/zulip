@@ -3,7 +3,7 @@ import re
 import secrets
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
-from typing import Dict, List, Match, Optional, Tuple
+from re import Match
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -11,7 +11,7 @@ from typing_extensions import override
 
 from zerver.actions.message_send import (
     check_send_message,
-    internal_send_huddle_message,
+    internal_send_group_direct_message,
     internal_send_private_message,
     internal_send_stream_message,
 )
@@ -64,7 +64,7 @@ def redact_email_address(error_message: str) -> str:
     return re.sub(rf"\b(\S*?)(@{re.escape(domain)})", redact, error_message)
 
 
-def log_error(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
+def log_error(email_message: EmailMessage, error_message: str, to: str | None) -> None:
     recipient = to or "No recipient found"
     error_message = "Sender: {}\nTo: {}\n{}".format(
         email_message.get("From"), recipient, error_message
@@ -90,7 +90,7 @@ def is_missed_message_address(address: str) -> bool:
     return is_mm_32_format(msg_string)
 
 
-def is_mm_32_format(msg_string: Optional[str]) -> bool:
+def is_mm_32_format(msg_string: str | None) -> bool:
     """
     Missed message strings are formatted with a little "mm" prefix
     followed by a randomly generated 32-character string.
@@ -113,8 +113,14 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
         mm_address = MissedMessageEmailAddress.objects.select_related(
             "user_profile",
             "user_profile__realm",
+            # Fetch group settings that are needed to determine whether a user
+            # can send a direct message to a given recipient.
             "user_profile__realm__can_access_all_users_group",
             "user_profile__realm__can_access_all_users_group__named_user_group",
+            "user_profile__realm__direct_message_initiator_group",
+            "user_profile__realm__direct_message_initiator_group__named_user_group",
+            "user_profile__realm__direct_message_permission_group",
+            "user_profile__realm__direct_message_permission_group__named_user_group",
             "message",
             "message__sender",
             "message__recipient",
@@ -217,7 +223,7 @@ def send_mm_reply_to_stream(
         )
 
 
-def get_message_part_by_type(message: EmailMessage, content_type: str) -> Optional[str]:
+def get_message_part_by_type(message: EmailMessage, content_type: str) -> str | None:
     charsets = message.get_charsets()
 
     for idx, part in enumerate(message.walk()):
@@ -270,7 +276,7 @@ def extract_body(
 talon_initialized = False
 
 
-def extract_plaintext_body(message: EmailMessage, include_quotes: bool = False) -> Optional[str]:
+def extract_plaintext_body(message: EmailMessage, include_quotes: bool = False) -> str | None:
     import talon_core
 
     global talon_initialized
@@ -288,7 +294,7 @@ def extract_plaintext_body(message: EmailMessage, include_quotes: bool = False) 
         return None
 
 
-def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> Optional[str]:
+def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> str | None:
     import talon_core
 
     global talon_initialized
@@ -327,7 +333,6 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
             if isinstance(attachment, bytes):
                 upload_url = upload_message_attachment(
                     filename,
-                    len(attachment),
                     content_type,
                     attachment,
                     sender,
@@ -345,7 +350,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
     return "\n".join(attachment_links)
 
 
-def decode_stream_email_address(email: str) -> Tuple[Stream, Dict[str, bool]]:
+def decode_stream_email_address(email: str) -> tuple[Stream, dict[str, bool]]:
     token, options = decode_email_address(email)
 
     try:
@@ -390,7 +395,7 @@ def find_emailgateway_recipient(message: EmailMessage) -> str:
 def strip_from_subject(subject: str) -> str:
     # strips RE and FWD from the subject
     # from: https://stackoverflow.com/questions/9153629/regex-code-for-removing-fwd-re-etc-from-email-subject
-    reg = r"([\[\(] *)?\b(RE|FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
+    reg = r"([\[\(] *)?\b(RE|AW|FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
     stripped = re.sub(reg, "", subject, flags=re.IGNORECASE | re.MULTILINE)
     return stripped.strip()
 
@@ -404,11 +409,17 @@ def is_forwarded(subject: str) -> bool:
 
 def process_stream_message(to: str, message: EmailMessage) -> None:
     subject_header = message.get("Subject", "")
-    subject = strip_from_subject(subject_header) or "(no topic)"
 
+    subject = strip_from_subject(subject_header)
     # We don't want to reject email messages with disallowed characters in the Subject,
     # so we just remove them to make it a valid Zulip topic name.
-    subject = "".join([char for char in subject if is_character_printable(char)]) or "(no topic)"
+    subject = "".join([char for char in subject if is_character_printable(char)])
+
+    # If the subject gets stripped to the empty string, we need to set some
+    # default value for the message topic. We can't use the usual
+    # "(no topic)" as that value is not permitted if the realm enforces
+    # that all messages must have a topic.
+    subject = subject or _("Email with no subject")
 
     stream, options = decode_stream_email_address(to)
     # Don't remove quotations if message is forwarded, unless otherwise specified:
@@ -458,7 +469,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         display_recipient = get_display_recipient(recipient)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)
-        internal_send_huddle_message(user_profile.realm, user_profile, body, emails=emails)
+        internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=emails)
     else:
         raise AssertionError("Invalid recipient type!")
 
@@ -469,8 +480,8 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
     )
 
 
-def process_message(message: EmailMessage, rcpt_to: Optional[str] = None) -> None:
-    to: Optional[str] = None
+def process_message(message: EmailMessage, rcpt_to: str | None = None) -> None:
+    to: str | None = None
 
     try:
         if rcpt_to is not None:
@@ -496,7 +507,7 @@ def validate_to_address(rcpt_to: str) -> None:
         decode_stream_email_address(rcpt_to)
 
 
-def mirror_email_message(rcpt_to: str, msg_base64: str) -> Dict[str, str]:
+def mirror_email_message(rcpt_to: str, msg_base64: str) -> dict[str, str]:
     try:
         validate_to_address(rcpt_to)
     except ZulipEmailForwardError as e:
@@ -528,7 +539,7 @@ class RateLimitedRealmMirror(RateLimitedObject):
         return f"{type(self).__name__}:{self.realm.string_id}"
 
     @override
-    def rules(self) -> List[Tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         return settings.RATE_LIMITING_MIRROR_REALM_RULES
 
 

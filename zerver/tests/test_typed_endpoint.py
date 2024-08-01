@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List, Literal, Optional, Type, TypeVar, Union, cast
+from collections.abc import Callable
+from typing import Annotated, Any, Literal, TypeAlias, TypeVar, cast
 
 import orjson
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -6,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints, ValidationInfo, WrapValidator
 from pydantic.dataclasses import dataclass
 from pydantic.functional_validators import ModelWrapValidatorHandler
-from typing_extensions import Annotated, TypeAlias, override
+from typing_extensions import override
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
 from zerver.lib.request import RequestConfusingParamsError, RequestVariableMissingError
@@ -42,10 +43,7 @@ class TestEndpoint(ZulipTestCase):
         """This test is only needed because we don't
         have coverage of is_optional in Python 3.11.
         """
-        type = cast(Type[Optional[str]], Optional[str])
-        self.assertTrue(is_optional(type))
-
-        type = str
+        self.assertTrue(is_optional(cast(type[str | None], str | None)))
         self.assertFalse(is_optional(str))
 
     def test_coerce(self) -> None:
@@ -82,10 +80,10 @@ class TestEndpoint(ZulipTestCase):
             json_int: Json[int],
             json_str: Json[str],
             json_data: Json[Foo],
-            json_optional: Optional[Json[Union[int, None]]] = None,
+            json_optional: Json[int | None] | None = None,
             json_default: Json[Foo] = Foo(10, 10),
             non_json: str = "ok",
-            non_json_optional: Optional[str] = None,
+            non_json_optional: str | None = None,
         ) -> HttpResponse:
             return MutableJsonResponse(
                 data={
@@ -250,7 +248,7 @@ class TestEndpoint(ZulipTestCase):
             *,
             body: JsonBodyPayload[WildValue],
             non_body: Json[int] = 0,
-        ) -> Dict[str, object]:
+        ) -> dict[str, object]:
             status = body["totame"]["status"].tame(check_bool)
             return {"status": status, "foo": non_body}
 
@@ -399,7 +397,7 @@ class TestEndpoint(ZulipTestCase):
             request: HttpRequest,
             *,
             bar: Annotated[
-                Optional[str],
+                str | None,
                 StringConstraints(strip_whitespace=True, max_length=3),
                 ApiParamConfig("test"),
             ] = None,
@@ -413,7 +411,7 @@ class TestEndpoint(ZulipTestCase):
         def nesting_with_config(
             request: HttpRequest,
             *,
-            invalid_param: Optional[Annotated[str, ApiParamConfig("test")]] = None,
+            invalid_param: Annotated[str, ApiParamConfig("test")] | None = None,
         ) -> None:
             raise AssertionError
 
@@ -428,7 +426,7 @@ class TestEndpoint(ZulipTestCase):
         def nesting_without_config(
             request: HttpRequest,
             *,
-            bar: Optional[Annotated[str, StringConstraints(max_length=3)]] = None,
+            bar: Annotated[str, StringConstraints(max_length=3)] | None = None,
         ) -> None:
             raise AssertionError
 
@@ -543,11 +541,11 @@ class TestEndpoint(ZulipTestCase):
         # all. The only possible way for val to be None is through the default
         # value (if it has one).
         @typed_endpoint
-        def foo(request: HttpRequest, *, val: Optional[Json[int]]) -> None: ...
+        def foo(request: HttpRequest, *, val: Json[int] | None) -> None: ...
 
         # Json[Optional[int]] however, allows client specified None value.
         @typed_endpoint
-        def bar(request: HttpRequest, *, val: Json[Optional[int]]) -> None: ...
+        def bar(request: HttpRequest, *, val: Json[int | None]) -> None: ...
 
         with self.assertRaisesMessage(ApiParamValidationError, "val is not an integer"):
             call_endpoint(foo, HostRequestMock({"val": orjson.dumps(None).decode()}))
@@ -593,16 +591,16 @@ class ValidationErrorHandlingTest(ZulipTestCase):
             def __repr__(self) -> str:
                 return f"Pydantic error type: {self.error_type}; Parameter type: {self.param_type}; Expected error message: {self.error_message}"
 
-        parameterized_tests: List[SubTest] = [
+        parameterized_tests: list[SubTest] = [
             SubTest(
                 error_type="string_too_short",
-                param_type=Json[List[Annotated[str, RequiredStringConstraint()]]],
+                param_type=Json[list[Annotated[str, RequiredStringConstraint()]]],
                 input_data=orjson.dumps([""]).decode(),
                 error_message="input[0] cannot be blank",
             ),
             SubTest(
                 error_type="string_too_short",
-                param_type=Json[List[Annotated[str, RequiredStringConstraint()]]],
+                param_type=Json[list[Annotated[str, RequiredStringConstraint()]]],
                 input_data=orjson.dumps(["g", "  "]).decode(),
                 error_message="input[1] cannot be blank",
             ),

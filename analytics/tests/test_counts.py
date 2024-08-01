@@ -1,13 +1,13 @@
+from collections.abc import Iterator
 from contextlib import AbstractContextManager, ExitStack, contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
+from typing import Any
 from unittest import mock
 
 import time_machine
 from django.apps import apps
 from django.db import models
 from django.db.models import Sum
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 from typing_extensions import override
@@ -57,13 +57,14 @@ from zerver.lib.push_notifications import (
     hex_to_b64,
 )
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Client,
-    Huddle,
+    DirectMessageGroup,
     Message,
     NamedUserGroup,
     PreregistrationUser,
@@ -111,7 +112,7 @@ class AnalyticsTestCase(ZulipTestCase):
         # used to generate unique names in self.create_*
         self.name_counter = 100
         # used as defaults in self.assert_table_count
-        self.current_property: Optional[str] = None
+        self.current_property: str | None = None
 
         # Delete RemoteRealm registrations to have a clean slate - the relevant
         # tests want to construct this from scratch.
@@ -132,7 +133,7 @@ class AnalyticsTestCase(ZulipTestCase):
             kwargs[key] = kwargs.get(key, value)
         kwargs["delivery_email"] = kwargs["email"]
         with time_machine.travel(kwargs["date_joined"], tick=False):
-            pass_kwargs: Dict[str, Any] = {}
+            pass_kwargs: dict[str, Any] = {}
             if kwargs["is_bot"]:
                 pass_kwargs["bot_type"] = UserProfile.DEFAULT_BOT
                 pass_kwargs["bot_owner"] = None
@@ -158,7 +159,7 @@ class AnalyticsTestCase(ZulipTestCase):
                 )
             return user
 
-    def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
+    def create_stream_with_recipient(self, **kwargs: Any) -> tuple[Stream, Recipient]:
         self.name_counter += 1
         defaults = {
             "name": f"stream name {self.name_counter}",
@@ -174,16 +175,20 @@ class AnalyticsTestCase(ZulipTestCase):
         stream.save(update_fields=["recipient"])
         return stream, recipient
 
-    def create_huddle_with_recipient(self, **kwargs: Any) -> Tuple[Huddle, Recipient]:
+    def create_direct_message_group_with_recipient(
+        self, **kwargs: Any
+    ) -> tuple[DirectMessageGroup, Recipient]:
         self.name_counter += 1
         defaults = {"huddle_hash": f"hash{self.name_counter}"}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        huddle = Huddle.objects.create(**kwargs)
-        recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.DIRECT_MESSAGE_GROUP)
-        huddle.recipient = recipient
-        huddle.save(update_fields=["recipient"])
-        return huddle, recipient
+        direct_message_group = DirectMessageGroup.objects.create(**kwargs)
+        recipient = Recipient.objects.create(
+            type_id=direct_message_group.id, type=Recipient.DIRECT_MESSAGE_GROUP
+        )
+        direct_message_group.recipient = recipient
+        direct_message_group.save(update_fields=["recipient"])
+        return direct_message_group, recipient
 
     def create_message(self, sender: UserProfile, recipient: Recipient, **kwargs: Any) -> Message:
         defaults = {
@@ -204,7 +209,12 @@ class AnalyticsTestCase(ZulipTestCase):
         return Message.objects.create(**kwargs)
 
     def create_attachment(
-        self, user_profile: UserProfile, filename: str, size: int, create_time: datetime
+        self,
+        user_profile: UserProfile,
+        filename: str,
+        size: int,
+        create_time: datetime,
+        content_type: str,
     ) -> Attachment:
         return Attachment.objects.create(
             file_name=filename,
@@ -213,17 +223,18 @@ class AnalyticsTestCase(ZulipTestCase):
             realm=user_profile.realm,
             size=size,
             create_time=create_time,
+            content_type=content_type,
         )
 
     # kwargs should only ever be a UserProfile or Stream.
     def assert_table_count(
         self,
-        table: Type[BaseCount],
+        table: type[BaseCount],
         value: int,
-        property: Optional[str] = None,
-        subgroup: Optional[str] = None,
+        property: str | None = None,
+        subgroup: str | None = None,
         end_time: datetime = TIME_ZERO,
-        realm: Optional[Realm] = None,
+        realm: Realm | None = None,
         **kwargs: models.Model,
     ) -> None:
         if property is None:
@@ -240,7 +251,7 @@ class AnalyticsTestCase(ZulipTestCase):
         self.assertEqual(queryset.values_list("value", flat=True)[0], value)
 
     def assertTableState(
-        self, table: Type[BaseCount], arg_keys: List[str], arg_values: List[List[object]]
+        self, table: type[BaseCount], arg_keys: list[str], arg_values: list[list[object]]
     ) -> None:
         """Assert that the state of a *Count table is what it should be.
 
@@ -270,7 +281,7 @@ class AnalyticsTestCase(ZulipTestCase):
             "value": 1,
         }
         for values in arg_values:
-            kwargs: Dict[str, Any] = {}
+            kwargs: dict[str, Any] = {}
             for i in range(len(values)):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
@@ -330,7 +341,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertEqual(InstallationCount.objects.filter(property=stat.property).count(), 1)
 
         # clean stat, with update
-        current_time = current_time + self.HOUR
+        current_time += self.HOUR
         stat = self.make_dummy_count_stat("test stat")
         process_count_stat(stat, current_time)
         self.assertFillStateEquals(stat, current_time)
@@ -540,8 +551,8 @@ class TestCountStats(AnalyticsTestCase):
 
         self.create_user(realm=self.no_message_realm)
         self.create_stream_with_recipient(realm=self.no_message_realm)
-        # This huddle should not show up anywhere
-        self.create_huddle_with_recipient()
+        # This direct_message_group should not show up anywhere
+        self.create_direct_message_group_with_recipient()
 
     def test_upload_quota_used_bytes(self) -> None:
         stat = COUNT_STATS["upload_quota_used_bytes::day"]
@@ -551,9 +562,9 @@ class TestCountStats(AnalyticsTestCase):
         user2 = self.create_user()
         user_second_realm = self.create_user(realm=self.second_realm)
 
-        self.create_attachment(user1, "file1", 100, self.TIME_LAST_HOUR)
-        attachment2 = self.create_attachment(user2, "file2", 200, self.TIME_LAST_HOUR)
-        self.create_attachment(user_second_realm, "file3", 10, self.TIME_LAST_HOUR)
+        self.create_attachment(user1, "file1", 100, self.TIME_LAST_HOUR, "text/plain")
+        attachment2 = self.create_attachment(user2, "file2", 200, self.TIME_LAST_HOUR, "text/plain")
+        self.create_attachment(user_second_realm, "file3", 10, self.TIME_LAST_HOUR, "text/plain")
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
@@ -588,11 +599,11 @@ class TestCountStats(AnalyticsTestCase):
         recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
 
         recipient_stream = self.create_stream_with_recipient()[1]
-        recipient_huddle = self.create_huddle_with_recipient()[1]
+        recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         self.create_message(bot, recipient_human1)
         self.create_message(bot, recipient_stream)
-        self.create_message(bot, recipient_huddle)
+        self.create_message(bot, recipient_direct_message_group)
         self.create_message(human1, recipient_human1)
         self.create_message(human2, recipient_human1)
 
@@ -629,19 +640,19 @@ class TestCountStats(AnalyticsTestCase):
         recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
 
         recipient_stream = self.create_stream_with_recipient()[1]
-        recipient_huddle = self.create_huddle_with_recipient()[1]
+        recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         # To be included
         self.create_message(bot, recipient_human1)
         self.create_message(bot, recipient_stream)
-        self.create_message(bot, recipient_huddle)
+        self.create_message(bot, recipient_direct_message_group)
         self.create_message(human1, recipient_human1)
         self.create_message(human2, recipient_human1)
 
         # To be excluded
         self.create_message(self.hourly_user, recipient_human1)
         self.create_message(self.hourly_user, recipient_stream)
-        self.create_message(self.hourly_user, recipient_huddle)
+        self.create_message(self.hourly_user, recipient_direct_message_group)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
 
@@ -685,11 +696,11 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(user1, recipient_stream4)
         self.create_message(user2, recipient_stream3)
 
-        # huddles
-        recipient_huddle1 = self.create_huddle_with_recipient()[1]
-        recipient_huddle2 = self.create_huddle_with_recipient()[1]
-        self.create_message(user1, recipient_huddle1)
-        self.create_message(user2, recipient_huddle2)
+        # direct message groups
+        recipient_direct_message_group1 = self.create_direct_message_group_with_recipient()[1]
+        recipient_direct_message_group2 = self.create_direct_message_group_with_recipient()[1]
+        self.create_message(user1, recipient_direct_message_group1)
+        self.create_message(user2, recipient_direct_message_group2)
 
         # direct messages
         recipient_user1 = Recipient.objects.get(type_id=user1.id, type=Recipient.PERSONAL)
@@ -752,13 +763,13 @@ class TestCountStats(AnalyticsTestCase):
         user_recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
         private_stream_recipient = self.create_stream_with_recipient(invite_only=True)[1]
         stream_recipient = self.create_stream_with_recipient()[1]
-        huddle_recipient = self.create_huddle_with_recipient()[1]
+        direct_message_group_recipient = self.create_direct_message_group_with_recipient()[1]
 
         # To be included
         self.create_message(user, user_recipient)
         self.create_message(user, private_stream_recipient)
         self.create_message(user, stream_recipient)
-        self.create_message(user, huddle_recipient)
+        self.create_message(user, direct_message_group_recipient)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
 
@@ -766,7 +777,7 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(self.hourly_user, user_recipient)
         self.create_message(self.hourly_user, private_stream_recipient)
         self.create_message(self.hourly_user, stream_recipient)
-        self.create_message(self.hourly_user, huddle_recipient)
+        self.create_message(self.hourly_user, direct_message_group_recipient)
 
         self.assertTableState(
             UserCount,
@@ -799,11 +810,11 @@ class TestCountStats(AnalyticsTestCase):
         user = self.create_user(id=1000)
         user_recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
         stream_recipient = self.create_stream_with_recipient(id=1000)[1]
-        huddle_recipient = self.create_huddle_with_recipient(id=1000)[1]
+        direct_message_group_recipient = self.create_direct_message_group_with_recipient(id=1000)[1]
 
         self.create_message(user, user_recipient)
         self.create_message(user, stream_recipient)
-        self.create_message(user, huddle_recipient)
+        self.create_message(user, direct_message_group_recipient)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
@@ -820,13 +831,13 @@ class TestCountStats(AnalyticsTestCase):
         recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
 
         recipient_stream = self.create_stream_with_recipient()[1]
-        recipient_huddle = self.create_huddle_with_recipient()[1]
+        recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         client2 = Client.objects.create(name="client2")
 
         self.create_message(user1, recipient_user2, sending_client=client2)
         self.create_message(user1, recipient_stream)
-        self.create_message(user1, recipient_huddle)
+        self.create_message(user1, recipient_direct_message_group)
         self.create_message(user2, recipient_user2, sending_client=client2)
         self.create_message(user2, recipient_user2, sending_client=client2)
 
@@ -916,8 +927,8 @@ class TestCountStats(AnalyticsTestCase):
         # To be excluded
         self.create_message(human2, recipient_human1)
         self.create_message(bot, recipient_human1)
-        recipient_huddle = self.create_huddle_with_recipient()[1]
-        self.create_message(human1, recipient_huddle)
+        recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
+        self.create_message(human1, recipient_direct_message_group)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
@@ -1366,7 +1377,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         self.assertTableState(UserCount, ["property", "value"], [["user test", 1]])
         self.assertTableState(StreamCount, ["property", "value"], [["stream test", 1]])
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     def test_mobile_pushes_received_count(self) -> None:
         self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
         self.server = RemoteZulipServer.objects.create(
@@ -1425,12 +1436,16 @@ class TestLoggingCountStats(AnalyticsTestCase):
             "gcm_options": gcm_options,
         }
         now = timezone_now()
-        with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-            return_value=10,
-        ), self.assertLogs("zilencer.views", level="INFO"):
+        with (
+            time_machine.travel(now, tick=False),
+            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
+            mock.patch(
+                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1484,12 +1499,16 @@ class TestLoggingCountStats(AnalyticsTestCase):
             "apns_payload": apns_payload,
             "gcm_options": gcm_options,
         }
-        with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-            return_value=10,
-        ), self.assertLogs("zilencer.views", level="INFO"):
+        with (
+            time_machine.travel(now, tick=False),
+            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
+            mock.patch(
+                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1542,12 +1561,16 @@ class TestLoggingCountStats(AnalyticsTestCase):
             realm_date_created=realm.date_created,
         )
 
-        with time_machine.travel(now, tick=False), mock.patch(
-            "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-            return_value=10,
-        ), self.assertLogs("zilencer.views", level="INFO"):
+        with (
+            time_machine.travel(now, tick=False),
+            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1613,7 +1636,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         def invite_context(
             too_many_recent_realm_invites: bool = False, failure: bool = False
         ) -> Iterator[None]:
-            managers: List[AbstractContextManager[Any]] = [
+            managers: list[AbstractContextManager[Any]] = [
                 mock.patch(
                     "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
                 ),
@@ -1806,7 +1829,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.current_property = self.stat.property
 
     def add_event(
-        self, event_type: int, days_offset: float, user: Optional[UserProfile] = None
+        self, event_type: int, days_offset: float, user: UserProfile | None = None
     ) -> None:
         hours_offset = int(24 * days_offset)
         if user is None:
@@ -1978,7 +2001,7 @@ class TestRealmActiveHumans(AnalyticsTestCase):
         self.stat = COUNT_STATS["realm_active_humans::day"]
         self.current_property = self.stat.property
 
-    def mark_15day_active(self, user: UserProfile, end_time: Optional[datetime] = None) -> None:
+    def mark_15day_active(self, user: UserProfile, end_time: datetime | None = None) -> None:
         if end_time is None:
             end_time = self.TIME_ZERO
         UserCount.objects.create(

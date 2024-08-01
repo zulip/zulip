@@ -1,4 +1,4 @@
-from typing import Annotated, List, Optional
+from typing import Annotated
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -109,10 +109,10 @@ def validate_custom_profile_field(
 
 def validate_custom_profile_field_update(
     field: CustomProfileField,
-    display_in_profile_summary: Optional[bool] = None,
-    field_data: Optional[ProfileFieldData] = None,
-    name: Optional[str] = None,
-    hint: Optional[str] = None,
+    display_in_profile_summary: bool | None = None,
+    field_data: ProfileFieldData | None = None,
+    name: str | None = None,
+    hint: str | None = None,
 ) -> None:
     if name is None:
         name = field.name
@@ -140,9 +140,9 @@ def validate_custom_profile_field_update(
 
 def update_only_display_in_profile_summary(
     existing_field: CustomProfileField,
-    requested_field_data: Optional[ProfileFieldData] = None,
-    requested_name: Optional[str] = None,
-    requested_hint: Optional[str] = None,
+    requested_field_data: ProfileFieldData | None = None,
+    requested_name: str | None = None,
+    requested_hint: str | None = None,
 ) -> bool:
     if (
         (requested_name is not None and requested_name != existing_field.name)
@@ -157,7 +157,7 @@ def update_only_display_in_profile_summary(
 
 
 def display_in_profile_summary_limit_reached(
-    realm: Realm, profile_field_id: Optional[int] = None
+    realm: Realm, profile_field_id: int | None = None
 ) -> bool:
     query = CustomProfileField.objects.filter(realm=realm, display_in_profile_summary=True)
     if profile_field_id is not None:
@@ -173,7 +173,7 @@ def create_realm_custom_profile_field(
     *,
     name: Annotated[str, StringConstraints(strip_whitespace=True)] = "",
     hint: str = "",
-    field_data: Optional[Json[ProfileFieldData]] = None,
+    field_data: Json[ProfileFieldData] | None = None,
     field_type: Json[int],
     display_in_profile_summary: Json[bool] = False,
     required: Json[bool] = False,
@@ -232,11 +232,11 @@ def update_realm_custom_profile_field(
     user_profile: UserProfile,
     *,
     field_id: PathOnly[int],
-    name: Optional[Annotated[str, StringConstraints(strip_whitespace=True)]] = None,
-    hint: Optional[str] = None,
-    field_data: Optional[Json[ProfileFieldData]] = None,
-    required: Optional[Json[bool]] = None,
-    display_in_profile_summary: Optional[Json[bool]] = None,
+    name: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None,
+    hint: str | None = None,
+    field_data: Json[ProfileFieldData] | None = None,
+    required: Json[bool] | None = None,
+    display_in_profile_summary: Json[bool] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -288,7 +288,7 @@ def reorder_realm_custom_profile_fields(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    order: Json[List[int]],
+    order: Json[list[int]],
 ) -> HttpResponse:
     try_reorder_realm_custom_profile_fields(user_profile.realm, order)
     return json_success(request)
@@ -300,7 +300,7 @@ def remove_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    data: Json[List[int]],
+    data: Json[list[int]],
 ) -> HttpResponse:
     for field_id in data:
         check_remove_custom_profile_field_value(user_profile, field_id)
@@ -313,7 +313,7 @@ def update_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    data: Json[List[ProfileDataElementUpdateDict]],
+    data: Json[list[ProfileDataElementUpdateDict]],
 ) -> HttpResponse:
     validate_user_custom_profile_data(user_profile.realm.id, data)
     do_update_user_custom_profile_data_if_changed(user_profile, data)

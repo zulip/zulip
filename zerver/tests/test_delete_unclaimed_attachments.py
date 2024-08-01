@@ -1,8 +1,7 @@
 import os
 import re
 from datetime import datetime, timedelta
-from io import StringIO
-from typing import Optional
+from unittest.mock import patch
 
 import time_machine
 from django.conf import settings
@@ -13,13 +12,14 @@ from zerver.actions.scheduled_messages import check_schedule_message, delete_sch
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
+from zerver.lib.test_helpers import get_test_image_file
 from zerver.models import ArchivedAttachment, Attachment, Message, UserProfile
 from zerver.models.clients import get_client
 
 
 class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
     def make_attachment(
-        self, filename: str, when: Optional[datetime] = None, uploader: Optional[UserProfile] = None
+        self, filename: str, when: datetime | None = None, uploader: UserProfile | None = None
     ) -> Attachment:
         if when is None:
             when = timezone_now() - timedelta(weeks=2)
@@ -28,12 +28,11 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         self.login_user(uploader)
 
         with time_machine.travel(when, tick=False):
-            file_obj = StringIO("zulip!")
-            file_obj.name = filename
-            response = self.assert_json_success(
-                self.client_post("/json/user_uploads", {"file": file_obj})
-            )
-            path_id = re.sub(r"/user_uploads/", "", response["uri"])
+            with get_test_image_file(filename) as file_obj:
+                response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": file_obj})
+                )
+            path_id = re.sub(r"/user_uploads/", "", response["url"])
             return Attachment.objects.get(path_id=path_id)
 
     def assert_exists(
@@ -55,8 +54,62 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             ArchivedAttachment.objects.filter(id=attachment.id).exists(), has_archived_attachment
         )
 
+    def test_delete_unused_thumbnails(self) -> None:
+        assert settings.LOCAL_FILES_DIR
+        with self.captureOnCommitCallbacks(execute=True):
+            unused_attachment = self.make_attachment("img.png")
+
+        self.assert_exists(
+            unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
+        )
+
+        # It also has thumbnails
+        self.assertTrue(
+            os.path.isdir(
+                os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", unused_attachment.path_id)
+            )
+        )
+        self.assertGreater(
+            len(
+                os.listdir(
+                    os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", unused_attachment.path_id)
+                )
+            ),
+            0,
+        )
+
+        # If we have 3 weeks of grace, nothing happens
+        do_delete_old_unclaimed_attachments(3)
+        self.assert_exists(
+            unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
+        )
+        self.assertTrue(
+            os.path.isdir(
+                os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", unused_attachment.path_id)
+            )
+        )
+        self.assertGreater(
+            len(
+                os.listdir(
+                    os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", unused_attachment.path_id)
+                )
+            ),
+            0,
+        )
+
+        # If we have 1 weeks of grace, the Attachment is deleted, and so is the file on disk
+        do_delete_old_unclaimed_attachments(1)
+        self.assert_exists(
+            unused_attachment, has_file=False, has_attachment=False, has_archived_attachment=False
+        )
+        self.assertFalse(
+            os.path.exists(
+                os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", unused_attachment.path_id)
+            )
+        )
+
     def test_delete_unused_upload(self) -> None:
-        unused_attachment = self.make_attachment("unused.txt")
+        unused_attachment = self.make_attachment("text.txt")
         self.assert_exists(
             unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
         )
@@ -75,7 +128,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_used_upload(self) -> None:
         hamlet = self.example_user("hamlet")
-        attachment = self.make_attachment("used.txt")
+        attachment = self.make_attachment("text.txt")
 
         # Send message referencing that message
         self.subscribe(hamlet, "Denmark")
@@ -90,7 +143,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_upload_archived_message(self) -> None:
         hamlet = self.example_user("hamlet")
-        attachment = self.make_attachment("used.txt")
+        attachment = self.make_attachment("text.txt")
 
         # Send message referencing that message
         self.subscribe(hamlet, "Denmark")
@@ -98,7 +151,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
 
         # Delete that message; this moves it to ArchivedAttachment but leaves the file on disk
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])
+        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)], acting_user=None)
         self.assert_exists(
             attachment, has_file=True, has_attachment=False, has_archived_attachment=True
         )
@@ -127,7 +180,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_one_message(self) -> None:
         hamlet = self.example_user("hamlet")
-        attachment = self.make_attachment("used.txt")
+        attachment = self.make_attachment("text.txt")
 
         # Send message referencing that message
         self.subscribe(hamlet, "Denmark")
@@ -137,7 +190,9 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
         # Delete the second message; this leaves an Attachment and an
         # ArchivedAttachment, both associated with a message
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=first_message_id)])
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=first_message_id)], acting_user=None
+        )
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
         )
@@ -167,7 +222,9 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         # Deleting the other message now leaves just an ArchivedAttachment
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=second_message_id)])
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=second_message_id)], acting_user=None
+        )
         self.assert_exists(
             attachment, has_file=True, has_attachment=False, has_archived_attachment=True
         )
@@ -183,7 +240,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_with_scheduled_messages(self) -> None:
         hamlet = self.example_user("hamlet")
-        attachment = self.make_attachment("used.txt")
+        attachment = self.make_attachment("text.txt")
 
         # Schedule a future send with the attachment
         self.subscribe(hamlet, "Denmark")
@@ -222,7 +279,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_with_scheduled_message_and_archive(self) -> None:
         hamlet = self.example_user("hamlet")
-        attachment = self.make_attachment("used.txt")
+        attachment = self.make_attachment("text.txt")
 
         # Schedule a message, and also send one now
         self.subscribe(hamlet, "Denmark")
@@ -245,7 +302,9 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # Deleting the sent message leaves us with an Attachment
         # attached to the scheduled message, and an archived
         # attachment with an archived message
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=sent_message_id)])
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=sent_message_id)], acting_user=None
+        )
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
         )
@@ -286,7 +345,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # the process of archiving prunes Attachments which have no
         # references.
         hamlet = self.example_user("hamlet")
-        attachment = self.make_attachment("used.txt")
+        attachment = self.make_attachment("text.txt")
 
         # Schedule a message, and also send one now
         self.subscribe(hamlet, "Denmark")
@@ -308,7 +367,9 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
         # Delete the message and then unschedule the scheduled message
         # before expiring the ArchivedMessages.
-        do_delete_messages(hamlet.realm, [Message.objects.get(id=sent_message_id)])
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=sent_message_id)], acting_user=None
+        )
         delete_scheduled_message(hamlet, scheduled_message_id)
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
@@ -337,4 +398,63 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=False, has_attachment=False, has_archived_attachment=False
+        )
+
+    def test_delete_batch_size(self) -> None:
+        attachments = [self.make_attachment("text.txt") for _ in range(10)]
+
+        with (
+            patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 6),
+            patch("zerver.actions.uploads.delete_message_attachments") as delete_mock,
+        ):
+            do_delete_old_unclaimed_attachments(1)
+
+        # We expect all of the 10 attachments to be deleted,
+        # across two different calls of 6- and 4-element lists
+        self.assertEqual(delete_mock.call_count, 2)
+        self.assert_length(delete_mock.call_args_list[0][0][0], 6)
+        self.assert_length(delete_mock.call_args_list[1][0][0], 4)
+
+        self.assertEqual(
+            set(delete_mock.call_args_list[0][0][0] + delete_mock.call_args_list[1][0][0]),
+            {attachment.path_id for attachment in attachments},
+        )
+
+    def test_delete_batch_size_archived(self) -> None:
+        hamlet = self.example_user("hamlet")
+        attachments = [self.make_attachment("text.txt") for _ in range(20)]
+
+        # Send message referencing 10/20 of those attachments
+        self.subscribe(hamlet, "Denmark")
+        body = "Some files here\n" + "\n".join(
+            f"[a](http://{hamlet.realm.host}/user_uploads/{attachment.path_id}"
+            for attachment in attachments[:10]
+        )
+        message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
+
+        # Delete and purge the message, leaving both the ArchivedAttachments dangling
+        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)], acting_user=None)
+        with self.settings(ARCHIVED_DATA_VACUUMING_DELAY_DAYS=0):
+            clean_archived_data()
+
+        # Removing unclaimed attachments now cleans them all out
+        with (
+            patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 6),
+            patch("zerver.actions.uploads.delete_message_attachments") as delete_mock,
+        ):
+            do_delete_old_unclaimed_attachments(1)
+
+        # We expect all of the 20 attachments (10 of which are
+        # ArchivedAttachments) to be deleted, across four different
+        # calls: 6, 6, 6, 2
+        self.assertEqual(delete_mock.call_count, 4)
+        self.assert_length(delete_mock.call_args_list[0][0][0], 6)
+        self.assert_length(delete_mock.call_args_list[1][0][0], 6)
+        self.assert_length(delete_mock.call_args_list[2][0][0], 6)
+        self.assert_length(delete_mock.call_args_list[3][0][0], 2)
+
+        deleted_path_ids = {elem for call in delete_mock.call_args_list for elem in call[0][0]}
+        self.assertEqual(
+            deleted_path_ids,
+            {attachment.path_id for attachment in attachments},
         )

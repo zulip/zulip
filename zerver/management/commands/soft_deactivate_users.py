@@ -1,6 +1,6 @@
 import sys
 from argparse import ArgumentParser
-from typing import Any, Dict, List
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError
@@ -16,7 +16,7 @@ from zerver.lib.soft_deactivation import (
 from zerver.models import Realm, UserProfile
 
 
-def get_users_from_emails(emails: List[str], filter_kwargs: Dict[str, Realm]) -> List[UserProfile]:
+def get_users_from_emails(emails: list[str], filter_kwargs: dict[str, Realm]) -> list[UserProfile]:
     # Bug: Ideally, this would be case-insensitive like our other email queries.
     users = list(UserProfile.objects.filter(delivery_email__in=emails, **filter_kwargs))
 
@@ -68,7 +68,7 @@ class Command(ZulipBaseCommand):
         activate = options["activate"]
         deactivate = options["deactivate"]
 
-        filter_kwargs: Dict[str, Realm] = {}
+        filter_kwargs: dict[str, Realm] = {}
         if realm is not None:
             filter_kwargs = dict(realm=realm)
 

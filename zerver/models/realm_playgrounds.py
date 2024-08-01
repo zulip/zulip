@@ -1,5 +1,3 @@
-from typing import List
-
 import uri_template
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
@@ -76,7 +74,7 @@ class RealmPlayground(models.Model):
             )
 
 
-def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
+def get_realm_playgrounds(realm: Realm) -> list[RealmPlaygroundDict]:
     return [
         RealmPlaygroundDict(
             id=playground.id,

@@ -77,7 +77,8 @@ Dependencies:
 """
 
 import re
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableSequence, Optional, Sequence
+from collections.abc import Callable, Iterable, Mapping, MutableSequence, Sequence
+from typing import Any
 
 import lxml.html
 from django.utils.html import escape
@@ -128,7 +129,7 @@ CODE_WRAP = "<pre><code{}>{}\n</code></pre>"
 LANG_TAG = ' class="{}"'
 
 
-def validate_curl_content(lines: List[str]) -> None:
+def validate_curl_content(lines: list[str]) -> None:
     error_msg = """
 Missing required -X argument in curl command:
 
@@ -141,7 +142,7 @@ Missing required -X argument in curl command:
             raise MarkdownRenderingError(error_msg.format(command=line.strip()))
 
 
-CODE_VALIDATORS: Dict[Optional[str], Callable[[List[str]], None]] = {
+CODE_VALIDATORS: dict[str | None, Callable[[list[str]], None]] = {
     "curl": validate_curl_content,
 }
 
@@ -175,14 +176,14 @@ class ZulipBaseHandler:
         self,
         processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
-        fence: Optional[str] = None,
+        fence: str | None = None,
         process_contents: bool = False,
     ) -> None:
         self.processor = processor
         self.output = output
         self.fence = fence
         self.process_contents = process_contents
-        self.lines: List[str] = []
+        self.lines: list[str] = []
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -220,10 +221,10 @@ def generic_handler(
     processor: "FencedBlockPreprocessor",
     output: MutableSequence[str],
     fence: str,
-    lang: Optional[str],
-    header: Optional[str],
+    lang: str | None,
+    header: str | None,
     run_content_validators: bool = False,
-    default_language: Optional[str] = None,
+    default_language: str | None = None,
 ) -> ZulipBaseHandler:
     if lang is not None:
         lang = lang.lower()
@@ -242,13 +243,13 @@ def check_for_new_fence(
     output: MutableSequence[str],
     line: str,
     run_content_validators: bool = False,
-    default_language: Optional[str] = None,
+    default_language: str | None = None,
 ) -> None:
     m = FENCE_RE.match(line)
     if m:
         fence = m.group("fence")
-        lang: Optional[str] = m.group("lang")
-        header: Optional[str] = m.group("header")
+        lang: str | None = m.group("lang")
+        header: str | None = m.group("header")
         if not lang and default_language:
             lang = default_language
         handler = generic_handler(
@@ -265,7 +266,7 @@ class OuterHandler(ZulipBaseHandler):
         processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         run_content_validators: bool = False,
-        default_language: Optional[str] = None,
+        default_language: str | None = None,
     ) -> None:
         self.run_content_validators = run_content_validators
         self.default_language = default_language
@@ -284,7 +285,7 @@ class CodeHandler(ZulipBaseHandler):
         processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: str,
-        lang: Optional[str],
+        lang: str | None,
         run_content_validators: bool = False,
     ) -> None:
         self.lang = lang
@@ -310,7 +311,7 @@ class QuoteHandler(ZulipBaseHandler):
         processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: str,
-        default_language: Optional[str] = None,
+        default_language: str | None = None,
     ) -> None:
         self.default_language = default_language
         super().__init__(processor, output, fence, process_contents=True)
@@ -335,7 +336,7 @@ class SpoilerHandler(ZulipBaseHandler):
         processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: str,
-        spoiler_header: Optional[str],
+        spoiler_header: str | None,
     ) -> None:
         self.spoiler_header = spoiler_header
         super().__init__(processor, output, fence, process_contents=True)
@@ -423,15 +424,15 @@ class FencedBlockPreprocessor(Preprocessor):
         self.handlers.pop()
 
     @override
-    def run(self, lines: Iterable[str]) -> List[str]:
+    def run(self, lines: Iterable[str]) -> list[str]:
         """Match and store Fenced Code Blocks in the HtmlStash."""
 
         from zerver.lib.markdown import ZulipMarkdown
 
-        output: List[str] = []
+        output: list[str] = []
 
         processor = self
-        self.handlers: List[ZulipBaseHandler] = []
+        self.handlers: list[ZulipBaseHandler] = []
 
         default_language = None
         if isinstance(self.md, ZulipMarkdown) and self.md.zulip_realm is not None:
@@ -452,7 +453,7 @@ class FencedBlockPreprocessor(Preprocessor):
             output.append("")
         return output
 
-    def format_code(self, lang: Optional[str], text: str) -> str:
+    def format_code(self, lang: str | None, text: str) -> str:
         if lang:
             langclass = LANG_TAG.format(lang)
         else:
@@ -529,7 +530,7 @@ class FencedBlockPreprocessor(Preprocessor):
             quoted_paragraphs.append("\n".join("> " + line for line in lines))
         return "\n".join(quoted_paragraphs)
 
-    def format_spoiler(self, header: Optional[str], text: str) -> str:
+    def format_spoiler(self, header: str | None, text: str) -> str:
         output = []
         header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">'
         end_header_start_content_html = '</div><div class="spoiler-content" aria-hidden="true">'

@@ -1,10 +1,11 @@
 import re
-from typing import List, Optional, Sequence, Set
+from typing import Annotated
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
@@ -17,17 +18,17 @@ from zerver.actions.invites import (
 )
 from zerver.decorator import require_member_or_admin
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.validator import check_bool, check_int, check_int_in, check_list, check_none_or
+from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
 # Because mypy fails to correctly infer the type of the validator, we want this constant
 # to be Optional[int] to avoid a mypy error when using it as the default value.
 # https://github.com/python/mypy/issues/13234
-INVITATION_LINK_VALIDITY_MINUTES: Optional[int] = 24 * 60 * settings.INVITATION_LINK_VALIDITY_DAYS
+INVITATION_LINK_VALIDITY_MINUTES: int | None = 24 * 60 * settings.INVITATION_LINK_VALIDITY_DAYS
 
 
 def check_role_based_permissions(
@@ -44,22 +45,20 @@ def check_role_based_permissions(
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    invitee_emails_raw: str = REQ("invitee_emails"),
-    invite_expires_in_minutes: Optional[int] = REQ(
-        json_validator=check_none_or(check_int), default=INVITATION_LINK_VALIDITY_MINUTES
-    ),
-    invite_as: int = REQ(
-        json_validator=check_int_in(
-            list(PreregistrationUser.INVITE_AS.values()),
-        ),
-        default=PreregistrationUser.INVITE_AS["MEMBER"],
-    ),
-    stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
-    include_realm_default_subscriptions: bool = REQ(json_validator=check_bool, default=False),
+    *,
+    invitee_emails_raw: Annotated[str, ApiParamConfig("invitee_emails")],
+    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
+    invite_as: Annotated[
+        Json[int],
+        check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
+    ] = PreregistrationUser.INVITE_AS["MEMBER"],
+    notify_referrer_on_join: Json[bool] = True,
+    stream_ids: Json[list[int]],
+    include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
@@ -80,7 +79,7 @@ def invite_users_backend(
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
-    streams: List[Stream] = []
+    streams: list[Stream] = []
     for stream_id in stream_ids:
         try:
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
@@ -99,6 +98,7 @@ def invite_users_backend(
         user_profile,
         invitee_emails,
         streams,
+        notify_referrer_on_join,
         invite_expires_in_minutes=invite_expires_in_minutes,
         include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
@@ -118,7 +118,7 @@ def invite_users_backend(
     return json_success(request)
 
 
-def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
+def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
     invitee_emails_list = set(re.split(r"[,\n]", invitee_emails_raw))
     invitee_emails = set()
     for email in invitee_emails_list:
@@ -136,9 +136,9 @@ def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def revoke_user_invite(
-    request: HttpRequest, user_profile: UserProfile, invite_id: int
+    request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     try:
         prereg_user = PreregistrationUser.objects.get(id=invite_id)
@@ -156,9 +156,9 @@ def revoke_user_invite(
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def revoke_multiuse_invite(
-    request: HttpRequest, user_profile: UserProfile, invite_id: int
+    request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     try:
         invite = MultiuseInvite.objects.get(id=invite_id)
@@ -179,9 +179,9 @@ def revoke_multiuse_invite(
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def resend_user_invite_email(
-    request: HttpRequest, user_profile: UserProfile, invite_id: int
+    request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     try:
         prereg_user = PreregistrationUser.objects.get(id=invite_id)
@@ -201,22 +201,21 @@ def resend_user_invite_email(
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    invite_expires_in_minutes: Optional[int] = REQ(
-        json_validator=check_none_or(check_int), default=INVITATION_LINK_VALIDITY_MINUTES
-    ),
-    invite_as: int = REQ(
-        json_validator=check_int_in(
-            list(PreregistrationUser.INVITE_AS.values()),
-        ),
-        default=PreregistrationUser.INVITE_AS["MEMBER"],
-    ),
-    stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
-    include_realm_default_subscriptions: bool = REQ(json_validator=check_bool, default=False),
+    *,
+    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
+    invite_as: Annotated[
+        Json[int],
+        check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
+    ] = PreregistrationUser.INVITE_AS["MEMBER"],
+    stream_ids: Json[list[int]] | None = None,
+    include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
+    if stream_ids is None:
+        stream_ids = []
     if not user_profile.can_create_multiuse_invite_to_realm():
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.

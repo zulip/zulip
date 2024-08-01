@@ -29,28 +29,12 @@ for any particular type of object.
 """
 
 import re
+from collections.abc import Collection, Container, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import (
-    Any,
-    Callable,
-    Collection,
-    Container,
-    Dict,
-    Iterator,
-    List,
-    NoReturn,
-    Optional,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-    cast,
-    overload,
-)
+from typing import Any, NoReturn, TypeVar, cast, overload
 
 import orjson
-import zoneinfo
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
@@ -59,7 +43,6 @@ from pydantic.functional_validators import ModelWrapValidatorHandler
 from typing_extensions import override
 
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
-from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileFieldData, Validator
 
 ResultT = TypeVar("ResultT")
@@ -131,17 +114,6 @@ def check_long_string(var_name: str, val: object) -> str:
     return check_capped_string(500)(var_name, val)
 
 
-def check_timezone(var_name: str, val: object) -> str:
-    s = check_string(var_name, val)
-    try:
-        zoneinfo.ZoneInfo(canonicalize_timezone(s))
-    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
-        raise ValidationError(
-            _("{var_name} is not a recognized time zone").format(var_name=var_name)
-        )
-    return s
-
-
 def check_date(var_name: str, val: object) -> str:
     if not isinstance(val, str):
         raise ValidationError(_("{var_name} is not a string").format(var_name=var_name))
@@ -162,7 +134,7 @@ def check_int(var_name: str, val: object) -> int:
     return val
 
 
-def check_int_in(possible_values: List[int]) -> Validator[int]:
+def check_int_in(possible_values: list[int]) -> Validator[int]:
     """
     Assert that the input is an integer and is contained in `possible_values`. If the input is not in
     `possible_values`, a `ValidationError` is raised containing the failing field's name.
@@ -213,8 +185,8 @@ def check_color(var_name: str, val: object) -> str:
     return s
 
 
-def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[ResultT]]:
-    def f(var_name: str, val: object) -> Optional[ResultT]:
+def check_none_or(sub_validator: Validator[ResultT]) -> Validator[ResultT | None]:
+    def f(var_name: str, val: object) -> ResultT | None:
         if val is None:
             return val
         else:
@@ -224,9 +196,9 @@ def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[Resul
 
 
 def check_list(
-    sub_validator: Validator[ResultT], length: Optional[int] = None
-) -> Validator[List[ResultT]]:
-    def f(var_name: str, val: object) -> List[ResultT]:
+    sub_validator: Validator[ResultT], length: int | None = None
+) -> Validator[list[ResultT]]:
+    def f(var_name: str, val: object) -> list[ResultT]:
         if not isinstance(val, list):
             raise ValidationError(_("{var_name} is not a list").format(var_name=var_name))
 
@@ -243,7 +215,7 @@ def check_list(
             valid_item = sub_validator(vname, item)
             assert item is valid_item  # To justify the unchecked cast below
 
-        return cast(List[ResultT], val)
+        return cast(list[ResultT], val)
 
     return f
 
@@ -251,27 +223,27 @@ def check_list(
 # https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
 @overload
 def check_dict(
-    required_keys: Collection[Tuple[str, Validator[object]]] = [],
-    optional_keys: Collection[Tuple[str, Validator[object]]] = [],
+    required_keys: Collection[tuple[str, Validator[object]]] = [],
+    optional_keys: Collection[tuple[str, Validator[object]]] = [],
     *,
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, object]]: ...
+) -> Validator[dict[str, object]]: ...
 @overload
 def check_dict(
-    required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
-    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[tuple[str, Validator[ResultT]]] = [],
+    optional_keys: Collection[tuple[str, Validator[ResultT]]] = [],
     *,
     value_validator: Validator[ResultT],
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, ResultT]]: ...
+) -> Validator[dict[str, ResultT]]: ...
 def check_dict(
-    required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
-    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[tuple[str, Validator[ResultT]]] = [],
+    optional_keys: Collection[tuple[str, Validator[ResultT]]] = [],
     *,
-    value_validator: Optional[Validator[ResultT]] = None,
+    value_validator: Validator[ResultT] | None = None,
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, ResultT]]:
-    def f(var_name: str, val: object) -> Dict[str, ResultT]:
+) -> Validator[dict[str, ResultT]]:
+    def f(var_name: str, val: object) -> dict[str, ResultT]:
         if not isinstance(val, dict):
             raise ValidationError(_("{var_name} is not a dict").format(var_name=var_name))
 
@@ -309,17 +281,17 @@ def check_dict(
                     _("Unexpected arguments: {keys}").format(keys=", ".join(delta_keys))
                 )
 
-        return cast(Dict[str, ResultT], val)
+        return cast(dict[str, ResultT], val)
 
     return f
 
 
 def check_dict_only(
-    required_keys: Collection[Tuple[str, Validator[ResultT]]],
-    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
-) -> Validator[Dict[str, ResultT]]:
+    required_keys: Collection[tuple[str, Validator[ResultT]]],
+    optional_keys: Collection[tuple[str, Validator[ResultT]]] = [],
+) -> Validator[dict[str, ResultT]]:
     return cast(
-        Validator[Dict[str, ResultT]],
+        Validator[dict[str, ResultT]],
         check_dict(required_keys, optional_keys, _allow_only_listed_keys=True),
     )
 
@@ -405,7 +377,7 @@ def check_external_account_url_pattern(var_name: str, val: object) -> str:
     return s
 
 
-def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[str, str]]:
+def validate_select_field_data(field_data: ProfileFieldData) -> dict[str, dict[str, str]]:
     """
     This function is used to validate the data sent to the server while
     creating/editing choices of the choice field in Organization settings.
@@ -418,7 +390,7 @@ def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[s
     )
 
     # To create an array of texts of each option
-    distinct_field_names: Set[str] = set()
+    distinct_field_names: set[str] = set()
 
     for key, value in field_data.items():
         if not key.strip():
@@ -433,7 +405,7 @@ def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[s
     if len(field_data) != len(distinct_field_names):
         raise ValidationError(_("Field must not have duplicate choices."))
 
-    return cast(Dict[str, Dict[str, str]], field_data)
+    return cast(dict[str, dict[str, str]], field_data)
 
 
 def validate_select_field(var_name: str, field_data: str, value: object) -> str:
@@ -449,7 +421,7 @@ def validate_select_field(var_name: str, field_data: str, value: object) -> str:
     return s
 
 
-def check_widget_content(widget_content: object) -> Dict[str, Any]:
+def check_widget_content(widget_content: object) -> dict[str, Any]:
     if not isinstance(widget_content, dict):
         raise ValidationError("widget_content is not a dict")
 
@@ -604,29 +576,7 @@ def to_float(var_name: str, s: str) -> float:
     return float(s)
 
 
-def to_timezone_or_empty(var_name: str, s: str) -> str:
-    try:
-        s = canonicalize_timezone(s)
-        zoneinfo.ZoneInfo(s)
-    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
-        return ""
-    else:
-        return s
-
-
-def to_converted_or_fallback(
-    sub_converter: Callable[[str, str], ResultT], default: ResultT
-) -> Callable[[str, str], ResultT]:
-    def converter(var_name: str, s: str) -> ResultT:
-        try:
-            return sub_converter(var_name, s)
-        except ValueError:
-            return default
-
-    return converter
-
-
-def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]]:
+def check_string_or_int_list(var_name: str, val: object) -> str | list[int]:
     if isinstance(val, str):
         return val
 
@@ -638,8 +588,8 @@ def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]
     return check_list(check_int)(var_name, val)
 
 
-def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
-    if isinstance(val, (str, int)):
+def check_string_or_int(var_name: str, val: object) -> str | int:
+    if isinstance(val, str | int):
         return val
 
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
@@ -669,7 +619,7 @@ class WildValue:
         return self.value == other
 
     def __len__(self) -> int:
-        if not isinstance(self.value, (dict, list, str)):
+        if not isinstance(self.value, dict | list | str):
             raise ValidationError(
                 _("{var_name} does not have a length").format(var_name=self.var_name)
             )
@@ -691,7 +641,7 @@ class WildValue:
     def __contains__(self, key: str) -> bool:
         self._need_dict()
 
-    def __getitem__(self, key: Union[int, str]) -> "WildValue":
+    def __getitem__(self, key: int | str) -> "WildValue":
         if isinstance(key, int):
             self._need_list()
         else:
@@ -706,7 +656,7 @@ class WildValue:
     def values(self) -> Iterator["WildValue"]:
         self._need_dict()
 
-    def items(self) -> Iterator[Tuple[str, "WildValue"]]:
+    def items(self) -> Iterator[tuple[str, "WildValue"]]:
         self._need_dict()
 
     def tame(self, validator: Validator[ResultT]) -> ResultT:
@@ -714,7 +664,7 @@ class WildValue:
 
 
 class WildValueList(WildValue):
-    value: List[object]
+    value: list[object]
 
     @override
     def __iter__(self) -> Iterator[WildValue]:
@@ -722,7 +672,7 @@ class WildValueList(WildValue):
             yield wrap_wild_value(f"{self.var_name}[{i}]", item)
 
     @override
-    def __getitem__(self, key: Union[int, str]) -> WildValue:
+    def __getitem__(self, key: int | str) -> WildValue:
         if not isinstance(key, int):
             return super().__getitem__(key)
 
@@ -737,14 +687,14 @@ class WildValueList(WildValue):
 
 
 class WildValueDict(WildValue):
-    value: Dict[str, object]
+    value: dict[str, object]
 
     @override
     def __contains__(self, key: str) -> bool:
         return key in self.value
 
     @override
-    def __getitem__(self, key: Union[int, str]) -> WildValue:
+    def __getitem__(self, key: int | str) -> WildValue:
         if not isinstance(key, str):
             return super().__getitem__(key)
 
@@ -774,7 +724,7 @@ class WildValueDict(WildValue):
             yield wrap_wild_value(f"{self.var_name}[{key!r}]", value)
 
     @override
-    def items(self) -> Iterator[Tuple[str, WildValue]]:
+    def items(self) -> Iterator[tuple[str, WildValue]]:
         for key, value in self.value.items():
             yield key, wrap_wild_value(f"{self.var_name}[{key!r}]", value)
 

@@ -30,11 +30,11 @@ different flows:
 - The user uses the "back" button in their browser (basically
   equivalent to the previous one, as a _link_ out of the browser history
   will be visited).
-- The user clicking some in-app click handler (e.g. "Channel settings"
+- The user clicking some in-app click handler (e.g., "Channel settings"
   for an individual channel), that potentially does
-  several UI-manipulating things including e.g. loading the channels
-  overlay, and needs to update the hash without re-triggering the open
-  animation (etc.).
+  several UI-manipulating things including, for example, loading the
+  channels overlay, and needs to update the hash without re-triggering
+  the open animation (etc.).
 - Within an overlay like the channels overlay, the user clicks to
   another part of the overlay, which should update the hash but not
   re-trigger loading the overlay (which would result in a confusing
@@ -45,7 +45,7 @@ different flows:
 - A server-initiated browser reload (done after a new version is
   deployed, or when a user comes back after being idle for a while,
   see [notes below][self-server-reloads]), where we try to preserve
-  extra state (e.g. content of compose box, scroll position within a
+  extra state (e.g., content of compose box, scroll position within a
   narrow) using the `/#reload` hash prefix.
 
 When making changes to the hashchange system, it is **essential** to
@@ -65,7 +65,7 @@ The main external API lives in `web/src/browser_history.js`:
 Internally you have these functions:
 
 - `hashchange.hashchanged` is the function used to handle the hash,
-  whether it's changed by the browser (e.g. by clicking on a link to
+  whether it's changed by the browser (e.g., by clicking on a link to
   a hash or using the back button) or triggered internally.
 - `hashchange.do_hashchange_normal` handles most cases, like loading the main
   page (but maybe with a specific URL if you are narrowed to a

@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Collection
 from contextlib import suppress
-from typing import Any, Collection, Dict, List, Optional
+from typing import Any, Optional
 from urllib.parse import unquote
 
 import tornado.web
@@ -20,7 +21,7 @@ from zerver.lib.response import AsynchronousResponse, json_response
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
 current_handler_id = 0
-handlers: Dict[int, "AsyncDjangoHandler"] = {}
+handlers: dict[int, "AsyncDjangoHandler"] = {}
 fake_wsgi_container = WSGIContainer(lambda environ, start_response: [])
 
 
@@ -45,7 +46,7 @@ def handler_stats_string() -> str:
     return f"{len(handlers)} handlers, latest ID {current_handler_id}"
 
 
-def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str, Any]]) -> None:
+def finish_handler(handler_id: int, event_queue_id: str, contents: list[dict[str, Any]]) -> None:
     try:
         # We do the import during runtime to avoid cyclic dependency
         # with zerver.lib.request
@@ -104,7 +105,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # on_finish and on_connection_close.
         self.handler_id = allocate_handler_id(self)
 
-        self._request: Optional[HttpRequest] = None
+        self._request: HttpRequest | None = None
 
     @override
     def on_finish(self) -> None:
@@ -162,7 +163,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
 
         # Copy any cookies
         if not hasattr(self, "_new_cookies"):
-            self._new_cookies: List[http.cookie.SimpleCookie] = []
+            self._new_cookies: list[http.cookie.SimpleCookie] = []
         self._new_cookies.append(response.cookies)
 
         # Copy the response content
@@ -228,7 +229,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         if client_descriptor is not None:
             client_descriptor.disconnect_handler(client_closed=True)
 
-    async def zulip_finish(self, result_dict: Dict[str, Any], old_request: HttpRequest) -> None:
+    async def zulip_finish(self, result_dict: dict[str, Any], old_request: HttpRequest) -> None:
         # Function called when we want to break a long-polled
         # get_events request and return a response to the client.
 

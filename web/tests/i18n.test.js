@@ -85,45 +85,31 @@ run_test("t_tag", ({mock_template}) => {
     require("../templates/popovers/message_actions_popover.hbs")(args);
 });
 
-run_test("tr_tag", ({mock_template}) => {
+run_test("{{#tr}} to tag for translation", ({mock_template}) => {
     const args = {
-        botserverrc: "botserverrc",
-        date_joined_text: "Mar 21, 2022",
-        information_density_settings: {
-            settings: {},
-        },
-        display_settings: {
-            settings: {},
-        },
         notification_settings: {},
-        current_user: {
-            full_name: "John Doe",
-            delivery_email: "john@zulip.com",
-        },
-        page_params: {},
-        realm: {},
         settings_object: {},
         settings_label: {
             desktop_icon_count_display:
                 "Unread count badge (appears in desktop sidebar and browser tab)",
             realm_name_in_email_notifications_policy:
                 "Include organization name in subject of message notification emails",
-            twenty_four_hour_time: "Time format",
             automatically_follow_topics_policy: "Automatically follow topics",
             automatically_unmute_topics_in_muted_streams_policy:
                 "Automatically unmute topics in muted channels",
-            automatically_follow_topics_where_mentioned:
-                "Automatically follow topics where I'm mentioned",
         },
-        show_push_notifications_tooltip: false,
-        user_role_text: "Member",
     };
 
-    mock_template("settings_tab.hbs", true, (data, html) => {
+    // We're actually testing `notification_settings.hbs` here which
+    // is imported as a partial in the file below. We want to test
+    // the partial handling logic in `templates.js`, that's why we
+    // test the file below instead of directly testing
+    // `notification_settings.hbs`.
+    mock_template("settings/user_notification_settings.hbs", true, (data, html) => {
         assert.equal(data, args);
         assert.ok(html.includes("Déclencheurs de notification"));
     });
-    require("../templates/settings_tab.hbs")(args);
+    require("../templates/settings/user_notification_settings.hbs")(args);
 });
 
 run_test("language_list", () => {

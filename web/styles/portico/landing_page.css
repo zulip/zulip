@@ -597,57 +597,6 @@ button {
     }
 }
 
-/* -- faq css -- */
-.faqs {
-    position: relative;
-    background-color: hsl(0deg 0% 98%);
-
-    .padded-content {
-        position: relative;
-        z-index: 1;
-    }
-
-    & header {
-        max-width: 700px;
-        margin: 0 auto;
-
-        & h1 span {
-            vertical-align: top;
-        }
-    }
-
-    .faq {
-        margin: 50px auto;
-        max-width: 700px;
-        font-size: 1.2em;
-        color: hsl(223deg 6% 25%);
-
-        .question {
-            font-weight: 600;
-            color: hsl(222deg 20% 40%);
-            font-size: 1.1em;
-        }
-
-        .answer {
-            margin: 20px 0 0;
-            font-weight: 400;
-        }
-    }
-
-    /* the last faq in the box shouldn't have an extra 50px of margin. */
-    .faq-box div:last-of-type {
-        margin-bottom: 10px;
-    }
-
-    .faq-header-link {
-        color: hsl(0deg 0% 0%);
-
-        &:hover {
-            text-decoration: underline;
-        }
-    }
-}
-
 .screen {
     .line {
         width: 100%;
@@ -2265,7 +2214,8 @@ button {
         }
     }
 
-    .feature-image {
+    .feature-image,
+    .message-screenshot {
         & img,
         div.quote {
             width: 400px;
@@ -2281,6 +2231,34 @@ button {
             & div.quote {
                 width: auto;
             }
+        }
+    }
+
+    .message-screenshot {
+        position: relative;
+
+        img {
+            display: block;
+            mask-image: linear-gradient(
+                to right,
+                hsl(0deg 0% 0%) 75%,
+                transparent 100%
+            );
+        }
+        margin-bottom: 10px;
+    }
+
+    /* message-starred is used when the message screenshot captured using
+    the script "generate-user-message-screenshot" contains starred message.
+    This is done to reduce the fading effect on the image caused by
+    ".message-screenshot" class so that the star is visible. */
+    .message-starred {
+        img {
+            mask-image: linear-gradient(
+                to right,
+                hsl(0deg 0% 0%) 95%,
+                transparent 100%
+            );
         }
     }
 

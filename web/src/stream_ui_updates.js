@@ -252,6 +252,13 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
 
     const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
     $general_settings_container
+        .find("input, button")
+        .prop("disabled", !sub.can_change_stream_permissions);
+
+    const $advanced_configurations_container = $stream_settings.find(
+        $("#stream-advanced-configurations"),
+    );
+    $advanced_configurations_container
         .find("input, select, button")
         .prop("disabled", !sub.can_change_stream_permissions);
 
@@ -399,7 +406,12 @@ export function update_setting_element(sub, setting_name) {
     }
 
     const $elem = $(`#id_${CSS.escape(setting_name)}`);
-    settings_org.discard_stream_property_element_changes($elem, sub);
+    const $subsection = $elem.closest(".settings-subsection-parent");
+    if ($subsection.find(".save-button-controls").hasClass("hide")) {
+        settings_org.discard_stream_property_element_changes($elem, sub);
+    } else {
+        settings_org.discard_stream_settings_subsection_changes($subsection, sub);
+    }
 }
 
 export function enable_or_disable_add_subscribers_elements(
@@ -408,16 +420,11 @@ export function enable_or_disable_add_subscribers_elements(
     stream_creation = false,
 ) {
     const $input_element = $container_elem.find(".input").expectOne();
-    const $add_subscribers_button = $container_elem
-        .find('button[name="add_subscriber"]')
-        .expectOne();
     const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
 
     $input_element.prop("contenteditable", enable_elem);
-    $add_subscribers_button.prop("disabled", !enable_elem);
 
     if (enable_elem) {
-        $add_subscribers_button.css("pointer-events", "");
         $add_subscribers_container[0]?._tippy?.destroy();
         $container_elem.find(".add_subscribers_container").removeClass("add_subscribers_disabled");
     } else {
@@ -436,6 +443,14 @@ export function enable_or_disable_add_subscribers_elements(
             $container_elem
                 .find(".add_all_users_to_stream_btn_container")
                 .addClass("add_subscribers_disabled");
+        }
+    } else {
+        const $add_subscribers_button = $container_elem
+            .find('button[name="add_subscriber"]')
+            .expectOne();
+        $add_subscribers_button.prop("disabled", !enable_elem);
+        if (enable_elem) {
+            $add_subscribers_button.css("pointer-events", "");
         }
     }
 }

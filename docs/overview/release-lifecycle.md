@@ -32,7 +32,7 @@ server repository][zulip-server].
   Organizations self-hosting Zulip primarily use stable releases.
 - The numbering scheme is simple: the first digit indicates the major
   release series (which we'll refer to as "7.x"). (Before Zulip 3.0,
-  Zulip versions had another digit, e.g. 1.9.2 was a bug fix release
+  Zulip versions had another digit, e.g., 1.9.2 was a bug fix release
   in the Zulip 1.9.x major release series).
 - [New major releases][blog-major-releases], like Zulip 7.0, are
   published every 3-6 months, and contain hundreds of features, bug
@@ -121,7 +121,7 @@ bug fix release, transparently documenting the issue(s) using the
 industry-standard [CVE advisory process](https://cve.mitre.org/).
 
 When new security releases are published, we simultaneously publish
-the fixes to the `main` and stable release branches (E.g. `4.x`), so
+the fixes to the `main` and stable release branches (e.g., `4.x`), so
 that anyone using those branches can immediately upgrade as well.
 
 See also our [security model][security-model] documentation.
@@ -143,8 +143,8 @@ The nag will appear only to organization administrators starting a
 month before the deadline; after that, it will appear for all users on
 the server.
 
-You can adjust the deadline for your installation by setting e.g.
-`SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 21` in
+You can adjust the deadline for your installation by setting, for
+example, `SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 21` in
 `/etc/zulip/settings.py` and then [restarting the server](../production/settings.md).
 
 ### Operating system support
@@ -167,12 +167,13 @@ releases, and do not support them in production.
 The Zulip server project uses GitHub projects and labels to structure
 communication about priorities:
 
-- We use GitHub projects to track goals for major releases (e.g., [Zulip 9.0
-  priorities](https://github.com/orgs/zulip/projects/9/)). The project board
-  should be seen a list of priorities being _considered_ for the release, not a
-  guarantee that features will be included. As the release date approaches,
-  features that will not make it into the release are dropped from the project
-  board on an ongoing basis.
+- We use a [GitHub project
+  board](https://github.com/orgs/zulip/projects/9/views/13) to publicly track
+  goals for major releases. The items with the "Done" status will be included in
+  the next major release. Otherwise, the project board should be seen a list of
+  priorities being _considered_ for the release, not a guarantee that features
+  will be included. As the release date approaches, features that will not make
+  it into the release are dropped from the project board on an ongoing basis.
 
 - The [high priority][label-high] label tags issues that we consider important.
   It is reviewed in the planning stage of the release cycle to identify

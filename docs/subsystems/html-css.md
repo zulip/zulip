@@ -83,8 +83,8 @@ with its corresponding CSS selector as `.my-multiword-class`.
 
 When changing any part of the Zulip CSS, it's important to check that
 the new CSS looks good at a wide range of screen widths, from very
-wide screen (e.g. 1920px) all the way down to narrow phone screens
-(e.g. 480px).
+wide screen (e.g., 1920px) all the way down to narrow phone screens
+(e.g., 480px).
 
 For complex changes, it's definitely worth testing in a few different
 browsers to make sure things look the same.
@@ -228,9 +228,9 @@ needs to be accessible from one of the entry points defined either in
   `web/src/bundles/common.ts` which itself is imported to the
   `app` and `common` bundles.
 - If it's just used on a single standalone page which is only used in
-  a development environment (e.g. `/devlogin`) create a new entry
+  a development environment (e.g., `/devlogin`) create a new entry
   point in `web/webpack.dev-assets.json` or it's used in both
-  production and development (e.g. `/stats`) create a new entry point
+  production and development (e.g., `/stats`) create a new entry point
   in `web/webpack.assets.json`. Use the `bundle` macro (defined in
   `templates/zerver/base.html`) in the relevant Jinja2 template to
   inject the compiled JS and CSS.
@@ -246,10 +246,10 @@ A few useful notes are:
   `/home/zulip/prod-static`. When a new version is deployed, before the
   server is restarted, files are copied into that directory.
 - We use the VFL (versioned file layout) strategy, where each file in
-  the codebase (e.g. `favicon.ico`) gets a new name
-  (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it. Each
+  the codebase (e.g., `favicon.ico`) gets a new name
+  (e.g., `favicon.c55d45ae8c58.ico`) that contains a hash in it. Each
   deployment, has a manifest file
-  (e.g. `/home/zulip/deployments/current/staticfiles.json`) that maps
+  (e.g., `/home/zulip/deployments/current/staticfiles.json`) that maps
   codebase filenames to serving filenames for that deployment. The
   benefit of this VFL approach is that all the static files for past
   deployments can coexist, which in turn eliminates most classes of
@@ -257,7 +257,7 @@ A few useful notes are:
   deployment can't find their static assets. It also is necessary for
   any incremental rollout strategy where different clients get
   different versions of the site.
-- Some paths for files (e.g. emoji) are stored in the
+- Some paths for files (e.g., emoji) are stored in the
   `rendered_content` of past messages, and thus cannot be removed
   without breaking the rendering of old messages (or doing a
   mass-rerender of old messages).

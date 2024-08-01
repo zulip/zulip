@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any
 
 import orjson
 from django.conf import settings
@@ -97,7 +98,7 @@ class Command(ZulipBaseCommand):
         self, *args: Any, dry_run: bool = False, admins_only: bool = False, **options: str
     ) -> None:
         users: QuerySet[UserProfile] = UserProfile.objects.none()
-        add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None
+        add_context: Callable[[dict[str, object], UserProfile], None] | None = None
         distinct_email = False
 
         if options["remote_servers"]:
@@ -105,13 +106,13 @@ class Command(ZulipBaseCommand):
             add_server_context = None
             if options["json_file"]:
                 with open(options["json_file"]) as f:
-                    server_data: Dict[str, Dict[str, object]] = orjson.loads(f.read())
+                    server_data: dict[str, dict[str, object]] = orjson.loads(f.read())
                 servers = RemoteZulipServer.objects.filter(
                     id__in=[int(server_id) for server_id in server_data]
                 )
 
                 def add_server_context_from_dict(
-                    context: Dict[str, object], server: RemoteZulipServer
+                    context: dict[str, object], server: RemoteZulipServer
                 ) -> None:
                     context.update(server_data.get(str(server.id), {}))
 
@@ -154,7 +155,7 @@ class Command(ZulipBaseCommand):
             )
             distinct_email = True
 
-            def add_marketing_unsubscribe(context: Dict[str, object], user: UserProfile) -> None:
+            def add_marketing_unsubscribe(context: dict[str, object], user: UserProfile) -> None:
                 context["unsubscribe_link"] = one_click_unsubscribe_link(user, "marketing")
 
             add_context = add_marketing_unsubscribe
@@ -181,10 +182,10 @@ class Command(ZulipBaseCommand):
 
         if options["json_file"]:
             with open(options["json_file"]) as f:
-                user_data: Dict[str, Dict[str, object]] = orjson.loads(f.read())
+                user_data: dict[str, dict[str, object]] = orjson.loads(f.read())
             users = users.filter(id__in=[int(user_id) for user_id in user_data])
 
-            def add_context_from_dict(context: Dict[str, object], user: UserProfile) -> None:
+            def add_context_from_dict(context: dict[str, object], user: UserProfile) -> None:
                 context.update(user_data.get(str(user.id), {}))
 
             add_context = add_context_from_dict

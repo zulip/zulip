@@ -26,6 +26,13 @@
             </div>
         </div>
     </div>
+    <div class="input-group new-style" id="receive-invite-acceptance-notification-container">
+        <label class="checkbox display-block">
+            <input type="checkbox" id="receive-invite-acceptance-notification" checked/>
+            <span></span>
+            {{t "Send me a direct message when my invitation is accepted" }}
+        </label>
+    </div>
     <div class="input-group">
         <label for="expires_in" class="modal-field-label">{{t "Invitation expires after" }}</label>
         <select id="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
@@ -54,10 +61,10 @@
             <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
             {{#if is_admin}}
             <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
-            <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Organization administrators" }}</option>
+            <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Administrators" }}</option>
             {{/if}}
             {{#if is_owner}}
-            <option name="invite_as" value="{{ invite_as_options.owner.code }}">{{t "Organization owners" }}</option>
+            <option name="invite_as" value="{{ invite_as_options.owner.code }}">{{t "Owners" }}</option>
             {{/if}}
         </select>
     </div>
@@ -77,7 +84,7 @@
             <div id="invite_streams_container" class="add_streams_container">
                 <div class="pill-container stream_picker">
                     <div class="input" contenteditable="true"
-                      data-placeholder="{{t 'Streams' }}">
+                      data-placeholder="{{t 'Channels' }}">
                         {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
                     </div>
                 </div>

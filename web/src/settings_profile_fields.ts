@@ -22,6 +22,7 @@ import type {CustomProfileField} from "./state_data";
 import {current_user, realm} from "./state_data";
 import type {HTMLSelectOneElement, UserExternalAccountData} from "./types";
 import * as ui_report from "./ui_report";
+import {place_caret_at_end} from "./ui_util";
 
 type FieldChoice = {
     value: string;
@@ -280,6 +281,9 @@ function open_custom_profile_field_form_modal(): void {
         on_click: create_profile_field,
         post_render: set_up_form_fields,
         loading_spinner: true,
+        on_shown() {
+            $("#profile_field_type").trigger("focus");
+        },
     });
 }
 
@@ -552,7 +556,7 @@ function open_edit_form_modal(this: HTMLElement): void {
             }
 
             if (Object.keys(deleted_values).length !== 0) {
-                const edit_select_field_modal_callback: () => void = () => {
+                const edit_select_field_modal_callback = (): void => {
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
                 };
                 dialog_widget.close(edit_select_field_modal_callback);
@@ -572,6 +576,9 @@ function open_edit_form_modal(this: HTMLElement): void {
         on_click: submit_form,
         post_render: set_initial_values_of_profile_field,
         loading_spinner: true,
+        on_shown() {
+            place_caret_at_end($("#id-custom-profile-field-name")[0]!);
+        },
     });
 }
 

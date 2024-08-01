@@ -4,15 +4,20 @@ import type * as tippy from "tippy.js";
 import * as activity_ui from "./activity_ui";
 import * as compose_actions from "./compose_actions";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_state from "./compose_state";
 import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
+import * as modals from "./modals";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
+import * as overlays from "./overlays";
 import * as pm_list from "./pm_list";
+import * as popovers from "./popovers";
 import * as resize from "./resize";
+import * as sidebar_ui from "./sidebar_ui";
 import * as stream_list from "./stream_list";
 import * as unread_ui from "./unread_ui";
 
@@ -23,7 +28,6 @@ export const FILTERS = {
 };
 
 const TIPPY_PROPS: Partial<tippy.Props> = {
-    placement: "bottom-start",
     offset: [0, 2],
 };
 
@@ -133,4 +137,16 @@ export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.
     message_viewport.plan_scroll_to_selected();
+}
+
+export function is_in_focus(): boolean {
+    return (
+        !compose_state.composing() &&
+        !popovers.any_active() &&
+        !sidebar_ui.any_sidebar_expanded_as_overlay() &&
+        !overlays.any_active() &&
+        !modals.any_active_or_animating() &&
+        !$(".home-page-input").is(":focus") &&
+        !$("#search_query").is(":focus")
+    );
 }

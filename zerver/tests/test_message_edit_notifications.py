@@ -1,4 +1,5 @@
-from typing import Any, Dict, Mapping, Union
+from collections.abc import Mapping
+from typing import Any
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -75,7 +76,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def _get_queued_data_for_message_update(
         self, message_id: int, content: str, expect_short_circuit: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         This function updates a message with a post to
         /json/messages/(message_id).
@@ -99,9 +100,11 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             content=content,
         )
 
-        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
-            with self.captureOnCommitCallbacks(execute=True):
-                result = self.client_patch(url, request)
+        with (
+            mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_patch(url, request)
 
         cordelia = self.example_user("cordelia")
         cordelia_calls = [
@@ -121,7 +124,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         queue_messages = []
 
-        def fake_publish(queue_name: str, event: Union[Mapping[str, Any], str], *args: Any) -> None:
+        def fake_publish(queue_name: str, event: Mapping[str, Any] | str, *args: Any) -> None:
             queue_messages.append(
                 dict(
                     queue_name=queue_name,
@@ -149,7 +152,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         expect_short_circuit: bool = False,
         connected_to_zulip: bool = False,
         present_on_web: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         message_id = self._login_and_send_original_stream_message(
             content=original_content,
             enable_online_push_notifications=enable_online_push_notifications,

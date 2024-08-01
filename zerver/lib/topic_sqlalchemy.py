@@ -23,7 +23,7 @@ def topic_column_sa() -> ColumnElement[Text]:
 
 def get_followed_topic_condition_sa(user_id: int) -> ColumnElement[Boolean]:
     follow_topic_cond = (
-        select([1])
+        select(1)
         .select_from(table("zerver_usertopic"))
         .where(
             and_(

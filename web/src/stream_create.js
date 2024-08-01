@@ -449,8 +449,8 @@ export function set_up_handlers() {
         settings_data.user_can_create_public_streams() ||
         settings_data.user_can_create_web_public_streams();
 
-    const $people_to_add_holder = $("#people_to_add").expectOne();
-    stream_create_subscribers.create_handlers($people_to_add_holder);
+    const $subscribers_container = $(".subscribers_container").expectOne();
+    stream_create_subscribers.create_handlers($subscribers_container);
 
     const $container = $("#stream-creation").expectOne();
 

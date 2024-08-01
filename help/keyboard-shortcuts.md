@@ -27,7 +27,10 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Paste formatted text**: <kbd>Ctrl</kbd> + <kbd>V</kbd>
 
-* **Paste as plain text**: <kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>
+* **Paste as plain text**: <kbd data-mac-following-key="⌥">Ctrl</kbd> +
+  <kbd>Shift</kbd> + <kbd>V</kbd>. You can also paste formatted text with
+  <kbd>Ctrl</kbd> + <kbd>V</kbd>, and press <kbd>Ctrl</kbd> + <kbd>Z</kbd> to
+  remove formatting.
 
 * **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
   <kbd>[</kbd> — Close the compose box and save the unsent message as a
@@ -94,7 +97,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to topic or DM conversation**: <kbd>S</kbd>
 
-* **Go to channel from topic view**: <kbd>S</kbd>
+* **Go to channel feed from topic view**: <kbd>S</kbd>
 
 * **Go to your direct message feed**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
@@ -208,7 +211,7 @@ Use <kbd>Enter</kbd> to engage with elements.
 
 * **Delete selected draft**: <kbd>Backspace</kbd>
 
-Keyboard navigation (e.g. arrow keys) works as expected.
+Keyboard navigation (e.g., arrow keys) works as expected.
 
 ## Menus
 

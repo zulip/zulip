@@ -7,7 +7,6 @@
 import argparse
 import os
 import sys
-from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
@@ -22,7 +21,7 @@ ENV = get_environment()
 NODE_MODULES_CACHE_PATH = "/srv/zulip-npm-cache"
 
 
-def get_caches_in_use(threshold_days: int) -> Set[str]:
+def get_caches_in_use(threshold_days: int) -> set[str]:
     setups_to_check = {ZULIP_PATH}
     caches_in_use = set()
 

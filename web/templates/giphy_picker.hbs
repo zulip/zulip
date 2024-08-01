@@ -1,11 +1,8 @@
 <div id="giphy_grid_in_popover">
     <div class="arrow"></div>
     <div class="popover-inner">
-        <div class="search-box">
-            <input type="text" tabindex=0 id="giphy-search-query" class="search-query" placeholder="{{t 'Search GIFs' }}" />
-            <button type="button" class="btn clear_search_button" id="giphy_search_clear">
-                <i class="fa fa-remove" aria-hidden="true"></i>
-            </button>
+        <div class="popover-filter-input-wrapper">
+            <input type="text" id="giphy-search-query" class="popover-filter-input filter_text_input" autocomplete="off" placeholder="{{t 'Filter' }}" autofocus/>
         </div>
         <div class="giphy-scrolling-container" data-simplebar data-simplebar-tab-index="-1">
             {{! We need a container we can replace

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from django.utils.timezone import now as timezone_now
 
@@ -12,7 +11,7 @@ from zerver.tornado.django_api import send_event
 def do_mute_user(
     user_profile: UserProfile,
     muted_user: UserProfile,
-    date_muted: Optional[datetime] = None,
+    date_muted: datetime | None = None,
 ) -> None:
     if date_muted is None:
         date_muted = timezone_now()

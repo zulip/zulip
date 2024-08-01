@@ -1,5 +1,6 @@
+from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Mapping, Tuple
+from typing import Any
 
 import orjson
 from django.http import HttpRequest, HttpResponse
@@ -21,41 +22,41 @@ SNAPSHOT = "image_url"
 class LibratoWebhookParser:
     ALERT_URL_TEMPLATE = "https://metrics.librato.com/alerts#/{alert_id}"
 
-    def __init__(self, payload: Mapping[str, Any], attachments: List[Dict[str, Any]]) -> None:
+    def __init__(self, payload: Mapping[str, Any], attachments: list[dict[str, Any]]) -> None:
         self.payload = payload
         self.attachments = attachments
 
     def generate_alert_url(self, alert_id: int) -> str:
         return self.ALERT_URL_TEMPLATE.format(alert_id=alert_id)
 
-    def parse_alert(self) -> Tuple[int, str, str, str]:
+    def parse_alert(self) -> tuple[int, str, str, str]:
         alert = self.payload["alert"]
         alert_id = alert["id"]
         return alert_id, alert["name"], self.generate_alert_url(alert_id), alert["runbook_url"]
 
-    def parse_condition(self, condition: Dict[str, Any]) -> Tuple[str, str, str, str]:
+    def parse_condition(self, condition: dict[str, Any]) -> tuple[str, str, str, str]:
         summary_function = condition["summary_function"]
         threshold = condition.get("threshold", "")
         condition_type = condition["type"]
         duration = condition.get("duration", "")
         return summary_function, threshold, condition_type, duration
 
-    def parse_violation(self, violation: Dict[str, Any]) -> Tuple[str, str]:
+    def parse_violation(self, violation: dict[str, Any]) -> tuple[str, str]:
         metric_name = violation["metric"]
         recorded_at = datetime.fromtimestamp(violation["recorded_at"], tz=timezone.utc).strftime(
             "%Y-%m-%d %H:%M:%S"
         )
         return metric_name, recorded_at
 
-    def parse_conditions(self) -> List[Dict[str, Any]]:
+    def parse_conditions(self) -> list[dict[str, Any]]:
         conditions = self.payload["conditions"]
         return conditions
 
-    def parse_violations(self) -> List[Dict[str, Any]]:
+    def parse_violations(self) -> list[dict[str, Any]]:
         violations = self.payload["violations"]["test-source"]
         return violations
 
-    def parse_snapshot(self, snapshot: Dict[str, Any]) -> Tuple[str, str, str]:
+    def parse_snapshot(self, snapshot: dict[str, Any]) -> tuple[str, str, str]:
         author_name, image_url, title = (
             snapshot["author_name"],
             snapshot["image_url"],
@@ -65,7 +66,7 @@ class LibratoWebhookParser:
 
 
 class LibratoWebhookHandler(LibratoWebhookParser):
-    def __init__(self, payload: Mapping[str, Any], attachments: List[Dict[str, Any]]) -> None:
+    def __init__(self, payload: Mapping[str, Any], attachments: list[dict[str, Any]]) -> None:
         super().__init__(payload, attachments)
         self.payload_available_types = {
             ALERT_CLEAR: self.handle_alert_clear_message,
@@ -112,7 +113,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
             content += self.handle_snapshot(attachment)
         return content
 
-    def handle_snapshot(self, snapshot: Dict[str, Any]) -> str:
+    def handle_snapshot(self, snapshot: dict[str, Any]) -> str:
         snapshot_template = "**{author_name}** sent a [snapshot]({image_url}) of [metric]({title})."
         author_name, image_url, title = self.parse_snapshot(snapshot)
         content = snapshot_template.format(
@@ -134,12 +135,12 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         conditions = self.parse_conditions()
         violations = self.parse_violations()
         content = ""
-        for condition, violation in zip(conditions, violations):
+        for condition, violation in zip(conditions, violations, strict=False):
             content += self.generate_violated_metric_condition(violation, condition)
         return content
 
     def generate_violated_metric_condition(
-        self, violation: Dict[str, Any], condition: Dict[str, Any]
+        self, violation: dict[str, Any], condition: dict[str, Any]
     ) -> str:
         summary_function, threshold, condition_type, duration = self.parse_condition(condition)
         metric_name, recorded_at = self.parse_violation(violation)

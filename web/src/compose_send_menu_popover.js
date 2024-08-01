@@ -7,7 +7,6 @@ import render_send_later_modal_options from "../templates/send_later_modal_optio
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
@@ -144,6 +143,7 @@ export function toggle() {
 export function initialize() {
     tippy.delegate("body", {
         ...popover_menus.default_popover_props,
+        theme: "popover-menu",
         target: "#send_later i",
         onUntrigger() {
             // This is only called when the popover is closed by clicking on `target`.
@@ -174,7 +174,6 @@ export function initialize() {
             // Make sure the compose drafts count, which is also displayed in this popover, has a current value.
             drafts.update_compose_draft_count();
             const $popper = $(instance.popper);
-            common.adjust_mac_kbd_tags(".enter_sends_choices kbd");
             $popper.one("click", ".send_later_selected_send_later_time", () => {
                 const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
                 do_schedule_message(send_at_timestamp);

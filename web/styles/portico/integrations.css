@@ -522,7 +522,7 @@ $category-text: hsl(219deg 23% 33%);
                 margin-left: 30px;
                 order: 3;
 
-                & span {
+                .integrations-back-to-list-label {
                     display: inline-block;
                     margin-left: 5px;
 

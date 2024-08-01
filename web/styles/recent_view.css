@@ -44,13 +44,9 @@
         display: flex;
         align-items: center;
 
-        .filter-icon {
-            /* Maintain righthand space between icon
-                and stream name. */
-            margin: 0 3px 0 -1px;
-        }
-
-        & > * {
+        .recent-view-table-link,
+        .recent-view-table-unread-count,
+        & > .zulip-icon {
             outline: 0;
         }
 
@@ -94,12 +90,10 @@
         width: 10px;
     }
 
-    .fa-envelope {
+    .zulip-icon-user {
         /* Legacy 11.2px size at 14px/1em. */
         font-size: 0.8em;
-        margin-right: 2px;
-        position: relative;
-        top: -1px;
+        text-align: center;
         opacity: 0.6;
     }
 
@@ -129,6 +123,10 @@
     .table_fix_head table th {
         padding: 8px;
         text-align: left;
+
+        &[data-sort] {
+            padding-right: var(--table-header-sortable-column-padding-right);
+        }
     }
 
     #recent_view_filter_buttons {
@@ -404,6 +402,17 @@
     .recent_topic_stream {
         padding: 8px 0 8px 8px;
 
+        .recent_view_focusable {
+            display: grid;
+            grid-template-areas: "starting-anchor-element row-content";
+            /* 14px at 14px/1em */
+            grid-template-columns: 1em minmax(0, 1fr);
+            /* Visually match the 8px of padding to
+               the left of the filter icon. */
+            gap: 7px;
+            place-content: center center;
+        }
+
         & a {
             word-break: break-word;
             hyphens: auto;
@@ -502,6 +511,7 @@
         /* Let flexbox handle vertical alignment by
            pushing back against inline-block display. */
         display: block;
+        text-align: center;
     }
 }
 

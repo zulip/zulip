@@ -5,10 +5,27 @@ const {strict: assert} = require("assert");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
+const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {realm} = require("./lib/zpage_params");
 
-const settings_config = zrequire("settings_config");
+const user_groups = zrequire("user_groups");
+
+const nobody = {
+    name: "role:nobody",
+    id: 1,
+    members: new Set([]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+const everyone = {
+    name: "role:everyone",
+    id: 2,
+    members: new Set([30]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
 set_global("document", {
     to_$: () => $("document-stub"),
@@ -365,6 +382,8 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
 test("quote_and_reply", ({disallow, override, override_rewire}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_reply, "selection_within_message_id", () => undefined);
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
 
     mock_banners();
     compose_state.set_message_type("stream");
@@ -508,6 +527,7 @@ test("on_narrow", ({override, override_rewire}) => {
     };
     people.add_active_user(bot);
 
+    user_groups.initialize({realm_user_groups: [nobody, everyone]});
     let cancel_called = false;
     override_rewire(compose_actions, "cancel", () => {
         cancel_called = true;
@@ -544,8 +564,8 @@ test("on_narrow", ({override, override_rewire}) => {
         start_called = true;
     });
     narrowed_by_pm_reply = true;
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.disabled.code;
+    realm.realm_direct_message_permission_group = nobody.id;
+    realm.realm_direct_message_initiator_group = everyone.id;
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
@@ -560,8 +580,8 @@ test("on_narrow", ({override, override_rewire}) => {
     });
     assert.ok(start_called);
 
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.by_anyone.code;
+    realm.realm_direct_message_permission_group = everyone.id;
+    blueslip.expect("warn", "Unknown emails");
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",

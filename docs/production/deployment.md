@@ -206,7 +206,7 @@ the following after unpacking a Zulip production release tarball:
 ```
 
 To run the database on a separate server, including a cloud provider's managed
-PostgreSQL instance (e.g. AWS RDS), or with a warm-standby replica for
+PostgreSQL instance (e.g., AWS RDS), or with a warm-standby replica for
 reliability, see our [dedicated PostgreSQL documentation][postgresql].
 
 [standalone.pp]: https://github.com/zulip/zulip/blob/main/puppet/zulip/manifests/profile/standalone.pp

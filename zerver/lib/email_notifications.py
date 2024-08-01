@@ -5,14 +5,14 @@ import os
 import re
 import subprocess
 import sys
+import zoneinfo
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import lxml.html
-import zoneinfo
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_backends
@@ -33,7 +33,7 @@ from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
-    huddle_narrow_url,
+    direct_message_group_narrow_url,
     personal_narrow_url,
     stream_narrow_url,
     topic_narrow_url,
@@ -92,7 +92,7 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
 
 
 def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
-    def make_emoji_img_elem(emoji_span_elem: lxml.html.HtmlElement) -> Dict[str, Any]:
+    def make_emoji_img_elem(emoji_span_elem: lxml.html.HtmlElement) -> dict[str, Any]:
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get("class")
         match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
@@ -157,7 +157,7 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
         m = FENCE_RE.match(line)
         if m:
             fence = m.group("fence")
-            lang: Optional[str] = m.group("lang")
+            lang: str | None = m.group("lang")
             if lang == "spoiler":
                 open_fence = fence
                 output.append(line)
@@ -185,15 +185,15 @@ def add_quote_prefix_in_text(content: str) -> str:
 
 def build_message_list(
     user: UserProfile,
-    messages: List[Message],
-    stream_id_map: Optional[Dict[int, Stream]] = None,  # only needs id, name
-) -> List[Dict[str, Any]]:
+    messages: list[Message],
+    stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
+) -> list[dict[str, Any]]:
     """
     Builds the message list object for the message notification email template.
     The messages are collapsed into per-recipient and per-sender blocks, like
     our web interface
     """
-    messages_to_render: List[Dict[str, Any]] = []
+    messages_to_render: list[dict[str, Any]] = []
 
     def sender_string(message: Message) -> str:
         if message.recipient.type in (Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP):
@@ -209,7 +209,7 @@ def build_message_list(
 
     def prepend_sender_to_message(
         message_plain: str, message_html: str, sender: str
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         message_plain = f"{sender}:\n{message_plain}"
         message_soup = BeautifulSoup(message_html, "html.parser")
         sender_name_soup = BeautifulSoup(f"<b>{sender}</b>: ", "html.parser")
@@ -222,7 +222,7 @@ def build_message_list(
             message_soup.insert(0, sender_name_soup)
         return message_plain, str(message_soup)
 
-    def build_message_payload(message: Message, sender: Optional[str] = None) -> Dict[str, str]:
+    def build_message_payload(message: Message, sender: str | None = None) -> dict[str, str]:
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         # There's a small chance of colliding with non-Zulip URLs containing
@@ -246,13 +246,13 @@ def build_message_list(
             plain, html = prepend_sender_to_message(plain, html, sender)
         return {"plain": plain, "html": html}
 
-    def build_sender_payload(message: Message) -> Dict[str, Any]:
+    def build_sender_payload(message: Message) -> dict[str, Any]:
         sender = sender_string(message)
         return {"sender": sender, "content": [build_message_payload(message, sender)]}
 
-    def message_header(message: Message) -> Dict[str, Any]:
+    def message_header(message: Message) -> dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
-            grouping: Dict[str, Any] = {"user": message.sender_id}
+            grouping: dict[str, Any] = {"user": message.sender_id}
             narrow_link = personal_narrow_url(
                 realm=user.realm,
                 sender=message.sender,
@@ -262,7 +262,7 @@ def build_message_list(
         elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
             grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
-            narrow_link = huddle_narrow_url(
+            narrow_link = direct_message_group_narrow_url(
                 user=user,
                 display_recipient=display_recipient,
             )
@@ -377,7 +377,7 @@ def include_realm_name_in_missedmessage_emails_subject(user_profile: UserProfile
 
 
 def do_send_missedmessage_events_reply_in_zulip(
-    user_profile: UserProfile, missed_messages: List[Dict[str, Any]], message_count: int
+    user_profile: UserProfile, missed_messages: list[dict[str, Any]], message_count: int
 ) -> None:
     """
     Send a reminder email to a user if she's missed some direct messages
@@ -385,8 +385,8 @@ def do_send_missedmessage_events_reply_in_zulip(
 
     The email will have its reply to address set to a limited used email
     address that will send a Zulip message to the correct recipient. This
-    allows the user to respond to missed direct messages, huddles, and
-    @-mentions directly from the email.
+    allows the user to respond to missed direct messages, direct message
+    groups, and @-mentions directly from the email.
 
     `user_profile` is the user to send the reminder to
     `missed_messages` is a list of dictionaries to Message objects and other data
@@ -474,7 +474,7 @@ def do_send_missedmessage_events_reply_in_zulip(
     senders = list({m["message"].sender for m in missed_messages})
     if missed_messages[0]["message"].recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(missed_messages[0]["message"].recipient)
-        narrow_url = huddle_narrow_url(
+        narrow_url = direct_message_group_narrow_url(
             user=user_profile,
             display_recipient=display_recipient,
         )
@@ -482,18 +482,18 @@ def do_send_missedmessage_events_reply_in_zulip(
         other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user_profile.id]
         context.update(group_pm=True)
         if len(other_recipients) == 2:
-            huddle_display_name = " and ".join(other_recipients)
-            context.update(huddle_display_name=huddle_display_name)
+            direct_message_group_display_name = " and ".join(other_recipients)
+            context.update(huddle_display_name=direct_message_group_display_name)
         elif len(other_recipients) == 3:
-            huddle_display_name = (
+            direct_message_group_display_name = (
                 f"{other_recipients[0]}, {other_recipients[1]}, and {other_recipients[2]}"
             )
-            context.update(huddle_display_name=huddle_display_name)
+            context.update(huddle_display_name=direct_message_group_display_name)
         else:
-            huddle_display_name = "{}, and {} others".format(
+            direct_message_group_display_name = "{}, and {} others".format(
                 ", ".join(other_recipients[:2]), len(other_recipients) - 2
             )
-            context.update(huddle_display_name=huddle_display_name)
+            context.update(huddle_display_name=direct_message_group_display_name)
     elif missed_messages[0]["message"].recipient.type == Recipient.PERSONAL:
         narrow_url = personal_narrow_url(
             realm=user_profile.realm,
@@ -592,11 +592,11 @@ def do_send_missedmessage_events_reply_in_zulip(
 @dataclass
 class MissedMessageData:
     trigger: str
-    mentioned_user_group_id: Optional[int] = None
+    mentioned_user_group_id: int | None = None
 
 
 def handle_missedmessage_emails(
-    user_profile_id: int, message_ids: Dict[int, MissedMessageData]
+    user_profile_id: int, message_ids: dict[int, MissedMessageData]
 ) -> None:
     user_profile = get_user_profile_by_id(user_profile_id)
     if user_profile.is_bot:  # nocoverage
@@ -629,7 +629,7 @@ def handle_missedmessage_emails(
     # We bucket messages by tuples that identify similar messages.
     # For streams it's recipient_id and topic.
     # For direct messages it's recipient id and sender.
-    messages_by_bucket: Dict[Tuple[int, Union[int, str]], List[Message]] = defaultdict(list)
+    messages_by_bucket: dict[tuple[int, int | str], list[Message]] = defaultdict(list)
     for msg in messages:
         if msg.recipient.type == Recipient.PERSONAL:
             # For direct messages group using (recipient, sender).
@@ -649,7 +649,7 @@ def handle_missedmessage_emails(
             msg_list.extend(filtered_context_messages)
 
     # Sort emails by least recently-active discussion.
-    bucket_tups: List[Tuple[Tuple[int, Union[int, str]], int]] = []
+    bucket_tups: list[tuple[tuple[int, int | str], int]] = []
     for bucket_tup, msg_list in messages_by_bucket.items():
         max_message_id = max(msg_list, key=lambda msg: msg.id).id
         bucket_tups.append((bucket_tup, max_message_id))
@@ -675,7 +675,7 @@ def handle_missedmessage_emails(
         )
 
 
-def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
+def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
     onboarding_emails = {
         # The delay should be 1 hour before the below specified number of days
         # as our goal is to maximize the chance that this email is near the top
@@ -744,7 +744,7 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
     return onboarding_emails
 
 
-def get_org_type_zulip_guide(realm: Realm) -> Tuple[Any, str]:
+def get_org_type_zulip_guide(realm: Realm) -> tuple[Any, str]:
     for realm_type, realm_type_details in Realm.ORG_TYPES.items():
         if realm_type_details["id"] == realm.org_type:
             organization_type_in_template = realm_type
@@ -761,7 +761,7 @@ def get_org_type_zulip_guide(realm: Realm) -> Tuple[Any, str]:
     return (None, "")
 
 
-def welcome_sender_information() -> Tuple[Optional[str], str]:
+def welcome_sender_information() -> tuple[str | None, str]:
     if settings.WELCOME_EMAIL_SENDER is not None:
         from_name = settings.WELCOME_EMAIL_SENDER["name"]
         from_address = settings.WELCOME_EMAIL_SENDER["email"]

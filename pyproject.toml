@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 100
-target-version = ["py38"]
+target-version = ["py310"]
 
 [tool.isort]
 src_paths = [".", "tools"]
@@ -99,7 +99,7 @@ warn_required_dynamic_aliases = true
 [tool.ruff]
 line-length = 100
 src = [".", "tools"]
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.lint]
 # See https://github.com/astral-sh/ruff#rules for error code definitions.
@@ -114,6 +114,7 @@ select = [
     "EXE", # shebang
     "F", # flakes
     "FLY", # string formatting
+    "FURB", # refurbishing
     "G", # logging format
     "I", # import sorting
     "INT", # gettext
@@ -185,7 +186,6 @@ ignore = [
     "SIM103", # Return the condition directly
     "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
     "SIM114", # Combine `if` branches using logical `or` operator
-    "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
     "SIM401", # Use `d.get(key, default)` instead of an `if` block
     "TCH001", # Move application import into a type-checking block
     "TCH002", # Move third-party import into a type-checking block

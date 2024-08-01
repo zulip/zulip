@@ -49,7 +49,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
             transfer_avatars_to_s3(1)
 
         path_id = user_avatar_path(user)
-        image_key = bucket.Object(path_id)
+        image_key = bucket.Object(path_id + ".png")
         original_image_key = bucket.Object(path_id + ".original")
         medium_image_key = bucket.Object(path_id + "-medium.png")
 
@@ -67,8 +67,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
-        upload_message_attachment("dummy1.txt", len(b"zulip1!"), "text/plain", b"zulip1!", hamlet)
-        upload_message_attachment("dummy2.txt", len(b"zulip2!"), "text/plain", b"zulip2!", othello)
+        upload_message_attachment("dummy1.txt", "text/plain", b"zulip1!", hamlet)
+        upload_message_attachment("dummy2.txt", "text/plain", b"zulip2!", othello)
 
         with self.assertLogs(level="INFO"):
             transfer_message_files_to_s3(1)
@@ -88,7 +88,9 @@ class TransferUploadsToS3Test(ZulipTestCase):
         emoji_name = "emoji.png"
 
         with get_test_image_file("img.png") as image_file:
-            emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
+            emoji = check_add_realm_emoji(
+                othello.realm, emoji_name, othello, image_file, "image/png"
+            )
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=othello.realm_id,
@@ -112,7 +114,9 @@ class TransferUploadsToS3Test(ZulipTestCase):
         emoji_name = "emoji2.png"
 
         with get_test_image_file("animated_img.gif") as image_file:
-            emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
+            emoji = check_add_realm_emoji(
+                othello.realm, emoji_name, othello, image_file, "image/gif"
+            )
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=othello.realm_id,

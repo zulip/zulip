@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import orjson
@@ -29,7 +29,7 @@ class DeleteMessageTest(ZulipTestCase):
 
     def test_delete_message_by_user(self) -> None:
         def set_message_deleting_params(
-            delete_own_message_policy: int, message_content_delete_limit_seconds: Union[int, str]
+            delete_own_message_policy: int, message_content_delete_limit_seconds: int | str
         ) -> None:
             self.login("iago")
             result = self.client_patch(
@@ -78,7 +78,7 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, "unlimited")
         msg_id = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id)
-        message.date_sent = message.date_sent - timedelta(seconds=600)
+        message.date_sent -= timedelta(seconds=600)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id)
@@ -91,12 +91,12 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, 240)
         msg_id_1 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_1)
-        message.date_sent = message.date_sent - timedelta(seconds=120)
+        message.date_sent -= timedelta(seconds=120)
         message.save()
 
         msg_id_2 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_2)
-        message.date_sent = message.date_sent - timedelta(seconds=360)
+        message.date_sent -= timedelta(seconds=360)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id_1)
@@ -120,9 +120,11 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test handling of 500 error caused by multiple delete requests due to latency.
         # see issue #11219.
-        with mock.patch("zerver.views.message_edit.do_delete_messages") as m, mock.patch(
-            "zerver.views.message_edit.validate_can_delete_message", return_value=None
-        ), mock.patch("zerver.views.message_edit.access_message", return_value=(None, None)):
+        with (
+            mock.patch("zerver.views.message_edit.do_delete_messages") as m,
+            mock.patch("zerver.views.message_edit.validate_can_delete_message", return_value=None),
+            mock.patch("zerver.views.message_edit.access_message", return_value=(None, None)),
+        ):
             m.side_effect = IntegrityError()
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
@@ -136,7 +138,7 @@ class DeleteMessageTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         def set_message_deleting_params(
-            delete_own_message_policy: int, message_content_delete_limit_seconds: Union[int, str]
+            delete_own_message_policy: int, message_content_delete_limit_seconds: int | str
         ) -> None:
             result = self.api_patch(
                 iago,
@@ -223,9 +225,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_delete_message_according_to_delete_own_message_policy(self) -> None:
-        def check_delete_message_by_sender(
-            sender_name: str, error_msg: Optional[str] = None
-        ) -> None:
+        def check_delete_message_by_sender(sender_name: str, error_msg: str | None = None) -> None:
             sender = self.example_user(sender_name)
             msg_id = self.send_stream_message(sender, "Verona")
             self.login_user(sender)
@@ -301,12 +301,14 @@ class DeleteMessageTest(ZulipTestCase):
         self.send_stream_message(hamlet, "Denmark")
         message = self.get_last_message()
 
-        with self.capture_send_event_calls(expected_num_events=1):
-            with mock.patch("zerver.tornado.django_api.queue_json_publish") as m:
-                m.side_effect = AssertionError(
-                    "Events should be sent only after the transaction commits."
-                )
-                do_delete_messages(hamlet.realm, [message])
+        with (
+            self.capture_send_event_calls(expected_num_events=1),
+            mock.patch("zerver.tornado.django_api.queue_json_publish") as m,
+        ):
+            m.side_effect = AssertionError(
+                "Events should be sent only after the transaction commits."
+            )
+            do_delete_messages(hamlet.realm, [message], acting_user=None)
 
     def test_delete_message_in_unsubscribed_private_stream(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -345,17 +347,17 @@ class DeleteMessageTest(ZulipTestCase):
         first_message_id = message_ids[0]
 
         message = Message.objects.get(id=message_ids[3])
-        do_delete_messages(realm, [message])
+        do_delete_messages(realm, [message], acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, first_message_id)
 
         first_message = Message.objects.get(id=first_message_id)
-        do_delete_messages(realm, [first_message])
+        do_delete_messages(realm, [first_message], acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, message_ids[1])
 
         all_messages = Message.objects.filter(id__in=message_ids)
-        with self.assert_database_query_count(23):
-            do_delete_messages(realm, all_messages)
+        with self.assert_database_query_count(24):
+            do_delete_messages(realm, all_messages, acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, None)

@@ -1,7 +1,8 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
 import logging
+from collections.abc import Callable, Iterable
 from datetime import timedelta
-from typing import Any, Callable, Dict, Iterable, Tuple
+from typing import Any
 
 from django.conf import settings
 from django.contrib.sessions.models import Session
@@ -29,7 +30,7 @@ from zerver.models.clients import get_client_cache_key
 
 
 def user_cache_items(
-    items_for_remote_cache: Dict[str, Tuple[UserProfile]], user_profile: UserProfile
+    items_for_remote_cache: dict[str, tuple[UserProfile]], user_profile: UserProfile
 ) -> None:
     for api_key in get_all_api_keys(user_profile):
         items_for_remote_cache[user_profile_by_api_key_cache_key(api_key)] = (user_profile,)
@@ -40,12 +41,12 @@ def user_cache_items(
     # core serving path for lots of requests.
 
 
-def client_cache_items(items_for_remote_cache: Dict[str, Tuple[Client]], client: Client) -> None:
+def client_cache_items(items_for_remote_cache: dict[str, tuple[Client]], client: Client) -> None:
     items_for_remote_cache[get_client_cache_key(client.name)] = (client,)
 
 
 def session_cache_items(
-    items_for_remote_cache: Dict[str, Dict[str, object]], session: Session
+    items_for_remote_cache: dict[str, dict[str, object]], session: Session
 ) -> None:
     if settings.SESSION_ENGINE != "zerver.lib.safe_session_cached_db":
         # If we're not using the cached_db session engine, we there
@@ -85,8 +86,8 @@ def get_users() -> QuerySet[UserProfile]:
 # doing any setup for things we're unlikely to use (without the lambda
 # wrapper the below adds an extra 3ms or so to startup time for
 # anything importing this file).
-cache_fillers: Dict[
-    str, Tuple[Callable[[], Iterable[Any]], Callable[[Dict[str, Any], Any], None], int, int]
+cache_fillers: dict[
+    str, tuple[Callable[[], Iterable[Any]], Callable[[dict[str, Any], Any], None], int, int]
 ] = {
     "user": (get_users, user_cache_items, 3600 * 24 * 7, 10000),
     "client": (
@@ -105,11 +106,11 @@ class SQLQueryCounter:
 
     def __call__(
         self,
-        execute: Callable[[str, Any, bool, Dict[str, Any]], Any],
+        execute: Callable[[str, Any, bool, dict[str, Any]], Any],
         sql: str,
         params: Any,
         many: bool,
-        context: Dict[str, Any],
+        context: dict[str, Any],
     ) -> Any:
         self.count += 1
         return execute(sql, params, many, context)
@@ -118,7 +119,7 @@ class SQLQueryCounter:
 def fill_remote_cache(cache: str) -> None:
     remote_cache_time_start = get_remote_cache_time()
     remote_cache_requests_start = get_remote_cache_requests()
-    items_for_remote_cache: Dict[str, Any] = {}
+    items_for_remote_cache: dict[str, Any] = {}
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
     count = 0
     db_query_counter = SQLQueryCounter()

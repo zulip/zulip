@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from collections.abc import Callable
+from typing import Any
 
 import django_scim.constants as scim_constants
 import django_scim.exceptions as scim_exceptions
@@ -40,7 +41,7 @@ class ZulipSCIMUser(SCIMUser):
     }
     ROLE_NAME_TO_TYPE = {v: k for k, v in ROLE_TYPE_TO_NAME.items()}
 
-    def __init__(self, obj: UserProfile, request: Optional[HttpRequest] = None) -> None:
+    def __init__(self, obj: UserProfile, request: HttpRequest | None = None) -> None:
         # We keep the function signature from the superclass, but this actually
         # shouldn't be called with request being None.
         assert request is not None
@@ -60,11 +61,11 @@ class ZulipSCIMUser(SCIMUser):
         # in response to a request for the corresponding
         # UserProfile fields to change. The .save() method inspects
         # these fields an executes the requested changes.
-        self._email_new_value: Optional[str] = None
-        self._is_active_new_value: Optional[bool] = None
-        self._full_name_new_value: Optional[str] = None
-        self._role_new_value: Optional[int] = None
-        self._password_set_to: Optional[str] = None
+        self._email_new_value: str | None = None
+        self._is_active_new_value: bool | None = None
+        self._full_name_new_value: str | None = None
+        self._role_new_value: int | None = None
+        self._password_set_to: str | None = None
 
     def is_new_user(self) -> bool:
         return not bool(self.obj.id)
@@ -79,7 +80,7 @@ class ZulipSCIMUser(SCIMUser):
         """
         return self.obj.full_name
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a ``dict`` conforming to the SCIM User Schema,
         ready for conversion to a JSON object.
@@ -124,7 +125,7 @@ class ZulipSCIMUser(SCIMUser):
             "meta": self.meta,
         }
 
-    def from_dict(self, d: Dict[str, Any]) -> None:
+    def from_dict(self, d: dict[str, Any]) -> None:
         """Consume a dictionary conforming to the SCIM User Schema. The
         dictionary was originally submitted as JSON by the client in
         PUT (update a user) and POST (create a new user) requests.  A
@@ -209,8 +210,8 @@ class ZulipSCIMUser(SCIMUser):
 
     def handle_replace(
         self,
-        path: Optional[AttrPath],
-        value: Union[str, List[object], Dict[AttrPath, object]],
+        path: AttrPath | None,
+        value: str | list[object] | dict[AttrPath, object],
         operation: Any,
     ) -> None:
         """
@@ -346,8 +347,8 @@ class ZulipSCIMUser(SCIMUser):
 
 
 def get_extra_model_filter_kwargs_getter(
-    model: Type[models.Model],
-) -> Callable[[HttpRequest, Any, Any], Dict[str, object]]:
+    model: type[models.Model],
+) -> Callable[[HttpRequest, Any, Any], dict[str, object]]:
     """Registered as GET_EXTRA_MODEL_FILTER_KWARGS_GETTER in our
     SCIM configuration.
 
@@ -367,7 +368,7 @@ def get_extra_model_filter_kwargs_getter(
 
     def get_extra_filter_kwargs(
         request: HttpRequest, *args: Any, **kwargs: Any
-    ) -> Dict[str, object]:
+    ) -> dict[str, object]:
         realm = RequestNotes.get_notes(request).realm
         assert realm is not None
         return {"realm_id": realm.id, "is_bot": False}

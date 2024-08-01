@@ -3,23 +3,23 @@ from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_logo import get_realm_logo_url
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.upload import upload_logo_image
+from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.upload import get_file_info, upload_logo_image
 from zerver.lib.url_encoding import append_url_query_string
-from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def upload_logo(
-    request: HttpRequest, user_profile: UserProfile, night: bool = REQ(json_validator=check_bool)
+    request: HttpRequest, user_profile: UserProfile, *, night: Json[bool]
 ) -> HttpResponse:
     user_profile.realm.ensure_not_on_limited_plan()
 
@@ -34,7 +34,8 @@ def upload_logo(
                 max_size=settings.MAX_LOGO_FILE_SIZE_MIB,
             )
         )
-    upload_logo_image(logo_file, user_profile, night)
+    _filename, content_type = get_file_info(logo_file)
+    upload_logo_image(logo_file, user_profile, night, content_type=content_type)
     do_change_logo_source(
         user_profile.realm, user_profile.realm.LOGO_UPLOADED, night, acting_user=user_profile
     )
@@ -42,9 +43,9 @@ def upload_logo(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def delete_logo_backend(
-    request: HttpRequest, user_profile: UserProfile, night: bool = REQ(json_validator=check_bool)
+    request: HttpRequest, user_profile: UserProfile, *, night: Json[bool]
 ) -> HttpResponse:
     # We don't actually delete the logo because it might still
     # be needed if the URL was cached and it is rewritten
@@ -55,9 +56,9 @@ def delete_logo_backend(
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def get_logo_backend(
-    request: HttpRequest, user_profile: UserProfile, night: bool = REQ(json_validator=check_bool)
+    request: HttpRequest, user_profile: UserProfile, *, night: Json[bool]
 ) -> HttpResponse:
     url = get_realm_logo_url(user_profile.realm, night)
 

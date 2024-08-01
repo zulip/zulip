@@ -7,9 +7,11 @@ import * as compose_notifications from "./compose_notifications";
 import * as compose_ui from "./compose_ui";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
+import * as message_events_util from "./message_events_util";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
+import * as message_util from "./message_util";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as recent_view_data from "./recent_view_data";
@@ -196,7 +198,7 @@ export function insert_local_message(message_request, local_id_float, insert_new
 
     message.display_recipient = build_display_recipient(message);
 
-    [message] = insert_new_messages([message], true);
+    [message] = insert_new_messages([message], true, true);
 
     waiting_for_id.set(message.local_id, message);
     waiting_for_ack.set(message.local_id, message);
@@ -224,6 +226,14 @@ export function try_deliver_locally(message_request, insert_new_messages) {
     // view; this is useful to ensure it will be visible in other
     // views that we might navigate to before we get a response from
     // the server.
+    if (
+        message_request.to_user_ids &&
+        !people.user_can_initiate_direct_message_thread(message_request.to_user_ids) &&
+        !message_util.get_direct_message_permission_hints(message_request.to_user_ids)
+            .is_local_echo_safe
+    ) {
+        return undefined;
+    }
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return undefined;
     }
@@ -368,7 +378,7 @@ export function update_message_lists({old_id, new_id}) {
 }
 
 export function process_from_server(messages) {
-    const msgs_to_rerender = [];
+    const msgs_to_rerender_or_add_to_narrow = [];
     const non_echo_messages = [];
 
     for (const message of messages) {
@@ -415,17 +425,29 @@ export function process_from_server(messages) {
         client_message.is_me_message = message.is_me_message;
         client_message.submessages = message.submessages;
 
-        msgs_to_rerender.push(client_message);
+        msgs_to_rerender_or_add_to_narrow.push(client_message);
         waiting_for_ack.delete(local_id);
     }
 
-    if (msgs_to_rerender.length > 0) {
-        // In theory, we could just rerender messages where there were
-        // changes in either the rounded timestamp we display or the
-        // message content, but in practice, there's no harm to just
-        // doing it unconditionally.
+    if (msgs_to_rerender_or_add_to_narrow.length > 0) {
         for (const msg_list of message_lists.all_rendered_message_lists()) {
-            msg_list.view.rerender_messages(msgs_to_rerender);
+            if (!msg_list.data.filter.can_apply_locally()) {
+                // If this message list is a search filter that we
+                // cannot apply locally, we will not have locally
+                // echoed echoed the message at all originally, and
+                // must the server now whether to add it to the view.
+                message_events_util.maybe_add_narrowed_messages(
+                    msgs_to_rerender_or_add_to_narrow,
+                    msg_list,
+                    message_util.add_new_messages,
+                );
+            } else {
+                // In theory, we could just rerender messages where there were
+                // changes in either the rounded timestamp we display or the
+                // message content, but in practice, there's no harm to just
+                // doing it unconditionally.
+                msg_list.view.rerender_messages(msgs_to_rerender_or_add_to_narrow);
+            }
         }
     }
 

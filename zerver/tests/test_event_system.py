@@ -1,5 +1,6 @@
 import time
-from typing import Any, Callable, Dict, List
+from collections.abc import Callable
+from typing import Any
 from unittest import mock
 from urllib.parse import urlsplit
 
@@ -76,21 +77,23 @@ class EventsEndpointTest(ZulipTestCase):
         self.assert_json_error(result, "Could not allocate event queue")
 
         return_event_queue = "15:11"
-        return_user_events: List[Dict[str, Any]] = []
+        return_user_events: list[dict[str, Any]] = []
 
         # We choose realm_emoji somewhat randomly--we want
         # a "boring" event type for the purpose of this test.
         event_type = "realm_emoji"
-        empty_realm_emoji_dict: Dict[str, Any] = {}
+        empty_realm_emoji_dict: dict[str, Any] = {}
         test_event = dict(id=6, type=event_type, realm_emoji=empty_realm_emoji_dict)
 
         # Test that call is made to deal with a returning soft deactivated user.
-        with mock.patch("zerver.lib.events.reactivate_user_if_soft_deactivated") as fa:
-            with stub_event_queue_user_events(return_event_queue, return_user_events):
-                result = self.api_post(
-                    user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
-                )
-                self.assertEqual(fa.call_count, 1)
+        with (
+            mock.patch("zerver.lib.events.reactivate_user_if_soft_deactivated") as fa,
+            stub_event_queue_user_events(return_event_queue, return_user_events),
+        ):
+            result = self.api_post(
+                user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
+            )
+            self.assertEqual(fa.call_count, 1)
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
@@ -286,7 +289,7 @@ class GetEventsTest(ZulipTestCase):
         self,
         view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
         user_profile: UserProfile,
-        post_data: Dict[str, Any],
+        post_data: dict[str, Any],
     ) -> HttpResponse:
         request = HostRequestMock(post_data, user_profile, tornado_handler=dummy_handler)
         return view_func(request, user_profile)
@@ -430,7 +433,7 @@ class GetEventsTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
 
-        def get_message(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
+        def get_message(apply_markdown: bool, client_gravatar: bool) -> dict[str, Any]:
             result = self.tornado_call(
                 get_events,
                 user_profile,
@@ -943,16 +946,16 @@ class ClientDescriptorsTest(ZulipTestCase):
                 self.apply_markdown = apply_markdown
                 self.client_gravatar = client_gravatar
                 self.client_type_name = "whatever"
-                self.events: List[Dict[str, Any]] = []
+                self.events: list[dict[str, Any]] = []
 
             def accepts_messages(self) -> bool:
                 return True
 
-            def accepts_event(self, event: Dict[str, Any]) -> bool:
+            def accepts_event(self, event: dict[str, Any]) -> bool:
                 assert event["type"] == "message"
                 return True
 
-            def add_event(self, event: Dict[str, Any]) -> None:
+            def add_event(self, event: dict[str, Any]) -> None:
                 self.events.append(event)
 
         client1 = MockClient(
@@ -1026,7 +1029,7 @@ class ClientDescriptorsTest(ZulipTestCase):
         # Setting users to `[]` bypasses code we don't care about
         # for this test--we assume client_info is correct in our mocks,
         # and we are interested in how messages are put on event queue.
-        users: List[Dict[str, Any]] = []
+        users: list[dict[str, Any]] = []
 
         with mock.patch(
             "zerver.tornado.event_queue.get_client_info_for_message_event", return_value=client_info
@@ -1170,9 +1173,11 @@ class FetchQueriesTest(ZulipTestCase):
         # count in production.
         realm = get_realm_with_settings(realm_id=user.realm_id)
 
-        with self.assert_database_query_count(43):
-            with mock.patch("zerver.lib.events.always_want") as want_mock:
-                fetch_initial_state_data(user, realm=realm)
+        with (
+            self.assert_database_query_count(41),
+            mock.patch("zerver.lib.events.always_want") as want_mock,
+        ):
+            fetch_initial_state_data(user, realm=realm)
 
         expected_counts = dict(
             alert_words=1,
@@ -1185,7 +1190,7 @@ class FetchQueriesTest(ZulipTestCase):
             muted_users=1,
             onboarding_steps=1,
             presence=1,
-            realm=3,
+            realm=1,
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,
