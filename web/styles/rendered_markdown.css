@@ -225,7 +225,7 @@
         white-space: nowrap;
         margin: 0 2px 1px;
 
-        .fa-clock-o {
+        .markdown-timestamp-icon {
             align-self: center;
         }
     }
