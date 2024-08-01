@@ -262,8 +262,9 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
     )
     realm = user_profile.realm
 
+    send_event_on_commit(realm, event_deactivate_user, active_user_ids(realm.id))
+
     if not user_access_restricted_in_realm(user_profile):
-        send_event_on_commit(realm, event_deactivate_user, active_user_ids(realm.id))
         return
 
     non_guest_user_ids = active_non_guest_user_ids(realm.id)
@@ -298,10 +299,6 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         | users_involved_in_dms_dict[user_profile.id]
         | peer_direct_message_group_subscribers
     )
-    if users_with_access_to_deactivated_user:
-        send_event_on_commit(
-            realm, event_deactivate_user, list(users_with_access_to_deactivated_user)
-        )
 
     users_losing_access_to_deactivated_user = (
         peer_stream_subscribers - users_with_access_to_deactivated_user

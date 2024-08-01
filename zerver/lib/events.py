@@ -1065,11 +1065,34 @@ def apply_event(
                 if "new_email" in person:
                     p["email"] = person["new_email"]
 
-                if "is_active" in person and not person["is_active"] and include_subscribers:
-                    for sub in state["subscriptions"]:
-                        sub["subscribers"] = [
-                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
-                        ]
+                if "is_active" in person and not person["is_active"]:
+                    if p["full_name"] == str(UserProfile.INACCESSIBLE_USER_NAME):
+                        # For inaccessible users, is_active field remains True always.
+                        p["is_active"] = True
+
+                    if include_subscribers:
+                        for sub_dict in [
+                            state["subscriptions"],
+                            state["unsubscribed"],
+                            state["never_subscribed"],
+                        ]:
+                            for sub in sub_dict:
+                                sub["subscribers"] = [
+                                    user_id
+                                    for user_id in sub["subscribers"]
+                                    if user_id != person_user_id
+                                ]
+
+            # User group members need to be updated even when the
+            # updated person is not present in "raw_users" object
+            # to handle the case when the user being deactivated
+            # is inaccessible to guest.
+            if "is_active" in person and not person["is_active"]:
+                for group in state["realm_user_groups"]:
+                    group["members"] = [
+                        user_id for user_id in group["members"] if user_id != person_user_id
+                    ]
+
         elif event["op"] == "remove":
             if person_user_id in state["raw_users"]:
                 if user_list_incomplete:
@@ -1081,10 +1104,15 @@ def apply_event(
                     state["raw_users"][person_user_id] = inaccessible_user_dict
 
             if include_subscribers:
-                for sub in state["subscriptions"]:
-                    sub["subscribers"] = [
-                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
-                    ]
+                for sub_dict in [
+                    state["subscriptions"],
+                    state["unsubscribed"],
+                    state["never_subscribed"],
+                ]:
+                    for sub in sub_dict:
+                        sub["subscribers"] = [
+                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                        ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
