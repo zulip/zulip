@@ -119,7 +119,7 @@
 
 /* Main geometry for this element is in zulip.css */
 #compose-content {
-    background-color: hsl(232deg 30% 92%);
+    background-color: var(--color-compose-box-background);
     padding: 7px 7px 8px;
     border: 1px solid hsl(0deg 0% 0% / 10%);
     border-radius: 9px 9px 0 0;
@@ -352,6 +352,7 @@
 #preview_message_area {
     margin-right: calc(var(--composebox-buttons-width) * -1);
     padding-right: var(--composebox-buttons-width);
+    background-color: var(--color-compose-message-content-background);
     color: var(--color-text-default);
 }
 
@@ -833,7 +834,6 @@ textarea.new_message_textarea {
     resize: none !important;
     border-radius: 3px 3px 0 0;
     border: none;
-    background-color: hsl(0deg 0% 100%);
     scrollbar-width: thin;
     scrollbar-color: hsl(0deg 0% 50%) transparent;
     box-shadow: none;
@@ -1363,7 +1363,6 @@ textarea.new_message_textarea {
     overflow: auto;
 
     border-radius: 3px 3px 0 0;
-    background-color: hsl(0deg 0% 100%);
     cursor: not-allowed;
 }
 
