@@ -3,11 +3,12 @@ import os
 import sys
 import time
 from copy import deepcopy
-from typing import Any, Dict, Final, List, Literal, Tuple, Union
+from typing import Any, Final, Literal
 from urllib.parse import urljoin
 
 from scripts.lib.zulip_tools import get_tornado_ports
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
+from zerver.lib.types import AnalyticsDataUploadLevel
 
 from .config import (
     DEPLOY_ROOT,
@@ -43,6 +44,7 @@ from .configured_settings import (
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
+    PUSH_NOTIFICATION_BOUNCER_URL,
     RATE_LIMITING_RULES,
     REALM_HOSTS,
     REGISTER_LINK_DISABLED,
@@ -61,9 +63,14 @@ from .configured_settings import (
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
     SOCIAL_AUTH_SUBDOMAIN,
     STATIC_URL,
+    SUBMIT_USAGE_STATISTICS,
     TORNADO_PORTS,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
+    ZULIP_SERVICE_PUSH_NOTIFICATIONS,
+    ZULIP_SERVICE_SECURITY_ALERTS,
+    ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS,
+    ZULIP_SERVICES_URL,
 )
 
 ########################################################################
@@ -89,6 +96,68 @@ SERVER_GENERATION = int(time.time())
 # Key to authenticate this server to zulip.org for push notifications, etc.
 ZULIP_ORG_KEY = get_secret("zulip_org_key")
 ZULIP_ORG_ID = get_secret("zulip_org_id")
+
+
+service_name_to_required_upload_level = {
+    "security_alerts": AnalyticsDataUploadLevel.BASIC,
+    "mobile_push": AnalyticsDataUploadLevel.BILLING,
+    "submit_usage_statistics": AnalyticsDataUploadLevel.ALL,
+}
+
+services: list[str] | None = None
+
+
+def services_append(service_name: str) -> None:
+    global services
+    if services is None:
+        services = []
+    services.append(service_name)
+
+
+if ZULIP_SERVICE_PUSH_NOTIFICATIONS:
+    services_append("mobile_push")
+    if ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS is None:
+        # This setting has special behavior where we want to activate
+        # it by default when push notifications are enabled - unless
+        # explicitly set otherwise in the config.
+        ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = True
+
+if ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS:
+    services_append("submit_usage_statistics")
+if ZULIP_SERVICE_SECURITY_ALERTS:
+    services_append("security_alerts")
+
+if services is None and PUSH_NOTIFICATION_BOUNCER_URL is not None:
+    # ZULIP_SERVICE_* are the new settings that control the services
+    # enabled by the server, which in turn dictate the level of data
+    # uploaded to ZULIP_SERVICES_URL.
+    # As some older servers, predating the transition to the ZULIP_SERVICE_*
+    # settings, may have upgraded without redoing this part of their config,
+    # we need this block to set this level correctly based on the
+    # legacy settings.
+
+    # This is a setting that some servers from before 9.0 may have configured
+    # instead of the new ZULIP_SERVICE_* settings.
+    # Translate it to a correct configuration.
+    ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
+    services_append("mobile_push")
+    ZULIP_SERVICES_URL = PUSH_NOTIFICATION_BOUNCER_URL
+    if SUBMIT_USAGE_STATISTICS:
+        ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = True
+        services_append("submit_usage_statistics")
+
+if services is not None and set(services).intersection(
+    {"submit_usage_statistics", "security_alerts", "mobile_push"}
+):
+    # None of these make sense enabled without ZULIP_SERVICES_URL.
+    assert (
+        ZULIP_SERVICES_URL is not None
+    ), "ZULIP_SERVICES_URL is required when any services are enabled."
+
+ANALYTICS_DATA_UPLOAD_LEVEL = max(
+    [service_name_to_required_upload_level[service] for service in (services or [])],
+    default=AnalyticsDataUploadLevel.NONE,
+)
 
 if DEBUG:
     INTERNAL_IPS = ("127.0.0.1",)
@@ -261,7 +330,7 @@ SILENCED_SYSTEM_CHECKS = [
 # We implement these options with a default DATABASES configuration
 # supporting peer authentication, with logic to override it as
 # appropriate if DEVELOPMENT or REMOTE_POSTGRES_HOST is set.
-DATABASES: Dict[str, Dict[str, Any]] = {
+DATABASES: dict[str, dict[str, Any]] = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": get_config("postgresql", "database_name", "zulip"),
@@ -332,7 +401,7 @@ SESSION_ENGINE = "zerver.lib.safe_session_cached_db"
 
 MEMCACHED_PASSWORD = get_secret("memcached_password")
 
-CACHES: Dict[str, Dict[str, object]] = {
+CACHES: dict[str, dict[str, object]] = {
     "default": {
         "BACKEND": "zerver.lib.singleton_bmemcached.SingletonBMemcached",
         "LOCATION": MEMCACHED_LOCATION,
@@ -419,7 +488,6 @@ if DEVELOPMENT:
     # PRODUCTION.  Saves a bunch of time.
     PASSWORD_HASHERS = [
         "django.contrib.auth.hashers.MD5PasswordHasher",
-        "django.contrib.auth.hashers.SHA1PasswordHasher",
         "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     ]
     # Also we auto-generate passwords for the default users which you
@@ -484,7 +552,7 @@ INTERNAL_BOTS = [
 ]
 
 # Bots that are created for each realm like the reminder-bot goes here.
-REALM_INTERNAL_BOTS: List[Dict[str, str]] = []
+REALM_INTERNAL_BOTS: list[dict[str, str]] = []
 # These are realm-internal bots that may exist in some organizations,
 # so configure power the setting, but should not be auto-created at this time.
 DISABLED_REALM_INTERNAL_BOTS = [
@@ -517,14 +585,6 @@ INTERNAL_BOT_DOMAIN = "zulip.com"
 
 # This needs to be synced with the Camo installation
 CAMO_KEY = get_secret("camo_key") if CAMO_URI != "" else None
-
-########################################################################
-# KATEX SERVER SETTINGS
-########################################################################
-
-KATEX_SERVER = get_config("application_server", "katex_server", False)
-KATEX_SERVER_PORT = get_config("application_server", "katex_server_port", "9700")
-
 
 ########################################################################
 # STATIC CONTENT AND MINIFICATION SETTINGS
@@ -576,7 +636,7 @@ else:
 ########################################################################
 
 # List of callables that know how to import templates from various sources.
-LOADERS: List[Union[str, Tuple[object, ...]]] = [
+LOADERS: list[str | tuple[object, ...]] = [
     "django.template.loaders.filesystem.Loader",
     "django.template.loaders.app_directories.Loader",
 ]
@@ -584,7 +644,7 @@ if PRODUCTION:
     # Template caching is a significant performance win in production.
     LOADERS = [("django.template.loaders.cached.Loader", LOADERS)]
 
-base_template_engine_settings: Dict[str, Any] = {
+base_template_engine_settings: dict[str, Any] = {
     "BACKEND": "django.template.backends.jinja2.Jinja2",
     "OPTIONS": {
         "environment": "zproject.jinja2.environment",
@@ -730,7 +790,7 @@ def file_handler(
     filename: str,
     level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG",
     formatter: str = "default",
-) -> Dict[str, str]:
+) -> dict[str, str]:
     return {
         "filename": filename,
         "level": level,
@@ -739,7 +799,7 @@ def file_handler(
     }
 
 
-LOGGING: Dict[str, Any] = {
+LOGGING: dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
@@ -890,7 +950,7 @@ LOGGING: Dict[str, Any] = {
             "propagate": False,
         },
         "pyvips": {
-            "level": "WARNING",
+            "level": "ERROR",
             "handlers": ["console", "errors_file"],
             "propagate": False,
         },

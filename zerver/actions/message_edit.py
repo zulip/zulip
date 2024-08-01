@@ -1,7 +1,9 @@
 import itertools
 from collections import defaultdict
+from collections.abc import Iterable
+from collections.abc import Set as AbstractSet
 from datetime import timedelta
-from typing import AbstractSet, Any, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any
 
 from django.conf import settings
 from django.db import transaction
@@ -84,16 +86,16 @@ from zerver.models.users import get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 
-def subscriber_info(user_id: int) -> Dict[str, Any]:
+def subscriber_info(user_id: int) -> dict[str, Any]:
     return {"id": user_id, "flags": ["read"]}
 
 
 def validate_message_edit_payload(
     message: Message,
-    stream_id: Optional[int],
-    topic_name: Optional[str],
-    propagate_mode: Optional[str],
-    content: Optional[str],
+    stream_id: int | None,
+    topic_name: str | None,
+    propagate_mode: str | None,
+    content: str | None,
 ) -> None:
     """
     Checks that the data sent is well-formed. Does not handle editability, permissions etc.
@@ -148,7 +150,7 @@ def maybe_send_resolve_topic_notifications(
     new_topic_name: str,
     changed_messages: QuerySet[Message],
     pre_truncation_new_topic_name: str,
-) -> Tuple[Optional[int], bool]:
+) -> tuple[int | None, bool]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
     resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
@@ -185,7 +187,7 @@ def maybe_send_resolve_topic_notifications(
     # For that reason, we apply a short grace period during which
     # such an undo action will just delete the previous notification
     # message instead.
-    if maybe_delete_previous_resolve_topic_notification(stream, new_topic_name):
+    if maybe_delete_previous_resolve_topic_notification(user_profile, stream, new_topic_name):
         return None, True
 
     # Compute the users who either sent or reacted to messages that
@@ -220,7 +222,9 @@ def maybe_send_resolve_topic_notifications(
     return resolved_topic_message_id, False
 
 
-def maybe_delete_previous_resolve_topic_notification(stream: Stream, topic: str) -> bool:
+def maybe_delete_previous_resolve_topic_notification(
+    user_profile: UserProfile, stream: Stream, topic: str
+) -> bool:
     assert stream.recipient_id is not None
     last_message = messages_for_topic(stream.realm_id, stream.recipient_id, topic).last()
 
@@ -236,7 +240,7 @@ def maybe_delete_previous_resolve_topic_notification(stream: Stream, topic: str)
     if time_difference > settings.RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS:
         return False
 
-    do_delete_messages(stream.realm, [last_message])
+    do_delete_messages(stream.realm, [last_message], acting_user=user_profile)
     return True
 
 
@@ -245,10 +249,10 @@ def send_message_moved_breadcrumbs(
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic_name: str,
-    old_thread_notification_string: Optional[StrPromise],
+    old_thread_notification_string: StrPromise | None,
     new_stream: Stream,
-    new_topic_name: Optional[str],
-    new_thread_notification_string: Optional[StrPromise],
+    new_topic_name: str | None,
+    new_thread_notification_string: StrPromise | None,
     changed_messages_count: int,
 ) -> None:
     # Since moving content between streams is highly disruptive,
@@ -299,7 +303,7 @@ def send_message_moved_breadcrumbs(
             )
 
 
-def get_mentions_for_message_updates(message_id: int) -> Set[int]:
+def get_mentions_for_message_updates(message_id: int) -> set[int]:
     # We exclude UserMessage.flags.historical rows since those
     # users did not receive the message originally, and thus
     # probably are not relevant for reprocessed alert_words,
@@ -330,7 +334,7 @@ def update_user_message_flags(
 ) -> None:
     mentioned_ids = rendering_result.mentions_user_ids
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
-    changed_ums: Set[UserMessage] = set()
+    changed_ums: set[UserMessage] = set()
 
     def update_flag(um: UserMessage, should_set: bool, flag: int) -> None:
         if should_set:
@@ -362,35 +366,32 @@ def update_user_message_flags(
 def do_update_embedded_data(
     user_profile: UserProfile,
     message: Message,
-    content: Optional[str],
-    rendering_result: MessageRenderingResult,
+    rendered_content: str | MessageRenderingResult,
 ) -> None:
-    timestamp = timezone_now()
-    event: Dict[str, Any] = {
+    ums = UserMessage.objects.filter(message=message.id)
+    update_fields = ["rendered_content"]
+    if isinstance(rendered_content, MessageRenderingResult):
+        update_user_message_flags(rendered_content, ums)
+        message.rendered_content = rendered_content.rendered_content
+        message.rendered_content_version = markdown_version
+        update_fields.append("rendered_content_version")
+    else:
+        message.rendered_content = rendered_content
+    message.save(update_fields=update_fields)
+
+    update_message_cache([message])
+    event: dict[str, Any] = {
         "type": "update_message",
         "user_id": None,
-        "edit_timestamp": datetime_to_timestamp(timestamp),
+        "edit_timestamp": datetime_to_timestamp(timezone_now()),
         "message_id": message.id,
+        "message_ids": [message.id],
+        "content": message.content,
+        "rendered_content": message.rendered_content,
         "rendering_only": True,
     }
-    changed_messages = [message]
-    rendered_content: Optional[str] = None
 
-    ums = UserMessage.objects.filter(message=message.id)
-
-    if content is not None:
-        update_user_message_flags(rendering_result, ums)
-        rendered_content = rendering_result.rendered_content
-        message.rendered_content = rendered_content
-        message.rendered_content_version = markdown_version
-        event["content"] = content
-        event["rendered_content"] = rendered_content
-
-    message.save(update_fields=["content", "rendered_content"])
-
-    event["message_ids"] = update_message_cache(changed_messages)
-
-    def user_info(um: UserMessage) -> Dict[str, Any]:
+    def user_info(um: UserMessage) -> dict[str, Any]:
         return {
             "id": um.user_profile_id,
             "flags": um.flags_list(),
@@ -426,15 +427,15 @@ def get_visibility_policy_after_merge(
 def do_update_message(
     user_profile: UserProfile,
     target_message: Message,
-    new_stream: Optional[Stream],
-    topic_name: Optional[str],
-    propagate_mode: Optional[str],
+    new_stream: Stream | None,
+    topic_name: str | None,
+    propagate_mode: str | None,
     send_notification_to_old_thread: bool,
     send_notification_to_new_thread: bool,
-    content: Optional[str],
-    rendering_result: Optional[MessageRenderingResult],
-    prior_mention_user_ids: Set[int],
-    mention_data: Optional[MentionData] = None,
+    content: str | None,
+    rendering_result: MessageRenderingResult | None,
+    prior_mention_user_ids: set[int],
+    mention_data: MentionData | None = None,
 ) -> int:
     """
     The main function for message editing.  A message edit event can
@@ -452,7 +453,7 @@ def do_update_message(
     timestamp = timezone_now()
     target_message.last_edit_time = timestamp
 
-    event: Dict[str, Any] = {
+    event: dict[str, Any] = {
         "type": "update_message",
         "user_id": user_profile.id,
         "edit_timestamp": datetime_to_timestamp(timestamp),
@@ -524,7 +525,7 @@ def do_update_message(
             else:
                 new_topic_name = target_message.topic_name()
 
-            stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
+            stream_topic: StreamTopicTarget | None = StreamTopicTarget(
                 stream_id=stream_id,
                 topic_name=new_topic_name,
             )
@@ -586,7 +587,7 @@ def do_update_message(
         event["propagate_mode"] = propagate_mode
 
     users_losing_access = UserProfile.objects.none()
-    user_ids_gaining_usermessages: List[int] = []
+    user_ids_gaining_usermessages: list[int] = []
     if new_stream is not None:
         assert content is None
         assert target_message.is_stream_message()
@@ -792,13 +793,13 @@ def do_update_message(
     # freshly-fetched-from-the-database changed messages.
     changed_messages = save_changes_for_propagation_mode()
 
-    realm_id: Optional[int] = None
+    realm_id: int | None = None
     if stream_being_edited is not None:
         realm_id = stream_being_edited.realm_id
 
     event["message_ids"] = update_message_cache(changed_messages, realm_id)
 
-    def user_info(um: UserMessage) -> Dict[str, Any]:
+    def user_info(um: UserMessage) -> dict[str, Any]:
         return {
             "id": um.user_profile_id,
             "flags": um.flags_list(),
@@ -908,9 +909,9 @@ def do_update_message(
         assert target_stream is not None
         assert target_topic_name is not None
 
-        stream_inaccessible_to_user_profiles: List[UserProfile] = []
-        orig_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
-        target_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
+        stream_inaccessible_to_user_profiles: list[UserProfile] = []
+        orig_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
+        target_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
         user_ids_losing_access = {user.id for user in users_losing_access}
         for user_topic in get_users_with_user_topic_visibility_policy(
             stream_being_edited.id, orig_topic_name
@@ -930,14 +931,14 @@ def do_update_message(
             )
 
         # User profiles having any of the visibility policies set for either the original or target topic.
-        user_profiles_having_visibility_policy: Set[UserProfile] = set(
+        user_profiles_having_visibility_policy: set[UserProfile] = set(
             itertools.chain(
                 orig_topic_user_profile_to_visibility_policy.keys(),
                 target_topic_user_profile_to_visibility_policy.keys(),
             )
         )
 
-        user_profiles_for_visibility_policy_pair: Dict[Tuple[int, int], List[UserProfile]] = (
+        user_profiles_for_visibility_policy_pair: dict[tuple[int, int], list[UserProfile]] = (
             defaultdict(list)
         )
         for user_profile_with_policy in user_profiles_having_visibility_policy:
@@ -1145,8 +1146,8 @@ def do_update_message(
 def check_time_limit_for_change_all_propagate_mode(
     message: Message,
     user_profile: UserProfile,
-    topic_name: Optional[str] = None,
-    stream_id: Optional[int] = None,
+    topic_name: str | None = None,
+    stream_id: int | None = None,
 ) -> None:
     realm = user_profile.realm
     message_move_limit_buffer = 20
@@ -1197,7 +1198,7 @@ def check_time_limit_for_change_all_propagate_mode(
             message__recipient_id=message.recipient_id,
             message__subject__iexact=message.topic_name(),
         ).values_list("message_id", flat=True)
-        messages_allowed_to_move: List[int] = list(
+        messages_allowed_to_move: list[int] = list(
             Message.objects.filter(
                 # Uses index: zerver_message_pkey
                 id__in=accessible_messages_in_topic,
@@ -1238,12 +1239,12 @@ def check_time_limit_for_change_all_propagate_mode(
 def check_update_message(
     user_profile: UserProfile,
     message_id: int,
-    stream_id: Optional[int] = None,
-    topic_name: Optional[str] = None,
+    stream_id: int | None = None,
+    topic_name: str | None = None,
     propagate_mode: str = "change_one",
     send_notification_to_old_thread: bool = True,
     send_notification_to_new_thread: bool = True,
-    content: Optional[str] = None,
+    content: str | None = None,
 ) -> int:
     """This will update a message given the message id and user profile.
     It checks whether the user profile has the permission to edit the message
@@ -1291,9 +1292,9 @@ def check_update_message(
             raise JsonableError(_("The time limit for editing this message's topic has passed."))
 
     rendering_result = None
-    links_for_embed: Set[str] = set()
-    prior_mention_user_ids: Set[int] = set()
-    mention_data: Optional[MentionData] = None
+    links_for_embed: set[str] = set()
+    prior_mention_user_ids: set[int] = set()
+    mention_data: MentionData | None = None
     if content is not None:
         if content.rstrip() == "":
             content = "(deleted)"

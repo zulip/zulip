@@ -1,10 +1,8 @@
-from typing import Optional
-
 import lxml.html
 from lxml.html.diff import htmldiff
 
 
-def highlight_html_differences(s1: str, s2: str, msg_id: Optional[int] = None) -> str:
+def highlight_html_differences(s1: str, s2: str, msg_id: int | None = None) -> str:
     retval = htmldiff(s1, s2)
     fragment = lxml.html.fragment_fromstring(retval, create_parent=True)
 

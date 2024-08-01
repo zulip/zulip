@@ -4,7 +4,6 @@ import json
 import os
 import subprocess
 import sys
-from typing import List
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -16,7 +15,7 @@ sanity_check.check_venv(__file__)
 from scripts.lib.zulip_tools import ENDC, FAIL, WARNING
 
 
-def find_handlebars(translatable_strings: List[str]) -> List[str]:
+def find_handlebars(translatable_strings: list[str]) -> list[str]:
     return [string for string in translatable_strings if "{{" in string]
 
 

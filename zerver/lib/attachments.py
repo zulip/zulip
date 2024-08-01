@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -22,7 +22,7 @@ from zerver.models import (
 )
 
 
-def user_attachments(user_profile: UserProfile) -> List[Dict[str, Any]]:
+def user_attachments(user_profile: UserProfile) -> list[dict[str, Any]]:
     attachments = Attachment.objects.filter(owner=user_profile).prefetch_related("messages")
     return [a.to_dict() for a in attachments]
 
@@ -52,7 +52,7 @@ def remove_attachment(user_profile: UserProfile, attachment: Attachment) -> None
 
 def validate_attachment_request_for_spectator_access(
     realm: Realm, attachment: Attachment
-) -> Optional[bool]:
+) -> bool | None:
     if attachment.realm != realm:
         return False
 
@@ -89,10 +89,10 @@ def validate_attachment_request_for_spectator_access(
 
 
 def validate_attachment_request(
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     path_id: str,
-    realm: Optional[Realm] = None,
-) -> Optional[bool]:
+    realm: Realm | None = None,
+) -> bool | None:
     try:
         attachment = Attachment.objects.get(path_id=path_id)
     except Attachment.DoesNotExist:
@@ -161,7 +161,7 @@ def validate_attachment_request(
 
 def get_old_unclaimed_attachments(
     weeks_ago: int,
-) -> Tuple[QuerySet[Attachment], QuerySet[ArchivedAttachment]]:
+) -> tuple[QuerySet[Attachment], QuerySet[ArchivedAttachment]]:
     """
     The logic in this function is fairly tricky. The essence is that
     a file should be cleaned up if and only if it not referenced by any
@@ -176,7 +176,7 @@ def get_old_unclaimed_attachments(
 
     # The Attachment vs ArchivedAttachment queries are asymmetric because only
     # Attachment has the scheduled_messages relation.
-    old_attachments = Attachment.objects.annotate(
+    old_attachments = Attachment.objects.alias(
         has_other_messages=Exists(
             ArchivedAttachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
         )
@@ -186,7 +186,7 @@ def get_old_unclaimed_attachments(
         create_time__lt=delta_weeks_ago,
         has_other_messages=False,
     )
-    old_archived_attachments = ArchivedAttachment.objects.annotate(
+    old_archived_attachments = ArchivedAttachment.objects.alias(
         has_other_messages=Exists(
             Attachment.objects.filter(id=OuterRef("id")).exclude(
                 messages=None, scheduled_messages=None

@@ -1,8 +1,9 @@
-from typing import Any, Callable, Dict, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 ReturnT = TypeVar("ReturnT")
 
-FUNCTION_NAME_TO_PER_REQUEST_RESULT: Dict[str, Dict[int, Any]] = {}
+FUNCTION_NAME_TO_PER_REQUEST_RESULT: dict[str, dict[int, Any]] = {}
 
 
 def return_same_value_during_entire_request(f: Callable[..., ReturnT]) -> Callable[..., ReturnT]:

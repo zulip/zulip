@@ -40,13 +40,6 @@
         opacity: 0.5;
         line-height: 0;
         border-radius: 4px;
-        /* Leave room for the focus outline. */
-        margin-right: 1px;
-
-        &:focus {
-            /* Reduce height to leave 1px on top and bottom for the outline. */
-            height: calc(100% - 2px);
-        }
 
         &:not(:focus-visible) {
             outline: none;
@@ -61,23 +54,13 @@
         }
     }
 
-    .zulip-icon-close {
-        font-size: 10px;
-    }
-
     .search-input-and-pills {
         grid-area: search-pills;
         display: flex;
         padding: 0;
         flex-wrap: wrap;
-        gap: 2px 2px;
+        gap: 2px;
         align-self: center;
-    }
-
-    .search-input-and-pills.freshly-opened {
-        > .pill {
-            border-color: var(--focus-outline-input-pill);
-        }
     }
 
     .navbar-search:not(.expanded) {
@@ -166,7 +149,11 @@
             color: var(--color-text-search-hover);
         }
 
-        .typeahead-menu > li > a {
+        .typeahead-menu .simplebar-content {
+            min-width: unset;
+        }
+
+        .typeahead-menu .simplebar-content > li > a {
             max-width: none;
         }
     }
@@ -174,19 +161,13 @@
     .input-append {
         position: relative;
         width: 100%;
+        box-sizing: border-box;
         margin-bottom: 0;
     }
 
     .search-input {
         /* Avoid massive inheritance chain on font-size. */
         font-size: var(--base-font-size-px);
-        /* override height-input-pill from default input pills to account for pill border */
-        line-height: calc(
-            var(--height-input-pill) + var(--vertical-spacing-input-pill)
-        );
-        min-height: calc(
-            var(--height-input-pill) + var(--vertical-spacing-input-pill)
-        );
         /* override bootstrap padding for input[type="text"] */
         padding: 0;
         border: none;
@@ -219,15 +200,22 @@
         /* Override style for .pill-container that isn't relevant for search. */
         border: none;
         grid-template:
-            "search-icon search-pills search-close" minmax(
-                var(--search-box-height),
-                auto
-            )
-            / auto minmax(0, 1fr) auto;
-        align-items: start;
+            "search-icon search-pills search-close" var(--search-box-height)
+            ". search-pills ." auto / auto minmax(0, 1fr) 28px;
+        align-content: center;
         cursor: pointer;
 
         /* Override styles for .pill-container that aren't relevant for search. */
+        &.pill-container {
+            /* Pill container should display the same background
+               color as the search typeahead. */
+            background-color: var(--color-background-search);
+            /* Maintain only a column gap. */
+            gap: 0 5px;
+            /* Override padding. */
+            padding: 0;
+        }
+
         .pill {
             margin: 0;
             min-width: unset;
@@ -240,12 +228,23 @@
             .search-input-and-pills {
                 flex-wrap: nowrap;
                 overflow: hidden;
+
+                @media (height < $short_navbar_cutoff_height) {
+                    line-height: var(--base-line-height-unitless);
+                }
             }
         }
 
+        &.focused .user-pill-container {
+            flex-flow: row wrap;
+        }
+
         .user-pill-container {
-            min-width: fit-content;
-            gap: 5px;
+            gap: 2px 5px;
+            /* Don't enforce a height, as user-pill containers
+               can contain multiple user pills that wrap onto
+               new lines. */
+            height: unset;
 
             > .pill-label {
                 min-width: fit-content;
@@ -253,18 +252,35 @@
                 width: fit-content;
                 /* Replaced by the 5px gap. */
                 margin-right: 0;
+                /* Don't inherit large line-height for user pill labels. */
+                line-height: 1;
             }
 
             .pill {
-                height: var(--height-input-pill);
+                /* Reduce user pill height by 2px to
+                   preserve an apparent border around
+                   them even under `box-sizing: border-box`
+                   in the area. */
+                height: calc(var(--height-input-pill) - 2px);
                 border: none;
-                border-radius: 3px;
+                /* Match border radius to image */
+                border-radius: 4px;
+                max-width: none;
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+
+                /* Don't inherit large line-height for user pills themselves, either. */
+                line-height: 1;
 
                 &:not(.deactivated-pill) {
                     background-color: var(--color-background-user-pill);
                 }
             }
         }
+    }
+
+    .pill-label {
+        min-width: 30px;
     }
 
     @media (width >= $md_min) {
@@ -291,19 +307,15 @@
         #searchbox_form:not(.expanded) {
             margin: 0;
             /* Now that the header is shorter, the search box will take up the whole
-               height (which looks weird), so add 2px of space above and below it.
-               The extra pixel is to account for the header's bottom border (box shadow). */
-            margin-top: 2px;
-            height: calc(var(--header-height) - 5px);
-
-            #searchbox-input-container {
-                height: calc(var(--search-box-height) - 5px);
-            }
+               height (which looks weird), so add 1px of space above and below it
+               by manipulating the margin and the height. */
+            margin-top: 1px;
+            height: calc(var(--header-height) - 3px);
         }
 
         /* It looks fine to fill the navbar when the typeahead is open. */
         #searchbox_form.expanded {
-            margin-top: 0;
+            margin-top: 1px;
         }
     }
 
@@ -320,17 +332,22 @@
         }
     }
 
-    .typeahead-menu li a {
-        padding: 3px 30px;
+    .typeahead-menu .simplebar-content > li > a {
+        padding: 3px 40px;
         /* Override white-space: nowrap from zulip.css */
         white-space: normal;
 
+        .search_list_item {
+            max-width: 100%;
+        }
+
         .search_list_item .pill-container {
-            margin-left: 5px;
+            margin: 1px 5px;
             /* This contains only one pill, which handles its own border */
             border: none;
             cursor: pointer;
             padding: 0;
+            max-width: 100%;
         }
 
         .pill {
@@ -349,7 +366,7 @@
 
         .pill-image {
             /* Add line-height equal to height to mimic baseline alignment. */
-            line-height: var(--length-input-pill-image);
+            line-height: var(--height-input-pill);
             align-self: center;
         }
     }

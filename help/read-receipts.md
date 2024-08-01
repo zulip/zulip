@@ -24,6 +24,11 @@ their organization.
 
 3. Click **View read receipts**.
 
+!!! keyboard_tip ""
+
+    You can also use <kbd>Shift</kbd> + <kbd>V</kbd> to show or hide read receipts
+    for the selected message.
+
 {tab|mobile}
 
 {!message-long-press-menu.md!}

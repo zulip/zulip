@@ -190,6 +190,66 @@ run_test("get_recursive_subgroups", () => {
     assert.deepEqual(user_groups.get_recursive_subgroups(test), undefined);
 });
 
+run_test("get_recursive_group_members", () => {
+    const admins = {
+        name: "Admins",
+        description: "foo",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 2,
+        members: new Set([2, 3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1, 3]),
+    };
+    const test = {
+        name: "Test",
+        id: 3,
+        members: new Set([3, 4, 5]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([2]),
+    };
+    const foo = {
+        name: "Foo",
+        id: 4,
+        members: new Set([6, 7]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+
+    user_groups.add(admins);
+    user_groups.add(all);
+    user_groups.add(test);
+    user_groups.add(foo);
+
+    // This test setup has a state that won't appear in real data: Groups 2 and 3
+    // each contain the other. We test this corner case because it is a simple way
+    // to verify whether our algorithm correctly avoids visiting groups multiple times
+    // when determining recursive subgroups.
+    // A test case that can occur in practice and would be problematic without this
+    // optimization is a tree where each layer connects to every node in the next layer.
+    assert.deepEqual([...user_groups.get_recursive_group_members(admins)].sort(), [1, 6, 7]);
+    assert.deepEqual(
+        [...user_groups.get_recursive_group_members(all)].sort(),
+        [1, 2, 3, 4, 5, 6, 7],
+    );
+    assert.deepEqual(
+        [...user_groups.get_recursive_group_members(test)].sort(),
+        [1, 2, 3, 4, 5, 6, 7],
+    );
+    assert.deepEqual([...user_groups.get_recursive_group_members(foo)].sort(), [6, 7]);
+
+    user_groups.add_subgroups(foo.id, [9999]);
+    const foo_group = user_groups.get_user_group_from_id(foo.id);
+    blueslip.expect("error", "Could not find subgroup", 2);
+    assert.deepEqual([...user_groups.get_recursive_group_members(foo_group)].sort(), [6, 7]);
+    assert.deepEqual([...user_groups.get_recursive_group_members(test)].sort(), [3, 4, 5]);
+});
+
 run_test("is_user_in_group", () => {
     const admins = {
         name: "Admins",
@@ -409,4 +469,25 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
             message: "Invalid setting: invalid_setting",
         },
     );
+});
+
+run_test("get_display_group_name", () => {
+    const admins = {
+        name: "Admins",
+        description: "foo",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4]),
+    };
+    const all = {
+        name: "role:everyone",
+        id: 2,
+        members: new Set([2, 3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+    };
+
+    assert.equal(user_groups.get_display_group_name(admins), "Admins");
+    assert.equal(user_groups.get_display_group_name(all), "translated: Everyone");
 });

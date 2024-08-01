@@ -45,13 +45,6 @@
             font-size: 1em;
         }
 
-        .fa-envelope {
-            /* The squatter envelope icon appears
-               better vertically centered when aligned
-               to the baseline of the adjacent DM partners. */
-            align-self: baseline;
-        }
-
         @media (height < $short_navbar_cutoff_height) {
             padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
@@ -60,14 +53,6 @@
             margin: 0 6px 0 5px;
             /* Align all icons to center. */
             align-self: center;
-        }
-
-        .fa {
-            .fa-envelope {
-                /* 14px at 16px em, inherited from .navbar_title */
-                font-size: 0.875em;
-                margin: 0 5px;
-            }
         }
     }
 
@@ -90,7 +75,12 @@
         background: none;
         color: inherit;
         font-weight: 400;
-        padding-left: 10px;
+        /* Padding to the left separates the description from the
+           view label or channel name; padding to the right keeps
+           the description from getting too close to the closed
+           search box--with a pleasing equidistant space in both
+           places. */
+        padding: 0 10px;
         overflow: hidden;
         text-overflow: ellipsis;
         /* The very last element in the navbar is the search icon, the second
@@ -106,6 +96,21 @@
         .help_link_widget,
         .fa {
             margin: 0;
+        }
+
+        .fa-question-circle-o {
+            /* Override relative position for sake of
+               Chrome paint bug that keeps the circle
+               visible when ellipses are showing. */
+            position: static;
+        }
+
+        .help_link_widget {
+            /* With relative positioning no longer
+               in effect, we vertically align the
+               help icon with an inline-block assist,
+               which is present on the .fa class. */
+            vertical-align: middle;
         }
     }
 }

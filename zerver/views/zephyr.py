@@ -4,7 +4,6 @@ import re
 import shlex
 import subprocess
 from email.headerregistry import Address
-from typing import Optional
 
 import orjson
 from django.conf import settings
@@ -30,7 +29,7 @@ kerberos_alter_egos = {
 @authenticated_json_view
 @typed_endpoint
 def webathena_kerberos_login(
-    request: HttpRequest, user_profile: UserProfile, *, cred: Optional[str] = None
+    request: HttpRequest, user_profile: UserProfile, *, cred: str | None = None
 ) -> HttpResponse:
     if cred is None:
         raise JsonableError(_("Could not find Kerberos credential"))

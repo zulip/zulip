@@ -2,10 +2,11 @@ import base64
 import email.policy
 import os
 import subprocess
+from collections.abc import Callable, Mapping
 from email import message_from_string
 from email.headerregistry import Address
 from email.message import EmailMessage, MIMEPart
-from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -52,7 +53,7 @@ logger_name = "zerver.lib.email_mirror"
 class TestEncodeDecode(ZulipTestCase):
     def _assert_options(
         self,
-        options: Dict[str, bool],
+        options: dict[str, bool],
         show_sender: bool = False,
         include_footer: bool = False,
         include_quotes: bool = False,
@@ -325,7 +326,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         self.assertEqual(message.content, "TestStreamEmailMessages body")
         self.assert_message_stream_name(message, stream.name)
-        self.assertEqual(message.topic_name(), "(no topic)")
+        self.assertEqual(message.topic_name(), "Email with no subject")
 
     def test_receive_stream_email_messages_subject_with_nonprintable_chars(
         self,
@@ -357,7 +358,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.topic_name(), "(no topic)")
+        self.assertEqual(message.topic_name(), "Email with no subject")
 
     def test_receive_private_stream_email_messages_success(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1371,6 +1372,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         self.assertFalse(is_forwarded("subject"))
         self.assertFalse(is_forwarded("RE: FWD: hi"))
+        self.assertFalse(is_forwarded("AW: FWD: hi"))
 
     def test_reply_is_extracted_from_plain(self) -> None:
         # build dummy messages for stream
@@ -1526,7 +1528,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         def check_queue_json_publish(
             queue_name: str,
             event: Mapping[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             self.assertEqual(queue_name, "email_mirror")
             self.assertEqual(event, {"rcpt_to": to_address, "msg_base64": msg_base64})
@@ -1606,7 +1608,7 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestStreamEmailMessages body")
-        incoming_valid_message["Subject"] = "Re: Fwd: Re: Test"
+        incoming_valid_message["Subject"] = "Re: Fwd: Re: AW: Test"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -1615,12 +1617,12 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         message = most_recent_message(user_profile)
         self.assertEqual("Test", message.topic_name())
 
-        # If after stripping we get an empty subject, it should get set to (no topic)
+        # If after stripping we get an empty subject, it should get set to Email with no subject
         del incoming_valid_message["Subject"]
         incoming_valid_message["Subject"] = "Re: Fwd: Re: "
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
-        self.assertEqual("(no topic)", message.topic_name())
+        self.assertEqual("Email with no subject", message.topic_name())
 
     def test_strip_from_subject(self) -> None:
         subject_list = orjson.loads(self.fixture_data("subjects.json", type="email"))

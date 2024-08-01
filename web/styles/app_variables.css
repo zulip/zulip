@@ -1,4 +1,167 @@
 :root {
+    /* Zulip color palette */
+    /* stylelint-disable color-no-hex */
+    /* grey */
+    --grey-0: #f7f8fc;
+    --grey-50: #f2f3f7;
+    --grey-100: #e9ebf2;
+    --grey-150: #dfe1e8;
+    --grey-200: #cbcdd6;
+    --grey-250: #bbbdc8;
+    --grey-300: #aaadba;
+    --grey-350: #9ea1ae;
+    --grey-400: #9194a3;
+    --grey-450: #858897;
+    --grey-500: #767988;
+    --grey-550: #626573;
+    --grey-600: #535663;
+    --grey-650: #444754;
+    --grey-700: #393c49;
+    --grey-750: #2d303c;
+    --grey-800: #242631;
+    --grey-850: #181a25;
+    --grey-900: #11131e;
+    --grey-950: #0a0c17;
+    --grey-1000: #070812;
+
+    /* purple */
+    --purple-0: #f3f2fd;
+    --purple-50: #ededfc;
+    --purple-100: #e5e5fc;
+    --purple-150: #dbdaff;
+    --purple-200: #c9c7fd;
+    --purple-250: #b8b4ff;
+    --purple-300: #aba5fd;
+    --purple-350: #9e94fd;
+    --purple-400: #9283fd;
+    --purple-450: #8a70fc;
+    --purple-500: #7f63ee;
+    --purple-550: #7153dc;
+    --purple-600: #5f3cc5;
+    --purple-650: #522ab4;
+    --purple-700: #4615a3;
+    --purple-750: #370386;
+    --purple-800: #2c0070;
+    --purple-850: #200154;
+    --purple-900: #13013a;
+    --purple-950: #0d002c;
+    --purple-1000: #070020;
+
+    /* violet */
+    --violet-0: #f1f3fe;
+    --violet-50: #eceefc;
+    --violet-100: #e3e6fd;
+    --violet-150: #d8dcfc;
+    --violet-200: #c3c9fe;
+    --violet-250: #b1b7fe;
+    --violet-300: #a3a9fc;
+    --violet-350: #9398fd;
+    --violet-400: #8688fd;
+    --violet-450: #7977fe;
+    --violet-500: #6e69f3;
+    --violet-550: #6159e1;
+    --violet-600: #4f42c9;
+    --violet-650: #4331b8;
+    --violet-700: #381da7;
+    --violet-750: #2b0e8a;
+    --violet-800: #230773;
+    --violet-850: #180557;
+    --violet-900: #0e033c;
+    --violet-950: #08012e;
+    --violet-1000: #050121;
+
+    /* blue */
+    --blue-0: #eff3fe;
+    --blue-50: #e5edfe;
+    --blue-100: #dae5fd;
+    --blue-150: #cbdbfd;
+    --blue-200: #b4cafd;
+    --blue-250: #97b6fe;
+    --blue-300: #84a8fd;
+    --blue-350: #7199fe;
+    --blue-400: #5f8bfc;
+    --blue-450: #4d7bfd;
+    --blue-500: #406ef6;
+    --blue-550: #325ce3;
+    --blue-600: #2145cb;
+    --blue-650: #1633b9;
+    --blue-700: #0f23ac;
+    --blue-750: #0a089b;
+    --blue-800: #06037c;
+    --blue-850: #03025c;
+    --blue-900: #020145;
+    --blue-950: #010034;
+    --blue-1000: #010024;
+
+    /* green */
+    --green-0: #ebffee;
+    --green-50: #d0fed8;
+    --green-100: #b4ffc3;
+    --green-150: #a3f9b5;
+    --green-200: #82e89a;
+    --green-250: #6bd586;
+    --green-300: #57c273;
+    --green-350: #41ae61;
+    --green-400: #2f9f52;
+    --green-450: #158f44;
+    --green-500: #07833c;
+    --green-550: #087736;
+    --green-600: #09672e;
+    --green-650: #035926;
+    --green-700: #054f22;
+    --green-750: #05401b;
+    --green-800: #013112;
+    --green-850: #03260e;
+    --green-900: #001d07;
+    --green-950: #011505;
+    --green-1000: #010d03;
+
+    /* orange */
+    --orange-0: #fef4e3;
+    --orange-50: #ffeccd;
+    --orange-100: #ffda9b;
+    --orange-150: #fecb6f;
+    --orange-200: #febe3d;
+    --orange-250: #f8b325;
+    --orange-300: #eba002;
+    --orange-350: #db920d;
+    --orange-400: #c8850d;
+    --orange-450: #ba7401;
+    --orange-500: #a96a05;
+    --orange-550: #9c5c00;
+    --orange-600: #88520c;
+    --orange-650: #764607;
+    --orange-700: #623b0c;
+    --orange-750: #4f2e06;
+    --orange-800: #3f2404;
+    --orange-850: #321c04;
+    --orange-900: #291602;
+    --orange-950: #200f01;
+    --orange-1000: #180c03;
+
+    /* red */
+    --red-0: #fcf3f2;
+    --red-50: #ffe4e0;
+    --red-100: #ffd4cd;
+    --red-150: #ffbfb5;
+    --red-200: #fea497;
+    --red-250: #ff8b7c;
+    --red-300: #fd7465;
+    --red-350: #fd5f50;
+    --red-400: #f34c3e;
+    --red-450: #e1392e;
+    --red-500: #d22720;
+    --red-550: #c0070a;
+    --red-600: #ac0508;
+    --red-650: #960708;
+    --red-700: #7c0203;
+    --red-750: #650102;
+    --red-800: #4f0001;
+    --red-850: #400101;
+    --red-900: #330201;
+    --red-950: #280100;
+    --red-1000: #1a0200;
+
     color-scheme: light;
 
     /*
@@ -16,18 +179,20 @@
 
     /*
     Height of the search box, which appears in the header.
-    On very short screens, the search box's height becomes
-    the height of its parent (i.e. the header height).
     */
-    --search-box-height: 28px;
+    --search-box-height: 32px;
     --search-box-width: 150px;
-
-    @media (height < $short_navbar_cutoff_height) {
-        --search-box-height: var(--header-height);
-    }
 
     @media (width < $md_min) {
         --search-box-width: 40px;
+    }
+
+    /*
+        On very short screens, the search box's height becomes
+        is reduced to fit the available space.
+    */
+    @media (height < $short_navbar_cutoff_height) {
+        --search-box-height: 28px;
     }
 
     /*
@@ -78,7 +243,15 @@
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
-    --left-sidebar-width: 270px;
+    --left-sidebar-right-margin: 12px;
+    /* 287px at 14px/1em */
+    --left-sidebar-max-width: calc(20.5em - var(--left-sidebar-right-margin));
+    /* Sidebar width is 1/3 of the screen at smaller
+       sizes, but gets held to the left sidebar's max width.
+       This is very useful for areas in the CSS codebase
+       that rely on this value, but not necessarily as
+       applied to `width:` or `max-width:`. */
+    --left-sidebar-width: min(33.3333%, var(--left-sidebar-max-width));
     /* 40px (toggle icon) + 5px (gap) + 20px logo + 10px right margin */
     --left-sidebar-width-with-realm-icon-logo: 75px;
     --right-sidebar-width: 250px;
@@ -101,7 +274,9 @@
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
     --message-actions-popover-min-width: 230px;
+    --user-group-info-popover-min-width: 16.4285em; /* 230px / 14px em */
     --topic-actions-popover-min-width: 200px;
+    --user-card-popover-min-width: 200px;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
@@ -255,9 +430,13 @@
     --recent-topics-filters-height: 50px;
 
     /* Pill dimensions. */
-    /* 1.4286em is 20px at 14px/1em */
-    --height-input-pill: 1.4286em;
-    --length-input-pill-image: var(--height-input-pill);
+    /* 1.5714em is 22px (border-inclusive) at 14px/1em */
+    --height-input-pill: 1.5714em;
+    /* Reduce user pill image lengths by 2px to
+       preserve an apparent border around
+       them, and a square aspect-ratio, even under
+       `box-sizing: border-box` in the area. */
+    --length-input-pill-image: calc(var(--height-input-pill) - 2px);
     --vertical-spacing-input-pill: 2px;
     --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
     --horizontal-spacing-input-pill: 6px;
@@ -289,6 +468,9 @@
     */
     --max-unmaximized-compose-height: 40vh;
 
+    /* Maximum height of the message-edit and preview areas. */
+    --max-message-edit-height: 24em;
+
     /*
     Line height of the message buttons in compose box. Here it's necessary
     to control this value uniformly and precisely to avoid issues with
@@ -319,6 +501,13 @@
     visually consistent with that of it's parent popover.
     */
     --popover-tippy-arrow-before-offset: -6.5px;
+
+    /*
+    Padding used in headers for sortable columns in table to make sure
+    that the arrow is visible completely for different screen widths,
+    languages and font-size including when hovering over the header.
+    */
+    --table-header-sortable-column-padding-right: 1em;
 
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
@@ -468,6 +657,7 @@
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(0deg 0% 43%);
     --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
+    --color-text-user-card-secondary: var(--grey-550);
     --color-text-url: hsl(200deg 100% 40%);
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
@@ -513,6 +703,28 @@
     --color-tab-picker-icon: hsl(200deg 100% 40%);
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
+    /* hsl(229deg 9% 36%) corresponds to --grey-600.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent);
+    --color-copy-btn-hover: var(--green-600);
+    /* hsl(144deg 84% 22%) corresponds to --green-600.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn-bg-hover: color-mix(
+        in oklch,
+        hsl(144deg 84% 22%) 8%,
+        transparent
+    );
+    --color-copy-btn-active: var(--green-500);
+    /* hsl(146deg 90% 27%) corresponds to --green-500.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn-bg-active: color-mix(
+        in oklch,
+        hsl(146deg 90% 27%) 12%,
+        transparent
+    );
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 0% / 10%);
@@ -848,6 +1060,7 @@
     --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
     --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
     --color-text-sidebar-popover-menu: hsl(236deg 33% 90%);
+    --color-text-user-card-secondary: var(--grey-400);
     /* 75% opacity of --color-text-default against --color-background.
        We use color-mix here to avoid defining a separate, compounding
        `opacity` property, and also to preserve a record of the
@@ -897,6 +1110,28 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
+    /* hsl(229deg 9% 65%) corresponds to --grey-350.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 65%) 70%, transparent);
+    --color-copy-btn-hover: var(--green-300);
+    /* hsl(144deg 84% 22%) corresponds to --green-600.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn-bg-hover: color-mix(
+        in oklch,
+        hsl(144deg 84% 22%) 8%,
+        transparent
+    );
+    --color-copy-btn-active: var(--green-300);
+    /* hsl(139deg 54% 40%) corresponds to --green-400.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn-bg-active: color-mix(
+        in oklch,
+        hsl(139deg 54% 40%) 17%,
+        transparent
+    );
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 100% / 15%);

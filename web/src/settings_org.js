@@ -20,6 +20,7 @@ import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_notifications from "./settings_notifications";
+import * as settings_preferences from "./settings_preferences";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_ui from "./settings_ui";
 import {current_user, realm} from "./state_data";
@@ -370,7 +371,7 @@ function set_create_web_public_stream_dropdown_visibility() {
 }
 
 export function check_disable_direct_message_initiator_group_dropdown(current_value) {
-    if (current_value === user_groups.get_user_group_from_name("role:nobody").id) {
+    if (user_groups.is_empty_group(current_value)) {
         $("#realm_direct_message_initiator_group_widget").prop("disabled", true);
     } else {
         $("#realm_direct_message_initiator_group_widget").prop("disabled", false);
@@ -730,7 +731,7 @@ export function sync_realm_settings(property) {
     }
 }
 
-export function save_organization_settings(data, $save_button, patch_url) {
+export function save_organization_settings(data, $save_button, patch_url, success_continuation) {
     const $subsection_parent = $save_button.closest(".settings-subsection-parent");
     const $save_btn_container = $subsection_parent.find(".save-button-controls");
     const $failed_alert_elem = $subsection_parent.find(".subsection-failed-status p");
@@ -741,6 +742,9 @@ export function save_organization_settings(data, $save_button, patch_url) {
         success() {
             $failed_alert_elem.hide();
             settings_components.change_save_button_state($save_btn_container, "succeeded");
+            if (success_continuation !== undefined) {
+                success_continuation();
+            }
         },
         error(xhr) {
             settings_components.change_save_button_state($save_btn_container, "failed");
@@ -794,9 +798,6 @@ function set_up_dropdown_widget(
                 custom_dropdown_widget_callback(this.current_value);
             }
         },
-        tippy_props: {
-            placement: "bottom-start",
-        },
         default_id: realm[setting_name],
         unique_id_type,
         text_if_current_value_not_in_options,
@@ -804,6 +805,7 @@ function set_up_dropdown_widget(
             if (setting_type === "group") {
                 $(dropdown.popper).css("min-width", "300px");
                 $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
+                $(dropdown.popper).find(".simplebar-content").css("min-width", "100%");
             }
         },
     });
@@ -952,6 +954,7 @@ export function register_save_discard_widget_handlers(
         const $save_button = $(e.currentTarget);
         const $subsection_elem = $save_button.closest(".settings-subsection-parent");
         let data;
+        let success_continuation;
         if (!for_realm_default_settings) {
             data = settings_components.populate_data_for_realm_settings_request($subsection_elem);
         } else {
@@ -959,8 +962,22 @@ export function register_save_discard_widget_handlers(
                 settings_components.populate_data_for_default_realm_settings_request(
                     $subsection_elem,
                 );
+
+            if (
+                data.dense_mode !== undefined ||
+                data.web_font_size_px !== undefined ||
+                data.web_line_height_percent !== undefined
+            ) {
+                success_continuation = () => {
+                    settings_preferences.update_information_density_settings_visibility(
+                        $("#realm-user-default-settings"),
+                        realm_user_settings_defaults,
+                        data,
+                    );
+                };
+            }
         }
-        save_organization_settings(data, $save_button, patch_url);
+        save_organization_settings(data, $save_button, patch_url, success_continuation);
     });
 }
 

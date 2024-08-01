@@ -1,4 +1,3 @@
-from typing import Dict, List, Optional
 from unittest.mock import Mock, patch
 
 from django.conf import settings
@@ -139,7 +138,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
             return f"CacheWithKeyDecoratorTest:test_cache_with_key_none_values:{user_id}"
 
         @cache_with_key(cache_key_function, timeout=1000)
-        def get_user_function_can_return_none(user_id: int) -> Optional[UserProfile]:
+        def get_user_function_can_return_none(user_id: int) -> UserProfile | None:
             try:
                 return UserProfile.objects.get(id=user_id)
             except UserProfile.DoesNotExist:
@@ -253,12 +252,12 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
         class CustomError(Exception):
             pass
 
-        def query_function(ids: List[int]) -> List[UserProfile]:
+        def query_function(ids: list[int]) -> list[UserProfile]:
             raise CustomError("The query function was called")
 
         # query_function shouldn't be called, because the only requested object
         # is already cached:
-        result: Dict[int, UserProfile] = bulk_cached_fetch(
+        result: dict[int, UserProfile] = bulk_cached_fetch(
             cache_key_function=user_profile_by_id_cache_key,
             query_function=query_function,
             object_ids=[hamlet.id],
@@ -288,13 +287,13 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             raise CustomError("The cache key function was called")
 
         def query_function(
-            emails: List[str],
-        ) -> List[UserProfile]:  # nocoverage -- this is just here to make sure it's not called
+            emails: list[str],
+        ) -> list[UserProfile]:  # nocoverage -- this is just here to make sure it's not called
             raise CustomError("The query function was called")
 
         # query_function and cache_key_function shouldn't be called, because
         # objects_ids is empty, so there's nothing to do.
-        result: Dict[str, UserProfile] = bulk_cached_fetch(
+        result: dict[str, UserProfile] = bulk_cached_fetch(
             cache_key_function=cache_key_function,
             query_function=query_function,
             object_ids=[],

@@ -6,7 +6,7 @@ import * as typeahead from "../shared/src/typeahead";
 import type {Emoji, EmojiSuggestion} from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
-import {Typeahead} from "./bootstrap_typeahead";
+import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -103,9 +103,8 @@ export type TypeaheadSuggestion =
     | EmojiSuggestion
     | SlashCommandSuggestion;
 
-// This is what we use for direct message/compose typeaheads.
 // We export it to allow tests to mock it.
-export const max_num_items = 8;
+export const max_num_items = MAX_ITEMS;
 
 export let emoji_collection: Emoji[] = [];
 
@@ -1239,7 +1238,7 @@ export function initialize_topic_edit_typeahead(
             const stream_id = stream_data.get_stream_id(stream_name);
             return topics_seen_for(stream_id);
         },
-        items: 5,
+        items: max_num_items,
     });
 }
 
@@ -1317,7 +1316,7 @@ export function initialize({
         source(): string[] {
             return topics_seen_for(compose_state.stream_id());
         },
-        items: 3,
+        items: max_num_items,
         highlighter_html(item: string): string {
             return typeahead_helper.render_typeahead_item({primary: item});
         },

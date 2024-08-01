@@ -1,14 +1,14 @@
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal
 
 
 @dataclass
 class UrlEmbedData:
-    type: Optional[str] = None
-    html: Optional[str] = None
-    title: Optional[str] = None
-    description: Optional[str] = None
-    image: Optional[str] = None
+    type: str | None = None
+    html: str | None = None
+    title: str | None = None
+    description: str | None = None
+    image: str | None = None
 
     def merge(self, other: "UrlEmbedData") -> None:
         if self.title is None and other.title is not None:
@@ -22,4 +22,4 @@ class UrlEmbedData:
 @dataclass
 class UrlOEmbedData(UrlEmbedData):
     type: Literal["photo", "video"]
-    html: Optional[str] = None
+    html: str | None = None

@@ -1,5 +1,3 @@
-from typing import List, Optional, Sequence, Union
-
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -22,9 +20,8 @@ from zerver.actions.user_groups import (
 from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
@@ -43,7 +40,6 @@ from zerver.lib.user_groups import (
     validate_group_setting_value_change,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
-from zerver.lib.validator import check_bool, check_int, check_list
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
@@ -56,9 +52,9 @@ def add_user_group(
     user_profile: UserProfile,
     *,
     name: str,
-    members: Json[Sequence[int]],
+    members: Json[list[int]],
     description: str,
-    can_mention_group: Optional[Json[Union[int, AnonymousSettingGroupDict]]] = None,
+    can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     name = check_user_group_name(name)
@@ -93,7 +89,7 @@ def add_user_group(
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint_without_parameters
 def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     user_groups = user_groups_in_realm_serialized(user_profile.realm)
     return json_success(request, data={"user_groups": user_groups})
@@ -107,9 +103,9 @@ def edit_user_group(
     user_profile: UserProfile,
     *,
     user_group_id: PathOnly[int],
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-    can_mention_group: Optional[Json[GroupSettingChangeRequest]] = None,
+    name: str | None = None,
+    description: str | None = None,
+    can_mention_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     if name is None and description is None and can_mention_group is None:
         raise JsonableError(_("No new data supplied"))
@@ -164,11 +160,12 @@ def edit_user_group(
 
 
 @require_user_group_edit_permission
-@has_request_variables
+@typed_endpoint
 def delete_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(json_validator=check_int, path_only=True),
+    *,
+    user_group_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     # For deletion, the user group's recursive subgroups and the user group itself are locked.
     with lock_subgroups_with_respect_to_supergroup(
@@ -179,25 +176,32 @@ def delete_user_group(
 
 
 @require_user_group_edit_permission
-@has_request_variables
+@typed_endpoint
 def update_user_group_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(json_validator=check_int, path_only=True),
-    delete: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
-    add: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+    *,
+    user_group_id: PathOnly[Json[int]],
+    delete: Json[list[int]] | None = None,
+    add: Json[list[int]] | None = None,
 ) -> HttpResponse:
     if not add and not delete:
         raise JsonableError(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
-    thunks = [
-        lambda: add_members_to_group_backend(
-            request, user_profile, user_group_id=user_group_id, members=add
-        ),
-        lambda: remove_members_from_group_backend(
-            request, user_profile, user_group_id=user_group_id, members=delete
-        ),
-    ]
+    thunks = []
+    if add:
+        thunks.append(
+            lambda: add_members_to_group_backend(
+                request, user_profile, user_group_id=user_group_id, members=add
+            )
+        )
+    if delete:
+        thunks.append(
+            lambda: remove_members_from_group_backend(
+                request, user_profile, user_group_id=user_group_id, members=delete
+            )
+        )
+
     data = compose_views(thunks)
 
     return json_success(request, data)
@@ -205,7 +209,7 @@ def update_user_group_backend(
 
 def notify_for_user_group_subscription_changes(
     acting_user: UserProfile,
-    recipient_users: List[UserProfile],
+    recipient_users: list[UserProfile],
     user_group: NamedUserGroup,
     *,
     send_subscription_message: bool = False,
@@ -254,11 +258,11 @@ def notify_for_user_group_subscription_changes(
 
 @transaction.atomic
 def add_members_to_group_backend(
-    request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_group_id: int,
+    members: list[int],
 ) -> HttpResponse:
-    if not members:
-        return json_success(request)
-
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
     member_users = user_ids_to_users(members, user_profile.realm)
     existing_member_ids = set(
@@ -286,11 +290,11 @@ def add_members_to_group_backend(
 
 @transaction.atomic
 def remove_members_from_group_backend(
-    request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_group_id: int,
+    members: list[int],
 ) -> HttpResponse:
-    if not members:
-        return json_success(request)
-
     user_profiles = user_ids_to_users(members, user_profile.realm)
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
     group_member_ids = get_user_group_direct_member_ids(user_group)
@@ -312,11 +316,11 @@ def remove_members_from_group_backend(
 
 
 def add_subgroups_to_group_backend(
-    request: HttpRequest, user_profile: UserProfile, user_group_id: int, subgroup_ids: Sequence[int]
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_group_id: int,
+    subgroup_ids: list[int],
 ) -> HttpResponse:
-    if not subgroup_ids:
-        return json_success(request)
-
     with lock_subgroups_with_respect_to_supergroup(
         subgroup_ids, user_group_id, user_profile
     ) as context:
@@ -348,11 +352,11 @@ def add_subgroups_to_group_backend(
 
 
 def remove_subgroups_from_group_backend(
-    request: HttpRequest, user_profile: UserProfile, user_group_id: int, subgroup_ids: Sequence[int]
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_group_id: int,
+    subgroup_ids: list[int],
 ) -> HttpResponse:
-    if not subgroup_ids:
-        return json_success(request)
-
     with lock_subgroups_with_respect_to_supergroup(
         subgroup_ids, user_group_id, user_profile
     ) as context:
@@ -378,38 +382,46 @@ def remove_subgroups_from_group_backend(
 
 
 @require_user_group_edit_permission
-@has_request_variables
+@typed_endpoint
 def update_subgroups_of_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(json_validator=check_int, path_only=True),
-    delete: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
-    add: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+    *,
+    user_group_id: PathOnly[Json[int]],
+    delete: Json[list[int]] | None = None,
+    add: Json[list[int]] | None = None,
 ) -> HttpResponse:
     if not add and not delete:
         raise JsonableError(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
-    thunks = [
-        lambda: add_subgroups_to_group_backend(
-            request, user_profile, user_group_id=user_group_id, subgroup_ids=add
-        ),
-        lambda: remove_subgroups_from_group_backend(
-            request, user_profile, user_group_id=user_group_id, subgroup_ids=delete
-        ),
-    ]
+    thunks = []
+    if add:
+        thunks.append(
+            lambda: add_subgroups_to_group_backend(
+                request, user_profile, user_group_id=user_group_id, subgroup_ids=add
+            )
+        )
+    if delete:
+        thunks.append(
+            lambda: remove_subgroups_from_group_backend(
+                request, user_profile, user_group_id=user_group_id, subgroup_ids=delete
+            )
+        )
+
     data = compose_views(thunks)
 
     return json_success(request, data)
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def get_is_user_group_member(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(json_validator=check_int, path_only=True),
-    user_id: int = REQ(json_validator=check_int, path_only=True),
-    direct_member_only: bool = REQ(json_validator=check_bool, default=False),
+    *,
+    user_group_id: PathOnly[Json[int]],
+    user_id: PathOnly[Json[int]],
+    direct_member_only: Json[bool] = False,
 ) -> HttpResponse:
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
@@ -425,12 +437,13 @@ def get_is_user_group_member(
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def get_user_group_members(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(json_validator=check_int, path_only=True),
-    direct_member_only: bool = REQ(json_validator=check_bool, default=False),
+    *,
+    user_group_id: PathOnly[Json[int]],
+    direct_member_only: Json[bool] = False,
 ) -> HttpResponse:
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
 
@@ -443,12 +456,13 @@ def get_user_group_members(
 
 
 @require_member_or_admin
-@has_request_variables
+@typed_endpoint
 def get_subgroups_of_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(json_validator=check_int, path_only=True),
-    direct_subgroup_only: bool = REQ(json_validator=check_bool, default=False),
+    *,
+    user_group_id: PathOnly[Json[int]],
+    direct_subgroup_only: Json[bool] = False,
 ) -> HttpResponse:
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
 

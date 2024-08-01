@@ -8,7 +8,7 @@ import sys
 import time
 from importlib import import_module
 from io import StringIO
-from typing import Any, List, Set
+from typing import Any
 
 from django.apps import apps
 from django.conf import settings
@@ -60,7 +60,7 @@ VERBOSE_MESSAGE_ABOUT_HASH_TRANSITION = """
 """
 
 
-def migration_paths() -> List[str]:
+def migration_paths() -> list[str]:
     return [
         *glob.glob("*/migrations/*.py"),
         "requirements/dev.txt",
@@ -79,7 +79,7 @@ class Database:
         )
         self.migration_digest_file = "migrations_hash_" + database_name
 
-    def important_settings(self) -> List[str]:
+    def important_settings(self) -> list[str]:
         def get(setting_name: str) -> str:
             value = getattr(settings, setting_name, {})
             return json.dumps(value, sort_keys=True)
@@ -318,7 +318,7 @@ def get_migration_status(**options: Any) -> str:
     return re.sub(r"\x1b\[(1|0)m", "", output)
 
 
-def extract_migrations_as_list(migration_status: str) -> List[str]:
+def extract_migrations_as_list(migration_status: str) -> list[str]:
     MIGRATIONS_RE = re.compile(r"\[[X| ]\] (\d+_.+)\n")
     return MIGRATIONS_RE.findall(migration_status)
 
@@ -339,7 +339,7 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     while also ensuring we will eventually delete all leaked databases.
     """
     files = glob.glob(os.path.join(UUID_VAR_DIR, TEMPLATE_DATABASE_DIR, "*"))
-    test_databases: Set[str] = set()
+    test_databases: set[str] = set()
     try:
         with connection.cursor() as cursor:
             cursor.execute("SELECT datname FROM pg_database;")
@@ -350,12 +350,11 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     except ProgrammingError:
         pass
 
-    databases_in_use: Set[str] = set()
+    databases_in_use: set[str] = set()
     for file in files:
         if round(time.time()) - os.path.getmtime(file) < expiry_time:
             with open(file) as f:
-                for line in f:
-                    databases_in_use.add(f"zulip_test_template_{line}".rstrip())
+                databases_in_use.update(f"zulip_test_template_{line}".rstrip() for line in f)
         else:
             # Any test-backend run older than expiry_time can be
             # cleaned up, both the database and the file listing its

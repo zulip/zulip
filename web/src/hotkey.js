@@ -291,11 +291,6 @@ export function process_escape_key(e) {
     }
 
     if (popovers.any_active()) {
-        if (user_card_popover.manage_menu.is_open()) {
-            user_card_popover.manage_menu.hide();
-            $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
-            return true;
-        }
         popovers.hide_all();
         return true;
     }
@@ -406,11 +401,6 @@ function handle_popover_events(event_name) {
             popover_menu_visible_instance,
             event_name,
         );
-        return true;
-    }
-
-    if (user_card_popover.manage_menu.is_open()) {
-        user_card_popover.manage_menu.handle_keyboard(event_name);
         return true;
     }
 
@@ -808,13 +798,29 @@ export function process_hotkey(e, hotkey) {
         return true;
     }
 
-    if (event_name === "toggle_compose_preview" && compose_state.composing()) {
-        if ($("#compose .markdown_preview").is(":visible")) {
-            compose.show_preview_area();
-        } else {
-            compose.clear_preview_area();
+    if (event_name === "toggle_compose_preview") {
+        const $last_focused_compose_type_input = $(
+            compose_state.get_last_focused_compose_type_input(),
+        );
+
+        if ($last_focused_compose_type_input.hasClass("message_edit_content")) {
+            if ($last_focused_compose_type_input.closest(".preview_mode").length) {
+                message_edit.clear_preview_area($last_focused_compose_type_input);
+                $last_focused_compose_type_input.trigger("focus");
+            } else {
+                message_edit.show_preview_area($last_focused_compose_type_input);
+            }
+            return true;
         }
-        return true;
+
+        if (compose_state.composing()) {
+            if ($("#compose .markdown_preview").is(":visible")) {
+                compose.show_preview_area();
+            } else {
+                compose.clear_preview_area();
+            }
+            return true;
+        }
     }
 
     if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {

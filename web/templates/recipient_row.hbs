@@ -61,17 +61,17 @@
             {{#if is_subscribed}}
                 <span class="change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
                     {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
-                        <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You follow this topic' }}"></i>
+                        <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic.'}}"
+                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You follow this topic.' }}"></i>
                     {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
-                        <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon" data-tippy-content="{{t 'You have unmuted this topic'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have unmuted this topic' }}"></i>
+                        <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon" data-tippy-content="{{t 'You have unmuted this topic.'}}"
+                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have unmuted this topic.' }}"></i>
                     {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
-                        <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have muted this topic' }}"></i>
+                        <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic.'}}"
+                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have muted this topic.' }}"></i>
                     {{else}}
-                        <i class="zulip-icon zulip-icon-inherit recipient_bar_icon" data-tippy-content="{{t 'You will get default notifications for this topic'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You will get default notifications for this topic' }}"></i>
+                        <i class="zulip-icon zulip-icon-inherit recipient_bar_icon"
+                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'Notifications are based on your configuration for this channel.' }}"></i>
                     {{/if}}
                 </span>
             {{/if}}

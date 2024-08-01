@@ -18,7 +18,59 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 10.0
+
+Feature levels 278-279 are reserved for future use in 9.x maintenance
+releases.
+
 ## Changes in Zulip 9.0
+
+**Feature level 277**
+
+No changes; feature level used for Zulip 9.0 release.
+
+**Feature level 276**
+
+* [Markdown message formatting](/api/message-formatting#image-previews):
+  Image preview elements not contain a `data-original-dimensions`
+  attribute containing the dimensions of the original image.
+
+**Feature level 275**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_animate_image_previews` setting, which controls how
+  animated images should be played in the web/desktop app message feed.
+
+**Feature level 274**
+
+* [`GET /events`](/api/get-events): `delete_message` events are now
+  always sent to the user who deletes the message, even if the message
+  was in a channel that the user was not subscribed to.
+
+**Feature level 273**
+
+* [`POST /register`](/api/register-queue): Added `server_thumbnail_formats`
+  describing what formats the server will thumbnail images into.
+
+**Feature level 272**
+
+* [`POST /user_uploads`](/api/upload-file): `uri` was renamed
+  to `url`, but remains available as a deprecated alias for
+  backwards-compatibility.
+
+**Feature level 271**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added support for a new [search/narrow filter](/api/construct-narrow#changes)
+  operator, `with`, which uses a message ID for its operand. It returns
+  messages in the same conversation as the message with the specified
+  ID, and is designed to be used for creating permanent links to topics
+  that continue to work when a topic is moved or resolved.
 
 **Feature level 270**
 
@@ -78,7 +130,7 @@ format used by the Zulip server that they are interacting with.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added a new [search/narrow filter](/api/construct-narrow),
+  Added a new [search/narrow filter](/api/construct-narrow#changes),
   `is:followed`, matching messages in topics that the current user is
   [following](/help/follow-a-topic).
 
@@ -227,7 +279,7 @@ format used by the Zulip server that they are interacting with.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added support for two [search/narrow filters](/api/construct-narrow)
+  Added support for two [search/narrow filters](/api/construct-narrow#changes)
   related to stream messages: `channel` and `channels`. The `channel`
   operator is an alias for the `stream` operator. The `channels`
   operator is an alias for the `streams` operator.
@@ -238,7 +290,7 @@ format used by the Zulip server that they are interacting with.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added support for a new [search/narrow filter](/api/construct-narrow),
+  Added support for a new [search/narrow filter](/api/construct-narrow#changes),
   `has:reaction`, which returns messages with at least one [emoji
   reaction](/help/emoji-reactions).
 
@@ -754,8 +806,8 @@ No changes; feature level used for Zulip 8.0 release.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  For [search/narrow filters](/api/construct-narrow) with the `id`
-  operator, added support for encoding the message ID operand as either
+  For [search/narrow filters](/api/construct-narrow#message-ids) with the
+  `id` operator, added support for encoding the message ID operand as either
   a string or an integer. Previously, only string encoding was supported.
 
 **Feature level 193**
@@ -890,7 +942,7 @@ No changes; feature level used for Zulip 7.0 release.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  Added support for three [search/narrow filters](/api/construct-narrow)
+  Added support for three [search/narrow filters](/api/construct-narrow#changes)
   related to direct messages: `is:dm`, `dm` and `dm-including`.
   The `dm` operator replaces and deprecates the `pm-with` operator.
   The `is:dm` filter replaces and deprecates the `is:private` filter.
@@ -2362,7 +2414,7 @@ No changes; feature level used for Zulip 3.0 release.
 * [`POST /register`](/api/register-queue): Added
   `realm_default_external_accounts` to endpoint response.
 * [`GET /messages`](/api/get-messages): Added support for
-  [search/narrow options](/api/construct-narrow) that use stream/user
+  [search/narrow options](/api/construct-narrow#changes) that use stream/user
   IDs to specify a message's sender, its stream, and/or its recipient(s).
 * [`GET /users`](/api/get-users): Added `include_custom_profile_fields`
   to request custom profile field data.

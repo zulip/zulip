@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
 import * as message_lists from "./message_lists";
@@ -264,6 +266,26 @@ export function _possible_unread_message_ids(
     let sub;
     let topic_name;
     let current_filter_pm_string;
+
+    // For the `with` operator, we can only correctly compute the
+    // correct channel/topic for lookup unreads in if we either
+    // have the message in our local cache, or we know the filter
+    // has already been updated for potentially moved messages.
+    //
+    // The code path that needs this function is never called in
+    // the `with` code path, but for safety, we assert that
+    // assumption is not violated.
+    //
+    // If we need to change that assumption, we can try looking up the
+    // target message in message_store, but would need to return
+    // undefined if the target message is not available.
+    assert(!current_filter.requires_adjustment_for_moved_with_target);
+
+    if (current_filter.can_bucket_by("channel", "topic", "with")) {
+        sub = stream_sub(current_filter)!;
+        topic_name = topic(current_filter)!;
+        return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
+    }
 
     if (current_filter.can_bucket_by("channel", "topic")) {
         sub = stream_sub(current_filter);

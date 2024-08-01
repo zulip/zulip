@@ -9,7 +9,6 @@ import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_c
 import * as activity_ui from "./activity_ui";
 import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
@@ -119,6 +118,7 @@ export function initialize() {
         // Inline image, video and twitter previews.
         if (
             $target.is("img.message_inline_image") ||
+            $target.is(".message_inline_animated_image_still") ||
             $target.is("video") ||
             $target.is(".message_inline_video") ||
             $target.is("img.twitter-avatar")
@@ -285,7 +285,11 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        navigate.to_end();
+        // Since it take a few milliseconds for this button complete disappear transition,
+        // it is possible for user to click it before it hides when switching narrows.
+        if (narrow_state.is_message_feed_visible()) {
+            navigate.to_end();
+        }
     });
 
     $("body").on("click", ".message_row", function () {
@@ -362,41 +366,12 @@ export function initialize() {
 
     $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
         e.preventDefault();
-        const $row = rows.get_closest_row(e.target);
-        const $msg_edit_content = $row.find(".message_edit_content");
-        const content = $msg_edit_content.val();
-
-        // Disable unneeded compose_control_buttons as we don't
-        // need them in preview mode.
-        $row.addClass("preview_mode");
-        $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
-
-        $msg_edit_content.hide();
-        $row.find(".markdown_preview").hide();
-        $row.find(".undo_markdown_preview").show();
-        $row.find(".preview_message_area").show();
-
-        compose.render_and_show_preview(
-            $row.find(".markdown_preview_spinner"),
-            $row.find(".preview_content"),
-            content,
-        );
+        message_edit.show_preview_area(e.target);
     });
 
     $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
         e.preventDefault();
-        const $row = rows.get_closest_row(e.target);
-
-        // While in preview mode we disable unneeded compose_control_buttons,
-        // so here we are re-enabling those compose_control_buttons
-        $row.removeClass("preview_mode");
-        $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
-
-        $row.find(".message_edit_content").show();
-        $row.find(".undo_markdown_preview").hide();
-        $row.find(".preview_message_area").hide();
-        $row.find(".preview_content").empty();
-        $row.find(".markdown_preview").show();
+        message_edit.clear_preview_area(e.target);
     });
 
     // RESOLVED TOPICS
@@ -774,13 +749,14 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!$(e.target).hasClass("direct-messages-list-filter")) {
-            // Avoiding having clicks on the filter input.
-            //
-            // TODO: Refactor to use more precise selectors for this
-            // click handler in general; this is a fragile pattern.
-            window.location.hash = "narrow/is/dm";
-        }
+        window.location.hash = "narrow/is/dm";
+    });
+
+    $("body").on("click", ".direct-messages-list-filter", (e) => {
+        // We don't want clicking on the filter to trigger the DM
+        // narrow defined on click for
+        // `#direct-messages-section-header.zoom-in`.
+        e.stopPropagation();
     });
 
     // disable the draggability for left-sidebar components

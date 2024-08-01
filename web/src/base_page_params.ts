@@ -72,7 +72,21 @@ const stats_params_schema = default_params_schema.extend({
 // Sync this with corporate.views.portico.team_view.
 const team_params_schema = default_params_schema.extend({
     page_type: z.literal("team"),
-    contributors: z.unknown(),
+    contributors: z.optional(
+        z.array(
+            z
+                .object({
+                    avatar: z.string(),
+                    github_username: z.optional(z.string()),
+                    email: z.optional(z.string()),
+                    name: z.optional(z.string()),
+                })
+                // Repository names may change or increase over time,
+                // so we use this to parse the contributions of the user in
+                // the given repository instead of typing every name.
+                .catchall(z.number()),
+        ),
+    ),
 });
 
 // Sync this with corporate.lib.stripe.UpgradePageParams.

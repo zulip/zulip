@@ -1,10 +1,10 @@
 import os
-from typing import Dict, List, Optional, Tuple
 
 import ldap
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
+from zerver.lib.types import AnalyticsDataUploadLevel
 from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEPLOY_ROOT, get_from_file_if_exists
@@ -24,7 +24,7 @@ PUPPETEER_TESTS = "PUPPETEER_TESTS" in os.environ
 FAKE_EMAIL_DOMAIN = "zulip.testserver"
 
 # Clear out the REALM_HOSTS set in dev_settings.py
-REALM_HOSTS: Dict[str, str] = {}
+REALM_HOSTS: dict[str, str] = {}
 
 DATABASES["default"] = {
     "NAME": os.getenv("ZULIP_DB_NAME", "zulip_test"),
@@ -131,9 +131,6 @@ if not PUPPETEER_TESTS:
     set_loglevel("zerver.worker", "WARNING")
     set_loglevel("stripe", "WARNING")
 
-# Enable file:/// hyperlink support by default in tests
-ENABLE_FILE_LINKS = True
-
 # This is set dynamically in `zerver/lib/test_runner.py`.
 # Allow setting LOCAL_UPLOADS_DIR in the environment so that the
 # frontend/API tests in test_server.py can control this.
@@ -155,8 +152,8 @@ HOME_NOT_LOGGED_IN = "/login/"
 LOGIN_URL = "/accounts/login/"
 
 # If dev_settings.py found a key or cert file to use here, ignore it.
-APNS_TOKEN_KEY_FILE: Optional[str] = None
-APNS_CERT_FILE: Optional[str] = None
+APNS_TOKEN_KEY_FILE: str | None = None
+APNS_CERT_FILE: str | None = None
 
 # By default will not send emails when login occurs.
 # Explicitly set this to True within tests that must have this on.
@@ -181,7 +178,7 @@ SOCIAL_AUTH_APPLE_TEAM = "TEAMSTRING"
 SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")
 
 
-SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, OIDCIdPConfigDict] = {
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {
     "testoidc": {
         "display_name": "Test OIDC",
         "oidc_url": "https://example.com/api/openid",
@@ -202,8 +199,22 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
-PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
 DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
+
+# Disable all Zulip services by default. Tests can activate them by
+# overriding settings explicitly when they want to enable something,
+# often using activate_push_notification_service.
+ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
+ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
+ZULIP_SERVICE_SECURITY_ALERTS = False
+
+# Hack: This should be computed in computed_settings, but the transmission
+# of test settings overrides is wonky. See test_settings for more details.
+ANALYTICS_DATA_UPLOAD_LEVEL = AnalyticsDataUploadLevel.NONE
+
+# The most common value used by tests. Set it as the default so that it doesn't
+# have to be repeated every time.
+ZULIP_SERVICES_URL = "https://push.zulip.org.example.com"
 
 # Logging the emails while running the tests adds them
 # to /emails page.
@@ -231,7 +242,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "emailAddress": "support@example.com",
 }
 
-SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
+SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, SAMLIdPConfigDict] = {
     "test_idp": {
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
@@ -247,7 +258,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
     },
 }
 
-RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
+RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {
     "api_by_user": [],
     "api_by_ip": [],
     "api_by_remote_server": [],
@@ -258,10 +269,10 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
     "sends_email_by_remote_server": [],
 }
 
-CLOUD_FREE_TRIAL_DAYS: Optional[int] = None
-SELF_HOSTING_FREE_TRIAL_DAYS: Optional[int] = None
+CLOUD_FREE_TRIAL_DAYS: int | None = None
+SELF_HOSTING_FREE_TRIAL_DAYS: int | None = None
 
-SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
+SCIM_CONFIG: dict[str, SCIMConfigDict] = {
     "zulip": {
         "bearer_token": "token1234",
         "scim_client_name": "test-scim-client",
@@ -269,10 +280,12 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
     }
 }
 
-ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS = True
+ALLOW_GROUP_VALUED_SETTINGS = True
 
 # This override disables the grace period for undoing resolving/unresolving
 # a topic in tests.
 # This allows tests to not worry about the special behavior during the grace period.
 # Otherwise they would have to do lots of mocking of the timer to work around this.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 0
+
+KATEX_SERVER = False

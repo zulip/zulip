@@ -39,7 +39,7 @@ If you'd prefer not to see notifications when others type, you can disable them.
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, toggle **Show when other users are typing**.
+1. Under **Information**, toggle **Show when other users are typing**.
 
 {end_tabs}
 

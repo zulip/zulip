@@ -1,10 +1,9 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 import os
 import subprocess
-from typing import Optional
 
 
-def try_git_describe() -> Optional[str]:
+def try_git_describe() -> str | None:
     try:  # nocoverage
         return subprocess.check_output(
             ["git", "describe", "--tags", "--match=[0-9]*", "--always", "--dirty", "--long"],

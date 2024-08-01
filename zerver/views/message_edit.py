@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List, Literal, Optional, Union
+from typing import Literal
 
 import orjson
 from django.contrib.auth.models import AnonymousUser
@@ -29,8 +29,8 @@ from zerver.models import Message, UserProfile
 
 
 def fill_edit_history_entries(
-    raw_edit_history: List[EditHistoryEvent], message: Message
-) -> List[FormattedEditHistoryEvent]:
+    raw_edit_history: list[EditHistoryEvent], message: Message
+) -> list[FormattedEditHistoryEvent]:
     """
     This fills out the message edit history entries from the database
     to have the current topic + content as of that time, plus data on
@@ -47,7 +47,7 @@ def fill_edit_history_entries(
         assert message.last_edit_time is not None
         assert datetime_to_timestamp(message.last_edit_time) == raw_edit_history[0]["timestamp"]
 
-    formatted_edit_history: List[FormattedEditHistoryEvent] = []
+    formatted_edit_history: list[FormattedEditHistoryEvent] = []
     for edit_history_event in raw_edit_history:
         formatted_entry: FormattedEditHistoryEvent = {
             "content": prev_content,
@@ -121,12 +121,12 @@ def update_message_backend(
     user_profile: UserProfile,
     *,
     message_id: PathOnly[NonNegativeInt],
-    stream_id: Optional[Json[NonNegativeInt]] = None,
+    stream_id: Json[NonNegativeInt] | None = None,
     topic_name: OptionalTopic = None,
     propagate_mode: Literal["change_later", "change_one", "change_all"] = "change_one",
     send_notification_to_old_thread: Json[bool] = False,
     send_notification_to_new_thread: Json[bool] = True,
-    content: Optional[str] = None,
+    content: str | None = None,
 ) -> HttpResponse:
     number_changed = check_update_message(
         user_profile,
@@ -158,7 +158,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
         # Only user with roles as allowed by delete_own_message_policy can delete message.
         raise JsonableError(_("You don't have permission to delete this message"))
 
-    deadline_seconds: Optional[int] = user_profile.realm.message_content_delete_limit_seconds
+    deadline_seconds: int | None = user_profile.realm.message_content_delete_limit_seconds
     if deadline_seconds is None:
         # None means no time limit to delete message
         return
@@ -183,7 +183,7 @@ def delete_message_backend(
     message = access_message(user_profile, message_id, lock_message=True)
     validate_can_delete_message(user_profile, message)
     try:
-        do_delete_messages(user_profile.realm, [message])
+        do_delete_messages(user_profile.realm, [message], acting_user=user_profile)
     except (Message.DoesNotExist, IntegrityError):
         raise JsonableError(_("Message already deleted"))
     return json_success(request)
@@ -192,7 +192,7 @@ def delete_message_backend(
 @typed_endpoint
 def json_fetch_raw_message(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    maybe_user_profile: UserProfile | AnonymousUser,
     *,
     message_id: PathOnly[NonNegativeInt],
     apply_markdown: Json[bool] = True,

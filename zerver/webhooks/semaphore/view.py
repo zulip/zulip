@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from typing import Optional, Tuple
 from urllib.parse import urlsplit
 
 from django.http import HttpRequest, HttpResponse
@@ -111,7 +110,7 @@ def api_semaphore_webhook(
     return json_success(request)
 
 
-def semaphore_classic(payload: WildValue) -> Tuple[str, str, str, str]:
+def semaphore_classic(payload: WildValue) -> tuple[str, str, str, str]:
     # semaphore only gives the last commit, even if there were multiple commits
     # since the last build
     branch_name = payload["branch_name"].tame(check_string)
@@ -161,7 +160,7 @@ def semaphore_classic(payload: WildValue) -> Tuple[str, str, str, str]:
     return content, project_name, branch_name, event
 
 
-def semaphore_2(payload: WildValue) -> Tuple[str, str, Optional[str], str]:
+def semaphore_2(payload: WildValue) -> tuple[str, str, str | None, str]:
     repo_url = payload["repository"]["url"].tame(check_string)
     project_name = payload["project"]["name"].tame(check_string)
     organization_name = payload["organization"]["name"].tame(check_string)

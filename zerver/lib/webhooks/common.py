@@ -1,13 +1,14 @@
 import fnmatch
 import importlib
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 from pydantic import Json
-from typing_extensions import Annotated, TypeAlias, override
+from typing_extensions import override
 
 from zerver.actions.message_send import (
     check_send_private_message,
@@ -45,10 +46,10 @@ that this integration expects!
 SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
 SETUP_MESSAGE_USER_PART = " by {user_name}"
 
-OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[Optional[str], ApiParamConfig("topic")]
+OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig("topic")]
 
 
-def get_setup_webhook_message(integration: str, user_name: Optional[str] = None) -> str:
+def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
     content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
     if user_name:
         content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
@@ -85,12 +86,12 @@ def check_send_webhook_message(
     user_profile: UserProfile,
     topic: str,
     body: str,
-    complete_event_type: Optional[str] = None,
+    complete_event_type: str | None = None,
     *,
-    stream: Optional[str] = None,
+    stream: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
-    only_events: Optional[Json[List[str]]] = None,
-    exclude_events: Optional[Json[List[str]]] = None,
+    only_events: Json[list[str]] | None = None,
+    exclude_events: Json[list[str]] | None = None,
     unquote_url_parameters: bool = False,
 ) -> None:
     if complete_event_type is not None and (
@@ -146,7 +147,7 @@ def check_send_webhook_message(
             pass
 
 
-def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str, str]:
+def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:
     """This method can be used to standardize a dictionary of headers with
     the standard format that Django expects. For reference, refer to:
     https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpRequest.headers
@@ -194,7 +195,7 @@ def validate_extract_webhook_http_header(
     return extracted_header
 
 
-def get_fixture_http_headers(integration_name: str, fixture_name: str) -> Dict["str", "str"]:
+def get_fixture_http_headers(integration_name: str, fixture_name: str) -> dict["str", "str"]:
     """For integrations that require custom HTTP headers for some (or all)
     of their test fixtures, this method will call a specially named
     function from the target integration module to determine what set
@@ -211,13 +212,13 @@ def get_fixture_http_headers(integration_name: str, fixture_name: str) -> Dict["
     return fixture_to_headers(fixture_name)
 
 
-def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict[str, str]]:
+def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], dict[str, str]]:
     """If an integration requires an event type kind of HTTP header which can
     be easily (statically) determined, then name the fixtures in the format
     of "header_value__other_details" or even "header_value" and the use this
     method in the headers.py file for the integration."""
 
-    def fixture_to_headers(filename: str) -> Dict[str, str]:
+    def fixture_to_headers(filename: str) -> dict[str, str]:
         if "__" in filename:
             event_type = filename.split("__")[0]
         else:

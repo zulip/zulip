@@ -1,6 +1,6 @@
 import os
 from posixpath import basename
-from typing import Any, List, Set
+from typing import Any
 from urllib.parse import urlsplit
 
 from typing_extensions import override
@@ -20,7 +20,7 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.static_images: Set[str] = set()
+        self.static_images: set[str] = set()
         self.images_static_dir: str = get_images_dir(self.images_path)
 
     @override
@@ -45,7 +45,7 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
 class HelpDocumentationSpider(UnusedImagesLinterSpider):
     name = "help_documentation_crawler"
     start_urls = ["http://localhost:9981/help/"]
-    deny_domains: List[str] = []
+    deny_domains: list[str] = []
     deny = ["/policies/privacy"]
     images_path = "static/images/help"
 
@@ -53,7 +53,7 @@ class HelpDocumentationSpider(UnusedImagesLinterSpider):
 class APIDocumentationSpider(UnusedImagesLinterSpider):
     name = "api_documentation_crawler"
     start_urls = ["http://localhost:9981/api"]
-    deny_domains: List[str] = []
+    deny_domains: list[str] = []
     images_path = "static/images/api"
 
 
@@ -84,4 +84,4 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
         "http://localhost:9981/for/research/",
         "http://localhost:9981/security/",
     ]
-    deny_domains: List[str] = []
+    deny_domains: list[str] = []

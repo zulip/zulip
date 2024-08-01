@@ -1,11 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import * as tippy from "tippy.js";
 
 import render_compose_control_buttons_popover from "../templates/popovers/compose_control_buttons/compose_control_buttons_popover.hbs";
-import render_mobile_message_buttons_popover from "../templates/popovers/mobile_message_buttons_popover.hbs";
 
-import * as compose_actions from "./compose_actions";
 import * as giphy_state from "./giphy_state";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
@@ -13,50 +10,6 @@ import * as rows from "./rows";
 import {parse_html} from "./ui_util";
 
 export function initialize(): void {
-    // compose box buttons popover shown on mobile widths.
-    // We want this click event to propagate and hide other popovers
-    // that could possibly obstruct user from using this popover.
-    tippy.delegate("body", {
-        ...popover_menus.default_popover_props,
-        // Attach the click event to `.mobile_button_container`, since
-        // the button (`.compose_mobile_button`) already has a hover
-        // action attached, for showing the keyboard shortcut,
-        // and Tippy cannot handle events that trigger two different
-        // actions
-        target: ".mobile_button_container",
-        placement: "top",
-        theme: "popover-menu",
-        onShow(instance) {
-            popover_menus.popover_instances.compose_mobile_button = instance;
-            popover_menus.on_show_prep(instance);
-            instance.setContent(parse_html(render_mobile_message_buttons_popover()));
-        },
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            $popper.one("click", ".compose_mobile_stream_button", (e) => {
-                compose_actions.start({
-                    message_type: "stream",
-                    trigger: "clear topic button",
-                });
-                e.stopPropagation();
-                popover_menus.hide_current_popover_if_visible(instance);
-            });
-            $popper.one("click", ".compose_mobile_direct_message_button", (e) => {
-                compose_actions.start({
-                    message_type: "private",
-                });
-                e.stopPropagation();
-                popover_menus.hide_current_popover_if_visible(instance);
-            });
-        },
-        onHidden(instance) {
-            // Destroy instance so that event handlers
-            // are destroyed too.
-            instance.destroy();
-            popover_menus.popover_instances.compose_mobile_button = null;
-        },
-    });
-
     // Click event handlers for it are handled in `compose_ui` and
     // we don't want to close this popover on click inside it but
     // only if user clicked outside it.

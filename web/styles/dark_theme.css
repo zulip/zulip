@@ -160,10 +160,6 @@
 
     #scroll-to-bottom-button-container {
         background: transparent;
-
-        & span {
-            color: hsl(0deg 0% 27%);
-        }
     }
 
     .main-view-banner {
@@ -388,6 +384,10 @@
 
     .rendered_markdown .message_inline_image {
         background: hsl(0deg 0% 100% / 3%);
+
+        img.image-loading-placeholder {
+            content: url("../images/loading/loader-white.svg");
+        }
 
         &:hover {
             background: hsl(0deg 0% 100% / 15%);
@@ -649,7 +649,7 @@
     }
 
     #recent_view_table {
-        .fa-envelope,
+        .zulip-icon-user,
         .fa-group {
             opacity: 0.7;
         }
@@ -660,8 +660,6 @@
     }
 
     & .drafts-container .drafts-header,
-    .nav > li > a:focus,
-    .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
     .user-groups-container .user-groups-header,
     .overlay-messages-header,
@@ -717,10 +715,6 @@
         .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
-    }
-
-    .nav-list > li > a {
-        text-shadow: none;
     }
 
     #message-edit-history-overlay-container {
@@ -901,8 +895,8 @@
     .streams_subheader {
         color: hsl(240deg 11% 85%);
 
-        & span::before,
-        span::after {
+        & .streams_subheader_name::before,
+        .streams_subheader_name::after {
             border-color: hsl(240deg 11% 85%);
         }
     }
@@ -963,7 +957,8 @@
     .color_animated_button {
         background-color: hsl(211deg 29% 14%);
 
-        * {
+        .zulip-icon,
+        .color-animated-button-text {
             color: hsl(0deg 0% 100%);
         }
 
@@ -1000,21 +995,21 @@
     .todo-widget {
         & label.checkbox {
             & input[type="checkbox"] {
-                ~ span {
+                ~ .custom-checkbox {
                     border-color: hsl(185deg 40% 45%);
                     opacity: 0.7;
                 }
 
-                &:hover ~ span {
+                &:hover ~ .custom-checkbox {
                     background-color: hsl(185deg 20% 20%);
                     border-color: hsl(185deg 40% 35%);
                 }
 
-                &:checked ~ span {
+                &:checked ~ .custom-checkbox {
                     background-color: hsl(185deg 40% 45%);
                 }
 
-                &:focus ~ span {
+                &:focus ~ .custom-checkbox {
                     outline-color: hsl(0deg 0% 100% / 0%);
                 }
             }

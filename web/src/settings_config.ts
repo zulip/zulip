@@ -84,6 +84,21 @@ export const user_list_style_values = {
     // },
 };
 
+export const web_animate_image_previews_values = {
+    always: {
+        code: "always",
+        description: $t({defaultMessage: "Always"}),
+    },
+    on_hover: {
+        code: "on_hover",
+        description: $t({defaultMessage: "On hover"}),
+    },
+    never: {
+        code: "never",
+        description: $t({defaultMessage: "Only in image viewer"}),
+    },
+};
+
 export const web_stream_unreads_count_display_policy_values = {
     all_streams: {
         code: 1,
@@ -145,41 +160,40 @@ export type DisplaySettings = {
         user_display_settings: string[];
     };
     render_group?: boolean;
-    render_only: {
-        dense_mode?: boolean;
-        high_contrast_mode?: boolean;
-        web_font_size_px?: boolean;
-        web_line_height_percent?: boolean;
-    };
 };
 
 /* istanbul ignore next */
-export const get_all_preferences = (): DisplaySettings => ({
+export const information_section_checkbox_group: DisplaySettings = {
     settings: {
         user_display_settings: [
-            "dense_mode",
-            "high_contrast_mode",
             "starred_message_counts",
             "receives_typing_notifications",
             "fluid_layout_width",
         ],
     },
-    render_only: {
-        dense_mode: page_params.development_environment,
-        high_contrast_mode: page_params.development_environment,
-    },
-});
+};
 
 /* istanbul ignore next */
 export const get_information_density_preferences = (): DisplaySettings => ({
     render_group: page_params.development_environment,
-    render_only: {
-        web_font_size_px: page_params.development_environment,
-        web_line_height_percent: page_params.development_environment,
-    },
     settings: {
         user_display_settings: ["web_font_size_px", "web_line_height_percent"],
     },
+});
+
+type SettingsRenderOnly = {
+    dense_mode: boolean;
+    high_contrast_mode: boolean;
+    web_font_size_px: boolean;
+    web_line_height_percent: boolean;
+};
+
+/* istanbul ignore next */
+export const get_settings_render_only = (): SettingsRenderOnly => ({
+    dense_mode: page_params.development_environment,
+    high_contrast_mode: page_params.development_environment,
+    web_font_size_px: page_params.development_environment,
+    web_line_height_percent: page_params.development_environment,
 });
 
 export const email_address_visibility_values = {
@@ -553,7 +567,7 @@ export const user_role_map = new Map(user_role_array.map((role) => [role.code, r
 
 export const preferences_settings_labels = {
     default_language_settings_label: $t({defaultMessage: "Language"}),
-    dense_mode: $t({defaultMessage: "Dense mode"}),
+    dense_mode: $t({defaultMessage: "Compact mode"}),
     display_emoji_reaction_users: new Handlebars.SafeString(
         $t_html({
             defaultMessage:

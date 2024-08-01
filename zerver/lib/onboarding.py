@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Count
@@ -25,7 +23,7 @@ def missing_any_realm_internal_bots() -> bool:
         for bot in settings.REALM_INTERNAL_BOTS
     ]
     realm_count = Realm.objects.count()
-    return UserProfile.objects.filter(email__in=bot_emails).values("email").annotate(
+    return UserProfile.objects.filter(email__in=bot_emails).values("email").alias(
         count=Count("id")
     ).filter(count=realm_count).count() != len(bot_emails)
 
@@ -332,7 +330,7 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
 :point_right: Click on this message to start a new message in the same conversation.
 """)
 
-    welcome_messages: List[Dict[str, str]] = []
+    welcome_messages: list[dict[str, str]] = []
 
     # Messages added to the "welcome messages" list last will be most
     # visible to users, since welcome messages will likely be browsed

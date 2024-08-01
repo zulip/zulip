@@ -3,10 +3,12 @@
 import copy
 import logging
 import time
-from typing import Any, Callable, Collection, Dict, Iterable, Mapping, Optional, Sequence, Set
+from collections.abc import Callable, Collection, Iterable, Sequence
+from typing import Any
 
 from django.conf import settings
 from django.utils.translation import gettext as _
+from typing_extensions import NotRequired, TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
@@ -53,6 +55,7 @@ from zerver.lib.subscription_info import (
     gather_subscriptions_helper,
     get_web_public_subs,
 )
+from zerver.lib.thumbnail import THUMBNAIL_OUTPUT_FORMATS
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
@@ -102,7 +105,7 @@ from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
-def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
+def add_realm_logo_fields(state: dict[str, Any], realm: Realm) -> None:
     state["realm_logo_url"] = get_realm_logo_url(realm, night=False)
     state["realm_logo_source"] = get_realm_logo_source(realm, night=False)
     state["realm_night_logo_url"] = get_realm_logo_url(realm, night=True)
@@ -122,23 +125,23 @@ def always_want(msg_type: str) -> bool:
 
 
 def fetch_initial_state_data(
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     *,
     realm: Realm,
-    event_types: Optional[Iterable[str]] = None,
-    queue_id: Optional[str] = "",
+    event_types: Iterable[str] | None = None,
+    queue_id: str | None = "",
     client_gravatar: bool = False,
     user_avatar_url_field_optional: bool = False,
     user_settings_object: bool = False,
     slim_presence: bool = False,
-    presence_last_update_id_fetched_by_client: Optional[int] = None,
+    presence_last_update_id_fetched_by_client: int | None = None,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    spectator_requested_language: Optional[str] = None,
+    spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
     apps).  Can also fetch a subset as determined by `event_types`.
@@ -150,7 +153,7 @@ def fetch_initial_state_data(
     corresponding events for changes in the data structures and new
     code to apply_events (and add a test in test_events.py).
     """
-    state: Dict[str, Any] = {"queue_id": queue_id}
+    state: dict[str, Any] = {"queue_id": queue_id}
 
     if event_types is None:
         # return True always
@@ -380,6 +383,16 @@ def fetch_initial_state_data(
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
+        state["server_thumbnail_formats"] = [
+            {
+                "name": str(thumbnail_format),
+                "max_width": thumbnail_format.max_width,
+                "max_height": thumbnail_format.max_height,
+                "format": thumbnail_format.extension,
+                "animated": thumbnail_format.animated,
+            }
+            for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS
+        ]
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
@@ -756,9 +769,9 @@ def fetch_initial_state_data(
 def apply_events(
     user_profile: UserProfile,
     *,
-    state: Dict[str, Any],
-    events: Iterable[Dict[str, Any]],
-    fetch_event_types: Optional[Collection[str]],
+    state: dict[str, Any],
+    events: Iterable[dict[str, Any]],
+    fetch_event_types: Collection[str] | None,
     client_gravatar: bool,
     slim_presence: bool,
     include_subscribers: bool,
@@ -791,8 +804,8 @@ def apply_events(
 def apply_event(
     user_profile: UserProfile,
     *,
-    state: Dict[str, Any],
-    event: Dict[str, Any],
+    state: dict[str, Any],
+    event: dict[str, Any],
     client_gravatar: bool,
     slim_presence: bool,
     include_subscribers: bool,
@@ -1627,25 +1640,39 @@ def apply_event(
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
 
+class ClientCapabilities(TypedDict):
+    # This field was accidentally made required when it was added in v2.0.0-781;
+    # this was not realized until after the release of Zulip 2.1.2. (It remains
+    # required to help ensure backwards compatibility of client code.)
+    notification_settings_null: bool
+    # Any new fields of `client_capabilities` should be optional. Add them here.
+    bulk_message_deletion: NotRequired[bool]
+    user_avatar_url_field_optional: NotRequired[bool]
+    stream_typing_notifications: NotRequired[bool]
+    user_settings_object: NotRequired[bool]
+    linkifier_url_template: NotRequired[bool]
+    user_list_incomplete: NotRequired[bool]
+
+
 def do_events_register(
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     realm: Realm,
     user_client: Client,
     apply_markdown: bool = True,
     client_gravatar: bool = False,
     slim_presence: bool = False,
-    presence_last_update_id_fetched_by_client: Optional[int] = None,
-    event_types: Optional[Sequence[str]] = None,
+    presence_last_update_id_fetched_by_client: int | None = None,
+    event_types: Sequence[str] | None = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    client_capabilities: Mapping[str, bool] = {},
+    client_capabilities: ClientCapabilities = ClientCapabilities(notification_settings_null=False),
     narrow: Collection[NarrowTerm] = [],
-    fetch_event_types: Optional[Collection[str]] = None,
-    spectator_requested_language: Optional[str] = None,
+    fetch_event_types: Collection[str] | None = None,
+    spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_predicate will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
@@ -1662,15 +1689,18 @@ def do_events_register(
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
 
     if fetch_event_types is not None:
-        event_types_set: Optional[Set[str]] = set(fetch_event_types)
+        event_types_set: set[str] | None = set(fetch_event_types)
     elif event_types is not None:
         event_types_set = set(event_types)
     else:
         event_types_set = None
 
     # Fetch the realm object again to prefetch all the
-    # group settings which support anonymous groups
+    # settings that will be used in 'fetch_initial_state_data'
     # to avoid unnecessary DB queries.
+    # The settings include:
+    # * group settings which support anonymous groups
+    # * announcements streams
     realm = get_realm_with_settings(realm_id=realm.id)
 
     if user_profile is None:
@@ -1771,7 +1801,7 @@ def do_events_register(
 
 
 def post_process_state(
-    user_profile: Optional[UserProfile], ret: Dict[str, Any], notification_settings_null: bool
+    user_profile: UserProfile | None, ret: dict[str, Any], notification_settings_null: bool
 ) -> None:
     """
     NOTE:

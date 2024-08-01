@@ -15,7 +15,7 @@
 
 {end_tabs}
 
-Click the **pencil and paper** (<i class="fa fa-edit"></i>) icon to resume editing.
+Click the **pencil and paper** (<i class="zulip-icon zulip-icon-edit"></i>) icon to resume editing.
 
 ## Related articles
 

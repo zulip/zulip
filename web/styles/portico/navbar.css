@@ -285,7 +285,7 @@ details summary::-webkit-details-marker {
         max-width: 40px;
     }
 
-    .top-menu-tab .top-menu-tab-user-label span {
+    .top-menu-tab .top-menu-tab-user-label .top-menu-tab-user-name {
         display: none;
     }
 }

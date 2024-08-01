@@ -500,7 +500,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     };
     let response = {
         body: {
-            uri: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
+            url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
         },
     };
 
@@ -525,7 +525,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
 
     response = {
         body: {
-            uri: undefined,
+            url: undefined,
         },
     };
     compose_ui_replace_syntax_called = false;

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Set
 
 from django.db.models import Sum
 from django.utils.timezone import now as timezone_now
@@ -9,7 +8,7 @@ from analytics.models import StreamCount
 from zerver.models import Realm
 
 
-def get_streams_traffic(stream_ids: Set[int], realm: Realm) -> Optional[Dict[int, int]]:
+def get_streams_traffic(stream_ids: set[int], realm: Realm) -> dict[int, int] | None:
     if realm.is_zephyr_mirror_realm:
         # We do not need traffic data for streams in zephyr mirroring realm.
         return None
@@ -41,8 +40,8 @@ STREAM_TRAFFIC_CALCULATION_MIN_AGE_DAYS = 7
 
 
 def get_average_weekly_stream_traffic(
-    stream_id: int, stream_date_created: datetime, recent_traffic: Dict[int, int]
-) -> Optional[int]:
+    stream_id: int, stream_date_created: datetime, recent_traffic: dict[int, int]
+) -> int | None:
     try:
         stream_traffic = recent_traffic[stream_id]
     except KeyError:

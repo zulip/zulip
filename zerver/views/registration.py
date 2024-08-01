@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Iterable
 from contextlib import suppress
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Annotated, Any
 from urllib.parse import urlencode, urljoin
 
 import orjson
@@ -18,6 +19,7 @@ from django.urls import reverse
 from django.utils.translation import get_language
 from django.views.defaults import server_error
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
+from pydantic import Json, NonNegativeInt, StringConstraints
 
 from confirmation.models import (
     Confirmation,
@@ -58,19 +60,22 @@ from zerver.lib.i18n import (
 )
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.typed_endpoint import (
+    ApiParamConfig,
+    PathOnly,
+    typed_endpoint,
+    typed_endpoint_without_parameters,
+)
+from zerver.lib.typed_endpoint_validators import (
+    check_int_in_validator,
+    non_negative_int_or_none_validator,
+    timezone_or_empty_validator,
+)
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
-from zerver.lib.validator import (
-    check_capped_string,
-    check_int_in,
-    to_converted_or_fallback,
-    to_non_negative_int,
-    to_timezone_or_empty,
-)
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
     MultiuseInvite,
@@ -118,9 +123,9 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import LicenseLimitError
 
 
-@has_request_variables
+@typed_endpoint
 def get_prereg_key_and_redirect(
-    request: HttpRequest, confirmation_key: str, full_name: Optional[str] = REQ(default=None)
+    request: HttpRequest, *, confirmation_key: PathOnly[str], full_name: str | None = None
 ) -> HttpResponse:
     """
     The purpose of this little endpoint is primarily to take a GET
@@ -159,7 +164,7 @@ def get_prereg_key_and_redirect(
 
 def check_prereg_key(
     request: HttpRequest, confirmation_key: str
-) -> Tuple[Union[PreregistrationUser, PreregistrationRealm], bool]:
+) -> tuple[PreregistrationUser | PreregistrationRealm, bool]:
     """
     Checks if the Confirmation key is valid, returning the PreregistrationUser or
     PreregistrationRealm object in case of success and raising an appropriate
@@ -174,7 +179,7 @@ def check_prereg_key(
     prereg_object = get_object_from_key(
         confirmation_key, confirmation_types, mark_object_used=False
     )
-    assert isinstance(prereg_object, (PreregistrationRealm, PreregistrationUser))
+    assert isinstance(prereg_object, PreregistrationRealm | PreregistrationUser)
 
     confirmation_obj = prereg_object.confirmation.get()
     realm_creation = confirmation_obj.type == Confirmation.REALM_CREATION
@@ -193,7 +198,7 @@ def check_prereg_key(
     return prereg_object, realm_creation
 
 
-def get_selected_realm_type_name(prereg_realm: Optional[PreregistrationRealm]) -> Optional[str]:
+def get_selected_realm_type_name(prereg_realm: PreregistrationRealm | None) -> str | None:
     if prereg_realm is None:
         # We show the selected realm type only when creating new realm.
         return None
@@ -202,8 +207,8 @@ def get_selected_realm_type_name(prereg_realm: Optional[PreregistrationRealm]) -
 
 
 def get_selected_realm_default_language_name(
-    prereg_realm: Optional[PreregistrationRealm],
-) -> Optional[str]:
+    prereg_realm: PreregistrationRealm | None,
+) -> str | None:
     if prereg_realm is None:
         # We show the selected realm language only when creating new realm.
         return None
@@ -222,17 +227,16 @@ def accounts_register(*args: Any, **kwargs: Any) -> HttpResponse:
     return registration_helper(*args, **kwargs)
 
 
-@has_request_variables
+@typed_endpoint
 def registration_helper(
     request: HttpRequest,
-    key: str = REQ(default=""),
-    timezone: str = REQ(default="", converter=to_timezone_or_empty),
-    from_confirmation: Optional[str] = REQ(default=None),
-    form_full_name: Optional[str] = REQ("full_name", default=None),
-    source_realm_id: Optional[int] = REQ(
-        default=None, converter=to_converted_or_fallback(to_non_negative_int, None)
-    ),
-    form_is_demo_organization: Optional[str] = REQ("is_demo_organization", default=None),
+    *,
+    key: str = "",
+    timezone: Annotated[str, timezone_or_empty_validator()] = "",
+    from_confirmation: str | None = None,
+    form_full_name: Annotated[str | None, ApiParamConfig("full_name")] = None,
+    source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
+    form_is_demo_organization: Annotated[str | None, ApiParamConfig("is_demo_organization")] = None,
 ) -> HttpResponse:
     try:
         prereg_object, realm_creation = check_prereg_key(request, key)
@@ -521,22 +525,20 @@ def registration_helper(
         if source_realm_id is not None:
             # Non-integer realm_id values like "string" are treated
             # like the "Do not import" value of "".
-            source_profile: Optional[UserProfile] = get_source_profile(email, source_realm_id)
+            source_profile: UserProfile | None = get_source_profile(email, source_realm_id)
         else:
             source_profile = None
 
         if not realm_creation:
             try:
-                existing_user_profile: Optional[UserProfile] = get_user_by_delivery_email(
-                    email, realm
-                )
+                existing_user_profile: UserProfile | None = get_user_by_delivery_email(email, realm)
             except UserProfile.DoesNotExist:
                 existing_user_profile = None
         else:
             existing_user_profile = None
 
-        user_profile: Optional[UserProfile] = None
-        return_data: Dict[str, bool] = {}
+        user_profile: UserProfile | None = None
+        return_data: dict[str, bool] = {}
         if ldap_auth_enabled(realm):
             # If the user was authenticated using an external SSO
             # mechanism like Google or GitHub auth, then authentication
@@ -764,11 +766,11 @@ def prepare_activation_url(
     email: str,
     session: SessionBase,
     *,
-    realm: Optional[Realm],
-    streams: Optional[Iterable[Stream]] = None,
-    invited_as: Optional[int] = None,
-    include_realm_default_subscriptions: Optional[bool] = None,
-    multiuse_invite: Optional[MultiuseInvite] = None,
+    realm: Realm | None,
+    streams: Iterable[Stream] | None = None,
+    invited_as: int | None = None,
+    include_realm_default_subscriptions: bool | None = None,
+    multiuse_invite: MultiuseInvite | None = None,
 ) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
@@ -818,10 +820,10 @@ def send_confirm_registration_email(
     email: str,
     activation_url: str,
     *,
-    realm: Optional[Realm] = None,
-    realm_subdomain: Optional[str] = None,
-    realm_type: Optional[int] = None,
-    request: Optional[HttpRequest] = None,
+    realm: Realm | None = None,
+    realm_subdomain: str | None = None,
+    realm_type: int | None = None,
+    request: HttpRequest | None = None,
 ) -> None:
     org_url = ""
     org_type = ""
@@ -856,7 +858,7 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
 
 
 @add_google_analytics
-def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> HttpResponse:
+def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpResponse:
     try:
         key_record = validate_key(creation_key)
     except RealmCreationKey.InvalidError:
@@ -959,8 +961,8 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
     )
 
 
-@has_request_variables
-def signup_send_confirm(request: HttpRequest, email: str = REQ("email")) -> HttpResponse:
+@typed_endpoint
+def signup_send_confirm(request: HttpRequest, *, email: str) -> HttpResponse:
     try:
         # Because we interpolate the email directly into the template
         # from the query parameter, do a simple validation that it
@@ -981,14 +983,15 @@ def signup_send_confirm(request: HttpRequest, email: str = REQ("email")) -> Http
 
 
 @add_google_analytics
-@has_request_variables
+@typed_endpoint
 def new_realm_send_confirm(
     request: HttpRequest,
-    email: str = REQ("email"),
-    realm_name: str = REQ(str_validator=check_capped_string(Realm.MAX_REALM_NAME_LENGTH)),
-    realm_type: int = REQ(json_validator=check_int_in(Realm.ORG_TYPE_IDS)),
-    realm_default_language: str = REQ(str_validator=check_capped_string(MAX_LANGUAGE_ID_LENGTH)),
-    realm_subdomain: str = REQ(str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH)),
+    *,
+    email: str,
+    realm_name: Annotated[str, StringConstraints(max_length=Realm.MAX_REALM_NAME_LENGTH)],
+    realm_type: Annotated[Json[int], check_int_in_validator(Realm.ORG_TYPE_IDS)],
+    realm_default_language: Annotated[str, StringConstraints(max_length=MAX_LANGUAGE_ID_LENGTH)],
+    realm_subdomain: Annotated[str, StringConstraints(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)],
 ) -> HttpResponse:
     return TemplateResponse(
         request,
@@ -1010,7 +1013,7 @@ def new_realm_send_confirm(
 def accounts_home(
     request: HttpRequest,
     multiuse_object_key: str = "",
-    multiuse_object: Optional[MultiuseInvite] = None,
+    multiuse_object: MultiuseInvite | None = None,
 ) -> HttpResponse:
     try:
         realm = get_realm(get_subdomain(request))
@@ -1096,7 +1099,7 @@ def accounts_home(
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     realm = get_realm_from_request(request)
-    multiuse_object: Optional[MultiuseInvite] = None
+    multiuse_object: MultiuseInvite | None = None
     try:
         confirmation_obj = get_object_from_key(
             confirmation_key, [Confirmation.MULTIUSE_INVITE], mark_object_used=False
@@ -1114,11 +1117,11 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
     )
 
 
-@has_request_variables
+@typed_endpoint_without_parameters
 def find_account(request: HttpRequest) -> HttpResponse:
     url = reverse("find_account")
     form = FindMyTeamForm()
-    emails: List[str] = []
+    emails: list[str] = []
     if request.method == "POST":
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
@@ -1152,8 +1155,8 @@ def find_account(request: HttpRequest) -> HttpResponse:
             # one outgoing email per provided email address, with each
             # email listing all of the accounts that email address has
             # with the current Zulip server.
-            emails_account_found: Set[str] = set()
-            context: Dict[str, Dict[str, Any]] = {}
+            emails_account_found: set[str] = set()
+            context: dict[str, dict[str, Any]] = {}
             for user in user_profiles:
                 key = user.delivery_email.lower()
                 context.setdefault(key, {})
@@ -1192,7 +1195,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 )
 
             emails_lower_with_account = {email.lower() for email in emails_account_found}
-            emails_without_account: Set[str] = {
+            emails_without_account: set[str] = {
                 email for email in emails if email.lower() not in emails_lower_with_account
             }
             if emails_without_account:
@@ -1218,8 +1221,8 @@ def find_account(request: HttpRequest) -> HttpResponse:
     )
 
 
-@has_request_variables
-def realm_redirect(request: HttpRequest, next: str = REQ(default="")) -> HttpResponse:
+@typed_endpoint
+def realm_redirect(request: HttpRequest, *, next: str = "") -> HttpResponse:
     if request.method == "POST":
         form = RealmRedirectForm(request.POST)
         if form.is_valid():

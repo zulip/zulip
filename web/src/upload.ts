@@ -1,4 +1,4 @@
-import type {UppyFile} from "@uppy/core";
+import type {Meta, UppyFile} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import XHRUpload from "@uppy/xhr-upload";
 import $ from "jquery";
@@ -33,7 +33,7 @@ export function feature_check(): XMLHttpRequestUpload {
     return window.XMLHttpRequest && new window.XMLHttpRequest().upload;
 }
 
-export function get_translated_status(file: File | UppyFile): string {
+export function get_translated_status(file: File | UppyFile<Meta, Record<string, never>>): string {
     const status = $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name});
     return "[" + status + "]()";
 }
@@ -263,6 +263,7 @@ export function setup_upload(config: Config): Uppy {
                 ),
                 failedToUpload: $t({defaultMessage: "Failed to upload %'{file}'"}),
             },
+            pluralize: (_n) => 0,
         },
     });
     uppy.setMeta({
@@ -280,6 +281,7 @@ export function setup_upload(config: Config): Uppy {
                     defaultMessage: "Upload stalled for %'{seconds}' seconds, aborting.",
                 }),
             },
+            pluralize: (_n) => 0,
         },
     });
 
@@ -289,6 +291,7 @@ export function setup_upload(config: Config): Uppy {
 
     uppy.on("upload-progress", (file, progress) => {
         assert(file !== undefined);
+        assert(progress.bytesTotal !== null);
         const percent_complete = (100 * progress.bytesUploaded) / progress.bytesTotal;
         $(`${config.upload_banner_identifier(file.id)} .moving_bar`).css({
             width: `${percent_complete}%`,
@@ -369,7 +372,7 @@ export function setup_upload(config: Config): Uppy {
 
     uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
-        const {uri: url} = z.object({uri: z.string().optional()}).parse(response.body);
+        const {url} = z.object({url: z.string().optional()}).parse(response.body);
         if (url === undefined) {
             return;
         }
@@ -479,7 +482,7 @@ export function deactivate_upload(config: Config): void {
         // Uninstall all plugins and close down the Uppy instance.
         // Also runs uppy.cancelAll() before uninstalling - which
         // cancels all uploads, resets progress and removes all files.
-        uppy.close();
+        uppy.destroy();
     } catch (error) {
         blueslip.error("Failed to close upload object.", {config}, error);
     }

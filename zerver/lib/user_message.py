@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from django.db import connection
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Composable, Literal
@@ -19,7 +17,7 @@ class UserMessageLite:
         self.message_id = message_id
         self.flags = flags
 
-    def flags_list(self) -> List[str]:
+    def flags_list(self) -> list[str]:
         return UserMessage.flags_list_for_flags(self.flags)
 
 
@@ -29,9 +27,9 @@ DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
 def create_historical_user_messages(
     *,
     user_id: int,
-    message_ids: List[int],
-    flagattr: Optional[int] = None,
-    flag_target: Optional[int] = None,
+    message_ids: list[int],
+    flagattr: int | None = None,
+    flag_target: int | None = None,
 ) -> None:
     # Users can see and interact with messages sent to streams with
     # public history for which they do not have a UserMessage because
@@ -51,7 +49,7 @@ def create_historical_user_messages(
     bulk_insert_all_ums([user_id], message_ids, flags, conflict)
 
 
-def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
+def bulk_insert_ums(ums: list[UserMessageLite]) -> None:
     """
     Doing bulk inserts this way is much faster than using Django,
     since we don't have any ORM overhead.  Profiling with 1000
@@ -76,7 +74,7 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
 
 
 def bulk_insert_all_ums(
-    user_ids: List[int], message_ids: List[int], flags: int, conflict: Optional[Composable] = None
+    user_ids: list[int], message_ids: list[int], flags: int, conflict: Composable | None = None
 ) -> None:
     if not user_ids or not message_ids:
         return

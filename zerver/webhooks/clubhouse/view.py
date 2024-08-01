@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Iterable, Iterator, List, Optional
+from collections.abc import Callable, Iterable, Iterator
 
 from django.http import HttpRequest, HttpResponse
 
@@ -83,7 +83,7 @@ def get_action_with_primary_id(payload: WildValue) -> WildValue:
     return action_with_primary_id
 
 
-def get_event(payload: WildValue, action: WildValue) -> Optional[str]:
+def get_event(payload: WildValue, action: WildValue) -> str | None:
     event = "{}_{}".format(
         action["entity_type"].tame(check_string), action["action"].tame(check_string)
     )
@@ -129,7 +129,7 @@ def get_event(payload: WildValue, action: WildValue) -> Optional[str]:
 
 def get_topic_function_based_on_type(
     payload: WildValue, action: WildValue
-) -> Optional[Callable[[WildValue, WildValue], Optional[str]]]:
+) -> Callable[[WildValue, WildValue], str | None] | None:
     entity_type = action["entity_type"].tame(check_string)
     return EVENT_TOPIC_FUNCTION_MAPPER.get(entity_type)
 
@@ -299,7 +299,7 @@ def get_story_task_body(operation: str, payload: WildValue, action: WildValue) -
     return STORY_TASK_TEMPLATE.format(**kwargs)
 
 
-def get_story_task_completed_body(payload: WildValue, action: WildValue) -> Optional[str]:
+def get_story_task_completed_body(payload: WildValue, action: WildValue) -> str | None:
     kwargs = {
         "task_description": action["description"].tame(check_string),
     }
@@ -371,7 +371,7 @@ def get_story_update_estimate_body(payload: WildValue, action: WildValue) -> str
     return STORY_ESTIMATE_TEMPLATE.format(**kwargs)
 
 
-def get_reference_by_id(payload: WildValue, ref_id: Optional[int]) -> Optional[WildValue]:
+def get_reference_by_id(payload: WildValue, ref_id: int | None) -> WildValue | None:
     ref = None
     for reference in payload["references"]:
         if reference["id"].tame(check_string_or_int) == ref_id:
@@ -431,7 +431,7 @@ def get_story_create_github_entity_body(entity: str, payload: WildValue, action:
     return template.format(**kwargs)
 
 
-def get_story_update_attachment_body(payload: WildValue, action: WildValue) -> Optional[str]:
+def get_story_update_attachment_body(payload: WildValue, action: WildValue) -> str | None:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"].tame(check_string),
@@ -456,7 +456,7 @@ def get_story_update_attachment_body(payload: WildValue, action: WildValue) -> O
     return FILE_ATTACHMENT_TEMPLATE.format(**kwargs)
 
 
-def get_story_joined_label_list(payload: WildValue, label_ids_added: List[int]) -> str:
+def get_story_joined_label_list(payload: WildValue, label_ids_added: list[int]) -> str:
     labels = []
 
     for label_id in label_ids_added:
@@ -475,7 +475,7 @@ def get_story_joined_label_list(payload: WildValue, label_ids_added: List[int]) 
     return ", ".join(labels)
 
 
-def get_story_label_body(payload: WildValue, action: WildValue) -> Optional[str]:
+def get_story_label_body(payload: WildValue, action: WildValue) -> str | None:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"].tame(check_string),
@@ -543,7 +543,7 @@ def get_story_update_owner_body(payload: WildValue, action: WildValue) -> str:
     return STORY_UPDATE_OWNER_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_batch_body(payload: WildValue, action: WildValue) -> Optional[str]:
+def get_story_update_batch_body(payload: WildValue, action: WildValue) -> str | None:
     # When the user selects one or more stories with the checkbox, they can perform
     # a batch update on multiple stories while changing multiple attributes at the
     # same time.
@@ -660,7 +660,7 @@ def get_story_update_batch_body(payload: WildValue, action: WildValue) -> Option
     return STORY_UPDATE_BATCH_TEMPLATE.format(**kwargs)
 
 
-def get_entity_name(entity: str, payload: WildValue, action: WildValue) -> Optional[str]:
+def get_entity_name(entity: str, payload: WildValue, action: WildValue) -> str | None:
     name = action["name"].tame(check_string) if "name" in action else None
 
     if name is None or action["entity_type"] == "branch":
@@ -701,7 +701,7 @@ def send_channel_messages_for_actions(
         check_send_webhook_message(request, user_profile, topic_name, body, event)
 
 
-EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
+EVENT_BODY_FUNCTION_MAPPER: dict[str, Callable[[WildValue, WildValue], str | None]] = {
     "story_update_archived": partial(get_update_archived_body, "story"),
     "epic_update_archived": partial(get_update_archived_body, "epic"),
     "story_create": get_story_create_body,
@@ -734,7 +734,7 @@ EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[
 
 ALL_EVENT_TYPES = list(EVENT_BODY_FUNCTION_MAPPER.keys())
 
-EVENT_TOPIC_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
+EVENT_TOPIC_FUNCTION_MAPPER: dict[str, Callable[[WildValue, WildValue], str | None]] = {
     "story": partial(get_entity_name, "story"),
     "pull-request": partial(get_entity_name, "story"),
     "branch": partial(get_entity_name, "story"),
@@ -748,7 +748,7 @@ IGNORED_EVENTS = {
     "story-comment_update",
 }
 
-EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Iterator[WildValue]]] = {
+EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: dict[str, Callable[[WildValue], Iterator[WildValue]]] = {
     "pull-request_create": partial(get_secondary_actions_with_param, "story", "pull_request_ids"),
     "branch_create": partial(get_secondary_actions_with_param, "story", "branch_ids"),
     "pull-request_comment": partial(get_secondary_actions_with_param, "story", "pull_request_ids"),

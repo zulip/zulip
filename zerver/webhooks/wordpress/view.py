@@ -13,17 +13,9 @@ PUBLISH_POST_OR_PAGE_TEMPLATE = """
 New {type} published:
 * [{title}]({url})
 """.strip()
-USER_REGISTER_TEMPLATE = """
-New blog user registered:
-* **Name**: {name}
-* **Email**: {email}
-""".strip()
-WP_LOGIN_TEMPLATE = "User {name} logged in."
 ALL_EVENT_TYPES = [
     "publish_post",
     "publish_page",
-    "user_register",
-    "wp_login",
 ]
 
 
@@ -37,22 +29,12 @@ def api_wordpress_webhook(
     post_title: str = "New WordPress post",
     post_type: str = "post",
     post_url: str = "WordPress post URL",
-    display_name: str = "New user name",
-    user_email: str = "New user email",
-    user_login: str = "Logged in user",
 ) -> HttpResponse:
     # remove trailing whitespace (issue for some test fixtures)
     hook = hook.rstrip()
 
     if hook in ("publish_post", "publish_page"):
         data = PUBLISH_POST_OR_PAGE_TEMPLATE.format(type=post_type, title=post_title, url=post_url)
-
-    elif hook == "user_register":
-        data = USER_REGISTER_TEMPLATE.format(name=display_name, email=user_email)
-
-    elif hook == "wp_login":
-        data = WP_LOGIN_TEMPLATE.format(name=user_login)
-
     else:
         raise JsonableError(_("Unknown WordPress webhook action: {hook}").format(hook=hook))
 

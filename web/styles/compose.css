@@ -10,10 +10,11 @@
     align-items: stretch;
 
     .new_message_button {
-        .button.small {
+        .button {
             /* Keep the new message button sized to match
                adjacent buttons. */
             font-size: inherit;
+            min-width: inherit;
             line-height: var(--line-height-compose-buttons);
             padding: 3px 10px;
         }
@@ -351,6 +352,7 @@
 #preview_message_area {
     margin-right: calc(var(--composebox-buttons-width) * -1);
     padding-right: var(--composebox-buttons-width);
+    color: var(--color-text-default);
 }
 
 .surround-formatting-buttons-row {
@@ -824,7 +826,7 @@
 
 textarea.new_message_textarea {
     display: table-cell;
-    padding: 5px;
+    padding: 5px 5px 0;
     height: 1.5em;
     max-height: 22em;
     margin: 0;
@@ -1001,41 +1003,80 @@ textarea.new_message_textarea {
 }
 
 .enter_sends_choices {
+    display: flex;
+    flex-direction: column;
+    color: var(--color-text-popover-menu);
+
     .enter_sends_choice {
         display: flex;
         gap: 8px;
-        padding-top: 4px;
+        padding: 4px 10px;
+        align-items: flex-start;
 
-        & input[type="radio"] {
-            position: relative;
-            top: 5px;
+        &:hover {
+            background: var(--color-background-hover-popover-menu);
+            outline: none;
+        }
+
+        &:active {
+            background: var(--color-background-active-popover-menu);
+        }
+
+        & .enter_sends_choice_radio {
             width: auto;
             cursor: pointer;
             margin: 4px 0 0;
+            accent-color: hsl(217deg 100% 60%);
 
             &:focus {
                 outline: 1px dotted hsl(0deg 0% 20%);
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
             }
-        }
 
-        &:first-child {
-            padding: 0 0 4px;
-            border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+            &:checked
+                + .enter_sends_choice_text_container
+                .popover-menu-hotkey-hint {
+                color: hsl(217deg 100% 60%);
+                border: 1px solid hsl(217deg 100% 60% / 50%);
+            }
         }
+    }
+
+    .enter_sends_choice_text_container {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        gap: 3px;
+        white-space: nowrap;
     }
 
     .enter_sends_choice_text {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        gap: 3px;
     }
 
-    .enter_sends_minor,
-    .enter_sends_minor kbd {
-        opacity: 0.9;
-        font-size: 11px;
-        color: hsl(0deg 0% 50%);
+    .popover-menu-hotkey-hints {
+        margin: 0;
+        padding: 0;
+
+        .popover-menu-hotkey-hint {
+            padding: 2px 5px;
+        }
+    }
+
+    .enter_sends_major {
+        font-size: 15px;
+    }
+
+    .enter_sends_minor {
+        font-size: 12px;
+
+        .popover-menu-hotkey-hint {
+            font-size: 12px;
+            padding: 1px 4px;
+        }
     }
 }
 
@@ -1045,6 +1086,13 @@ textarea.new_message_textarea {
        in the compose box. */
     @media (width < $sm_min) {
         display: block;
+    }
+
+    .unread_count {
+        margin: 1px 0 0 6px;
+        border: 0.5px solid var(--color-border-unread-counter);
+        background-color: unset;
+        color: inherit;
     }
 }
 
@@ -1202,7 +1250,7 @@ textarea.new_message_textarea {
             vdot menu icon, so that it is hidden when all compose buttons fit
             in the main row below the compose box. So, this is the same as
             the media query for .show_popover_buttons. */
-            @media (((width < 1398px) and (width >= $xl_min)) or (width < 1158px)) {
+            @media (((width < 1418px) and (width >= $xl_min)) or (width < 1178px)) {
                 display: block;
 
                 .compose_control_menu {
@@ -1216,7 +1264,7 @@ textarea.new_message_textarea {
             we hide and show in a popover instead when they no longer fit in a
             single row. The media query below handles the hiding and showing of the
             buttons from the main row of compose buttons below the compose box. */
-            @media (((width < 1398px) and (width >= $xl_min)) or (width < 1158px)) {
+            @media (((width < 1418px) and (width >= $xl_min)) or (width < 1178px)) {
                 display: none;
             }
         }
@@ -1225,7 +1273,7 @@ textarea.new_message_textarea {
             /* This is similar to show_popover_buttons, but it's only for those
             compose buttons that we hide, and show in the popover only when the
             screen gets extremely narrow. */
-            @media ((width < 596px) or ((width < 919px) and (width >= $md_min))) {
+            @media ((width < 596px) or ((width < 939px) and (width >= $md_min))) {
                 display: none;
             }
         }
@@ -1233,7 +1281,7 @@ textarea.new_message_textarea {
         &.show_in_popover {
             /* This is to show the popover 2 buttons in the popover, only when
             they are hidden in the main row below the compose box. */
-            @media ((width < 596px) or ((width < 919px) and (width >= $md_min))) {
+            @media ((width < 596px) or ((width < 939px) and (width >= $md_min))) {
                 display: flex;
             }
         }
@@ -1311,11 +1359,7 @@ textarea.new_message_textarea {
 }
 
 .preview_message_area {
-    padding: 5px;
-    /* the maximum height the textarea gets to. */
-    max-height: 308px;
-    /* the minimum height the textarea collapses to. */
-    min-height: 42px;
+    padding: 5px 5px 0;
     overflow: auto;
 
     border-radius: 3px 3px 0 0;
@@ -1351,26 +1395,6 @@ textarea.new_message_textarea {
         padding-left: 5px;
         color: var(--color-compose-chevron-arrow);
         font-weight: lighter;
-    }
-}
-
-.typeahead.dropdown-menu {
-    .typeahead-menu {
-        list-style: none;
-        margin: 4px 0;
-    }
-
-    .typeahead-header {
-        margin: 0;
-        padding: 4px 10px;
-        border-top: 1px solid hsl(0deg 0% 0% / 20%);
-        display: flex;
-        align-items: center;
-    }
-
-    #typeahead-header-text {
-        color: var(--color-dropdown-item);
-        font-size: 12px;
     }
 }
 

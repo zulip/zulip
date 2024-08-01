@@ -1,15 +1,16 @@
 import time
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
+from collections.abc import Callable
+from typing import Annotated, Any
 
 import orjson
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from pydantic import BaseModel, Field, Json, NonNegativeInt, StringConstraints, model_validator
 
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -47,7 +48,6 @@ from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.message import bulk_access_stream_messages_query
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import STREAM_MESSAGE_BATCH_SIZE as RETENTION_STREAM_MESSAGE_BATCH_SIZE
 from zerver.lib.retention import parse_message_retention_days
@@ -72,29 +72,16 @@ from zerver.lib.topic import (
     get_topic_history_for_stream,
     messages_for_topic,
 )
-from zerver.lib.types import Validator
+from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint_validators import check_color, check_int_in_validator
 from zerver.lib.user_groups import access_user_group_for_setting
 from zerver.lib.users import access_user_by_email, access_user_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.lib.validator import (
-    check_bool,
-    check_capped_string,
-    check_color,
-    check_dict,
-    check_dict_only,
-    check_int,
-    check_int_in,
-    check_list,
-    check_string,
-    check_string_or_int,
-    check_union,
-    to_non_negative_int,
-)
 from zerver.models import NamedUserGroup, Realm, Stream, UserProfile
 from zerver.models.users import get_system_bot
 
 
-def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) -> UserProfile:
+def principal_to_user_profile(agent: UserProfile, principal: str | int) -> UserProfile:
     if isinstance(principal, str):
         return access_user_by_email(
             agent, principal, allow_deactivated=False, allow_bots=True, for_admin=False
@@ -124,9 +111,9 @@ def deactivate_stream_backend(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def add_default_stream(
-    request: HttpRequest, user_profile: UserProfile, stream_id: int = REQ(json_validator=check_int)
+    request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
     if stream.invite_only:
@@ -136,13 +123,14 @@ def add_default_stream(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def create_default_stream_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    group_name: str = REQ(),
-    description: str = REQ(),
-    stream_names: List[str] = REQ(json_validator=check_list(check_string)),
+    *,
+    group_name: str,
+    description: str,
+    stream_names: Json[list[str]],
 ) -> HttpResponse:
     streams = []
     for stream_name in stream_names:
@@ -153,13 +141,14 @@ def create_default_stream_group(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def update_default_stream_group_info(
     request: HttpRequest,
     user_profile: UserProfile,
-    group_id: int,
-    new_group_name: Optional[str] = REQ(default=None),
-    new_description: Optional[str] = REQ(default=None),
+    *,
+    group_id: PathOnly[int],
+    new_group_name: str | None = None,
+    new_description: str | None = None,
 ) -> HttpResponse:
     if not new_group_name and not new_description:
         raise JsonableError(_('You must pass "new_description" or "new_group_name".'))
@@ -173,13 +162,14 @@ def update_default_stream_group_info(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def update_default_stream_group_streams(
     request: HttpRequest,
     user_profile: UserProfile,
-    group_id: int,
-    op: str = REQ(),
-    stream_names: List[str] = REQ(json_validator=check_list(check_string)),
+    *,
+    group_id: PathOnly[int],
+    op: str,
+    stream_names: Json[list[str]],
 ) -> HttpResponse:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
@@ -197,9 +187,9 @@ def update_default_stream_group_streams(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def remove_default_stream_group(
-    request: HttpRequest, user_profile: UserProfile, group_id: int
+    request: HttpRequest, user_profile: UserProfile, *, group_id: PathOnly[int]
 ) -> HttpResponse:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     do_remove_default_stream_group(user_profile.realm, group)
@@ -207,9 +197,9 @@ def remove_default_stream_group(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def remove_default_stream(
-    request: HttpRequest, user_profile: UserProfile, stream_id: int = REQ(json_validator=check_int)
+    request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(
         user_profile,
@@ -220,29 +210,31 @@ def remove_default_stream(
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def update_stream_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int,
-    description: Optional[str] = REQ(
-        str_validator=check_capped_string(Stream.MAX_DESCRIPTION_LENGTH), default=None
-    ),
-    is_private: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    is_announcement_only: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    is_default_stream: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    stream_post_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES), default=None
-    ),
-    history_public_to_subscribers: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    is_web_public: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    new_name: Optional[str] = REQ(default=None),
-    message_retention_days: Optional[Union[int, str]] = REQ(
-        json_validator=check_string_or_int, default=None
-    ),
-    can_remove_subscribers_group_id: Optional[int] = REQ(
-        "can_remove_subscribers_group", json_validator=check_int, default=None
-    ),
+    *,
+    stream_id: PathOnly[int],
+    description: Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)]
+    | None = None,
+    is_private: Json[bool] | None = None,
+    is_announcement_only: Json[bool] | None = None,
+    is_default_stream: Json[bool] | None = None,
+    stream_post_policy: Json[
+        Annotated[
+            int,
+            check_int_in_validator(Stream.STREAM_POST_POLICY_TYPES),
+        ]
+    ]
+    | None = None,
+    history_public_to_subscribers: Json[bool] | None = None,
+    is_web_public: Json[bool] | None = None,
+    new_name: str | None = None,
+    message_retention_days: Json[str] | Json[int] | None = None,
+    can_remove_subscribers_group_id: Annotated[
+        Json[int | None], ApiParamConfig("can_remove_subscribers_group")
+    ] = None,
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
@@ -396,11 +388,12 @@ def update_stream_backend(
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def list_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    include_subscribers: bool = REQ(json_validator=check_bool, default=False),
+    *,
+    include_subscribers: Json[bool] = False,
 ) -> HttpResponse:
     subscribed, _ = gather_subscriptions(
         user_profile,
@@ -409,26 +402,32 @@ def list_subscriptions_backend(
     return json_success(request, data={"subscriptions": subscribed})
 
 
-add_subscriptions_schema = check_list(
-    check_dict_only(
-        required_keys=[("name", check_string)],
-        optional_keys=[
-            ("color", check_color),
-            ("description", check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
-        ],
-    ),
-)
+class AddSubscriptionData(BaseModel):
+    name: str
+    color: str | None = None
+    description: (
+        Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)] | None
+    ) = None
 
-remove_subscriptions_schema = check_list(check_string)
+    @model_validator(mode="after")
+    def validate_terms(self) -> "AddSubscriptionData":
+        if self.color is not None:
+            self.color = check_color("add.color", self.color)
+        return self
 
 
-@has_request_variables
+@typed_endpoint
 def update_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    delete: Sequence[str] = REQ(json_validator=remove_subscriptions_schema, default=[]),
-    add: Sequence[Mapping[str, str]] = REQ(json_validator=add_subscriptions_schema, default=[]),
+    *,
+    delete: Json[list[str]] | None = None,
+    add: Json[list[AddSubscriptionData]] | None = None,
 ) -> HttpResponse:
+    if delete is None:
+        delete = []
+    if add is None:
+        add = []
     if not add and not delete:
         raise JsonableError(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
@@ -441,7 +440,7 @@ def update_subscriptions_backend(
     return json_success(request, data)
 
 
-def compose_views(thunks: List[Callable[[], HttpResponse]]) -> Dict[str, Any]:
+def compose_views(thunks: list[Callable[[], HttpResponse]]) -> dict[str, Any]:
     """
     This takes a series of thunks and calls them in sequence, and it
     smushes all the json results into a single response when
@@ -450,7 +449,7 @@ def compose_views(thunks: List[Callable[[], HttpResponse]]) -> Dict[str, Any]:
     one of the composed methods.
     """
 
-    json_dict: Dict[str, Any] = {}
+    json_dict: dict[str, Any] = {}
     with transaction.atomic():
         for thunk in thunks:
             response = thunk()
@@ -458,23 +457,17 @@ def compose_views(thunks: List[Callable[[], HttpResponse]]) -> Dict[str, Any]:
     return json_dict
 
 
-check_principals: Validator[Union[List[str], List[int]]] = check_union(
-    [check_list(check_string), check_list(check_int)],
-)
-
-
-@has_request_variables
+@typed_endpoint
 def remove_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    streams_raw: Sequence[str] = REQ("subscriptions", json_validator=remove_subscriptions_schema),
-    principals: Optional[Union[List[str], List[int]]] = REQ(
-        json_validator=check_principals, default=None
-    ),
+    *,
+    streams_raw: Annotated[Json[list[str]], ApiParamConfig("subscriptions")],
+    principals: Json[list[str] | list[int]] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
 
-    streams_as_dict: List[StreamDict] = [
+    streams_as_dict: list[StreamDict] = [
         {"name": stream_name.strip()} for stream_name in streams_raw
     ]
 
@@ -495,7 +488,7 @@ def remove_subscriptions_backend(
         unsubscribing_others=unsubscribing_others,
     )
 
-    result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
+    result: dict[str, list[str]] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(
         realm, people_to_unsub, streams, acting_user=user_profile
     )
@@ -509,7 +502,7 @@ def remove_subscriptions_backend(
 
 
 def you_were_just_subscribed_message(
-    acting_user: UserProfile, recipient_user: UserProfile, stream_names: Set[str]
+    acting_user: UserProfile, recipient_user: UserProfile, stream_names: set[str]
 ) -> str:
     subscriptions = sorted(stream_names)
     if len(subscriptions) == 1:
@@ -529,42 +522,37 @@ def you_were_just_subscribed_message(
     return message
 
 
-RETENTION_DEFAULT: Union[str, int] = "realm_default"
-EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
+RETENTION_DEFAULT: str | int = "realm_default"
 
 
+@transaction.atomic(savepoint=False)
 @require_non_guest_user
-@has_request_variables
+@typed_endpoint
 def add_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    streams_raw: Sequence[Mapping[str, str]] = REQ(
-        "subscriptions", json_validator=add_subscriptions_schema
-    ),
-    invite_only: bool = REQ(json_validator=check_bool, default=False),
-    is_web_public: bool = REQ(json_validator=check_bool, default=False),
-    is_default_stream: bool = REQ(json_validator=check_bool, default=False),
-    stream_post_policy: int = REQ(
-        json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES),
-        default=Stream.STREAM_POST_POLICY_EVERYONE,
-    ),
-    history_public_to_subscribers: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    message_retention_days: Union[str, int] = REQ(
-        json_validator=check_string_or_int, default=RETENTION_DEFAULT
-    ),
-    can_remove_subscribers_group_id: Optional[int] = REQ(
-        "can_remove_subscribers_group", json_validator=check_int, default=None
-    ),
-    announce: bool = REQ(json_validator=check_bool, default=False),
-    principals: Union[Sequence[str], Sequence[int]] = REQ(
-        json_validator=check_principals,
-        default=EMPTY_PRINCIPALS,
-    ),
-    authorization_errors_fatal: bool = REQ(json_validator=check_bool, default=True),
+    *,
+    streams_raw: Annotated[Json[list[AddSubscriptionData]], ApiParamConfig("subscriptions")],
+    invite_only: Json[bool] = False,
+    is_web_public: Json[bool] = False,
+    is_default_stream: Json[bool] = False,
+    stream_post_policy: Json[
+        Annotated[int, check_int_in_validator(Stream.STREAM_POST_POLICY_TYPES)]
+    ] = Stream.STREAM_POST_POLICY_EVERYONE,
+    history_public_to_subscribers: Json[bool] | None = None,
+    message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
+    can_remove_subscribers_group_id: Annotated[
+        Json[int | None], ApiParamConfig("can_remove_subscribers_group")
+    ] = None,
+    announce: Json[bool] = False,
+    principals: Json[list[str] | list[int]] | None = None,
+    authorization_errors_fatal: Json[bool] = True,
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
     color_map = {}
+    if principals is None:
+        principals = []
 
     if can_remove_subscribers_group_id is not None:
         permission_configuration = Stream.stream_permission_group_settings[
@@ -586,18 +574,18 @@ def add_subscriptions_backend(
             is_system_group=True,
         )
 
-    for stream_dict in streams_raw:
+    for stream_obj in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
-        if "color" in stream_dict:
-            color_map[stream_dict["name"]] = stream_dict["color"]
+        if stream_obj.color is not None:
+            color_map[stream_obj.name] = stream_obj.color
 
         stream_dict_copy: StreamDict = {}
-        stream_dict_copy["name"] = stream_dict["name"].strip()
+        stream_dict_copy["name"] = stream_obj.name.strip()
 
         # We don't allow newline characters in stream descriptions.
-        if "description" in stream_dict:
-            stream_dict_copy["description"] = stream_dict["description"].replace("\n", " ")
+        if stream_obj.description is not None:
+            stream_dict_copy["description"] = stream_obj.description.replace("\n", " ")
 
         stream_dict_copy["invite_only"] = invite_only
         stream_dict_copy["is_web_public"] = is_web_public
@@ -662,9 +650,9 @@ def add_subscriptions_backend(
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
-    email_to_user_profile: Dict[str, UserProfile] = {}
+    email_to_user_profile: dict[str, UserProfile] = {}
 
-    result: Dict[str, Any] = dict(
+    result: dict[str, Any] = dict(
         subscribed=defaultdict(list), already_subscribed=defaultdict(list)
     )
     for sub_info in subscribed:
@@ -698,10 +686,10 @@ def add_subscriptions_backend(
 
 def send_messages_for_new_subscribers(
     user_profile: UserProfile,
-    subscribers: Set[UserProfile],
-    new_subscriptions: Dict[str, List[str]],
-    email_to_user_profile: Dict[str, UserProfile],
-    created_streams: List[Stream],
+    subscribers: set[UserProfile],
+    new_subscriptions: dict[str, list[str]],
+    email_to_user_profile: dict[str, UserProfile],
+    created_streams: list[Stream],
     announce: bool,
 ) -> None:
     """
@@ -815,11 +803,12 @@ def send_messages_for_new_subscribers(
         do_send_messages(notifications, mark_as_read=[user_profile.id])
 
 
-@has_request_variables
+@typed_endpoint
 def get_subscribers_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int = REQ("stream", converter=to_non_negative_int, path_only=True),
+    *,
+    stream_id: Annotated[NonNegativeInt, ApiParamConfig("stream", path_only=True)],
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(
         user_profile,
@@ -833,16 +822,17 @@ def get_subscribers_backend(
 
 # By default, lists all streams that the user has access to --
 # i.e. public streams plus invite-only streams that the user is on
-@has_request_variables
+@typed_endpoint
 def get_streams_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    include_public: bool = REQ(json_validator=check_bool, default=True),
-    include_web_public: bool = REQ(json_validator=check_bool, default=False),
-    include_subscribed: bool = REQ(json_validator=check_bool, default=True),
-    include_all_active: bool = REQ(json_validator=check_bool, default=False),
-    include_default: bool = REQ(json_validator=check_bool, default=False),
-    include_owner_subscribed: bool = REQ(json_validator=check_bool, default=False),
+    *,
+    include_public: Json[bool] = True,
+    include_web_public: Json[bool] = False,
+    include_subscribed: Json[bool] = True,
+    include_all_active: Json[bool] = False,
+    include_default: Json[bool] = False,
+    include_owner_subscribed: Json[bool] = False,
 ) -> HttpResponse:
     streams = do_get_streams(
         user_profile,
@@ -856,11 +846,12 @@ def get_streams_backend(
     return json_success(request, data={"streams": streams})
 
 
-@has_request_variables
+@typed_endpoint
 def get_stream_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int,
+    *,
+    stream_id: PathOnly[int],
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
 
@@ -868,15 +859,16 @@ def get_stream_backend(
     return json_success(request, data={"stream": stream_to_dict(stream, recent_traffic)})
 
 
-@has_request_variables
+@typed_endpoint
 def get_topics_backend(
     request: HttpRequest,
-    maybe_user_profile: Union[UserProfile, AnonymousUser],
-    stream_id: int = REQ(converter=to_non_negative_int, path_only=True),
+    maybe_user_profile: UserProfile | AnonymousUser,
+    *,
+    stream_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     if not maybe_user_profile.is_authenticated:
         is_web_public_query = True
-        user_profile: Optional[UserProfile] = None
+        user_profile: UserProfile | None = None
     else:
         is_web_public_query = False
         assert isinstance(maybe_user_profile, UserProfile)
@@ -906,12 +898,13 @@ def get_topics_backend(
 
 
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def delete_in_topic(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int = REQ(converter=to_non_negative_int, path_only=True),
-    topic_name: str = REQ("topic_name"),
+    *,
+    stream_id: PathOnly[NonNegativeInt],
+    topic_name: str,
 ) -> HttpResponse:
     stream, ignored_sub = access_stream_by_id(user_profile, stream_id)
 
@@ -938,48 +931,75 @@ def delete_in_topic(
             )
             if not messages_to_delete:
                 break
-            do_delete_messages(user_profile.realm, messages_to_delete)
+            do_delete_messages(user_profile.realm, messages_to_delete, acting_user=user_profile)
 
     return json_success(request, data={"complete": True})
 
 
-@has_request_variables
+@typed_endpoint
 def json_get_stream_id(
-    request: HttpRequest, user_profile: UserProfile, stream_name: str = REQ("stream")
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    stream_name: Annotated[str, ApiParamConfig("stream")],
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_name(user_profile, stream_name)
     return json_success(request, data={"stream_id": stream.id})
 
 
-@has_request_variables
+class SubscriptionPropertyChangeRequest(BaseModel):
+    stream_id: int
+    property: str
+    value: bool | str
+
+    @model_validator(mode="after")
+    def validate_terms(self) -> "SubscriptionPropertyChangeRequest":
+        boolean_properties = {
+            "in_home_view",
+            "is_muted",
+            "desktop_notifications",
+            "audible_notifications",
+            "push_notifications",
+            "email_notifications",
+            "pin_to_top",
+            "wildcard_mentions_notify",
+        }
+
+        if self.property == "color":
+            self.value = check_color("color", self.value)
+        elif self.property in boolean_properties:
+            if not isinstance(self.value, bool):
+                raise JsonableError(_("{property} is not a boolean").format(property=self.property))
+        else:
+            raise JsonableError(
+                _("Unknown subscription property: {property}").format(property=self.property)
+            )
+        return self
+
+
+@typed_endpoint
 def update_subscriptions_property(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int = REQ(json_validator=check_int),
-    property: str = REQ(),
-    value: str = REQ(),
+    *,
+    stream_id: PathOnly[Json[int]],
+    property: str,
+    value: Annotated[Json[bool] | str, Field(union_mode="left_to_right")],
 ) -> HttpResponse:
-    subscription_data = [{"property": property, "stream_id": stream_id, "value": value}]
+    change_request = SubscriptionPropertyChangeRequest(
+        stream_id=stream_id, property=property, value=value
+    )
     return update_subscription_properties_backend(
-        request, user_profile, subscription_data=subscription_data
+        request, user_profile, subscription_data=[change_request]
     )
 
 
-@has_request_variables
+@typed_endpoint
 def update_subscription_properties_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    subscription_data: List[Dict[str, Any]] = REQ(
-        json_validator=check_list(
-            check_dict(
-                [
-                    ("stream_id", check_int),
-                    ("property", check_string),
-                    ("value", check_union([check_string, check_bool])),
-                ]
-            ),
-        ),
-    ),
+    *,
+    subscription_data: Json[list[SubscriptionPropertyChangeRequest]],
 ) -> HttpResponse:
     """
     This is the entry point to changing subscription properties. This
@@ -991,38 +1011,17 @@ def update_subscription_properties_backend(
     [{"stream_id": "1", "property": "is_muted", "value": False},
      {"stream_id": "1", "property": "color", "value": "#c2c2c2"}]
     """
-    property_converters = {
-        "color": check_color,
-        "in_home_view": check_bool,
-        "is_muted": check_bool,
-        "desktop_notifications": check_bool,
-        "audible_notifications": check_bool,
-        "push_notifications": check_bool,
-        "email_notifications": check_bool,
-        "pin_to_top": check_bool,
-        "wildcard_mentions_notify": check_bool,
-    }
 
     for change in subscription_data:
-        stream_id = change["stream_id"]
-        property = change["property"]
-        value = change["value"]
-
-        if property not in property_converters:
-            raise JsonableError(
-                _("Unknown subscription property: {property}").format(property=property)
-            )
+        stream_id = change.stream_id
+        property = change.property
+        value = change.value
 
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
             raise JsonableError(
                 _("Not subscribed to channel ID {channel_id}").format(channel_id=stream_id)
             )
-
-        try:
-            value = property_converters[property](property, value)
-        except ValidationError as error:
-            raise JsonableError(error.message)
 
         do_change_subscription_property(
             user_profile, sub, stream, property, value, acting_user=user_profile
@@ -1031,11 +1030,12 @@ def update_subscription_properties_backend(
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def get_stream_email_address(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int = REQ("stream", converter=to_non_negative_int, path_only=True),
+    *,
+    stream_id: Annotated[NonNegativeInt, ApiParamConfig("stream", path_only=True)],
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(
         user_profile,

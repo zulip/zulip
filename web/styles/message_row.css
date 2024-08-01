@@ -83,7 +83,7 @@
             cursor: pointer;
         }
 
-        > div {
+        > .message_control_button {
             opacity: 1;
             visibility: visible;
         }
@@ -362,6 +362,8 @@
             vertical-align: baseline;
             /* A bit of margin here helps these not look associated with the name. */
             margin-left: 4px;
+            /* Unset the padding used on edited notices under the avatar. */
+            padding-right: 0;
         }
 
         .message_sender {
@@ -406,6 +408,133 @@
                     }
                 }
             }
+        }
+    }
+}
+
+.message_controls {
+    display: flex;
+    align-items: baseline;
+    font-size: 16px;
+    /* This is a bit tricky; we need to reserve space for the message
+       controls even when the message isn't hovered, so that hover
+       doesn't disturb the layout.  Usually that would be just
+       visibility: hidden, but that cannot be animated, so we set
+       opacity as well, which can be animated. */
+    .message_control_button {
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        width: var(--message-box-icon-width);
+        height: var(--message-box-icon-height);
+        text-align: center;
+        color: var(--color-message-action-visible);
+
+        & .message-controls-icon {
+            vertical-align: middle;
+            /* TODO: Math for these values, possibly with variables.
+               In short, the icon body is 16px square; the current
+               area for the icon is 26px wide by 25px tall, so these
+               values ensure a 26px x 25px clickable area for the icon. */
+            padding: 2.5px 3px;
+
+            &::before {
+                /* We specify block display so the
+                   scaling transform below works as
+                   expected. */
+                display: block;
+            }
+
+            &:active::before {
+                transform: scale(0.92);
+                transform-origin: center;
+                outline: 0;
+            }
+
+            &:focus {
+                /* Remove the outline but do not color on focus;
+                   focus-visible is more appropriate for the color
+                   changes, as it only applies color when focus
+                   is achieved from a keyboard or other pointerless
+                   device. */
+                outline: 0;
+            }
+
+            &:hover,
+            &:focus-visible {
+                outline: 0;
+                color: var(--color-message-action-interactive);
+            }
+
+            /* Separate hover colors for stars */
+            &.star:hover,
+            &.star:focus-visible {
+                color: var(--color-message-star-action);
+            }
+        }
+
+        .zulip-icon-more-vertical {
+            /* Increase visual prominence of the vdots. */
+            font-size: 21px;
+        }
+    }
+
+    /* Tooltips should not follow the width restrictions of their parent element. */
+    [data-tippy-root] {
+        width: max-content;
+        word-wrap: unset;
+    }
+
+    .edit_content {
+        /* Icons for editing content are determined on message hover;
+           we set an empty `.edit_content` to have 0 height in order to
+           preserve the layout of the other icons prior to any hovering. */
+        &:empty {
+            height: 0;
+        }
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    .message_failed {
+        display: inline-flex;
+        justify-content: space-between;
+        cursor: pointer;
+        position: relative;
+        vertical-align: middle;
+        padding-left: 2px;
+
+        &.hide {
+            display: none;
+        }
+
+        .rotating {
+            display: inline-block;
+            outline: none;
+
+            animation: rotate 1s infinite linear;
+        }
+
+        .failed_message_action {
+            opacity: 1 !important;
+            color: var(--color-failed-message-send-icon);
+            font-weight: bold;
+            padding: 1px;
+        }
+
+        .message_control_button {
+            visibility: inherit;
+        }
+    }
+
+    .star_container {
+        &:not(.empty-star) {
+            /* Color, opacity, and visibility, as though the message is hovered. */
+            color: var(--color-message-star-action);
+            opacity: 1;
+            visibility: visible !important;
         }
     }
 }
@@ -552,7 +681,7 @@
 }
 
 .message_edit_content {
-    max-height: 24em;
+    max-height: var(--max-message-edit-height);
     width: 100%;
     min-width: 206px;
     min-height: 52px;
@@ -560,14 +689,14 @@
     /* Setting resize as none hides the bottom right diagonal box
        (which even has a background color of its own!). */
     resize: none !important;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     background-color: hsl(0deg 0% 100%);
     border-radius: 3px;
     vertical-align: middle;
     border: none;
     /* Match textarea padding to compose box and
        message-edit preview area. */
-    padding: 5px;
+    padding: 5px 5px 0;
     margin: 0;
 
     box-shadow: none;
@@ -647,6 +776,10 @@ of the base style defined for a read-only textarea in dark mode. */
         margin-left: 0;
         margin-top: 0;
     }
+
+    .preview_message_area {
+        max-height: var(--max-message-edit-height);
+    }
 }
 
 .message_edit_notice {
@@ -656,6 +789,8 @@ of the base style defined for a read-only textarea in dark mode. */
     white-space: nowrap;
     overflow-x: hidden;
     overflow-x: clip;
+    text-overflow: ellipsis;
+    padding-right: 5.5px;
 }
 
 .fade-in-message {

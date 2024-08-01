@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import render_change_email_modal from "../templates/change_email_modal.hbs";
-import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
 import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
@@ -11,7 +10,6 @@ import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
-import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
@@ -28,6 +26,7 @@ import * as settings_ui from "./settings_ui";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
+import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_pill from "./user_pill";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
@@ -448,6 +447,9 @@ export function set_up() {
             post_render: change_password_post_render,
             on_click: do_change_password,
             validate_input,
+            on_shown() {
+                $("#old_password").trigger("focus");
+            },
         });
 
         if (realm.realm_password_auth_enabled !== false) {
@@ -742,14 +744,11 @@ export function set_up() {
                 },
             });
         }
-        const html_body = render_confirm_deactivate_own_user();
-        confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Deactivate your account"}),
-            html_body,
-            on_click: handle_confirm,
-            help_link: "/help/deactivate-your-account",
-            loading_spinner: true,
-        });
+        user_deactivation_ui.confirm_deactivation(
+            people.my_current_user_id(),
+            handle_confirm,
+            true,
+        );
     });
 
     $("#show_my_user_profile_modal").on("click", (e) => {

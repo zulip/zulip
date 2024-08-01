@@ -1,6 +1,6 @@
 import os
 from argparse import ArgumentParser
-from typing import Any, Set
+from typing import Any
 
 import orjson
 from django.conf import settings
@@ -61,7 +61,7 @@ Does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
         #     Published 2021-11-02 11:01:07
         #     LastStatus 2021-11-02 23:00:00
         #     ExitAddress 176.10.99.200 2021-11-02 23:17:02
-        exit_nodes: Set[str] = set()
+        exit_nodes: set[str] = set()
         for line in response.text.splitlines():
             if line.startswith("ExitAddress "):
                 exit_nodes.add(line.split()[1])

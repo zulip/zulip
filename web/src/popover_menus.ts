@@ -22,7 +22,6 @@ type PopoverName =
     | "top_left_sidebar"
     | "message_actions"
     | "stream_settings"
-    | "compose_mobile_button"
     | "topics_menu"
     | "send_later"
     | "change_visibility_policy"
@@ -40,7 +39,6 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     top_left_sidebar: null,
     message_actions: null,
     stream_settings: null,
-    compose_mobile_button: null,
     topics_menu: null,
     send_later: null,
     change_visibility_policy: null,
@@ -193,16 +191,26 @@ export const default_popover_props: Partial<tippy.Props> = {
                     const instance = (state.elements.reference as tippy.ReferenceElement)._tippy!;
                     const $popover = $(state.elements.popper);
                     const $tippy_box = $popover.find(".tippy-box");
-                    if ($tippy_box.hasClass("show-when-reference-hidden")) {
-                        return;
-                    }
-
                     // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check
                     // but linter wants us to write it like this.
                     const is_reference_outside_window = Object.hasOwn(
                         $tippy_box[0]!.dataset,
                         "referenceHidden",
                     );
+
+                    if ($tippy_box.hasClass("show-when-reference-hidden")) {
+                        // Show user card popover as an overlay if we are not sure about position of the
+                        // reference. This can happen when popover reference has been replaced or hidden.
+                        if (
+                            is_reference_outside_window &&
+                            $tippy_box.find("#user_card_popover").length > 0
+                        ) {
+                            $("body").append($("<div>").attr("id", "popover-overlay-background"));
+                            instance.setProps(get_props_for_popover_centering(instance.props));
+                        }
+                        return;
+                    }
+
                     if (is_reference_outside_window) {
                         hide_current_popover_if_visible(instance);
                         return;

@@ -6,7 +6,6 @@ import subprocess
 import sys
 import time
 from collections import defaultdict
-from typing import Dict
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
@@ -30,7 +29,7 @@ TORNADO_PROCESSES = len(get_tornado_ports(config_file))
 
 output = subprocess.check_output(["/usr/sbin/rabbitmqctl", "list_consumers"], text=True)
 
-consumers: Dict[str, int] = defaultdict(int)
+consumers: dict[str, int] = defaultdict(int)
 
 queues = {
     *normal_queues,
@@ -48,6 +47,8 @@ for line in output.split("\n"):
         queue_name = parts[0]
         if queue_name.startswith("notify_tornado_"):
             queue_name = "notify_tornado"
+
+        # Collapse sharded queues into a single queue for this check.
         queue_name = re.sub(r"_shard(\d+)", "", queue_name)
         consumers[queue_name] += 1
 
@@ -61,6 +62,8 @@ for queue_name in consumers:
         target_count = int(
             get_config(config_file, "application_server", "mobile_notification_shards", "1")
         )
+    elif queue_name == "thumbnail":
+        target_count = int(get_config(config_file, "application_server", "thumbnail_workers", "1"))
 
     atomic_nagios_write(
         "check-rabbitmq-consumers-" + queue_name,

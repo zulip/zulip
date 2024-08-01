@@ -88,7 +88,7 @@
         border: 1px solid hsl(0deg 0% 47%);
     }
 
-    & span {
+    .create_button_plus_sign {
         position: relative;
         top: -5px;
     }
@@ -370,7 +370,7 @@ h4.user_group_setting_subsection_title {
         margin-left: 2em;
         margin-right: 2em;
 
-        & span {
+        .settings-empty-option-text {
             color: hsl(0deg 0% 67%);
         }
     }
@@ -379,10 +379,16 @@ h4.user_group_setting_subsection_title {
         border-right: 1px solid hsl(0deg 0% 87%);
 
         .list-toggler-container {
+            align-items: center;
             padding: 6px 8px;
             border-bottom: 1px solid hsl(0deg 0% 87%);
             display: flex;
             justify-content: space-between;
+
+            #add_new_subscription {
+                position: relative;
+                top: -2px;
+            }
         }
     }
 
@@ -519,11 +525,6 @@ h4.user_group_setting_subsection_title {
 
     #announce-new-stream {
         margin: 20px auto;
-
-        & div[class^="fa"] {
-            margin-left: 3px;
-            margin-right: 8px;
-        }
     }
 }
 
@@ -698,6 +699,11 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
+    .tab-switcher {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
     #user-group-creation,
     #stream-creation {
         overflow: auto;

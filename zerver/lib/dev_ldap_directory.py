@@ -2,7 +2,7 @@ import glob
 import logging
 import os
 from email.headerregistry import Address
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from django.conf import settings
 
@@ -14,7 +14,7 @@ LDAP_USER_ACCOUNT_CONTROL_NORMAL = "512"
 LDAP_USER_ACCOUNT_CONTROL_DISABLED = "514"
 
 
-def generate_dev_ldap_dir(mode: str, num_users: int = 8) -> Dict[str, Dict[str, Any]]:
+def generate_dev_ldap_dir(mode: str, num_users: int = 8) -> dict[str, dict[str, Any]]:
     mode = mode.lower()
     ldap_data = []
     for i in range(1, num_users + 1):
@@ -60,7 +60,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int = 8) -> Dict[str, Dict[str, 
 
 
 def init_fakeldap(
-    directory: Optional[Dict[str, Dict[str, List[str]]]] = None,
+    directory: dict[str, dict[str, list[str]]] | None = None,
 ) -> None:  # nocoverage
     # We only use this in development.  Importing mock inside
     # this function is an import time optimization, which

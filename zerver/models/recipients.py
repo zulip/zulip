@@ -1,6 +1,6 @@
 import hashlib
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Set
+from typing import TYPE_CHECKING
 
 from django.db import models, transaction
 from django_stubs_ext import ValuesQuerySet
@@ -43,7 +43,7 @@ class Recipient(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     type_id = models.IntegerField(db_index=True)
     type = models.PositiveSmallIntegerField(db_index=True)
-    # Valid types are {personal, stream, huddle}
+    # Valid types are {personal, stream, direct_message_group}
 
     # The type for 1:1 direct messages.
     PERSONAL = 1
@@ -56,7 +56,11 @@ class Recipient(models.Model):
         unique_together = ("type", "type_id")
 
     # N.B. If we used Django's choice=... we would get this for free (kinda)
-    _type_names = {PERSONAL: "personal", STREAM: "stream", DIRECT_MESSAGE_GROUP: "huddle"}
+    _type_names = {
+        PERSONAL: "personal",
+        STREAM: "stream",
+        DIRECT_MESSAGE_GROUP: "direct_message_group",
+    }
 
     @override
     def __str__(self) -> str:
@@ -89,14 +93,15 @@ def get_direct_message_group_user_ids(recipient: Recipient) -> ValuesQuerySet["S
     )
 
 
-def bulk_get_direct_message_group_user_ids(recipient_ids: List[int]) -> Dict[int, Set[int]]:
+def bulk_get_direct_message_group_user_ids(recipient_ids: list[int]) -> dict[int, set[int]]:
     """
-    Takes a list of huddle-type recipient_ids, returns a dict
-    mapping recipient id to list of user ids in the huddle.
+    Takes a list of direct_message_group type recipient_ids, returns
+    a dictmapping recipient id to list of user ids in the direct
+    message group.
 
     We rely on our caller to pass us recipient_ids that correspond
-    to huddles, but technically this function is valid for any type
-    of subscription.
+    to direct_message_group, but technically this function is valid
+    for any typeof subscription.
     """
     from zerver.models import Subscription
 
@@ -107,7 +112,7 @@ def bulk_get_direct_message_group_user_ids(recipient_ids: List[int]) -> Dict[int
         recipient_id__in=recipient_ids,
     ).only("user_profile_id", "recipient_id")
 
-    result_dict: Dict[int, Set[int]] = defaultdict(set)
+    result_dict: dict[int, set[int]] = defaultdict(set)
     for subscription in subscriptions:
         result_dict[subscription.recipient_id].add(subscription.user_profile_id)
 
@@ -142,13 +147,13 @@ class DirectMessageGroup(models.Model):
         db_table = "zerver_huddle"
 
 
-def get_direct_message_group_hash(id_list: List[int]) -> str:
+def get_direct_message_group_hash(id_list: list[int]) -> str:
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
     return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
-def get_or_create_direct_message_group(id_list: List[int]) -> DirectMessageGroup:
+def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup:
     """
     Takes a list of user IDs and returns the DirectMessageGroup
     object for the group consisting of these users. If the

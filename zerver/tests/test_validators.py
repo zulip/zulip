@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -174,7 +174,7 @@ class ValidatorTestCase(ZulipTestCase):
             check_list(check_string, length=2)("x", x)
 
     def test_check_dict(self) -> None:
-        keys: List[Tuple[str, Validator[object]]] = [
+        keys: list[tuple[str, Validator[object]]] = [
             ("names", check_list(check_string)),
             ("city", check_string),
         ]
@@ -264,7 +264,7 @@ class ValidatorTestCase(ZulipTestCase):
         # There might be situations where we want deep
         # validation, but the error message should be customized.
         # This is an example.
-        def check_person(val: object) -> Dict[str, object]:
+        def check_person(val: object) -> dict[str, object]:
             try:
                 return check_dict(
                     [

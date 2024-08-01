@@ -39,7 +39,9 @@ body {
     .header-main,
     .app .app-main,
     #compose-container {
-        max-width: 1400px;
+        /* 1417px at 14px/1em; (14px * 20.5em) - 12px + 880 + 250px = 1417px */
+        max-width: 100.3571em;
+        max-width: calc(var(--left-sidebar-max-width) + 62.8571em + 250px);
     }
 
     &.fluid_layout_width {
@@ -784,7 +786,25 @@ strong {
 }
 
 #change_visibility_policy_button_tooltip {
-    text-align: center;
+    text-align: left;
+
+    .tooltip-privacy-icon {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip-privacy-icon .zulip-icon-lock {
+        margin-top: -0.15em !important;
+    }
+
+    .tooltip-privacy-icon i {
+        position: absolute;
+        top: 0.1667em;
+    }
+
+    .privacy-tooltip-stream-name {
+        margin-left: 1.25em;
+    }
 }
 
 .narrow-filter {
@@ -808,133 +828,6 @@ strong {
     opacity: 0.8;
     color: var(--color-text-default);
     animation: rotate 1s infinite linear;
-}
-
-.message_controls {
-    display: flex;
-    align-items: baseline;
-    font-size: 16px;
-    /* This is a bit tricky; we need to reserve space for the message
-       controls even when the message isn't hovered, so that hover
-       doesn't disturb the layout.  Usually that would be just
-       visibility: hidden, but that cannot be animated, so we set
-       opacity as well, which can be animated. */
-    .message_control_button {
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.2s ease;
-        width: var(--message-box-icon-width);
-        height: var(--message-box-icon-height);
-        text-align: center;
-        color: var(--color-message-action-visible);
-
-        & i {
-            vertical-align: middle;
-            /* TODO: Math for these values, possibly with variables.
-               In short, the icon body is 16px square; the current
-               area for the icon is 26px wide by 25px tall, so these
-               values ensure a 26px x 25px clickable area for the icon. */
-            padding: 2.5px 3px;
-
-            &::before {
-                /* We specify block display so the
-                   scaling transform below works as
-                   expected. */
-                display: block;
-            }
-
-            &:active::before {
-                transform: scale(0.92);
-                transform-origin: center;
-                outline: 0;
-            }
-
-            &:focus {
-                /* Remove the outline but do not color on focus;
-                   focus-visible is more appropriate for the color
-                   changes, as it only applies color when focus
-                   is achieved from a keyboard or other pointerless
-                   device. */
-                outline: 0;
-            }
-
-            &:hover,
-            &:focus-visible {
-                outline: 0;
-                color: var(--color-message-action-interactive);
-            }
-
-            /* Separate hover colors for stars */
-            &.star:hover,
-            &.star:focus-visible {
-                color: var(--color-message-star-action);
-            }
-        }
-
-        .zulip-icon-more-vertical {
-            /* Increase visual prominence of the vdots. */
-            font-size: 21px;
-        }
-    }
-
-    /* Tooltips should not follow the width restrictions of their parent element. */
-    [data-tippy-root] {
-        width: max-content;
-        word-wrap: unset;
-    }
-
-    .edit_content {
-        /* Icons for editing content are determined on message hover;
-           we set an empty `.edit_content` to have 0 height in order to
-           preserve the layout of the other icons prior to any hovering. */
-        &:empty {
-            height: 0;
-        }
-
-        &:hover {
-            cursor: pointer;
-        }
-    }
-
-    .message_failed {
-        display: inline-flex;
-        justify-content: space-between;
-        cursor: pointer;
-        position: relative;
-        vertical-align: middle;
-        padding-left: 2px;
-
-        &.hide {
-            display: none;
-        }
-
-        .rotating {
-            display: inline-block;
-            outline: none;
-
-            animation: rotate 1s infinite linear;
-        }
-
-        .failed_message_action {
-            opacity: 1 !important;
-            color: var(--color-failed-message-send-icon);
-            font-weight: bold;
-            padding: 1px;
-        }
-
-        .message_control_button {
-            visibility: inherit;
-        }
-    }
-
-    .star_container {
-        &:not(.empty-star) {
-            /* Color, opacity, and visibility, as though the message is hovered. */
-            color: var(--color-message-star-action);
-            opacity: 1;
-            visibility: visible !important;
-        }
-    }
 }
 
 .star {
@@ -1026,13 +919,6 @@ strong {
 
 .tiny {
     font-size: 60%;
-}
-
-.settings-forgot-password {
-    display: inline-block;
-    position: relative;
-    color: hsl(0deg 0% 73%);
-    bottom: 4px;
 }
 
 div.message-list {
@@ -1264,45 +1150,6 @@ div.focused-message-list {
     border-radius: 6px;
     padding: 0;
     font-size: 0;
-}
-
-.typeahead.dropdown-menu {
-    a strong.typeahead-strong-section {
-        white-space: pre;
-    }
-
-    .active {
-        .unsubscribed_icon {
-            visibility: visible;
-            float: right;
-            margin-top: 5px;
-            color: hsl(96deg 7% 73%);
-        }
-    }
-
-    .unsubscribed_icon {
-        visibility: hidden;
-        font-size: 0.8em;
-    }
-}
-
-.typeahead-image {
-    display: inline-block;
-    height: 21px;
-    width: 21px;
-    border-radius: 4px;
-
-    /* For FontAwesome icons and zulip icons used in place of images for some users. */
-    font-size: 19px;
-    text-align: center;
-
-    &.zulip-icon-triple-users {
-        font-size: 19px;
-    }
-
-    &.no-presence-circle {
-        margin-left: 14px;
-    }
 }
 
 nav {
@@ -1663,30 +1510,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     user-select: none;
 }
 
-.user_popover_email {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: all 0.4s ease;
-
-    & i {
-        cursor: pointer;
-
-        &.hide_copy_icon {
-            display: none;
-        }
-    }
-}
-
-.email_copied,
-.user_popover_email i:hover {
-    color: hsl(170deg 48% 54%);
-}
-
-.email_copied i {
-    display: none !important;
-}
-
 .flatpickr-calendar {
     /* Hide the up and down arrows in the Flatpickr datepicker year */
     .flatpickr-months .numInputWrapper span {
@@ -1847,6 +1670,10 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         display: none;
 
         &.expanded {
+            /* In the extended state, we open the sidebar
+               to its maximum possible size (otherwise, it
+               would be unnecessarily too narrow). */
+            --left-sidebar-width: var(--left-sidebar-max-width);
             display: block;
             position: absolute;
             float: none;
@@ -1956,14 +1783,6 @@ body:not(.hide-left-sidebar) {
 
         .top-navbar-container {
             margin-left: 40px;
-        }
-
-        .typeahead.dropdown-menu .typeahead-menu li {
-            width: 100%;
-
-            & a {
-                white-space: normal;
-            }
         }
 
         #feedback_container {
@@ -2164,7 +1983,8 @@ body:not(.hide-left-sidebar) {
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
-        min-width: 200px;
+        /* 200px/14px */
+        min-width: 14.285em;
 
         .dropdown-list {
             list-style: none;
@@ -2197,13 +2017,13 @@ body:not(.hide-left-sidebar) {
     padding: 3px 10px 3px 8px;
     gap: 4px;
     font-weight: 400;
-    line-height: 20px;
+    line-height: var(--base-line-height-unitless);
     white-space: normal;
 
     .stream-privacy-type-icon {
-        font-size: 13px;
-        width: 13px;
-        height: 13px;
+        font-size: 0.93em;
+        width: 0.93em;
+        height: 0.93em;
         padding-right: 2px;
     }
 
@@ -2242,15 +2062,6 @@ body:not(.hide-left-sidebar) {
     .zulip-icon-star {
         position: relative;
         top: 2px;
-    }
-}
-
-.typeahead-option-label {
-    display: flex !important;
-    justify-content: space-between;
-
-    > strong {
-        margin-right: 14px;
     }
 }
 

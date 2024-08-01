@@ -1,6 +1,6 @@
 import os
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 import orjson
 from django.http import HttpRequest, HttpResponse
@@ -23,11 +23,11 @@ if TYPE_CHECKING:
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 
 
-def get_webhook_integrations() -> List[str]:
+def get_webhook_integrations() -> list[str]:
     return [integration.name for integration in WEBHOOK_INTEGRATIONS]
 
 
-def get_valid_integration_name(name: str) -> Optional[str]:
+def get_valid_integration_name(name: str) -> str | None:
     for integration_name in get_webhook_integrations():
         if name == integration_name:
             return integration_name
@@ -47,7 +47,7 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
 
 
 def send_webhook_fixture_message(
-    url: str, body: str, is_json: bool, custom_headers: Dict[str, Any]
+    url: str, body: str, is_json: bool, custom_headers: dict[str, Any]
 ) -> "TestHttpResponse":
     client = Client()
     realm = get_realm("zulip")

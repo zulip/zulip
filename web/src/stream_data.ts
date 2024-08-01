@@ -181,12 +181,15 @@ export function get_sub_by_id(stream_id: number): StreamSubscription | undefined
     return stream_info.get(stream_id);
 }
 
-export function maybe_get_creator_details(creator_id: number | null): User | undefined {
+export function maybe_get_creator_details(
+    creator_id: number | null,
+): (User & {is_active: boolean}) | undefined {
     if (creator_id === null) {
         return undefined;
     }
 
-    return people.get_user_by_id_assert_valid(creator_id);
+    const creator = people.get_user_by_id_assert_valid(creator_id);
+    return {...creator, is_active: people.is_person_active(creator_id)};
 }
 
 export function get_stream_id(name: string): number | undefined {

@@ -1,5 +1,4 @@
 # vim:fenc=utf-8
-from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -57,7 +56,7 @@ def api_gitea_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     return gogs_webhook_main(

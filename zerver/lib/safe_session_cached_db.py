@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.contrib.sessions.backends.cached_db import SessionStore as CachedDbSessionStore
 from django.db.transaction import get_connection
 from typing_extensions import override
@@ -23,6 +21,6 @@ class SessionStore(CachedDbSessionStore):
         super().save(must_create)
 
     @override
-    def delete(self, session_key: Optional[str] = None) -> None:
+    def delete(self, session_key: str | None = None) -> None:
         assert not get_connection().in_atomic_block
         super().delete(session_key)

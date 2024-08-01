@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
-from typing import Callable
 
 from dateutil.tz import tzlocal
 from django.core.management.commands.runserver import Command as DjangoCommand

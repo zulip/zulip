@@ -15,11 +15,11 @@ import subprocess
 import sys
 import time
 import uuid
-from datetime import datetime, timedelta
-from typing import IO, Any, Dict, List, Literal, Optional, Sequence, Set, Union, overload
-from urllib.parse import SplitResult
-
 import zoneinfo
+from collections.abc import Sequence
+from datetime import datetime, timedelta
+from typing import IO, Any, Literal, overload
+from urllib.parse import SplitResult
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -300,7 +300,7 @@ def get_environment() -> str:
     return "dev"
 
 
-def get_recent_deployments(threshold_days: int) -> Set[str]:
+def get_recent_deployments(threshold_days: int) -> set[str]:
     # Returns a list of deployments not older than threshold days
     # including `/root/zulip` directory if it exists.
     recent = set()
@@ -337,8 +337,8 @@ def get_threshold_timestamp(threshold_days: int) -> int:
 
 
 def get_caches_to_be_purged(
-    caches_dir: str, caches_in_use: Set[str], threshold_days: int
-) -> Set[str]:
+    caches_dir: str, caches_in_use: set[str], threshold_days: int
+) -> set[str]:
     # Given a directory containing caches, a list of caches in use
     # and threshold days, this function return a list of caches
     # which can be purged. Remove the cache only if it is:
@@ -360,7 +360,7 @@ def get_caches_to_be_purged(
 
 def purge_unused_caches(
     caches_dir: str,
-    caches_in_use: Set[str],
+    caches_in_use: set[str],
     cache_type: str,
     args: argparse.Namespace,
 ) -> None:
@@ -405,8 +405,8 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
 
 
 def maybe_perform_purging(
-    dirs_to_purge: Set[str],
-    dirs_to_keep: Set[str],
+    dirs_to_purge: set[str],
+    dirs_to_keep: set[str],
     dir_type: str,
     dry_run: bool,
     verbose: bool,
@@ -429,7 +429,7 @@ def maybe_perform_purging(
 
 
 @functools.lru_cache(None)
-def parse_os_release() -> Dict[str, str]:
+def parse_os_release() -> dict[str, str]:
     """
     Example of the useful subset of the data:
     {
@@ -444,7 +444,7 @@ def parse_os_release() -> Dict[str, str]:
     developers, but we avoid using it, as it is not available on
     RHEL-based platforms.
     """
-    distro_info: Dict[str, str] = {}
+    distro_info: dict[str, str] = {}
     with open("/etc/os-release") as fp:
         for line in fp:
             line = line.strip()
@@ -458,7 +458,7 @@ def parse_os_release() -> Dict[str, str]:
 
 
 @functools.lru_cache(None)
-def os_families() -> Set[str]:
+def os_families() -> set[str]:
     """
     Known families:
     debian (includes: debian, ubuntu)
@@ -548,7 +548,7 @@ def is_root() -> bool:
     return False
 
 
-def run_as_root(args: List[str], **kwargs: Any) -> None:
+def run_as_root(args: list[str], **kwargs: Any) -> None:
     sudo_args = kwargs.pop("sudo_args", [])
     if not is_root():
         args = ["sudo", *sudo_args, "--", *args]
@@ -586,7 +586,7 @@ def get_config(
     section: str,
     key: str,
     default_value: None = None,
-) -> Optional[str]: ...
+) -> str | None: ...
 @overload
 def get_config(
     config_file: configparser.RawConfigParser,
@@ -602,8 +602,8 @@ def get_config(
     config_file: configparser.RawConfigParser,
     section: str,
     key: str,
-    default_value: Union[str, bool, None] = None,
-) -> Union[str, bool, None]:
+    default_value: str | bool | None = None,
+) -> str | bool | None:
     if config_file.has_option(section, key):
         val = config_file.get(section, key)
         if isinstance(default_value, bool):
@@ -619,7 +619,7 @@ def get_config_file() -> configparser.RawConfigParser:
     return config_file
 
 
-def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
+def get_deploy_options(config_file: configparser.RawConfigParser) -> list[str]:
     return shlex.split(get_config(config_file, "deployment", "deploy_options", ""))
 
 
@@ -632,7 +632,7 @@ def run_psql_as_postgres(
     subprocess.check_call(["su", "postgres", "-c", subcmd])
 
 
-def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
+def get_tornado_ports(config_file: configparser.RawConfigParser) -> list[int]:
     ports = []
     if config_file.has_section("tornado_sharding"):
         ports = sorted(
@@ -705,7 +705,7 @@ def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentPa
     return parser
 
 
-def listening_publicly(port: int) -> List[str]:
+def listening_publicly(port: int) -> list[str]:
     filter = f"sport = :{port} and not src 127.0.0.1:{port} and not src [::1]:{port}"
     # Parse lines that look like this:
     # tcp    LISTEN     0          128             0.0.0.0:25672        0.0.0.0:*
@@ -726,8 +726,8 @@ def listening_publicly(port: int) -> List[str]:
 def atomic_nagios_write(
     name: str,
     status: Literal["ok", "warning", "critical", "unknown"],
-    message: Optional[str] = None,
-    event_time: Optional[int] = None,
+    message: str | None = None,
+    event_time: int | None = None,
 ) -> int:
     if message is None:
         message = status

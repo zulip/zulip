@@ -1,12 +1,11 @@
 from datetime import timedelta
-from typing import Any, Dict, Optional
+from typing import Annotated, Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
-from typing_extensions import Annotated
 
 from zerver.actions.presence import update_user_presence
 from zerver.actions.user_status import do_update_user_status
@@ -80,16 +79,16 @@ def update_user_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    away: Optional[Json[bool]] = None,
+    away: Json[bool] | None = None,
     status_text: Annotated[
-        Optional[str], StringConstraints(strip_whitespace=True, max_length=60)
+        str | None, StringConstraints(strip_whitespace=True, max_length=60)
     ] = None,
-    emoji_name: Optional[str] = None,
-    emoji_code: Optional[str] = None,
+    emoji_name: str | None = None,
+    emoji_code: str | None = None,
     # TODO: emoji_type is the more appropriate name for this parameter, but changing
     # that requires nontrivial work on the API documentation, since it's not clear
     # that the reactions endpoint would prefer such a change.
-    emoji_type: Annotated[Optional[str], ApiParamConfig("reaction_type")] = None,
+    emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
 ) -> HttpResponse:
     if status_text is not None:
         status_text = status_text.strip()
@@ -154,7 +153,7 @@ def update_active_status_backend(
     ping_only: Json[bool] = False,
     new_user_input: Json[bool] = False,
     slim_presence: Json[bool] = False,
-    last_update_id: Optional[Json[int]] = None,
+    last_update_id: Json[int] | None = None,
 ) -> HttpResponse:
     if last_update_id is not None:
         # This param being submitted by the client, means they want to use
@@ -170,7 +169,7 @@ def update_active_status_backend(
         update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
 
     if ping_only:
-        ret: Dict[str, Any] = {}
+        ret: dict[str, Any] = {}
     else:
         ret = get_presence_response(
             user_profile, slim_presence, last_update_id_fetched_by_client=last_update_id

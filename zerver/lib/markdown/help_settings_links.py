@@ -1,5 +1,6 @@
 import re
-from typing import Any, List, Match
+from re import Match
+from typing import Any
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -148,7 +149,7 @@ def set_relative_settings_links(value: bool) -> None:
 
 class Setting(Preprocessor):
     @override
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         done = False
         while not done:
             for line in lines:

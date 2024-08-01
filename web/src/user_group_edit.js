@@ -96,7 +96,7 @@ function update_add_members_elements(group) {
 
         settings_components.initialize_disable_btn_hint_popover(
             $add_members_container,
-            $t({defaultMessage: "Only group members can add users to a group."}),
+            $t({defaultMessage: "You are not allowed to add members to this group."}),
         );
     }
 }

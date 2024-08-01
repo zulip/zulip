@@ -1,9 +1,11 @@
+import assert from "minimalistic-assert";
 import type {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
 import {$t} from "./i18n";
+import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import type {StateData, user_group_schema} from "./state_data";
 import {current_user} from "./state_data";
@@ -176,6 +178,37 @@ export function is_user_group(
     return item.members !== undefined;
 }
 
+export function is_empty_group(user_group_id: number): boolean {
+    const user_group = user_group_by_id_dict.get(user_group_id);
+    if (user_group === undefined) {
+        blueslip.error("Could not find user group", {user_group_id});
+        return false;
+    }
+    if (user_group.members.size > 0) {
+        return false;
+    }
+
+    // Check if all the recursive subgroups are empty.
+    // Correctness of this algorithm relying on the ES6 Set
+    // implementation having the property that a `for of` loop will
+    // visit all items that are added to the set during the loop.
+    const subgroup_ids = new Set(user_group.direct_subgroup_ids);
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        if (subgroup === undefined) {
+            blueslip.error("Could not find subgroup", {subgroup_id});
+            return false;
+        }
+        if (subgroup.members.size > 0) {
+            return false;
+        }
+        for (const direct_subgroup_id of subgroup.direct_subgroup_ids) {
+            subgroup_ids.add(direct_subgroup_id);
+        }
+    }
+    return true;
+}
+
 export function get_user_groups_of_user(user_id: number): UserGroup[] {
     const user_groups_realm = get_realm_user_groups();
     const groups_of_user = user_groups_realm.filter((group) =>
@@ -201,6 +234,24 @@ export function get_recursive_subgroups(target_user_group: UserGroup): Set<numbe
         }
     }
     return subgroup_ids;
+}
+
+export function get_recursive_group_members(target_user_group: UserGroup): Set<number> {
+    const members = new Set(target_user_group.members);
+    const subgroup_ids = get_recursive_subgroups(target_user_group);
+
+    if (subgroup_ids === undefined) {
+        return members;
+    }
+
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        assert(subgroup !== undefined);
+        for (const member of subgroup.members) {
+            members.add(member);
+        }
+    }
+    return members;
 }
 
 export function is_user_in_group(user_group_id: number, user_id: number): boolean {
@@ -291,7 +342,10 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             };
         });
 
-    if (require_system_group) {
+    if (
+        (setting_name !== "can_mention_group" && !page_params.development_environment) ||
+        require_system_group
+    ) {
         return system_user_groups;
     }
 
@@ -301,4 +355,16 @@ export function get_realm_user_groups_for_dropdown_list_widget(
     }));
 
     return [...system_user_groups, ...user_groups_excluding_system_groups];
+}
+
+// Group name for user-facing display. For settings, we already use
+// description strings for system groups. But those description strings
+// might not be suitable for every case, e.g. we want the name for
+// `role:everyone` to be `Everyone` instead of
+// `Admins, moderators, members and guests` from `settings_config`.
+// Right now, we only change the name for `role:everyone`, that's why
+// we don't store the values in a structured way like
+// `settings_config` yet.
+export function get_display_group_name(user_group: UserGroup): string {
+    return user_group.name === "role:everyone" ? $t({defaultMessage: "Everyone"}) : user_group.name;
 }

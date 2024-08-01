@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
@@ -24,7 +22,7 @@ def api_slack_webhook(
     user_name: str,
     text: str,
     channel_name: str,
-    channels_map_to_topics: Optional[str] = None,
+    channels_map_to_topics: str | None = None,
 ) -> HttpResponse:
     content = ZULIP_MESSAGE_TEMPLATE.format(message_sender=user_name, text=text)
     topic_name = "Message from Slack"

@@ -80,6 +80,9 @@ function process_result(data, opts) {
 
     if (messages.length !== 0) {
         if (opts.msg_list) {
+            if (opts.validate_filter_topic_post_fetch) {
+                opts.msg_list.data.filter.try_adjusting_for_moved_with_target(messages[0]);
+            }
             // Since this adds messages to the MessageList and renders MessageListView,
             // we don't need to call it if msg_list was not defined by the caller.
             message_util.add_old_messages(messages, opts.msg_list);
@@ -394,6 +397,7 @@ export function load_messages_for_narrow(opts) {
         num_after: consts.narrow_after,
         msg_list: opts.msg_list,
         cont: opts.cont,
+        validate_filter_topic_post_fetch: opts.validate_filter_topic_post_fetch,
     });
 }
 
@@ -602,7 +606,11 @@ export function initialize(finished_initial_fetch) {
     // which always contains the latest message, it makes sense for
     // Recent view to display the same data and be in sync.
     all_messages_data.set_add_messages_callback((messages, rows_order_changed) => {
-        recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
+        try {
+            recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
+        } catch (error) {
+            blueslip.error("Error in recent_view_ui.process_messages", undefined, error);
+        }
     });
 
     // TODO: Ideally we'd have loading indicators for Recent Conversations

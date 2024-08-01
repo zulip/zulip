@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from collections.abc import Mapping
+from typing import Any
 from urllib.parse import urljoin
 
 import orjson
@@ -26,6 +27,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.redis_utils import get_redis_client
+from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.models import Realm, RealmAuditLog
 from zerver.models.realms import OrgTypeEnum
 
@@ -54,7 +56,7 @@ class RealmCountDataForAnalytics(BaseModel):
     realm: int
     id: int
     end_time: float
-    subgroup: Optional[str]
+    subgroup: str | None
     value: int
 
 
@@ -62,7 +64,7 @@ class InstallationCountDataForAnalytics(BaseModel):
     property: str
     id: int
     end_time: float
-    subgroup: Optional[str]
+    subgroup: str | None
     value: int
 
 
@@ -71,7 +73,7 @@ class RealmAuditLogDataForAnalytics(BaseModel):
     realm: int
     event_time: float
     backfilled: bool
-    extra_data: Optional[Union[str, Dict[str, Any]]]
+    extra_data: str | dict[str, Any] | None
     event_type: int
 
 
@@ -87,7 +89,7 @@ class RealmDataForAnalytics(BaseModel):
     deactivated: bool
     is_system_bot_realm: bool = False
 
-    authentication_methods: Dict[str, bool] = Field(default_factory=dict)
+    authentication_methods: dict[str, bool] = Field(default_factory=dict)
 
     uuid: UUID4
     uuid_owner_secret: str
@@ -102,13 +104,13 @@ class RealmDataForAnalytics(BaseModel):
 
 
 class AnalyticsRequest(BaseModel):
-    realm_counts: Json[List[RealmCountDataForAnalytics]]
-    installation_counts: Json[List[InstallationCountDataForAnalytics]]
-    realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None
-    realms: Json[List[RealmDataForAnalytics]]
-    version: Optional[Json[str]]
-    merge_base: Optional[Json[str]]
-    api_feature_level: Optional[Json[int]]
+    realm_counts: Json[list[RealmCountDataForAnalytics]]
+    installation_counts: Json[list[InstallationCountDataForAnalytics]]
+    realmauditlog_rows: Json[list[RealmAuditLogDataForAnalytics]] | None = None
+    realms: Json[list[RealmDataForAnalytics]]
+    version: Json[str] | None
+    merge_base: Json[str] | None
+    api_feature_level: Json[int] | None
 
 
 class UserDataForRemoteBilling(BaseModel):
@@ -120,9 +122,9 @@ class UserDataForRemoteBilling(BaseModel):
 def send_to_push_bouncer(
     method: str,
     endpoint: str,
-    post_data: Union[bytes, Mapping[str, Union[str, int, None, bytes]]],
+    post_data: bytes | Mapping[str, str | int | None | bytes],
     extra_headers: Mapping[str, str] = {},
-) -> Dict[str, object]:
+) -> dict[str, object]:
     """While it does actually send the notice, this function has a lot of
     code and comments around error handling for the push notifications
     bouncer.  There are several classes of failures, each with its own
@@ -139,10 +141,10 @@ def send_to_push_bouncer(
       vs. client-side errors like an invalid token.
 
     """
-    assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+    assert settings.ZULIP_SERVICES_URL is not None
     assert settings.ZULIP_ORG_ID is not None
     assert settings.ZULIP_ORG_KEY is not None
-    url = urljoin(settings.PUSH_NOTIFICATION_BOUNCER_URL, "/api/v1/remotes/" + endpoint)
+    url = urljoin(settings.ZULIP_SERVICES_URL, "/api/v1/remotes/" + endpoint)
     api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY)
 
     headers = {"User-agent": f"ZulipServer/{ZULIP_VERSION}"}
@@ -242,7 +244,7 @@ def send_to_push_bouncer(
 
 def send_json_to_push_bouncer(
     method: str, endpoint: str, post_data: Mapping[str, object]
-) -> Dict[str, object]:
+) -> dict[str, object]:
     return send_to_push_bouncer(
         method,
         endpoint,
@@ -275,7 +277,7 @@ def check_push_notifications_recently_working() -> bool:
 
 
 def maybe_mark_pushes_disabled(
-    e: Union[JsonableError, orjson.JSONDecodeError], logger: logging.Logger
+    e: JsonableError | orjson.JSONDecodeError, logger: logging.Logger
 ) -> None:
     if isinstance(e, PushNotificationBouncerServerError):
         # We don't fall through and deactivate the flag, since this is
@@ -285,7 +287,7 @@ def maybe_mark_pushes_disabled(
     if isinstance(e, JsonableError):
         logger.warning(e.msg)
     else:
-        logger.exception("Exception communicating with %s", settings.PUSH_NOTIFICATION_BOUNCER_URL)
+        logger.exception("Exception communicating with %s", settings.ZULIP_SERVICES_URL)
 
     # An exception was thrown talking to the push bouncer. There may
     # be certain transient failures that we could ignore here -
@@ -309,10 +311,10 @@ def build_analytics_data(
     realm_count_query: QuerySet[RealmCount],
     installation_count_query: QuerySet[InstallationCount],
     realmauditlog_query: QuerySet[RealmAuditLog],
-) -> Tuple[
-    List[RealmCountDataForAnalytics],
-    List[InstallationCountDataForAnalytics],
-    List[RealmAuditLogDataForAnalytics],
+) -> tuple[
+    list[RealmCountDataForAnalytics],
+    list[InstallationCountDataForAnalytics],
+    list[RealmAuditLogDataForAnalytics],
 ]:
     # We limit the batch size on the client side to avoid OOM kills timeouts, etc.
     MAX_CLIENT_BATCH_SIZE = 10000
@@ -355,7 +357,7 @@ def build_analytics_data(
     return realm_count_data, installation_count_data, zerver_realmauditlog
 
 
-def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[RealmDataForAnalytics]:
+def get_realms_info_for_push_bouncer(realm_id: int | None = None) -> list[RealmDataForAnalytics]:
     realms = Realm.objects.order_by("id")
     if realm_id is not None:  # nocoverage
         realms = realms.filter(id=realm_id)
@@ -380,6 +382,10 @@ def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[Rea
     return realm_info_list
 
 
+def should_send_analytics_data() -> bool:  # nocoverage
+    return settings.ANALYTICS_DATA_UPLOAD_LEVEL > AnalyticsDataUploadLevel.NONE
+
+
 def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> None:
     logger = logging.getLogger("zulip.analytics")
     # first, check what's latest
@@ -395,7 +401,10 @@ def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> 
     last_acked_installation_count_id = result["last_installation_count_id"]
     last_acked_realmauditlog_id = result["last_realmauditlog_id"]
 
-    if settings.SUBMIT_USAGE_STATISTICS and consider_usage_statistics:
+    if (
+        settings.ANALYTICS_DATA_UPLOAD_LEVEL == AnalyticsDataUploadLevel.ALL
+        and consider_usage_statistics
+    ):
         # Only upload usage statistics, which is relatively expensive,
         # if called from the analytics cron job and the server has
         # uploading such statistics enabled.
@@ -409,12 +418,20 @@ def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> 
         installation_count_query = InstallationCount.objects.none()
         realm_count_query = RealmCount.objects.none()
 
+    if settings.ANALYTICS_DATA_UPLOAD_LEVEL >= AnalyticsDataUploadLevel.BILLING:
+        realmauditlog_query = RealmAuditLog.objects.filter(
+            event_type__in=RealmAuditLog.SYNCED_BILLING_EVENTS, id__gt=last_acked_realmauditlog_id
+        )
+    else:
+        realmauditlog_query = RealmAuditLog.objects.none()
+
+    # This code shouldn't be called at all if we're not configured to send any data.
+    assert settings.ANALYTICS_DATA_UPLOAD_LEVEL > AnalyticsDataUploadLevel.NONE
+
     (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
         realm_count_query=realm_count_query,
         installation_count_query=installation_count_query,
-        realmauditlog_query=RealmAuditLog.objects.filter(
-            event_type__in=RealmAuditLog.SYNCED_BILLING_EVENTS, id__gt=last_acked_realmauditlog_id
-        ),
+        realmauditlog_query=realmauditlog_query,
     )
 
     record_count = len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data)

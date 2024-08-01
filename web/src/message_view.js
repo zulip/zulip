@@ -10,6 +10,7 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
@@ -87,7 +88,19 @@ export function changehash(newhash, trigger) {
         return;
     }
     message_viewport.stop_auto_scrolling();
-    browser_history.set_hash(newhash);
+
+    if (trigger === "retarget topic location") {
+        // It is important to use `replaceState` rather than `replace`
+        // here for the `back` button to work; we don't want to use
+        // any metadata potentially stored by
+        // update_current_history_state_data associated with an old
+        // URL for the target conversation, and conceptually we want
+        // to replace the inaccurate/old URL for the conversation with
+        // the current/corrected value.
+        window.history.replaceState(null, "", newhash);
+    } else {
+        browser_history.set_hash(newhash);
+    }
 }
 
 export function update_hash_to_match_filter(filter, trigger) {
@@ -111,17 +124,19 @@ function create_and_update_message_list(filter, id_info, opts) {
     let msg_list;
     let restore_rendered_list = false;
     const is_combined_feed_global_view = filter.is_in_home();
-    for (const list of message_lists.all_rendered_message_lists()) {
-        if (is_combined_feed_global_view && list.data.filter.is_in_home()) {
-            if (opts.then_select_id > 0 && !list.msg_id_in_fetched_range(opts.then_select_id)) {
-                // We don't have the target message in the current rendered list.
-                // Read MessageList.should_preserve_current_rendered_state for details.
+    if (!opts.force_rerender) {
+        for (const list of message_lists.all_rendered_message_lists()) {
+            if (is_combined_feed_global_view && list.data.filter.is_in_home()) {
+                if (opts.then_select_id > 0 && !list.msg_id_in_fetched_range(opts.then_select_id)) {
+                    // We don't have the target message in the current rendered list.
+                    // Read MessageList.should_preserve_current_rendered_state for details.
+                    break;
+                }
+
+                msg_list = list;
+                restore_rendered_list = true;
                 break;
             }
-
-            msg_list = list;
-            restore_rendered_list = true;
-            break;
         }
     }
 
@@ -132,12 +147,14 @@ function create_and_update_message_list(filter, id_info, opts) {
         });
 
         // Populate the message list if we can apply our filter locally (i.e.
-        // with no backend help) and we have the message we want to select.
+        // with no server help) and we have the message we want to select.
         // Also update id_info accordingly.
-        maybe_add_local_messages({
-            id_info,
-            msg_data,
-        });
+        if (!filter.requires_adjustment_for_moved_with_target) {
+            maybe_add_local_messages({
+                id_info,
+                msg_data,
+            });
+        }
 
         if (!id_info.local_select_id) {
             // If we're not actually ready to select an ID, we need to
@@ -219,54 +236,53 @@ function handle_post_message_list_change(
     compose_recipient.handle_middle_pane_transition();
 }
 
-function try_rendering_locally_for_same_narrow(filter, opts) {
-    if (opts.then_select_id || opts.then_select_offset) {
-        // This function is designed to navigate user to a target message
-        // specified via `near` operator, which doesn't handle
-        // `then_select_id` or `then_select_offset` to avoid targeting
-        // the wrong message.
-        return false;
-    }
-
+export function try_rendering_locally_for_same_narrow(filter, opts) {
     const current_filter = narrow_state.filter();
+    let target_scroll_offset;
     if (!current_filter) {
         return false;
     }
 
-    if (filter.has_operator("near")) {
-        const target_id = Number.parseInt(filter.operands("near")[0], 10);
-        const target_message = message_lists.current?.get(target_id);
-        if (!target_message) {
-            return false;
-        }
-
-        const adjusted_terms = Filter.adjusted_terms_if_moved(filter.terms(), target_message);
-        if (adjusted_terms !== null) {
-            filter = new Filter(adjusted_terms);
-        }
-
-        // If the difference between the current filter and the new filter
-        // is just a `near` operator, or just the value of a `near` operator,
-        // we can render the new filter without a rerender of the message list
-        // if the target message in the `near` operator is already rendered.
-        const excluded_operators = ["near"];
-        if (!filter.equals(current_filter, excluded_operators)) {
-            return false;
-        }
-
-        const currently_selected_id = message_lists.current?.selected_id();
-        if (currently_selected_id !== target_id) {
-            message_lists.current.select_id(target_id, {
-                then_scroll: true,
-            });
-        }
-
-        message_lists.current.data.filter = filter;
-        update_hash_to_match_filter(filter, "retarget message location");
-        return true;
+    let target_id;
+    if (opts.then_select_id !== undefined) {
+        target_id = opts.then_select_id;
+        target_scroll_offset = opts.then_select_offset;
+    } else if (filter.has_operator("near")) {
+        target_id = Number.parseInt(filter.operands("near")[0], 10);
+    } else {
+        return false;
     }
 
-    return false;
+    const target_message = message_lists.current?.get(target_id);
+    if (!target_message) {
+        return false;
+    }
+
+    const adjusted_terms = Filter.adjusted_terms_if_moved(filter.terms(), target_message);
+    if (adjusted_terms !== null) {
+        filter = new Filter(adjusted_terms);
+    }
+
+    // If the difference between the current filter and the new filter
+    // is just a `near` operator, or just the value of a `near` operator,
+    // we can render the new filter without a rerender of the message list
+    // if the target message in the `near` operator is already rendered.
+    const excluded_operators = ["near"];
+    if (!filter.equals(current_filter, excluded_operators)) {
+        return false;
+    }
+
+    const currently_selected_id = message_lists.current?.selected_id();
+    if (currently_selected_id !== target_id) {
+        message_lists.current.select_id(target_id, {
+            then_scroll: true,
+            target_scroll_offset,
+        });
+    }
+
+    message_lists.current.data.filter = filter;
+    update_hash_to_match_filter(filter, "retarget message location");
+    return true;
 }
 
 export function show(raw_terms, opts) {
@@ -303,17 +319,18 @@ export function show(raw_terms, opts) {
 
     // No operators is an alias for the Combined Feed view.
     if (raw_terms.length === 0) {
-        raw_terms = [{operator: "is", operand: "home"}];
+        raw_terms = [{operator: "in", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
+    filter.try_adjusting_for_moved_with_target();
 
-    if (try_rendering_locally_for_same_narrow(filter, opts)) {
+    if (!opts.force_rerender && try_rendering_locally_for_same_narrow(filter, opts)) {
         return;
     }
 
     const is_combined_feed_global_view = filter.is_in_home();
     const is_narrowed_to_combined_feed_view = narrow_state.filter()?.is_in_home();
-    if (is_narrowed_to_combined_feed_view && is_combined_feed_global_view) {
+    if (!opts.force_rerender && is_narrowed_to_combined_feed_view && is_combined_feed_global_view) {
         // If we're already looking at the combined feed, exit without doing any work.
         return;
     }
@@ -642,12 +659,36 @@ export function show(raw_terms, opts) {
                 }
                 message_fetch.load_messages_for_narrow({
                     anchor,
+                    validate_filter_topic_post_fetch:
+                        filter.requires_adjustment_for_moved_with_target,
                     cont() {
+                        if (message_lists.current !== msg_list) {
+                            return;
+                        }
+
+                        if (filter.narrow_requires_hash_change) {
+                            // We've already adjusted our filter via
+                            // filter.try_adjusting_for_moved_with_target, and
+                            // should update the URL hash accordingly.
+                            update_hash_to_match_filter(filter, "retarget topic location");
+                            // Since filter is updated, we need to handle various things
+                            // like updating the message view header title, unread banner
+                            // based on the updated filter.
+                            handle_post_message_list_change(
+                                id_info,
+                                message_lists.current,
+                                opts,
+                                select_immediately,
+                                select_opts,
+                                then_select_offset,
+                            );
+                            filter.narrow_requires_hash_change = false;
+                        }
                         if (!select_immediately) {
                             render_message_list_with_selected_message({
                                 id_info,
                                 select_offset: then_select_offset,
-                                msg_list: message_lists.current,
+                                msg_list,
                                 select_opts,
                             });
                         }
@@ -1251,6 +1292,13 @@ export function to_compose_target() {
 
 function handle_post_view_change(msg_list, opts) {
     const filter = msg_list.data.filter;
+
+    if (narrow_state.narrowed_by_reply()) {
+        compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
+    } else {
+        compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+    }
+
     scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
 
@@ -1264,6 +1312,7 @@ function handle_post_view_change(msg_list, opts) {
     compose_closed_ui.update_reply_recipient_label();
 
     message_view_header.render_title_area();
+
     narrow_title.update_narrow_title(filter);
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);

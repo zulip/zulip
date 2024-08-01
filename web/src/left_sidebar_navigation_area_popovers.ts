@@ -67,7 +67,7 @@ export function initialize(): void {
             $popper.one("click", "#toggle_display_starred_msg_count", () => {
                 const starred_msg_counts = user_settings.starred_message_counts;
                 const data = {
-                    starred_messages_counts: JSON.stringify(!starred_msg_counts),
+                    starred_message_counts: JSON.stringify(!starred_msg_counts),
                 };
                 void channel.patch({
                     url: "/json/settings",

@@ -109,19 +109,21 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
     }));
 }
 
-export async function display_stacktrace(ex: unknown): Promise<void> {
+export async function display_stacktrace(ex: unknown, message?: string): Promise<void> {
     const errors = [];
     do {
         if (!(ex instanceof Error)) {
-            const prototype: unknown = Object.getPrototypeOf(ex);
+            let prototype: unknown;
             errors.push({
                 name:
-                    typeof prototype === "object" &&
+                    ex !== null &&
+                    ex !== undefined &&
+                    typeof (prototype = Object.getPrototypeOf(ex)) === "object" &&
                     prototype !== null &&
                     "constructor" in prototype
                         ? `thrown ${prototype.constructor.name}`
                         : "thrown",
-                message: String(ex),
+                message: ex === undefined ? message : String(ex),
                 stackframes: [],
             });
             break;

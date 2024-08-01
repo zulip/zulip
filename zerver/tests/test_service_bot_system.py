@@ -1,11 +1,12 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Concatenate
 from unittest import mock
 
 import orjson
 from django.conf import settings
 from django.test import override_settings
-from typing_extensions import Concatenate, ParamSpec, override
+from typing_extensions import ParamSpec, override
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events
@@ -491,8 +492,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
         def check_values_passed(
             queue_name: Any,
-            trigger_event: Dict[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            trigger_event: dict[str, Any],
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
@@ -534,8 +535,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
         def check_values_passed(
             queue_name: Any,
-            trigger_event: Dict[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            trigger_event: dict[str, Any],
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
@@ -578,8 +579,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
         def check_values_passed(
             queue_name: Any,
-            trigger_event: Dict[str, Any],
-            processor: Optional[Callable[[Any], None]] = None,
+            trigger_event: dict[str, Any],
+            processor: Callable[[Any], None] | None = None,
         ) -> None:
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])

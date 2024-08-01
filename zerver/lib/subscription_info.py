@@ -1,6 +1,7 @@
 import itertools
+from collections.abc import Callable, Collection, Iterable, Mapping
 from operator import itemgetter
-from typing import Any, Callable, Collection, Dict, Iterable, List, Mapping, Optional, Set, Tuple
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.db import connection
@@ -140,7 +141,7 @@ def build_stream_dict_for_sub(
     user: UserProfile,
     sub_dict: RawSubscriptionDict,
     raw_stream_dict: RawStreamDict,
-    recent_traffic: Optional[Dict[int, int]],
+    recent_traffic: dict[int, int] | None,
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
@@ -215,7 +216,7 @@ def build_stream_dict_for_sub(
 
 def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
-    recent_traffic: Optional[Dict[int, int]],
+    recent_traffic: dict[int, int] | None,
 ) -> NeverSubscribedStreamDict:
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     creator_id = raw_stream_dict["creator_id"]
@@ -261,9 +262,7 @@ def build_stream_dict_for_never_sub(
     )
 
 
-def validate_user_access_to_subscribers(
-    user_profile: Optional[UserProfile], stream: Stream
-) -> None:
+def validate_user_access_to_subscribers(user_profile: UserProfile | None, stream: Stream) -> None:
     """Validates whether the user can view the subscribers of a stream.  Raises a JsonableError if:
     * The user and the stream are in different realms
     * The realm is MIT and the stream is not invite only.
@@ -284,7 +283,7 @@ def validate_user_access_to_subscribers(
 
 
 def validate_user_access_to_subscribers_helper(
-    user_profile: Optional[UserProfile],
+    user_profile: UserProfile | None,
     stream_dict: Mapping[str, Any],
     check_user_subscribed: Callable[[UserProfile], bool],
 ) -> None:
@@ -342,8 +341,8 @@ def validate_user_access_to_subscribers_helper(
 def bulk_get_subscriber_user_ids(
     stream_dicts: Collection[Mapping[str, Any]],
     user_profile: UserProfile,
-    subscribed_stream_ids: Set[int],
-) -> Dict[int, List[int]]:
+    subscribed_stream_ids: set[int],
+) -> dict[int, list[int]]:
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
     is_subscribed: bool
@@ -366,7 +365,7 @@ def bulk_get_subscriber_user_ids(
     recip_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in target_stream_dicts}
     recipient_ids = sorted(stream["recipient_id"] for stream in target_stream_dicts)
 
-    result: Dict[int, List[int]] = {stream["id"]: [] for stream in stream_dicts}
+    result: dict[int, list[int]] = {stream["id"]: [] for stream in stream_dicts}
     if not recipient_ids:
         return result
 
@@ -412,7 +411,7 @@ def bulk_get_subscriber_user_ids(
 
 
 def get_subscribers_query(
-    stream: Stream, requesting_user: Optional[UserProfile]
+    stream: Stream, requesting_user: UserProfile | None
 ) -> QuerySet[Subscription]:
     """Build a query to get the subscribers list for a stream, raising a JsonableError if:
 
@@ -456,10 +455,10 @@ def gather_subscriptions_helper(
         "realm_id",
         "recipient_id",
     )
-    recip_id_to_stream_id: Dict[int, int] = {
+    recip_id_to_stream_id: dict[int, int] = {
         stream["recipient_id"]: stream["id"] for stream in all_streams
     }
-    all_streams_map: Dict[int, RawStreamDict] = {stream["id"]: stream for stream in all_streams}
+    all_streams_map: dict[int, RawStreamDict] = {stream["id"]: stream for stream in all_streams}
 
     sub_dicts_query: Iterable[RawSubscriptionDict] = (
         get_stream_subscriptions_for_user(user_profile)
@@ -472,7 +471,7 @@ def gather_subscriptions_helper(
     )
 
     # We only care about subscriptions for active streams.
-    sub_dicts: List[RawSubscriptionDict] = [
+    sub_dicts: list[RawSubscriptionDict] = [
         sub_dict
         for sub_dict in sub_dicts_query
         if recip_id_to_stream_id.get(sub_dict["recipient_id"])
@@ -486,9 +485,9 @@ def gather_subscriptions_helper(
 
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.
-    subscribed: List[SubscriptionStreamDict] = []
-    unsubscribed: List[SubscriptionStreamDict] = []
-    never_subscribed: List[NeverSubscribedStreamDict] = []
+    subscribed: list[SubscriptionStreamDict] = []
+    unsubscribed: list[SubscriptionStreamDict] = []
+    never_subscribed: list[NeverSubscribedStreamDict] = []
 
     sub_unsub_stream_ids = set()
     for sub_dict in sub_dicts:
@@ -575,7 +574,7 @@ def gather_subscriptions_helper(
 def gather_subscriptions(
     user_profile: UserProfile,
     include_subscribers: bool = False,
-) -> Tuple[List[SubscriptionStreamDict], List[SubscriptionStreamDict]]:
+) -> tuple[list[SubscriptionStreamDict], list[SubscriptionStreamDict]]:
     helper_result = gather_subscriptions_helper(
         user_profile,
         include_subscribers=include_subscribers,

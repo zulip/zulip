@@ -115,7 +115,7 @@ export function append_person(opts: {
 
 export function get_user_ids(pill_widget: UserPillWidget | CombinedPillContainer): number[] {
     const items = pill_widget.items();
-    return items.flatMap((item) => (item.type === "user" ? item.user_id ?? [] : [])); // be defensive about undefined users
+    return items.flatMap((item) => (item.type === "user" ? (item.user_id ?? []) : [])); // be defensive about undefined users
 }
 
 export function has_unconverted_data(pill_widget: UserPillWidget): boolean {

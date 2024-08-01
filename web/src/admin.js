@@ -194,11 +194,13 @@ export function build_page() {
         user_list_style_values: settings_config.user_list_style_values,
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
+        web_animate_image_previews_values: settings_config.web_animate_image_previews_values,
         color_scheme_values: settings_config.color_scheme_values,
         web_home_view_values: settings_config.web_home_view_values,
         settings_object: realm_user_settings_defaults,
-        display_settings: settings_config.get_all_preferences(),
+        information_section_checkbox_group: settings_config.information_section_checkbox_group,
         information_density_settings: settings_config.get_information_density_preferences(),
+        settings_render_only: settings_config.get_settings_render_only(),
         settings_label: settings_config.realm_user_settings_defaults_labels,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         enable_sound_select:

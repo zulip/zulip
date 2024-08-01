@@ -4,7 +4,7 @@ import json
 import os
 import subprocess
 import sys
-from typing import NoReturn, Optional
+from typing import NoReturn
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -14,7 +14,7 @@ os.chdir(os.path.join(os.path.dirname(__file__), "../web"))
 from version import ZULIP_VERSION
 
 
-def build_for_prod_or_puppeteer(quiet: bool, config_name: Optional[str] = None) -> NoReturn:
+def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> NoReturn:
     """Builds for production, writing the output to disk"""
 
     with open("/proc/meminfo") as meminfo:

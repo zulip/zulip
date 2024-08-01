@@ -841,7 +841,15 @@ test("creator_id", () => {
     // When there is no creator
     assert.equal(stream_data.maybe_get_creator_details(null), undefined);
 
-    const creator_details = people.get_by_user_id(test_user.user_id);
+    let creator_details = {...people.get_by_user_id(test_user.user_id), is_active: true};
+    assert.deepStrictEqual(
+        stream_data.maybe_get_creator_details(test_user.user_id),
+        creator_details,
+    );
+
+    // Check when creator is deactivated.
+    people.deactivate(test_user);
+    creator_details = {...people.get_by_user_id(test_user.user_id), is_active: false};
     assert.deepStrictEqual(
         stream_data.maybe_get_creator_details(test_user.user_id),
         creator_details,

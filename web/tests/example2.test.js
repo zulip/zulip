@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const {make_stream} = require("./lib/test_stream");
 
 // Hopefully the basic patterns for testing data-oriented modules
 // are starting to become apparent.  To reinforce that, we will present
@@ -28,12 +29,12 @@ const isaac = {
     full_name: "Isaac Newton",
 };
 
-const denmark_stream = {
+const denmark_stream = make_stream({
     color: "blue",
     name: "Denmark",
     stream_id: 101,
     subscribed: false,
-};
+});
 
 const messages = {
     isaac_to_denmark_stream: {

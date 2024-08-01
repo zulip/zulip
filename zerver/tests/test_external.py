@@ -1,7 +1,8 @@
 import time
 import uuid
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
-from typing import IO, TYPE_CHECKING, Any, Callable, Iterator, Optional, Sequence
+from typing import IO, TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 
 import DNS
@@ -291,18 +292,20 @@ class RateLimitTests(ZulipTestCase):
     @contextmanager
     def tor_mock(
         self,
-        side_effect: Optional[Exception] = None,
+        side_effect: Exception | None = None,
         read_data: Sequence[str] = ["1.2.3.4", "5.6.7.8"],
     ) -> Iterator[mock.Mock]:
         # We need to reset the circuitbreaker before starting.  We
         # patch the .opened property to be false, then call the
         # function, so it resets to closed.
-        with mock.patch("builtins.open", mock.mock_open(read_data=orjson.dumps(["1.2.3.4"]))):
-            with mock.patch(
+        with (
+            mock.patch("builtins.open", mock.mock_open(read_data=orjson.dumps(["1.2.3.4"]))),
+            mock.patch(
                 "circuitbreaker.CircuitBreaker.opened", new_callable=mock.PropertyMock
-            ) as mock_opened:
-                mock_opened.return_value = False
-                get_tor_ips()
+            ) as mock_opened,
+        ):
+            mock_opened.return_value = False
+            get_tor_ips()
 
         # Having closed it, it's now cached.  Clear the cache.
         assert CircuitBreakerMonitor.get("get_tor_ips").closed
@@ -353,13 +356,15 @@ class RateLimitTests(ZulipTestCase):
         # An empty list of IPs is treated as some error in parsing the
         # input, and as such should not be cached; rate-limiting
         # should work as normal, per-IP
-        with self.tor_mock(read_data=[]) as tor_open:
-            with self.assertLogs("zerver.lib.rate_limiter", level="WARNING"):
-                self.do_test_hit_ratelimits(
-                    lambda: self.send_unauthed_api_request(REMOTE_ADDR="1.2.3.4")
-                )
-                resp = self.send_unauthed_api_request(REMOTE_ADDR="5.6.7.8")
-                self.assertNotEqual(resp.status_code, 429)
+        with (
+            self.tor_mock(read_data=[]) as tor_open,
+            self.assertLogs("zerver.lib.rate_limiter", level="WARNING"),
+        ):
+            self.do_test_hit_ratelimits(
+                lambda: self.send_unauthed_api_request(REMOTE_ADDR="1.2.3.4")
+            )
+            resp = self.send_unauthed_api_request(REMOTE_ADDR="5.6.7.8")
+            self.assertNotEqual(resp.status_code, 429)
 
         # Was not cached, so tried to read twice before hitting the
         # circuit-breaker, and stopping trying
@@ -371,15 +376,17 @@ class RateLimitTests(ZulipTestCase):
         for ip in ["1.2.3.4", "5.6.7.8", "tor-exit-node"]:
             RateLimitedIPAddr(ip, domain="api_by_ip").clear_history()
 
-        with self.tor_mock(side_effect=FileNotFoundError("File not found")) as tor_open:
+        with (
+            self.tor_mock(side_effect=FileNotFoundError("File not found")) as tor_open,
             # If we cannot get a list of TOR exit nodes, then
             # rate-limiting works as normal, per-IP
-            with self.assertLogs("zerver.lib.rate_limiter", level="WARNING") as log_mock:
-                self.do_test_hit_ratelimits(
-                    lambda: self.send_unauthed_api_request(REMOTE_ADDR="1.2.3.4")
-                )
-                resp = self.send_unauthed_api_request(REMOTE_ADDR="5.6.7.8")
-                self.assertNotEqual(resp.status_code, 429)
+            self.assertLogs("zerver.lib.rate_limiter", level="WARNING") as log_mock,
+        ):
+            self.do_test_hit_ratelimits(
+                lambda: self.send_unauthed_api_request(REMOTE_ADDR="1.2.3.4")
+            )
+            resp = self.send_unauthed_api_request(REMOTE_ADDR="5.6.7.8")
+            self.assertNotEqual(resp.status_code, 429)
 
         # Tries twice before hitting the circuit-breaker, and stopping trying
         tor_open.assert_has_calls(

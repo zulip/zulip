@@ -1,12 +1,13 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Dict, Set, Tuple, Union
+from typing import Concatenate
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.urls import path
 from django.urls.resolvers import URLPattern
 from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import ParamSpec
 
 from zerver.decorator import (
     authenticated_json_view,
@@ -47,8 +48,8 @@ def default_never_cache_responses(
 
 
 def get_target_view_function_or_response(
-    request: HttpRequest, rest_dispatch_kwargs: Dict[str, object]
-) -> Union[Tuple[Callable[..., HttpResponse], Set[str]], HttpResponse]:
+    request: HttpRequest, rest_dispatch_kwargs: dict[str, object]
+) -> tuple[Callable[..., HttpResponse], set[str]] | HttpResponse:
     """Helper for REST API request dispatch. The rest_dispatch_kwargs
     parameter is expected to be a dictionary mapping HTTP methods to
     a mix of view functions and (view_function, {view_flags}) tuples.
@@ -65,7 +66,7 @@ def get_target_view_function_or_response(
     this feature; it's not clear it's actually used.
 
     """
-    supported_methods: Dict[str, object] = {}
+    supported_methods: dict[str, object] = {}
     request_notes = RequestNotes.get_notes(request)
     if request_notes.saved_response is not None:
         # For completing long-polled Tornado requests, we skip the
@@ -205,9 +206,6 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
 
 def rest_path(
     route: str,
-    **handlers: Union[
-        Callable[..., HttpResponseBase],
-        Tuple[Callable[..., HttpResponseBase], Set[str]],
-    ],
+    **handlers: Callable[..., HttpResponseBase] | tuple[Callable[..., HttpResponseBase], set[str]],
 ) -> URLPattern:
     return path(route, rest_dispatch, handlers)

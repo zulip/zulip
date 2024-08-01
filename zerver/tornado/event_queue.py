@@ -8,28 +8,11 @@ import time
 import traceback
 import uuid
 from collections import deque
+from collections.abc import Callable, Collection, Iterable, Mapping, MutableMapping, Sequence
+from collections.abc import Set as AbstractSet
 from contextlib import suppress
 from functools import cache
-from typing import (
-    AbstractSet,
-    Any,
-    Callable,
-    Collection,
-    Deque,
-    Dict,
-    Iterable,
-    List,
-    Literal,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypedDict,
-    Union,
-    cast,
-)
+from typing import Any, Literal, TypedDict, cast
 
 import orjson
 import tornado.ioloop
@@ -71,7 +54,7 @@ MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 HEARTBEAT_MIN_FREQ_SECS = 45
 
 
-def create_heartbeat_event() -> Dict[str, str]:
+def create_heartbeat_event() -> dict[str, str]:
     return dict(type="heartbeat")
 
 
@@ -81,7 +64,7 @@ class ClientDescriptor:
         user_profile_id: int,
         realm_id: int,
         event_queue: "EventQueue",
-        event_types: Optional[Sequence[str]],
+        event_types: Sequence[str] | None,
         client_type_name: str,
         apply_markdown: bool = True,
         client_gravatar: bool = True,
@@ -106,8 +89,8 @@ class ClientDescriptor:
         # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
         self.realm_id = realm_id
-        self.current_handler_id: Optional[int] = None
-        self.current_client_name: Optional[str] = None
+        self.current_handler_id: int | None = None
+        self.current_client_name: str | None = None
         self.event_queue = event_queue
         self.event_types = event_types
         self.last_connection_time = time.time()
@@ -132,7 +115,7 @@ class ClientDescriptor:
             lifespan_secs = DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
         self.queue_timeout = min(lifespan_secs, MAX_QUEUE_TIMEOUT_SECS)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
         # migration code in from_dict or load_event_queues to account for
         # loading event queues that lack that key.
@@ -319,14 +302,14 @@ class EventQueue:
         # When extending this list of properties, one must be sure to
         # update to_dict and from_dict.
 
-        self.queue: Deque[Dict[str, Any]] = deque()
+        self.queue: deque[dict[str, Any]] = deque()
         self.next_event_id: int = 0
         # will only be None for migration from old versions
-        self.newest_pruned_id: Optional[int] = -1
+        self.newest_pruned_id: int | None = -1
         self.id: str = id
-        self.virtual_events: Dict[str, Dict[str, Any]] = {}
+        self.virtual_events: dict[str, dict[str, Any]] = {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
         # migration code in from_dict or load_event_queues to account for
         # loading event queues that lack that key.
@@ -341,7 +324,7 @@ class EventQueue:
         return d
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "EventQueue":
+    def from_dict(cls, d: dict[str, Any]) -> "EventQueue":
         ret = cls(d["id"])
         ret.next_event_id = d["next_event_id"]
         ret.newest_pruned_id = d.get("newest_pruned_id")
@@ -394,7 +377,7 @@ class EventQueue:
     # Note that pop ignores virtual events.  This is fine in our
     # current usage since virtual events should always be resolved to
     # a real event before being given to users.
-    def pop(self) -> Dict[str, Any]:
+    def pop(self) -> dict[str, Any]:
         return self.queue.popleft()
 
     def empty(self) -> bool:
@@ -406,9 +389,9 @@ class EventQueue:
             self.newest_pruned_id = self.queue[0]["id"]
             self.pop()
 
-    def contents(self, include_internal_data: bool = False) -> List[Dict[str, Any]]:
-        contents: List[Dict[str, Any]] = []
-        virtual_id_map: Dict[str, Dict[str, Any]] = {}
+    def contents(self, include_internal_data: bool = False) -> list[dict[str, Any]]:
+        contents: list[dict[str, Any]] = []
+        virtual_id_map: dict[str, dict[str, Any]] = {}
         for event_type in self.virtual_events:
             virtual_id_map[self.virtual_events[event_type]["id"]] = self.virtual_events[event_type]
         virtual_ids = sorted(virtual_id_map.keys())
@@ -433,7 +416,7 @@ class EventQueue:
         return prune_internal_data(contents)
 
 
-def prune_internal_data(events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def prune_internal_data(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Prunes the internal_data data structures, which are not intended to
     be exposed to API clients.
     """
@@ -447,21 +430,21 @@ def prune_internal_data(events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 # Queue-ids which still need to be sent a web_reload_client event.
 # This is treated as an ordered set, which is sorted by realm-id when
 # loaded from disk.
-web_reload_clients: Dict[str, Literal[True]] = {}
+web_reload_clients: dict[str, Literal[True]] = {}
 
 # maps queue ids to client descriptors
-clients: Dict[str, ClientDescriptor] = {}
+clients: dict[str, ClientDescriptor] = {}
 # maps user id to list of client descriptors
-user_clients: Dict[int, List[ClientDescriptor]] = {}
+user_clients: dict[int, list[ClientDescriptor]] = {}
 # maps realm id to list of client descriptors with all_public_streams=True
-realm_clients_all_streams: Dict[int, List[ClientDescriptor]] = {}
+realm_clients_all_streams: dict[int, list[ClientDescriptor]] = {}
 
 # list of registered gc hooks.
 # each one will be called with a user profile id, queue, and bool
 # last_for_client that is true if this is the last queue pertaining
 # to this user_profile_id
 # that is about to be deleted
-gc_hooks: List[Callable[[int, ClientDescriptor, bool], None]] = []
+gc_hooks: list[Callable[[int, ClientDescriptor, bool], None]] = []
 
 
 def clear_client_event_queues_for_testing() -> None:
@@ -492,11 +475,11 @@ def access_client_descriptor(user_id: int, queue_id: str) -> ClientDescriptor:
     raise BadEventQueueIdError(queue_id)
 
 
-def get_client_descriptors_for_user(user_profile_id: int) -> List[ClientDescriptor]:
+def get_client_descriptors_for_user(user_profile_id: int) -> list[ClientDescriptor]:
     return user_clients.get(user_profile_id, [])
 
 
-def get_client_descriptors_for_realm_all_streams(realm_id: int) -> List[ClientDescriptor]:
+def get_client_descriptors_for_realm_all_streams(realm_id: int) -> list[ClientDescriptor]:
     return realm_clients_all_streams.get(realm_id, [])
 
 
@@ -519,7 +502,7 @@ def do_gc_event_queues(
     to_remove: AbstractSet[str], affected_users: AbstractSet[int], affected_realms: AbstractSet[int]
 ) -> None:
     def filter_client_dict(
-        client_dict: MutableMapping[int, List[ClientDescriptor]], key: int
+        client_dict: MutableMapping[int, list[ClientDescriptor]], key: int
     ) -> None:
         if key not in client_dict:
             return
@@ -552,9 +535,9 @@ def gc_event_queues(port: int) -> None:
     # We cannot use perf_counter here, since we store and compare UNIX
     # timestamps to it in the queues.
     start = time.time()
-    to_remove: Set[str] = set()
-    affected_users: Set[int] = set()
-    affected_realms: Set[int] = set()
+    to_remove: set[str] = set()
+    affected_users: set[int] = set()
+    affected_realms: set[int] = set()
     for id, client in clients.items():
         if client.expired(start):
             to_remove.add(id)
@@ -643,7 +626,7 @@ def load_event_queues(port: int) -> None:
 
 
 def send_restart_events() -> None:
-    event: Dict[str, Any] = dict(
+    event: dict[str, Any] = dict(
         type="restart",
         zulip_version=ZULIP_VERSION,
         zulip_merge_base=ZULIP_MERGE_BASE,
@@ -668,8 +651,8 @@ def mark_clients_to_reload(queue_ids: Iterable[str]) -> None:
         web_reload_clients[qid] = True
 
 
-def send_web_reload_client_events(immediate: bool = False, count: Optional[int] = None) -> int:
-    event: Dict[str, Any] = dict(
+def send_web_reload_client_events(immediate: bool = False, count: int | None = None) -> int:
+    event: dict[str, Any] = dict(
         type="web_reload_client",
         immediate=immediate,
     )
@@ -704,14 +687,14 @@ async def setup_event_queue(
 
 
 def fetch_events(
-    queue_id: Optional[str],
+    queue_id: str | None,
     dont_block: bool,
-    last_event_id: Optional[int],
+    last_event_id: int | None,
     user_profile_id: int,
-    new_queue_data: Optional[MutableMapping[str, Any]],
+    new_queue_data: MutableMapping[str, Any] | None,
     client_type_name: str,
     handler_id: int,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     try:
         was_connected = False
         orig_queue_id = queue_id
@@ -749,7 +732,7 @@ def fetch_events(
             was_connected = client.finish_current_handler()
 
         if not client.event_queue.empty() or dont_block:
-            response: Dict[str, Any] = dict(
+            response: dict[str, Any] = dict(
                 events=client.event_queue.contents(),
             )
             if orig_queue_id is None:
@@ -780,7 +763,7 @@ def fetch_events(
     return dict(type="async")
 
 
-def build_offline_notification(user_profile_id: int, message_id: int) -> Dict[str, Any]:
+def build_offline_notification(user_profile_id: int, message_id: int) -> dict[str, Any]:
     return {
         "user_profile_id": user_profile_id,
         "message_id": message_id,
@@ -938,10 +921,10 @@ def maybe_enqueue_notifications(
     user_notifications_data: UserMessageNotificationsData,
     acting_user_id: int,
     message_id: int,
-    mentioned_user_group_id: Optional[int],
+    mentioned_user_group_id: int | None,
     idle: bool,
-    already_notified: Dict[str, bool],
-) -> Dict[str, bool]:
+    already_notified: dict[str, bool],
+) -> dict[str, bool]:
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here.
@@ -949,7 +932,7 @@ def maybe_enqueue_notifications(
     See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
     for high-level design documentation.
     """
-    notified: Dict[str, bool] = {}
+    notified: dict[str, bool] = {}
 
     if user_notifications_data.is_push_notifiable(acting_user_id, idle):
         notice = build_offline_notification(user_notifications_data.user_id, message_id)
@@ -993,7 +976,7 @@ class ClientInfo(TypedDict):
 
 def get_client_info_for_message_event(
     event_template: Mapping[str, Any], users: Iterable[Mapping[str, Any]]
-) -> Dict[str, ClientInfo]:
+) -> dict[str, ClientInfo]:
     """
     Return client info for all the clients interested in a message.
     This basically includes clients for users who are recipients
@@ -1001,9 +984,9 @@ def get_client_info_for_message_event(
     to all streams, plus users who may be mentioned, etc.
     """
 
-    send_to_clients: Dict[str, ClientInfo] = {}
+    send_to_clients: dict[str, ClientInfo] = {}
 
-    sender_queue_id: Optional[str] = event_template.get("sender_queue_id", None)
+    sender_queue_id: str | None = event_template.get("sender_queue_id", None)
 
     def is_sender_client(client: ClientDescriptor) -> bool:
         return (sender_queue_id is not None) and client.event_queue.id == sender_queue_id
@@ -1100,7 +1083,7 @@ def process_message_event(
     user_ids_without_access_to_sender = event_template.get("user_ids_without_access_to_sender", [])
     realm_host = event_template.get("realm_host", "")
 
-    wide_dict: Dict[str, Any] = event_template["message_dict"]
+    wide_dict: dict[str, Any] = event_template["message_dict"]
 
     # Temporary transitional code: Zulip servers that have message
     # events in their event queues and upgrade to the new version
@@ -1119,7 +1102,7 @@ def process_message_event(
     @cache
     def get_client_payload(
         apply_markdown: bool, client_gravatar: bool, can_access_sender: bool
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,
             apply_markdown=apply_markdown,
@@ -1129,12 +1112,12 @@ def process_message_event(
         )
 
     # Extra user-specific data to include
-    extra_user_data: Dict[int, Any] = {}
+    extra_user_data: dict[int, Any] = {}
 
     for user_data in users:
         user_profile_id: int = user_data["id"]
         flags: Collection[str] = user_data.get("flags", [])
-        mentioned_user_group_id: Optional[int] = user_data.get("mentioned_user_group_id")
+        mentioned_user_group_id: int | None = user_data.get("mentioned_user_group_id")
 
         # If the recipient was offline and the message was a (1:1 or group) direct message
         # to them or they were @-notified potentially notify more immediately
@@ -1193,7 +1176,7 @@ def process_message_event(
         client = client_data["client"]
         flags = client_data["flags"]
         is_sender: bool = client_data.get("is_sender", False)
-        extra_data: Optional[Mapping[str, bool]] = extra_user_data.get(client.user_profile_id, None)
+        extra_data: Mapping[str, bool] | None = extra_user_data.get(client.user_profile_id, None)
 
         if not client.accepts_messages():
             # The actual check is the accepts_event() check below;
@@ -1211,7 +1194,7 @@ def process_message_event(
             message_dict = message_dict.copy()
             message_dict["invite_only_stream"] = True
 
-        user_event: Dict[str, Any] = dict(type="message", message=message_dict, flags=flags)
+        user_event: dict[str, Any] = dict(type="message", message=message_dict, flags=flags)
         if extra_data is not None:
             user_event.update(extra_data)
 
@@ -1530,8 +1513,8 @@ def maybe_enqueue_notifications_for_message_update(
 
 
 def reformat_legacy_send_message_event(
-    event: Mapping[str, Any], users: Union[List[int], List[Mapping[str, Any]]]
-) -> Tuple[MutableMapping[str, Any], Collection[MutableMapping[str, Any]]]:
+    event: Mapping[str, Any], users: list[int] | list[Mapping[str, Any]]
+) -> tuple[MutableMapping[str, Any], Collection[MutableMapping[str, Any]]]:
     # do_send_messages used to send events with users in dict format, with the
     # dict containing the user_id and other data. We later trimmed down the user
     # data to only contain the user_id and the usermessage flags, and put everything
@@ -1539,7 +1522,7 @@ def reformat_legacy_send_message_event(
     # This block handles any old-format events still in the queue during upgrade.
 
     modern_event = cast(MutableMapping[str, Any], event)
-    user_dicts = cast(List[MutableMapping[str, Any]], users)
+    user_dicts = cast(list[MutableMapping[str, Any]], users)
 
     # Back-calculate the older all-booleans format data in the `users` dicts into the newer
     # all-lists format, and attach the lists to the `event` object.
@@ -1575,7 +1558,7 @@ def reformat_legacy_send_message_event(
 
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
-    users: Union[List[int], List[Mapping[str, Any]]] = notice["users"]
+    users: list[int] | list[Mapping[str, Any]] = notice["users"]
     start_time = time.perf_counter()
 
     if event["type"] == "message":
@@ -1585,9 +1568,9 @@ def process_notification(notice: Mapping[str, Any]) -> None:
             modern_event, user_dicts = reformat_legacy_send_message_event(event, users)
             process_message_event(modern_event, user_dicts)
         else:
-            process_message_event(event, cast(List[Mapping[str, Any]], users))
+            process_message_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "update_message":
-        process_message_update_event(event, cast(List[Mapping[str, Any]], users))
+        process_message_update_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "delete_message":
         if len(users) > 0 and isinstance(users[0], dict):
             # do_delete_messages used to send events with users in
@@ -1597,16 +1580,16 @@ def process_notification(notice: Mapping[str, Any]) -> None:
             #
             # TODO/compatibility: Remove this block once you can no
             # longer directly upgrade directly from 4.x to main.
-            user_ids: List[int] = [user["id"] for user in cast(List[Mapping[str, Any]], users)]
+            user_ids: list[int] = [user["id"] for user in cast(list[Mapping[str, Any]], users)]
         else:
-            user_ids = cast(List[int], users)
+            user_ids = cast(list[int], users)
         process_deletion_event(event, user_ids)
     elif event["type"] == "presence":
-        process_presence_event(event, cast(List[int], users))
+        process_presence_event(event, cast(list[int], users))
     elif event["type"] == "custom_profile_fields":
-        process_custom_profile_fields_event(event, cast(List[int], users))
+        process_custom_profile_fields_event(event, cast(list[int], users))
     elif event["type"] == "realm_user" and event["op"] == "add":
-        process_realm_user_add_event(event, cast(List[int], users))
+        process_realm_user_add_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.
@@ -1620,7 +1603,7 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         else:
             client.cleanup()
     else:
-        process_event(event, cast(List[int], users))
+        process_event(event, cast(list[int], users))
     logging.debug(
         "Tornado: Event %s for %s users took %sms",
         event["type"],
@@ -1629,15 +1612,15 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     )
 
 
-def get_wrapped_process_notification(queue_name: str) -> Callable[[List[Dict[str, Any]]], None]:
-    def failure_processor(notice: Dict[str, Any]) -> None:
+def get_wrapped_process_notification(queue_name: str) -> Callable[[list[dict[str, Any]]], None]:
+    def failure_processor(notice: dict[str, Any]) -> None:
         logging.error(
             "Maximum retries exceeded for Tornado notice:%s\nStack trace:\n%s\n",
             notice,
             traceback.format_exc(),
         )
 
-    def wrapped_process_notification(notices: List[Dict[str, Any]]) -> None:
+    def wrapped_process_notification(notices: list[dict[str, Any]]) -> None:
         for notice in notices:
             try:
                 process_notification(notice)

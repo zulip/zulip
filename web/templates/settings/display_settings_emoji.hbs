@@ -1,0 +1,47 @@
+<div class="emoji-preferences {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="subsection-header">
+        <h3 class="light">{{t "Emoji" }}</h3>
+        {{> settings_save_discard_widget section_name="emoji-preferences-settings" show_only_indicator=(not for_realm_settings) }}
+    </div>
+
+    <div class="input-group">
+        <label class="settings-field-label">{{t "Emoji theme" }}</label>
+        <div class="emojiset_choices grey-box prop-element" id="{{prefix}}emojiset" data-setting-widget-type="radio-group" data-setting-choice-type="string">
+            {{#each settings_object.emojiset_choices}}
+                <label class="preferences-radio-choice-label">
+                    <div class="radio-choice-controls">
+                        <input type="radio" class="setting_emojiset_choice" name="emojiset" value="{{this.key}}"/>
+                        <span class="preferences-radio-choice-text">{{this.text}}</span>
+                        {{#if (eq this.key "google-blob")}}
+                        <span>(<em>{{t "deprecated" }}</em>)</span>
+                        {{> ../help_link_widget link="/help/emoji-and-emoticons#change-your-emoji-set" }}
+                        {{/if}}
+                    </div>
+                    <span class="right">
+                        {{#if (eq this.key "text") }}
+                        <div class="emoji_alt_code">&nbsp;:relaxed:</div>
+                        {{else}}
+                        <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f642.png" />
+                        <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f44d.png" />
+                        <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f680.png" />
+                        <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f389.png" />
+                        {{/if}}
+                    </span>
+                </label>
+            {{/each}}
+        </div>
+    </div>
+
+    {{> settings_checkbox
+      setting_name="translate_emoticons"
+      is_checked=settings_object.translate_emoticons
+      label=settings_label.translate_emoticons
+      help_link="/help/configure-emoticon-translations"
+      prefix=prefix}}
+
+    {{> settings_checkbox
+      setting_name="display_emoji_reaction_users"
+      is_checked=settings_object.display_emoji_reaction_users
+      label=settings_label.display_emoji_reaction_users
+      prefix=prefix}}
+</div>

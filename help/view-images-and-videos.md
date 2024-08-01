@@ -135,4 +135,4 @@ images and videos in messages matching that search.
 
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [Share and upload files](/help/share-and-upload-files)
-* [Block image and link previews](/help/allow-image-link-previews)
+* [Image, video and website previews](/help/allow-image-link-previews)

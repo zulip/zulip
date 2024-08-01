@@ -1,6 +1,6 @@
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Optional, Set
+from typing import Any
 from unittest import mock
 
 import orjson
@@ -76,7 +76,7 @@ from zerver.views.message_send import InvalidMirrorInputError
 
 class MessagePOSTTest(ZulipTestCase):
     def _send_and_verify_message(
-        self, user: UserProfile, stream_name: str, error_msg: Optional[str] = None
+        self, user: UserProfile, stream_name: str, error_msg: str | None = None
     ) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(user, stream_name)
@@ -1770,7 +1770,7 @@ class StreamMessagesTest(ZulipTestCase):
             ).flags.is_private.is_set
         )
 
-    def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> Set[int]:
+    def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> set[int]:
         with self.capture_send_event_calls(expected_num_events=1) as events:
             self.send_stream_message(
                 user,
@@ -1794,7 +1794,7 @@ class StreamMessagesTest(ZulipTestCase):
             user_profile=cordelia,
         ).delete()
 
-        def mention_cordelia() -> Set[int]:
+        def mention_cordelia() -> set[int]:
             content = "test @**Cordelia, Lear's daughter** rules"
 
             user_ids = self._send_stream_message(
@@ -2118,9 +2118,11 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(cordelia, "test_stream")
         do_set_realm_property(cordelia.realm, "wildcard_mention_policy", 10, acting_user=None)
         content = "@**all** test wildcard mention"
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=16):
-            with self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"):
-                self.send_stream_message(cordelia, "test_stream", content)
+        with (
+            mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=16),
+            self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"),
+        ):
+            self.send_stream_message(cordelia, "test_stream", content)
 
     def test_user_group_mention_restrictions(self) -> None:
         iago = self.example_user("iago")
@@ -2535,7 +2537,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             self.send_personal_message(user_profile, cordelia)
         self.assertEqual(
             str(direct_message_permission_error.exception),
-            "You do not have permission to send direct messages to this recipient.",
+            "This conversation does not include any users who can authorize it.",
         )
 
         # We can send to this direct message group as it has administrator as one of the
@@ -3274,7 +3276,7 @@ class CheckMessageTest(ZulipTestCase):
         # after; this should send an error to the bot owner that the
         # stream doesn't exist
         assert sender.last_reminder is not None
-        sender.last_reminder = sender.last_reminder - timedelta(hours=1)
+        sender.last_reminder -= timedelta(hours=1)
         sender.save(update_fields=["last_reminder"])
         ret = check_message(sender, client, addressee, message_content)
 

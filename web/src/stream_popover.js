@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -20,6 +21,7 @@ import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
 import {web_channel_default_view_values} from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
@@ -99,11 +101,15 @@ function build_stream_popover(opts) {
         return;
     }
 
+    const stream_hash = hash_util.by_stream_url(stream_id);
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
         web_channel_default_view_values.channel_feed.code;
     const content = render_left_sidebar_stream_actions_popover({
-        stream: sub_store.get(stream_id),
+        stream: {
+            ...sub_store.get(stream_id),
+            url: browser_history.get_full_url(stream_hash),
+        },
         show_go_to_channel_feed,
     });
 
@@ -145,7 +151,14 @@ function build_stream_popover(opts) {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
 
-                const stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
+                // Admin can change any stream's name & description either stream is public or
+                // private, subscribed or unsubscribed.
+                const can_change_name_description = current_user.is_admin;
+                const can_change_stream_permissions = stream_data.can_change_permissions(sub);
+                let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
+                if (!can_change_stream_permissions && !can_change_name_description) {
+                    stream_edit_hash = hash_util.channels_settings_edit_url(sub, "personal");
+                }
                 browser_history.go_to_location(stream_edit_hash);
             });
 
@@ -215,6 +228,10 @@ function build_stream_popover(opts) {
                 $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
                 $(e.currentTarget).hide();
                 e.stopPropagation();
+            });
+
+            new ClipboardJS($popper.find(".copy_stream_link")[0]).on("success", () => {
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden() {
@@ -439,7 +456,9 @@ export async function build_move_topic_to_stream_popover(
         send_notification_to_new_thread = send_notification_to_new_thread === "on";
         send_notification_to_old_thread = send_notification_to_old_thread === "on";
         current_stream_id = Number.parseInt(current_stream_id, 10);
-        select_stream_id = Number.parseInt(select_stream_id, 10);
+        if (select_stream_id !== undefined) {
+            select_stream_id = Number.parseInt(select_stream_id, 10);
+        }
 
         if (new_topic_name !== undefined) {
             // new_topic_name can be undefined when the new topic input is disabled when
@@ -583,7 +602,6 @@ export async function build_move_topic_to_stream_popover(
             $events_container: $("#move_topic_modal"),
             tippy_props: {
                 // Overlap dropdown search input with stream selection button.
-                placement: "bottom-start",
                 offset: [0, -30],
             },
         }).setup();
@@ -606,6 +624,7 @@ export async function build_move_topic_to_stream_popover(
         html_body: render_move_topic_to_stream(args),
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
         id: "move_topic_modal",
+        form_id: "move_topic_form",
         on_click: move_topic,
         loading_spinner: true,
         on_shown: focus_on_move_modal_render,

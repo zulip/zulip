@@ -8,7 +8,6 @@ import pwd
 import signal
 import subprocess
 import sys
-from typing import List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -81,7 +80,7 @@ if options.interface is None:
 elif options.interface == "":
     options.interface = None
 
-runserver_args: List[str] = []
+runserver_args: list[str] = []
 base_port = 9991
 if options.test:
     base_port = 9981
@@ -139,7 +138,7 @@ with open(pid_file_path, "w+") as f:
     f.write(str(os.getpgrp()) + "\n")
 
 
-def server_processes() -> List[List[str]]:
+def server_processes() -> list[list[str]]:
     main_cmds = [
         [
             "./manage.py",
@@ -330,7 +329,7 @@ def https_log_filter(record: logging.LogRecord) -> bool:
 logging.getLogger("aiohttp.server").addFilter(https_log_filter)
 
 runner: web.AppRunner
-children: List["subprocess.Popen[bytes]"] = []
+children: list["subprocess.Popen[bytes]"] = []
 
 
 async def serve() -> None:

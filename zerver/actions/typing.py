@@ -1,5 +1,3 @@
-from typing import List
-
 from django.conf import settings
 from django.utils.translation import gettext as _
 
@@ -11,7 +9,7 @@ from zerver.tornado.django_api import send_event
 
 
 def do_send_typing_notification(
-    realm: Realm, sender: UserProfile, recipient_user_profiles: List[UserProfile], operator: str
+    realm: Realm, sender: UserProfile, recipient_user_profiles: list[UserProfile], operator: str
 ) -> None:
     sender_dict = {"user_id": sender.id, "email": sender.email}
 
@@ -39,7 +37,7 @@ def do_send_typing_notification(
 
 # check_send_typing_notification:
 # Checks the typing notification and sends it
-def check_send_typing_notification(sender: UserProfile, user_ids: List[int], operator: str) -> None:
+def check_send_typing_notification(sender: UserProfile, user_ids: list[int], operator: str) -> None:
     realm = sender.realm
 
     if sender.id not in user_ids:

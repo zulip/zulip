@@ -3,7 +3,6 @@ import glob
 import os
 import shutil
 import sys
-from typing import List
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if ZULIP_PATH not in sys.path:
@@ -25,7 +24,7 @@ def generate_zulip_bots_static_files() -> None:
 
     package_bots_dir = get_bots_directory_path()
 
-    def copy_bots_data(bot_names: List[str]) -> None:
+    def copy_bots_data(bot_names: list[str]) -> None:
         for name in bot_names:
             src_dir = os.path.join(package_bots_dir, name)
             dst_dir = os.path.join(bots_dir, name)

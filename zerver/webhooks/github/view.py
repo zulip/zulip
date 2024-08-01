@@ -1,6 +1,6 @@
 import re
+from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -811,7 +811,7 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
     return get_repository_name(payload)
 
 
-EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
+EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "commit_comment": get_commit_comment_body,
     "closed_pull_request": get_closed_pull_request_body,
     "create": partial(get_create_or_delete_body, "created"),
@@ -908,7 +908,7 @@ def api_github_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
-    branches: Optional[str] = None,
+    branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     """
@@ -940,11 +940,17 @@ def api_github_webhook(
     return json_success(request)
 
 
+def is_empty_pull_request_review_event(payload: WildValue) -> bool:
+    action = payload["action"].tame(check_string)
+    changes = payload.get("changes", {})
+    return action == "edited" and len(changes) == 0
+
+
 def get_zulip_event_name(
     header_event: str,
     payload: WildValue,
-    branches: Optional[str],
-) -> Optional[str]:
+    branches: str | None,
+) -> str | None:
     """
     Usually, we return an event name that is a key in EVENT_FUNCTION_MAPPER.
 
@@ -970,6 +976,14 @@ def get_zulip_event_name(
             return "pull_request_auto_merge"
         if action in IGNORED_PULL_REQUEST_ACTIONS:
             return None
+    elif header_event == "pull_request_review":
+        if is_empty_pull_request_review_event(payload):
+            # When submitting a review, GitHub has a bug where it'll
+            # send a duplicate empty "edited" event for the main
+            # review body. Ignore those, to avoid triggering
+            # duplicate notifications.
+            return None
+        return "pull_request_review"
     elif header_event == "push":
         if is_merge_queue_push_event(payload):
             return None

@@ -4,7 +4,7 @@ import random
 import re
 import string
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Union
+from typing import Any
 from unittest import mock, skipUnless
 
 import orjson
@@ -42,6 +42,7 @@ from zerver.lib.realm_description import get_realm_rendered_description, get_rea
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.upload import delete_message_attachments, upload_message_attachment
 from zerver.models import (
     Attachment,
@@ -81,9 +82,12 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_creation_ensures_internal_realms(self) -> None:
         with mock.patch("zerver.actions.create_realm.server_initialized", return_value=False):
-            with mock.patch(
-                "zerver.actions.create_realm.create_internal_realm"
-            ) as mock_create_internal, self.assertLogs(level="INFO") as info_logs:
+            with (
+                mock.patch(
+                    "zerver.actions.create_realm.create_internal_realm"
+                ) as mock_create_internal,
+                self.assertLogs(level="INFO") as info_logs,
+            ):
                 do_create_realm("testrealm", "Test Realm")
                 mock_create_internal.assert_called_once()
             self.assertEqual(
@@ -92,13 +96,14 @@ class RealmTest(ZulipTestCase):
             )
 
     def test_realm_creation_on_special_subdomains_disallowed(self) -> None:
-        with self.settings(SOCIAL_AUTH_SUBDOMAIN="zulipauth"):
-            with self.assertRaises(AssertionError):
-                do_create_realm("zulipauth", "Test Realm")
+        with self.settings(SOCIAL_AUTH_SUBDOMAIN="zulipauth"), self.assertRaises(AssertionError):
+            do_create_realm("zulipauth", "Test Realm")
 
-        with self.settings(SELF_HOSTING_MANAGEMENT_SUBDOMAIN="zulipselfhosting"):
-            with self.assertRaises(AssertionError):
-                do_create_realm("zulipselfhosting", "Test Realm")
+        with (
+            self.settings(SELF_HOSTING_MANAGEMENT_SUBDOMAIN="zulipselfhosting"),
+            self.assertRaises(AssertionError),
+        ):
+            do_create_realm("zulipselfhosting", "Test Realm")
 
     def test_permission_for_education_non_profit_organization(self) -> None:
         realm = do_create_realm(
@@ -1366,7 +1371,7 @@ class RealmTest(ZulipTestCase):
         ]
         self.assertEqual(sorted(user_group_names), sorted(expected_system_group_names))
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     def test_do_create_realm_notify_bouncer(self) -> None:
         dummy_send_realms_only_response = {
             "result": "success",
@@ -1382,7 +1387,7 @@ class RealmTest(ZulipTestCase):
                 "last_realmauditlog_id": 0,
             }
 
-            def mock_send_to_push_bouncer_response(method: str, *args: Any) -> Dict[str, Any]:
+            def mock_send_to_push_bouncer_response(method: str, *args: Any) -> dict[str, Any]:
                 if method == "GET":
                     return get_response
                 return dummy_send_realms_only_response
@@ -1529,7 +1534,7 @@ class RealmAPITest(ZulipTestCase):
         super().setUp()
         self.login("desdemona")
 
-    def update_with_api(self, name: str, value: Union[int, str]) -> Realm:
+    def update_with_api(self, name: str, value: int | str) -> Realm:
         if not isinstance(value, str):
             value = orjson.dumps(value).decode()
         result = self.client_patch("/json/realm", {name: value})
@@ -1544,8 +1549,8 @@ class RealmAPITest(ZulipTestCase):
         assertion error.
         """
 
-        bool_tests: List[bool] = [False, True]
-        test_values: Dict[str, Any] = dict(
+        bool_tests: list[bool] = [False, True]
+        test_values: dict[str, Any] = dict(
             default_language=["de", "en"],
             default_code_block_language=["javascript", ""],
             description=["Realm description", "New description"],
@@ -1839,8 +1844,8 @@ class RealmAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
 
-        # Test case when ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS is False.
-        with self.settings(ALLOW_ANONYMOUS_GROUP_VALUED_SETTINGS=False):
+        # Test case when ALLOW_GROUP_VALUED_SETTINGS is False.
+        with self.settings(ALLOW_GROUP_VALUED_SETTINGS=False):
             result = self.client_patch(
                 "/json/realm",
                 {
@@ -1854,9 +1859,19 @@ class RealmAPITest(ZulipTestCase):
                     ).decode()
                 },
             )
-            self.assert_json_error(
-                result, f"{setting_name} can only be set to a single named user group."
+            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    setting_name: orjson.dumps(
+                        {
+                            "new": leadership_group.id,
+                        }
+                    ).decode()
+                },
             )
+            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
 
             result = self.client_patch(
                 "/json/realm",
@@ -1874,20 +1889,6 @@ class RealmAPITest(ZulipTestCase):
             self.assert_json_success(result)
             realm = get_realm("zulip")
             self.assertEqual(getattr(realm, setting_name), moderators_group.usergroup_ptr)
-
-            result = self.client_patch(
-                "/json/realm",
-                {
-                    setting_name: orjson.dumps(
-                        {
-                            "new": leadership_group.id,
-                        }
-                    ).decode()
-                },
-            )
-            self.assert_json_success(result)
-            realm = get_realm("zulip")
-            self.assertEqual(getattr(realm, setting_name), leadership_group.usergroup_ptr)
 
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
@@ -1934,10 +1935,10 @@ class RealmAPITest(ZulipTestCase):
         self.assert_json_success(result)
 
     def do_test_realm_default_setting_update_api(self, name: str) -> None:
-        bool_tests: List[bool] = [False, True]
-        test_values: Dict[str, Any] = dict(
-            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
-            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
+        bool_tests: list[bool] = [False, True]
+        test_values: dict[str, Any] = dict(
+            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_COMPACT],
+            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_COMPACT],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
             web_home_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
@@ -1945,6 +1946,7 @@ class RealmAPITest(ZulipTestCase):
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
             web_channel_default_view=UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
+            web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
             desktop_icon_count_display=UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES,
             notification_sound=["zulip", "ding"],
@@ -1987,7 +1989,118 @@ class RealmAPITest(ZulipTestCase):
             # settings in RealmUserDefault table will be used.
             if prop in ["default_language", "enable_login_emails", "enable_marketing_emails"]:
                 continue
+            if prop in ["dense_mode"]:
+                # Testing this is complicated, see test_update_default_information_density_settings.
+                continue
             self.do_test_realm_default_setting_update_api(prop)
+
+    def test_update_default_information_density_settings(self) -> None:
+        realm = get_realm("zulip")
+
+        # Start with the legacy settings configuration
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        realm_user_default.dense_mode = True
+        realm_user_default.web_font_size_px = RealmUserDefault.WEB_FONT_SIZE_PX_COMPACT
+        realm_user_default.web_line_height_percent = (
+            RealmUserDefault.WEB_LINE_HEIGHT_PERCENT_COMPACT
+        )
+        realm_user_default.save()
+        self.login("iago")
+
+        data: dict[str, str | int] = {"web_font_size_px": 16}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
+        )
+
+        data = {"web_font_size_px": 16, "dense_mode": orjson.dumps(False).decode()}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 16)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"web_font_size_px": 20}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 20)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        # Check dense_mode is still false when both the
+        # settings are set to legacy values.
+        data = {"web_font_size_px": 14}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.web_line_height_percent, 122)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"dense_mode": orjson.dumps(True).decode()}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.dense_mode, True)
+
+        data = {"web_line_height_percent": 140}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
+        )
+
+        data = {"web_line_height_percent": 140, "dense_mode": orjson.dumps(False).decode()}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_line_height_percent, 140)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"web_line_height_percent": 130}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_line_height_percent, 130)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        # Check dense_mode is still false when both the
+        # settings are set to legacy values.
+        data = {"web_line_height_percent": 122}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.web_line_height_percent, 122)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"dense_mode": orjson.dumps(True).decode(), "web_font_size_px": 16}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
+        )
+
+        data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
+        )
+
+        data = {
+            "dense_mode": orjson.dumps(True).decode(),
+            "web_font_size_px": 14,
+            "web_line_height_percent": 122,
+        }
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.web_line_height_percent, 122)
+        self.assertEqual(realm_user_default.dense_mode, True)
 
     def test_invalid_default_notification_sound_value(self) -> None:
         result = self.client_patch(
@@ -2015,6 +2128,12 @@ class RealmAPITest(ZulipTestCase):
             {"email_notifications_batching_period_seconds": 7 * 24 * 60 * 60 + 10},
         )
         self.assert_json_error(result, "Invalid email batching period: 604810 seconds")
+
+    def test_invalid_emojiset_value(self) -> None:
+        result = self.client_patch("/json/realm/user_settings_defaults", {"emojiset": "invalid"})
+        self.assert_json_error(
+            result, "Invalid emojiset: Value error, Not in the list of possible values"
+        )
 
     def test_ignored_parameters_in_realm_default_endpoint(self) -> None:
         params = {"starred_message_counts": orjson.dumps(False).decode(), "emoji_set": "twitter"}
@@ -2087,8 +2206,8 @@ class RealmAPITest(ZulipTestCase):
         )
 
     def do_test_changing_settings_by_owners_only(self, setting_name: str) -> None:
-        bool_tests: List[bool] = [False, True]
-        test_values: Dict[str, Any] = dict(
+        bool_tests: list[bool] = [False, True]
+        test_values: dict[str, Any] = dict(
             invite_to_realm_policy=[
                 InviteToRealmPolicyEnum.MEMBERS_ONLY,
                 InviteToRealmPolicyEnum.ADMINS_ONLY,

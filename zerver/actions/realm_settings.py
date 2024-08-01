@@ -1,8 +1,8 @@
 import logging
-from email.headerregistry import Address
-from typing import Any, Dict, Literal, Optional, Tuple, Union
-
 import zoneinfo
+from email.headerregistry import Address
+from typing import Any, Literal
+
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
@@ -56,7 +56,7 @@ if settings.BILLING_ENABLED:
 
 @transaction.atomic(savepoint=False)
 def do_set_realm_property(
-    realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
+    realm: Realm, name: str, value: Any, *, acting_user: UserProfile | None
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
     value to update and and the user who initiated the update.
@@ -114,7 +114,7 @@ def do_set_realm_property(
 
 
 def do_set_push_notifications_enabled_end_timestamp(
-    realm: Realm, value: Optional[int], *, acting_user: Optional[UserProfile]
+    realm: Realm, value: int | None, *, acting_user: UserProfile | None
 ) -> None:
     # Variant of do_set_realm_property with a bit of extra complexity
     # for the fact that we store a datetime object in the database but
@@ -162,9 +162,9 @@ def do_change_realm_permission_group_setting(
     realm: Realm,
     setting_name: str,
     user_group: UserGroup,
-    old_setting_api_value: Optional[Union[int, AnonymousSettingGroupDict]] = None,
+    old_setting_api_value: int | AnonymousSettingGroupDict | None = None,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
     user_group to update and and the user who initiated the update.
@@ -219,8 +219,8 @@ def do_change_realm_permission_group_setting(
 
 
 def parse_and_set_setting_value_if_required(
-    realm: Realm, setting_name: str, value: Union[int, str], *, acting_user: Optional[UserProfile]
-) -> Tuple[Optional[int], bool]:
+    realm: Realm, setting_name: str, value: int | str, *, acting_user: UserProfile | None
+) -> tuple[int | None, bool]:
     parsed_value = parse_message_time_limit_setting(
         value,
         Realm.MESSAGE_TIME_LIMIT_SETTING_SPECIAL_VALUES_MAP,
@@ -245,8 +245,8 @@ def parse_and_set_setting_value_if_required(
 
 
 def get_realm_authentication_methods_for_page_params_api(
-    realm: Realm, authentication_methods: Dict[str, bool]
-) -> Dict[str, Any]:
+    realm: Realm, authentication_methods: dict[str, bool]
+) -> dict[str, Any]:
     # To avoid additional queries, this expects passing in the authentication_methods
     # dictionary directly, which is useful when the caller already has to fetch it
     # for other purposes - and that's the circumstance in which this function is
@@ -254,7 +254,7 @@ def get_realm_authentication_methods_for_page_params_api(
 
     from zproject.backends import AUTH_BACKEND_NAME_MAP
 
-    result_dict: Dict[str, Dict[str, Union[str, bool]]] = {
+    result_dict: dict[str, dict[str, str | bool]] = {
         backend_name: {"enabled": enabled, "available": True}
         for backend_name, enabled in authentication_methods.items()
     }
@@ -296,7 +296,7 @@ def get_realm_authentication_methods_for_page_params_api(
 
 
 def validate_authentication_methods_dict_from_api(
-    realm: Realm, authentication_methods: Dict[str, bool]
+    realm: Realm, authentication_methods: dict[str, bool]
 ) -> None:
     current_authentication_methods = realm.authentication_methods_dict()
     for name in authentication_methods:
@@ -312,7 +312,7 @@ def validate_authentication_methods_dict_from_api(
 
 
 def validate_plan_for_authentication_methods(
-    realm: Realm, authentication_methods: Dict[str, bool]
+    realm: Realm, authentication_methods: dict[str, bool]
 ) -> None:
     from zproject.backends import AUTH_BACKEND_NAME_MAP
 
@@ -335,7 +335,7 @@ def validate_plan_for_authentication_methods(
 
 
 def do_set_realm_authentication_methods(
-    realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
+    realm: Realm, authentication_methods: dict[str, bool], *, acting_user: UserProfile | None
 ) -> None:
     old_value = realm.authentication_methods_dict()
     with transaction.atomic():
@@ -381,10 +381,10 @@ def do_set_realm_stream(
         "signup_announcements_stream",
         "zulip_update_announcements_stream",
     ],
-    stream: Optional[Stream],
+    stream: Stream | None,
     stream_id: int,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     # We could calculate more of these variables from `field`, but
     # it's probably more readable to not do so.
@@ -429,7 +429,7 @@ def do_set_realm_stream(
 
 
 def do_set_realm_new_stream_announcements_stream(
-    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
+    realm: Realm, stream: Stream | None, stream_id: int, *, acting_user: UserProfile | None
 ) -> None:
     do_set_realm_stream(
         realm, "new_stream_announcements_stream", stream, stream_id, acting_user=acting_user
@@ -437,7 +437,7 @@ def do_set_realm_new_stream_announcements_stream(
 
 
 def do_set_realm_signup_announcements_stream(
-    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
+    realm: Realm, stream: Stream | None, stream_id: int, *, acting_user: UserProfile | None
 ) -> None:
     do_set_realm_stream(
         realm, "signup_announcements_stream", stream, stream_id, acting_user=acting_user
@@ -445,7 +445,7 @@ def do_set_realm_signup_announcements_stream(
 
 
 def do_set_realm_zulip_update_announcements_stream(
-    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
+    realm: Realm, stream: Stream | None, stream_id: int, *, acting_user: UserProfile | None
 ) -> None:
     do_set_realm_stream(
         realm, "zulip_update_announcements_stream", stream, stream_id, acting_user=acting_user
@@ -457,7 +457,7 @@ def do_set_realm_user_default_setting(
     name: str,
     value: Any,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     old_value = getattr(realm_user_default, name)
     realm = realm_user_default.realm
@@ -502,7 +502,7 @@ RealmDeactivationReasonType = Literal[
 def do_deactivate_realm(
     realm: Realm,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
     deactivation_reason: RealmDeactivationReasonType,
     email_owners: bool,
 ) -> None:
@@ -620,7 +620,7 @@ def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> 
         obj_class._default_manager.filter(realm=realm).delete()
 
 
-def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
+def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
     if settings.BILLING_ENABLED:
         billing_session = RealmBillingSession(user=acting_user, realm=realm)
         billing_session.downgrade_now_without_creating_additional_invoices()
@@ -679,7 +679,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
 def do_change_realm_org_type(
     realm: Realm,
     org_type: int,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
 ) -> None:
     old_value = realm.org_type
     realm.org_type = org_type
@@ -699,7 +699,7 @@ def do_change_realm_org_type(
 
 @transaction.atomic(savepoint=False)
 def do_change_realm_plan_type(
-    realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
+    realm: Realm, plan_type: int, *, acting_user: UserProfile | None
 ) -> None:
     from zproject.backends import AUTH_BACKEND_NAME_MAP
 
@@ -785,7 +785,7 @@ def do_change_realm_plan_type(
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
-def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
+def do_send_realm_reactivation_email(realm: Realm, *, acting_user: UserProfile | None) -> None:
     obj = RealmReactivationStatus.objects.create(realm=realm)
 
     url = create_confirmation_link(obj, Confirmation.REALM_REACTIVATION)
@@ -812,8 +812,8 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
     )
 
 
-def do_send_realm_deactivation_email(realm: Realm, acting_user: Optional[UserProfile]) -> None:
-    shared_context: Dict[str, Any] = {
+def do_send_realm_deactivation_email(realm: Realm, acting_user: UserProfile | None) -> None:
+    shared_context: dict[str, Any] = {
         "realm_name": realm.name,
     }
     deactivation_time = timezone_now()

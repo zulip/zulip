@@ -8,7 +8,8 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Literal, Mapping, Optional, Set, Tuple, Union
+from collections.abc import Mapping
+from typing import Any, Literal
 
 import orjson
 from openapi_core import OpenAPI
@@ -28,14 +29,14 @@ EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
 }
 # Consists of endpoints with some documentation remaining.
 # These are skipped but return true as the validator cannot exclude objects
-EXCLUDE_DOCUMENTED_ENDPOINTS: Set[Tuple[str, str]] = set()
+EXCLUDE_DOCUMENTED_ENDPOINTS: set[tuple[str, str]] = set()
 
 
 # Most of our code expects allOf to be preprocessed away because that is what
 # yamole did.  Its algorithm for doing so is not standards compliant, but we
 # replicate it here.
-def naively_merge(a: Dict[str, object], b: Dict[str, object]) -> Dict[str, object]:
-    ret: Dict[str, object] = a.copy()
+def naively_merge(a: dict[str, object], b: dict[str, object]) -> dict[str, object]:
+    ret: dict[str, object] = a.copy()
     for key, b_value in b.items():
         if key == "example" or key not in ret:
             ret[key] = b_value
@@ -59,7 +60,7 @@ def naively_merge_allOf(obj: object) -> object:
         return obj
 
 
-def naively_merge_allOf_dict(obj: Dict[str, object]) -> Dict[str, object]:
+def naively_merge_allOf_dict(obj: dict[str, object]) -> dict[str, object]:
     if "allOf" in obj:
         ret = obj.copy()
         subschemas = ret.pop("allOf")
@@ -75,10 +76,10 @@ def naively_merge_allOf_dict(obj: Dict[str, object]) -> Dict[str, object]:
 class OpenAPISpec:
     def __init__(self, openapi_path: str) -> None:
         self.openapi_path = openapi_path
-        self.mtime: Optional[float] = None
-        self._openapi: Dict[str, Any] = {}
-        self._endpoints_dict: Dict[str, str] = {}
-        self._spec: Optional[OpenAPI] = None
+        self.mtime: float | None = None
+        self._openapi: dict[str, Any] = {}
+        self._endpoints_dict: dict[str, str] = {}
+        self._spec: OpenAPI | None = None
 
     def check_reload(self) -> None:
         # Because importing yaml takes significant time, and we only
@@ -146,7 +147,7 @@ class OpenAPISpec:
             path_regex = path_regex.replace(r"/", r"\/")
             self._endpoints_dict[path_regex] = endpoint
 
-    def openapi(self) -> Dict[str, Any]:
+    def openapi(self) -> dict[str, Any]:
         """Reload the OpenAPI file if it has been modified after the last time
         it was read, and then return the parsed data.
         """
@@ -154,7 +155,7 @@ class OpenAPISpec:
         assert len(self._openapi) > 0
         return self._openapi
 
-    def endpoints_dict(self) -> Dict[str, str]:
+    def endpoints_dict(self) -> dict[str, str]:
         """Reload the OpenAPI file if it has been modified after the last time
         it was read, and then return the parsed data.
         """
@@ -179,7 +180,7 @@ class SchemaError(Exception):
 openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH)
 
 
-def get_schema(endpoint: str, method: str, status_code: str) -> Dict[str, Any]:
+def get_schema(endpoint: str, method: str, status_code: str) -> dict[str, Any]:
     if len(status_code) == 3 and (
         "oneOf"
         in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
@@ -203,7 +204,7 @@ def get_schema(endpoint: str, method: str, status_code: str) -> Dict[str, Any]:
         return schema
 
 
-def get_openapi_fixture(endpoint: str, method: str, status_code: str = "200") -> Dict[str, Any]:
+def get_openapi_fixture(endpoint: str, method: str, status_code: str = "200") -> dict[str, Any]:
     """Fetch a fixture from the full spec object."""
     return get_schema(endpoint, method, status_code)["example"]
 
@@ -213,7 +214,7 @@ def get_openapi_fixture_description(endpoint: str, method: str, status_code: str
     return get_schema(endpoint, method, status_code)["description"]
 
 
-def get_curl_include_exclude(endpoint: str, method: str) -> List[Dict[str, Any]]:
+def get_curl_include_exclude(endpoint: str, method: str) -> list[dict[str, Any]]:
     """Fetch all the kinds of parameters required for curl examples."""
     if (
         "x-curl-examples-parameters"
@@ -232,7 +233,7 @@ def check_requires_administrator(endpoint: str, method: str) -> bool:
     )
 
 
-def check_additional_imports(endpoint: str, method: str) -> Optional[List[str]]:
+def check_additional_imports(endpoint: str, method: str) -> list[str] | None:
     """Fetch the additional imports required for an endpoint."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
         "x-python-examples-extra-imports", None
@@ -253,7 +254,7 @@ def get_parameters_description(endpoint: str, method: str) -> str:
     )
 
 
-def generate_openapi_fixture(endpoint: str, method: str) -> List[str]:
+def generate_openapi_fixture(endpoint: str, method: str) -> list[str]:
     """Generate fixture to be rendered"""
     fixture = []
     for status_code in sorted(
@@ -307,7 +308,7 @@ def get_openapi_summary(endpoint: str, method: str) -> str:
     return openapi_spec.openapi()["paths"][endpoint][method.lower()]["summary"]
 
 
-def get_endpoint_from_operationid(operationid: str) -> Tuple[str, str]:
+def get_endpoint_from_operationid(operationid: str) -> tuple[str, str]:
     for endpoint in openapi_spec.openapi()["paths"]:
         for method in openapi_spec.openapi()["paths"][endpoint]:
             operationId = openapi_spec.openapi()["paths"][endpoint][method].get("operationId")
@@ -316,7 +317,7 @@ def get_endpoint_from_operationid(operationid: str) -> Tuple[str, str]:
     raise AssertionError("No such page exists in OpenAPI data.")
 
 
-def get_openapi_paths() -> Set[str]:
+def get_openapi_paths() -> set[str]:
     return set(openapi_spec.openapi()["paths"].keys())
 
 
@@ -328,7 +329,7 @@ class Parameter(BaseModel):
     name: str
     description: str
     json_encoded: bool
-    value_schema: Dict[str, Any]
+    value_schema: dict[str, Any]
     example: object
     required: bool
     deprecated: bool
@@ -336,7 +337,7 @@ class Parameter(BaseModel):
 
 def get_openapi_parameters(
     endpoint: str, method: str, include_url_parameters: bool = True
-) -> List[Parameter]:
+) -> list[Parameter]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     parameters = []
 
@@ -402,7 +403,7 @@ def get_openapi_parameters(
     return parameters
 
 
-def get_openapi_return_values(endpoint: str, method: str) -> Dict[str, Any]:
+def get_openapi_return_values(endpoint: str, method: str) -> dict[str, Any]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
     # We do not currently have documented endpoints that have multiple schemas
@@ -413,7 +414,7 @@ def get_openapi_return_values(endpoint: str, method: str) -> Dict[str, Any]:
     return schema["properties"]
 
 
-def find_openapi_endpoint(path: str) -> Optional[str]:
+def find_openapi_endpoint(path: str) -> str | None:
     for path_regex, endpoint in openapi_spec.endpoints_dict().items():
         matches = re.match(path_regex, path)
         if matches:
@@ -422,7 +423,7 @@ def find_openapi_endpoint(path: str) -> Optional[str]:
 
 
 def validate_against_openapi_schema(
-    content: Dict[str, Any], path: str, method: str, status_code: str
+    content: dict[str, Any], path: str, method: str, status_code: str
 ) -> bool:
     mock_request = MockRequest("http://localhost:9991/", method, "/api/v1" + path)
     mock_response = MockResponse(
@@ -486,7 +487,7 @@ def validate_test_response(request: Request, response: Response) -> bool:
     return True
 
 
-def validate_schema(schema: Dict[str, Any]) -> None:
+def validate_schema(schema: dict[str, Any]) -> None:
     """Check if opaque objects are present in the OpenAPI spec; this is an
     important part of our policy for ensuring every detail of Zulip's
     API responses is correct.
@@ -541,8 +542,8 @@ SKIP_JSON = {
 def validate_request(
     url: str,
     method: str,
-    data: Union[str, bytes, Mapping[str, Any]],
-    http_headers: Dict[str, str],
+    data: str | bytes | Mapping[str, Any],
+    http_headers: dict[str, str],
     json_url: bool,
     status_code: str,
     intentionally_undocumented: bool = False,

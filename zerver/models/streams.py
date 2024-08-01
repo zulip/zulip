@@ -1,5 +1,5 @@
 import secrets
-from typing import Any, Dict, Set
+from typing import Any
 
 from django.db import models
 from django.db.models import CASCADE, Q, QuerySet
@@ -39,7 +39,7 @@ class Stream(models.Model):
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
     # Various permission policy configurations
-    PERMISSION_POLICIES: Dict[str, Dict[str, Any]] = {
+    PERMISSION_POLICIES: dict[str, dict[str, Any]] = {
         "web_public": {
             "invite_only": False,
             "history_public_to_subscribers": True,
@@ -87,7 +87,7 @@ class Stream(models.Model):
 
     # Who in the organization has permission to send messages to this stream.
     stream_post_policy = models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE)
-    POST_POLICIES: Dict[int, StrPromise] = {
+    POST_POLICIES: dict[int, StrPromise] = {
         # These strings should match the strings in the
         # stream_post_policy_values object in stream_data.js.
         STREAM_POST_POLICY_EVERYONE: gettext_lazy("All channel members can post"),
@@ -252,8 +252,8 @@ def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related("realm", "recipient").get(id=stream_id, realm=realm)
 
 
-def bulk_get_streams(realm: Realm, stream_names: Set[str]) -> Dict[str, Any]:
-    def fetch_streams_by_name(stream_names: Set[str]) -> QuerySet[Stream]:
+def bulk_get_streams(realm: Realm, stream_names: set[str]) -> dict[str, Any]:
+    def fetch_streams_by_name(stream_names: set[str]) -> QuerySet[Stream]:
         #
         # This should be just
         #
@@ -377,7 +377,7 @@ class DefaultStreamGroup(models.Model):
     class Meta:
         unique_together = ("realm", "name")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return dict(
             name=self.name,
             id=self.id,

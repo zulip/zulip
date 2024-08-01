@@ -15,6 +15,7 @@ import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import type {StreamSubscription} from "./sub_store";
 import {parse_html} from "./ui_util";
+import * as util from "./util";
 
 /* Sync with max-height set in zulip.css */
 export const DEFAULT_DROPDOWN_HEIGHT = 210;
@@ -66,6 +67,8 @@ type DropdownWidgetOptions = {
     hide_search_box?: boolean;
     // Disable the widget for spectators.
     disable_for_spectators?: boolean;
+    dropdown_input_visible_selector?: string;
+    prefer_top_start_placement?: boolean;
 };
 
 export class DropdownWidget {
@@ -95,6 +98,8 @@ export class DropdownWidget {
     text_if_current_value_not_in_options: string;
     hide_search_box: boolean;
     disable_for_spectators: boolean;
+    dropdown_input_visible_selector: string;
+    prefer_top_start_placement: boolean;
 
     constructor(options: DropdownWidgetOptions) {
         this.widget_name = options.widget_name;
@@ -122,6 +127,9 @@ export class DropdownWidget {
             options.text_if_current_value_not_in_options ?? "";
         this.hide_search_box = options.hide_search_box ?? false;
         this.disable_for_spectators = options.disable_for_spectators ?? false;
+        this.dropdown_input_visible_selector =
+            options.dropdown_input_visible_selector ?? this.widget_selector;
+        this.prefer_top_start_placement = options.prefer_top_start_placement ?? false;
     }
 
     init(): void {
@@ -158,6 +166,57 @@ export class DropdownWidget {
         }
     }
 
+    adjust_dropdown_position_post_list_render(tippy_instance: tippy.Instance): void {
+        let top_offset = 0;
+        let left_offset = 0;
+
+        // Use offset if provided by the widget callers.
+        if (typeof this.tippy_props?.offset === "object" && this.tippy_props?.offset.length === 2) {
+            left_offset = this.tippy_props.offset[0];
+            top_offset = this.tippy_props.offset[1];
+        }
+
+        const window_height = window.innerHeight;
+        let dropdown_search_box_and_padding_height = 50;
+        if (this.hide_search_box) {
+            dropdown_search_box_and_padding_height = 0;
+        }
+        const dropdown_input_props = $(this.dropdown_input_visible_selector).get_offset_to_window();
+        const dropdown_input_top = dropdown_input_props.top;
+
+        // Pixels above the dropdown input.
+        const top_space = dropdown_input_top - top_offset - dropdown_search_box_and_padding_height;
+        // Pixels below the top of dropdown input.
+        const bottom_space =
+            window_height - dropdown_input_top - dropdown_search_box_and_padding_height;
+
+        // Show dropdown at bottom by default if we `DEFAULT_DROPDOWN_HEIGHT`
+        // space available unless the dropdown caller prefers to show at top.
+        // If we don't have `DEFAULT_DROPDOWN_HEIGHT` space available above
+        // or below the dropdown input, show the dropdown at maximum space.
+        let placement: tippy.Placement = "top-start";
+        let height: number = Math.min(DEFAULT_DROPDOWN_HEIGHT, Math.max(top_space, bottom_space));
+        if (this.prefer_top_start_placement && top_space > DEFAULT_DROPDOWN_HEIGHT) {
+            height = DEFAULT_DROPDOWN_HEIGHT;
+        } else if (!this.prefer_top_start_placement && bottom_space > DEFAULT_DROPDOWN_HEIGHT) {
+            placement = "bottom-start";
+            height = DEFAULT_DROPDOWN_HEIGHT;
+            // Use the provided offset if we have enough space. Otherwise,
+            // we overlap the top of dropdown with top of dropdown input.
+            if (this.tippy_props?.offset === undefined) {
+                top_offset = -1 * dropdown_input_props.height;
+            }
+        } else if (bottom_space > top_space) {
+            placement = "bottom-start";
+            top_offset = -1 * dropdown_input_props.height;
+        }
+
+        const offset: [number, number] = [left_offset, top_offset];
+        tippy_instance.setProps({placement, offset});
+        const $popper = $(tippy_instance.popper);
+        $popper.find(".dropdown-list-wrapper").css("max-height", height + "px");
+    }
+
     show_empty_if_no_items($popper: JQuery): void {
         assert(this.list_widget !== undefined);
         const list_items = this.list_widget.get_current_list();
@@ -191,6 +250,14 @@ export class DropdownWidget {
             theme: "dropdown-widget",
             arrow: false,
             onShow: (instance: tippy.Instance) => {
+                if (util.is_mobile()) {
+                    // The dropdown trigger button can be hidden by the
+                    // keyboard on mobile or if it is scrolled out of
+                    // view to keyboard being displayed.
+                    // So, we show the dropdown even if reference is hidden on
+                    // mobile.
+                    $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+                }
                 instance.setContent(
                     parse_html(
                         render_dropdown_list_container({
@@ -352,6 +419,7 @@ export class DropdownWidget {
                 }, 0);
 
                 this.on_show_callback(instance);
+                this.adjust_dropdown_position_post_list_render(instance);
             },
             onMount: (instance: tippy.Instance) => {
                 this.show_empty_if_no_items($(instance.popper));

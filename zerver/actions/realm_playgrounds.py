@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -12,7 +10,7 @@ from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
-def notify_realm_playgrounds(realm: Realm, realm_playgrounds: List[RealmPlaygroundDict]) -> None:
+def notify_realm_playgrounds(realm: Realm, realm_playgrounds: list[RealmPlaygroundDict]) -> None:
     event = dict(type="realm_playgrounds", realm_playgrounds=realm_playgrounds)
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
@@ -21,7 +19,7 @@ def notify_realm_playgrounds(realm: Realm, realm_playgrounds: List[RealmPlaygrou
 def check_add_realm_playground(
     realm: Realm,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: UserProfile | None,
     name: str,
     pygments_language: str,
     url_template: str,
@@ -63,7 +61,7 @@ def check_add_realm_playground(
 
 @transaction.atomic(durable=True)
 def do_remove_realm_playground(
-    realm: Realm, realm_playground: RealmPlayground, *, acting_user: Optional[UserProfile]
+    realm: Realm, realm_playground: RealmPlayground, *, acting_user: UserProfile | None
 ) -> None:
     removed_playground = {
         "name": realm_playground.name,

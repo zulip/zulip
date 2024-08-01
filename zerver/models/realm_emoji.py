@@ -1,4 +1,4 @@
-from typing import Dict, Optional, TypedDict
+from typing import TypedDict
 
 from django.core.validators import MinLengthValidator, RegexValidator
 from django.db import models
@@ -16,8 +16,8 @@ class EmojiInfo(TypedDict):
     name: str
     source_url: str
     deactivated: bool
-    author_id: Optional[int]
-    still_url: Optional[str]
+    author_id: int | None
+    still_url: str | None
 
 
 def get_all_custom_emoji_for_realm_cache_key(realm_id: int) -> str:
@@ -69,7 +69,7 @@ class RealmEmoji(models.Model):
         return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
 
-def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
+def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> dict[str, EmojiInfo]:
     # RealmEmoji objects with file_name=None are still in the process
     # of being uploaded, and we expect to be cleaned up by a
     # try/finally block if the upload fails, so it's correct to
@@ -109,11 +109,11 @@ def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> Dict[str, EmojiInf
 
 
 @cache_with_key(get_all_custom_emoji_for_realm_cache_key, timeout=3600 * 24 * 7)
-def get_all_custom_emoji_for_realm(realm_id: int) -> Dict[str, EmojiInfo]:
+def get_all_custom_emoji_for_realm(realm_id: int) -> dict[str, EmojiInfo]:
     return get_all_custom_emoji_for_realm_uncached(realm_id)
 
 
-def get_name_keyed_dict_for_active_realm_emoji(realm_id: int) -> Dict[str, EmojiInfo]:
+def get_name_keyed_dict_for_active_realm_emoji(realm_id: int) -> dict[str, EmojiInfo]:
     # It's important to use the cached version here.
     realm_emojis = get_all_custom_emoji_for_realm(realm_id)
     return {row["name"]: row for row in realm_emojis.values() if not row["deactivated"]}

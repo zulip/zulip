@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
@@ -12,7 +10,7 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def send_bot_owner_update_events(
-    user_profile: UserProfile, bot_owner: UserProfile, previous_owner: Optional[UserProfile]
+    user_profile: UserProfile, bot_owner: UserProfile, previous_owner: UserProfile | None
 ) -> None:
     update_users = bot_owner_user_ids(user_profile)
 
@@ -36,14 +34,14 @@ def send_bot_owner_update_events(
             {previous_owner_id},
         )
         # Do not send update event for previous bot owner.
-        update_users = update_users - {previous_owner.id}
+        update_users.discard(previous_owner.id)
 
     # Notify the new owner that the bot has been added.
     if not bot_owner.is_realm_admin:
         add_event = created_bot_event(user_profile)
         send_event_on_commit(user_profile.realm, add_event, {bot_owner.id})
         # Do not send update event for bot_owner.
-        update_users = update_users - {bot_owner.id}
+        update_users.discard(bot_owner.id)
 
     bot_event = dict(
         type="realm_bot",
@@ -73,7 +71,7 @@ def send_bot_owner_update_events(
 
 
 def remove_bot_from_inaccessible_private_streams(
-    user_profile: UserProfile, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile, *, acting_user: UserProfile | None
 ) -> None:
     assert user_profile.bot_owner is not None
 
@@ -102,7 +100,7 @@ def remove_bot_from_inaccessible_private_streams(
 
 @transaction.atomic(durable=True)
 def do_change_bot_owner(
-    user_profile: UserProfile, bot_owner: UserProfile, acting_user: Union[UserProfile, None]
+    user_profile: UserProfile, bot_owner: UserProfile, acting_user: UserProfile | None
 ) -> None:
     previous_owner = user_profile.bot_owner
     user_profile.bot_owner = bot_owner
@@ -123,7 +121,7 @@ def do_change_bot_owner(
 
 @transaction.atomic(durable=True)
 def do_change_default_sending_stream(
-    user_profile: UserProfile, stream: Optional[Stream], *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile, stream: Stream | None, *, acting_user: UserProfile | None
 ) -> None:
     old_value = user_profile.default_sending_stream_id
     user_profile.default_sending_stream = stream
@@ -144,7 +142,7 @@ def do_change_default_sending_stream(
 
     if user_profile.is_bot:
         if stream:
-            stream_name: Optional[str] = stream.name
+            stream_name: str | None = stream.name
         else:
             stream_name = None
         event = dict(
@@ -164,7 +162,7 @@ def do_change_default_sending_stream(
 
 @transaction.atomic(durable=True)
 def do_change_default_events_register_stream(
-    user_profile: UserProfile, stream: Optional[Stream], *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile, stream: Stream | None, *, acting_user: UserProfile | None
 ) -> None:
     old_value = user_profile.default_events_register_stream_id
     user_profile.default_events_register_stream = stream
@@ -185,7 +183,7 @@ def do_change_default_events_register_stream(
 
     if user_profile.is_bot:
         if stream:
-            stream_name: Optional[str] = stream.name
+            stream_name: str | None = stream.name
         else:
             stream_name = None
 
@@ -206,7 +204,7 @@ def do_change_default_events_register_stream(
 
 @transaction.atomic(durable=True)
 def do_change_default_all_public_streams(
-    user_profile: UserProfile, value: bool, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile, value: bool, *, acting_user: UserProfile | None
 ) -> None:
     old_value = user_profile.default_all_public_streams
     user_profile.default_all_public_streams = value

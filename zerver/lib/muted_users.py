@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Set
 
 from zerver.lib.cache import cache_with_key, get_muting_users_cache_key
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -7,7 +6,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import MutedUser, UserProfile
 
 
-def get_user_mutes(user_profile: UserProfile) -> List[Dict[str, int]]:
+def get_user_mutes(user_profile: UserProfile) -> list[dict[str, int]]:
     rows = MutedUser.objects.filter(user_profile=user_profile).values(
         "muted_user_id",
         "date_muted",
@@ -29,7 +28,7 @@ def add_user_mute(user_profile: UserProfile, muted_user: UserProfile, date_muted
     )
 
 
-def get_mute_object(user_profile: UserProfile, muted_user: UserProfile) -> Optional[MutedUser]:
+def get_mute_object(user_profile: UserProfile, muted_user: UserProfile) -> MutedUser | None:
     try:
         return MutedUser.objects.get(user_profile=user_profile, muted_user=muted_user)
     except MutedUser.DoesNotExist:
@@ -37,7 +36,7 @@ def get_mute_object(user_profile: UserProfile, muted_user: UserProfile) -> Optio
 
 
 @cache_with_key(get_muting_users_cache_key, timeout=3600 * 24 * 7)
-def get_muting_users(muted_user_id: int) -> Set[int]:
+def get_muting_users(muted_user_id: int) -> set[int]:
     """
     This is kind of the inverse of `get_user_mutes` above.
     While `get_user_mutes` is mainly used for event system work,

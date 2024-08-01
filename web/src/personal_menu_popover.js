@@ -1,5 +1,4 @@
 import $ from "jquery";
-import * as tippy from "tippy.js";
 
 import render_navbar_personal_menu_popover from "../templates/popovers/navbar/navbar_personal_menu_popover.hbs";
 
@@ -36,11 +35,6 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.personal_menu = instance;
-
-            tippy.default(".personal-menu-clear-status", {
-                placement: "top",
-                appendTo: document.body,
-            });
 
             $popper.on("change", "input[name='theme-select']", (e) => {
                 const new_theme_code = $(e.currentTarget).attr("data-theme-code");

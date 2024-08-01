@@ -94,6 +94,59 @@ accident.
 
 {end_tabs}
 
+## Search for messages in unresolved topics
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Click the **search** (<i class="search_icon zulip-icon
+   zulip-icon-search"></i>) icon in the top bar to open the search box.
+
+1. Type `-is:resolved`, or start typing and select **Exclude topics marked as
+   resolved** from the typeahead.
+
+1. _(optional)_ Enter additional search terms or
+   [filters](/help/search-for-messages).
+
+1. Press <kbd>Enter</kbd>.
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
+    keyboard shortcut to start searching messages.
+
+{end_tabs}
+
+!!! tip ""
+
+    To get a feed of unread messages in all unresolved topics, search for
+    `is:unresolved is:unread`.
+
+## Search for messages in resolved topics
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Click the **search** (<i class="search_icon zulip-icon
+   zulip-icon-search"></i>) icon in the top bar to open the search box.
+
+1. Type `is:resolved`, or start typing and select **Topics marked as resolved**
+   from the typeahead.
+
+1. _(optional)_ Enter additional search terms or
+   [filters](/help/search-for-messages).
+
+1. Press <kbd>Enter</kbd>.
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
+    keyboard shortcut to start searching messages.
+
+{end_tabs}
+
 ## Details
 
 * Resolving a topic works by moving the messages to a new topic.
