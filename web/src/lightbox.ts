@@ -251,7 +251,6 @@ export function render_lightbox_media_list(displayed_source: string): void {
 
                 const $video = $("<video>");
                 $video.attr("src", payload.source);
-                $video.attr("controls", "false");
 
                 $node.append($video);
             } else {
