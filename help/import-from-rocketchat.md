@@ -128,6 +128,8 @@ keep in mind about the import process:
 - Messages longer than Zulip's limit of 10,000 characters are not
   imported.
 
+- Livechat channels/messages are not imported.
+
 - Messages from Rocket.Chat Discussions are imported as topics
   inside the Zulip channel corresponding to the parent channel of the
   Rocket.Chat Discussion.
