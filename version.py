@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 277  # Last bumped for Zulip 9.0
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (287, 0)  # bumped 2024-07-17 to rebuild emoji_names
+PROVISION_VERSION = (288, 0)  # bumped 2024-08-01 to upgrade Python requirements
