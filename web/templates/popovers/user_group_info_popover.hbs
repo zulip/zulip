@@ -3,9 +3,9 @@
         <div class="group-info">
             <div class="group-name">
                 <i
-                    class="zulip-icon zulip-icon-triple-users"
-                    aria-hidden="true"
-                ></i>
+                  class="zulip-icon zulip-icon-triple-users"
+                  aria-hidden="true"
+                  ></i>
                 {{group_name}}
             </div>
             <div class="group-description">
@@ -14,31 +14,31 @@
         </div>
         <hr />
         <ul
-            class="nav nav-list member-list"
-            data-simplebar
-            data-simplebar-tab-index="-1"
-            data-simplebar-auto-hide="false"
-        >
+          class="nav nav-list member-list"
+          data-simplebar
+          data-simplebar-tab-index="-1"
+          data-simplebar-auto-hide="false"
+          >
             <ul
-                class="nav nav-list member-list"
-                data-simplebar
-                data-simplebar-auto-hide="false"
-            >
+              class="nav nav-list member-list"
+              data-simplebar
+              data-simplebar-auto-hide="false"
+              >
                 {{#if members.length}}
                     {{#each members}}
                         <li>
                             {{#if is_bot}}
                                 <i
-                                    class="zulip-icon zulip-icon-bot"
-                                    aria-hidden="true"
-                                ></i>
+                                  class="zulip-icon zulip-icon-bot"
+                                  aria-hidden="true"
+                                  ></i>
                             {{else}}
                                 <span
-                                    class="user_circle
-                                        {{user_circle_class}}
-                                        popover_user_presence"
-                                    title="{{user_last_seen_time_status}}"
-                                ></span>
+                                  class="user_circle
+                                  {{user_circle_class}}
+                                  popover_user_presence"
+                                  title="{{user_last_seen_time_status}}"
+                                  ></span>
                             {{/if}}
                             <span>{{full_name}}</span>
                         </li>
@@ -54,12 +54,13 @@
                 <li>
                     <a href="{{group_edit_url}}">
                         <i
-                            class="zulip-icon zulip-icon-user-cog"
-                            aria-hidden="true"
-                        ></i>{{t "Group settings"}}
+                          class="zulip-icon zulip-icon-user-cog"
+                          aria-hidden="true"
+                          ></i>{{t "Group settings"}}
                     </a>
                 </li>
             </ul>
         {{/unless}}
     </div>
 </div>
+
