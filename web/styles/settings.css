@@ -2183,3 +2183,14 @@ $option_title_width: 180px;
 #admin-user-list .tab-switcher .ind-tab {
     width: 110px;
 }
+
+#admin-bot-list {
+    .tab-switcher {
+        margin: 2px 0;
+    }
+
+    .tab-switcher .ind-tab {
+        margin-bottom: 10px;
+        width: 110px;
+    }
+}

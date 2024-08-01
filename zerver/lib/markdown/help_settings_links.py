@@ -79,6 +79,16 @@ link_mapping = {
         "Bots",
         "/#organization/bots",
     ],
+    "all-bots": [
+        "Organization settings",
+        "Bots",
+        "/#organization/bots/all-bots",
+    ],
+    "org-your-bots": [
+        "Organization settings",
+        "Bots",
+        "/#organization/bots/your-bots",
+    ],
     "default-channels-list": [
         "Organization settings",
         "Default channels",
