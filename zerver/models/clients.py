@@ -42,7 +42,6 @@ class Client(models.Model):
                 "ios",
                 "android",
             )
-            or "desktop app" in sending_client
             # Since the vast majority of messages are sent by humans
             # in Zulip, treat test suite messages as such.
             or (sending_client == "test suite" and settings.TEST_SUITE)
