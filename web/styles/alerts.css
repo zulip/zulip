@@ -254,7 +254,6 @@ $alert-error-red: hsl(0deg 80% 40%);
     align-items: center;
     padding: 5px 10px;
     margin-top: 10px;
-    display: grid;
     grid-template-columns: 80px auto 50px;
     grid-column-gap: 10px; /* Ensure proper spacing between columns */
 
