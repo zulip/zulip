@@ -59,7 +59,7 @@ https://github.com/zulip/zulint/archive/417b4e4971fdd5ca8e84847f1391b657b188631a
 python-debian
 
 # Pattern-based lint tool
-semgrep
+semgrep<1.80.0  # https://github.com/semgrep/semgrep/issues/10408
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check
