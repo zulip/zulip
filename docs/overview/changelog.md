@@ -7,6 +7,24 @@ up-to-date list of all changes.
 
 ## Zulip Server 8.x series
 
+### Zulip Server 8.5
+
+_Released 2024-07-31_
+
+- Fixed failures installing/upgrading Debian systems by removing the
+  Apache Arrow apt repository as a dependency, which suffers from an
+  annual problem with expired GPG signatures.
+- Improved documentation for upgrading the Ubuntu version.
+- Fixed `manage.py register_server --rotate-key` crashing without
+  having written its secrets if the `zulip` user had permission to write
+  to `/etc/zulip/zulip-secrets.conf`, but not its parent directory.
+- Fixed client-provided HTTP authentication headers being incorrectly
+  forwarded in S3 requests, causing authentication errors.
+- Removed the Gitter data import tool (Gitter no longer exports data
+  in the format it supported).
+- Upgraded Python dependencies.
+- Updated translations.
+
 ### Zulip Server 8.4
 
 _Released 2024-05-09_
