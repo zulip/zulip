@@ -388,3 +388,12 @@ class DefaultStreamGroup(models.Model):
 
 def get_default_stream_groups(realm: Realm) -> QuerySet[DefaultStreamGroup]:
     return DefaultStreamGroup.objects.filter(realm=realm)
+
+
+class TopicRestriction(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
+    topic = models.CharField(max_length=256)
+
+    class Meta:
+        unique_together = ("user", "stream", "topic")

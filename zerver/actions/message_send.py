@@ -107,7 +107,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realms import PrivateMessagePolicyEnum
 from zerver.models.recipients import get_huddle_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
-from zerver.models.streams import get_stream, get_stream_by_id_in_realm
+from zerver.models.streams import get_stream, get_stream_by_id_in_realm,TopicRestriction
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -1651,6 +1651,14 @@ def check_message(
         else:
             stream = addressee.stream()
         assert stream is not None
+        if stream_id and topic_name:
+            existing_message = Message.objects.filter(recipient_id=stream.recipient_id,
+                                                  subject=topic_name).count()
+
+            if existing_message == 0:
+               stream_ = Stream.objects.get(id=stream_id)
+               TopicRestriction.objects.create(user_id=sender.id, stream=stream_, topic=topic_name)
+               print("topic restriction created")
 
         # To save a database round trip, we construct the Recipient
         # object for the Stream rather than fetching it from the

@@ -29,7 +29,7 @@ from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC
 from zerver.lib.topic_sqlalchemy import topic_column_sa
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import UserMessage, UserProfile
-
+from zerver.models.streams import get_stream,TopicRestriction
 MAX_MESSAGES_PER_FETCH = 5000
 
 
@@ -272,6 +272,23 @@ def get_messages_backend(
             realm=realm,
         )
 
+    restrictions = TopicRestriction.objects.filter(user=user_profile)
+
+    # Create a list to hold the results
+    restricted_list = []
+
+    for restriction in restrictions:
+        restricted_list.append({
+            's': restriction.stream_id,
+            't': restriction.topic
+        })
+    restricted_list = {(item['s'], item['t']) for item in restricted_list}
+
+    message_list = [
+        item for item in message_list
+        if ('stream_id' not in item or 'subject' not in item) or (
+            (item['stream_id'], item['subject']) in restricted_list)
+    ]
     ret = dict(
         messages=message_list,
         result="success",

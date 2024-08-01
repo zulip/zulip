@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
+import render_delete_topic_user from "../templates/confirm_dialog/confirm_topic_user.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
 import * as confirm_dialog from "./confirm_dialog";
@@ -16,6 +17,144 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
+
+//document.addEventListener('DOMContentLoaded', function () {
+//    // Add event listener for the topic permissions link
+//    document.querySelectorAll('.sidebar-popover-permission-topic-messages').forEach(function (element) {
+//        element.addEventListener('click', function () {
+//            const streamId = this.dataset.streamId;
+//            const topicName = this.dataset.topicName;
+//            openTopicPermissionsModal(streamId, topicName);
+//        });
+//    });
+//});
+function openTopicPermissionsModal(streamId, topicName) {
+    // Fetch users and display the modal
+    fetchUsers(streamId, topicName);
+    const html_body = render_delete_topic_user(streamId, topicName)
+
+                    confirm_dialog.launch({
+                        html_heading: $t_html({defaultMessage: "Topic Permission"}),
+                        help_link: "",
+                        html_body,
+
+                    });
+    //$('#topic-permissions-modal').modal('show');
+}
+
+function fetchUsers(streamId, topicName) {
+
+    fetch(`api/v1/topic_restrictions_delete/?stream_id=${streamId}&topic=${topicName}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.restricted_users && data.unrestricted_users) {
+                displayUsers(data.restricted_users, 'restricted-users-list', true);
+                displayUsers(data.unrestricted_users, 'unrestricted-users-list', false);
+            } else {
+                alert('Failed to fetch user data.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while fetching user data.');
+        });
+}
+
+function displayUsers(users, listId, isRestricted) {
+    const listElement = document.getElementById(listId);
+    listElement.innerHTML = '';
+    users.forEach(user => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${user.email} `;
+        if (isRestricted) {
+            const subscribeButton = document.createElement('button');
+            subscribeButton.textContent = 'UnSubscribe';
+
+            subscribeButton.addEventListener('click', () => subscribeUser([user.email], user.stream_id, user.topic,'Y'));
+            listItem.appendChild(subscribeButton);
+        }
+        if (!isRestricted) {
+            const subscribeButton = document.createElement('button');
+            subscribeButton.textContent = 'Subscribe';
+
+            subscribeButton.addEventListener('click', () => subscribeUser([user.email], user.stream_id, user.topic,'N'));
+            listItem.appendChild(subscribeButton);
+        }
+
+        listElement.appendChild(listItem);
+    });
+}
+
+//function subscribeUser(userId, streamId, topicName) {
+//
+//    fetch('/api/v1/topic_restrictions_delete/', {
+//        method: 'DELETE',
+//
+//        body: new URLSearchParams({
+//            'stream_id': streamId,
+//            'topic': topicName,
+//            'user_emails': [userId]
+//        })
+//    }).then(response => response.json())
+//      .then(data => {
+//          if (data.success) {
+//              alert(data);
+//              fetchUsers(streamId, topicName);  // Refresh the user lists
+//          } else {
+//              alert(data.error);
+//          }
+//      }).catch(error => {
+//          console.error('Error:', error);
+//          alert('An error occurred while subscribing the user.');
+//      });
+//}
+function subscribeUser(userEmails, streamId, topicName, flag) {
+    // Create URLSearchParams object for URL-encoded parameters
+    const params = new URLSearchParams();
+    params.append('stream_id', streamId);
+    params.append('topic', topicName);
+    //params.append('user', email);
+    userEmails.forEach(email => params.append('user', email));
+    params.append('flag', flag);
+
+    // Construct the URL with query parameters
+    const url = `/api/v1/topic_restriction_detail_ui/?${params.toString()}`;
+
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => response.json())
+      .then(data => {
+
+          if (data.MSG) {
+              //alert(JSON.stringify(data));  // Use JSON.stringify to properly display the data object
+              fetchUsers(streamId, topicName);  // Refresh the user lists
+          } else {
+              alert(data.error || 'An error occurred.');
+          }
+      })
+      .catch(error => {
+          alert('Failed to retrieve data: ' + error.message);
+      });
+}
+// Function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 
 export function initialize() {
     popover_menus.register_popover_menu(
@@ -124,7 +263,13 @@ export function initialize() {
                     unread_ops.mark_topic_as_unread(stream_id, topic_name);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
+                $popper.one("click", ".sidebar-popover-permission-topic-messages", () => {
+                    const html_body = render_delete_topic_user(stream_id, topic_name);
 
+                    openTopicPermissionsModal(stream_id, topic_name)
+
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
                 $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
                     const html_body = render_delete_topic_modal({topic_name});
 

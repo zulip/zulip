@@ -27,6 +27,41 @@ from zerver.lib.validator import check_capped_string, validate_select_field_data
 from zerver.models import CustomProfileField, Realm, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from zerver.decorator import zulip_login_required, has_request_variables, REQ
+from zerver.models import UserProfile, Attachment, Stream, Recipient, Message
+#from zerver.lib.response import json_success, json_error
+
+def json_error(message: str):
+    return JsonResponse({'result': 'error', 'msg': message}, status=400)
+@has_request_variables
+def list_uploaded_files_from_attachments(request,
+                                 stream_name: str=REQ(str),
+                                 topic_name: Optional[str]=REQ(str, default=None),
+                                 limit: int=REQ(int, default=100)):
+    try:
+        stream = Stream.objects.get( id=24)
+        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream_name)
+    except Stream.DoesNotExist:
+        return json_error(_('Invalid stream name'))
+
+    messages = Message.objects.filter(
+        recipient_id=recipient.id
+    ).order_by('-id')[:limit]
+
+    message_ids = [message.id for message in messages]
+    print(message_ids)
+    attachments = Attachment.objects.filter(messages_id_in=message_ids).distinct()
+
+    file_urls = [{
+        'file_name': attachment.file_name,
+        'url': attachment.path_id,
+        'size': attachment.size,
+        'uploaded_by': attachment.owner.id if attachment.owner else None  # Ensure uploaded_by is serializable
+    } for attachment in attachments]
+
+    return JsonResponse(file_urls, safe=False)
 
 def list_realm_custom_profile_fields(
     request: HttpRequest, user_profile: UserProfile

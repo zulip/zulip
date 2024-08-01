@@ -54,6 +54,7 @@ from zerver.views.custom_profile_fields import (
     reorder_realm_custom_profile_fields,
     update_realm_custom_profile_field,
     update_user_custom_profile_data,
+    list_uploaded_files_from_attachments
 )
 from zerver.views.digest import digest_page
 from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
@@ -853,9 +854,15 @@ if settings.DEVELOPMENT:
     urls += dev_urls.urls
     i18n_urls += dev_urls.i18n_urls
     v1_api_mobile_patterns += dev_urls.v1_api_mobile_patterns
-
+from zerver.views.topic_restriction import topic_restriction_list, topic_restriction_detail,topic_restriction_detail_ui
 urls += [
     path("api/v1/", include(v1_api_mobile_patterns)),
+    path('api/v1/custom/<int:stream_name>/list_uploaded_files_from_attachments/',
+         list_uploaded_files_from_attachments, name='list_uploaded_files_from_attachments'),
+    path('api/v1/topic_restrictions/', topic_restriction_list, name='topic_restriction_list'),
+    path('api/v1/topic_restrictions_delete/', topic_restriction_detail, name='topic_restriction_detail'),
+    path('api/v1/topic_restriction_detail_ui/', topic_restriction_detail_ui,
+         name='topic_restriction_detail_ui'),
 ]
 
 # Healthcheck URL

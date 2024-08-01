@@ -172,7 +172,7 @@ class RestApiAuthBackend(BaseBackend):
             print(email)
             print(realm)
             #email = 'a@test.com'
-            user_profile = UserProfile.objects.get(email=email, realm=realm)
+            user_profile = UserProfile.objects.get(delivery_email=email, realm=realm)
             #user_profile = UserProfile.objects.get(pk=27)
         except UserProfile.DoesNotExist:
             print('no')
