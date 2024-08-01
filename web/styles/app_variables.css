@@ -585,6 +585,8 @@
     --color-recent-view-link-hover: hsl(214deg 40% 58%);
 
     /* Compose box colors */
+    --color-compose-box-background: hsl(232deg 30% 92%);
+    --color-compose-message-content-background: hsl(0deg 0% 100%);
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
     --color-compose-send-button-background: hsl(240deg 96% 68%);
     --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
@@ -988,6 +990,12 @@
     --color-recent-view-link-hover: hsl(208deg 64% 52%);
 
     /* Compose box colors */
+    --color-compose-box-background: hsl(228deg 11% 17%);
+    --color-compose-message-content-background: color-mix(
+        in srgb,
+        var(--color-compose-box-background),
+        hsl(0deg 0% 0%) 20%
+    );
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
     --color-compose-send-control-button: hsl(240deg 30% 70%);
     --color-compose-send-control-button-background: transparent;

@@ -500,7 +500,6 @@
     }
 
     #compose-content {
-        background-color: hsl(228deg 11% 17%);
         border-color: hsl(0deg 0% 0% / 60%);
     }
 
@@ -515,10 +514,6 @@
     .overlay-message-row .overlay-message-info-box,
     .preview_message_area {
         border-color: hsl(0deg 0% 0% / 40%);
-    }
-
-    .preview_message_area {
-        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     .top-navbar-border {
