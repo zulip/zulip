@@ -454,7 +454,7 @@
             margin-bottom: 10px;
             border: 1px solid hsl(0deg 0% 87%);
 
-            & > div {
+            .tab-content {
                 display: none;
             }
         }
@@ -467,7 +467,7 @@
             border-radius: 6px;
         }
 
-        &.no-tabs .blocks > div,
+        &.no-tabs .blocks > .tab-content,
         &.has-tabs .blocks > .active {
             display: block;
         }
