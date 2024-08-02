@@ -11,7 +11,7 @@ up-to-date list of all changes.
 
 _Released 2024-08-02_
 
-- Clarified upgrade notes, installer error messages, and improved
++ Clarified upgrade notes and installer error messages. Improved
   documentation to smooth the process of upgrading Ubuntu 20.04 to
   22.04 before upgrading to Zulip 9.x. Installations currently running
   Ubuntu 20.04 should first upgrade to the latest Zulip 8.x release,
