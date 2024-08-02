@@ -96,6 +96,7 @@ export const user_schema = z
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.
         is_inaccessible_user: z.optional(z.boolean()),
+        is_system_bot: z.optional(z.literal(true)),
     })
     .and(
         z.discriminatedUnion("is_bot", [
@@ -110,12 +111,6 @@ export const user_schema = z
             }),
         ]),
     );
-
-export const cross_realm_bot_schema = user_schema.and(
-    z.object({
-        is_system_bot: z.boolean(),
-    }),
-);
 
 export const server_emoji_schema = z.object({
     id: z.string(),
@@ -410,7 +405,7 @@ export const state_data_schema = z
             .object({
                 realm_users: z.array(user_schema),
                 realm_non_active_users: z.array(user_schema),
-                cross_realm_bots: z.array(cross_realm_bot_schema),
+                cross_realm_bots: z.array(user_schema),
             })
             .transform((people) => ({people})),
     )
