@@ -1,7 +1,3 @@
-# https://github.com/typeddjango/django-stubs/issues/1698
-# mypy: disable-error-code="explicit-override"
-
-
 from django.db import models
 from django.db.models import CASCADE
 from django.utils.timezone import now as timezone_now
