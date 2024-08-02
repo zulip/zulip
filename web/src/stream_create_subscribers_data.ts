@@ -4,7 +4,7 @@ import * as people from "./people";
 import type {User} from "./people";
 import {current_user} from "./state_data";
 
-let user_id_set: Set<number>;
+export let user_id_set: Set<number>;
 let soft_remove_user_id_set: Set<number>;
 
 export function initialize_with_current_user(): void {
