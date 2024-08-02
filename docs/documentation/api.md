@@ -254,13 +254,13 @@ above.
    question works by reading the code! To understand how arguments
    are specified in Zulip backend endpoints, read our [REST API
    tutorial][rest-api-tutorial], paying special attention to the
-   details of `REQ` and `has_request_variables`.
+   details of `typed_endpoint`.
 
    Once you understand that, the best way to determine the supported
    arguments for an API endpoint is to find the corresponding URL
    pattern in `zprojects/urls.py`, look up the backend function for
-   that endpoint in `zerver/views/`, and inspect its arguments
-   declared using `REQ`.
+   that endpoint in `zerver/views/`, and inspect its keyword-only
+   arguments.
 
    You can check your formatting using these helpful tools.
 
