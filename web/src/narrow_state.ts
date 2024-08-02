@@ -304,7 +304,7 @@ export function _possible_unread_message_ids(
         return unread.get_msg_ids_for_stream(sub.stream_id);
     }
 
-    if (current_filter.can_bucket_by("dm")) {
+    if (current_filter.can_bucket_by("dm", "with") || current_filter.can_bucket_by("dm")) {
         current_filter_pm_string = pm_ids_string(current_filter);
         if (current_filter_pm_string === undefined) {
             return [];
@@ -349,7 +349,7 @@ export function narrowed_by_pm_reply(current_filter: Filter | undefined = filter
     if (current_filter === undefined) {
         return false;
     }
-    const terms = current_filter.terms();
+    const terms = current_filter.terms().filter((term) => term.operator !== "with");
     return terms.length === 1 && current_filter.has_operator("dm");
 }
 

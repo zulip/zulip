@@ -402,7 +402,8 @@ export class Filter {
             return orig_terms;
         }
 
-        const updated_terms = [...orig_terms];
+        const updated_terms = orig_terms.filter((term: NarrowTerm) => term.operator !== "dm");
+
         let channel_term = updated_terms.find(
             (term: NarrowTerm) => Filter.canonicalize_operator(term.operator) === "channel",
         );
@@ -616,9 +617,9 @@ export class Filter {
             "channels-public",
             "channel",
             "topic",
-            "with",
             "dm",
             "dm-including",
+            "with",
             "sender",
             "near",
             "id",
@@ -891,6 +892,8 @@ export class Filter {
         this.cached_sorted_terms_for_comparison = undefined;
         if (this.has_operator("channel")) {
             this._sub = stream_data.get_sub_by_name(this.operands("channel")[0]!);
+        } else {
+            this._sub = undefined;
         }
     }
 
@@ -1075,6 +1078,10 @@ export class Filter {
         }
 
         if (_.isEqual(term_types, ["channel", "topic"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["dm", "with"])) {
             return true;
         }
 
@@ -1303,6 +1310,7 @@ export class Filter {
         }
         if (
             (term_types.length === 2 && _.isEqual(term_types, ["dm", "near"])) ||
+            (term_types.length === 2 && _.isEqual(term_types, ["dm", "with"])) ||
             (term_types.length === 1 && _.isEqual(term_types, ["dm"]))
         ) {
             const emails = this.operands("dm")[0]!.split(",");
@@ -1475,7 +1483,6 @@ export class Filter {
     fix_terms(terms: NarrowTerm[]): NarrowTerm[] {
         terms = this._canonicalize_terms(terms);
         terms = this._fix_redundant_is_private(terms);
-        terms = this._fix_redundant_with_dm(terms);
         return terms;
     }
 
@@ -1486,16 +1493,6 @@ export class Filter {
         }
 
         return terms.filter((term) => Filter.term_type(term) !== "is-dm");
-    }
-
-    _fix_redundant_with_dm(terms: NarrowTerm[]): NarrowTerm[] {
-        // Because DMs can't move, the `with` operator is a noop on a
-        // DM conversation.
-        if (terms.some((term) => Filter.term_type(term) === "dm")) {
-            return terms.filter((term) => Filter.term_type(term) !== "with");
-        }
-
-        return terms;
     }
 
     _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowTerm[] {
@@ -1613,6 +1610,7 @@ export class Filter {
         if (
             _.isEqual(term_type, ["channel", "topic", "with"]) ||
             _.isEqual(term_type, ["channel", "topic"]) ||
+            _.isEqual(term_type, ["dm", "with"]) ||
             _.isEqual(term_type, ["dm"])
         ) {
             return true;
