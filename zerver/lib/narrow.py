@@ -1,7 +1,7 @@
 import re
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import Any, Generic, TypeAlias, TypeVar
+from typing import Any, Generic, TypeAlias, TypedDict, TypeVar
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -26,6 +26,7 @@ from sqlalchemy.sql import (
     or_,
     select,
     table,
+    true,
     union_all,
 )
 from sqlalchemy.sql.selectable import SelectBase
@@ -43,6 +44,8 @@ from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
+    access_stream_by_id,
+    access_stream_by_name,
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
     get_public_streams_queryset,
@@ -56,7 +59,7 @@ from zerver.lib.topic_sqlalchemy import (
     topic_match_sa,
 )
 from zerver.lib.types import Validator
-from zerver.lib.user_topics import exclude_topic_mutes
+from zerver.lib.user_topics import exclude_topic_mutes, include_unmutes_and_followed_topics
 from zerver.lib.validator import (
     check_bool,
     check_required_string,
@@ -80,6 +83,11 @@ from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
 )
+
+
+class StreamSubscription(TypedDict):
+    stream: Stream
+    sub: Subscription
 
 
 class NarrowParameter(BaseModel):
@@ -263,11 +271,13 @@ class NarrowBuilder:
         msg_id_column: ColumnElement[Integer],
         realm: Realm,
         is_web_public_query: bool = False,
+        channel_data: StreamSubscription | None = None,
     ) -> None:
         self.user_profile = user_profile
         self.msg_id_column = msg_id_column
         self.realm = realm
         self.is_web_public_query = is_web_public_query
+        self.channel_data = channel_data
         self.by_method_map = {
             "has": self.by_has,
             "in": self.by_in,
@@ -371,13 +381,12 @@ class NarrowBuilder:
         assert self.user_profile is not None
 
         if operand == "home":
-            conditions = exclude_muting_conditions(
-                self.user_profile, [NarrowParameter(operator="in", operand="home")]
-            )
+            conditions = exclude_muting_conditions(self.user_profile, self.channel_data)
             if conditions:
                 return query.where(maybe_negate(and_(*conditions)))
-            return query  # nocoverage
+            return query
         elif operand == "all":
+            # TODO: Is `-in:all` output wrong? It's certainly useless in any case.
             return query
 
         raise BadNarrowOperatorError("unknown 'in' operand " + operand)
@@ -868,13 +877,23 @@ def ok_to_include_history(
     return include_history
 
 
-def get_channel_from_narrow_access_unchecked(
-    narrow: list[NarrowParameter] | None, realm: Realm
-) -> Stream | None:
+def get_channel_from_narrow(
+    narrow: list[NarrowParameter] | None, user_profile: UserProfile
+) -> StreamSubscription | None:
     if narrow is not None:
         for term in narrow:
             if term.operator in channel_operators:
-                return get_stream_by_narrow_operand_access_unchecked(term.operand, realm)
+                try:
+                    if isinstance(term.operand, str):
+                        (stream, sub) = access_stream_by_name(user_profile, term.operand)
+                    else:
+                        (stream, sub) = access_stream_by_id(user_profile, term.operand)
+                    if sub:
+                        return StreamSubscription(stream=stream, sub=sub)
+                    else:
+                        return None
+                except JsonableError:
+                    return None
     return None
 
 
@@ -955,24 +974,16 @@ def update_narrow_terms_containing_with_operator(
 
 
 def exclude_muting_conditions(
-    user_profile: UserProfile, narrow: list[NarrowParameter] | None
+    user_profile: UserProfile, channel_data: StreamSubscription | None = None
 ) -> list[ClauseElement]:
     conditions: list[ClauseElement] = []
-    channel_id = None
-    try:
-        # Note: It is okay here to not check access to channel
-        # because we are only using the channel ID to exclude data,
-        # not to include results.
-        channel = get_channel_from_narrow_access_unchecked(narrow, user_profile.realm)
-        if channel is not None:
-            channel_id = channel.id
-    except Stream.DoesNotExist:
-        pass
 
     # Channel-level muting only applies when looking at views that
     # include multiple channels, since we do want users to be able to
     # browser messages within a muted channel.
-    if channel_id is None:
+    if channel_data is None:
+        channel_id = None
+
         rows = Subscription.objects.filter(
             user_profile=user_profile,
             active=True,
@@ -980,12 +991,45 @@ def exclude_muting_conditions(
             recipient__type=Recipient.STREAM,
         ).values("recipient_id")
         muted_recipient_ids = [row["recipient_id"] for row in rows]
-        if len(muted_recipient_ids) > 0:
-            # Only add the condition if we have muted channels to simplify/avoid warnings.
-            condition = not_(column("recipient_id", Integer).in_(muted_recipient_ids))
-            conditions.append(condition)
 
-    conditions = exclude_topic_mutes(conditions, user_profile, channel_id)
+        # Only add the condition if we have muted channels to simplify/avoid warnings.
+        if len(muted_recipient_ids) > 0:
+            # Include unmuted and followed topics from muted channels
+            unmuted_followed_conditions = include_unmutes_and_followed_topics(user_profile)
+            if unmuted_followed_conditions is not None:
+                or_condition = or_(
+                    not_(column("recipient_id", Integer).in_(muted_recipient_ids)),
+                    unmuted_followed_conditions,
+                )
+                conditions.append(or_condition)
+            else:
+                condition = not_(column("recipient_id", Integer).in_(muted_recipient_ids))
+                conditions.append(condition)
+        else:
+            # If there are no muted channels, we should include messages from all channels.
+            conditions.append(true())
+        conditions = exclude_topic_mutes(conditions, user_profile, channel_id)
+
+    else:
+        channel_id = channel_data["stream"].id
+        channel_subscription = channel_data["sub"]
+
+        # If we're in a channel narrow, we need to take into consideration if the channel
+        # is muted.
+        if channel_subscription.is_muted:
+            # If channel is muted, default to excluding messages and include only unmuted topics
+            # and followed topics.
+            unmuted_followed_conditions = include_unmutes_and_followed_topics(
+                user_profile, channel_id
+            )
+            if unmuted_followed_conditions is not None:
+                conditions.append(unmuted_followed_conditions)
+            else:
+                # If there are no unmuted or followed topics, we should not include any messages.
+                conditions.append(false())
+        else:
+            # If channel is not muted, default to including messages and excluding muted topics.
+            conditions = exclude_topic_mutes(conditions, user_profile, channel_id)
 
     # Muted user logic for hiding messages is implemented entirely
     # client-side. This is by design, as it allows UI to hint that
@@ -995,7 +1039,6 @@ def exclude_muting_conditions(
     # clients. (We could in theory exclude direct messages from muted
     # users, but they're likely to be sufficiently rare to not be worth
     # extra logic/testing here).
-
     return conditions
 
 
@@ -1057,8 +1100,17 @@ def add_narrow_conditions(
     if narrow is None:
         return (query, is_search)
 
+    # Get channel data if it is a channel narrow since we need the channel data
+    # to build the query for is:muted.
+    if user_profile is not None:
+        channel_data = get_channel_from_narrow(narrow, user_profile)
+    else:
+        channel_data = None
+
     # Build the query for the narrow
-    builder = NarrowBuilder(user_profile, inner_msg_id_col, realm, is_web_public_query)
+    builder = NarrowBuilder(
+        user_profile, inner_msg_id_col, realm, is_web_public_query, channel_data
+    )
     search_operands = []
 
     # As we loop through terms, builder does most of the work to extend
@@ -1123,7 +1175,8 @@ def find_first_unread_anchor(
 
     # We exclude messages on muted topics when finding the first unread
     # message in this narrow
-    muting_conditions = exclude_muting_conditions(user_profile, narrow)
+    channel_data = get_channel_from_narrow(narrow, user_profile)
+    muting_conditions = exclude_muting_conditions(user_profile, channel_data)
     if muting_conditions:
         condition = and_(condition, *muting_conditions)
 

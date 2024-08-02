@@ -8,6 +8,7 @@ from django.db import connection, transaction
 from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
+from sqlalchemy import true
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
 from sqlalchemy.types import Integer
 
@@ -250,7 +251,7 @@ def exclude_topic_mutes(
     )
 
     if not rows:
-        return conditions
+        return [*conditions, true()]
 
     class RecipientTopicDict(TypedDict):
         recipient_id: int
@@ -265,6 +266,45 @@ def exclude_topic_mutes(
 
     condition = not_(or_(*map(mute_cond, rows)))
     return [*conditions, condition]
+
+
+def include_unmutes_and_followed_topics(
+    user_profile: UserProfile, stream_id: int | None = None
+) -> ClauseElement | None:
+    query = UserTopic.objects.filter(
+        user_profile=user_profile,
+        visibility_policy__in=[
+            UserTopic.VisibilityPolicy.UNMUTED,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+        ],
+    )
+
+    if stream_id is not None:
+        # If we are narrowed to a stream, we can optimize the query
+        # by not considering topics outside the stream.
+        query = query.filter(stream_id=stream_id)
+
+    rows = query.values(
+        "recipient_id",
+        "topic_name",
+    )
+
+    if not rows:
+        return None
+
+    class RecipientTopicDict(TypedDict):
+        recipient_id: int
+        topic_name: str
+
+    def unmute_cond(row: RecipientTopicDict) -> ClauseElement:
+        recipient_id = row["recipient_id"]
+        topic_name = row["topic_name"]
+        stream_cond = column("recipient_id", Integer) == recipient_id
+        topic_cond = topic_match_sa(topic_name)
+        return and_(stream_cond, topic_cond)
+
+    condition = or_(*map(unmute_cond, rows))
+    return condition
 
 
 def build_get_topic_visibility_policy(
