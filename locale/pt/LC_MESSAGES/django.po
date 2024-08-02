@@ -6,6 +6,7 @@
 # Alex Schneider Zis <alexszis@gmail.com>, 2018
 # Andrei Bernardo Simoni <andrei_simoni@hotmail.com>, 2021
 # André Lopes Pereira <andrelopespereira@gmail.com>, 2018-2019
+# André Malagutti, 2024
 # André Lopes Pereira <andrelopespereira@gmail.com>, 2018
 # Everton Pereira, 2024
 # Juno Takano <juno@newen.pub>, 2019
@@ -19,7 +20,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Leonardo Pimenta, 2024\n"
+"Last-Translator: André Malagutti, 2024\n"
 "Language-Team: Portuguese (http://app.transifex.com/zulip/zulip/language/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1637,11 +1638,11 @@ msgstr "\n                            Se você é um proprietário dessa organiz
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
-msgstr ""
+msgstr "Concluir o login do aplicativo de desktop"
 
 #: templates/zerver/desktop_login.html:11
 msgid "Finish desktop login"
-msgstr ""
+msgstr "Concluir login na área de trabalho"
 
 #: templates/zerver/desktop_login.html:14
 msgid ""
@@ -1667,7 +1668,7 @@ msgstr "Token aceito. Fazendo login…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
-msgstr ""
+msgstr "Faça login no aplicativo de desktop"
 
 #: templates/zerver/desktop_redirect.html:12
 msgid ""
@@ -2545,7 +2546,7 @@ msgstr ""
 #: templates/zerver/emails/onboarding_team_to_zulip.html:16
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:6
 msgid "Use the app itself to chat about your impressions."
-msgstr ""
+msgstr "Use o próprio aplicativo para conversar sobre suas impressões."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:18
 #, python-format
@@ -2943,7 +2944,7 @@ msgstr "Perguntas? <a href=\"%(billing_help_link)s\">Saiba mais</a> ou entre em 
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.subject.txt:1
 msgid "Log in to Zulip plan management"
-msgstr ""
+msgstr "Faça login no gerenciamento do plano Zulip"
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:1
 #, python-format
@@ -2980,11 +2981,11 @@ msgstr ""
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html:14
 #: templates/zerver/emails/remote_realm_billing_confirm_login.txt:4
 msgid "Confirm and log in"
-msgstr ""
+msgstr "Confirme e faça login"
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.subject.txt:1
 msgid "Confirm email for Zulip plan management"
-msgstr ""
+msgstr "Confirme email para gerenciamento do plano Zulip"
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.txt:1
 #, python-format
@@ -3157,23 +3158,23 @@ msgstr "Status do Zulip Cloud"
 
 #: templates/zerver/footer.html:47
 msgid "Organization set up"
-msgstr ""
+msgstr "Configuração da organização"
 
 #: templates/zerver/footer.html:52
 msgid "Installing a Zulip server"
-msgstr ""
+msgstr "Instalando um servidor Zulip"
 
 #: templates/zerver/footer.html:57
 msgid "Upgrading a Zulip server"
-msgstr ""
+msgstr "Atualizando um servidor Zulip"
 
 #: templates/zerver/footer.html:64
 msgid "Contributing"
-msgstr ""
+msgstr "Contribuindo"
 
 #: templates/zerver/footer.html:69
 msgid "Contributing guide"
-msgstr ""
+msgstr "Guia de contribuição"
 
 #: templates/zerver/footer.html:72
 msgid "Development community"
@@ -3221,7 +3222,7 @@ msgstr "X (Twitter)"
 
 #: templates/zerver/footer.html:99
 msgid "Mastodon"
-msgstr ""
+msgstr "Mastodonte"
 
 #: templates/zerver/footer.html:100
 msgid "LinkedIn"
@@ -3229,7 +3230,7 @@ msgstr "LinkedIn"
 
 #: templates/zerver/footer.html:110
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
-msgstr ""
+msgstr "Desenvolvido por <a href=\"https://zulip.com\">Zulip</a>"
 
 #: templates/zerver/footer.html:116
 msgid "Terms of Service"
@@ -3241,7 +3242,7 @@ msgstr "Política de privacidade"
 
 #: templates/zerver/footer.html:119
 msgid "Website attributions"
-msgstr ""
+msgstr "Atribuições do site"
 
 #: templates/zerver/integrations/index.html:23
 #, python-format
@@ -4783,7 +4784,7 @@ msgstr "Mensagens diretas estão desabilitadas nesta organização."
 
 #: zerver/lib/exceptions.py:538
 msgid "This conversation does not include any users who can authorize it."
-msgstr ""
+msgstr "Esta conversa não inclui nenhum usuário que possa autorizá-la"
 
 #: zerver/lib/exceptions.py:551
 msgid "Access denied"
@@ -5952,11 +5953,11 @@ msgstr "Público"
 
 #: zerver/models/streams.py:59
 msgid "Private, shared history"
-msgstr ""
+msgstr "Histórico privado e compartilhado"
 
 #: zerver/models/streams.py:65
 msgid "Private, protected history"
-msgstr ""
+msgstr "Histórico privado e protegido"
 
 #: zerver/models/streams.py:73
 msgid "Public, protected history"

@@ -11,6 +11,7 @@
 # Hanson Sin <yeehangsin@yahoo.com>, 2020
 # Huiming Tao <taohuiming@gmail.com>, 2017-2018
 # 张建春 <zhang.jianchun1@gmail.com>, 2016
+# Jingchun Chen, 2024
 # LIU Lin <2671362312@qq.com>, 2019
 # longjiang li <cqlilon@live.com>, 2018-2020
 # Mingyuan Zhuang, 2024
@@ -22,7 +23,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2022,2024\n"
+"Last-Translator: Jingchun Chen, 2024\n"
 "Language-Team: Chinese Simplified (http://app.transifex.com/zulip/zulip/language/zh-Hans/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -144,18 +145,18 @@ msgstr "无效的远程服务器。"
 msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
-msgstr ""
+msgstr "您必须为组织中的所有活动用户购买许可证（最低{min_licenses}）。"
 
 #: corporate/lib/stripe.py:223
 #, python-brace-format
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this"
 " page. To complete the upgrade, please contact {email}."
-msgstr ""
+msgstr "此页面无法处理许可证数量超过{max_licenses}的发票。要完成升级，请联系{email}。"
 
 #: corporate/lib/stripe.py:360
 msgid "No payment method on file."
-msgstr ""
+msgstr "档案中没有付款方式。"
 
 #: corporate/lib/stripe.py:368
 #, python-brace-format
@@ -182,11 +183,11 @@ msgstr "出错啦！请过几秒再试."
 
 #: corporate/lib/stripe.py:1794
 msgid "Please add a credit card before starting your free trial."
-msgstr ""
+msgstr "请在开始免费试用之前添加信用卡。"
 
 #: corporate/lib/stripe.py:1816
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "请添加信用卡以安排升级。"
 
 #: corporate/lib/stripe.py:2792
 msgid ""
@@ -201,7 +202,7 @@ msgstr "无法更新计划。计划已经结束。"
 #: corporate/lib/stripe.py:2855
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
-msgstr ""
+msgstr "无法在当前计费期内更新免费试用计划的许可证。"
 
 #: corporate/lib/stripe.py:2860 corporate/lib/stripe.py:2888
 msgid ""
@@ -223,7 +224,7 @@ msgstr "您不能减少当前计费周期内的许可证。"
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
-msgstr ""
+msgstr "无法更改正在降级的计划的下一个计费周期的许可证。"
 
 #: corporate/lib/stripe.py:2903
 #, python-brace-format
@@ -237,7 +238,7 @@ msgstr "您的计划已安排续订 {licenses_at_next_renewal} 许可证。"
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
-msgstr ""
+msgstr "您已经为下一计费期购买了{licenses_at_next_renewal}许可证。"
 
 #: corporate/lib/stripe.py:2949
 msgid "Nothing to change."
@@ -261,7 +262,7 @@ msgstr "未找到付款意图"
 
 #: corporate/lib/stripe.py:3228
 msgid "Pass stripe_session_id or stripe_invoice_id"
-msgstr ""
+msgstr "传递 stripe_session_id 或者 stripe_invoice_id"
 
 #: corporate/lib/stripe.py:3961
 #, python-brace-format
@@ -273,43 +274,43 @@ msgstr "您的组织的赞助请求已获通过！您已免费升级至{plan_nam
 
 #: corporate/views/billing_page.py:334
 msgid "Parameter 'confirmed' is required"
-msgstr ""
+msgstr "参数“confirmed”是必需的"
 
 #: corporate/views/remote_billing_page.py:141
 msgid "Billing access token expired."
-msgstr ""
+msgstr "计费访问令牌已过期。"
 
 #: corporate/views/remote_billing_page.py:143
 msgid "Invalid billing access token."
-msgstr ""
+msgstr "计费访问令牌无效。"
 
 #: corporate/views/remote_billing_page.py:219
 msgid ""
 "Failed to migrate customer from server to realms. Please contact support for"
 " assistance."
-msgstr ""
+msgstr "无法将客户从服务器迁移到领域。请联系支持人员以获得帮助。"
 
 #: corporate/views/remote_billing_page.py:299
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "用户帐户尚不存在。"
 
 #: corporate/views/remote_billing_page.py:304
 #: corporate/views/remote_billing_page.py:732
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "您必须接受服务条款才能继续。"
 
 #: corporate/views/remote_billing_page.py:542
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
-msgstr ""
+msgstr "此 zulip_org_id 未在 zulip 的计费管理系统中注册。"
 
 #: corporate/views/remote_billing_page.py:549
 msgid "Invalid zulip_org_key for this zulip_org_id."
-msgstr ""
+msgstr "此 zulip_org_id 的 zulp_org_key 无效。"
 
 #: corporate/views/remote_billing_page.py:553
 msgid "Your server registration has been deactivated."
-msgstr ""
+msgstr "您的服务器注册已停用。"
 
 #: corporate/views/support.py:370 zerver/views/streams.py:275
 #: zerver/views/streams.py:279 zerver/views/streams.py:287
@@ -332,11 +333,11 @@ msgid ""
 "            If this error is unexpected, you can\n"
 "            <a href=\"mailto:%(support_email)s\">contact support</a>.\n"
 "            "
-msgstr ""
+msgstr "\n如果此错误是意外的，您可以<a href=\"mailto:%(support_email)s\">联系支持</a>人员。 "
 
 #: templates/4xx.html:11
 msgid "Access forbidden (403)"
-msgstr ""
+msgstr "禁止访问（403）"
 
 #: templates/4xx.html:13
 msgid ""
@@ -345,14 +346,14 @@ msgid ""
 "            browser did not send the credentials required to authenticate\n"
 "            your access. To resolve this issue:\n"
 "            "
-msgstr ""
+msgstr "\n您的请求无法完成，因为您的浏览器未发送身份验证所需的凭据您的访问权限。要解决此问题，请执行以下操作："
 
 #: templates/4xx.html:22
 msgid ""
 "\n"
 "                Make sure that your browser allows cookies for this site.\n"
 "                "
-msgstr ""
+msgstr "\n确保您的浏览器允许此网站使用Cookie。"
 
 #: templates/4xx.html:27
 msgid ""
@@ -361,7 +362,7 @@ msgid ""
 "                that block Referer headers, and disable them for\n"
 "                this site.\n"
 "                "
-msgstr ""
+msgstr "\n检查是否有任何浏览器隐私设置或扩展阻止Referer标头，并禁用它们这个网站。"
 
 #: templates/4xx.html:35
 msgid "Method not allowed (405)"
@@ -377,14 +378,14 @@ msgid ""
 "\n"
 "            Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
 "            "
-msgstr ""
+msgstr "\n无法加载您的Zulip聊天，因为服务器遇到技术问题。"
 
 #: templates/500.html:23
 msgid ""
 "\n"
 "            This page will reload automatically when service is restored.\n"
 "            "
-msgstr ""
+msgstr "\n恢复服务后，此页面将自动重新加载。"
 
 #: templates/500.html:27
 #, python-format
@@ -392,7 +393,7 @@ msgid ""
 "\n"
 "                In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
 "                "
-msgstr ""
+msgstr "\n同时，您可以<a href=\"mailto:%(support_email)s\">联系Zulip支持</a>。"
 
 #: templates/500.html:31
 #, python-format
@@ -401,7 +402,7 @@ msgid ""
 "                In the meantime, you can <a href=\"mailto:%(support_email)s\">contact\n"
 "                this server's administrators</a> for support.\n"
 "                "
-msgstr ""
+msgstr "\n与此同时，您可以<a href=\"mailto:%(support_email)s\">联系此服务器的管理员</a>提供支持。"
 
 #: templates/500.html:39
 #, python-format
@@ -410,7 +411,7 @@ msgid ""
 "                If you administer this server, you may want to check out the\n"
 "                <a href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>.\n"
 "                "
-msgstr ""
+msgstr "\n如果您管理此服务器，您可能需要签出<a href=\"%(troubleshooting_url)s\">Zulip服务器故障排除指南</a>。"
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -418,7 +419,7 @@ msgid ""
 "\n"
 "    Analytics for %(target_name)s | Zulip\n"
 "    "
-msgstr ""
+msgstr "\n%(target_name)s 的分析 | Zulip"
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -586,7 +587,7 @@ msgid ""
 "\n"
 "            Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "            "
-msgstr ""
+msgstr "\n                    不管任何麻烦，请联系 %(support_email_html_tag)s，我们将尽快给您解决。 \n                    "
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
@@ -628,20 +629,20 @@ msgstr "账单"
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:33
 msgid "Close modal"
-msgstr ""
+msgstr "关闭模式"
 
 #: templates/corporate/billing/billing.html:422
 #: templates/corporate/billing/billing.html:510
 #: templates/corporate/billing/billing.html:538
 #: templates/corporate/billing/billing.html:566
 msgid "Never mind"
-msgstr ""
+msgstr "无关紧要"
 
 #: templates/corporate/billing/billing.html:424
 #: templates/corporate/billing/billing.html:512
 #: templates/corporate/billing/billing.html:540
 msgid "Downgrade"
-msgstr ""
+msgstr "降级"
 
 #: templates/corporate/billing/billing.html:455
 #: templates/corporate/billing/billing.html:484
@@ -658,7 +659,7 @@ msgstr "确认"
 
 #: templates/corporate/billing/billing.html:568
 msgid "Cancel upgrade"
-msgstr ""
+msgstr "取消升级"
 
 #: templates/corporate/billing/event_status.html:5
 msgid "Billing status"
@@ -666,14 +667,14 @@ msgstr "账单状态"
 
 #: templates/corporate/billing/remote_billing_server_deactivate.html:5
 msgid "Deactivate server registration?"
-msgstr ""
+msgstr "停用服务器注册吗？"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:4
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:11
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:4
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:11
 msgid "Plan management not available"
-msgstr ""
+msgstr "计划管理不可用"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:13
 #, python-format
