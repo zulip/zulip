@@ -14,12 +14,7 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import type {
-    StateData,
-    cross_realm_bot_schema,
-    profile_datum_schema,
-    user_schema,
-} from "./state_data";
+import type {StateData, profile_datum_schema, user_schema} from "./state_data";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {is_user_in_group} from "./user_groups";
@@ -43,20 +38,18 @@ export type PseudoMentionUser = {
     idx: number;
 };
 
-export type CrossRealmBot = z.infer<typeof cross_realm_bot_schema>;
-
 let people_dict: FoldDict<User>;
 let people_by_name_dict: FoldDict<User>;
 let people_by_user_id_dict: Map<number, User>;
 let active_user_dict: Map<number, User>;
 let non_active_user_dict: Map<number, User>;
-let cross_realm_dict: Map<number, CrossRealmBot>;
+let cross_realm_dict: Map<number, User>;
 let pm_recipient_count_dict: Map<number, number>;
 let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
 
 export let INACCESSIBLE_USER_NAME: string;
-export let WELCOME_BOT: CrossRealmBot;
+export let WELCOME_BOT: User;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
@@ -1403,7 +1396,7 @@ export const is_person_active = (user_id: number): boolean => {
     return active_user_dict.has(user_id);
 };
 
-export function add_cross_realm_user(person: CrossRealmBot): void {
+export function add_cross_realm_user(person: User): void {
     if (!people_dict.has(person.email)) {
         _add_user(person);
     }
