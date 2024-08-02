@@ -324,6 +324,19 @@ test("basics", () => {
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
 
+    terms = [
+        {operator: "dm", operand: "joe@example.com,jack@example.com"},
+        {operator: "with", operand: "12"},
+    ];
+    filter = new Filter(terms);
+    assert.ok(filter.contains_only_private_messages());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.is_conversation_view());
+    assert.ok(!filter.is_conversation_view_with_near());
+
     // "pm-with" was renamed to "dm"
     terms = [{operator: "pm-with", operand: "joe@example.com"}];
     filter = new Filter(terms);
@@ -742,13 +755,6 @@ test("redundancies", () => {
     ];
     filter = new Filter(terms);
     assert.ok(filter.can_bucket_by("is-dm", "not-dm"));
-
-    terms = [
-        {operator: "dm", operand: "joe@example.com,"},
-        {operator: "with", operand: "12"},
-    ];
-    filter = new Filter(terms);
-    assert.ok(filter.can_bucket_by("dm"));
 });
 
 test("canonicalization", () => {
@@ -1561,12 +1567,25 @@ test("can_bucket_by", () => {
     assert.equal(filter.can_bucket_by("channel"), false);
     assert.equal(filter.can_bucket_by("channel", "topic"), false);
     assert.equal(filter.can_bucket_by("dm"), false);
+    assert.equal(filter.can_bucket_by("dm", "with"), false);
 
     terms = [{operator: "dm", operand: "foo@example.com,bar@example.com"}];
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("channel"), false);
     assert.equal(filter.can_bucket_by("channel", "topic"), false);
     assert.equal(filter.can_bucket_by("dm"), true);
+    assert.equal(filter.can_bucket_by("dm", "with"), false);
+    assert.equal(filter.can_bucket_by("is-mentioned"), false);
+    assert.equal(filter.can_bucket_by("is-dm"), false);
+
+    terms = [
+        {operator: "dm", operand: "foo@example.com,bar@example.com"},
+        {operator: "with", operand: "7"},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.can_bucket_by("channel"), false);
+    assert.equal(filter.can_bucket_by("channel", "topic"), false);
+    assert.equal(filter.can_bucket_by("dm", "with"), true);
     assert.equal(filter.can_bucket_by("is-mentioned"), false);
     assert.equal(filter.can_bucket_by("is-dm"), false);
 
@@ -1820,6 +1839,22 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
     assert.deepEqual(filter.terms(), [
         {operator: "dm", operand: "user3@zulip.com", negated: false},
+        {operator: "with", operand: "2", negated: false},
+    ]);
+
+    // When the narrow consists of `dm` operators, while the `with`
+    // operator corresponds to that of a channel topic message.
+    terms = [
+        {operator: "dm", operand: "iago@foo.com"},
+        {operator: "with", operand: "12"},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
+    assert.deepEqual(filter.terms(), [
+        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "topic", operand: "Test 1", negated: false},
+        {operator: "with", operand: "12", negated: false},
     ]);
 
     // When message id attached to `with` operator is found locally,
@@ -1991,6 +2026,10 @@ test("navbar_helpers", () => {
         {operator: "topic", operand: "pink"},
     ];
     const dm = [{operator: "dm", operand: "joe@example.com"}];
+    const dm_with = [
+        {operator: "dm", operand: "joe@example.com"},
+        {operator: "with", operand: "12"},
+    ];
     const dm_group = [{operator: "dm", operand: "joe@example.com,STEVE@foo.com"}];
     const dm_with_guest = [{operator: "dm", operand: "alice@example.com"}];
     const dm_group_including_guest = [
@@ -2219,6 +2258,13 @@ test("navbar_helpers", () => {
             is_common_narrow: true,
             zulip_icon: "hashtag",
             title: "Foo",
+            redirect_url_with_search: "#",
+        },
+        {
+            terms: dm_with,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: properly_separated_names([joe.full_name]),
             redirect_url_with_search: "#",
         },
     ];
