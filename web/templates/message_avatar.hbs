@@ -1,6 +1,6 @@
 <div class="u-{{msg/sender_id}} message-avatar sender_info_hover view_user_card_tooltip no-select" aria-hidden="true" data-is-bot="{{sender_is_bot}}">
     <div class="inline_profile_picture {{#sender_is_guest}} guest-avatar{{/sender_is_guest}}">
-        <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
+        <img loading="lazy" src="{{small_avatar_url}}" alt="" class="no-drag"/>
     </div>
 </div>
 {{~! remove whitespace ~}}
