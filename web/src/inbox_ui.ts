@@ -1327,9 +1327,17 @@ export function update(): void {
     const has_visible_unreads = has_dms_post_filter || has_topics_post_filter;
     show_empty_inbox_text(has_visible_unreads);
 
+    // We want to avoid weird jumps when user is interacting with Inbox
+    // and we are updating the view. So, we only reset current focus if
+    // the update was triggered by user. This can mean `row_focus` can
+    // be out of bounds, so we need to fix that.
     if (update_triggered_by_user) {
         setTimeout(revive_current_focus, 0);
         update_triggered_by_user = false;
+    } else {
+        if (row_focus >= get_all_rows().length) {
+            revive_current_focus();
+        }
     }
 }
 
