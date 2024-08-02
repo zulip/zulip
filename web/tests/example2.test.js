@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {make_stream} = require("./lib/example_stream");
+const {make_user} = require("./lib/example_user");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
@@ -23,11 +24,11 @@ const unread = zrequire("unread");
 // test module, but you can also do this within tests. Here we
 // will set up things at the top.
 
-const isaac = {
+const isaac = make_user({
     email: "isaac@example.com",
     user_id: 30,
     full_name: "Isaac Newton",
-};
+});
 
 const denmark_stream = make_stream({
     color: "blue",
