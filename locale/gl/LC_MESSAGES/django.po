@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-25 18:54+0000\n"
+"POT-Creation-Date: 2024-08-02 20:44+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3947,7 +3947,7 @@ msgstr ""
 msgid "Invalid order mapping."
 msgstr ""
 
-#: zerver/actions/custom_profile_fields.py:220 zerver/lib/users.py:420
+#: zerver/actions/custom_profile_fields.py:220 zerver/lib/users.py:419
 #: zerver/views/custom_profile_fields.py:222
 #: zerver/views/custom_profile_fields.py:245
 #, python-brace-format
@@ -4139,35 +4139,35 @@ msgstr ""
 msgid "Invalid message(s)"
 msgstr ""
 
-#: zerver/actions/message_send.py:164
+#: zerver/actions/message_send.py:165
 msgid "Unable to render message"
 msgstr ""
 
-#: zerver/actions/message_send.py:1256
+#: zerver/actions/message_send.py:1281
 msgid "Expected exactly one channel"
 msgstr ""
 
-#: zerver/actions/message_send.py:1267
+#: zerver/actions/message_send.py:1292
 msgid "Invalid data type for channel"
 msgstr ""
 
-#: zerver/actions/message_send.py:1283 zerver/actions/message_send.py:1293
+#: zerver/actions/message_send.py:1308 zerver/actions/message_send.py:1318
 #: zerver/lib/recipient_parsing.py:23
 msgid "Invalid data type for recipients"
 msgstr ""
 
-#: zerver/actions/message_send.py:1301 zerver/actions/message_send.py:1309
+#: zerver/actions/message_send.py:1326 zerver/actions/message_send.py:1334
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr ""
 
-#: zerver/actions/message_send.py:1459
+#: zerver/actions/message_send.py:1484
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel ID {channel_id}, "
 "but there is no channel with that ID."
 msgstr ""
 
-#: zerver/actions/message_send.py:1470
+#: zerver/actions/message_send.py:1495
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}, "
@@ -4175,26 +4175,26 @@ msgid ""
 "it."
 msgstr ""
 
-#: zerver/actions/message_send.py:1482
+#: zerver/actions/message_send.py:1507
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}. "
 "The channel exists but does not have any subscribers."
 msgstr ""
 
-#: zerver/actions/message_send.py:1583
+#: zerver/actions/message_send.py:1608
 msgid "You do not have permission to access some of the recipients."
 msgstr ""
 
-#: zerver/actions/message_send.py:1715
+#: zerver/actions/message_send.py:1740
 msgid "Topics are required in this organization"
 msgstr ""
 
-#: zerver/actions/message_send.py:1778
+#: zerver/actions/message_send.py:1803
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr ""
 
-#: zerver/actions/message_send.py:1784
+#: zerver/actions/message_send.py:1809
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr ""
@@ -4380,8 +4380,8 @@ msgstr ""
 #: zerver/decorator.py:674 zerver/lib/streams.py:724 zerver/lib/streams.py:750
 #: zerver/lib/streams.py:752 zerver/lib/streams.py:754
 #: zerver/lib/streams.py:773 zerver/lib/user_groups.py:117
-#: zerver/lib/user_groups.py:181 zerver/lib/users.py:260
-#: zerver/lib/users.py:289 zerver/lib/users.py:293 zerver/views/invite.py:66
+#: zerver/lib/user_groups.py:181 zerver/lib/users.py:259
+#: zerver/lib/users.py:288 zerver/lib/users.py:292 zerver/views/invite.py:66
 #: zerver/views/invite.py:222 zerver/views/presence.py:49
 #: zerver/views/realm_emoji.py:35 zerver/views/streams.py:306
 #: zerver/views/streams.py:609
@@ -5674,77 +5674,77 @@ msgstr ""
 msgid "User group name cannot start with '{prefix}'."
 msgstr ""
 
-#: zerver/lib/users.py:59
+#: zerver/lib/users.py:58
 msgid "Name too long!"
 msgstr ""
 
-#: zerver/lib/users.py:61
+#: zerver/lib/users.py:60
 msgid "Name too short!"
 msgstr ""
 
-#: zerver/lib/users.py:64
+#: zerver/lib/users.py:63
 msgid "Invalid characters in name!"
 msgstr ""
 
-#: zerver/lib/users.py:70
+#: zerver/lib/users.py:69
 msgid "Invalid format!"
 msgstr ""
 
-#: zerver/lib/users.py:89
+#: zerver/lib/users.py:88
 msgid "Unique names required in this organization."
 msgstr ""
 
-#: zerver/lib/users.py:111
+#: zerver/lib/users.py:110
 msgid "Name is already in use!"
 msgstr ""
 
-#: zerver/lib/users.py:117 zerver/views/users.py:484 zerver/views/users.py:497
+#: zerver/lib/users.py:116 zerver/views/users.py:484 zerver/views/users.py:497
 #: zerver/views/users.py:686
 msgid "Bad name or username"
 msgstr ""
 
-#: zerver/lib/users.py:135
+#: zerver/lib/users.py:134
 #, python-brace-format
 msgid "Invalid integration '{integration_name}'."
 msgstr ""
 
-#: zerver/lib/users.py:141
+#: zerver/lib/users.py:140
 #, python-brace-format
 msgid "Missing configuration parameters: {keys}"
 msgstr ""
 
-#: zerver/lib/users.py:151
+#: zerver/lib/users.py:150
 #, python-brace-format
 msgid "Invalid {key} value {value} ({error})"
 msgstr ""
 
-#: zerver/lib/users.py:169
+#: zerver/lib/users.py:168
 msgid "Invalid configuration data!"
 msgstr ""
 
-#: zerver/lib/users.py:203
+#: zerver/lib/users.py:202
 msgid "Invalid bot type"
 msgstr ""
 
-#: zerver/lib/users.py:208
+#: zerver/lib/users.py:207
 msgid "Invalid interface type"
 msgstr ""
 
-#: zerver/lib/users.py:247
+#: zerver/lib/users.py:246
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr ""
 
-#: zerver/lib/users.py:256 zerver/lib/users.py:258
+#: zerver/lib/users.py:255 zerver/lib/users.py:257
 msgid "No such bot"
 msgstr ""
 
-#: zerver/lib/users.py:282 zerver/lib/users.py:313 zerver/lib/users.py:330
-#: zerver/lib/users.py:346 zerver/views/presence.py:41
+#: zerver/lib/users.py:281 zerver/lib/users.py:312 zerver/lib/users.py:329
+#: zerver/lib/users.py:345 zerver/views/presence.py:41
 msgid "No such user"
 msgstr ""
 
-#: zerver/lib/users.py:284
+#: zerver/lib/users.py:283
 msgid "User is deactivated"
 msgstr ""
 
