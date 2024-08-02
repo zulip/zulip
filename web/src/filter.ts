@@ -15,7 +15,7 @@ import {page_params} from "./page_params";
 import type {User} from "./people";
 import * as people from "./people";
 import type {UserPillItem} from "./search_suggestion";
-import {realm} from "./state_data";
+import {current_user, realm} from "./state_data";
 import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
@@ -401,7 +401,8 @@ export class Filter {
             return orig_terms;
         }
 
-        const updated_terms = [...orig_terms];
+        const updated_terms = orig_terms.filter((term: NarrowTerm) => term.operator !== "dm");
+
         let channel_term = updated_terms.find(
             (term: NarrowTerm) => Filter.canonicalize_operator(term.operator) === "channel",
         );
@@ -822,12 +823,14 @@ export class Filter {
             const conversation_terms = new Set(["channel", "topic", "dm"]);
             const filtered_terms = raw_terms.filter((term) => {
                 const operator = Filter.canonicalize_operator(term.operator);
-                return !conversation_terms.has(operator);
+                return !conversation_terms.has(operator) && operator !== "with";
             });
 
             assert(typeof message.display_recipient !== "string");
             const dm_participants = message.display_recipient.map((user) => user.email);
-            const dm_operand = dm_participants.join(",");
+            const dm_operand = dm_participants
+                .filter((user_email) => user_email !== current_user.email)
+                .join(",");
 
             const dm_conversation_terms = [{operator: "dm", operand: dm_operand, negated: false}];
             return [...dm_conversation_terms, ...filtered_terms];
@@ -1441,7 +1444,6 @@ export class Filter {
     fix_terms(terms: NarrowTerm[]): NarrowTerm[] {
         terms = this._canonicalize_terms(terms);
         terms = this._fix_redundant_is_private(terms);
-        terms = this._fix_redundant_with_dm(terms);
         return terms;
     }
 
@@ -1452,16 +1454,6 @@ export class Filter {
         }
 
         return terms.filter((term) => Filter.term_type(term) !== "is-dm");
-    }
-
-    _fix_redundant_with_dm(terms: NarrowTerm[]): NarrowTerm[] {
-        // Because DMs can't move, the `with` operator is a noop on a
-        // DM conversation.
-        if (terms.some((term) => Filter.term_type(term) === "dm")) {
-            return terms.filter((term) => Filter.term_type(term) !== "with");
-        }
-
-        return terms;
     }
 
     _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowTerm[] {

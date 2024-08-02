@@ -742,13 +742,6 @@ test("redundancies", () => {
     ];
     filter = new Filter(terms);
     assert.ok(filter.can_bucket_by("is-dm", "not-dm"));
-
-    terms = [
-        {operator: "dm", operand: "joe@example.com,"},
-        {operator: "with", operand: "12"},
-    ];
-    filter = new Filter(terms);
-    assert.ok(filter.can_bucket_by("dm"));
 });
 
 test("canonicalization", () => {
@@ -1822,6 +1815,21 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
         {operator: "dm", operand: "user3@zulip.com", negated: false},
     ]);
 
+    // When the narrow consists of `dm` operators, while the `with`
+    // operator corresponds to that of a channel topic message.
+    terms = [
+        {operator: "dm", operand: "iago@foo.com"},
+        {operator: "with", operand: "12"},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
+    assert.deepEqual(filter.terms(), [
+        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "topic", operand: "Test 1", negated: false},
+        {operator: "with", operand: "12", negated: false},
+    ]);
+
     // When message id attached to `with` operator is found locally,
     // and is present in the same narrow as the original one, then
     // no hash change is required.
@@ -2446,10 +2454,7 @@ run_test("adjusted_terms_if_moved", () => {
         {operator: "with", operand: `${message.id}`},
     ];
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
-    assert.deepEqual(result, [
-        {operator: "dm", operand: "user3@zulip.com", negated: false},
-        {operator: "with", operand: "2"},
-    ]);
+    assert.deepEqual(result, [{operator: "dm", operand: "user3@zulip.com", negated: false}]);
 
     // should return null if no terms are changed
     raw_terms = [{operator: "channel", operand: "general"}];
