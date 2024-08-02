@@ -10,6 +10,7 @@
 const {strict: assert} = require("assert");
 
 const {make_stream} = require("./lib/example_stream");
+const {make_user} = require("./lib/example_user");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
@@ -34,11 +35,11 @@ assert.ok(util.find_stream_wildcard_mentions("mention @**everyone**"));
 //  * change the data
 //  * get a true value
 
-const isaac = {
+const isaac = make_user({
     email: "isaac@example.com",
     user_id: 30,
     full_name: "Isaac Newton",
-};
+});
 
 // The `people` object is a very fundamental object in the
 // Zulip app.  You can learn a lot more about it by reading

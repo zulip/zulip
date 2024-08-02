@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {make_user} = require("./lib/example_user");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 
@@ -46,11 +47,11 @@ const message_events = zrequire("message_events");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 
-const isaac = {
+const isaac = make_user({
     email: "isaac@example.com",
     user_id: 30,
     full_name: "Isaac Newton",
-};
+});
 people.add_active_user(isaac);
 
 /*
