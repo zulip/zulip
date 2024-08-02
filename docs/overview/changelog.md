@@ -30,7 +30,7 @@ _Released 2024-08-02_
 - Fix several minor visual bugs, most notably with composebox
   typeahead overflowing incorrectly.
 - Fixed a subtle live-update bug rerendering the inbox view.
-- Fixed a couple subtle performance issues involving the analytics
+- Fixed a couple of subtle performance issues involving the analytics
   cron job and listing invitations in organization settings.
 - Updated documentation for a couple integrations.
 - Updated translations.
