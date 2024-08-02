@@ -2,9 +2,9 @@
 
 const {strict: assert} = require("assert");
 
+const {make_stream} = require("./lib/example_stream");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
-const {make_stream} = require("./lib/test_stream");
 const $ = require("./lib/zjquery");
 
 /*
