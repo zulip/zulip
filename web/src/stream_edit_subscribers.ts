@@ -181,12 +181,7 @@ function make_list_widget({
     });
 }
 
-function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
-    const sub = get_sub(current_stream_id);
-    if (!sub) {
-        return;
-    }
-
+function filter_active_users(pill_user_ids: number[]): [Set<number>, Set<number>] {
     const deactivated_users = new Set<number>();
     const active_user_ids = pill_user_ids.filter((user_id) => {
         if (!people.is_person_active(user_id)) {
@@ -195,8 +190,16 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         }
         return true;
     });
+    return [new Set(active_user_ids), deactivated_users];
+}
 
-    const user_id_set = new Set(active_user_ids);
+function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
+    const sub = get_sub(current_stream_id);
+    if (!sub) {
+        return;
+    }
+
+    const [user_id_set, deactivated_users] = filter_active_users(pill_user_ids);
 
     if (user_id_set.has(current_user.user_id) && sub.subscribed) {
         // We don't want to send a request to subscribe ourselves
