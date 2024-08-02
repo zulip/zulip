@@ -210,11 +210,11 @@ function update_add_bot_button(): void {
         $("#bot-settings .add-a-new-bot").show();
         $("#admin-bot-list .add-new-bots").show();
         $("#admin-bot-list .manage-your-bots").hide();
-        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
+        $(".org-settings-list li[data-section='bots'] .locked").hide();
     } else {
         $("#bot-settings .add-a-new-bot").hide();
         $("#admin-bot-list .add-new-bots").hide();
-        $(".org-settings-list li[data-section='bot-list-admin'] .locked").show();
+        $(".org-settings-list li[data-section='bots'] .locked").show();
 
         if (bot_data.get_all_bots_for_current_user().length > 0) {
             $("#admin-bot-list .manage-your-bots").show();

@@ -281,6 +281,11 @@ function do_hashchange_overlay(old_hash) {
         // #settings/display-settings is being redirected to #settings/preferences.
         section = "preferences";
     }
+    if (section === "bot-list-admin") {
+        // #organization/bot-list-admin is being redirected to #organization/bots.
+        section = "bots";
+        base = "organization";
+    }
     if (section === "user-list-admin") {
         // #settings/user-list-admin is being redirected to #settings/users after it was renamed.
         section = "users";
