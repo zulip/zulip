@@ -4432,12 +4432,12 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether this organization has been configured to enable
-                                        [previews of linked images](/help/allow-image-link-previews).
+                                        [previews of linked images](/help/image-video-and-website-previews).
                                     inline_url_embed_preview:
                                       type: boolean
                                       description: |
                                         Whether this organization has been configured to enable
-                                        [previews of linked websites](/help/allow-image-link-previews).
+                                        [previews of linked websites](/help/image-video-and-website-previews).
                                     invite_required:
                                       type: boolean
                                       description: |
@@ -15790,14 +15790,14 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether this organization has been configured to enable
-                          [previews of linked images](/help/allow-image-link-previews).
+                          [previews of linked images](/help/image-video-and-website-previews).
                       realm_inline_url_embed_preview:
                         type: boolean
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether this organization has been configured to enable
-                          [previews of linked websites](/help/allow-image-link-previews).
+                          [previews of linked websites](/help/image-video-and-website-previews).
                       realm_mandatory_topics:
                         type: boolean
                         description: |

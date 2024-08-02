@@ -125,6 +125,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
         "/help/browse-and-subscribe-to-channels",
         "/help/introduction-to-channels#browse-and-subscribe-to-channels",
     ),
+    URLRedirect("/help/allow-image-link-previews", "/help/image-video-and-website-previews"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

@@ -91,8 +91,7 @@ previews:
 - Animated images will have a `data-animated` attribute on the `img`
   tag. As detailed in `server_thumbnail_formats`, both animated and
   still images are available for clients to use, depending on their
-  preference. See, for example, the [web
-  setting](/help/allow-image-link-previews#configure-how-animated-images-are-played)
+  preference. See, for example, the [web setting][help-previews]
   to control whether animated images are autoplayed in the message
   feed.
 - Clients should not assume that the requested format is the format
@@ -150,3 +149,4 @@ inconsistent syntax, were removed.
 [help-global-time]: /help/global-times
 [help-mentions]: /help/mention-a-user-or-group
 [help-mention-all]: /help/mention-a-user-or-group#mention-everyone-on-a-channel
+[help-previews]: /help/image-video-and-website-previews#configure-how-animated-images-are-played
