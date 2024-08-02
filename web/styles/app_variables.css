@@ -218,28 +218,23 @@
     Our sidebars (and anything that top-align
     with them) go beneath the header.
     */
-    --left-sidebar-padding-left: 8px;
     /* The width of the empty space in the sidebar to separate
        content from the edge of the window */
-    --left-sidebar-far-left-gutter-size: 10px;
+    --left-sidebar-padding-left: 8px;
+    /* The empty space between left-sidebar row icons and
+       the row content.
+       7px at 16px/1em */
+    --left-sidebar-icon-content-gap: 0.4375em;
+    /* The space allotted in gridded rows for the toggle icon. */
+    --left-sidebar-header-icon-toggle-width: 20px;
+    /* Other rows need an offset to preserve a column the
+       entire height of the left sidebar for where toggles sit. */
+    --left-sidebar-toggle-width-offset: var(
+        --left-sidebar-header-icon-toggle-width
+    );
     /* This represents the space in the sidebar reserved for symbols like
        the #; labels like the stream name go to the right of this. */
-    --left-sidebar-privacy-icon-column-size: 19px;
-    /* 13px at 14px/1em */
-    --left-sidebar-topic-resolve-width: 0.9286em;
-    /* At legacy sizes, the full indentation to the
-       left of the topic name was 25px of gutter,
-       plus 13px for the topic-resolution checkmark.
-       That works out to 38px (25px + 13px), which
-       we here express as pixels, as that is always
-       the amount of space to the left of the topic
-       name. However, CSS subtracts the em-unit width
-       of the topic-resolution checkmark to prevent
-       the the topic name from being shifted to the
-       right. */
-    --left-sidebar-topic-indent: calc(
-        38px - var(--left-sidebar-topic-resolve-width)
-    );
+    --left-sidebar-icon-column-width: 16px;
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;

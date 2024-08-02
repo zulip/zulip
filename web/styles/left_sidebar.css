@@ -180,17 +180,17 @@ li.show-more-topics {
 }
 
 #direct-messages-section-header {
-    grid-template-columns: 0 15px minmax(0, 1fr) max-content 30px 0;
+    grid-template-columns:
+        0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 1fr)
+        max-content 30px 0;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
-    /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
-       value and the styles dependent on it so that this kind of
-       1990s layout shenanigans is made unnecessary. */
-    margin-left: -3px;
     cursor: pointer;
     white-space: nowrap;
 
     #toggle-direct-messages-section-icon {
         grid-area: starting-anchor-element;
+        /* Horizontally center the icon in its allotted grid area. */
+        justify-self: center;
     }
 
     .left-sidebar-title {
@@ -334,8 +334,8 @@ li.show-more-topics {
 #login-link-container,
 #subscribe-to-more-streams {
     text-decoration: none;
-    margin: 5px auto 5.5px 10px;
-    margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
+    margin: 5px auto var(--left-sidebar-bottom-scrolling-buffer)
+        var(--left-sidebar-toggle-width-offset);
 
     & i {
         min-width: 19px;
@@ -646,7 +646,11 @@ li.top_left_scheduled_messages {
        for laying out the items that are its
        children. Same template areas, different
        column widths. */
-    grid-template-columns: 0 22px minmax(0, 1fr) max-content 0 0;
+    grid-template-columns:
+        var(--left-sidebar-toggle-width-offset) var(
+            --left-sidebar-icon-column-width
+        )
+        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) max-content 0 0;
 
     .filter-icon {
         grid-area: starting-anchor-element;
@@ -714,7 +718,7 @@ li.top_left_scheduled_messages {
        modified or reassigned as needed, without running up against `padding`
        (which alters the box size) or `margin` (which notoriously bleeds outside
        of the element it's defined on). */
-    grid-template-areas: "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset";
+    grid-template-areas: "starting-offset starting-anchor-element icon-content-gap row-content markers-and-controls ending-anchor-element ending-offset";
 }
 
 .top_left_row {
@@ -725,7 +729,7 @@ li.top_left_scheduled_messages {
     /* The row grid for the outer .top_left_row
        is chiefly for lefthand spacing and placing
        the inner row content and vdots. */
-    grid-template-columns: 7px 0 minmax(0, 1fr) 0 30px 0;
+    grid-template-columns: 0 0 0 minmax(0, 1fr) 0 30px 0;
 
     .sidebar-menu-icon {
         grid-area: ending-anchor-element;
@@ -746,19 +750,18 @@ li.top_left_scheduled_messages {
        that now by having it share this grid template. Its row and column
        definitions have the final say about dimensions and placement. */
     grid-template-areas:
-        "starting-offset starting-anchor-element row-content markers-and-controls ending-anchor-element ending-offset"
-        ".               .                       filter-box  filter-box           filter-box            .            ";
+        "starting-offset starting-anchor-element icon-content-gap row-content markers-and-controls ending-anchor-element ending-offset"
+        ".               .                       filter-box       filter-box  filter-box           filter-box            .            ";
 }
 
 #views-label-container {
     grid-template-columns:
-        0 15px minmax(0, 0.5fr) minmax(0, 1fr)
+        0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr) minmax(
+            0,
+            1fr
+        )
         30px var(--left-sidebar-right-margin);
     grid-template-rows: var(--line-height-sidebar-row-prominent);
-    /* TODO: Rewrite the `--left-sidebar-collapse-widget-gutter`
-       value and the styles dependent on it so that this kind of
-       1990s layout shenanigans is made unnecessary. */
-    margin-left: -3px;
     cursor: pointer;
 
     &.showing-expanded-navigation {
@@ -806,6 +809,8 @@ li.top_left_scheduled_messages {
 
     #toggle-top-left-navigation-area-icon {
         grid-area: starting-anchor-element;
+        /* Horizontally center the icon in its allotted grid area. */
+        justify-self: center;
     }
 
     .left-sidebar-title {
@@ -848,7 +853,13 @@ li.top_left_scheduled_messages {
 
 .subscription_block {
     grid-template-columns:
-        7px 22px minmax(0, 1fr) minmax(0, max-content)
+        var(--left-sidebar-toggle-width-offset) var(
+            --left-sidebar-icon-column-width
+        )
+        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
         30px 0;
     white-space: nowrap;
 
@@ -880,15 +891,21 @@ li.top_left_scheduled_messages {
 
 .topic-box,
 .searching-for-more-topics {
+    margin-left: var(--left-sidebar-toggle-width-offset);
     grid-template-columns:
-        var(--left-sidebar-topic-indent) var(--left-sidebar-topic-resolve-width)
+        0 var(--left-sidebar-icon-column-width) var(
+            --left-sidebar-icon-content-gap
+        )
         minmax(0, 1fr) minmax(0, max-content)
         30px 0;
 }
 
 .topic_search_section {
     grid-template-columns:
-        var(--left-sidebar-topic-indent) 0 minmax(0, 1fr) minmax(0, max-content)
+        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
         30px 0;
 }
 
@@ -930,6 +947,7 @@ li.top_left_scheduled_messages {
 
 .sidebar-topic-check {
     grid-area: starting-anchor-element;
+    justify-self: end;
     /* 15px at 14px/1em */
     font-size: 1.0714em;
 }
@@ -1071,7 +1089,15 @@ li.topic-list-item {
 }
 
 .dm-box {
-    grid-template-columns: 7px 22px minmax(0, 1fr) minmax(0, max-content) 30px 0;
+    grid-template-columns:
+        var(--left-sidebar-toggle-width-offset) var(
+            --left-sidebar-icon-column-width
+        )
+        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
+        30px 0;
 
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
@@ -1143,7 +1169,9 @@ li.topic-list-item {
     position: sticky;
     top: 0;
     z-index: 2;
-    grid-template-columns: 0 0 minmax(0, 1fr) max-content 0 42px;
+    grid-template-columns:
+        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr)
+        max-content 0 42px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     padding-top: var(--left-sidebar-sections-vertical-gutter);
     color: hsl(0deg 0% 43%);
@@ -1154,13 +1182,6 @@ li.topic-list-item {
         color: inherit;
         text-decoration: none;
         text-transform: uppercase;
-        margin-left: calc(var(--left-sidebar-far-left-gutter-size) + 2px);
-
-        & i {
-            margin: 0 6px 0 13px;
-            position: relative;
-            top: 1px;
-        }
     }
 
     .unread_count {
@@ -1169,14 +1190,13 @@ li.topic-list-item {
 }
 
 #streams_header {
-    grid-template-columns: 0 0 minmax(0, 1fr) minmax(17px, max-content) 30px var(
-            --left-sidebar-right-margin
-        );
+    grid-template-columns:
+        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr)
+        minmax(17px, max-content) 30px var(--left-sidebar-right-margin);
     /* Keep the stream-search area rows collapsed. */
     grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
     cursor: pointer;
-    padding: var(--left-sidebar-sections-vertical-gutter) 0 3px
-        calc(var(--left-sidebar-far-left-gutter-size) + 2px);
+    padding: var(--left-sidebar-sections-vertical-gutter) 0 3px 0;
     position: sticky;
     /* Keep sticky within SimpleBar context. */
     top: 0;
@@ -1316,9 +1336,9 @@ li.topic-list-item {
    one that reassigns the vdots space to markers and
    controls. */
 .spectator-view #streams_header {
-    grid-template-columns: 0 0 minmax(0, 1fr) minmax(30px, max-content) 0 var(
-            --left-sidebar-right-margin
-        );
+    grid-template-columns:
+        0 0 var(--left-sidebar-icon-content-gap) minmax(0, 1fr)
+        minmax(30px, max-content) 0 var(--left-sidebar-right-margin);
 
     /* With markers and controls now sized the same
        as the ordinary vdots area (but allowed to grow,
@@ -1336,7 +1356,7 @@ li.topic-list-item {
     font-weight: normal;
     /* 16px line-height at 0.8em (11.2px at 14px legacy em) */
     line-height: 1.4286em;
-    padding-left: var(--left-sidebar-far-left-gutter-size);
+    padding-left: var(--left-sidebar-toggle-width-offset);
     cursor: pointer;
     text-align: center;
     margin-right: var(--left-sidebar-right-margin);
