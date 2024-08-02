@@ -1,6 +1,3 @@
-# https://github.com/typeddjango/django-stubs/issues/1698
-# mypy: disable-error-code="explicit-override"
-
 from email.headerregistry import Address
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import uuid4
