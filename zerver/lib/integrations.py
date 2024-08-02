@@ -791,7 +791,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "pagerduty": [ScreenshotConfig("trigger_v2.json")],
     "papertrail": [ScreenshotConfig("short_post.json", payload_as_query_param=True)],
     "patreon": [ScreenshotConfig("members_pledge_create.json")],
-    "pingdom": [ScreenshotConfig("http_up_to_down.json", image_name="002.png")],
+    "pingdom": [ScreenshotConfig("http_up_to_down.json", image_name="001.png")],
     "pivotal": [ScreenshotConfig("v5_type_changed.json")],
     "radarr": [ScreenshotConfig("radarr_movie_grabbed.json")],
     "raygun": [ScreenshotConfig("new_error.json")],
