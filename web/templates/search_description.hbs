@@ -46,6 +46,10 @@
             {{~!-- squash whitespace --~}}
             {{this.verb}}followed topics
             {{~!-- squash whitespace --~}}
+        {{else if (eq this.operand "muted")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}messages in muted streams/topics
+            {{~!-- squash whitespace --~}}
         {{else}}
             {{~!-- squash whitespace --~}}
             invalid {{this.operand}} operand for is operator
