@@ -895,7 +895,7 @@ test_people("message_methods", () => {
 
     assert.equal(
         people.small_avatar_url_for_person(maria),
-        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
     );
     assert.equal(
         people.medium_avatar_url_for_person(maria),
@@ -907,7 +907,7 @@ test_people("message_methods", () => {
     muted_users.add_muted_user(30);
     assert.deepEqual(people.sender_info_for_recent_view_row([30]), [
         {
-            avatar_url_small: "http://zulip.zulipdev.com/avatar/30?s=50",
+            avatar_url_small: "/avatar/30",
             is_muted: true,
             email: "me@example.com",
             full_name: me.full_name,
@@ -929,7 +929,7 @@ test_people("message_methods", () => {
     assert.equal(people.pm_with_url(message), "#narrow/dm/301,302-group");
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,301,302-group");
     assert.equal(people.pm_reply_to(message), "Athens@example.com,charles@example.com");
-    assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png?s=50");
+    assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png");
 
     message = {
         type: "private",
@@ -939,7 +939,7 @@ test_people("message_methods", () => {
     assert.equal(people.pm_with_url(message), "#narrow/dm/302-Maria-Athens");
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,302-dm");
     assert.equal(people.pm_reply_to(message), "Athens@example.com");
-    assert.equal(people.small_avatar_url(message), "http://zulip.zulipdev.com/legacy.png?s=50");
+    assert.equal(people.small_avatar_url(message), "legacy.png");
 
     message = {
         avatar_url: undefined,
@@ -947,7 +947,7 @@ test_people("message_methods", () => {
     };
     assert.equal(
         people.small_avatar_url(message),
-        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
     );
 
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
@@ -958,16 +958,13 @@ test_people("message_methods", () => {
     };
     assert.equal(
         people.small_avatar_url(message),
-        "https://secure.gravatar.com/avatar/b48def645758b95537d4424c84d1a9ff?d=identicon&s=50",
+        "https://secure.gravatar.com/avatar/b48def645758b95537d4424c84d1a9ff?d=identicon",
     );
 
     message = {
         sender_id: ashton.user_id,
     };
-    assert.equal(
-        people.small_avatar_url(message),
-        `http://zulip.zulipdev.com/avatar/${ashton.user_id}?s=50`,
-    );
+    assert.equal(people.small_avatar_url(message), `/avatar/${ashton.user_id}`);
 
     message = {
         type: "private",

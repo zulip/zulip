@@ -894,7 +894,7 @@ test("people_suggestions", ({override, mock_template}) => {
     test_full_name("dm:ted@zulip.com", expectedString);
     test_full_name("dm-including:ted@zulip.com", expectedString);
 
-    expectedString = example_avatar_url + "?s=50";
+    expectedString = example_avatar_url;
 
     function test_avatar_url(q, avatar_url) {
         return suggestions.lookup_table.get(q).description_html.includes(avatar_url);
