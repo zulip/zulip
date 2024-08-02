@@ -37,7 +37,7 @@ const isaac_item = {
     type: "user",
     user_id: isaac.user_id,
     deactivated: false,
-    img_src: `http://zulip.zulipdev.com/avatar/${isaac.user_id}?s=50`,
+    img_src: `/avatar/${isaac.user_id}`,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
@@ -50,7 +50,7 @@ const inaccessible_user_item = {
     type: "user",
     user_id: inaccessible_user_id,
     deactivated: false,
-    img_src: `http://zulip.zulipdev.com/avatar/${inaccessible_user_id}?s=50`,
+    img_src: `/avatar/${inaccessible_user_id}`,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
