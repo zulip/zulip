@@ -444,7 +444,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("mention", ["marketing"], display_name="Mention"),
     WebhookIntegration("netlify", ["continuous-integration", "deployment"], display_name="Netlify"),
     WebhookIntegration("newrelic", ["monitoring"], display_name="New Relic"),
-    WebhookIntegration("opencollective", ["communication"], display_name="Open Collective"),
+    WebhookIntegration("opencollective", ["financial"], display_name="Open Collective"),
     WebhookIntegration("opsgenie", ["meta-integration", "monitoring"]),
     WebhookIntegration("pagerduty", ["monitoring"], display_name="PagerDuty"),
     WebhookIntegration("papertrail", ["monitoring"]),
