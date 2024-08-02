@@ -889,7 +889,6 @@ textarea.new_message_textarea {
 
     &:read-only,
     &:disabled {
-        cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
     }
 }
@@ -1208,7 +1207,6 @@ textarea.new_message_textarea {
 
     .compose_control_button_container.disabled-on-hover:hover {
         opacity: 0.3;
-        cursor: not-allowed;
 
         .compose_control_button {
             pointer-events: none;
@@ -1396,8 +1394,6 @@ textarea.new_message_textarea {
     }
 
     &.disabled-message-send-controls {
-        cursor: not-allowed;
-
         & button {
             pointer-events: none;
             opacity: 0.5;
@@ -1419,7 +1415,6 @@ textarea.new_message_textarea {
     overflow: auto;
 
     border-radius: 3px 3px 0 0;
-    cursor: not-allowed;
 }
 
 .markdown_preview_spinner {
@@ -1718,7 +1713,6 @@ textarea.new_message_textarea {
     }
 
     .preview_mode_disabled {
-        cursor: not-allowed;
         opacity: 0.3;
 
         .compose_control_button {
