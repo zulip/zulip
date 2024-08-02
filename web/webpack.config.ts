@@ -2,6 +2,9 @@
 
 import path from "path";
 
+import type {ZopfliOptions} from "@gfx/zopfli";
+import {gzip} from "@gfx/zopfli";
+import CompressionPlugin from "compression-webpack-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
@@ -29,6 +32,38 @@ const config = (
             },
         },
     };
+
+    const plugins: webpack.WebpackPluginInstance[] = [
+        new DefinePlugin({
+            DEVELOPMENT: JSON.stringify(!production),
+            ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
+        }),
+        new DebugRequirePlugin(),
+        new BundleTracker({
+            path: path.join(__dirname, production ? ".." : "../var"),
+            filename: production ? "webpack-stats-production.json" : "webpack-stats-dev.json",
+        }),
+        // Extract CSS from files
+        new MiniCssExtractPlugin({
+            filename: production ? "[name].[contenthash].css" : "[name].css",
+            chunkFilename: production ? "[contenthash].css" : "[id].css",
+        }),
+        new HtmlWebpackPlugin({
+            filename: "5xx.html",
+            template: "html/5xx.html",
+            chunks: ["error-styles"],
+            publicPath: production ? "/static/webpack-bundles/" : "/webpack/",
+        }),
+    ];
+    if (production) {
+        plugins.push(
+            new CompressionPlugin<ZopfliOptions>({
+                // Use zopfli to write pre-compressed versions of text files
+                test: /\.(js|css|html)$/,
+                algorithm: gzip,
+            }),
+        );
+    }
 
     const frontendConfig: webpack.Configuration = {
         ...baseConfig,
@@ -197,28 +232,7 @@ const config = (
                 maxInitialRequests: 20,
             },
         },
-        plugins: [
-            new DefinePlugin({
-                DEVELOPMENT: JSON.stringify(!production),
-                ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
-            }),
-            new DebugRequirePlugin(),
-            new BundleTracker({
-                path: path.join(__dirname, production ? ".." : "../var"),
-                filename: production ? "webpack-stats-production.json" : "webpack-stats-dev.json",
-            }),
-            // Extract CSS from files
-            new MiniCssExtractPlugin({
-                filename: production ? "[name].[contenthash].css" : "[name].css",
-                chunkFilename: production ? "[contenthash].css" : "[id].css",
-            }),
-            new HtmlWebpackPlugin({
-                filename: "5xx.html",
-                template: "html/5xx.html",
-                chunks: ["error-styles"],
-                publicPath: production ? "/static/webpack-bundles/" : "/webpack/",
-            }),
-        ],
+        plugins,
         devServer: {
             client: {
                 overlay: {

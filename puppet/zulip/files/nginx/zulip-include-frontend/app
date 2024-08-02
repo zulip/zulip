@@ -9,6 +9,7 @@ error_page 502 503 504 /static/webpack-bundles/5xx.html;
 # Serve static files directly
 location /static/ {
     alias /home/zulip/prod-static/;
+    gzip_static on;
     include /etc/nginx/zulip-include/headers;
     add_header Access-Control-Allow-Origin *;
     add_header Timing-Allow-Origin *;
