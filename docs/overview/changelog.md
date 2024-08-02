@@ -32,7 +32,7 @@ _Released 2024-08-02_
 - Fixed a subtle live-update bug rerendering the inbox view.
 - Fixed a couple of subtle performance issues involving the analytics
   cron job and listing invitations in organization settings.
-- Updated documentation for a couple integrations.
+- Updated documentation for a couple of integrations.
 - Updated translations.
 
 ### Zulip Server 9.0
