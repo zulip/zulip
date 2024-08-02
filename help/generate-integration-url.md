@@ -38,7 +38,7 @@ integration URL.
 
 {!admin-only.md!}
 
-{settings_tab|bot-list-admin}
+{settings_tab|bots}
 
 1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
    icon for an **Incoming webhook** bot.
