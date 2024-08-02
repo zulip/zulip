@@ -70,6 +70,7 @@ from zerver.models import (
 )
 from zerver.models.alert_words import flush_alert_word
 from zerver.models.clients import get_client
+from zerver.models.onboarding_steps import OnboardingStep
 from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
@@ -935,7 +936,18 @@ class Command(ZulipBaseCommand):
                     defaults={"last_active_time": date, "last_connected_time": date},
                 )
 
-        user_profiles_ids = [user_profile.id for user_profile in user_profiles]
+        user_profiles_ids = []
+        onboarding_steps = []
+        for user_profile in user_profiles:
+            user_profiles_ids.append(user_profile.id)
+            onboarding_steps.append(
+                OnboardingStep(
+                    user=user_profile, onboarding_step="narrow_to_dm_with_welcome_bot_new_user"
+                )
+            )
+
+        # Existing users shouldn't narrow to DM with welcome bot on first login.
+        OnboardingStep.objects.bulk_create(onboarding_steps)
 
         # Create several initial direct message groups
         for i in range(options["num_direct_message_groups"]):

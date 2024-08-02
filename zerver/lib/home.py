@@ -140,7 +140,6 @@ def build_page_params_for_home_page_load(
     narrow: list[NarrowTerm],
     narrow_stream: Stream | None,
     narrow_topic_name: str | None,
-    needs_tutorial: bool,
 ) -> tuple[int, dict[str, object]]:
     """
     This function computes page_params for when we load the home page.
@@ -211,7 +210,6 @@ def build_page_params_for_home_page_load(
         corporate_enabled=settings.CORPORATE_ENABLED,
         ## Misc. extra data.
         language_list=get_language_list(),
-        needs_tutorial=needs_tutorial,
         furthest_read_time=furthest_read_time,
         bot_types=get_bot_types(user_profile),
         two_fa_enabled=two_fa_enabled,

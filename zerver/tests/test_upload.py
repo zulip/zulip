@@ -19,6 +19,7 @@ from urllib3.fields import RequestField
 import zerver.lib.upload
 from analytics.models import RealmCount
 from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
@@ -1305,7 +1306,9 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.client_post("/json/users/me/avatar", {"file": image_file})
 
         source_user_profile = self.example_user("hamlet")
-        target_user_profile = self.example_user("iago")
+        target_user_profile = do_create_user(
+            "user@zulip.com", "password", get_realm("zulip"), "user", acting_user=None
+        )
 
         copy_default_settings(source_user_profile, target_user_profile)
 

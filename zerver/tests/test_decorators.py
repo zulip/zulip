@@ -1116,7 +1116,6 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/android_gcm_reg_id",
             "/api/v1/users/me/onboarding_steps",
             "/api/v1/users/me/presence",
-            "/api/v1/users/me/tutorial_status",
         ]
         for endpoint in post_endpoints:
             result = self.api_post(default_bot, endpoint)

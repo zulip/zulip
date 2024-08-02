@@ -325,7 +325,10 @@ run_test("default_streams", ({override}) => {
 });
 
 run_test("onboarding_steps", () => {
-    onboarding_steps.initialize({onboarding_steps: []});
+    onboarding_steps.initialize({
+        params: {onboarding_steps: []},
+        narrow_to_dm_with_welcome_bot_new_user() {},
+    });
     const event = event_fixtures.onboarding_steps;
     const one_time_notices = new Set();
     for (const onboarding_step of event.onboarding_steps) {
