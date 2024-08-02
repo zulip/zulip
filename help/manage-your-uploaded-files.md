@@ -64,4 +64,4 @@ You can sort your uploaded files by name, upload date, message ID, and size.
 
 * [Share and upload files](/help/share-and-upload-files)
 * [View images and videos](/help/view-images-and-videos)
-* [Image, video and website previews](/help/allow-image-link-previews)
+* [Image, video and website previews](/help/image-video-and-website-previews)

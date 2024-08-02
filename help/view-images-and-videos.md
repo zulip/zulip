@@ -1,8 +1,8 @@
 # View images and videos
 
 Zulip shows previews of attached images and videos, unless previews are
-[disabled](/help/allow-image-link-previews) in your organization. You
-can click on a preview to view an image in more detail, or to play a
+[disabled](/help/image-video-and-website-previews) in your organization.
+You can click on a preview to view an image in more detail, or to play a
 video. Zulip also makes it convenient to browse all images and videos
 attached to messages in your current view.
 
@@ -135,4 +135,4 @@ images and videos in messages matching that search.
 
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [Share and upload files](/help/share-and-upload-files)
-* [Image, video and website previews](/help/allow-image-link-previews)
+* [Image, video and website previews](/help/image-video-and-website-previews)

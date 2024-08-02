@@ -224,7 +224,7 @@
 * [Restrict moving messages](/help/restrict-moving-messages)
 * [Restrict message editing](/help/restrict-message-editing-and-deletion)
 * [Disable message edit history](/help/disable-message-edit-history)
-* [Image, video and website previews](/help/allow-image-link-previews)
+* [Image, video and website previews](/help/image-video-and-website-previews)
 * [Hide message content in emails](/help/hide-message-content-in-emails)
 * [Message retention policy](/help/message-retention-policy)
 * [Weekly digest emails](/help/digest-emails)
