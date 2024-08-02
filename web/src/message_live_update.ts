@@ -80,9 +80,7 @@ export function update_user_full_name(user_id: number, full_name: string): void 
 }
 
 export function update_avatar(user_id: number, avatar_url: string): void {
-    let url = avatar_url;
-    url = people.format_small_avatar_url(url);
-    message_store.update_small_avatar_url(user_id, url);
+    message_store.update_small_avatar_url(user_id, avatar_url);
     rerender_messages_view_for_user(user_id);
 }
 
