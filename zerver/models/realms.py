@@ -11,6 +11,7 @@ from django.db import models
 from django.db.models import CASCADE, Q, QuerySet, Sum
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
@@ -182,6 +183,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_REALM_REDIRECT_URL_LENGTH = 128
 
+    DEFAULT_REALM_DESCRIPTION = _("The coolest place in the universe.")
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""

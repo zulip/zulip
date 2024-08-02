@@ -1240,7 +1240,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.string_id, "realm_string_id")
         self.assertEqual(realm.name, "realm name")
         self.assertFalse(realm.emails_restricted_to_domains)
-        self.assertEqual(realm.description, "")
+        self.assertEqual(realm.description, Realm.DEFAULT_REALM_DESCRIPTION)
         self.assertTrue(realm.invite_required)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["unspecified"]["id"])
