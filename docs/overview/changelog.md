@@ -21,7 +21,7 @@ _Released 2024-08-02_
 - Improved web and mobile app loading times and bandwidth usage by
   tuning API response compression and removing some unnecessary
   entropy in user object payloads.
-- Fixed how Zulip handles a GitHub quirk to avoid duplicate
+- Fixed how Zulip handles a GitHub quirk, to avoid duplicate
   notifications when pull request reviews are submitted.
 - Fixed a rare race condition that could cause uploaded images to be
   displayed as a perpetual loading spinner.
