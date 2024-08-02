@@ -218,7 +218,7 @@
     Our sidebars (and anything that top-align
     with them) go beneath the header.
     */
-    --left-sidebar-collapse-widget-gutter: 10px;
+    --left-sidebar-padding-left: 8px;
     /* The width of the empty space in the sidebar to separate
        content from the edge of the window */
     --left-sidebar-far-left-gutter-size: 10px;
@@ -244,8 +244,10 @@
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
     --left-sidebar-right-margin: 12px;
-    /* 287px at 14px/1em */
-    --left-sidebar-max-width: calc(20.5em - var(--left-sidebar-right-margin));
+    /* 289px at 14px/1em */
+    --left-sidebar-max-width: calc(
+        20.6429em - var(--left-sidebar-right-margin)
+    );
     /* Sidebar width is 1/3 of the screen at smaller
        sizes, but gets held to the left sidebar's max width.
        This is very useful for areas in the CSS codebase
