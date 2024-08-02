@@ -1,7 +1,9 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_guest_in_dm_recipient_warning from "../templates/compose_banner/guest_in_dm_recipient_warning.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
 import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
@@ -352,6 +354,57 @@ export function warn_if_in_search_view(): void {
         const new_row_html = render_compose_banner(context);
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     }
+}
+
+export function clear_guest_in_dm_recipient_warning(): void {
+    const classname = compose_banner.CLASSNAMES.guest_in_dm_recipient_warning;
+    $(`#compose_banners .${CSS.escape(classname)}`).remove();
+}
+
+// Only called on recipient change. Adds new banner if not already
+// exists or updates the existing banner or remove banner is no
+// guest in the dm.
+export function warn_if_guest_in_dm_recipient(): void {
+    const email_string = compose_state.private_message_recipient();
+    const guest_emails = people.filter_guest_emails(email_string);
+
+    // only messages of type private are valid
+    const is_private = compose_state.get_message_type() === "private";
+
+    if (
+        !realm.realm_enable_guest_user_dm_warning ||
+        !is_private ||
+        !guest_emails ||
+        guest_emails.length === 0
+    ) {
+        clear_guest_in_dm_recipient_warning();
+        compose_state.set_recipient_guest_emails_for_dm_warning([]);
+        return;
+    }
+    // if warning was shown earlier for same guests in the recipients, do nothing.
+    if (_.isEqual(compose_state.get_recipient_guest_emails_for_dm_warning(), guest_emails)) {
+        return;
+    }
+
+    const banner_text = people.get_dm_guest_banner_text(guest_emails);
+
+    const classname = compose_banner.CLASSNAMES.guest_in_dm_recipient_warning;
+    let $banner = $(`#compose_banners .${CSS.escape(classname)}`);
+
+    compose_state.set_recipient_guest_emails_for_dm_warning(guest_emails);
+    // update banner text if banner exists.
+    if ($banner.length === 1) {
+        $banner.find(".banner_content").text(banner_text);
+        return;
+    }
+
+    $banner = $(
+        render_guest_in_dm_recipient_warning({
+            banner_text,
+            classname: compose_banner.CLASSNAMES.guest_in_dm_recipient_warning,
+        }),
+    );
+    compose_banner.append_compose_banner_to_banner_list($banner, $("#compose_banners"));
 }
 
 function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
