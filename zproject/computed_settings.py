@@ -62,6 +62,8 @@ from .configured_settings import (
     SOCIAL_AUTH_SAML_ENABLED_IDPS,
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
     SOCIAL_AUTH_SUBDOMAIN,
+    SOCIAL_AUTH_SYNC_ATTRS_DICT,
+    SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT,
     STATIC_URL,
     SUBMIT_USAGE_STATISTICS,
     TORNADO_PORTS,
@@ -1180,6 +1182,25 @@ for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     else:
         path = f"/etc/zulip/saml/idps/{idp_name}.crt"
     idp_dict["x509cert"] = get_from_file_if_exists(path)
+
+
+def ensure_dict_path(d: dict[str, Any], keys: list[str]) -> None:
+    for key in keys:
+        if key not in d:
+            d[key] = {}
+        d = d[key]
+
+
+# Merge SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT into SOCIAL_AUTH_SYNC_ATTRS_DICT.
+# This is compat code for the original SOCIAL_AUTH_CUSTOM_ATTRS_DICT setting.
+# TODO/compatibility: Remove this for release Zulip 10.0.
+for subdomain, dict_for_subdomain in SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.items():
+    for backend_name, custom_attrs_map in dict_for_subdomain.items():
+        ensure_dict_path(SOCIAL_AUTH_SYNC_ATTRS_DICT, [subdomain, backend_name])
+        for custom_attr_name, source_attr_name in custom_attrs_map.items():
+            SOCIAL_AUTH_SYNC_ATTRS_DICT[subdomain][backend_name][f"custom__{custom_attr_name}"] = (
+                source_attr_name
+            )
 
 SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.social_details",

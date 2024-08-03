@@ -158,6 +158,7 @@ def maybe_send_to_registration(
     email: str,
     *,
     full_name: str = "",
+    role: int | None = None,
     mobile_flow_otp: str | None = None,
     desktop_flow_otp: str | None = None,
     is_signup: bool = False,
@@ -171,6 +172,12 @@ def maybe_send_to_registration(
     the registration flow or the "continue to registration" flow,
     depending on is_signup, whether the email address can join the
     organization (checked in HomepageForm), and similar details.
+
+    Important: role, if specified as argument to this function,
+    takes precedence over anything else, as it is an explicit
+    statement of what the user should be created as, and is likely
+    being synced from some user management system tied to the
+    authentication method used.
     """
 
     # In the desktop and mobile registration flows, the sign up
@@ -189,7 +196,10 @@ def maybe_send_to_registration(
     # approach of putting something in PreregistrationUser, because
     # that would apply to future registration attempts on other
     # devices, e.g. just creating an account on the web on their laptop.
+
     assert not (mobile_flow_otp and desktop_flow_otp)
+    assert (role is None) or (role in PreregistrationUser.INVITE_AS.values())
+
     if mobile_flow_otp:
         set_expirable_session_var(
             request.session,
@@ -243,7 +253,7 @@ def maybe_send_to_registration(
         {"email": email},
         realm=realm,
         from_multiuse_invite=from_multiuse_invite,
-        invited_as=invited_as,
+        invited_as=role or invited_as,
     )
     if form.is_valid():
         # If the email address is allowed to sign up for an account in
@@ -294,7 +304,13 @@ def maybe_send_to_registration(
             prereg_user.streams.set(streams_to_subscribe)
         if include_realm_default_subscriptions is not None:
             prereg_user.include_realm_default_subscriptions = include_realm_default_subscriptions
-        prereg_user.invited_as = invited_as
+
+        if role is not None:
+            # As explained at the top of this function, role, if specified as argument,
+            # takes precedence over the role implied by the invitation.
+            prereg_user.invited_as = role
+        else:
+            prereg_user.invited_as = invited_as
         prereg_user.multiuse_invite = multiuse_obj
         prereg_user.save()
 
@@ -333,6 +349,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     kwargs_to_pass = [
         "email",
         "full_name",
+        "role",
         "mobile_flow_otp",
         "desktop_flow_otp",
         "is_signup",

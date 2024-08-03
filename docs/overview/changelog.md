@@ -15,7 +15,12 @@ _Unreleased_
 
 #### Upgrade notes for 10.0
 
-- None yet.
+- The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting is deprecated in favor of the
+  more general `SOCIAL_AUTH_SYNC_ATTRS_DICT` setting structure, but still works in
+  this release for a smooth upgrade experience. The new setting supports
+  synchronizing role, and otherwise functions like the old one, except Zulip
+  custom profile fields are referred to with the prefix `custom__`. See the updated
+  comment documentation in `/etc/zulip/settings.py` for details.
 
 ## Zulip Server 9.x series
 
