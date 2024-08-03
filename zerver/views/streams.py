@@ -664,9 +664,7 @@ def add_subscriptions_backend(
         realm, streams, subscribers, acting_user=user_profile, color_map=color_map
     )
 
-    # We can assume unique emails here for now, but we should eventually
-    # convert this function to be more id-centric.
-    email_to_user_profile: dict[str, UserProfile] = {}
+    id_to_user_profile: dict[str, UserProfile] = {}
 
     result: dict[str, Any] = dict(
         subscribed=defaultdict(list), already_subscribed=defaultdict(list)
@@ -674,12 +672,14 @@ def add_subscriptions_backend(
     for sub_info in subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
-        result["subscribed"][subscriber.email].append(stream.name)
-        email_to_user_profile[subscriber.email] = subscriber
+        user_id = str(subscriber.id)
+        result["subscribed"][user_id].append(stream.name)
+        id_to_user_profile[user_id] = subscriber
     for sub_info in already_subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
-        result["already_subscribed"][subscriber.email].append(stream.name)
+        user_id = str(subscriber.id)
+        result["already_subscribed"][user_id].append(stream.name)
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
@@ -688,7 +688,7 @@ def add_subscriptions_backend(
         user_profile=user_profile,
         subscribers=subscribers,
         new_subscriptions=result["subscribed"],
-        email_to_user_profile=email_to_user_profile,
+        id_to_user_profile=id_to_user_profile,
         created_streams=created_streams,
         announce=announce,
     )
@@ -704,7 +704,7 @@ def send_messages_for_new_subscribers(
     user_profile: UserProfile,
     subscribers: set[UserProfile],
     new_subscriptions: dict[str, list[str]],
-    email_to_user_profile: dict[str, UserProfile],
+    id_to_user_profile: dict[str, UserProfile],
     created_streams: list[Stream],
     announce: bool,
 ) -> None:
@@ -716,7 +716,7 @@ def send_messages_for_new_subscribers(
     excessive query counts by mocking this function so that it
     doesn't drown out query counts from other code.
     """
-    bots = {subscriber.email: subscriber.is_bot for subscriber in subscribers}
+    bots = {str(subscriber.id): subscriber.is_bot for subscriber in subscribers}
 
     newly_created_stream_names = {s.name for s in created_streams}
 
@@ -727,11 +727,11 @@ def send_messages_for_new_subscribers(
     # or if a new stream was created with the "announce" option.
     notifications = []
     if new_subscriptions:
-        for email, subscribed_stream_names in new_subscriptions.items():
-            if email == user_profile.email:
+        for id, subscribed_stream_names in new_subscriptions.items():
+            if id == str(user_profile.id):
                 # Don't send a Zulip if you invited yourself.
                 continue
-            if bots[email]:
+            if bots[id]:
                 # Don't send invitation Zulips to bots
                 continue
 
@@ -742,7 +742,7 @@ def send_messages_for_new_subscribers(
             if not notify_stream_names:
                 continue
 
-            recipient_user = email_to_user_profile[email]
+            recipient_user = id_to_user_profile[id]
             sender = get_system_bot(settings.NOTIFICATION_BOT, recipient_user.realm_id)
 
             msg = you_were_just_subscribed_message(

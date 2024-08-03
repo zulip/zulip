@@ -495,10 +495,10 @@ class TestCreateStreams(ZulipTestCase):
             "result": "success",
             "msg": "",
             "subscribed": {
-                "AARON@zulip.com": ["brand new stream"],
-                "cordelia@zulip.com": ["brand new stream"],
-                "hamlet@zulip.com": ["brand new stream"],
-                "iago@zulip.com": ["brand new stream"],
+                "10": ["brand new stream"],
+                "11": ["brand new stream"],
+                "6": ["brand new stream"],
+                "8": ["brand new stream"],
             },
             "already_subscribed": {},
         }
@@ -4062,6 +4062,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.user_profile = self.example_user("hamlet")
         self.test_email = self.user_profile.email
         self.test_user = self.user_profile
+        self.test_id = str(self.user_profile.id)
         self.login_user(self.user_profile)
         self.test_realm = self.user_profile.realm
         self.streams = self.get_streams(self.user_profile)
@@ -4170,29 +4171,30 @@ class SubscriptionAPITest(ZulipTestCase):
         email: str,
         new_subs: list[str],
         realm: Realm,
+        id: str,
         invite_only: bool = False,
     ) -> None:
         """
         Check result of adding subscriptions.
 
         You can add subscriptions for yourself or possibly many
-        principals, which is why e-mails map to subscriptions in the
+        principals, which is why user ID map to subscriptions in the
         result.
 
         The result json is of the form
 
         {"msg": "",
          "result": "success",
-         "already_subscribed": {self.example_email("iago"): ["Venice", "Verona"]},
-         "subscribed": {self.example_email("iago"): ["Venice8"]}}
+         "already_subscribed": {self.example_user("iago").id: ["Venice", "Verona"]},
+         "subscribed": {self.example_user("iago").id: ["Venice8"]}}
         """
         result = self.common_subscribe_to_streams(
             self.test_user, subscriptions, other_params, invite_only=invite_only
         )
         json = self.assert_json_success(result)
-        self.assertEqual(sorted(subscribed), sorted(json["subscribed"][email]))
-        self.assertEqual(sorted(already_subscribed), sorted(json["already_subscribed"][email]))
-        user = get_user(email, realm)
+        self.assertEqual(sorted(subscribed), sorted(json["subscribed"][id]))
+        self.assertEqual(sorted(already_subscribed), sorted(json["already_subscribed"][id]))
+        user = get_user_profile_by_id_in_realm(int(id), realm)
         new_streams = self.get_streams(user)
         self.assertEqual(sorted(new_streams), sorted(new_subs))
 
@@ -4217,6 +4219,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 self.test_email,
                 self.streams + add_streams,
                 self.test_realm,
+                self.test_id,
             )
 
     def test_successful_subscriptions_add_with_announce(self) -> None:
@@ -4246,6 +4249,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 self.test_email,
                 self.streams + add_streams,
                 self.test_realm,
+                self.test_id,
             )
 
         expected_stream_ids = {get_stream(stream, self.test_realm).id for stream in add_streams}
@@ -4392,6 +4396,7 @@ class SubscriptionAPITest(ZulipTestCase):
             self.test_email,
             [*self.streams, "hümbüǵ"],
             self.test_realm,
+            self.test_id,
         )
 
     def test_subscriptions_add_too_long(self) -> None:
@@ -4703,6 +4708,7 @@ class SubscriptionAPITest(ZulipTestCase):
             other_profile.email,
             streams_to_sub,
             invitee_realm,
+            str(other_profile.id),
             invite_only=invite_only,
         )
 
@@ -4875,7 +4881,7 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=member)
         result = self.common_subscribe_to_streams(member, ["stream1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {member.email: ["stream1"]})
+        self.assertEqual(json["subscribed"], {str(member.id): ["stream1"]})
         self.assertEqual(json["already_subscribed"], {})
 
     def test_subscribe_to_stream_post_policy_restrict_new_members_stream(self) -> None:
@@ -4895,7 +4901,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         result = self.common_subscribe_to_streams(new_member, ["stream1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {new_member.email: ["stream1"]})
+        self.assertEqual(json["subscribed"], {str(new_member.id): ["stream1"]})
         self.assertEqual(json["already_subscribed"], {})
 
     def test_subscribe_to_stream_post_policy_moderators_stream(self) -> None:
@@ -4912,7 +4918,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         result = self.common_subscribe_to_streams(member, ["stream1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {member.email: ["stream1"]})
+        self.assertEqual(json["subscribed"], {str(member.id): ["stream1"]})
         self.assertEqual(json["already_subscribed"], {})
 
     def test_guest_user_subscribe(self) -> None:
@@ -5897,7 +5903,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
         result = self.common_subscribe_to_streams(hamlet, [stream_name], invite_only=True)
 
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {hamlet.email: [stream_name]})
+        self.assertEqual(json["subscribed"], {str(hamlet.id): [stream_name]})
         self.assertEqual(json["already_subscribed"], {})
 
         # Subscribing oneself to an invite-only stream is not allowed
@@ -5925,7 +5931,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
             extra_post_data={"principals": orjson.dumps([othello.id]).decode()},
         )
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {othello.email: [stream_name]})
+        self.assertEqual(json["subscribed"], {str(othello.id): [stream_name]})
         self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream

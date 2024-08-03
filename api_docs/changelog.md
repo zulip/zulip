@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 289**
+
+* [`POST /users/{user_id}/subscription`](/api/subscribe): In the response,
+  users are identified by their numeric user ID rather than by their
+  Zulip API email address.
+
 **Feature level 288**
 
 * [`POST /register`](/api/register-queue):

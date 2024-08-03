@@ -226,11 +226,11 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
     function invite_success(raw_data: unknown): void {
         const data = add_user_ids_api_response_schema.parse(raw_data);
         pill_widget.clear();
-        const subscribed_users = Object.keys(data.subscribed).map(
-            (email) => people.get_by_email(email)!,
+        const subscribed_users = Object.keys(data.subscribed).map((user_id) =>
+            people.get_by_user_id(Number(user_id)),
         );
-        const already_subscribed_users = Object.keys(data.already_subscribed).map(
-            (email) => people.get_by_email(email)!,
+        const already_subscribed_users = Object.keys(data.already_subscribed).map((user_id) =>
+            people.get_by_user_id(Number(user_id)),
         );
 
         show_stream_subscription_request_result({
