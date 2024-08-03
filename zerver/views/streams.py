@@ -75,20 +75,37 @@ from zerver.lib.topic import (
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_color, check_int_in_validator
 from zerver.lib.user_groups import access_user_group_for_setting
-from zerver.lib.users import access_user_by_email, access_user_by_id
+from zerver.lib.users import bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import NamedUserGroup, Realm, Stream, UserProfile
 from zerver.models.users import get_system_bot
 
 
-def principal_to_user_profile(agent: UserProfile, principal: str | int) -> UserProfile:
-    if isinstance(principal, str):
-        return access_user_by_email(
-            agent, principal, allow_deactivated=False, allow_bots=True, for_admin=False
+def bulk_principals_to_user_profiles(
+    principals: list[str] | list[int],
+    acting_user: UserProfile,
+) -> set[UserProfile]:
+    # Since principals is guaranteed to be non-empty and to have the same type of elements,
+    # the following if/else is safe and enough.
+
+    # principals are user emails.
+    if isinstance(principals[0], str):
+        return bulk_access_users_by_email(
+            principals,  # type: ignore[arg-type] # principals guaranteed to be list[str] only.
+            acting_user=acting_user,
+            allow_deactivated=False,
+            allow_bots=True,
+            for_admin=False,
         )
+
+    # principals are user ids.
     else:
-        return access_user_by_id(
-            agent, principal, allow_deactivated=False, allow_bots=True, for_admin=False
+        return bulk_access_users_by_id(
+            principals,  # type: ignore[arg-type] # principals guaranteed to be list[int] only.
+            acting_user=acting_user,
+            allow_deactivated=False,
+            allow_bots=True,
+            for_admin=False,
         )
 
 
@@ -473,12 +490,11 @@ def remove_subscriptions_backend(
 
     unsubscribing_others = False
     if principals:
-        people_to_unsub = set()
-        for principal in principals:
-            target_user = principal_to_user_profile(user_profile, principal)
-            people_to_unsub.add(target_user)
-            if not user_directly_controls_user(user_profile, target_user):
-                unsubscribing_others = True
+        people_to_unsub = bulk_principals_to_user_profiles(principals, user_profile)
+        unsubscribing_others = any(
+            not user_directly_controls_user(user_profile, target) for target in people_to_unsub
+        )
+
     else:
         people_to_unsub = {user_profile}
 
@@ -551,6 +567,7 @@ def add_subscriptions_backend(
     realm = user_profile.realm
     stream_dicts = []
     color_map = {}
+    # UserProfile ids or emails.
     if principals is None:
         principals = []
 
@@ -607,9 +624,8 @@ def add_subscriptions_backend(
             # Guest users case will not be handled here as it will
             # be handled by the decorator above.
             raise JsonableError(_("Insufficient permission"))
-        subscribers = {
-            principal_to_user_profile(user_profile, principal) for principal in principals
-        }
+        subscribers = bulk_principals_to_user_profiles(principals, user_profile)
+
     else:
         subscribers = {user_profile}
 
