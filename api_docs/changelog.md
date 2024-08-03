@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 281**
+
+* [`POST /users/{user_id}/subscription`](/api/subscribe): Returns two pairs of
+  dictionaries where the key is the id of the user/bot and the value is a list
+  of the names of the channels that were subscribed/already subscribed to as a
+  result of the query.
+
 **Feature level 280**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
