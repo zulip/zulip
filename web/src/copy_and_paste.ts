@@ -9,6 +9,7 @@ import * as compose_ui from "./compose_ui";
 import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import * as rows from "./rows";
+import * as stream_data from "./stream_data";
 import * as topic_link_util from "./topic_link_util";
 import * as util from "./util";
 
@@ -662,7 +663,10 @@ export function try_stream_topic_syntax_text(text: string): string | null {
         return null;
     }
 
-    if (topic_link_util.will_produce_broken_stream_topic_link(stream_topic.stream_name)) {
+    const stream = stream_data.get_sub_by_id(stream_topic.stream_id);
+    assert(stream !== undefined);
+    const stream_name = stream.name;
+    if (topic_link_util.will_produce_broken_stream_topic_link(stream_name)) {
         return null;
     }
 
@@ -673,7 +677,7 @@ export function try_stream_topic_syntax_text(text: string): string | null {
         return null;
     }
 
-    let syntax_text = "#**" + stream_topic.stream_name;
+    let syntax_text = "#**" + stream_name;
     if (stream_topic.topic_name) {
         syntax_text += ">" + stream_topic.topic_name;
     }

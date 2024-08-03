@@ -171,7 +171,7 @@ run_test("basics", ({override, override_rewire}) => {
     override_rewire(message_view, "try_rendering_locally_for_same_narrow", noop);
 
     const helper = test_helper({override});
-    const terms = [{operator: "stream", operand: "Denmark"}];
+    const terms = [{operator: "stream", operand: denmark.stream_id.toString()}];
 
     const selected_id = 1000;
 

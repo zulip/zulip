@@ -159,21 +159,23 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     const query = last.operand;
     let channels = stream_data.subscribed_streams();
 
-    channels = channels.filter((channel) => channel_matches_query(channel, query));
+    channels = channels.filter((channel_name) => channel_matches_query(channel_name, query));
 
     channels = typeahead_helper.sorter(query, channels, (x) => x);
 
     const regex = typeahead_helper.build_highlight_regex(query);
     const highlight_query = typeahead_helper.highlight_with_escaping_and_regex;
 
-    return channels.map((channel) => {
+    return channels.map((channel_name) => {
         const prefix = "channel";
-        const highlighted_channel = highlight_query(regex, channel);
+        const highlighted_channel = highlight_query(regex, channel_name);
         const verb = last.negated ? "exclude " : "";
         const description_html = verb + prefix + " " + highlighted_channel;
+        const channel = stream_data.get_sub_by_name(channel_name);
+        assert(channel !== undefined);
         const term = {
             operator: "channel",
-            operand: channel,
+            operand: channel.stream_id.toString(),
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
@@ -473,7 +475,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     const operator = Filter.canonicalize_operator(last.operator);
     const operand = last.operand;
     const negated = operator === "topic" && last.negated;
-    let channel: string | undefined;
+    let channel_id: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
     const suggest_terms: NarrowTerm[] = [];
@@ -496,28 +498,28 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     switch (operator) {
         case "channel":
             guess = "";
-            channel = operand;
+            channel_id = operand;
             suggest_terms.push(last);
             break;
         case "topic":
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
-                channel = filter.operands("channel")[0];
+                channel_id = filter.operands("channel")[0];
             } else {
-                channel = narrow_state.stream_name();
-                if (channel) {
-                    suggest_terms.push({operator: "channel", operand: channel});
+                channel_id = narrow_state.stream_id()?.toString();
+                if (channel_id) {
+                    suggest_terms.push({operator: "channel", operand: channel_id});
                 }
             }
             break;
     }
 
-    if (!channel) {
+    if (!channel_id) {
         return [];
     }
 
-    const subscription = stream_data.get_sub(channel);
+    const subscription = stream_data.get_sub_by_id_string(channel_id);
     if (!subscription) {
         return [];
     }
@@ -849,12 +851,12 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
 }
 
 function suggestions_for_current_filter(): SuggestionLine[] {
-    if (narrow_state.stream_name() && narrow_state.topic() !== "") {
+    if (narrow_state.stream_id() && narrow_state.topic() !== "") {
         return [
             get_default_suggestion_line([
                 {
                     operator: "channel",
-                    operand: narrow_state.stream_name()!,
+                    operand: narrow_state.stream_id()!.toString(),
                 },
             ]),
             get_default_suggestion_line(narrow_state.search_terms()),

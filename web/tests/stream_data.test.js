@@ -17,6 +17,7 @@ const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
+const hash_util = zrequire("hash_util");
 const stream_settings_data = zrequire("stream_settings_data");
 const user_groups = zrequire("user_groups");
 
@@ -127,10 +128,8 @@ test("basics", () => {
     assert.deepEqual(stream_data.get_colors(), ["red", "yellow"]);
     assert.deepEqual(stream_data.subscribed_stream_ids(), [social.stream_id, test.stream_id]);
 
-    assert.ok(stream_data.is_subscribed_by_name("social"));
-    assert.ok(stream_data.is_subscribed_by_name("Social"));
-    assert.ok(!stream_data.is_subscribed_by_name("Denmark"));
-    assert.ok(!stream_data.is_subscribed_by_name("Rome"));
+    assert.ok(stream_data.is_subscribed(social.stream_id));
+    assert.ok(!stream_data.is_subscribed(denmark.stream_id));
 
     assert.equal(stream_data.get_stream_privacy_policy(test.stream_id), "public");
     assert.equal(stream_data.get_stream_privacy_policy(social.stream_id), "invite-only");
@@ -139,9 +138,10 @@ test("basics", () => {
         "invite-only-public-history",
     );
     assert.equal(stream_data.get_stream_privacy_policy(web_public_stream.stream_id), "web-public");
-    assert.ok(stream_data.is_web_public_by_stream_name(web_public_stream.name));
-    assert.ok(!stream_data.is_web_public_by_stream_name(social.name));
-    assert.ok(!stream_data.is_web_public_by_stream_name("unknown"));
+    assert.ok(stream_data.is_web_public_by_stream_id(web_public_stream.stream_id));
+    assert.ok(!stream_data.is_web_public_by_stream_id(social.stream_id));
+    const unknown_stream_id = 9999;
+    assert.ok(!stream_data.is_web_public_by_stream_id(unknown_stream_id));
 
     assert.ok(stream_data.is_invite_only_by_stream_id(social.stream_id));
     // Unknown stream id
@@ -150,9 +150,6 @@ test("basics", () => {
     assert.equal(stream_data.get_color(social.stream_id), "red");
     assert.equal(stream_data.get_color(undefined), "#c2c2c2");
     assert.equal(stream_data.get_color(1234567), "#c2c2c2");
-
-    assert.equal(stream_data.get_name("denMARK"), "Denmark");
-    assert.equal(stream_data.get_name("unknown Stream"), "unknown Stream");
 
     assert.ok(!stream_data.is_muted(social.stream_id));
     assert.ok(stream_data.is_muted(denmark.stream_id));
@@ -168,19 +165,37 @@ test("basics", () => {
 
     // "new" correct url formats
     assert.equal(stream_data.slug_to_stream_id("2-social"), 2);
+    assert.equal(hash_util.decode_operand("channel", "2-social"), "2");
+
     assert.equal(stream_data.slug_to_stream_id("2"), 2);
+    assert.equal(hash_util.decode_operand("channel", "2"), "2");
+
     // we still get 2 because it's a valid stream id
     assert.equal(stream_data.slug_to_stream_id("2-whatever"), 2);
-    // invalid stream id
-    assert.equal(stream_data.slug_to_stream_id("999-social"), undefined);
-    // legacy
-    assert.equal(stream_data.slug_to_stream_id("social"), 2);
+    assert.equal(stream_data.slug_to_stream_id("2-"), 2);
 
-    // invalid formats
-    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), undefined);
-    assert.equal(stream_data.slug_to_stream_id("2something"), undefined);
+    // legacy, we recognize "social" as a valid channel name
+    assert.equal(stream_data.slug_to_stream_id("social"), 2);
+    assert.equal(hash_util.decode_operand("channel", "social"), "2");
+
+    // These aren't prepended with valid ids nor valid channel names. We
+    // don't get any stream id from the slug, and the decoded operand (the
+    // only caller of `slug_to_stream_id`) returns an empty string (which we
+    // don't display anywhere, since the channel is invalid).
+    assert.equal(stream_data.slug_to_stream_id("999-social"), undefined);
+    assert.equal(hash_util.decode_operand("channel", "999-social"), "");
+
     assert.equal(stream_data.slug_to_stream_id("99-whatever"), undefined);
+    assert.equal(hash_util.decode_operand("channel", "99-whatever"), "");
+
+    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), undefined);
+    assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "");
+
+    assert.equal(stream_data.slug_to_stream_id("2something"), undefined);
+    assert.equal(hash_util.decode_operand("channel", "2something"), "");
+
     assert.equal(stream_data.slug_to_stream_id("99whatever"), undefined);
+    assert.equal(hash_util.decode_operand("channel", "99whatever"), "");
 
     // sub_store
     assert.equal(sub_store.get(-3), undefined);
@@ -520,12 +535,12 @@ test("delete_sub", () => {
 
     stream_data.add_sub(canada);
 
-    assert.ok(stream_data.is_subscribed_by_name("Canada"));
+    assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
     assert.equal(sub_store.get(canada.stream_id).name, "Canada");
 
     stream_data.delete_sub(canada.stream_id);
-    assert.ok(!stream_data.is_subscribed_by_name("Canada"));
+    assert.ok(!stream_data.is_subscribed(canada.stream_id));
     assert.ok(!stream_data.get_sub("Canada"));
     assert.ok(!sub_store.get(canada.stream_id));
 

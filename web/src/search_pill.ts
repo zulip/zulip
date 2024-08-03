@@ -10,6 +10,7 @@ import type {InputPill, InputPillContainer} from "./input_pill";
 import * as people from "./people";
 import type {User} from "./people";
 import type {NarrowTerm} from "./state_data";
+import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
 import * as util from "./util";
@@ -56,7 +57,7 @@ export function create_item_from_search_string(search_string: string): SearchPil
 
 export function get_search_string_from_item(item: SearchPill): string {
     const sign = item.negated ? "-" : "";
-    return `${sign}${item.operator}: ${get_search_operand(item)}`;
+    return `${sign}${item.operator}: ${get_search_operand(item, true)}`;
 }
 
 // This is called when the a pill is closed. We have custom logic here
@@ -215,9 +216,12 @@ export function set_search_bar_contents(
     }
 }
 
-function get_search_operand(item: SearchPill): string {
+function get_search_operand(item: SearchPill, for_display: boolean): string {
     if (item.type === "search_user") {
         return item.users.map((user) => user.email).join(",");
+    }
+    if (for_display && item.operator === "channel") {
+        return stream_data.get_valid_sub_by_id_string(item.operand).name;
     }
     return item.operand;
 }
@@ -225,6 +229,6 @@ function get_search_operand(item: SearchPill): string {
 export function get_current_search_pill_terms(pill_widget: SearchPillWidget): NarrowTerm[] {
     return pill_widget.items().map((item) => ({
         ...item,
-        operand: get_search_operand(item),
+        operand: get_search_operand(item, false),
     }));
 }

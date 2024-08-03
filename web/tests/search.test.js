@@ -237,25 +237,26 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             assert.equal(opts.updater("ver"), "ver");
             assert.ok(!input_pill_displayed);
 
+            const verona_stream_id = verona.stream_id.toString();
             terms = [
                 {
                     negated: false,
                     operator: "channel",
-                    operand: "Verona",
+                    operand: verona_stream_id,
                 },
             ];
             expected_pill_display_value = "channel: Verona";
             _setup(terms);
             input_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
-            assert.equal(opts.updater("channel:Verona"), "");
+            assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
             assert.ok(input_pill_displayed);
 
             search.__Rewire__("is_using_input_method", true);
             _setup(terms);
             input_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
-            assert.equal(opts.updater("channel:Verona"), "");
+            assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
             assert.ok(input_pill_displayed);
         }
         return {

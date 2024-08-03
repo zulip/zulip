@@ -75,6 +75,26 @@ function make_sub(name, stream_id) {
     stream_data.add_sub(sub);
 }
 
+let _stream_id = 0;
+function new_stream_id() {
+    _stream_id += 1;
+    return _stream_id;
+}
+
+const foo_stream_id = new_stream_id();
+const foo_sub = {
+    name: "Foo",
+    stream_id: foo_stream_id,
+};
+
+const general_sub = {
+    name: "general",
+    stream_id: new_stream_id(),
+};
+stream_data.add_sub(general_sub);
+
+const invalid_sub_id = new_stream_id();
+
 function test(label, f) {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
@@ -84,21 +104,20 @@ function test(label, f) {
 
 test("basics", () => {
     let terms = [
-        {operator: "channel", operand: "foo"},
-        {operator: "channel", operand: "exclude_me", negated: true},
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "channel", operand: invalid_sub_id.toString(), negated: true}, // excluded
         {operator: "topic", operand: "bar"},
     ];
     let filter = new Filter(terms);
 
     assert_same_terms(filter.terms(), terms);
-    assert.deepEqual(filter.operands("channel"), ["foo"]);
+    assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
 
     assert.ok(filter.has_operator("channel"));
     assert.ok(!filter.has_operator("search"));
 
-    assert.ok(filter.has_operand("channel", "foo"));
-    assert.ok(!filter.has_operand("channel", "exclude_me"));
-    assert.ok(!filter.has_operand("channel", "nada"));
+    assert.ok(filter.has_operand("channel", foo_stream_id.toString()));
+    assert.ok(!filter.has_operand("channel", invalid_sub_id.toString()));
 
     assert.ok(!filter.is_keyword_search());
     assert.ok(!filter.can_mark_messages_read());
@@ -114,27 +133,26 @@ test("basics", () => {
     assert.ok(filter.can_bucket_by("channel", "topic"));
 
     // "stream" was renamed to "channel"
-    terms = [{operator: "stream", operand: "foo"}];
+    terms = [{operator: "stream", operand: foo_stream_id.toString()}];
     assert.ok(filter.has_operator("channel"));
-    assert.deepEqual(filter.operands("channel"), ["foo"]);
+    assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
     assert.ok(filter.includes_full_stream_history());
     assert.ok(filter.can_apply_locally());
 
     terms = [
-        {operator: "channel", operand: "foo"},
-        {operator: "channel", operand: "exclude_me", negated: true},
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "channel", operand: invalid_sub_id.toString(), negated: true}, // excluded
         {operator: "topic", operand: "bar"},
     ];
     filter = new Filter(terms);
 
-    assert.deepEqual(filter.operands("channel"), ["foo"]);
+    assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
 
     assert.ok(filter.has_operator("channel"));
     assert.ok(!filter.has_operator("search"));
 
-    assert.ok(filter.has_operand("channel", "foo"));
-    assert.ok(!filter.has_operand("channel", "exclude_me"));
-    assert.ok(!filter.has_operand("channel", "nada"));
+    assert.ok(filter.has_operand("channel", foo_stream_id.toString()));
+    assert.ok(!filter.has_operand("channel", invalid_sub_id.toString()));
 
     assert.ok(!filter.is_keyword_search());
     assert.ok(!filter.can_mark_messages_read());
@@ -147,7 +165,7 @@ test("basics", () => {
     assert.ok(!filter.is_conversation_view());
 
     terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
         {operator: "search", operand: "pizza"},
     ];
@@ -165,7 +183,7 @@ test("basics", () => {
     assert.ok(!filter.is_conversation_view());
 
     terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
         {operator: "near", operand: 17},
     ];
@@ -186,7 +204,7 @@ test("basics", () => {
     // If our only channel operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a channel operator, because we don't
     // want to have the channel in the tab bar or unsubscribe messaging, etc.
-    terms = [{operator: "channel", operand: "exclude", negated: true}];
+    terms = [{operator: "channel", operand: invalid_sub_id.toString(), negated: true}];
     filter = new Filter(terms);
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.has_operator("channel"));
@@ -394,7 +412,7 @@ test("basics", () => {
     assert.ok(!filter.is_conversation_view());
 
     terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
     ];
     filter = new Filter(terms);
@@ -411,7 +429,7 @@ test("basics", () => {
     assert.ok(!filter.is_conversation_view_with_near());
 
     terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
         {operator: "with", operand: 17},
     ];
@@ -431,7 +449,7 @@ test("basics", () => {
 
     // "stream" was renamed to "channel"
     terms = [
-        {operator: "stream", operand: "foo"},
+        {operator: "stream", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
     ];
     filter = new Filter(terms);
@@ -545,19 +563,19 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_is_operands();
     assert_not_mark_read_when_searching();
 
-    const channel_term = [{operator: "channel", operand: "foo"}];
+    const channel_term = [{operator: "channel", operand: foo_stream_id.toString()}];
     let filter = new Filter(channel_term);
     assert.ok(filter.can_mark_messages_read());
     assert_not_mark_read_with_has_operands(channel_term);
     assert_not_mark_read_with_is_operands(channel_term);
     assert_not_mark_read_when_searching(channel_term);
 
-    const channel_negated_operator = [{operator: "channel", operand: "foo", negated: true}];
+    const channel_negated_operator = [{operator: "channel", operand: foo_stream_id, negated: true}];
     filter = new Filter(channel_negated_operator);
     assert.ok(!filter.can_mark_messages_read());
 
     const channel_topic_terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
     ];
     filter = new Filter(channel_topic_terms);
@@ -567,7 +585,7 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_when_searching(channel_topic_terms);
 
     const channel_negated_topic_terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar", negated: true},
     ];
     filter = new Filter(channel_negated_topic_terms);
@@ -665,34 +683,34 @@ test("show_first_unread", () => {
 
 test("filter_with_new_params_topic", () => {
     const terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "old topic"},
     ];
     const filter = new Filter(terms);
 
-    assert.ok(filter.has_topic("foo", "old topic"));
-    assert.ok(!filter.has_topic("wrong", "old topic"));
-    assert.ok(!filter.has_topic("foo", "wrong"));
+    assert.ok(filter.has_topic(foo_stream_id.toString(), "old topic"));
+    assert.ok(!filter.has_topic(invalid_sub_id.toString(), "old topic"));
+    assert.ok(!filter.has_topic(foo_stream_id.toString(), "wrong"));
 
     const new_filter = filter.filter_with_new_params({
         operator: "topic",
         operand: "new topic",
     });
 
-    assert.deepEqual(new_filter.operands("channel"), ["foo"]);
+    assert.deepEqual(new_filter.operands("channel"), [foo_stream_id.toString()]);
     assert.deepEqual(new_filter.operands("topic"), ["new topic"]);
 });
 
 test("filter_with_new_params_channel", () => {
     const terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "old topic"},
     ];
     const filter = new Filter(terms);
 
-    assert.ok(filter.has_topic("foo", "old topic"));
-    assert.ok(!filter.has_topic("wrong", "old topic"));
-    assert.ok(!filter.has_topic("foo", "wrong"));
+    assert.ok(filter.has_topic(foo_stream_id.toString(), "old topic"));
+    assert.ok(!filter.has_topic(invalid_sub_id.toString(), "old topic"));
+    assert.ok(!filter.has_topic(foo_stream_id.toString(), "wrong"));
 
     const new_filter = filter.filter_with_new_params({
         operator: "channel",
@@ -706,33 +724,41 @@ test("filter_with_new_params_channel", () => {
 test("new_style_terms", () => {
     const term = {
         operator: "channel",
-        operand: "foo",
+        operand: foo_stream_id.toString(),
     };
     const terms = [term];
     const filter = new Filter(terms);
 
-    assert.deepEqual(filter.operands("channel"), ["foo"]);
+    assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
     assert.ok(filter.can_bucket_by("channel"));
 });
 
-test("public_terms", ({override}) => {
+test("public_terms", ({override, override_rewire}) => {
     stream_data.clear_subscriptions();
+    const some_channel_id = new_stream_id();
     let terms = [
-        {operator: "channel", operand: "some_channel"},
+        {operator: "channel", operand: some_channel_id},
         {operator: "in", operand: "all"},
         {operator: "topic", operand: "bar"},
     ];
     let filter = new Filter(terms);
     const expected_terms = [
-        {operator: "channel", operand: "some_channel"},
+        {operator: "channel", operand: some_channel_id},
         {operator: "in", operand: "all"},
         {operator: "topic", operand: "bar"},
     ];
     override(page_params, "narrow_stream", undefined);
+    override_rewire(stream_data, "get_sub_by_name", (name) => {
+        assert.equal(name, "default");
+        return {
+            name,
+            some_channel_id,
+        };
+    });
     assert_same_terms(filter.public_terms(), expected_terms);
     assert.ok(filter.can_bucket_by("channel"));
 
-    terms = [{operator: "channel", operand: "default"}];
+    terms = [{operator: "channel", operand: some_channel_id}];
     filter = new Filter(terms);
     override(page_params, "narrow_stream", "default");
     assert_same_terms(filter.public_terms(), []);
@@ -845,34 +871,34 @@ test("predicate_basics", ({override}) => {
     // To keep these tests simple, we only pass objects with a few relevant attributes
     // rather than full-fledged message objects.
 
-    const stream_id = 42;
-    make_sub("Foo", stream_id);
+    stream_data.add_sub(foo_sub);
     let predicate = get_predicate([
-        ["channel", "Foo"],
+        ["channel", foo_stream_id.toString()],
         ["topic", "Bar"],
     ]);
 
-    assert.ok(predicate({type: stream_message, stream_id, topic: "bar"}));
-    assert.ok(!predicate({type: stream_message, stream_id, topic: "whatever"}));
+    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
+    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "whatever"}));
     // 9999999 doesn't exist, testing no match
     assert.ok(!predicate({type: stream_message, stream_id: 9999999}));
     assert.ok(!predicate({type: direct_message}));
 
     // For old channels that we are no longer subscribed to, we may not have
     // a subscription, but these should still match by channel name.
+    const old_sub_id = new_stream_id();
     const old_sub = {
         name: "old-subscription",
-        stream_id: 5,
+        stream_id: old_sub_id,
         subscribed: false,
     };
     stream_data.add_sub(old_sub);
     predicate = get_predicate([
-        ["channel", "old-subscription"],
+        ["channel", old_sub_id.toString()],
         ["topic", "Bar"],
     ]);
-    assert.ok(predicate({type: stream_message, stream_id: 5, topic: "bar"}));
+    assert.ok(predicate({type: stream_message, stream_id: old_sub.stream_id, topic: "bar"}));
     // 99999 doesn't exist, testing no match
-    assert.ok(!predicate({type: stream_message, stream_id: 99999, topic: "whatever"}));
+    assert.ok(!predicate({type: stream_message, stream_id: invalid_sub_id, topic: "whatever"}));
 
     predicate = get_predicate([["search", "emoji"]]);
     assert.ok(predicate({}));
@@ -921,7 +947,7 @@ test("predicate_basics", ({override}) => {
     override(user_topics, "is_topic_followed", () => true);
     assert.ok(predicate({type: "stream", topic: "foo", stream_id: 5}));
 
-    const unknown_stream_id = 999;
+    const unknown_stream_id = new_stream_id();
     override(user_topics, "is_topic_muted", () => false);
     override(user_topics, "is_topic_unmuted_or_followed", () => false);
     predicate = get_predicate([["in", "home"]]);
@@ -931,7 +957,7 @@ test("predicate_basics", ({override}) => {
     // Muted topic is not part of in-home.
     with_overrides(({override}) => {
         override(user_topics, "is_topic_muted", () => true);
-        assert.ok(!predicate({stream_id, topic: "bar"}));
+        assert.ok(!predicate({stream_id: foo_stream_id, topic: "bar"}));
     });
 
     // Muted stream is not part of in-home.
@@ -1141,10 +1167,10 @@ test("negated_predicates", () => {
     let predicate;
     let narrow;
 
-    const social_stream_id = 555;
+    const social_stream_id = new_stream_id();
     make_sub("social", social_stream_id);
 
-    narrow = [{operator: "channel", operand: "social", negated: true}];
+    narrow = [{operator: "channel", operand: social_stream_id.toString(), negated: true}];
     predicate = new Filter(narrow).predicate();
     assert.ok(predicate({type: stream_message, stream_id: 999999}));
     assert.ok(!predicate({type: stream_message, stream_id: social_stream_id}));
@@ -1155,10 +1181,10 @@ test("negated_predicates", () => {
 });
 
 function test_mit_exceptions() {
-    const foo_stream_id = 555;
+    const foo_stream_id = new_stream_id();
     make_sub("Foo", foo_stream_id);
     let predicate = get_predicate([
-        ["channel", "Foo"],
+        ["channel", foo_stream_id.toString()],
         ["topic", "personal"],
     ]);
     assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "personal"}));
@@ -1169,7 +1195,7 @@ function test_mit_exceptions() {
     assert.ok(!predicate({type: direct_message}));
 
     predicate = get_predicate([
-        ["channel", "Foo"],
+        ["channel", foo_stream_id.toString()],
         ["topic", "bar"],
     ]);
     assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar.d"}));
@@ -1184,7 +1210,7 @@ function test_mit_exceptions() {
 
     // Try to get the MIT regex to explode for an empty topic.
     terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: ""},
     ];
     predicate = new Filter(terms).predicate();
@@ -1216,10 +1242,10 @@ test("predicate_edge_cases", () => {
     assert.ok(!predicate({}));
 
     // Exercise caching feature.
-    const stream_id = 101;
+    const stream_id = new_stream_id();
     make_sub("Off topic", stream_id);
     const terms = [
-        {operator: "channel", operand: "Off topic"},
+        {operator: "channel", operand: stream_id.toString()},
         {operator: "topic", operand: "Mars"},
     ];
     const filter = new Filter(terms);
@@ -1237,18 +1263,27 @@ test("parse", () => {
         assert_same_terms(result, terms);
     }
 
-    string = "channel:Foo topic:Bar yo";
+    make_sub(foo_sub.name, foo_stream_id);
+    string = "channel:Foo topic:bar yo";
     terms = [
-        {operator: "channel", operand: "Foo"},
-        {operator: "topic", operand: "Bar"},
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "topic", operand: "bar"},
+        {operator: "search", operand: "yo"},
+    ];
+    _test();
+
+    string = `channel:${foo_stream_id} topic:bar yo`;
+    terms = [
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "topic", operand: "bar"},
         {operator: "search", operand: "yo"},
     ];
     _test();
 
     // "stream" was renamed to "channel"
-    string = "stream:Foo topic:Bar yo";
+    string = `stream:${foo_stream_id} topic:Bar yo`;
     terms = [
-        {operator: "channel", operand: "Foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "Bar"},
         {operator: "search", operand: "yo"},
     ];
@@ -1262,41 +1297,21 @@ test("parse", () => {
     terms = [{operator: "sender", operand: "leo+test@zulip.com"}];
     _test();
 
-    string = "channel:With+Space";
-    terms = [{operator: "channel", operand: "With Space"}];
-    _test();
-
-    string = 'channel:"with quoted space" topic:and separate';
-    terms = [
-        {operator: "channel", operand: "with quoted space"},
-        {operator: "topic", operand: "and"},
-        {operator: "search", operand: "separate"},
-    ];
-    _test();
-
-    string = 'channel:"unclosed quote';
-    terms = [{operator: "channel", operand: "unclosed quote"}];
-    _test();
-
-    string = 'channel:""';
-    terms = [{operator: "channel", operand: ""}];
-    _test();
-
     string = "https://www.google.com";
     terms = [{operator: "search", operand: "https://www.google.com"}];
     _test();
 
-    string = "channel:foo -channel:exclude";
+    string = `channel:${foo_stream_id} -channel:${invalid_sub_id}`;
     terms = [
-        {operator: "channel", operand: "foo"},
-        {operator: "channel", operand: "exclude", negated: true},
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "channel", operand: invalid_sub_id.toString(), negated: true},
     ];
     _test();
 
-    string = "text channel:foo more text";
+    string = `text channel:${foo_stream_id} more text`;
     terms = [
         {operator: "search", operand: "text"},
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "search", operand: "more text"},
     ];
     _test();
@@ -1322,25 +1337,25 @@ test("parse", () => {
     terms = [{operator: "channels", operand: "public"}];
     _test();
 
-    string = "channel:foo :emoji: are cool";
+    string = `channel:${foo_stream_id} :emoji: are cool`;
     terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "search", operand: ":emoji: are cool"},
     ];
     _test();
 
-    string = ":channel: channel:foo :emoji: are cool";
+    string = `:channel: channel:${foo_stream_id} :emoji: are cool`;
     terms = [
         {operator: "search", operand: ":channel:"},
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "search", operand: ":emoji: are cool"},
     ];
     _test();
 
-    string = ":channel: channel:foo -:emoji: are cool";
+    string = `:channel: channel:${foo_stream_id} -:emoji: are cool`;
     terms = [
         {operator: "search", operand: ":channel:"},
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "search", operand: "-:emoji: are cool"},
     ];
     _test();
@@ -1349,10 +1364,10 @@ test("parse", () => {
     terms = [];
     _test();
 
-    string = 'channel: separated topic: "with space"';
+    string = `channel: ${foo_stream_id} topic: "separated with space"`;
     terms = [
-        {operator: "channel", operand: "separated"},
-        {operator: "topic", operand: "with space"},
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "topic", operand: "separated with space"},
     ];
     _test();
 });
@@ -1362,11 +1377,11 @@ test("unparse", () => {
     let terms;
 
     terms = [
-        {operator: "channel", operand: "Foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "Bar", negated: true},
         {operator: "search", operand: "yo"},
     ];
-    string = "channel:Foo -topic:Bar yo";
+    string = `channel:${foo_stream_id} -topic:Bar yo`;
     assert.deepEqual(Filter.unparse(terms), string);
 
     terms = [
@@ -1400,10 +1415,10 @@ test("unparse", () => {
     // canonical version of the operator is
     // used in the unparsed search string
     terms = [
-        {operator: "stream", operand: "Foo"},
+        {operator: "stream", operand: foo_stream_id.toString()},
         {operator: "subject", operand: "Bar"},
     ];
-    string = "channel:Foo topic:Bar";
+    string = `channel:${foo_stream_id} topic:Bar`;
     assert.deepEqual(Filter.unparse(terms), string);
 });
 
@@ -1420,22 +1435,27 @@ test("describe", ({mock_template}) => {
     string = "exclude channels public";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
+    const devel_id = new_stream_id();
+    make_sub("devel", devel_id);
+
     narrow = [
-        {operator: "channel", operand: "devel"},
+        {operator: "channel", operand: devel_id.toString()},
         {operator: "is", operand: "starred"},
     ];
     string = "channel devel, starred messages";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
+    const river_id = new_stream_id();
+    make_sub("river", river_id);
     narrow = [
-        {operator: "channel", operand: "river"},
+        {operator: "channel", operand: river_id.toString()},
         {operator: "is", operand: "unread"},
     ];
     string = "channel river, unread messages";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
-        {operator: "channel", operand: "devel"},
+        {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "JS"},
     ];
     string = "channel devel > JS";
@@ -1482,7 +1502,7 @@ test("describe", ({mock_template}) => {
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
-        {operator: "channel", operand: "devel"},
+        {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "JS", negated: true},
     ];
     string = "channel devel, exclude topic JS";
@@ -1496,14 +1516,14 @@ test("describe", ({mock_template}) => {
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
-        {operator: "channel", operand: "devel"},
+        {operator: "channel", operand: devel_id.toString()},
         {operator: "is", operand: "starred", negated: true},
     ];
     string = "channel devel, exclude starred messages";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
-        {operator: "channel", operand: "devel"},
+        {operator: "channel", operand: devel_id.toString()},
         {operator: "has", operand: "image", negated: true},
     ];
     string = "channel devel, exclude messages with images";
@@ -1511,14 +1531,14 @@ test("describe", ({mock_template}) => {
 
     narrow = [
         {operator: "has", operand: "abc", negated: true},
-        {operator: "channel", operand: "devel"},
+        {operator: "channel", operand: devel_id.toString()},
     ];
     string = "invalid abc operand for has operator, channel devel";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "has", operand: "image", negated: true},
-        {operator: "channel", operand: "devel"},
+        {operator: "channel", operand: devel_id.toString()},
     ];
     string = "exclude messages with images, channel devel";
     assert.equal(Filter.search_description_as_html(narrow), string);
@@ -1529,7 +1549,7 @@ test("describe", ({mock_template}) => {
 
     // canonical version of the operator is used in description
     narrow = [
-        {operator: "stream", operand: "devel"},
+        {operator: "stream", operand: devel_id.toString()},
         {operator: "subject", operand: "JS", negated: true},
     ];
     string = "channel devel, exclude topic JS";
@@ -1537,7 +1557,9 @@ test("describe", ({mock_template}) => {
 });
 
 test("can_bucket_by", () => {
-    let terms = [{operator: "channel", operand: "My channel"}];
+    const channel_id = new_stream_id();
+    make_sub("My channel", channel_id);
+    let terms = [{operator: "channel", operand: channel_id.toString()}];
     let filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("channel"), true);
     assert.equal(filter.can_bucket_by("channel", "topic"), false);
@@ -1546,7 +1568,7 @@ test("can_bucket_by", () => {
     terms = [
         // try a non-orthodox ordering
         {operator: "topic", operand: "My topic"},
-        {operator: "channel", operand: "My channel"},
+        {operator: "channel", operand: channel_id.toString()},
     ];
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("channel"), true);
@@ -1554,7 +1576,7 @@ test("can_bucket_by", () => {
     assert.equal(filter.can_bucket_by("dm"), false);
 
     terms = [
-        {operator: "channel", operand: "My channel", negated: true},
+        {operator: "channel", operand: channel_id.toString(), negated: true},
         {operator: "topic", operand: "My topic"},
     ];
     filter = new Filter(terms);
@@ -1670,7 +1692,7 @@ test("term_type", () => {
     const terms = [
         {operator: "topic", operand: "lunch"},
         {operator: "sender", operand: "steve@foo.com"},
-        {operator: "channel", operand: "Verona"},
+        {operator: "channel", operand: new_stream_id().toString()},
     ];
     let filter = new Filter(terms);
     const term_types = filter.sorted_term_types();
@@ -1737,8 +1759,8 @@ test("is_valid_search_term", () => {
         ["in: nowhere", false],
         ["id: 4", true],
         ["near: home", false],
-        ["channel: Denmark", true],
-        ["channel: GhostTown", false],
+        ["channel: " + denmark.stream_id, true],
+        [`channel: ${invalid_sub_id}`, false],
         ["channels: public", true],
         ["channels: private", false],
         ["topic: GhostTown", true],
@@ -1778,9 +1800,25 @@ test("update_email", () => {
 });
 
 test("try_adjusting_for_moved_with_target", ({override}) => {
+    const scotland_id = new_stream_id();
+    make_sub("Scotland", scotland_id);
+    const verona_id = new_stream_id();
+    make_sub("Verona", verona_id);
     const messages = {
-        12: {type: "stream", display_recipient: "Scotland", topic: "Test 1", id: 12},
-        17: {type: "stream", display_recipient: "Verona", topic: "Test 2", id: 17},
+        12: {
+            type: "stream",
+            stream_id: scotland_id,
+            display_recipient: "Scotland",
+            topic: "Test 1",
+            id: 12,
+        },
+        17: {
+            type: "stream",
+            stream_id: verona_id,
+            display_recipient: "Verona",
+            topic: "Test 2",
+            id: 17,
+        },
         2: {type: "direct", id: 2, display_recipient: [{id: 3, email: "user3@zulip.com"}]},
     };
 
@@ -1788,7 +1826,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
 
     // When the narrow terms are correct, it returns the same terms
     let terms = [
-        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "channel", operand: scotland_id.toString(), negated: false},
         {operator: "topic", operand: "Test 1", negated: false},
         {operator: "with", operand: "12", negated: false},
     ];
@@ -1802,7 +1840,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     // When the narrow terms are incorrect, the narrow is corrected
     // to the narrow of the `with` operand.
     const incorrect_terms = [
-        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "channel", operand: verona_id.toString(), negated: false},
         {operator: "topic", operand: "Test 2", negated: false},
         {operator: "with", operand: "12", negated: false},
     ];
@@ -1816,7 +1854,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     // when message specified in `with` operator does not exist in
     // message_store, we rather go to the server, without any updates.
     terms = [
-        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "channel", operand: scotland_id.toString(), negated: false},
         {operator: "topic", operand: "Test 1", negated: false},
         {operator: "with", operand: "11", negated: false},
     ];
@@ -1830,7 +1868,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     // the `with` operator corresponds to that of a direct message, then
     // the narrow is adjusted to point to the narrow containing the message.
     terms = [
-        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "channel", operand: scotland_id.toString(), negated: false},
         {operator: "topic", operand: "Test 1", negated: false},
         {operator: "with", operand: "2", negated: false},
     ];
@@ -1852,7 +1890,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     filter.try_adjusting_for_moved_with_target();
     assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
     assert.deepEqual(filter.terms(), [
-        {operator: "channel", operand: "Scotland", negated: false},
+        {operator: "channel", operand: scotland_id.toString(), negated: false},
         {operator: "topic", operand: "Test 1", negated: false},
         {operator: "with", operand: "12", negated: false},
     ]);
@@ -1861,7 +1899,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     // and is present in the same narrow as the original one, then
     // no hash change is required.
     terms = [
-        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "channel", operand: verona_id.toString(), negated: false},
         {operator: "topic", operand: "Test 2", negated: false},
         {operator: "with", operand: "17", negated: false},
     ];
@@ -1873,7 +1911,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     // locally, but messages fetched are in same narrow as
     // original narrow, then no hash change is required.
     terms = [
-        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "channel", operand: verona_id.toString(), negated: false},
         {operator: "topic", operand: "Test 2", negated: false},
         {operator: "with", operand: "1", negated: false},
     ];
@@ -1888,7 +1926,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     // and is not present in the same narrow as the original one,
     // then hash change is required.
     terms = [
-        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "channel", operand: verona_id.toString(), negated: false},
         {operator: "topic", operand: "Test 2", negated: false},
         {operator: "with", operand: "12", negated: false},
     ];
@@ -1900,7 +1938,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     // locally, and messages fetched are in different narrow from
     // original narrow, then hash change is required.
     terms = [
-        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "channel", operand: verona_id.toString(), negated: false},
         {operator: "topic", operand: "Test 2", negated: false},
         {operator: "with", operand: "1", negated: false},
     ];
@@ -1931,14 +1969,7 @@ function make_web_public_sub(name, stream_id) {
 }
 
 test("navbar_helpers", () => {
-    const sub = {
-        name: "Foo",
-        stream_id: 12,
-    };
-    stream_data.add_sub(sub);
-
-    const stream_id = 43;
-    make_sub("Foo", stream_id);
+    stream_data.add_sub(foo_sub);
 
     // make sure title has names separated with correct delimiters
     function properly_separated_names(names) {
@@ -2007,7 +2038,7 @@ test("navbar_helpers", () => {
     const is_followed = [{operator: "is", operand: "followed"}];
     const channels_public = [{operator: "channels", operand: "public"}];
     const channel_topic_terms = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
     ];
     const has_reaction_sender_me = [
@@ -2015,16 +2046,19 @@ test("navbar_helpers", () => {
         {operator: "sender", operand: "me"},
     ];
     // foo channel exists
-    const channel_term = [{operator: "channel", operand: "foo"}];
-    make_private_sub("psub", "22");
-    const private_channel_term = [{operator: "channel", operand: "psub"}];
-    make_web_public_sub("webPublicSub", "12"); // capitalized just to try be tricky and robust.
-    const web_public_channel = [{operator: "channel", operand: "webPublicSub"}];
-    const non_existent_channel = [{operator: "channel", operand: "Elephant"}];
-    const non_existent_channel_topic = [
-        {operator: "channel", operand: "Elephant"},
-        {operator: "topic", operand: "pink"},
+    const channel_term = [{operator: "channel", operand: foo_stream_id.toString()}];
+    const invalid_channel_id = new_stream_id();
+    const invalid_channel = [{operator: "channel", operand: invalid_channel_id.toString()}];
+    const invalid_channel_with_topic = [
+        {operator: "channel", operand: invalid_channel_id.toString()},
+        {operator: "topic", operand: "bar"},
     ];
+    const public_sub_id = new_stream_id();
+    make_private_sub("psub", public_sub_id);
+    const private_channel_term = [{operator: "channel", operand: public_sub_id.toString()}];
+    const web_public_sub_id = new_stream_id();
+    make_web_public_sub("webPublicSub", web_public_sub_id); // capitalized just to try be tricky and robust.
+    const web_public_channel = [{operator: "channel", operand: web_public_sub_id.toString()}];
     const dm = [{operator: "dm", operand: "joe@example.com"}];
     const dm_with = [
         {operator: "dm", operand: "joe@example.com"},
@@ -2042,7 +2076,7 @@ test("navbar_helpers", () => {
     const is_alerted = [{operator: "is", operand: "alerted"}];
     const is_unread = [{operator: "is", operand: "unread"}];
     const channel_topic_near = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
         {operator: "near", operand: "12"},
     ];
@@ -2051,7 +2085,7 @@ test("navbar_helpers", () => {
         {operator: "near", operand: "12"},
     ];
     const channel_with = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
         {operator: "with", operand: "12"},
     ];
@@ -2131,7 +2165,14 @@ test("navbar_helpers", () => {
             is_common_narrow: true,
             zulip_icon: "hashtag",
             title: "Foo",
-            redirect_url_with_search: "/#narrow/stream/43-Foo/topic/bar",
+            redirect_url_with_search: `/#narrow/stream/${foo_stream_id}-Foo/topic/bar`,
+        },
+        {
+            terms: invalid_channel_with_topic,
+            is_common_narrow: true,
+            icon: "question-circle-o",
+            title: "translated: Unknown channel",
+            redirect_url_with_search: "#",
         },
         {
             terms: channels_public,
@@ -2145,20 +2186,13 @@ test("navbar_helpers", () => {
             is_common_narrow: true,
             zulip_icon: "hashtag",
             title: "Foo",
-            redirect_url_with_search: "/#narrow/stream/43-Foo",
+            redirect_url_with_search: `/#narrow/stream/${foo_stream_id}-Foo`,
         },
         {
-            terms: non_existent_channel,
+            terms: invalid_channel,
             is_common_narrow: true,
             icon: "question-circle-o",
-            title: "translated: Unknown channel #Elephant",
-            redirect_url_with_search: "#",
-        },
-        {
-            terms: non_existent_channel_topic,
-            is_common_narrow: true,
-            icon: "question-circle-o",
-            title: "translated: Unknown channel #Elephant",
+            title: "translated: Unknown channel",
             redirect_url_with_search: "#",
         },
         {
@@ -2166,14 +2200,14 @@ test("navbar_helpers", () => {
             is_common_narrow: true,
             zulip_icon: "lock",
             title: "psub",
-            redirect_url_with_search: "/#narrow/stream/22-psub",
+            redirect_url_with_search: `/#narrow/stream/${public_sub_id}-psub`,
         },
         {
             terms: web_public_channel,
             is_common_narrow: true,
             zulip_icon: "globe",
             title: "webPublicSub",
-            redirect_url_with_search: "/#narrow/stream/12-webPublicSub",
+            redirect_url_with_search: `/#narrow/stream/${web_public_sub_id}-webPublicSub`,
         },
         {
             terms: dm,
@@ -2300,7 +2334,7 @@ test("navbar_helpers", () => {
 
     // incomplete and weak test cases just to restore coverage of filter.ts
     const complex_term = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
         {operator: "sender", operand: "me"},
     ];
@@ -2312,7 +2346,7 @@ test("navbar_helpers", () => {
     assert.equal(filter.is_common_narrow(), false);
 
     const channel_topic_search_term = [
-        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
         {operator: "search", operand: "potato"},
     ];
@@ -2357,7 +2391,7 @@ test("navbar_helpers", () => {
     // this is actually wrong, but the code is currently not robust enough to throw an error here
     // also, used as an example of triggering last return statement.
     const default_redirect = {
-        terms: [{operator: "channel", operand: "foo"}],
+        terms: [{operator: "channel", operand: foo_stream_id.toString()}],
         redirect_url: "#",
     };
 
@@ -2392,10 +2426,15 @@ run_test("is_spectator_compatible", () => {
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "dm-including", operand: "hamlet@zulip.com"}]),
     );
-    assert.ok(Filter.is_spectator_compatible([{operator: "channel", operand: "Denmark"}]));
+
+    const denmark_id = new_stream_id();
+    make_sub("Denmark", denmark_id);
+    assert.ok(
+        Filter.is_spectator_compatible([{operator: "channel", operand: denmark_id.toString()}]),
+    );
     assert.ok(
         Filter.is_spectator_compatible([
-            {operator: "channel", operand: "Denmark"},
+            {operator: "channel", operand: denmark_id.toString()},
             {operator: "topic", operand: "logic"},
         ]),
     );
@@ -2438,7 +2477,7 @@ run_test("is_in_home", () => {
 });
 
 run_test("equals", () => {
-    let terms = [{operator: "channel", operand: "Foo"}];
+    let terms = [{operator: "channel", operand: foo_stream_id.toString()}];
     let filter = new Filter(terms);
 
     assert.ok(filter.equals(new Filter(terms)));
@@ -2447,7 +2486,7 @@ run_test("equals", () => {
     assert.ok(!filter.equals(new Filter([...terms, {operator: "topic", operand: "Bar"}])));
 
     terms = [
-        {operator: "channel", operand: "Foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "Bar"},
     ];
     filter = new Filter(terms);
@@ -2455,7 +2494,7 @@ run_test("equals", () => {
         filter.equals(
             new Filter([
                 {operator: "topic", operand: "Bar"},
-                {operator: "channel", operand: "Foo"},
+                {operator: "channel", operand: foo_stream_id.toString()},
             ]),
         ),
     );
@@ -2468,7 +2507,7 @@ run_test("equals", () => {
             new Filter([
                 {operator: "near", operand: "10"},
                 {operator: "topic", operand: "Bar"},
-                {operator: "channel", operand: "Foo"},
+                {operator: "channel", operand: foo_stream_id.toString()},
                 {operator: "near", operand: "101"},
             ]),
             ["near"],
@@ -2480,7 +2519,7 @@ run_test("adjusted_terms_if_moved", () => {
     current_user.email = me.email;
     // should return null for non-stream messages containing no
     // `with` operator
-    let raw_terms = [{operator: "channel", operand: "Foo"}];
+    let raw_terms = [{operator: "channel", operand: foo_stream_id.toString()}];
     let message = {type: "private"};
     let result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.strictEqual(result, null);
@@ -2496,7 +2535,7 @@ run_test("adjusted_terms_if_moved", () => {
         ],
     };
     raw_terms = [
-        {operator: "channel", operand: "Foo"},
+        {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "with", operand: `${message.id}`},
     ];
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
@@ -2521,33 +2560,53 @@ run_test("adjusted_terms_if_moved", () => {
     ]);
 
     // should return null if no terms are changed
-    raw_terms = [{operator: "channel", operand: "general"}];
-    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    raw_terms = [{operator: "channel", operand: general_sub.stream_id.toString()}];
+    message = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        display_recipient: "general",
+        topic: "discussion",
+    };
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.strictEqual(result, null);
 
     // should adjust channel term to match message's display_recipient
-    raw_terms = [{operator: "channel", operand: "random"}];
-    message = {type: "stream", display_recipient: "general", topic: "discussion"};
-    let expected = [{operator: "channel", operand: "general"}];
+    raw_terms = [{operator: "channel", operand: "999"}];
+    message = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        display_recipient: "general",
+        topic: "discussion",
+    };
+    let expected = [{operator: "channel", operand: general_sub.stream_id.toString()}];
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.deepStrictEqual(result, expected);
 
     // should adjust topic term to match message's topic
     raw_terms = [{operator: "topic", operand: "random"}];
-    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    message = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        display_recipient: "general",
+        topic: "discussion",
+    };
     expected = [{operator: "topic", operand: "discussion"}];
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.deepStrictEqual(result, expected);
 
     // should adjust both channel and topic terms when both are different
     raw_terms = [
-        {operator: "channel", operand: "random"},
+        {operator: "channel", operand: "999"},
         {operator: "topic", operand: "random"},
     ];
-    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    message = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        display_recipient: "general",
+        topic: "discussion",
+    };
     expected = [
-        {operator: "channel", operand: "general"},
+        {operator: "channel", operand: general_sub.stream_id.toString()},
         {operator: "topic", operand: "discussion"},
     ];
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
@@ -2555,13 +2614,18 @@ run_test("adjusted_terms_if_moved", () => {
 
     // should not adjust terms that are not channel or topic
     raw_terms = [
-        {operator: "channel", operand: "random"},
+        {operator: "channel", operand: "999"},
         {operator: "topic", operand: "random"},
         {operator: "sender", operand: "alice"},
     ];
-    message = {type: "stream", display_recipient: "general", topic: "discussion"};
+    message = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        display_recipient: "general",
+        topic: "discussion",
+    };
     expected = [
-        {operator: "channel", operand: "general"},
+        {operator: "channel", operand: general_sub.stream_id.toString()},
         {operator: "topic", operand: "discussion"},
         {operator: "sender", operand: "alice"},
     ];
@@ -2589,7 +2653,9 @@ run_test("can_newly_match_moved_messages", () => {
     filter = new Filter([{operator: "is", operand: "starred"}]);
     assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), false);
 
-    filter = new Filter([{negated: true, operator: "channel", operand: "general"}]);
+    filter = new Filter([
+        {negated: true, operator: "channel", operand: general_sub.stream_id.toString()},
+    ]);
     assert.deepEqual(filter.can_newly_match_moved_messages("something-else", "test"), true);
 
     filter = new Filter([{negated: true, operator: "is", operand: "followed"}]);
