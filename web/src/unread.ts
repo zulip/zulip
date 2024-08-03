@@ -7,6 +7,7 @@ import type {Message} from "./message_store";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
 import * as settings_config from "./settings_config";
+import * as desktop_notifications from './desktop_notifications';
 import type {
     StateData,
     unread_direct_message_group_info_schema,
@@ -859,7 +860,7 @@ export function mark_as_read(message_id: number): void {
     // the following methods are cheap and work fine even if message_id
     // was never set to unread.
     unread_direct_message_counter.delete(message_id);
-
+    desktop_notifications.close_notification(message_id);
     // Important: This function uses `unread_topic_counter` to look up
     // the stream/topic for this previously unread message, so much
     // happen before the message is removed from that data structure.
