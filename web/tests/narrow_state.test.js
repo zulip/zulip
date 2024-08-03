@@ -46,7 +46,7 @@ test("stream", () => {
     assert.ok(!narrow_state.is_for_stream_id(test_stream.stream_id));
 
     set_filter([
-        ["stream", "Test"],
+        ["stream", "15"],
         ["topic", "Bar"],
         ["search", "yo"],
     ]);
@@ -59,16 +59,17 @@ test("stream", () => {
     assert.ok(narrow_state.is_for_stream_id(test_stream.stream_id));
 
     const expected_terms = [
-        {negated: false, operator: "channel", operand: "Test"},
+        {negated: false, operator: "channel", operand: "15"},
         {negated: false, operator: "topic", operand: "Bar"},
         {negated: false, operator: "search", operand: "yo"},
     ];
 
     const public_terms = narrow_state.public_search_terms();
     assert.deepEqual(public_terms, expected_terms);
-    assert.equal(narrow_state.search_string(), "channel:Test topic:Bar yo");
+    assert.equal(narrow_state.search_string(), "channel:15 topic:Bar yo");
 });
 
+const foo_stream = {name: "Foo", stream_id: 72};
 test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_to_pms());
     assert.ok(!narrow_state.narrowed_by_reply());
@@ -76,6 +77,8 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_topic_reply());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_sub(), undefined);
+
+    stream_data.add_sub(foo_stream);
 
     set_filter([["stream", "Foo"]]);
     assert.ok(!narrow_state.narrowed_to_pms());
@@ -92,7 +95,7 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([
-        ["stream", "Foo"],
+        ["stream", "72"],
         ["topic", "bar"],
     ]);
     assert.ok(!narrow_state.narrowed_to_pms());
@@ -118,14 +121,14 @@ test("narrowed", () => {
 
 test("terms", () => {
     set_filter([
-        ["stream", "Foo"],
+        ["stream", "72"],
         ["topic", "Bar"],
         ["search", "Yo"],
     ]);
     let result = narrow_state.search_terms();
     assert.equal(result.length, 3);
     assert.equal(result[0].operator, "channel");
-    assert.equal(result[0].operand, "Foo");
+    assert.equal(result[0].operand, "72");
 
     assert.equal(result[1].operator, "topic");
     assert.equal(result[1].operand, "Bar");
@@ -137,11 +140,11 @@ test("terms", () => {
     result = narrow_state.search_terms();
     assert.equal(result.length, 0);
 
-    page_params.narrow = [{operator: "stream", operand: "Foo"}];
+    page_params.narrow = [{operator: "stream", operand: "72"}];
     result = narrow_state.search_terms();
     assert.equal(result.length, 1);
     assert.equal(result[0].operator, "channel");
-    assert.equal(result[0].operand, "Foo");
+    assert.equal(result[0].operand, "72");
 });
 
 test("excludes_muted_topics", () => {
@@ -170,7 +173,7 @@ test("excludes_muted_topics", () => {
 
 test("set_compose_defaults", () => {
     set_filter([
-        ["stream", "Foo"],
+        ["stream", "72"],
         ["topic", "Bar"],
     ]);
 
@@ -179,8 +182,7 @@ test("set_compose_defaults", () => {
     assert.equal(stream_and_topic.stream_id, undefined);
     assert.equal(stream_and_topic.topic, "Bar");
 
-    const test_stream = {name: "Foo", stream_id: 72};
-    stream_data.add_sub(test_stream);
+    stream_data.add_sub(foo_stream);
     stream_and_topic = narrow_state.set_compose_defaults();
     assert.equal(stream_and_topic.stream_id, 72);
     assert.equal(stream_and_topic.topic, "Bar");
@@ -214,7 +216,7 @@ test("set_compose_defaults", () => {
     assert.deepEqual(narrow_state.set_compose_defaults(), {});
 
     stream_data.add_sub({name: "ROME", stream_id: 99});
-    set_filter([["stream", "rome"]]);
+    set_filter([["stream", "99"]]);
 
     const stream_test = narrow_state.set_compose_defaults();
     assert.equal(stream_test.stream_id, 99);
@@ -242,7 +244,7 @@ test("update_email", () => {
 
 test("topic", () => {
     set_filter([
-        ["stream", "Foo"],
+        ["stream", foo_stream.stream_id.toString()],
         ["topic", "Bar"],
     ]);
     assert.equal(narrow_state.topic(), "Bar");
@@ -272,10 +274,10 @@ test("stream_sub", () => {
     assert.equal(narrow_state.stream_sub(), undefined);
 
     set_filter([
-        ["stream", "Foo"],
+        ["stream", "55"],
         ["topic", "Bar"],
     ]);
-    assert.equal(narrow_state.stream_name(), "Foo");
+    assert.equal(narrow_state.stream_name(), undefined);
     assert.equal(narrow_state.stream_sub(), undefined);
 
     const sub = {name: "Foo", stream_id: 55};
@@ -298,7 +300,7 @@ test("pm_ids_string", () => {
     assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
     set_filter([
-        ["stream", "Foo"],
+        ["stream", foo_stream.stream_id.toString()],
         ["topic", "Bar"],
     ]);
     assert.equal(narrow_state.pm_ids_string(), undefined);

@@ -1,5 +1,4 @@
 import _ from "lodash";
-import assert from "minimalistic-assert";
 
 import * as narrow_state from "./narrow_state";
 import * as pm_conversations from "./pm_conversations";
@@ -87,7 +86,6 @@ export function get_next_topic(
 
     function get_unmuted_topics(stream_id: number): string[] {
         const narrowed_steam_id = narrow_state.stream_id();
-        assert(stream_id !== undefined);
         const topics = stream_topic_history.get_recent_topic_names(stream_id);
         const narrowed_topic = narrow_state.topic();
         if (
@@ -119,16 +117,11 @@ export function get_next_topic(
         return topics;
     }
 
-    function has_unread_messages(stream_id: number, topic: string): boolean {
-        assert(stream_id !== undefined);
-        return unread.topic_has_any_unread(stream_id, topic);
-    }
-
     if (only_followed_topics) {
         return next_topic(
             my_streams,
             get_followed_topics,
-            has_unread_messages,
+            unread.topic_has_any_unread,
             curr_stream_id,
             curr_topic,
         );
@@ -137,7 +130,7 @@ export function get_next_topic(
     return next_topic(
         my_streams,
         get_unmuted_topics,
-        has_unread_messages,
+        unread.topic_has_any_unread,
         curr_stream_id,
         curr_topic,
     );

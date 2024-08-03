@@ -38,34 +38,42 @@ const message_view = zrequire("../src/message_view");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 
+const devel = {
+    name: "devel",
+    stream_id: 100,
+    color: "blue",
+    subscribed: true,
+};
+stream_data.add_sub(devel);
+
 run_test("terms_round_trip", () => {
     let terms;
     let hash;
     let narrow;
 
     terms = [
-        {operator: "stream", operand: "devel"},
+        {operator: "stream", operand: devel.stream_id.toString()},
         {operator: "topic", operand: "algol"},
     ];
     hash = hash_util.search_terms_to_hash(terms);
-    assert.equal(hash, "#narrow/stream/devel/topic/algol");
+    assert.equal(hash, "#narrow/stream/100-devel/topic/algol");
 
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [
-        {operator: "stream", operand: "devel", negated: false},
+        {operator: "stream", operand: devel.stream_id.toString(), negated: false},
         {operator: "topic", operand: "algol", negated: false},
     ]);
 
     terms = [
-        {operator: "stream", operand: "devel"},
+        {operator: "stream", operand: devel.stream_id.toString()},
         {operator: "topic", operand: "visual c++", negated: true},
     ];
     hash = hash_util.search_terms_to_hash(terms);
-    assert.equal(hash, "#narrow/stream/devel/-topic/visual.20c.2B.2B");
+    assert.equal(hash, "#narrow/stream/100-devel/-topic/visual.20c.2B.2B");
 
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [
-        {operator: "stream", operand: "devel", negated: false},
+        {operator: "stream", operand: devel.stream_id.toString(), negated: false},
         {operator: "topic", operand: "visual c++", negated: true},
     ]);
 
@@ -75,11 +83,13 @@ run_test("terms_round_trip", () => {
         stream_id: 987,
     };
     stream_data.add_sub(florida_stream);
-    terms = [{operator: "stream", operand: "Florida, USA"}];
+    terms = [{operator: "stream", operand: florida_stream.stream_id.toString()}];
     hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/stream/987-Florida.2C-USA");
     narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [{operator: "stream", operand: "Florida, USA", negated: false}]);
+    assert.deepEqual(narrow, [
+        {operator: "stream", operand: florida_stream.stream_id.toString(), negated: false},
+    ]);
 });
 
 run_test("stream_to_channel_rename", () => {
@@ -90,13 +100,17 @@ run_test("stream_to_channel_rename", () => {
 
     // Confirm the URLs generated from search terms use "stream" and "streams"
     // and that the new Filter has the new "channel" and "channels" operators.
-    terms = [{operator: "channel", operand: "devel"}];
+    terms = [{operator: "channel", operand: devel.stream_id.toString()}];
     hash = hash_util.search_terms_to_hash(terms);
-    assert.equal(hash, "#narrow/stream/devel");
+    assert.equal(hash, "#narrow/stream/100-devel");
     narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [{operator: "stream", operand: "devel", negated: false}]);
+    assert.deepEqual(narrow, [
+        {operator: "stream", operand: devel.stream_id.toString(), negated: false},
+    ]);
     filter = new Filter(narrow);
-    assert.deepEqual(filter.terms(), [{operator: "channel", operand: "devel", negated: false}]);
+    assert.deepEqual(filter.terms(), [
+        {operator: "channel", operand: devel.stream_id.toString(), negated: false},
+    ]);
 
     terms = [{operator: "channels", operand: "public"}];
     hash = hash_util.search_terms_to_hash(terms);
@@ -115,16 +129,20 @@ run_test("stream_to_channel_rename", () => {
     stream_data.add_sub(test_channel);
     hash = "#narrow/channel/34-decode";
     narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [{operator: "channel", operand: "decode", negated: false}]);
+    assert.deepEqual(narrow, [
+        {operator: "channel", operand: test_channel.stream_id.toString(), negated: false},
+    ]);
     filter = new Filter(narrow);
-    assert.deepEqual(filter.terms(), [{operator: "channel", operand: "decode", negated: false}]);
+    assert.deepEqual(filter.terms(), [
+        {operator: "channel", operand: test_channel.stream_id.toString(), negated: false},
+    ]);
 });
 
 run_test("terms_trailing_slash", () => {
-    const hash = "#narrow/stream/devel/topic/algol/";
+    const hash = "#narrow/stream/100-devel/topic/algol/";
     const narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [
-        {operator: "stream", operand: "devel", negated: false},
+        {operator: "stream", operand: devel.stream_id.toString(), negated: false},
         {operator: "topic", operand: "algol", negated: false},
     ]);
 });

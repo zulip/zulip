@@ -242,7 +242,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // for non-existent or private stream
-    set_filter([["stream", "Foo"]]);
+    set_filter([["stream", "999"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -251,7 +251,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 
     // for non-subbed public stream
     stream_data.add_sub({name: "ROME", stream_id: 99});
-    set_filter([["stream", "Rome"]]);
+    set_filter([["stream", "99"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -263,7 +263,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 
     // for non-web-public stream for spectator
     page_params.is_spectator = true;
-    set_filter([["stream", "Rome"]]);
+    set_filter([["stream", "99"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -274,7 +274,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([
-        ["stream", "Rome"],
+        ["stream", "99"],
         ["topic", "foo"],
     ]);
     narrow_banner.show_empty_narrow_message();
@@ -289,7 +289,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     // for web-public stream for spectator
     stream_data.add_sub({name: "web-public-stream", stream_id: 1231, is_web_public: true});
     set_filter([
-        ["stream", "web-public-stream"],
+        ["stream", "1231"],
         ["topic", "foo"],
     ]);
     narrow_banner.show_empty_narrow_message();
@@ -503,7 +503,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 
     set_filter([
         ["sender", "alice@example.com"],
-        ["stream", "Rome"],
+        ["stream", "99"],
     ]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -528,7 +528,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     stream_data.add_sub(my_stream);
     stream_data.subscribe_myself(my_stream);
 
-    set_filter([["stream", "my stream"]]);
+    set_filter([["stream", "103"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -596,6 +596,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
         empty_narrow_html("translated: No search results.", undefined, expected_search_data),
     );
 
+    stream_data.add_sub({name: "streamA", stream_id: 88});
     const expected_stream_search_data = {
         has_stop_word: true,
         stream_query: "streamA",
@@ -606,7 +607,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
         ],
     };
     set_filter([
-        ["stream", "streamA"],
+        ["stream", "88"],
         ["search", "what about grail"],
     ]);
     narrow_banner.show_empty_narrow_message();
@@ -626,7 +627,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
         ],
     };
     set_filter([
-        ["stream", "streamA"],
+        ["stream", "88"],
         ["topic", "topicA"],
         ["search", "what about grail"],
     ]);
@@ -649,8 +650,8 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     stream_data.add_sub({name: "streamB", stream_id: 77});
 
     set_filter([
-        ["stream", "streamA"],
-        ["stream", "streamB"],
+        ["stream", "88"],
+        ["stream", "77"],
     ]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -723,7 +724,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     assert.equal(args.called, true);
     assert.equal(args.opts.trigger, "narrow_to_compose_target");
     assert.deepEqual(args.terms, [
-        {operator: "channel", operand: "ROME"},
+        {operator: "channel", operand: "99"},
         {operator: "topic", operand: "one"},
     ]);
 
@@ -733,7 +734,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [
-        {operator: "channel", operand: "ROME"},
+        {operator: "channel", operand: "99"},
         {operator: "topic", operand: "four"},
     ]);
 
@@ -742,14 +743,14 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "channel", operand: "99"}]);
 
     // Test with no topic
     compose_state.topic(undefined);
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "channel", operand: "99"}]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
@@ -837,19 +838,16 @@ run_test("narrow_compute_title", () => {
     stream_data.add_sub(sub);
 
     filter = new Filter([
-        {operator: "stream", operand: "foo"},
+        {operator: "stream", operand: "43"},
         {operator: "topic", operand: "bar"},
     ]);
     assert.equal(narrow_title.compute_narrow_title(filter), "#Foo > bar");
 
-    filter = new Filter([{operator: "stream", operand: "foo"}]);
+    filter = new Filter([{operator: "stream", operand: "43"}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "#Foo");
 
     filter = new Filter([{operator: "stream", operand: "Elephant"}]);
-    assert.equal(
-        narrow_title.compute_narrow_title(filter),
-        "translated: Unknown channel #Elephant",
-    );
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown channel");
 
     // Direct messages with narrows
     const joe = {

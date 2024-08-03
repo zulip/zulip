@@ -34,7 +34,7 @@ run_test("filter", () => {
     stream_data.add_sub(denmark_stream);
 
     const filter_terms = [
-        {operator: "stream", operand: "Denmark"},
+        {operator: "stream", operand: denmark_stream.stream_id.toString()},
         {operator: "topic", operand: "copenhagen"},
     ];
 
@@ -85,7 +85,7 @@ run_test("narrow_state", () => {
 
     // Now set up a Filter object.
     const filter_terms = [
-        {operator: "stream", operand: "Denmark"},
+        {operator: "stream", operand: denmark_stream.stream_id.toString()},
         {operator: "topic", operand: "copenhagen"},
     ];
 

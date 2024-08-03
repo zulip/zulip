@@ -265,7 +265,22 @@ export function load_messages(opts, attempt = 1) {
         if (page_params.narrow !== undefined) {
             terms = [...terms, ...page_params.narrow];
         }
-        data.narrow = JSON.stringify(terms);
+        // TODO(stream_id): The server would ideally work with stream ids instead
+        // of stream names.
+        const server_terms = [];
+        for (const term of terms) {
+            if (term.operator === "channel") {
+                const sub = stream_data.get_sub_by_id_string(term.operand);
+                server_terms.push({
+                    ...term,
+                    operand: sub.name,
+                });
+            } else {
+                server_terms.push({...term});
+            }
+        }
+
+        data.narrow = JSON.stringify(server_terms);
     }
 
     let update_loading_indicator =

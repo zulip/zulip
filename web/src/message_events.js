@@ -353,10 +353,9 @@ export function update_messages(events) {
                     // stream_data lookup here to fail.
                     //
                     // The fix is likely somewhat involved, so punting for now.
-                    const new_stream_name = sub_store.get(new_stream_id).name;
                     new_filter = new_filter.filter_with_new_params({
                         operator: "channel",
-                        operand: new_stream_name,
+                        operand: new_stream_id.toString(),
                     });
                     changed_narrow = true;
                 }

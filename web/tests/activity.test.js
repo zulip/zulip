@@ -105,7 +105,7 @@ const $fred_stub = $.create("fred stub");
 const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
 function add_sub_and_set_as_current_narrow(sub) {
     stream_data.add_sub(sub);
-    const filter = new Filter([{operator: "stream", operand: sub.name}]);
+    const filter = new Filter([{operator: "stream", operand: sub.stream_id}]);
     message_lists.set_current({
         data: {
             filter,

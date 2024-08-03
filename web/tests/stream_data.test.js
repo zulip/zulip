@@ -127,10 +127,8 @@ test("basics", () => {
     assert.deepEqual(stream_data.get_colors(), ["red", "yellow"]);
     assert.deepEqual(stream_data.subscribed_stream_ids(), [social.stream_id, test.stream_id]);
 
-    assert.ok(stream_data.is_subscribed_by_name("social"));
-    assert.ok(stream_data.is_subscribed_by_name("Social"));
-    assert.ok(!stream_data.is_subscribed_by_name("Denmark"));
-    assert.ok(!stream_data.is_subscribed_by_name("Rome"));
+    assert.ok(stream_data.is_subscribed(social.stream_id));
+    assert.ok(!stream_data.is_subscribed(denmark.stream_id));
 
     assert.equal(stream_data.get_stream_privacy_policy(test.stream_id), "public");
     assert.equal(stream_data.get_stream_privacy_policy(social.stream_id), "invite-only");
@@ -139,9 +137,9 @@ test("basics", () => {
         "invite-only-public-history",
     );
     assert.equal(stream_data.get_stream_privacy_policy(web_public_stream.stream_id), "web-public");
-    assert.ok(stream_data.is_web_public_by_stream_name(web_public_stream.name));
-    assert.ok(!stream_data.is_web_public_by_stream_name(social.name));
-    assert.ok(!stream_data.is_web_public_by_stream_name("unknown"));
+    assert.ok(stream_data.is_web_public_by_stream_id(web_public_stream.stream_id));
+    assert.ok(!stream_data.is_web_public_by_stream_id(social.stream_id));
+    assert.ok(!stream_data.is_web_public_by_stream_id(9999));
 
     assert.ok(stream_data.is_invite_only_by_stream_id(social.stream_id));
     // Unknown stream id
@@ -150,9 +148,6 @@ test("basics", () => {
     assert.equal(stream_data.get_color(social.stream_id), "red");
     assert.equal(stream_data.get_color(undefined), "#c2c2c2");
     assert.equal(stream_data.get_color(1234567), "#c2c2c2");
-
-    assert.equal(stream_data.get_name("denMARK"), "Denmark");
-    assert.equal(stream_data.get_name("unknown Stream"), "unknown Stream");
 
     assert.ok(!stream_data.is_muted(social.stream_id));
     assert.ok(stream_data.is_muted(denmark.stream_id));
@@ -166,16 +161,18 @@ test("basics", () => {
     assert.ok(!stream_data.is_default_stream_id(social.stream_id));
     assert.ok(!stream_data.is_default_stream_id(999999));
 
-    assert.equal(stream_data.slug_to_name("2-social"), "social");
-    assert.equal(stream_data.slug_to_name("2-whatever"), "social");
-    assert.equal(stream_data.slug_to_name("2"), "social");
+    assert.equal(stream_data.slug_to_id_string("2-social"), "2");
+    assert.equal(stream_data.slug_to_id_string("2-whatever"), "2");
+    assert.equal(stream_data.slug_to_id_string("2"), "2");
+    // invalid stream id, but still found through the name
+    assert.equal(stream_data.slug_to_id_string("999-social"), "2");
+    assert.equal(stream_data.slug_to_id_string("social"), "2");
 
     // legacy
-    assert.equal(stream_data.slug_to_name("25-or-6-to-4"), "25-or-6-to-4");
-    assert.equal(stream_data.slug_to_name("2something"), "2something");
-
-    assert.equal(stream_data.slug_to_name("99-whatever"), "99-whatever");
-    assert.equal(stream_data.slug_to_name("99whatever"), "99whatever");
+    assert.equal(stream_data.slug_to_id_string("25-or-6-to-4"), "25-or-6-to-4");
+    assert.equal(stream_data.slug_to_id_string("2something"), "2something");
+    assert.equal(stream_data.slug_to_id_string("99-whatever"), "99-whatever");
+    assert.equal(stream_data.slug_to_id_string("99whatever"), "99whatever");
 
     // sub_store
     assert.equal(sub_store.get(-3), undefined);
@@ -515,12 +512,12 @@ test("delete_sub", () => {
 
     stream_data.add_sub(canada);
 
-    assert.ok(stream_data.is_subscribed_by_name("Canada"));
+    assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
     assert.equal(sub_store.get(canada.stream_id).name, "Canada");
 
     stream_data.delete_sub(canada.stream_id);
-    assert.ok(!stream_data.is_subscribed_by_name("Canada"));
+    assert.ok(!stream_data.is_subscribed(canada.stream_id));
     assert.ok(!stream_data.get_sub("Canada"));
     assert.ok(!sub_store.get(canada.stream_id));
 

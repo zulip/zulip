@@ -12,7 +12,6 @@ import * as messages_overlay_ui from "./messages_overlay_ui";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
-import * as stream_data from "./stream_data";
 
 function restore_draft(draft_id) {
     const draft = drafts.draft_model.getDraft(draft_id);
@@ -28,7 +27,7 @@ function restore_draft(draft_id) {
                 [
                     {
                         operator: "channel",
-                        operand: stream_data.get_stream_name_from_id(compose_args.stream_id),
+                        operand: compose_args.stream_id.toString(),
                     },
                     {operator: "topic", operand: compose_args.topic},
                 ],
