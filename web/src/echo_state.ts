@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import type {Message} from "./message_store";
 
 const waiting_for_id = new Map<string, Message>();
@@ -30,4 +32,23 @@ export function remove_message_from_waiting_for_ack(local_id: string): void {
 export function _patch_waiting_for_ack(data: Map<string, Message>): void {
     // Only for testing
     waiting_for_ack = data;
+}
+
+export function get_max_msg_id_in_topics_waiting_for_ack(channel_id: number): Map<string, number> {
+    const max_message_id_in_topic = new Map<string, number>();
+
+    const channel_messages_waiting_for_ack = [...waiting_for_ack.values()].filter(
+        (message) => message.type === "stream" && message.stream_id === channel_id,
+    );
+
+    for (const message of channel_messages_waiting_for_ack) {
+        assert(message.type === "stream");
+        const topic = message.topic;
+        const existing_id = max_message_id_in_topic.get(topic);
+
+        if (existing_id === undefined || message.id > existing_id) {
+            max_message_id_in_topic.set(topic, message.id);
+        }
+    }
+    return max_message_id_in_topic;
 }
