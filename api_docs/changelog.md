@@ -910,8 +910,8 @@ No changes; feature level used for Zulip 7.0 release.
 
 **Feature level 182**
 
-* `POST /export/realm`: This endpoint now returns the ID of the data
-  export object created by the request.
+* [`POST /export/realm`](/api/export-realm): This endpoint now returns the ID
+  of the data export object created by the request.
 
 **Feature level 181**
 
@@ -2457,7 +2457,10 @@ No changes; feature level used for Zulip 3.0 release.
   window cached in a client.
 * Added `is_web_public` field to Stream objects.  This field is
   intended to support web-public streams.
-* Added `/export/realm` endpoints for triggering a data export.
+* [`GET /export/realm`](/api/get-realm-exports): Added endpoint for
+  fetching public data exports.
+  [`POST /export/realm`](/api/export-realm): Added endpoint for
+  triggering a public data export.
 * `PATCH /realm`: Added `invite_to_stream_policy`,
   `create_stream_policy`, `digest_emails_enabled`, `digest_weekday`,
   `user_group_edit_policy`, and `avatar_changes_disabled` organization settings.

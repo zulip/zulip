@@ -674,6 +674,26 @@ def remove_realm_playground(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/playgrounds/{playground_id}", "delete", "200")
 
 
+@openapi_test_function("/export/realm:get")
+def get_realm_exports(client: Client) -> None:
+    # {code_example|start}
+    # Get organization's public data exports.
+    result = client.call_endpoint(url="/export/realm", method="GET")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/export/realm", "get", "200")
+
+
+@openapi_test_function("/export/realm:post")
+def export_realm(client: Client) -> None:
+    # {code_example|start}
+    # Create a public data export of the organization.
+    result = client.call_endpoint(url="/export/realm", method="POST")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/export/realm", "post", "200")
+
+
 @openapi_test_function("/users/me:get")
 def get_profile(client: Client) -> None:
     # {code_example|start}
@@ -1810,6 +1830,8 @@ def test_server_organizations(client: Client) -> None:
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
     create_realm_profile_field(client)
+    export_realm(client)
+    get_realm_exports(client)
 
 
 def test_errors(client: Client) -> None:

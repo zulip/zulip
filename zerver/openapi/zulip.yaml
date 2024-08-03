@@ -12480,6 +12480,109 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /export/realm:
+    get:
+      operationId: get-realm-exports
+      summary: Get all public data exports
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Fetch all public [data exports](/help/export-your-organization)
+        of the organization.
+
+        **Changes**: New in Zulip 2.1.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      exports:
+                        type: array
+                        description: |
+                          An array of dictionaries where each dictionary contains
+                          details about a public data export of the organization.
+                        items:
+                          $ref: "#/components/schemas/RealmExport"
+                    example:
+                      {
+                        "exports":
+                          [
+                            {
+                              "acting_user_id": 11,
+                              "deleted_timestamp": null,
+                              "export_time": 1722243168.134179,
+                              "export_url": "http://example.zulipchat.com/user_avatars/exports/2/FprbwiF0c_sCN0O-rf-ryFtc/zulip-export-p6yuxc45.tar.gz",
+                              "id": 323,
+                              "failed_timestamp": null,
+                              "pending": false,
+                            },
+                          ],
+                        "msg": "",
+                        "result": "success",
+                      }
+    post:
+      operationId: export-realm
+      summary: Create a public data export
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Create a public [data export](/help/export-your-organization)
+        of the organization.
+
+        !!! warn ""
+
+            **Note**: If you're the administrator of a self-hosted installation,
+            you may be looking for the documentation on [server data export and
+            import][data-export] or [server backups][backups].
+
+        **Changes**: New in Zulip 2.1.
+
+        [data-export]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
+        [backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      id:
+                        type: integer
+                        description: |
+                          The ID of the public data export created.
+
+                          **Changes**: New in Zulip 7.0 (feature level 182).
+                    example: {"id": 1, "result": "success", "msg": ""}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Please request a manual export from zulip-admin@example.com.",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON error response for when the public data export
+                      exceeds the maximum allowed data export size.
   /invites:
     get:
       operationId: get-invites
