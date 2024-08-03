@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {JSDOM} = require("jsdom");
+
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 
@@ -245,6 +247,9 @@ test("server_history", () => {
 });
 
 test("test_unread_logic", () => {
+    const {window} = new JSDOM(`<!DOCTYPE html><html><body></body></html>`);
+    global.document = window.document;
+    global.Element = window.Element;
     const stream_id = 77;
 
     stream_topic_history.add_message({
