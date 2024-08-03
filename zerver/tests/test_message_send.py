@@ -560,7 +560,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "nonexistent_stream",
+                "to": orjson.dumps("nonexistent_stream").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
             },
@@ -577,7 +577,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": """&<"'><non-existent>""",
+                "to": orjson.dumps("""&<"'><non-existent>""").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
             },
@@ -760,7 +760,7 @@ class MessagePOSTTest(ZulipTestCase):
             {
                 "type": "direct",
                 "content": "Test message",
-                "to": "nonexistent",
+                "to": orjson.dumps("nonexistent").decode(),
             },
         )
         self.assert_json_error(result, "Invalid email 'nonexistent'")
@@ -874,7 +874,7 @@ class MessagePOSTTest(ZulipTestCase):
             {
                 "type": "invalid type",
                 "content": "Test message",
-                "to": othello.email,
+                "to": orjson.dumps(othello.email).decode(),
             },
         )
         self.assert_json_error(result, "Invalid type")
@@ -887,7 +887,7 @@ class MessagePOSTTest(ZulipTestCase):
         othello = self.example_user("othello")
         result = self.client_post(
             "/json/messages",
-            {"type": "direct", "content": " ", "to": othello.email},
+            {"type": "direct", "content": " ", "to": orjson.dumps(othello.email).decode()},
         )
         self.assert_json_error(result, "Message must not be empty")
 
@@ -900,7 +900,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "content": "Test message",
                 "topic": "",
             },
@@ -914,7 +914,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         result = self.client_post(
             "/json/messages",
-            {"type": "channel", "to": "Verona", "content": "Test message"},
+            {"type": "channel", "to": orjson.dumps("Verona").decode(), "content": "Test message"},
         )
         self.assert_json_error(result, "Missing topic")
 
@@ -928,7 +928,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "topic": "Test\n\rTopic",
                 "content": "Test message",
             },
@@ -940,7 +940,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "topic": "Test\ufffeTopic",
                 "content": "Test message",
             },
@@ -956,7 +956,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "invalid",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
             },
@@ -970,7 +970,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         result = self.client_post(
             "/json/messages",
-            {"type": "direct", "content": "Test content", "to": ""},
+            {"type": "direct", "content": "Test content", "to": orjson.dumps("").decode()},
         )
         self.assert_json_error(result, "Message must have recipients")
 
@@ -1025,7 +1025,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
-                "to": self.mit_email("starnine"),
+                "to": orjson.dumps(self.mit_email("starnine")).decode(),
             },
             subdomain="zephyr",
         )
@@ -1043,7 +1043,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
-                "to": self.mit_email("espuser"),
+                "to": orjson.dumps(self.mit_email("espuser")).decode(),
             },
             subdomain="zephyr",
         )
@@ -1090,7 +1090,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         post_data = {
             "type": "channel",
-            "to": "Verona",
+            "to": orjson.dumps("Verona").decode(),
             "content": "  I like null bytes \x00 in my content",
             "topic": "Test topic",
         }
@@ -1175,7 +1175,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
                 "forged": "true",
@@ -1191,7 +1191,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "direct",
                 "content": "Test message",
                 "client": "zephyr_mirror",
-                "to": self.mit_email("starnine"),
+                "to": orjson.dumps(self.mit_email("starnine")).decode(),
             },
             subdomain="zephyr",
         )
@@ -1206,7 +1206,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
-                "to": self.mit_email("starnine"),
+                "to": orjson.dumps(self.mit_email("starnine")).decode(),
             },
             subdomain="zephyr",
         )
@@ -1225,7 +1225,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
-                "to": self.mit_email("starnine"),
+                "to": orjson.dumps(self.mit_email("starnine")).decode(),
             },
             subdomain="zephyr",
         )
@@ -1247,7 +1247,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
-                "to": user.email,
+                "to": orjson.dumps(user.email).decode(),
             },
             subdomain="notzephyr",
         )
@@ -2298,7 +2298,7 @@ class StreamMessagesTest(ZulipTestCase):
             "/api/v1/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "sender": self.mit_email("sipbtest"),
                 "client": "zephyr_mirror",
                 "topic": "announcement",
