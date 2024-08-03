@@ -700,14 +700,6 @@ const jazy = {
     is_muted: true,
 };
 
-test("is_muted", () => {
-    stream_data.add_sub(tony);
-    stream_data.add_sub(jazy);
-    assert.ok(!stream_data.is_stream_muted_by_name("tony"));
-    assert.ok(stream_data.is_stream_muted_by_name("jazy"));
-    assert.ok(stream_data.is_stream_muted_by_name("EEXISTS"));
-});
-
 test("is_new_stream_announcements_stream_muted", () => {
     stream_data.add_sub(tony);
     stream_data.add_sub(jazy);

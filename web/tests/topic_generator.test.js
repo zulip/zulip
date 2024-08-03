@@ -85,6 +85,7 @@ run_test("topics", ({override}) => {
         muted: muted_stream_id,
         devel: devel_stream_id,
         announce: 402,
+        "test here": 200,
     };
 
     override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
@@ -100,7 +101,7 @@ run_test("topics", ({override}) => {
 
     override(stream_data, "get_stream_id", (stream_name) => stream_id_dct[stream_name]);
 
-    override(stream_data, "is_stream_muted_by_name", (stream_name) => stream_name === "muted");
+    override(stream_data, "is_muted", (stream_id) => stream_id === muted_stream_id);
 
     let topic_has_unreads = new Set([
         "unmuted",
