@@ -17,6 +17,7 @@ import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import * as compose_textarea from "./compose_textarea.ts";
 import * as compose_state from "./compose_state.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -630,20 +631,7 @@ export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>)
     const cursor_position = $textarea.caret();
     const current_content = $textarea.val()!;
 
-    return position_inside_code_block(current_content, cursor_position);
-}
-
-export function position_inside_code_block(content: string, position: number): boolean {
-    let unique_insert = "UNIQUEINSERT:" + Math.random();
-    while (content.includes(unique_insert)) {
-        unique_insert = "UNIQUEINSERT:" + Math.random();
-    }
-    const unique_insert_content =
-        content.slice(0, position) + unique_insert + content.slice(position);
-    const rendered_content = markdown.parse_non_message(unique_insert_content);
-    const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
-    const code_blocks = rendered_html.querySelectorAll("pre > code");
-    return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
+    return compose_textarea.position_inside_code_block(current_content, cursor_position);
 }
 
 export let format_text = (
