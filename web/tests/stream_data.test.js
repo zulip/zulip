@@ -123,7 +123,6 @@ test("basics", () => {
     assert.equal(stream_data.get_sub("web_public_stream"), web_public_stream);
     assert.ok(stream_data.is_web_public(web_public_stream.stream_id));
 
-    assert.deepEqual(stream_data.home_view_stream_names(), ["social"]);
     assert.deepEqual(stream_data.subscribed_streams(), ["social", "test"]);
     assert.deepEqual(stream_data.get_colors(), ["red", "yellow"]);
     assert.deepEqual(stream_data.subscribed_stream_ids(), [social.stream_id, test.stream_id]);
