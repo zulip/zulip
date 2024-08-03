@@ -322,13 +322,13 @@ run_test("bookend", ({override}) => {
     list.view.clear_trailing_bookend = noop;
     list.is_combined_feed_view = false;
 
-    override(narrow_state, "stream_name", () => "IceCream");
+    override(narrow_state, "stream_id", () => 5);
 
     let is_subscribed = true;
     let invite_only = false;
 
-    override(stream_data, "is_subscribed_by_name", () => is_subscribed);
-    override(stream_data, "get_sub", () => ({invite_only}));
+    override(stream_data, "is_subscribed", () => is_subscribed);
+    override(stream_data, "get_sub_by_id", () => ({invite_only, name: "IceCream"}));
     override(stream_data, "can_toggle_subscription", () => true);
 
     {
