@@ -10,6 +10,7 @@ from typing import Any, TypedDict
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
+from django.db.models.functions import Upper
 from django.utils.translation import gettext as _
 from django_otp.middleware import is_verified
 from typing_extensions import NotRequired
@@ -345,6 +346,74 @@ def access_user_by_email(
         raise JsonableError(_("No such user"))
 
     return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
+
+
+def bulk_access_users_by_email(
+    emails: list[str],
+    *,
+    acting_user: UserProfile,
+    allow_deactivated: bool = False,
+    allow_bots: bool = False,
+    for_admin: bool,
+) -> set[UserProfile]:
+    # We upper-case the email addresses ourselves here, because
+    # `email__iexact__in=emails` is not supported by Django.
+    target_emails_upper = [email.strip().upper() for email in emails]
+    users = (
+        UserProfile.objects.annotate(email_upper=Upper("email"))
+        .select_related(
+            "realm",
+            "realm__can_access_all_users_group",
+            "realm__can_access_all_users_group__named_user_group",
+            "realm__direct_message_initiator_group",
+            "realm__direct_message_initiator_group__named_user_group",
+            "realm__direct_message_permission_group",
+            "realm__direct_message_permission_group__named_user_group",
+            "bot_owner",
+        )
+        .filter(email_upper__in=target_emails_upper, realm=acting_user.realm)
+    )
+    valid_emails_upper = {user_profile.email_upper for user_profile in users}
+    all_users_exist = all(email in valid_emails_upper for email in target_emails_upper)
+
+    if not all_users_exist:
+        raise JsonableError(_("No such user"))
+
+    return {
+        access_user_common(user_profile, acting_user, allow_deactivated, allow_bots, for_admin)
+        for user_profile in users
+    }
+
+
+def bulk_access_users_by_id(
+    user_ids: list[int],
+    *,
+    acting_user: UserProfile,
+    allow_deactivated: bool = False,
+    allow_bots: bool = False,
+    for_admin: bool,
+) -> set[UserProfile]:
+    users = UserProfile.objects.select_related(
+        "realm",
+        "realm__can_access_all_users_group",
+        "realm__can_access_all_users_group__named_user_group",
+        "realm__direct_message_initiator_group",
+        "realm__direct_message_initiator_group__named_user_group",
+        "realm__direct_message_permission_group",
+        "realm__direct_message_permission_group__named_user_group",
+        "bot_owner",
+    ).filter(id__in=user_ids, realm=acting_user.realm)
+
+    valid_user_ids = {user_profile.id for user_profile in users}
+    all_users_exist = all(user_id in valid_user_ids for user_id in user_ids)
+
+    if not all_users_exist:
+        raise JsonableError(_("No such user"))
+
+    return {
+        access_user_common(user_profile, acting_user, allow_deactivated, allow_bots, for_admin)
+        for user_profile in users
+    }
 
 
 class Account(TypedDict):
