@@ -508,6 +508,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "emailAddress": ZULIP_ADMINISTRATOR,
 }
 
+## Note: Any additional SAML attributes that'll be used here must be
+## listed in the "extra_attrs" field in the SOCIAL_AUTH_SAML_ENABLED_IDPS
+## configuration for your IdP.
 # SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT = {
 #    "example_org": {
 #        "saml": {
