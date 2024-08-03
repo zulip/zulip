@@ -67,6 +67,7 @@ const home_msg_list = {
 message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 
 const echo = zrequire("echo");
+const echo_state = zrequire("echo_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 
@@ -84,7 +85,7 @@ run_test("process_from_server for un-echoed messages", () => {
             local_id: "100.1",
         },
     ];
-    echo._patch_waiting_for_ack(waiting_for_ack);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, server_messages);
 });
@@ -122,7 +123,7 @@ run_test("process_from_server for differently rendered messages", ({override}) =
             topic_links: new_value,
         },
     ];
-    echo._patch_waiting_for_ack(waiting_for_ack);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
     disparities = [];
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, []);
@@ -171,7 +172,7 @@ run_test("process_from_server for messages to add to narrow", ({override}) => {
             topic_links: new_value,
         },
     ];
-    echo._patch_waiting_for_ack(waiting_for_ack);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, []);
     assert.deepEqual(messages_to_add_to_narrow, [
