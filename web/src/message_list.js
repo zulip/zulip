@@ -380,15 +380,15 @@ export class MessageList {
             return;
         }
 
-        const stream_name = narrow_state.stream_name();
-        if (stream_name === undefined) {
+        const stream_id = narrow_state.stream_id();
+        if (stream_id === undefined) {
             // Trailing bookends are only for channel views.
             return;
         }
 
         // If user narrows to a stream, don't update
         // trailing bookend if user is subscribed.
-        const sub = stream_data.get_sub(stream_name);
+        const sub = stream_data.get_sub_by_id(stream_id);
         if (
             sub &&
             sub.subscribed &&
@@ -401,7 +401,7 @@ export class MessageList {
 
         let deactivated = false;
         let just_unsubscribed = false;
-        const subscribed = stream_data.is_subscribed_by_name(stream_name);
+        const subscribed = stream_data.is_subscribed(stream_id);
         const invite_only = sub && sub.invite_only;
         const is_web_public = sub && sub.is_web_public;
         const can_toggle_subscription =
@@ -413,7 +413,7 @@ export class MessageList {
         }
 
         this.view.render_trailing_bookend(
-            stream_name,
+            sub.name,
             subscribed,
             deactivated,
             just_unsubscribed,
