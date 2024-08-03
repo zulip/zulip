@@ -7,6 +7,7 @@ import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_ui from "./compose_ui";
+import * as echo_state from "./echo_state";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_events_util from "./message_events_util";
@@ -94,9 +95,6 @@ type LocalMessage = MessageRequestObject & {
     );
 
 type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
-
-const waiting_for_id = new Map<string, Message>();
-let waiting_for_ack = new Map<string, Message>();
 
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
@@ -273,8 +271,8 @@ export function insert_local_message(
     const [message] = insert_new_messages([local_message], true, true);
     assert(message !== undefined);
     assert(message.local_id !== undefined);
-    waiting_for_id.set(message.local_id, message);
-    waiting_for_ack.set(message.local_id, message);
+    echo_state.set_message_waiting_for_id(message.local_id, message);
+    echo_state.set_message_waiting_for_ack(message.local_id, message);
 
     return message;
 }
@@ -428,8 +426,8 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
 }
 
 export function reify_message_id(local_id: string, server_id: number): void {
-    const message = waiting_for_id.get(local_id);
-    waiting_for_id.delete(local_id);
+    const message = echo_state.get_message_waiting_for_id(local_id);
+    echo_state.remove_message_from_waiting_for_id(local_id);
 
     // reify_message_id is called both on receiving a self-sent message
     // from the server, and on receiving the response to the send request
@@ -481,7 +479,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
             continue;
         }
 
-        const client_message = waiting_for_ack.get(local_id);
+        const client_message = echo_state.get_message_waiting_for_ack(local_id);
         if (client_message === undefined) {
             non_echo_messages.push(message);
             continue;
@@ -519,7 +517,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
         client_message.submessages = message.submessages;
 
         msgs_to_rerender_or_add_to_narrow.push(client_message);
-        waiting_for_ack.delete(local_id);
+        echo_state.remove_message_from_waiting_for_ack(local_id);
     }
 
     if (msgs_to_rerender_or_add_to_narrow.length > 0) {
@@ -545,11 +543,6 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
     }
 
     return non_echo_messages;
-}
-
-export function _patch_waiting_for_ack(data: Map<string, Message>): void {
-    // Only for testing
-    waiting_for_ack = data;
 }
 
 export function message_send_error(message_id: number, error_response: string): void {
@@ -616,7 +609,7 @@ export function initialize({
             const local_id = rows.local_echo_id($row);
             // Message should be waiting for ack and only have a local id,
             // otherwise send would not have failed
-            const message = waiting_for_ack.get(local_id);
+            const message = echo_state.get_message_waiting_for_ack(local_id);
             if (message === undefined) {
                 blueslip.warn(
                     "Got resend or retry on failure request but did not find message in ack list " +
