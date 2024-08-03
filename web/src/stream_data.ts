@@ -433,11 +433,6 @@ export function all_subscribed_streams_are_in_home_view(): boolean {
     return subscribed_subs().every((sub) => !sub.is_muted);
 }
 
-export function home_view_stream_names(): string[] {
-    const home_view_subs = subscribed_subs().filter((sub) => !sub.is_muted);
-    return home_view_subs.map((sub) => sub.name);
-}
-
 export function canonicalized_name(stream_name: string): string {
     return stream_name.toString().toLowerCase();
 }
