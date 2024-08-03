@@ -71,6 +71,7 @@ const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
 
 const general_sub = {
     stream_id: 101,
@@ -363,10 +364,12 @@ run_test("test reify_message_id", ({override}) => {
     const local_id_float = 103.01;
 
     override(markdown, "render", noop);
+    override(markdown, "get_topic_links", noop);
 
     const message_request = {
         type: "stream",
         stream_id: general_sub.stream_id,
+        topic: "test",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,
@@ -392,6 +395,10 @@ run_test("test reify_message_id", ({override}) => {
 
     assert.ok(message_store_reify_called);
     assert.ok(notifications_reify_called);
+
+    const history = stream_topic_history.find_or_create(general_sub.stream_id);
+    assert.equal(history.max_message_id, 110);
+    assert.equal(history.topics.get("test").message_id, 110);
 });
 
 run_test("reset MockDate", () => {

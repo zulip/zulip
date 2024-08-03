@@ -171,7 +171,9 @@ export function update_views_filtered_on_message_property(
 }
 
 export function insert_new_messages(messages, sent_by_this_client, deliver_locally) {
-    messages = messages.map((message) => message_helper.process_new_message(message));
+    messages = messages.map((message) =>
+        message_helper.process_new_message(message, deliver_locally),
+    );
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     direct_message_group_data.process_loaded_messages(messages);
