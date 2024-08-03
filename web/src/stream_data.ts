@@ -462,15 +462,6 @@ export function is_muted(stream_id: number): boolean {
     return sub.is_muted;
 }
 
-export function is_stream_muted_by_name(stream_name: string): boolean {
-    const sub = get_sub(stream_name);
-    // Return true for undefined streams
-    if (sub === undefined) {
-        return true;
-    }
-    return sub.is_muted;
-}
-
 export function is_new_stream_announcements_stream_muted(): boolean {
     return is_muted(realm.realm_new_stream_announcements_stream_id);
 }
