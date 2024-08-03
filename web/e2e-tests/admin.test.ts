@@ -248,8 +248,8 @@ async function test_upload_realm_logo_image_scaled(page: Page): Promise<void> {
     await page.waitForSelector(".dialog_submit_button", {visible: false});
     await page.waitForSelector(".dialog_submit_button", {visible: true});
     await page.click("#scale_to_fit");
-    await page.waitForSelector(".dialog_submit_button", {visible: false});
-    await page.waitForSelector(".dialog_submit_button", {visible: true});
+    await page.waitForSelector("#reset_scale_to_fit", {visible: false});
+    await page.waitForSelector("#reset_scale_to_fit", {visible: true});
     await page.click(".dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
     await page.waitForSelector("#realm-day-logo-upload-widget .upload-spinner-background", {

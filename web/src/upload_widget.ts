@@ -1,7 +1,7 @@
+import type {Body, Meta} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Dashboard from "@uppy/dashboard";
 import type {DashboardOptions} from "@uppy/dashboard";
-import type {ImageEditorOptions} from "@uppy/image-editor";
 import ImageEditor from "@uppy/image-editor";
 import $ from "jquery";
 
@@ -119,53 +119,23 @@ function display_dashboard_after_timeout(is_build_widget: boolean): void {
     }, timeout);
 }
 
-const dashboard_options: DashboardOptions = {
+const dashboard_options: DashboardOptions<Meta, Body> = {
     id: "Dashboard",
     inline: true,
-    autoOpenFileEditor: true,
-    animateOpenClose: false,
+    autoOpen: "imageEditor",
     hideUploadButton: true,
 };
 
-const image_editor_options: ImageEditorOptions = {
-    id: "ImageEditor",
-    quality: 1,
-    target: Dashboard,
-    cropperOptions: {
-        viewMode: 1,
-        aspectRatio: 1,
-        background: true,
-        cropBoxResizable: true,
-        movable: true,
-        restore: true,
-        responsive: false,
-        zoomOnWheel: false,
-        croppedCanvasOptions: {},
-        dragMode: "none",
-    },
-    actions: {
-        cropSquare: true,
-        cropWidescreen: false,
-        cropWidescreenVertical: false,
-        zoomIn: false,
-        zoomOut: false,
-        revert: false,
-        rotate: false,
-        granularRotate: false,
-        flip: false,
-    },
-    locale: {
-        strings: {
-            aspectRatioSquare: "Reset",
-        },
-    },
+const image_editor_options = {
+    cropSquare: true,
+    aspectRatio: 1,
 };
 
 async function is_image_scalable(file: File): Promise<boolean> {
     return new Promise((resolve) => {
         const image = new Image();
         image.addEventListener("load", function () {
-            if (image_editor_options.cropperOptions?.aspectRatio === 1) {
+            if (image_editor_options.aspectRatio === 1) {
                 resolve(this.width !== this.height);
             } else {
                 // aspect ratio is 4
@@ -185,7 +155,7 @@ async function scale_image(file: File): Promise<File> {
             const image_height = this.height;
 
             const canvas = document.createElement("canvas");
-            if (image_editor_options.cropperOptions?.aspectRatio === 1) {
+            if (image_editor_options.aspectRatio === 1) {
                 canvas.width = 1000;
                 canvas.height = 1000;
             } else {
@@ -254,9 +224,9 @@ async function handle_file_input(
             } else {
                 reset_scale = false;
                 original_file = file;
-                if (image_editor_options.cropperOptions && image_editor_options.actions) {
-                    image_editor_options.cropperOptions.aspectRatio = cropper_options.aspectRatio;
-                    image_editor_options.actions.cropSquare = cropper_options.cropSquare;
+                if (image_editor_options.cropSquare && image_editor_options.aspectRatio) {
+                    image_editor_options.aspectRatio = cropper_options.aspectRatio;
+                    image_editor_options.cropSquare = cropper_options.cropSquare;
                 }
                 scalable = await is_image_scalable(file);
                 if (scalable) {
@@ -271,7 +241,13 @@ async function handle_file_input(
     return scalable;
 }
 
-function initialize_uppy(dashboard_target: string, max_file_upload_size: number, file: File): Uppy {
+function initialize_uppy(
+    dashboard_target: string,
+    max_file_upload_size: number,
+    file: File,
+    crop_square: boolean,
+    aspect_ratio: number,
+): Uppy {
     const uppy = new Uppy({
         restrictions: {
             allowedFileTypes: supported_types,
@@ -284,7 +260,39 @@ function initialize_uppy(dashboard_target: string, max_file_upload_size: number,
             target: dashboard_target,
             theme: settings_data.using_dark_theme() ? "dark" : "light",
         })
-        .use(ImageEditor, image_editor_options);
+        .use(ImageEditor, {
+            id: "ImageEditor",
+            quality: 0.8,
+            actions: {
+                cropSquare: crop_square,
+                cropWidescreen: false,
+                cropWidescreenVertical: false,
+                zoomIn: false,
+                zoomOut: false,
+                revert: false,
+                rotate: false,
+                granularRotate: false,
+                flip: false,
+            },
+            cropperOptions: {
+                viewMode: 1,
+                aspectRatio: aspect_ratio,
+                background: true,
+                cropBoxResizable: true,
+                movable: true,
+                restore: true,
+                responsive: false,
+                zoomOnWheel: false,
+                croppedCanvasOptions: {},
+                dragMode: "none",
+            },
+            locale: {
+                strings: {
+                    aspectRatioSquare: "Reset",
+                },
+                pluralize: (n) => (n === 1 ? 0 : 1),
+            },
+        });
 
     uppy.addFile({
         source: "file_input",
@@ -344,14 +352,23 @@ export function build_widget(
                 }
                 $clear_button.show();
 
-                uppy = initialize_uppy("#" + $preview_text.attr("id"), max_file_upload_size, file);
+                uppy = initialize_uppy(
+                    "#" + $preview_text.attr("id"),
+                    max_file_upload_size,
+                    file,
+                    cropper_options.cropSquare,
+                    cropper_options.aspectRatio,
+                );
                 uppy.on("file-editor:complete", () => {
                     const file = uppy.getFiles()[0];
                     if (file) {
+                        if (file.name === undefined) {
+                            file.name = "image";
+                        }
                         fileID = file.id;
                         if (edited) {
                             uppy.removeFile(fileID);
-                            uppy.close();
+                            uppy.destroy();
                             reset_scale = !reset_scale;
                             if (!reset_scale) {
                                 accept(original_file, scalable);
@@ -360,10 +377,10 @@ export function build_widget(
                             }
                         } else {
                             edited = true;
-                            edited_file = new File([file.data], file.name);
+                            edited_file = new File([file.data], file.name, {type: file.type});
                             const image_blob = URL.createObjectURL(edited_file);
                             $preview_image.attr("src", image_blob);
-                            uppy.close();
+                            uppy.destroy();
                             $input_error.hide();
                             $save_button.hide();
                             $scale_to_fit_button.hide();
@@ -384,7 +401,7 @@ export function build_widget(
 
     function clear(): void {
         if (uppy) {
-            uppy.close();
+            uppy.destroy();
         }
         const $control = get_file_input();
         $control.val("");
@@ -494,7 +511,7 @@ export function build_direct_upload_widget(
 
     function clear(): void {
         if (uppy) {
-            uppy.close();
+            uppy.destroy();
         }
         const $control = get_file_input();
         $control.val("");
@@ -536,14 +553,23 @@ export function build_direct_upload_widget(
                 $scaleButton.show();
             }
         }
-        uppy = initialize_uppy("#ImageEditorDiv", max_file_upload_size, file);
+        uppy = initialize_uppy(
+            "#ImageEditorDiv",
+            max_file_upload_size,
+            file,
+            cropper_options.cropSquare,
+            cropper_options.aspectRatio,
+        );
         uppy.on("file-editor:complete", () => {
             const file = uppy.getFiles()[0];
             if (file) {
+                if (file.name === undefined) {
+                    file.name = "image";
+                }
                 fileID = file.id;
                 if (edited) {
                     uppy.removeFile(fileID);
-                    uppy.close();
+                    uppy.destroy();
                     if (reset_scale) {
                         accept(original_file, scalable);
                     } else {
@@ -552,7 +578,7 @@ export function build_direct_upload_widget(
                     reset_scale = !reset_scale;
                 } else {
                     edited = true;
-                    const new_file = new File([file.data], file.name);
+                    const new_file = new File([file.data], file.name, {type: file.type});
                     const $realm_logo_section = $upload_button.closest(".image_upload_widget");
                     if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
                         upload_function({files: [new_file]}, true, false);
