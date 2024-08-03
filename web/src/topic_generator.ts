@@ -67,13 +67,13 @@ export function get_next_topic(
     let my_streams = stream_list_sort.get_streams();
 
     my_streams = my_streams.filter((stream_name) => {
-        if (!stream_data.is_stream_muted_by_name(stream_name)) {
+        const stream_id = stream_data.get_stream_id(stream_name);
+        assert(stream_id !== undefined);
+        if (!stream_data.is_muted(stream_id)) {
             return true;
         }
         if (only_followed_topics) {
             // We can use Shift + N to go to unread followed topic in muted stream.
-            const stream_id = stream_data.get_stream_id(stream_name);
-            assert(stream_id !== undefined);
             const topics = stream_topic_history.get_recent_topic_names(stream_id);
             return topics.some((topic) => user_topics.is_topic_followed(stream_id, topic));
         }
@@ -83,8 +83,6 @@ export function get_next_topic(
             return true;
         }
         // We can use N to go to next unread unmuted/followed topic in a muted stream .
-        const stream_id = stream_data.get_stream_id(stream_name);
-        assert(stream_id !== undefined);
         const topics = stream_topic_history.get_recent_topic_names(stream_id);
         return topics.some((topic) => user_topics.is_topic_unmuted_or_followed(stream_id, topic));
     });
@@ -110,7 +108,7 @@ export function get_next_topic(
 
             /* istanbul ignore next */
             return topics.filter((topic) => !user_topics.is_topic_muted(stream_id, topic));
-        } else if (stream_data.is_stream_muted_by_name(stream_name)) {
+        } else if (stream_data.is_muted(stream_id)) {
             return topics.filter((topic) =>
                 user_topics.is_topic_unmuted_or_followed(stream_id, topic),
             );
