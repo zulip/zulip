@@ -406,7 +406,7 @@ test("basic_notifications", () => {
     assert.equal(last_shown_message_id, message_1.id.toString());
 
     // Remove notification.
-    desktop_notifications.close_notification(message_1);
+    desktop_notifications.close_notification(message_1.id);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
     assert.equal(n.size, 0);
@@ -437,8 +437,8 @@ test("basic_notifications", () => {
     assert.equal(last_shown_message_id, message_2.id.toString());
 
     // Remove notifications.
-    desktop_notifications.close_notification(message_1);
-    desktop_notifications.close_notification(message_2);
+    desktop_notifications.close_notification(message_1.id);
+    desktop_notifications.close_notification(message_2.id);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
     assert.equal(n.size, 0);
