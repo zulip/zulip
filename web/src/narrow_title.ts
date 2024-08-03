@@ -8,6 +8,7 @@ import * as inbox_util from "./inbox_util";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
 import {realm} from "./state_data";
+import * as stream_data from "./stream_data";
 import * as unread from "./unread";
 import type {FullUnreadCountsData} from "./unread";
 
@@ -34,10 +35,11 @@ export function compute_narrow_title(filter?: Filter): string {
     }
 
     if (filter.has_operator("channel")) {
-        if (!filter._sub) {
+        const sub = stream_data.get_sub_by_id_string(filter.operands("channel")[0]!);
+        if (!sub) {
             // The stream is not set because it does not currently
-            // exist (possibly due to a stream name change), or it
-            // is a private stream and the user is not subscribed.
+            // exist, or it is a private stream and the user is not
+            // subscribed.
             return filter_title;
         }
         if (filter.has_operator("topic")) {

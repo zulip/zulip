@@ -429,19 +429,19 @@ test_ui("narrowing", ({mock_template}) => {
 
     let filter;
 
-    filter = new Filter([{operator: "stream", operand: "devel"}]);
+    filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
     stream_list.handle_narrow_activated(filter);
     assert.ok($("<devel-sidebar-row-stub>").hasClass("active-filter"));
 
     filter = new Filter([
-        {operator: "stream", operand: "cars"},
+        {operator: "stream", operand: carSub.stream_id.toString()},
         {operator: "topic", operand: "sedans"},
     ]);
     stream_list.handle_narrow_activated(filter);
     assert.ok(!$("ul.filters li").hasClass("active-filter"));
     assert.ok(!$("<cars-sidebar-row-stub>").hasClass("active-filter")); // false because of topic
 
-    filter = new Filter([{operator: "stream", operand: "cars"}]);
+    filter = new Filter([{operator: "stream", operand: carSub.stream_id.toString()}]);
     stream_list.handle_narrow_activated(filter);
     assert.ok(!$("ul.filters li").hasClass("active-filter"));
     assert.ok($("<cars-sidebar-row-stub>").hasClass("active-filter"));

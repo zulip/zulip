@@ -114,19 +114,24 @@ export function set_compose_defaults(): {
     return opts;
 }
 
-export function stream_name(current_filter: Filter | undefined = filter()): string | undefined {
+export function stream_id(current_filter: Filter | undefined = filter()): number | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
     const stream_operands = current_filter.operands("channel");
     if (stream_operands.length === 1 && stream_operands[0] !== undefined) {
-        const name = stream_operands[0];
-
-        // Use get_name() to get the most current stream
-        // name (considering renames and capitalization).
-        return stream_data.get_name(name);
+        return Number.parseInt(stream_operands[0], 10);
     }
     return undefined;
+}
+
+export function stream_name(current_filter: Filter | undefined = filter()): string | undefined {
+    const id = stream_id(current_filter);
+    if (id === undefined) {
+        return undefined;
+    }
+    const sub = stream_data.get_sub_by_id(id);
+    return sub?.name;
 }
 
 export function stream_sub(
@@ -140,19 +145,7 @@ export function stream_sub(
     if (stream_operands.length !== 1 || stream_operands[0] === undefined) {
         return undefined;
     }
-
-    const name = stream_operands[0];
-    const sub = stream_data.get_sub_by_name(name);
-
-    return sub;
-}
-
-export function stream_id(filter?: Filter): number | undefined {
-    const sub = stream_sub(filter);
-    if (sub === undefined) {
-        return undefined;
-    }
-    return sub.stream_id;
+    return stream_data.get_sub_by_id_string(stream_operands[0]);
 }
 
 export function topic(current_filter: Filter | undefined = filter()): string | undefined {

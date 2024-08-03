@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import {FoldDict} from "./fold_dict";
@@ -177,6 +179,18 @@ export function get_sub(stream_name: string): StreamSubscription | undefined {
     return undefined;
 }
 
+export function get_sub_by_id_string(stream_id_string: string): StreamSubscription | undefined {
+    const stream_id = Number.parseInt(stream_id_string, 10);
+    const stream = stream_info.get(stream_id);
+    return stream;
+}
+
+export function get_valid_sub_by_id_string(stream_id_string: string): StreamSubscription {
+    const stream = get_sub_by_id_string(stream_id_string);
+    assert(stream !== undefined);
+    return stream;
+}
+
 export function get_sub_by_id(stream_id: number): StreamSubscription | undefined {
     return stream_info.get(stream_id);
 }
@@ -222,13 +236,8 @@ export function get_sub_by_name(name: string): StreamSubscription | undefined {
     return sub_store.get(stream_id);
 }
 
-export function name_to_slug(name: string): string {
-    const stream_id = get_stream_id(name);
-
-    if (!stream_id) {
-        return name;
-    }
-
+export function id_to_slug(stream_id: number): string {
+    let name = get_stream_name_from_id(stream_id);
     // The name part of the URL doesn't really matter, so we try to
     // make it pretty.
     name = name.replaceAll(" ", "-");
@@ -605,11 +614,6 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
     return true;
 }
 
-export function is_subscribed_by_name(stream_name: string): boolean {
-    const sub = get_sub(stream_name);
-    return sub ? sub.subscribed : false;
-}
-
 export function is_subscribed(stream_id: number): boolean {
     const sub = sub_store.get(stream_id);
     return sub ? sub.subscribed : false;
@@ -643,8 +647,8 @@ export function is_invite_only_by_stream_id(stream_id: number): boolean {
     return sub.invite_only;
 }
 
-export function is_web_public_by_stream_name(stream_name: string): boolean {
-    const sub = get_sub(stream_name);
+export function is_web_public_by_stream_id(stream_id: number): boolean {
+    const sub = get_sub_by_id(stream_id);
     if (sub === undefined) {
         return false;
     }
@@ -665,22 +669,6 @@ export function get_default_stream_ids(): number[] {
 
 export function is_default_stream_id(stream_id: number): boolean {
     return default_stream_ids.has(stream_id);
-}
-
-export function get_name(stream_name: string): string {
-    // This returns the actual name of a stream if we are subscribed to
-    // it (e.g. "Denmark" vs. "denmark"), while falling thru to
-    // stream_name if we don't have a subscription.  (Stream names
-    // are case-insensitive, but we try to display the actual name
-    // when we know it.)
-    //
-    // This function will also do the right thing if we have
-    // an old stream name in memory for a recently renamed stream.
-    const sub = get_sub_by_name(stream_name);
-    if (sub === undefined) {
-        return stream_name;
-    }
-    return sub.name;
 }
 
 export function is_user_subscribed(stream_id: number, user_id: number): boolean {

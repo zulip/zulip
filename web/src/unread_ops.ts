@@ -22,7 +22,6 @@ import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
 import type {NarrowTerm} from "./state_data";
-import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
@@ -610,22 +609,20 @@ export function process_visible(): void {
 }
 
 export function mark_stream_as_read(stream_id: number): void {
-    const stream_name = stream_data.get_stream_name_from_id(stream_id);
     bulk_update_read_flags_for_narrow(
         [
             {operator: "is", operand: "unread", negated: false},
-            {operator: "channel", operand: stream_name},
+            {operator: "channel", operand: stream_id.toString()},
         ],
         "add",
     );
 }
 
 export function mark_topic_as_read(stream_id: number, topic: string): void {
-    const stream_name = stream_data.get_stream_name_from_id(stream_id);
     bulk_update_read_flags_for_narrow(
         [
             {operator: "is", operand: "unread", negated: false},
-            {operator: "channel", operand: stream_name},
+            {operator: "channel", operand: stream_id.toString()},
             {operator: "topic", operand: topic},
         ],
         "add",
@@ -633,10 +630,9 @@ export function mark_topic_as_read(stream_id: number, topic: string): void {
 }
 
 export function mark_topic_as_unread(stream_id: number, topic: string): void {
-    const stream_name = stream_data.get_stream_name_from_id(stream_id);
     bulk_update_read_flags_for_narrow(
         [
-            {operator: "channel", operand: stream_name},
+            {operator: "channel", operand: stream_id.toString()},
             {operator: "topic", operand: topic},
         ],
         "remove",

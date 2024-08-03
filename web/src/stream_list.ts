@@ -682,8 +682,7 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
         return result;
     }
 
-    const stream_name = op_stream[0];
-    const stream_id = stream_data.get_stream_id(stream_name);
+    const stream_id = Number.parseInt(op_stream[0], 10);
 
     if (!stream_id) {
         return result;

@@ -549,7 +549,7 @@ export function initialize_everything(state_data) {
                 [
                     {
                         operator: "stream",
-                        operand: sub.name,
+                        operand: sub.stream_id.toString(),
                     },
                 ],
                 {trigger},
@@ -658,7 +658,7 @@ export function initialize_everything(state_data) {
             const sub = sub_store.get(stream_id);
             message_view.show(
                 [
-                    {operator: "channel", operand: sub.name},
+                    {operator: "channel", operand: sub.stream_id.toString()},
                     {operator: "topic", operand: topic},
                 ],
                 {trigger: "sidebar"},

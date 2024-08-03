@@ -138,7 +138,7 @@ function build_stream_popover(opts) {
                     [
                         {
                             operator: "stream",
-                            operand: sub.name,
+                            operand: sub.stream_id.toString(),
                         },
                     ],
                     {trigger: "stream-popover"},

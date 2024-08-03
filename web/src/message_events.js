@@ -472,7 +472,6 @@ export function update_messages(events) {
                 });
             }
 
-            const old_stream_name = stream_archived ? undefined : old_stream.name;
             if (
                 going_forward_change &&
                 // This logic is a bit awkward.  What we're trying to
@@ -490,7 +489,8 @@ export function update_messages(events) {
                 // messages within a narrow.
                 selection_changed_topic &&
                 current_filter &&
-                current_filter.has_topic(old_stream_name, orig_topic)
+                old_stream_id &&
+                current_filter.has_topic(old_stream_id, orig_topic)
             ) {
                 let new_filter = current_filter;
                 if (new_filter && stream_changed) {
@@ -501,10 +501,9 @@ export function update_messages(events) {
                     // stream_data lookup here to fail.
                     //
                     // The fix is likely somewhat involved, so punting for now.
-                    const new_stream_name = sub_store.get(new_stream_id).name;
                     new_filter = new_filter.filter_with_new_params({
                         operator: "channel",
-                        operand: new_stream_name,
+                        operand: new_stream_id.toString(),
                     });
                     changed_narrow = true;
                 }
@@ -533,10 +532,10 @@ export function update_messages(events) {
             // If a message was moved to the current narrow and we don't have
             // the message cached, we need to refresh the narrow to display the message.
             if (!changed_narrow && local_cache_missing_messages && current_filter) {
-                let moved_message_stream = old_stream_name;
+                let moved_message_stream_id = old_stream_id;
                 let moved_message_topic = orig_topic;
                 if (stream_changed) {
-                    moved_message_stream = sub_store.get(new_stream_id).name;
+                    moved_message_stream_id = sub_store.get(new_stream_id).stream_id.toString();
                 }
 
                 if (topic_edited) {
@@ -545,7 +544,7 @@ export function update_messages(events) {
 
                 if (
                     current_filter.can_newly_match_moved_messages(
-                        moved_message_stream,
+                        moved_message_stream_id,
                         moved_message_topic,
                     )
                 ) {

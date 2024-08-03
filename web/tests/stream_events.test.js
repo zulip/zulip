@@ -83,7 +83,7 @@ const frontend = {
 };
 
 function narrow_to_frontend() {
-    const filter = new Filter([{operator: "stream", operand: "frontend"}]);
+    const filter = new Filter([{operator: "stream", operand: frontend.stream_id.toString()}]);
     message_lists.current = {
         data: {
             filter,
@@ -382,12 +382,12 @@ test("marked_subscribed (emails)", ({override}) => {
 
     $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
-    assert.ok(!stream_data.is_subscribed_by_name(sub.name));
+    assert.ok(!stream_data.is_subscribed(sub.stream_id));
 
     const user_ids = [15, 20, 25, me.user_id];
     stream_events.mark_subscribed(sub, user_ids, "");
     assert.deepEqual(new Set(peer_data.get_subscribers(sub.stream_id)), new Set(user_ids));
-    assert.ok(stream_data.is_subscribed_by_name(sub.name));
+    assert.ok(stream_data.is_subscribed(sub.stream_id));
 
     const args = subs_stub.get_args("sub");
     assert.deepEqual(sub, args.sub);

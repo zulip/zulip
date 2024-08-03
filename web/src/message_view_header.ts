@@ -14,6 +14,7 @@ import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
 import {current_user} from "./state_data";
+import * as stream_data from "./stream_data";
 import type {SettingsSubscription} from "./stream_settings_data";
 import type {StreamSubscription} from "./sub_store";
 
@@ -99,22 +100,21 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         is_spectator: page_params.is_spectator,
     });
 
-    if (filter.has_operator("channel") && !filter._sub) {
-        return {
-            ...context,
-            sub_count: "0",
-            formatted_sub_count: "0",
-            rendered_narrow_description: $t({
-                defaultMessage: "This channel does not exist or is private.",
-            }),
-        };
-    }
-
-    if (filter._sub) {
+    if (filter.has_operator("channel")) {
+        const current_stream = stream_data.get_sub_by_id_string(filter.operands("channel")[0]!);
+        if (!current_stream) {
+            return {
+                ...context,
+                sub_count: "0",
+                formatted_sub_count: "0",
+                rendered_narrow_description: $t({
+                    defaultMessage: "This channel does not exist or is private.",
+                }),
+            };
+        }
         // We can now be certain that the narrow
         // involves a stream which exists and
         // the current user can access.
-        const current_stream = filter._sub;
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
         return {
             ...context,
@@ -131,11 +131,15 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
 
 export function colorize_message_view_header(): void {
     const filter = narrow_state.filter();
-    if (filter === undefined || !filter._sub) {
+    let current_stream;
+    if (filter?.has_operator("channel")) {
+        current_stream = stream_data.get_valid_sub_by_id_string(filter.operands("channel")[0]!);
+    }
+    if (!current_stream) {
         return;
     }
     // selecting i instead of .fa because web public streams have custom icon.
-    $("#message_view_header a.stream i").css("color", filter._sub.color);
+    $("#message_view_header a.stream i").css("color", current_stream.color);
 }
 
 function append_and_display_title_area(context: MessageViewHeaderContext): void {
@@ -175,10 +179,10 @@ export function render_title_area(): void {
 
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
-// narrowed (filter._sub) and rerenders if necessary
+// narrowed and rerenders if necessary
 export function maybe_rerender_title_area_for_stream(modified_sub: SettingsSubscription): void {
-    const filter = narrow_state.filter();
-    if (filter && filter._sub && filter._sub.stream_id === modified_sub.stream_id) {
+    const current_stream_id = narrow_state.stream_id();
+    if (current_stream_id === modified_sub.stream_id) {
         render_title_area();
     }
 }

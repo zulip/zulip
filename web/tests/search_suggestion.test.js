@@ -50,6 +50,12 @@ const jeff = {
 
 const example_avatar_url = "http://example.com/example.png";
 
+let _stream_id = 0;
+function new_stream_id() {
+    _stream_id += 1;
+    return _stream_id;
+}
+
 function init() {
     current_user.is_admin = true;
 
@@ -81,7 +87,7 @@ function test(label, f) {
 test("basic_get_suggestions", ({override}) => {
     const query = "fred";
 
-    override(narrow_state, "stream_name", () => "office");
+    override(narrow_state, "stream_id", noop);
 
     const suggestions = get_suggestions(query);
 
@@ -116,14 +122,17 @@ test("get_is_suggestions_for_spectator", () => {
 test("subset_suggestions", ({mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
-    const query = "channel:Denmark topic:Hamlet shakespeare";
+    const denmark_id = new_stream_id();
+    const sub = {name: "Denmark", stream_id: denmark_id};
+    stream_data.add_sub(sub);
+    const query = `channel:${denmark_id} topic:Hamlet shakespeare`;
 
     const suggestions = get_suggestions(query);
 
     const expected = [
-        "channel:Denmark topic:Hamlet shakespeare",
-        "channel:Denmark topic:Hamlet",
-        "channel:Denmark",
+        `channel:${denmark_id} topic:Hamlet shakespeare`,
+        `channel:${denmark_id} topic:Hamlet`,
+        `channel:${denmark_id}`,
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -249,7 +258,7 @@ test("dm_suggestions", ({override, mock_template}) => {
 
     // "pm-with" operator returns search result
     // and "dm" operator as a suggestions
-    override(narrow_state, "stream_name", () => undefined);
+    override(narrow_state, "stream_id", () => undefined);
     query = "pm-with";
     suggestions = get_suggestions(query);
     expected = ["pm-with", "dm:"];
@@ -330,10 +339,10 @@ test("group_suggestions", ({mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     // Doesn't show dms because it's invalid in combination
-    // with a channel.
-    query = "channel:Denmark has:link dm:bob@zulip.com,Smit";
+    // with a channel. (Random channel id.)
+    query = "channel:66 has:link dm:bob@zulip.com,Smit";
     suggestions = get_suggestions(query);
-    expected = ["channel:Denmark has:link", "channel:Denmark"];
+    expected = ["channel:66 has:link", "channel:66"];
     assert.deepEqual(suggestions.strings, expected);
 
     // Invalid emails don't give suggestions
@@ -346,8 +355,10 @@ test("group_suggestions", ({mock_template}) => {
 test("empty_query_suggestions", () => {
     const query = "";
 
-    stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
+    const devel_id = new_stream_id();
+    const office_id = new_stream_id();
+    stream_data.add_sub({stream_id: devel_id, name: "devel", subscribed: true});
+    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
 
     const suggestions = get_suggestions(query);
 
@@ -361,8 +372,8 @@ test("empty_query_suggestions", () => {
         "is:unread",
         "is:resolved",
         "sender:myself@zulip.com",
-        "channel:devel",
-        "channel:office",
+        `channel:${devel_id}`,
+        `channel:${office_id}`,
         "has:link",
         "has:image",
         "has:attachment",
@@ -395,7 +406,7 @@ test("has_suggestions", ({override, mock_template}) => {
     let query = "h";
     stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    override(narrow_state, "stream_name", noop);
+    override(narrow_state, "stream_id", noop);
 
     let suggestions = get_suggestions(query);
     let expected = ["h", "has:link", "has:image", "has:attachment", "has:reaction"];
@@ -439,13 +450,10 @@ test("has_suggestions", ({override, mock_template}) => {
     expected = ["att", "has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
 
-    query = "channel:Denmark is:alerted has:lin";
+    // 66 is misc channel id.
+    query = "channel:66 is:alerted has:lin";
     suggestions = get_suggestions(query);
-    expected = [
-        "channel:Denmark is:alerted has:link",
-        "channel:Denmark is:alerted",
-        "channel:Denmark",
-    ];
+    expected = ["channel:66 is:alerted has:link", "channel:66 is:alerted", "channel:66"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -453,9 +461,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
     mock_template("user_pill.hbs", true, (_data, html) => html);
 
-    stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    override(narrow_state, "stream_name", noop);
+    override(narrow_state, "stream_id", noop);
 
     let query = "i";
     let suggestions = get_suggestions(query);
@@ -541,20 +547,16 @@ test("check_is_suggestions", ({override, mock_template}) => {
     expected = ["st", "streams:public", "is:starred", "channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
-    query = "channel:Denmark has:link is:sta";
+    query = "channel:66 has:link is:sta";
     suggestions = get_suggestions(query);
-    expected = [
-        "channel:Denmark has:link is:starred",
-        "channel:Denmark has:link",
-        "channel:Denmark",
-    ];
+    expected = ["channel:66 has:link is:starred", "channel:66 has:link", "channel:66"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
 test("sent_by_me_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
-    override(narrow_state, "stream_name", noop);
+    override(narrow_state, "stream_id", noop);
 
     let query = "";
     let suggestions = get_suggestions(query);
@@ -604,13 +606,16 @@ test("sent_by_me_suggestions", ({override, mock_template}) => {
     expected = ["-sent", "-sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
-    query = "channel:Denmark topic:Denmark1 sent";
+    const denmark_id = new_stream_id();
+    const sub = {name: "Denmark", stream_id: denmark_id};
+    stream_data.add_sub(sub);
+    query = `channel:${denmark_id} topic:Denmark1 sent`;
     suggestions = get_suggestions(query);
     expected = [
-        "channel:Denmark topic:Denmark1 sent",
-        "channel:Denmark topic:Denmark1 sender:myself@zulip.com",
-        "channel:Denmark topic:Denmark1",
-        "channel:Denmark",
+        `channel:${denmark_id} topic:Denmark1 sent`,
+        `channel:${denmark_id} topic:Denmark1 sender:myself@zulip.com`,
+        `channel:${denmark_id} topic:Denmark1`,
+        `channel:${denmark_id}`,
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -627,11 +632,11 @@ test("topic_suggestions", ({override, mock_template}) => {
     let expected;
 
     override(stream_topic_history_util, "get_server_history", noop);
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    override(narrow_state, "stream_name", () => "office");
+    const office_id = new_stream_id();
+    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
+    override(narrow_state, "stream_id", () => office_id);
 
-    const devel_id = 44;
-    const office_id = 77;
+    const devel_id = new_stream_id();
     stream_data.add_sub({stream_id: devel_id, name: "devel", subscribed: true});
     stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
 
@@ -657,8 +662,8 @@ test("topic_suggestions", ({override, mock_template}) => {
         "dm:ted@zulip.com",
         "sender:ted@zulip.com",
         "dm-including:ted@zulip.com",
-        "channel:office topic:team",
-        "channel:office topic:test",
+        `channel:${office_id} topic:team`,
+        `channel:${office_id} topic:test`,
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -666,40 +671,56 @@ test("topic_suggestions", ({override, mock_template}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
     assert.equal(describe("te"), "Search for <strong>te</strong>");
-    assert.equal(describe("channel:office topic:team"), "Channel office > team");
+    assert.equal(describe(`channel:${office_id} topic:team`), "Channel office > team");
 
-    suggestions = get_suggestions("topic:staplers channel:office");
-    expected = ["topic:staplers channel:office", "topic:staplers"];
+    suggestions = get_suggestions(`topic:staplers channel:${office_id}`);
+    expected = [`topic:staplers channel:${office_id}`, "topic:staplers"];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = get_suggestions("channel:devel topic:");
-    expected = ["channel:devel topic:", "channel:devel topic:REXX", "channel:devel"];
+    suggestions = get_suggestions(`channel:${devel_id} topic:`);
+    expected = [
+        `channel:${devel_id} topic:`,
+        `channel:${devel_id} topic:REXX`,
+        `channel:${devel_id}`,
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = get_suggestions("channel:devel -topic:");
-    expected = ["channel:devel -topic:", "channel:devel -topic:REXX", "channel:devel"];
+    suggestions = get_suggestions(`channel:${devel_id} -topic:`);
+    expected = [
+        `channel:${devel_id} -topic:`,
+        `channel:${devel_id} -topic:REXX`,
+        `channel:${devel_id}`,
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions("-topic:te");
-    expected = ["-topic:te", "channel:office -topic:team", "channel:office -topic:test"];
+    expected = [
+        "-topic:te",
+        `channel:${office_id} -topic:team`,
+        `channel:${office_id} -topic:test`,
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = get_suggestions("is:alerted channel:devel is:starred topic:");
+    suggestions = get_suggestions(`is:alerted channel:${devel_id} is:starred topic:`);
     expected = [
-        "is:alerted channel:devel is:starred topic:",
-        "is:alerted channel:devel is:starred topic:REXX",
-        "is:alerted channel:devel is:starred",
-        "is:alerted channel:devel",
+        `is:alerted channel:${devel_id} is:starred topic:`,
+        `is:alerted channel:${devel_id} is:starred topic:REXX`,
+        `is:alerted channel:${devel_id} is:starred`,
+        `is:alerted channel:${devel_id}`,
         "is:alerted",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = get_suggestions("is:dm channel:devel topic:");
-    expected = ["is:dm channel:devel topic:", "is:dm channel:devel", "is:dm"];
+    suggestions = get_suggestions(`is:dm channel:${devel_id} topic:`);
+    expected = [`is:dm channel:${devel_id} topic:`, `is:dm channel:${devel_id}`, `is:dm`];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = get_suggestions("topic:REXX channel:devel topic:");
-    expected = ["topic:REXX channel:devel topic:", "topic:REXX channel:devel", "topic:REXX"];
+    suggestions = get_suggestions(`topic:REXX channel:${devel_id} topic:`);
+    expected = [
+        `topic:REXX channel:${devel_id} topic:`,
+        `topic:REXX channel:${devel_id}`,
+        "topic:REXX",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -748,38 +769,41 @@ test("topic_suggestions (limits)", () => {
 
 test("whitespace_glitch", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
+    const office_stream_id = new_stream_id();
 
     const query = "channel:office "; // note trailing space
 
     override(stream_topic_history_util, "get_server_history", noop);
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
+    stream_data.add_sub({stream_id: office_stream_id, name: "office", subscribed: true});
 
     const suggestions = get_suggestions(query);
 
-    const expected = ["channel:office"];
+    const expected = [`channel:${office_stream_id}`];
 
     assert.deepEqual(suggestions.strings, expected);
 });
 
 test("channel_completion", ({override}) => {
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
+    const office_stream_id = new_stream_id();
+    stream_data.add_sub({stream_id: office_stream_id, name: "office", subscribed: true});
+    const dev_help_stream_id = new_stream_id();
+    stream_data.add_sub({stream_id: dev_help_stream_id, name: "dev help", subscribed: true});
 
-    override(narrow_state, "stream_name", noop);
+    override(narrow_state, "stream_id", noop);
 
     let query = "channel:of";
     let suggestions = get_suggestions(query);
-    let expected = ["channel:office"];
+    let expected = [`channel:${office_stream_id}`];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-channel:of";
     suggestions = get_suggestions(query);
-    expected = ["-channel:office"];
+    expected = [`-channel:${office_stream_id}`];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "hel";
     suggestions = get_suggestions(query);
-    expected = ["hel", "channel:dev+help"];
+    expected = ["hel", `channel:${dev_help_stream_id}`];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -789,7 +813,7 @@ test("people_suggestions", ({override, mock_template}) => {
 
     let query = "te";
 
-    override(narrow_state, "stream_name", noop);
+    override(narrow_state, "stream_id", noop);
 
     const ted = {
         email: "ted@zulip.com",
@@ -959,7 +983,7 @@ test("people_suggestions", ({override, mock_template}) => {
 test("operator_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
-    override(narrow_state, "stream_name", () => undefined);
+    override(narrow_state, "stream_id", () => undefined);
 
     // Completed operator should return nothing
     let query = "channel:";
@@ -977,37 +1001,40 @@ test("operator_suggestions", ({override, mock_template}) => {
     expected = ["-s", "-sender:myself@zulip.com", "-sender:", "-channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
-    query = "channel:Denmark is:alerted -f";
+    // 66 is a misc channel id.
+    query = "channel:66 is:alerted -f";
     suggestions = get_suggestions(query);
     expected = [
-        "channel:Denmark is:alerted -f",
-        "channel:Denmark is:alerted -sender:myself@zulip.com",
-        "channel:Denmark is:alerted -sender:",
-        "channel:Denmark is:alerted",
-        "channel:Denmark",
+        "channel:66 is:alerted -f",
+        "channel:66 is:alerted -sender:myself@zulip.com",
+        "channel:66 is:alerted -sender:",
+        "channel:66 is:alerted",
+        "channel:66",
     ];
     assert.deepEqual(suggestions.strings, expected);
 });
 
 test("queries_with_spaces", () => {
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
+    const office_id = new_stream_id();
+    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
+    const dev_help_id = new_stream_id();
+    stream_data.add_sub({stream_id: dev_help_id, name: "dev help", subscribed: true});
 
     // test allowing spaces with quotes surrounding operand
     let query = 'channel:"dev he"';
     let suggestions = get_suggestions(query);
-    let expected = ["channel:dev+help"];
+    let expected = [`channel:${dev_help_id}`];
     assert.deepEqual(suggestions.strings, expected);
 
     // test mismatched quote
     query = 'channel:"dev h';
     suggestions = get_suggestions(query);
-    expected = ["channel:dev+help"];
+    expected = [`channel:${dev_help_id}`];
     assert.deepEqual(suggestions.strings, expected);
 
     // test extra space after operator still works
     query = "channel: offi";
     suggestions = get_suggestions(query);
-    expected = ["channel:office"];
+    expected = [`channel:${office_id}`];
     assert.deepEqual(suggestions.strings, expected);
 });

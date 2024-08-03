@@ -21,8 +21,9 @@ const hamlet = {
 
 people.add_active_user(hamlet);
 
+const frontend_id = 99;
 const frontend = {
-    stream_id: 99,
+    stream_id: frontend_id,
     name: "frontend",
 };
 
@@ -44,7 +45,7 @@ run_test("hash_util", () => {
     encode_decode_operand(operator, operand, "15-Hamlet");
 
     operator = "stream";
-    operand = "frontend";
+    operand = frontend_id.toString();
 
     encode_decode_operand(operator, operand, "99-frontend");
 
@@ -175,19 +176,19 @@ run_test("test_is_in_specified_hash_category", () => {
 
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
-        {negated: false, operator: "stream", operand: "frontend"},
+        {negated: false, operator: "stream", operand: frontend_id.toString()},
     ]);
 
     assert.deepEqual(hash_util.parse_narrow(["narrow", "-stream", "99-frontend"]), [
-        {negated: true, operator: "stream", operand: "frontend"},
+        {negated: true, operator: "stream", operand: frontend_id.toString()},
     ]);
 
     assert.equal(hash_util.parse_narrow(["narrow", "BOGUS"]), undefined);
 
-    // For nonexistent streams, we get the full slug.
-    // We possibly should remove the prefix and fix this test.
+    // For nonexistent streams, we get an empty string. We don't use this
+    // anywhere, and just show "Invalid stream" in the navbar.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "42-bogus"]), [
-        {negated: false, operator: "stream", operand: "42-bogus"},
+        {negated: false, operator: "stream", operand: ""},
     ]);
 });
 

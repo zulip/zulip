@@ -36,18 +36,19 @@ export function encode_operand(operator: string, operand: string): string {
     }
 
     if (operator === "stream") {
-        return encode_stream_name(operand);
+        const stream_id = Number.parseInt(operand, 10);
+        return encode_stream_id(stream_id);
     }
 
     return internal_url.encodeHashComponent(operand);
 }
 
-export function encode_stream_name(operand: string): string {
-    // stream_data prefixes the stream id, but it does not do the
+export function encode_stream_id(stream_id: number): string {
+    // stream_data postfixes the stream name, but it does not do the
     // URI encoding piece
-    operand = stream_data.name_to_slug(operand);
+    const slug = stream_data.id_to_slug(stream_id);
 
-    return internal_url.encodeHashComponent(operand);
+    return internal_url.encodeHashComponent(slug);
 }
 
 export function decode_operand(operator: string, operand: string): string {
@@ -67,13 +68,7 @@ export function decode_operand(operator: string, operand: string): string {
     operand = internal_url.decodeHashComponent(operand);
 
     if (util.canonicalize_stream_synonyms(operator) === "stream") {
-        const stream_id = stream_data.slug_to_stream_id(operand);
-        if (stream_id) {
-            const stream = stream_data.get_sub_by_id(stream_id);
-            if (stream) {
-                return stream.name;
-            }
-        }
+        return stream_data.slug_to_stream_id(operand)?.toString() ?? "";
     }
 
     return operand;
@@ -294,7 +289,7 @@ export function validate_group_settings_hash(hash: string): string {
 
 export function decode_stream_topic_from_url(
     url_str: string,
-): {stream_name: string; topic_name?: string} | null {
+): {stream_id: number; topic_name?: string} | null {
     try {
         const url = new URL(url_str);
         if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
@@ -314,13 +309,18 @@ export function decode_stream_topic_from_url(
         if (terms[0]?.operator !== "stream" && terms[0]?.operator !== "channel") {
             return null;
         }
+        const stream_id = Number.parseInt(terms[0].operand, 10);
+        // This can happen if we don't recognize the stream operand as a valid id.
+        if (Number.isNaN(stream_id)) {
+            return null;
+        }
         if (terms.length === 1) {
-            return {stream_name: terms[0].operand};
+            return {stream_id};
         }
         if (terms[1]?.operator !== "topic") {
             return null;
         }
-        return {stream_name: terms[0].operand, topic_name: terms[1].operand};
+        return {stream_id, topic_name: terms[1].operand};
     } catch {
         return null;
     }

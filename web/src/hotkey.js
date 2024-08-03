@@ -54,7 +54,6 @@ import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
 import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -1234,7 +1233,7 @@ export function process_hotkey(e, hotkey) {
                         [
                             {
                                 operator: "channel",
-                                operand: stream_data.get_stream_name_from_id(msg.stream_id),
+                                operand: msg.stream_id.toString(),
                             },
                             {operator: "topic", operand: msg.topic},
                             {operator: "near", operand: msg.id},

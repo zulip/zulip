@@ -76,10 +76,11 @@ function retrieve_search_query_data(): SearchData {
 
     // Add in stream:foo and topic:bar if present
     if (current_filter.has_operator("channel") || current_filter.has_operator("topic")) {
-        const stream = current_filter.operands("channel")[0];
+        const stream_id = current_filter.operands("channel")[0];
         const topic = current_filter.operands("topic")[0];
-        if (stream) {
-            search_string_result.stream_query = stream;
+        if (stream_id) {
+            const stream_name = stream_data.get_valid_sub_by_id_string(stream_id).name;
+            search_string_result.stream_query = stream_name;
         }
         if (topic) {
             search_string_result.topic_query = topic;
@@ -184,7 +185,7 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
         if (
             page_params.is_spectator &&
             first_operator === "channel" &&
-            !stream_data.is_web_public_by_stream_name(first_operand)
+            !stream_data.is_web_public_by_stream_id(Number.parseInt(first_operand, 10))
         ) {
             // For non web-public streams, show `login_to_access` modal.
             spectators.login_to_access(true);
@@ -264,7 +265,7 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
             // fallthrough to default case if no match is found
             break;
         case "channel":
-            if (!stream_data.is_subscribed_by_name(first_operand)) {
+            if (!stream_data.is_subscribed(Number.parseInt(first_operand, 10))) {
                 // You are narrowed to a stream which does not exist or is a private stream
                 // in which you were never subscribed.
 
@@ -280,7 +281,7 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                         return false;
                     }
 
-                    const stream_sub = stream_data.get_sub(first_operand);
+                    const stream_sub = stream_data.get_sub_by_id_string(first_operand);
                     return stream_sub && stream_data.can_toggle_subscription(stream_sub);
                 }
 
