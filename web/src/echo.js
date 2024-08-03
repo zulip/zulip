@@ -363,6 +363,17 @@ export function reify_message_id(local_id, server_id) {
     update_message_lists(opts);
     compose_notifications.reify_message_id(opts);
     recent_view_data.reify_message_id_if_available(opts);
+
+    // We add the message to stream_topic_history only after we receive
+    // it from the server i.e., is acked, so as to maintain integer
+    // message id values there.
+    if (message.type === "stream") {
+        stream_topic_history.add_message({
+            stream_id: message.stream_id,
+            topic_name: message.topic,
+            message_id: message.id,
+        });
+    }
 }
 
 export function update_message_lists({old_id, new_id}) {

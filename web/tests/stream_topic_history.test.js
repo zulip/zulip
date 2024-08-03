@@ -9,6 +9,7 @@ const channel = mock_esm("../src/channel");
 const message_util = mock_esm("../src/message_util");
 
 const all_messages_data = zrequire("all_messages_data");
+const echo_state = zrequire("echo_state");
 const unread = zrequire("unread");
 const message_store = zrequire("message_store");
 const stream_data = zrequire("stream_data");
@@ -468,4 +469,55 @@ test("ask_server_for_latest_topic_data", () => {
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(history, ["Topic1"]);
     assert.deepEqual(max_message_id, 102);
+});
+
+// Test when a local unacked message is sent, then get_max_message_id would also
+// consider this unacked message. However, the unacked message is not added to
+// max_message_id of stream, or message_id of topic histories.
+test("test_max_message_ids_in_channel_and_topics", () => {
+    const general_sub = {
+        stream_id: 101,
+        name: "general",
+        subscribed: true,
+    };
+
+    const history = stream_topic_history.find_or_create(general_sub.stream_id);
+
+    stream_topic_history.add_message({
+        stream_id: general_sub.stream_id,
+        message_id: 45,
+        topic_name: "topic 1",
+    });
+
+    assert.equal(stream_topic_history.get_max_message_id(general_sub.stream_id), 45);
+    assert.equal(history.max_message_id, 45);
+
+    stream_topic_history.add_message({
+        stream_id: general_sub.stream_id,
+        message_id: 47,
+        topic_name: "topic 1",
+    });
+
+    assert.equal(stream_topic_history.get_max_message_id(general_sub.stream_id), 47);
+    assert.equal(history.max_message_id, 47);
+
+    const local_message = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "topic 2",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+        id: 49.01,
+    };
+    echo_state.set_message_waiting_for_ack("49.01", local_message);
+
+    assert.equal(stream_topic_history.get_max_message_id(general_sub.stream_id), 49.01);
+    assert.equal(history.max_message_id, 47);
+    assert.equal(history.topics.get("topic 2"), undefined);
+
+    assert.deepEqual(stream_topic_history.get_recent_topic_names(general_sub.stream_id), [
+        "topic 2",
+        "topic 1",
+    ]);
 });
