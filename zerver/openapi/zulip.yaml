@@ -8452,6 +8452,23 @@ paths:
                     description: |
                       A typical JSON response for when another user with the same
                       email address already exists in the realm:
+
+  /users/{user_id}/delete:
+    delete:
+      operationId: delete-user
+      summary: Delete a user
+      tags: ["users"]
+      x-requires-administrator: true
+      description: |
+        [Delete a
+        user](https://zulip.com/help/deactivate-or-reactivate-a-user)
+        given their user ID.
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
   /users/{user_id}/reactivate:
     post:
       operationId: reactivate-user

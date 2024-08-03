@@ -60,7 +60,8 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
     if user_profile.realm.is_zephyr_mirror_realm:
         raise AssertionError("Deleting zephyr mirror users is not supported")
 
-    do_deactivate_user(user_profile, acting_user=acting_user)
+    if user_profile.is_active:
+        do_deactivate_user(user_profile, acting_user=acting_user)
 
     to_resubscribe_recipient_ids = set(
         Subscription.objects.filter(
@@ -108,6 +109,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
             event_type=RealmAuditLog.USER_DELETED,
             event_time=timezone_now(),
         )
+        send_events_for_user_deletion(replacement_user)
 
 
 def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
@@ -315,6 +317,16 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         send_event_on_commit(
             realm, event_remove_user, list(users_losing_access_to_deactivated_user)
         )
+
+
+def send_events_for_user_deletion(user_profile: UserProfile) -> None:
+    event_deleted_user = dict(
+        type="realm_user",
+        op="remove",
+        person=dict(user_id=user_profile.id, is_deleted=True),
+    )
+    realm = user_profile.realm
+    send_event_on_commit(realm, event_deleted_user, active_user_ids(realm.id))
 
 
 def do_deactivate_user(
