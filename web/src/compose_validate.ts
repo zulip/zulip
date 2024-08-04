@@ -569,6 +569,10 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
 }
 
 export function validate_stream_message_address_info(sub: StreamSubscription): boolean {
+    if (sub.is_archived) {
+        compose_banner.show_stream_does_not_exist_error(sub.name);
+        return false;
+    }
     if (sub.subscribed) {
         return true;
     }
