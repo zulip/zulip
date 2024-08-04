@@ -28,6 +28,7 @@ function create_item_from_stream_name(
 function set_up_pill_typeahead({pill_widget, $pill_container}: SetUpPillTypeaheadConfig): void {
     const opts = {
         help_on_empty_strings: true,
+        hide_on_empty_after_backspace: true,
         invite_streams: true,
     };
     set_up_stream($pill_container.find(".input"), pill_widget, opts);

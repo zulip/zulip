@@ -8,7 +8,6 @@ import time_machine
 from django.apps import apps
 from django.db import models
 from django.db.models import Sum
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 from typing_extensions import override
@@ -58,6 +57,7 @@ from zerver.lib.push_notifications import (
     hex_to_b64,
 )
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.user_counts import realm_user_count_by_role
@@ -1373,7 +1373,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         self.assertTableState(UserCount, ["property", "value"], [["user test", 1]])
         self.assertTableState(StreamCount, ["property", "value"], [["stream test", 1]])
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     def test_mobile_pushes_received_count(self) -> None:
         self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
         self.server = RemoteZulipServer.objects.create(

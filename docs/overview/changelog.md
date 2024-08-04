@@ -3,13 +3,11 @@
 This page contains the release history for the Zulip server. See also the
 [Zulip release lifecycle](../overview/release-lifecycle.md).
 
-## Zulip 9.x series
+## Zulip Server 9.x series
 
-### 9.0 -- unreleased
+### Zulip Server 9.0-beta1
 
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of all changes.
+_Released 2024-07-18_
 
 #### Highlights
 
@@ -21,6 +19,9 @@ log][commit-log] for an up-to-date list of all changes.
   exactly the same, and bots do not need to be updated.
 - The All messages view has been renamed to Combined feed, and
   its internals have been reworked, fixing many subtle bugs.
+- To make reading more comfortable, Zulip has been redesigned with a
+  larger font size and line spacing. The previous configuration is
+  available via the "Compact mode" setting.
 - The main message feed search feature has been redesigned with
   user-friendly pills for search operators.
 - When you paste content into the compose box, Zulip will now do its
@@ -49,10 +50,10 @@ log][commit-log] for an up-to-date list of all changes.
   desktop app.
 - Zulip's new-user and new-organization onboarding experiences have
   been completely reworked.
-- Redesigned all popovers with a more modern visual style and improved
-  accessibility for screen readers.
-- Added a new `with` narrow filter operator for implementing permanent
-  links to topics designed to handle topics being renamed or marked as
+- Redesigned all popovers with a more modern visual style, better
+  icons, and improved accessibility for screen readers.
+- Added a new `with` narrow parameter for implementing permanent links
+  to topics designed to handle topics being renamed or marked as
   resolved. This operator is not used in 9.0, but likely will be used
   by the topic-link Markdown feature starting with a 9.x maintenance
   release.
@@ -102,9 +103,10 @@ log][commit-log] for an up-to-date list of all changes.
   messages without disabling them entirely.
 - Added support for requiring unique names in an organization.
 - Added support for marking a custom profile field as required.
-- Added controls whether users should be subscribed to the
-  organization's default channels in invitations and the SCIM
-  integration.
+- Added setting to disable adding new guest users to any initial streams
+  when their accounts are provisioned via SCIM.
+- Fixed user creation to add the user to the streams that are default
+  at the time of user creation, rather than at the time of invitation.
 - Added a confirmation notice when moving a single message, linking to
   its new location.
 - Redesigned the channel creation interface to be more intuitive.
@@ -132,6 +134,7 @@ log][commit-log] for an up-to-date list of all changes.
 - Improved the efficiency of Zulip's internal statistics system, both
   in terms of CPU and storage usage.
 - Improved tooltips to better clarify how drafts work.
+- Improved the mobile web compose area experience.
 - Improved left sidebar channel menu to be divided between personal
   and administrator actions, like the topic menu, and to link directly
   to the personal tab if one doesn't have channel admin permissions.
@@ -160,7 +163,7 @@ log][commit-log] for an up-to-date list of all changes.
   the recent conversations view.
 - Fixed several bugs involving uploading files while editing messages.
 - Fixed dozens of subtle layout bugs in the web app.
-- Fixed several live-update bugs when moving messages.
+- Fixed several live-update bugs when moving or deleting messages.
 - Fixed several bugs impacting the public access experience.
 - Fixed several bugs involving the compose box, its banners, and tooltips.
 - Fixed several race condition bugs affecting the server and web app.
@@ -191,6 +194,29 @@ log][commit-log] for an up-to-date list of all changes.
   to give time to potentially reconfigure which channel to use. You can
   override the delay by running `./manage.py send_zulip_update_announcements --skip-delay`
   once you've done any necessary configuration updates.
+- We've reworked how Zulip's mobile push notifications service is
+  configured to be easier to understand, more extensible, and avoid
+  hardcoding URLs unnecessarily. The old settings names are fully
+  supported with identical behavior, so no action is required before
+  upgrading.
+
+  Once you've upgraded, while you're [updating your settings.py
+  documentation][update-settings-docs], we recommend updating
+  `/etc/zulip/settings.py` to use the modern settings names: Replacing
+  `PUSH_NOTIFICATIONS_BOUNCER_URL = "https://push.zulipchat.com"` with
+  `ZULIP_SERVICE_PUSH_NOTIFICATIONS = True` and renaming
+  `SUBMIT_USAGE_STATISTICS` to
+  `ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS`, if you have either of those
+  settings enabled. It's important not to set both the old and new
+  settings: The legacy settings will be ignored if the modern ones are
+  present.
+
+  The one minor functional change in this restructuring is that it is
+  now possible to configure sharing usage statistics with the Zulip
+  developers without attempting to send mobile push notifications via
+  the service, by setting `ZULIP_SERVICE_PUSH_NOTIFICATIONS = False`
+  and `ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS=True`.
+
 - The Zulip server now contains a KaTeX server worker, designed to
   make bulk-rendering LaTeX efficient. It has minimal memory
   footprint, but can be disabled using the `katex_server` [deployment

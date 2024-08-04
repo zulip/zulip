@@ -22,21 +22,12 @@ from zerver.lib.thumbnail import (
     MEDIUM_AVATAR_SIZE,
     THUMBNAIL_ACCEPT_IMAGE_TYPES,
     BadImageError,
-    BaseThumbnailFormat,
     maybe_thumbnail,
     resize_avatar,
     resize_emoji,
 )
 from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
-from zerver.models import (
-    Attachment,
-    ImageAttachment,
-    Message,
-    Realm,
-    RealmEmoji,
-    ScheduledMessage,
-    UserProfile,
-)
+from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -134,22 +125,6 @@ def sanitize_name(value: str) -> str:
     if value in {"", ".", ".."}:
         return "uploaded-file"
     return value
-
-
-def get_image_thumbnail_path(
-    image_attachment: ImageAttachment,
-    thumbnail_format: BaseThumbnailFormat,
-) -> str:
-    return f"thumbnail/{image_attachment.path_id}/{thumbnail_format!s}"
-
-
-def split_thumbnail_path(file_path: str) -> tuple[str, BaseThumbnailFormat]:
-    assert file_path.startswith("thumbnail/")
-    path_parts = file_path.split("/")
-    thumbnail_format = BaseThumbnailFormat.from_string(path_parts.pop())
-    assert thumbnail_format is not None
-    path_id = "/".join(path_parts[1:])
-    return path_id, thumbnail_format
 
 
 def upload_message_attachment(

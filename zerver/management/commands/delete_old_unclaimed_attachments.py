@@ -9,11 +9,8 @@ from typing_extensions import override
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.attachments import get_old_unclaimed_attachments
 from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
-from zerver.lib.upload import (
-    all_message_attachments,
-    delete_message_attachments,
-    split_thumbnail_path,
-)
+from zerver.lib.thumbnail import split_thumbnail_path
+from zerver.lib.upload import all_message_attachments, delete_message_attachments
 from zerver.models import ArchivedAttachment, Attachment
 
 

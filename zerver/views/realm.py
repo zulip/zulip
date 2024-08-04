@@ -61,7 +61,10 @@ from zerver.models.realms import (
     OrgTypeEnum,
     WildcardMentionPolicyEnum,
 )
-from zerver.views.user_settings import check_settings_values
+from zerver.views.user_settings import (
+    check_information_density_setting_values,
+    check_settings_values,
+)
 
 
 def parse_jitsi_server_url(value: str, special_values_map: Mapping[str, str | None]) -> str | None:
@@ -644,25 +647,17 @@ def update_realm_user_settings_defaults(
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
 
-    if (
-        dense_mode
-        and web_font_size_px is not None
-        and web_font_size_px != RealmUserDefault.WEB_FONT_SIZE_PX_LEGACY
-    ):
-        raise JsonableError(
-            _("Incompatible values for 'dense_mode' and 'web_font_size_px' settings.")
-        )
-
-    if (
-        dense_mode
-        and web_line_height_percent is not None
-        and web_line_height_percent != RealmUserDefault.WEB_LINE_HEIGHT_PERCENT_LEGACY
-    ):
-        raise JsonableError(
-            _("Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.")
-        )
-
     realm_user_default = RealmUserDefault.objects.get(realm=user_profile.realm)
+
+    if (
+        dense_mode is not None
+        or web_font_size_px is not None
+        or web_line_height_percent is not None
+    ):
+        check_information_density_setting_values(
+            realm_user_default, dense_mode, web_font_size_px, web_line_height_percent
+        )
+
     request_settings = {k: v for k, v in locals().items() if k in RealmUserDefault.property_types}
     for k, v in request_settings.items():
         if v is not None and getattr(realm_user_default, k) != v:

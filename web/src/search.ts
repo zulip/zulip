@@ -167,7 +167,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             $(".search-input-and-pills").removeClass("freshly-opened");
             search_input_has_changed = true;
         }
-        narrow_to_search_contents_with_search_bar_open();
     });
 
     $search_query_box.on("change", () => {

@@ -112,10 +112,12 @@
 }
 
 .modal__btn {
-    font-size: 0.875rem;
-    padding: 0.5rem 1rem;
+    /* We need the backup value for billing related html files where
+       this variable is not defined. */
+    font-size: var(--base-font-size-px, 14px);
+    padding: 8px 16px;
     background-color: hsl(0deg 0% 90%);
-    border-radius: 0.25rem;
+    border-radius: 4px;
     border-width: 0;
     cursor: pointer;
     text-transform: none;

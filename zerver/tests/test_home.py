@@ -23,7 +23,11 @@ from zerver.lib.home import (
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_user_messages, queries_captured
+from zerver.lib.test_helpers import (
+    activate_push_notification_service,
+    get_user_messages,
+    queries_captured,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
@@ -973,7 +977,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
         self.assertEqual(page_params["state_data"]["max_message_id"], -1)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     def test_get_billing_info(self) -> None:
         user = self.example_user("desdemona")
         user.role = UserProfile.ROLE_REALM_OWNER
@@ -1129,7 +1133,7 @@ class HomeTest(ZulipTestCase):
         # If the server doesn't have the push bouncer configured,
         # remote billing should be shown anyway, as the billing endpoint
         # is supposed show a useful error page.
-        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=None, CORPORATE_ENABLED=False):
+        with self.settings(ZULIP_SERVICE_PUSH_NOTIFICATIONS=False, CORPORATE_ENABLED=False):
             billing_info = get_billing_info(user)
         self.assertTrue(billing_info.show_remote_billing)
 

@@ -7,7 +7,7 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as ui_report from "./ui_report";
 
-type RequestOpts = {
+export type RequestOpts = {
     success_msg_html?: string | undefined;
     failure_msg_html?: string;
     success_continuation?: (response_data: unknown) => void;

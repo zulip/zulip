@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import IntEnum
 from typing import Any, TypeAlias, TypeVar
 
 from django_stubs_ext import StrPromise
@@ -326,3 +327,10 @@ class RawUserDict(TypedDict):
 class RemoteRealmDictValue(TypedDict):
     can_push: bool
     expected_end_timestamp: int | None
+
+
+class AnalyticsDataUploadLevel(IntEnum):
+    NONE = 0
+    BASIC = 1
+    BILLING = 2
+    ALL = 3

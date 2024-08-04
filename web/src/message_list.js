@@ -3,6 +3,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
+import * as compose_tooltips from "./compose_tooltips";
 import {MessageListData} from "./message_list_data";
 import * as message_list_tooltips from "./message_list_tooltips";
 import {MessageListView} from "./message_list_view";
@@ -456,6 +457,7 @@ export class MessageList {
     }
 
     hide_edit_message($row) {
+        compose_tooltips.hide_compose_control_button_tooltips($row);
         $row.find(".message_content, .status-message, .message_controls").show();
         $row.find(".message_edit_form").empty();
         $row.find(".messagebox-content").removeClass("content_edit_mode");

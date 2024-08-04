@@ -61,9 +61,7 @@ lint checks in parallel, including:
 - JavaScript ([ESLint](https://eslint.org/),
   [Prettier](https://prettier.io/))
 - Python ([mypy](http://mypy-lang.org/),
-  [ruff](https://github.com/astral-sh/ruff),
-  [Black](https://github.com/psf/black),
-  [isort](https://pycqa.github.io/isort/))
+  [Ruff](https://docs.astral.sh/ruff/))
 - templates
 - Puppet configuration
 - custom checks (e.g., trailing whitespace and spaces-not-tabs)
@@ -139,15 +137,12 @@ rules about integrating third-party projects.
 ## Python-specific conventions and practices
 
 - Our Python code is formatted with
-  [Black](https://github.com/psf/black) and
-  [isort](https://pycqa.github.io/isort/). The [linter
-  tool](../testing/linters.md) enforces this by running Black and
-  isort in check mode, or in write mode with
-  `tools/lint --only=black,isort --fix`. You may find it helpful to
-  [integrate Black](https://black.readthedocs.io/en/stable/integrations/editors.html)
-  and
-  [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
-  with your editor.
+  [Ruff](https://docs.astral.sh/ruff/). The [linter
+  tool](../testing/linters.md) enforces this by running Ruff in check
+  mode, or in write mode with
+  `tools/lint --only=ruff,ruff-format --fix`. You may find it helpful
+  to [integrate Ruff](https://docs.astral.sh/ruff/integrations/) with
+  your editor.
 - Don't put a shebang line on a Python file unless it's meaningful to
   run it as a script. (Some libraries can also be run as scripts, e.g.,
   to run a test suite.)

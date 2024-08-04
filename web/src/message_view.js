@@ -661,14 +661,23 @@ export function show(raw_terms, opts) {
                     validate_filter_topic_post_fetch:
                         filter.requires_adjustment_for_moved_with_target,
                     cont() {
-                        if (
-                            !filter.requires_adjustment_for_moved_with_target &&
-                            filter.has_operator("with")
-                        ) {
+                        if (filter.narrow_requires_hash_change) {
                             // We've already adjusted our filter via
                             // filter.try_adjusting_for_moved_with_target, and
                             // should update the URL hash accordingly.
                             update_hash_to_match_filter(filter, "retarget topic location");
+                            // Since filter is updated, we need to handle various things
+                            // like updating the message view header title, unread banner
+                            // based on the updated filter.
+                            handle_post_message_list_change(
+                                id_info,
+                                message_lists.current,
+                                opts,
+                                select_immediately,
+                                select_opts,
+                                then_select_offset,
+                            );
+                            filter.narrow_requires_hash_change = false;
                         }
                         if (!select_immediately) {
                             render_message_list_with_selected_message({

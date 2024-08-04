@@ -278,5 +278,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
             return;
         },
         post_render: generate_integration_url_post_render,
+        on_shown() {
+            $("#integration-name_widget").trigger("focus");
+        },
     });
 }

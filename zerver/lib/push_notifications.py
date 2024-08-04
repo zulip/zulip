@@ -248,7 +248,7 @@ def send_apple_push_notification(
     if apns_context is None:
         logger.debug(
             "APNs: Dropping a notification because nothing configured.  "
-            "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE)."
+            "Set ZULIP_SERVICES_URL (or APNS_CERT_FILE)."
         )
         return 0
 
@@ -455,7 +455,7 @@ def send_android_push_notification(
     if not fcm_app:
         logger.debug(
             "Skipping sending a FCM push notification since "
-            "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_FCM_CREDENTIALS_PATH are both unset"
+            "ZULIP_SERVICE_PUSH_NOTIFICATIONS and ANDROID_FCM_CREDENTIALS_PATH are both unset"
         )
         return 0
 
@@ -529,7 +529,7 @@ def send_android_push_notification(
 
 
 def uses_notification_bouncer() -> bool:
-    return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+    return settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS is True
 
 
 def sends_notifications_directly() -> bool:

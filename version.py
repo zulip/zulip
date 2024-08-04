@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "9.0-dev+git"
+ZULIP_VERSION = "9.0-beta1+git"
 
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(
@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 274  # Last bumped for `delete_message` event.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (286, 0)  # bumped 2024-07-16 for upgrading JavaScript dependencies
+PROVISION_VERSION = (287, 0)  # bumped 2024-07-17 to rebuild emoji_names

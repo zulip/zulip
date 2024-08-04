@@ -18,14 +18,12 @@ from zerver.lib.thumbnail import (
     BaseThumbnailFormat,
     StoredThumbnailFormat,
     ThumbnailFormat,
+    get_image_thumbnail_path,
     missing_thumbnails,
     resize_emoji,
-)
-from zerver.lib.upload import (
-    all_message_attachments,
-    get_image_thumbnail_path,
     split_thumbnail_path,
 )
+from zerver.lib.upload import all_message_attachments
 from zerver.models import Attachment, ImageAttachment
 from zerver.views.upload import closest_thumbnail_format
 from zerver.worker.thumbnail import ensure_thumbnails

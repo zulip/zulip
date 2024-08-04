@@ -245,7 +245,7 @@ def get_web_link_regex() -> Pattern[str]:
     return verbose_compile(REGEX)
 
 
-def clear_state_for_testing() -> None:
+def clear_web_link_regex_for_testing() -> None:
     # The link regex never changes in production, but our tests
     # try out both sides of ENABLE_FILE_LINKS, so we need
     # a way to clear it.

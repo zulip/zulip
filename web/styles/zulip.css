@@ -1028,13 +1028,6 @@ strong {
     font-size: 60%;
 }
 
-.settings-forgot-password {
-    display: inline-block;
-    position: relative;
-    color: hsl(0deg 0% 73%);
-    bottom: 4px;
-}
-
 div.message-list {
     border-collapse: separate;
     margin-left: auto;

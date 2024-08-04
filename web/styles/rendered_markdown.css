@@ -272,6 +272,13 @@
                    spoiler messages to wrap. */
                 flex: 1 1 auto;
             }
+
+            time {
+                /* Time tag pushes the arrow out of view when overflow,
+                   adding white-space property prevents this by wrapping
+                   the element */
+                white-space: normal;
+            }
         }
 
         .spoiler-content {

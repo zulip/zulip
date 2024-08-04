@@ -305,3 +305,19 @@ def maybe_thumbnail(attachment: AbstractAttachment, content: bytes) -> ImageAtta
             return image_row
     except BadImageError:
         return None
+
+
+def get_image_thumbnail_path(
+    image_attachment: ImageAttachment,
+    thumbnail_format: BaseThumbnailFormat,
+) -> str:
+    return f"thumbnail/{image_attachment.path_id}/{thumbnail_format!s}"
+
+
+def split_thumbnail_path(file_path: str) -> tuple[str, BaseThumbnailFormat]:
+    assert file_path.startswith("thumbnail/")
+    path_parts = file_path.split("/")
+    thumbnail_format = BaseThumbnailFormat.from_string(path_parts.pop())
+    assert thumbnail_format is not None
+    path_id = "/".join(path_parts[1:])
+    return path_id, thumbnail_format

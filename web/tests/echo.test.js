@@ -12,6 +12,7 @@ const {current_user} = require("./lib/zpage_params");
 const compose_notifications = mock_esm("../src/compose_notifications");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
+const message_events_util = mock_esm("../src/message_events_util");
 
 let disparities = [];
 
@@ -39,12 +40,26 @@ message_lists.current = {
         rerender_messages: noop,
         change_message_id: noop,
     },
+    data: {
+        filter: {
+            can_apply_locally() {
+                return true;
+            },
+        },
+    },
     change_message_id: noop,
 };
 const home_msg_list = {
     view: {
         rerender_messages: noop,
         change_message_id: noop,
+    },
+    data: {
+        filter: {
+            can_apply_locally() {
+                return true;
+            },
+        },
     },
     preserver_rendered_state: true,
     change_message_id: noop,
@@ -113,6 +128,53 @@ run_test("process_from_server for differently rendered messages", ({override}) =
     assert.deepEqual(non_echo_messages, []);
     assert.equal(disparities.length, 1);
     assert.deepEqual(messages_to_rerender, [
+        {
+            content: server_messages[0].content,
+            timestamp: new_value,
+            is_me_message: new_value,
+            submessages: new_value,
+            topic_links: new_value,
+        },
+    ]);
+});
+
+run_test("process_from_server for messages to add to narrow", ({override}) => {
+    let messages_to_add_to_narrow = [];
+
+    override(message_lists.current.data.filter, "can_apply_locally", () => false);
+    override(message_events_util, "maybe_add_narrowed_messages", (msgs, msg_list) => {
+        messages_to_add_to_narrow = msgs;
+        assert.equal(msg_list, message_lists.current);
+    });
+
+    const old_value = "old_value";
+    const new_value = "new_value";
+    const waiting_for_ack = new Map([
+        [
+            "100.1",
+            {
+                content: "<p>rendered message</p>",
+                timestamp: old_value,
+                is_me_message: old_value,
+                submessages: old_value,
+                topic_links: old_value,
+            },
+        ],
+    ]);
+    const server_messages = [
+        {
+            local_id: "100.1",
+            content: "<p>rendered message</p>",
+            timestamp: new_value,
+            is_me_message: new_value,
+            submessages: new_value,
+            topic_links: new_value,
+        },
+    ];
+    echo._patch_waiting_for_ack(waiting_for_ack);
+    const non_echo_messages = echo.process_from_server(server_messages);
+    assert.deepEqual(non_echo_messages, []);
+    assert.deepEqual(messages_to_add_to_narrow, [
         {
             content: server_messages[0].content,
             timestamp: new_value,

@@ -42,6 +42,7 @@ from zerver.lib.realm_description import get_realm_rendered_description, get_rea
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.upload import delete_message_attachments, upload_message_attachment
 from zerver.models import (
     Attachment,
@@ -1370,7 +1371,7 @@ class RealmTest(ZulipTestCase):
         ]
         self.assertEqual(sorted(user_group_names), sorted(expected_system_group_names))
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     def test_do_create_realm_notify_bouncer(self) -> None:
         dummy_send_realms_only_response = {
             "result": "success",
@@ -1936,8 +1937,8 @@ class RealmAPITest(ZulipTestCase):
     def do_test_realm_default_setting_update_api(self, name: str) -> None:
         bool_tests: list[bool] = [False, True]
         test_values: dict[str, Any] = dict(
-            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
-            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
+            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_COMPACT],
+            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_COMPACT],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
             web_home_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
@@ -1987,22 +1988,56 @@ class RealmAPITest(ZulipTestCase):
             # settings in RealmUserDefault table will be used.
             if prop in ["default_language", "enable_login_emails", "enable_marketing_emails"]:
                 continue
+            if prop in ["dense_mode"]:
+                # Testing this is complicated, see test_update_default_information_density_settings.
+                continue
             self.do_test_realm_default_setting_update_api(prop)
 
     def test_update_default_information_density_settings(self) -> None:
         realm = get_realm("zulip")
+
+        # Start with the legacy settings configuration
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
-        self.assertEqual(realm_user_default.dense_mode, True)
+        realm_user_default.dense_mode = True
+        realm_user_default.web_font_size_px = RealmUserDefault.WEB_FONT_SIZE_PX_COMPACT
+        realm_user_default.web_line_height_percent = (
+            RealmUserDefault.WEB_LINE_HEIGHT_PERCENT_COMPACT
+        )
+        realm_user_default.save()
         self.login("iago")
 
-        data = {"web_font_size_px": 16}
+        data: dict[str, str | int] = {"web_font_size_px": 16}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_font_size_px' settings.",
+        )
+
+        data = {"web_font_size_px": 16, "dense_mode": orjson.dumps(False).decode()}
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_success(result)
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         self.assertEqual(realm_user_default.web_font_size_px, 16)
         self.assertEqual(realm_user_default.dense_mode, False)
 
+        data = {"web_font_size_px": 20}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 20)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        # Check dense_mode is still false when both the
+        # settings are set to legacy values.
         data = {"web_font_size_px": 14}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.web_line_height_percent, 122)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"dense_mode": orjson.dumps(True).decode()}
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_success(result)
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
@@ -2011,24 +2046,60 @@ class RealmAPITest(ZulipTestCase):
 
         data = {"web_line_height_percent": 140}
         result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.",
+        )
+
+        data = {"web_line_height_percent": 140, "dense_mode": orjson.dumps(False).decode()}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_success(result)
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         self.assertEqual(realm_user_default.web_line_height_percent, 140)
         self.assertEqual(realm_user_default.dense_mode, False)
 
-        invalid_data = {"dense_mode": orjson.dumps(True).decode(), "web_font_size_px": 16}
-        result = self.client_patch("/json/realm/user_settings_defaults", invalid_data)
+        data = {"web_line_height_percent": 130}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_line_height_percent, 130)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        # Check dense_mode is still false when both the
+        # settings are set to legacy values.
+        data = {"web_line_height_percent": 122}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.web_line_height_percent, 122)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"dense_mode": orjson.dumps(True).decode(), "web_font_size_px": 16}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
             "Incompatible values for 'dense_mode' and 'web_font_size_px' settings.",
         )
 
-        invalid_data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
-        result = self.client_patch("/json/realm/user_settings_defaults", invalid_data)
+        data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
             "Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.",
         )
+
+        data = {
+            "dense_mode": orjson.dumps(True).decode(),
+            "web_font_size_px": 14,
+            "web_line_height_percent": 122,
+        }
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.web_line_height_percent, 122)
+        self.assertEqual(realm_user_default.dense_mode, True)
 
     def test_invalid_default_notification_sound_value(self) -> None:
         result = self.client_patch(

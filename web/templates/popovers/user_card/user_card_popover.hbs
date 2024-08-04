@@ -147,7 +147,7 @@
         {{#if can_send_private_message}}
             <li role="none" class="popover-menu-list-item link-item hidden-for-spectators">
                 <a role="menuitem" class="popover-menu-link {{ private_message_class }}" tabindex="0">
-                    <i class="popover-menu-icon zulip-icon zulip-icon-mail" aria-hidden="true"></i>
+                    <i class="popover-menu-icon zulip-icon zulip-icon-send-dm" aria-hidden="true"></i>
                     <span class="popover-menu-label">{{t "Send direct message" }}</span>
                     {{#if is_sender_popover}}
                         {{popover_hotkey_hints "R"}}
@@ -191,7 +191,7 @@
         <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
         <li role="none" class="popover-menu-list-item link-item">
             <a role="menuitem" href="{{ pm_with_url }}" class="narrow_to_private_messages popover-menu-link hidden-for-spectators" tabindex="0">
-                <i class="popover-menu-icon zulip-icon zulip-icon-mail" aria-hidden="true"></i>
+                <i class="popover-menu-icon zulip-icon zulip-icon-user" aria-hidden="true"></i>
                 {{#if is_me}}
                     <span class="popover-menu-label">{{t "View messages with yourself" }}</span>
                 {{else}}

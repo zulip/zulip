@@ -22,7 +22,6 @@ type PopoverName =
     | "top_left_sidebar"
     | "message_actions"
     | "stream_settings"
-    | "compose_mobile_button"
     | "topics_menu"
     | "send_later"
     | "change_visibility_policy"
@@ -40,7 +39,6 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     top_left_sidebar: null,
     message_actions: null,
     stream_settings: null,
-    compose_mobile_button: null,
     topics_menu: null,
     send_later: null,
     change_visibility_policy: null,

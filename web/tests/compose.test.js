@@ -5,7 +5,6 @@ const {strict: assert} = require("assert");
 const MockDate = require("mockdate");
 
 const {mock_banners} = require("./lib/compose_banner");
-const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -856,32 +855,6 @@ test_ui("DM policy disabled", ({override, override_rewire}) => {
     override(narrow_state, "pm_ids_string", () => "31");
     compose_closed_ui.update_buttons_for_private();
     assert.ok(reply_disabled);
-});
-
-test_ui("narrow_button_titles", ({override}) => {
-    override(narrow_state, "pm_ids_string", () => "31");
-    override(narrow_state, "is_message_feed_visible", () => true);
-    override(realm, "realm_direct_message_permission_group", everyone.id);
-    override(realm, "realm_direct_message_initiator_group", everyone.id);
-    compose_closed_ui.update_buttons_for_private();
-    assert.equal(
-        $("#new_conversation_button").text(),
-        $t({defaultMessage: "Start new conversation"}),
-    );
-    assert.equal(
-        $("#new_direct_message_button").text(),
-        $t({defaultMessage: "New direct message"}),
-    );
-
-    compose_closed_ui.update_buttons_for_stream_views();
-    assert.equal(
-        $("#new_conversation_button").text(),
-        $t({defaultMessage: "Start new conversation"}),
-    );
-    assert.equal(
-        $("#new_direct_message_button").text(),
-        $t({defaultMessage: "New direct message"}),
-    );
 });
 
 run_test("reset MockDate", () => {

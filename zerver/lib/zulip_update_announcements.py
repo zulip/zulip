@@ -128,7 +128,7 @@ configuration, you can access the feed from the channel menu.
 [Learn more]({channel_feed_help_url}).
 - You can also [configure]({automatically_go_to_conversation_help_url}) whether Zulip
 automatically takes you to the conversation to which you sent a message, if you
-aren't already viewing it.
+aren't already viewing it (on by default).
 - You can now [filter]({find_a_dm_conversation_help_url}) direct message
 conversations in the left sidebar to conversations that include a specific
 person.
@@ -136,6 +136,23 @@ person.
             channel_feed_help_url="/help/channel-feed",
             automatically_go_to_conversation_help_url="/help/mastering-the-compose-box#automatically-go-to-conversation-where-you-sent-a-message",
             find_a_dm_conversation_help_url="/help/direct-messages#find-a-direct-message-conversation",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=7,
+        message="""
+**Web and desktop updates**
+- To make reading more comfortable, Zulip has been redesigned with a larger font
+size and line spacing. If you prefer to see more content at once, [enable
+compact mode]({settings_preferences_url}) to go back to the previous design.
+- The main search has been redesigned with pills for [search
+filters]({search_help_url}), making it easier to use.
+- Pasted [channel and topic URLs]({link_help_url}) are now automatically
+converted into nicely formatted links.
+""".format(
+            settings_preferences_url="/#settings/preferences",
+            search_help_url="/help/search-for-messages",
+            link_help_url="/help/link-to-a-message-or-conversation",
         ),
     ),
 ]

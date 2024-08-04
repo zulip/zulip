@@ -680,6 +680,11 @@ export function show_edit_bot_info_modal(user_id, $container) {
 
         function get_options() {
             const user_ids = people.get_realm_active_human_user_ids();
+            if (!user_ids.includes(bot.bot_owner_id)) {
+                // Always include the current bot owner in
+                // options, even if the owner is deactivated.
+                user_ids.push(bot.bot_owner_id);
+            }
             return user_ids.map((user_id) => ({
                 name: people.get_full_name(user_id),
                 unique_id: user_id,

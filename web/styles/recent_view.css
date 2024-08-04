@@ -88,7 +88,7 @@
         width: 10px;
     }
 
-    .fa-envelope {
+    .zulip-icon-user {
         /* Legacy 11.2px size at 14px/1em. */
         font-size: 0.8em;
         text-align: center;

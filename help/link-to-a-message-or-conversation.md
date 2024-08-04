@@ -27,7 +27,8 @@ The easiest way to link to a channel or topic is:
 !!! tip ""
 
     When you paste a topic or channel link into Zulip, it is automatically
-    formatted for you.
+    formatted for you. You can paste as plain text if you prefer with
+    <kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
 
 {end_tabs}
 

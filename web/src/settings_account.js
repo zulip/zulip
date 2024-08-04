@@ -448,6 +448,9 @@ export function set_up() {
             post_render: change_password_post_render,
             on_click: do_change_password,
             validate_input,
+            on_shown() {
+                $("#old_password").trigger("focus");
+            },
         });
 
         if (realm.realm_password_auth_enabled !== false) {

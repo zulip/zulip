@@ -35,10 +35,10 @@ from zerver.lib.thumbnail import (
     THUMBNAIL_OUTPUT_FORMATS,
     BaseThumbnailFormat,
     StoredThumbnailFormat,
+    get_image_thumbnail_path,
 )
 from zerver.lib.upload import (
     check_upload_within_quota,
-    get_image_thumbnail_path,
     get_public_upload_root_url,
     upload_message_attachment_from_request,
 )

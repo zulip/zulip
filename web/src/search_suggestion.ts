@@ -853,8 +853,8 @@ class Attacher {
 
     push(suggestion_line: SuggestionLine): void {
         const search_string = suggestion_search_string(suggestion_line);
-        if (!this.prev.has(search_string)) {
-            this.prev.add(search_string);
+        if (!this.prev.has(search_string.toLowerCase())) {
+            this.prev.add(search_string.toLowerCase());
             this.result.push(suggestion_line);
         }
     }

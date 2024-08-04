@@ -65,7 +65,6 @@ class UserBaseSettings(models.Model):
     # Values for it are URL suffix after `#`.
     web_home_view = models.TextField(default="inbox")
     web_escape_navigates_to_home_view = models.BooleanField(default=True)
-    dense_mode = models.BooleanField(default=True)
     fluid_layout_width = models.BooleanField(default=False)
     high_contrast_mode = models.BooleanField(default=False)
     translate_emoticons = models.BooleanField(default=False)
@@ -80,11 +79,14 @@ class UserBaseSettings(models.Model):
 
     # Information density is established through
     # adjustments to the font size and line height.
-    WEB_FONT_SIZE_PX_LEGACY = 14
-    WEB_LINE_HEIGHT_PERCENT_LEGACY = 122
-    web_font_size_px = models.PositiveSmallIntegerField(default=WEB_FONT_SIZE_PX_LEGACY)
+    WEB_FONT_SIZE_PX_COMPACT = 14
+    WEB_FONT_SIZE_PX_DEFAULT = 16
+    WEB_LINE_HEIGHT_PERCENT_COMPACT = 122
+    WEB_LINE_HEIGHT_PERCENT_DEFAULT = 140
+    dense_mode = models.BooleanField(default=False)
+    web_font_size_px = models.PositiveSmallIntegerField(default=WEB_FONT_SIZE_PX_DEFAULT)
     web_line_height_percent = models.PositiveSmallIntegerField(
-        default=WEB_LINE_HEIGHT_PERCENT_LEGACY
+        default=WEB_LINE_HEIGHT_PERCENT_DEFAULT
     )
 
     # UI setting controlling Zulip's behavior of demoting in the sort
