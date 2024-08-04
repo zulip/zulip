@@ -14,12 +14,12 @@
 		"has_error": false,
 		"custom_fields": [],
 		"response_data": [],
-		"signing_url": "https://www.hellosign.com/sign/2b388914e3ae3b738bd4e2ee2850c677e6dc53d2",
+		"signing_url": "https://www.dropboxsign.com/sign/2b388914e3ae3b738bd4e2ee2850c677e6dc53d2",
 		"signing_redirect_url": null,
 		"final_copy_uri": "/v3/signature_request/final_copy/2b388914e3ae3b738bd4e2ee2850c677e6dc53d2",
-		"files_url": "https://api.hellosign.com/v3/signature_request/files/2b388914e3ae3b738bd4e2ee2850c677e6dc53d2",
-		"details_url": "https://www.hellosign.com/home/manage?guid=2b388914e3ae3b738bd4e2ee2850c677e6dc53d2",
-		"requester_email_address": "me@hellosign.com",
+		"files_url": "https://api.dropboxsign.com/v3/signature_request/files/2b388914e3ae3b738bd4e2ee2850c677e6dc53d2",
+		"details_url": "https://www.dropboxsign.com/home/manage?guid=2b388914e3ae3b738bd4e2ee2850c677e6dc53d2",
+		"requester_email_address": "me@dropboxsign.com",
 		"signatures": [{
 			"signature_id": "78caf2a1d01cd39cea2bc1cbb340dac3",
 			"signer_email_address": "jack@example.com",
@@ -42,7 +42,7 @@
 			"has_pin": false
 		}],
 		"cc_email_addresses": [
-			"lawyer1@hellosign.com",
+			"lawyer1@dropboxsign.com",
 			"lawyer2@example.com"
 		]
 	}

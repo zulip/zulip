@@ -3792,7 +3792,7 @@ _Released 2017-02-06_
   This entailed numerous changes to ensure a consistent experience.
 - Added support for (optionally) using PGRoonga to support full-text
   search in all languages (not just English).
-- Added AppFollow, GitLab, Google Calendar, GoSquared, HelloSign,
+- Added AppFollow, GitLab, Google Calendar, GoSquared, Dropbox Sign,
   Heroku, Librato, Mailchimp, Mention, Papertrail, Sentry, Solano
   Labs, Stripe and Zapier integrations.
 - Added a webhook integration for GitHub, replacing the deprecated

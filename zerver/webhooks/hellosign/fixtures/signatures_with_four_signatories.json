@@ -30,11 +30,11 @@
         "response_data":[
 
         ],
-        "signing_url":"https:\/\/app.hellosign.com\/sign\/a6ce6526d1e7496c96a1cdd11276efb5c4504084",
+        "signing_url":"https:\/\/app.dropboxsign.com\/sign\/a6ce6526d1e7496c96a1cdd11276efb5c4504084",
         "signing_redirect_url":null,
         "final_copy_uri":"\/\/signature_request\/final_copy\/a6ce6526d1e7496c96a1cdd11276efb5c4504084",
-        "files_url":"https:\/\/api.hellosign.com\/signature_request\/files\/a6ce6526d1e7496c96a1cdd11276efb5c4504084",
-        "details_url":"https:\/\/app.hellosign.com\/home\/manage?guid=a6ce6526d1e7496c96a1cdd11276efb5c4504084",
+        "files_url":"https:\/\/api.dropboxsign.com\/signature_request\/files\/a6ce6526d1e7496c96a1cdd11276efb5c4504084",
+        "details_url":"https:\/\/app.dropboxsign.com\/home\/manage?guid=a6ce6526d1e7496c96a1cdd11276efb5c4504084",
         "requester_email_address":"jerryguitarist@gmail.com",
         "signatures":[
             {
