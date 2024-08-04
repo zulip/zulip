@@ -1064,7 +1064,8 @@ export function render_message_list_with_selected_message(opts) {
     narrow_history.save_narrow_state_and_flush();
 }
 
-export function activate_stream_for_cycle_hotkey(stream_name) {
+export function activate_stream_for_cycle_hotkey(stream_id) {
+    const stream_name = stream_data.get_stream_name_from_id(stream_id);
     // This is the common code for A/D hotkeys.
     const filter_expr = [{operator: "channel", operand: stream_name}];
     show(filter_expr, {});
@@ -1083,8 +1084,7 @@ export function stream_cycle_backward() {
         return;
     }
 
-    const stream_name = stream_data.get_stream_name_from_id(stream_id);
-    activate_stream_for_cycle_hotkey(stream_name);
+    activate_stream_for_cycle_hotkey(stream_id);
 }
 
 export function stream_cycle_forward() {
@@ -1100,8 +1100,7 @@ export function stream_cycle_forward() {
         return;
     }
 
-    const stream_name = stream_data.get_stream_name_from_id(stream_id);
-    activate_stream_for_cycle_hotkey(stream_name);
+    activate_stream_for_cycle_hotkey(stream_id);
 }
 
 export function narrow_to_next_topic(opts = {}) {
