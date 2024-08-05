@@ -209,7 +209,6 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
 
-            operand = operand.toLowerCase();
             if (realm.realm_is_zephyr_mirror_realm) {
                 return zephyr_stream_name_match(message, operand);
             }
@@ -225,7 +224,6 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
 
-            operand = operand.toLowerCase();
             if (realm.realm_is_zephyr_mirror_realm) {
                 return zephyr_topic_name_match(message, operand);
             }
@@ -1554,8 +1552,6 @@ export class Filter {
 
     // Build a filter function from a list of operators.
     _build_predicate(): (message: Message) => boolean {
-        const terms = this._terms;
-
         if (!this.can_apply_locally()) {
             return () => true;
         }
@@ -1563,6 +1559,16 @@ export class Filter {
         // FIXME: This is probably pretty slow.
         // We could turn it into something more like a compiler:
         // build JavaScript code in a string and then eval() it.
+
+        // Make a shallow copy to avoid modifying the original terms.
+        const terms = this._terms.map((term) => ({...term}));
+        // Since we are doing a case-insensitive match, we need to
+        // ensure that the operand is in lowercase.
+        for (const term of terms) {
+            if (term.operand !== undefined) {
+                term.operand = term.operand.toLowerCase();
+            }
+        }
 
         return (message: Message) =>
             terms.every((term) => {
