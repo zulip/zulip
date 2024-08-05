@@ -7346,7 +7346,6 @@ class TestAdminSetBackends(ZulipTestCase):
                 "/json/realm",
                 {
                     "authentication_methods": orjson.dumps(
-                        # Github is not a supported authentication backend right now.
                         {"Email": True, "Dev": True, "AzureAD": False}
                     ).decode()
                 },
@@ -7361,7 +7360,6 @@ class TestAdminSetBackends(ZulipTestCase):
                 "/json/realm",
                 {
                     "authentication_methods": orjson.dumps(
-                        # Github is not a supported authentication backend right now.
                         {"Email": True, "Dev": True, "AzureAD": True}
                     ).decode()
                 },
