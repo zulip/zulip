@@ -23,6 +23,10 @@ import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
+type MessageMatchesSearchTermOpts = {
+    operand_ids?: number[];
+};
+
 type IconData = {
     title: string;
     is_spectator: boolean;
@@ -148,7 +152,12 @@ function message_in_home(message: Message): boolean {
     );
 }
 
-function message_matches_search_term(message: Message, operator: string, operand: string): boolean {
+function message_matches_search_term(
+    message: Message,
+    operator: string,
+    operand: string,
+    opts: MessageMatchesSearchTermOpts,
+): boolean {
     switch (operator) {
         case "has":
             switch (operand) {
@@ -233,20 +242,16 @@ function message_matches_search_term(message: Message, operator: string, operand
             return people.id_matches_email_operand(message.sender_id, operand);
 
         case "dm": {
-            // TODO: use user_ids, not emails here
             if (message.type !== "private") {
                 return false;
             }
-            const operand_ids = people.pm_with_operand_ids(operand);
-            if (!operand_ids) {
-                return false;
-            }
+
             const user_ids = people.pm_with_user_ids(message);
             if (!user_ids) {
                 return false;
             }
 
-            return _.isEqual(operand_ids, user_ids);
+            return _.isEqual(opts.operand_ids, user_ids);
         }
 
         case "dm-including": {
@@ -1562,17 +1567,22 @@ export class Filter {
 
         // Make a shallow copy to avoid modifying the original terms.
         const terms = this._terms.map((term) => ({...term}));
+        const opts: MessageMatchesSearchTermOpts = {};
         // Since we are doing a case-insensitive match, we need to
         // ensure that the operand is in lowercase.
         for (const term of terms) {
             if (term.operand !== undefined) {
                 term.operand = term.operand.toLowerCase();
             }
+
+            if (term.operator === "dm") {
+                opts.operand_ids = people.pm_with_operand_ids(term.operand) ?? [];
+            }
         }
 
         return (message: Message) =>
             terms.every((term) => {
-                let ok = message_matches_search_term(message, term.operator, term.operand);
+                let ok = message_matches_search_term(message, term.operator, term.operand, opts);
                 if (term.negated) {
                     ok = !ok;
                 }
