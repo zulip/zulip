@@ -7368,6 +7368,21 @@ class TestAdminSetBackends(ZulipTestCase):
                 result, "Authentication method AzureAD is not available on your current plan."
             )
 
+            # With BILLING_ENABLED=False, no such restrictions apply.
+            with self.settings(BILLING_ENABLED=False):
+                result = self.client_patch(
+                    "/json/realm",
+                    {
+                        "authentication_methods": orjson.dumps(
+                            {"Email": True, "Dev": True, "AzureAD": True}
+                        ).decode()
+                    },
+                )
+            self.assert_json_success(result)
+            self.assertEqual(
+                realm.authentication_methods_dict(), {"Dev": True, "Email": True, "AzureAD": True}
+            )
+
 
 class EmailValidatorTestCase(ZulipTestCase):
     def test_valid_email(self) -> None:
