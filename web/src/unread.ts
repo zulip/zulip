@@ -1,13 +1,13 @@
 import type {z} from "zod";
 
 import * as blueslip from "./blueslip";
+import * as desktop_notifications from "./desktop_notifications";
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
 import * as settings_config from "./settings_config";
-import * as desktop_notifications from "./desktop_notifications";
 import type {
     StateData,
     unread_direct_message_group_info_schema,
