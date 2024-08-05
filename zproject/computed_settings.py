@@ -239,6 +239,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "zerver.middleware.LocaleMiddleware",
     "zerver.middleware.HostDomainMiddleware",
+    "zerver.middleware.DetectInvalidRequests",
     "zerver.middleware.DetectProxyMisconfiguration",
     "django.middleware.csrf.CsrfViewMiddleware",
     # Make sure 2FA middlewares come after authentication middleware.

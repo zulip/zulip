@@ -737,3 +737,26 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
             return response
 
         return None
+
+
+class InvalidRequestError(JsonableError):
+    http_status_code: int = 403
+    code: ErrorCode = ErrorCode.INVALID_REQUEST
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("The Zulip API is only accessible over HTTPs.")
+
+
+class DetectInvalidRequests(MiddlewareMixin):
+    def process_request(self, request: HttpRequest) -> None:
+        if (
+            request.path.startswith("/api/")
+            and not request.is_secure()
+            and request.META["REMOTE_ADDR"] not in ("127.0.0.1", "::1")
+        ):
+            raise InvalidRequestError
