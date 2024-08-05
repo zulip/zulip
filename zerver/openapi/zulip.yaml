@@ -3728,8 +3728,9 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to the user who requested a [data export](/help/export-your-organization)
-                                when the status of the export changes.
+                                Event sent to the user who requested a public
+                                [data export](/help/export-your-organization)
+                                when the status of the data export changes.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3742,7 +3743,7 @@ paths:
                                   type: array
                                   description: |
                                     An array of dictionaries where each dictionary contains
-                                    data about a single organization export request.
+                                    details about a public data export of the organization.
                                   items:
                                     $ref: "#/components/schemas/RealmExport"
                               example:
