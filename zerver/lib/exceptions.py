@@ -32,6 +32,7 @@ class ErrorCode(Enum):
     REQUEST_CONFUSING_VAR = auto()
     INVALID_API_KEY = auto()
     INVALID_ZOOM_TOKEN = auto()
+    BAD_API_REQUEST = auto()
     UNAUTHENTICATED_USER = auto()
     NONEXISTENT_SUBDOMAIN = auto()
     RATE_LIMIT_HIT = auto()
