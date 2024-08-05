@@ -7,7 +7,7 @@ import type {Message} from "./message_store";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
 import * as settings_config from "./settings_config";
-import * as desktop_notifications from './desktop_notifications';
+import * as desktop_notifications from "./desktop_notifications";
 import type {
     StateData,
     unread_direct_message_group_info_schema,
