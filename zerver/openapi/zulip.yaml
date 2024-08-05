@@ -20909,41 +20909,54 @@ components:
       type: object
       additionalProperties: false
       description: |
-        Object containing details about a realm export.
+        Object containing details about a
+        [data export](/help/export-your-organization).
       properties:
         id:
           type: integer
           description: |
-            The ID of the export.
+            The ID of the data export.
         acting_user_id:
           type: integer
           description: |
-            The ID of the user who did the export.
+            The ID of the user who created the data export.
         export_time:
           type: number
           description: |
-            The UNIX timestamp of when the export was made.
+            The UNIX timestamp of when the data export was started.
         deleted_timestamp:
           type: number
           nullable: true
           description: |
-            The timestamp of when the export was deleted.
-            If `null`, it wasn't deleted.
+            The UNIX timestamp of when the data export was deleted.
+
+            Will be `null` if the data export has not been deleted.
         failed_timestamp:
           type: number
           nullable: true
           description: |
-            The timestamp of when the export failed.
-            If `null`, it didn't fail.
+            The UNIX timestamp of when the data export failed.
+
+            Will be `null` if the data export succeeded, or if it's
+            still being generated.
         export_url:
           type: string
           nullable: true
           description: |
-            The URL of the export. `null` if there's no URL.
+            The URL to download the generated data export.
+
+            Will be `null` if the data export failed, or if it's
+            still being generated.
         pending:
           type: boolean
           description: |
-            Whether the export is pending or not.
+            Whether the data export is pending, which indicates it
+            is still being generated, or if it succeeded, failed or
+            was deleted before being generated.
+
+            Depending on the size of the organization, it can take
+            anywhere from seconds to an hour to generate the data
+            export.
     UserGroup:
       type: object
       additionalProperties: false
