@@ -13,6 +13,15 @@ START_TABBED_SECTION_REGEX = re.compile(r"^\{start_tabs\}$")
 END_TABBED_SECTION_REGEX = re.compile(r"^\{end_tabs\}$")
 TAB_CONTENT_REGEX = re.compile(r"^\{tab\|([^}]+)\}$")
 
+# Our custom syntax uses curly braces at a lot of places, and Astro
+# tries to evaluate it as JS expression. The markdown received at this
+# step of conversion for tabbed_section is escaped by the tool
+# converting .md files to .mdx. This should be removed once we've
+# switched completely to using Astro for our help center.
+HELP_BETA_START_TABBED_SECTION_REGEX = re.compile(r"^\\{start_tabs\\}$")
+HELP_BETA_END_TABBED_SECTION_REGEX = re.compile(r"^\\{end_tabs\\}$")
+HELP_BETA_TAB_CONTENT_REGEX = re.compile(r"^\\{tab\|([^}]+)\\}$")
+
 TABBED_SECTION_TEMPLATE = """
 <div class="tabbed-section {tab_class}" markdown="1">
 {nav_bar}
@@ -36,6 +45,25 @@ DIV_TAB_CONTENT_TEMPLATE = """
 <div data-tab-key="{data_tab_key}" markdown="1">
 {content}
 </div>
+""".strip()
+
+# help-beta starlight Tabs template.
+HELP_BETA_TABBED_SECTION_TEMPLATE = """
+<Tabs>
+{blocks}
+</Tabs>
+""".strip()
+
+HELP_BETA_DIV_TAB_CONTENT_TEMPLATE = """
+<TabItem label="{tab_label}">
+{content}
+</TabItem>
+""".strip()
+
+HELP_BETA_CARD_TEMPLATE = """
+<Card title="">
+{blocks}
+</Card>
 """.strip()
 
 # If adding new entries here, also check if you need to update
@@ -125,21 +153,66 @@ TAB_SECTION_LABELS = {
 
 
 class TabbedSectionsGenerator(Extension):
+    def __init__(self, is_help_beta: bool) -> None:
+        super().__init__()
+        self.is_help_beta = is_help_beta
+
     @override
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
-            TabbedSectionsPreprocessor(md, self.getConfigs()),
+            TabbedSectionsPreprocessor(md, self.getConfigs(), self.is_help_beta),
             "tabbed_sections",
             PREPROCESSOR_PRIORITIES["tabbed_sections"],
         )
 
 
 class TabbedSectionsPreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
+    def __init__(
+        self, md: markdown.Markdown, config: Mapping[str, Any], is_help_beta: bool
+    ) -> None:
         super().__init__(md)
+        self.is_help_beta = is_help_beta
+        self.start_tabbed_section_regex = START_TABBED_SECTION_REGEX
+        self.end_tabbed_section_regex = END_TABBED_SECTION_REGEX
+        self.tab_content_regex = TAB_CONTENT_REGEX
+
+        if is_help_beta:  # nocoverage
+            self.start_tabbed_section_regex = HELP_BETA_START_TABBED_SECTION_REGEX
+            self.end_tabbed_section_regex = HELP_BETA_END_TABBED_SECTION_REGEX
+            self.tab_content_regex = HELP_BETA_TAB_CONTENT_REGEX
 
     @override
     def run(self, lines: list[str]) -> list[str]:
+        if self.is_help_beta:  # nocoverage
+            return self.run_help_beta(lines)
+
+        return self.run_default(lines)
+
+    def run_help_beta(self, lines: list[str]) -> list[str]:  # nocoverage
+        tab_section = self.parse_tabs(lines)
+        while tab_section:
+            if "tabs" in tab_section:
+                content_blocks = self.generate_content_blocks(
+                    tab_section, lines, HELP_BETA_DIV_TAB_CONTENT_TEMPLATE
+                )
+                rendered_tabs = HELP_BETA_TABBED_SECTION_TEMPLATE.format(blocks=content_blocks)
+            else:
+                tab_section["tabs"] = [
+                    {
+                        "tab_key": "instructions-for-all-platforms",
+                        "start": tab_section["start_tabs_index"],
+                    }
+                ]
+                content_blocks = self.generate_content_blocks(tab_section, lines, """{content}""")
+                rendered_tabs = HELP_BETA_CARD_TEMPLATE.format(blocks=content_blocks)
+
+            start = tab_section["start_tabs_index"]
+            end = tab_section["end_tabs_index"] + 1
+            lines = [*lines[:start], rendered_tabs, *lines[end:]]
+            tab_section = self.parse_tabs(lines)
+        return lines
+
+    def run_default(self, lines: list[str]) -> list[str]:
         tab_section = self.parse_tabs(lines)
         while tab_section:
             if "tabs" in tab_section:
@@ -153,7 +226,9 @@ class TabbedSectionsPreprocessor(Preprocessor):
                     }
                 ]
             nav_bar = self.generate_nav_bar(tab_section)
-            content_blocks = self.generate_content_blocks(tab_section, lines)
+            content_blocks = self.generate_content_blocks(
+                tab_section, lines, DIV_TAB_CONTENT_TEMPLATE
+            )
             rendered_tabs = TABBED_SECTION_TEMPLATE.format(
                 tab_class=tab_class, nav_bar=nav_bar, blocks=content_blocks
             )
@@ -164,7 +239,9 @@ class TabbedSectionsPreprocessor(Preprocessor):
             tab_section = self.parse_tabs(lines)
         return lines
 
-    def generate_content_blocks(self, tab_section: dict[str, Any], lines: list[str]) -> str:
+    def generate_content_blocks(
+        self, tab_section: dict[str, Any], lines: list[str], content_template: str
+    ) -> str:
         tab_content_blocks = []
         for index, tab in enumerate(tab_section["tabs"]):
             start_index = tab["start"] + 1
@@ -177,8 +254,9 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 end_index = tab_section["end_tabs_index"]
 
             content = "\n".join(lines[start_index:end_index]).strip()
-            tab_content_block = DIV_TAB_CONTENT_TEMPLATE.format(
+            tab_content_block = content_template.format(
                 data_tab_key=tab["tab_key"],
+                tab_label=TAB_SECTION_LABELS[tab["tab_key"]],
                 # Wrapping the content in two newlines is necessary here.
                 # If we don't do this, the inner Markdown does not get
                 # rendered properly.
@@ -205,22 +283,22 @@ class TabbedSectionsPreprocessor(Preprocessor):
     def parse_tabs(self, lines: list[str]) -> dict[str, Any] | None:
         block: dict[str, Any] = {}
         for index, line in enumerate(lines):
-            start_match = START_TABBED_SECTION_REGEX.search(line)
+            start_match = self.start_tabbed_section_regex.search(line)
             if start_match:
                 block["start_tabs_index"] = index
 
-            tab_content_match = TAB_CONTENT_REGEX.search(line)
+            tab_content_match = self.tab_content_regex.search(line)
             if tab_content_match:
                 block.setdefault("tabs", [])
                 tab = {"start": index, "tab_key": tab_content_match.group(1)}
                 block["tabs"].append(tab)
 
-            end_match = END_TABBED_SECTION_REGEX.search(line)
+            end_match = self.end_tabbed_section_regex.search(line)
             if end_match:
                 block["end_tabs_index"] = index
                 break
         return block
 
 
-def makeExtension(*args: Any, **kwargs: str) -> TabbedSectionsGenerator:
-    return TabbedSectionsGenerator(**kwargs)
+def makeExtension(is_help_beta: bool = False) -> TabbedSectionsGenerator:
+    return TabbedSectionsGenerator(is_help_beta)
