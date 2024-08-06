@@ -184,6 +184,13 @@ to the `API_DOCUMENTATION_REDIRECTS` list in `url_redirects.py`.
 
 You should still check for references to the old URL in your branch
 and replace those with the new URL (e.g., `git grep "/help/foo"`).
+One exception to this are links with the old URL that were included
+in the content of `zulip_update_announcements`, which can be found
+in `zerver/lib/zulip_update_announcements.py`. It's preferable to
+have the source code accurately reflect what was sent to users in
+those [Zulip update announcements][help-zulip-updates], so these
+should not be replaced with the new URL.
+
 Updating section headers in existing help center articles does not
 require adding a URL redirect, but you will need to update any
 existing links to that article's section in your branch.
@@ -199,6 +206,8 @@ checks all the URL redirects, which you can run from the command line:
 ```console
 ./tools/test-backend zerver.tests.test_urls.URLRedirectTest
 ```
+
+[help-zulip-updates]: https://zulip.com/help/configure-automated-notices#zulip-update-announcements
 
 ## Writing style
 
