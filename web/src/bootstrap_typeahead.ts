@@ -561,7 +561,9 @@ export class Typeahead<ItemType extends string | object> {
             const option_label_html = this.option_label(matching_items, item);
 
             if (option_label_html) {
-                $item_html.append($(option_label_html)).addClass("typeahead-option-label");
+                $item_html
+                    .append($(option_label_html))
+                    .addClass("typeahead-option-label-container");
             }
             return $i;
         });
