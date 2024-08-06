@@ -1,6 +1,6 @@
 <div class="custom_user_field" name="{{ field.name }}" data-field-id="{{ field.id }}">
     <span class="custom-user-field-label-wrapper {{#if field.required}}required-field-wrapper{{/if}}">
-        <label class="settings-field-label inline-block" for="{{ field.name }}" class="title">{{ field.name }}</label>
+        <label class="settings-field-label inline-block title" for="{{ field.name }}">{{ field.name }}</label>
         <span class="required-symbol {{#unless is_empty_required_field}}hidden{{/unless}}"> *</span>
     </span>
     <div class="alert-notification custom-field-status"></div>
