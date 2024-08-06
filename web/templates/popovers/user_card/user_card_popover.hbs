@@ -19,7 +19,9 @@
                         <div>{{t "System bot" }}</div>
                     {{else}}
                         <div>{{t "Bot" }}
-                            <span class="lowercase">({{user_type}})</span>
+                            {{~#unless (eq user_type "Member")}}
+                                <span class="lowercase">({{user_type}})</span>
+                            {{/unless~}}
                         </div>
                     {{/if}}
                 {{else}}
