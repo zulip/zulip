@@ -824,9 +824,15 @@ def process_avatars(record: dict[str, Any]) -> None:
 
 
 def process_emojis(
-    import_dir: str, default_user_profile_id: int | None, record: dict[str, Any]
+    import_dir: str,
+    default_user_profile_id: int | None,
+    filename_to_has_original: dict[str, bool],
+    record: dict[str, Any],
 ) -> None:
-    if not record["s3_path"].endswith(".original"):
+    # 3rd party exports may not provide .original files. In that case we want to just
+    # treat whatever file we have as the original.
+    should_use_as_original = not filename_to_has_original[record["file_name"]]
+    if not (record["s3_path"].endswith(".original") or should_use_as_original):
         return
 
     if "author_id" in record and record["author_id"] is not None:
@@ -848,7 +854,7 @@ def process_emojis(
             # This will overwrite the files that got copied to the appropriate paths
             # for emojis (whether in S3 or in the local uploads dir), ensuring to
             # thumbnail them and generate stills for animated emojis.
-            upload_emoji_image(f, record["file_name"], user_profile, content_type)
+            is_animated = upload_emoji_image(f, record["file_name"], user_profile, content_type)
         except BadImageError:
             logging.warning(
                 "Could not thumbnail emoji image %s; ignoring",
@@ -856,6 +862,18 @@ def process_emojis(
             )
             # TODO:: should we delete the RealmEmoji object, or keep it with the files
             # that did get copied; even though they do generate this error?
+            return
+
+    if is_animated and not record.get("deactivated", False):
+        # We only update the is_animated field if the emoji is not deactivated.
+        # That's because among deactivated emojis (name, realm_id) may not be
+        # unique, making the implementation here a bit hairier.
+        # Anyway, for Zulip exports, is_animated should be set correctly from the start,
+        # while 3rd party exports don't use the deactivated field, so this shouldn't
+        # particularly matter.
+        RealmEmoji.objects.filter(
+            name=record["name"], realm_id=user_profile.realm_id, deactivated=False
+        ).update(is_animated=True)
 
 
 def import_uploads(
@@ -890,16 +908,26 @@ def import_uploads(
         re_map_foreign_keys_internal(
             records, "records", "user_profile_id", related_table="user_profile", id_field=True
         )
-    if processing_emojis and records and "author" in records[0]:
-        # This condition only guarantees author field appears in the generated
-        # records. Potentially the value of it might be None though. In that
-        # case, this will be ignored by the remap below.
-        # Any code further down the codepath that wants to use the author value
-        # needs to be mindful of it potentially being None and use a fallback
-        # value, most likely default_user_profile_id being the right choice.
-        re_map_foreign_keys_internal(
-            records, "records", "author", related_table="user_profile", id_field=False
-        )
+    if processing_emojis:
+        # We need to build a mapping telling us which emojis have an .original file.
+        # This will be used when thumbnailing them later, to know whether we have that
+        # file available or whether we should just treat the regular image as the original
+        # for thumbnailing.
+        filename_to_has_original = {record["file_name"]: False for record in records}
+        for record in records:
+            if record["s3_path"].endswith(".original"):
+                filename_to_has_original[record["file_name"]] = True
+
+        if records and "author" in records[0]:
+            # This condition only guarantees author field appears in the generated
+            # records. Potentially the value of it might be None though. In that
+            # case, this will be ignored by the remap below.
+            # Any code further down the codepath that wants to use the author value
+            # needs to be mindful of it potentially being None and use a fallback
+            # value, most likely default_user_profile_id being the right choice.
+            re_map_foreign_keys_internal(
+                records, "records", "author", related_table="user_profile", id_field=False
+            )
 
     s3_uploads = settings.LOCAL_UPLOADS_DIR is None
 
@@ -1000,10 +1028,12 @@ def import_uploads(
             process_func = process_avatars
         else:
             assert processing_emojis
+
             process_func = partial(
                 process_emojis,
                 import_dir,
                 default_user_profile_id,
+                filename_to_has_original,
             )
 
         # Ensure that we have medium-size avatar images for every
