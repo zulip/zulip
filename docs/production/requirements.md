@@ -96,7 +96,7 @@ on hardware requirements for larger organizations.
   that Zulip can properly manage image and website previews and mobile
   push notifications. Outgoing Internet access is not required if you
   [disable those
-  features](https://zulip.com/help/allow-image-link-previews).
+  features](https://zulip.com/help/image-video-and-website-previews).
 - Outgoing SMTP access (usually port 587) to your [SMTP
   server](email.md) so that Zulip can send emails.
 - A domain name (e.g., `zulip.example.com`) that your users will use to
