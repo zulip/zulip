@@ -2667,7 +2667,7 @@ _Released 2019-12-12_
   setting is disabled. As a result, organization administrators can
   configure this feature entirely in the UI. However, servers that had
   previously [enabled previews of linked
-  websites](https://zulip.com/help/allow-image-link-previews) will
+  websites](https://zulip.com/help/image-video-and-website-previews) will
   lose the setting and need to re-enable it.
 - We rewrote the Google authentication backend to use the
   `python-social-auth` system we use for other third-party
