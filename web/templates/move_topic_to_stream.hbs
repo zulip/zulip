@@ -2,11 +2,12 @@
 <p class="white-space-preserve-wrap">{{#tr}}Move all messages in <strong>{topic_name}</strong>{{/tr}} to:</p>
 {{/unless}}
 <form class="new-style" id="move_topic_form">
+    <div class="move_topic_form_warning_container"></div>
     {{#if only_topic_edit }}
     <p>{{t "Rename topic to:" }}</p>
     {{else if from_message_actions_popover}}
     <p>{{t "Move messages to:" }}</p>
-    {{/if}}
+    {{/if}}    
     <div class="topic_stream_edit_header">
         {{#unless only_topic_edit}}
         {{> dropdown_widget_wrapper widget_name="move_topic_to_stream"}}

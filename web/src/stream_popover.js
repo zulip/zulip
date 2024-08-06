@@ -3,12 +3,14 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_message_moving_warning_banner from "../templates/modal_banner/message_moving_warning_banner.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
@@ -566,8 +568,32 @@ export async function build_move_topic_to_stream_popover(
         event.stopPropagation();
     }
 
+    function update_warning_banner() {
+        let propagate_mode = $("#move_topic_modal select.message_edit_topic_propagate").val();
+        let submit_button_disabled = $("#move_topic_modal .dialog_submit_button")[0].disabled;
+        if (!submit_button_disabled && propagate_mode != "change_one") {
+            $("#move_topic_modal .move_topic_form_warning_container").html(render_message_moving_warning_banner({
+                banner_type: compose_banner.WARNING,
+                hide_close_button: true,
+                classname: "message_moving_warning_banner",
+            }));   
+        } else {
+            $("#move_topic_modal .move_topic_form_warning_container").html("");
+        }
+    }
+
     function move_topic_post_render() {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
+
+        new MutationObserver(function(mutations){
+            update_warning_banner();
+        }).observe($("#move_topic_modal .dialog_submit_button")[0], {
+            attributes: true,
+        });
+
+        $("#move_topic_modal select.message_edit_topic_propagate")[0]?.addEventListener("change", function(){
+            update_warning_banner();
+        })
 
         const $topic_input = $("#move_topic_form .move_messages_edit_topic");
         move_topic_to_stream_topic_typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
