@@ -920,6 +920,7 @@
     --color-active-dropdown-item: hsl(0deg 0% 0%);
     --background-color-active-dropdown-item: hsl(220deg 12% 4.9% / 5%);
     --background-color-active-typeahead-item: hsl(221.14deg 89.74% 92.35%);
+    --color-typeahead-option-label: var(--grey-500);
 }
 
 %dark-theme {
@@ -1311,6 +1312,7 @@
     --background-color-active-typeahead-item: hsl(
         226.35deg 82.53% 55.1% / 38.82%
     );
+    --color-typeahead-option-label: var(--grey-400);
 }
 
 @media screen {
