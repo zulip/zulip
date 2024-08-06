@@ -150,7 +150,7 @@
     }
 }
 
-.typeahead-option-label {
+.typeahead-option-label-container {
     display: flex !important;
     justify-content: space-between;
 
