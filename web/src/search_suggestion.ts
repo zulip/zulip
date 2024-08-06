@@ -414,6 +414,58 @@ function get_person_suggestions(
     });
 }
 
+function generate_date_suggestions_array(input: string): string[] {
+    const current_date = new Date();
+
+    const current_date_string = current_date.toISOString().slice(0, 10);
+
+    if (input) {
+        const suggested_date = input + current_date_string.slice(input.length);
+
+        const parsed_date = new Date(suggested_date);
+        if (!Number.isNaN(parsed_date.getDate())) {
+            current_date.setTime(parsed_date.getTime());
+        }
+    }
+
+    const suggestions_array = [];
+
+    for (let i = 0; i < 5; i += 1) {
+        suggestions_array.push(current_date.toISOString().slice(0, 10));
+        current_date.setDate(current_date.getDate() - 1);
+    }
+
+    return suggestions_array;
+}
+
+function get_date_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+    const valid = ["after", "before"];
+    if (!check_validity(last, terms, valid, [])) {
+        return [];
+    }
+
+    const query = last.operand;
+
+    const suggestions = generate_date_suggestions_array(query);
+
+    const regex = typeahead_helper.build_highlight_regex(query);
+    const highlight_query = typeahead_helper.highlight_with_escaping_and_regex;
+
+    return suggestions.map((operand_suggestion) => {
+        const prefix = "messages " + (last.operator === "after" ? "after" : "before");
+        const highlighted_suggestion = highlight_query(regex, operand_suggestion);
+        const verb = last.negated ? "exclude " : "";
+        const description_html = verb + prefix + " " + highlighted_suggestion;
+        const term = {
+            operator: last.operator,
+            operand: operand_suggestion,
+            negated: last.negated,
+        };
+        const search_string = Filter.unparse([term]);
+        return {description_html, search_string, is_people: false};
+    });
+}
+
 function get_default_suggestion_line(terms: NarrowTerm[]): SuggestionLine {
     if (terms.length === 0) {
         return [{description_html: "", search_string: "", is_people: false}];
@@ -1068,6 +1120,7 @@ export function get_search_result(
         get_topic_suggestions,
         get_operator_suggestions,
         get_has_filter_suggestions,
+        get_date_suggestions,
     ];
 
     if (page_params.is_spectator) {

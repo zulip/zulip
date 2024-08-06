@@ -55,6 +55,7 @@ from zerver.lib.topic_sqlalchemy import (
     topic_column_sa,
     topic_match_sa,
 )
+from zerver.lib.typed_endpoint_validators import convert_to_datetime
 from zerver.lib.types import Validator
 from zerver.lib.user_topics import exclude_topic_mutes
 from zerver.lib.validator import (
@@ -296,6 +297,8 @@ class NarrowBuilder:
             # operator is removed.
             "pm_with": self.by_dm,
             "group_pm_with": self.by_group_pm_with,
+            "after": self.by_after,
+            "before": self.by_before,
         }
         self.is_channel_narrow = False
         self.is_dm_narrow = False
@@ -415,6 +418,26 @@ class NarrowBuilder:
         raise BadNarrowOperatorError("unknown 'is' operand " + operand)
 
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+    def by_before(
+        self, query: Select, operand: int | str, maybe_negate: ConditionTransform
+    ) -> Select:
+        try:
+            end_date = convert_to_datetime(operand)
+        except ValueError:
+            raise BadNarrowOperatorError("Invalid date format for 'before' operator")
+        cond = column("date_sent", postgresql.TIMESTAMP(timezone=True)) <= literal(end_date)
+        return query.where(maybe_negate(cond))
+
+    def by_after(
+        self, query: Select, operand: int | str, maybe_negate: ConditionTransform
+    ) -> Select:
+        try:
+            start_date = convert_to_datetime(operand)
+        except ValueError:
+            raise BadNarrowOperatorError("Invalid date format for 'after' operator")
+        cond = column("date_sent", postgresql.TIMESTAMP(timezone=True)) >= literal(start_date)
+        return query.where(maybe_negate(cond))
 
     def _pg_re_escape(self, pattern: str) -> str:
         """

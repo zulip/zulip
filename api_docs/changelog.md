@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 281**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added two new [search/narrow filters](/api/construct-narrow#changes),
+  `before:yyyy-mm-dd` and `after:yyyy-mm-dd`, matching messages before
+  and after the specified date (inclusively).
+
 **Feature level 280**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

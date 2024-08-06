@@ -1,6 +1,7 @@
+import zoneinfo
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 from unittest import mock
 
@@ -5042,3 +5043,77 @@ class PersonalMessagesNearTest(ZulipTestCase):
             message=message,
         )
         self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80-pm/near/555")
+
+
+class MessageDateOperatorsTest(ZulipTestCase):
+    def test_before_operator(self) -> None:
+        self.login("iago")
+        UTC = zoneinfo.ZoneInfo("UTC")
+
+        now = datetime.now(UTC)
+        before_narrow = orjson.dumps([dict(operator="before", operand=now.isoformat())]).decode()
+
+        msg_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="hey")
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=before_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+
+        now += timedelta(days=1)
+        before_narrow = orjson.dumps([dict(operator="before", operand=now.isoformat())]).decode()
+
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=before_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+
+        invalid_narrow = orjson.dumps([dict(operator="before", operand="invalid")]).decode()
+
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=invalid_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+
+        self.assert_json_error(
+            result, "Invalid narrow operator: Invalid date format for 'before' operator"
+        )
+
+    def test_after_operator(self) -> None:
+        self.login("iago")
+        UTC = zoneinfo.ZoneInfo("UTC")
+
+        now = datetime.now(UTC)
+        after_narrow = orjson.dumps([dict(operator="after", operand=now.isoformat())]).decode()
+
+        msg_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="hey")
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=after_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+
+        now += timedelta(days=1)
+        after_narrow = orjson.dumps([dict(operator="after", operand=now.isoformat())]).decode()
+
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=after_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+
+        invalid_narrow = orjson.dumps([dict(operator="after", operand="invalid")]).decode()
+
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=invalid_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+
+        self.assert_json_error(
+            result, "Invalid narrow operator: Invalid date format for 'after' operator"
+        )
