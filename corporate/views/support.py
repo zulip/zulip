@@ -549,6 +549,7 @@ def support(
             realm_data = get_data_for_cloud_support_view(billing_session)
             realm_support_data[realm.id] = realm_data
         context["realm_support_data"] = realm_support_data
+        context["SPONSORED_PLAN_TYPE"] = Realm.PLAN_TYPE_STANDARD_FREE
 
     def get_realm_owner_emails_as_string(realm: Realm) -> str:
         return ", ".join(
