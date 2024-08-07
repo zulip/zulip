@@ -233,18 +233,17 @@
             {{/if}}
             {{#if can_manage_user}}
                 <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
-                {{#if is_active}}
-                    <li role="none" class="popover-menu-list-item link-item">
-                        <a role="menuitem" class="sidebar-popover-manage-user popover-menu-link hidden-for-spectators" tabindex="0">
-                            <i class="popover-menu-icon zulip-icon zulip-icon-user-cog" aria-hidden="true"></i>
-                            {{#if is_bot}}
-                                <span class="popover-menu-label">{{t "Manage this bot" }}</span>
-                            {{else}}
-                                <span class="popover-menu-label">{{t "Manage this user" }}</span>
-                            {{/if}}
-                        </a>
-                    </li>
-                {{else}}
+                <li role="none" class="popover-menu-list-item link-item">
+                    <a role="menuitem" class="sidebar-popover-manage-user popover-menu-link hidden-for-spectators" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-user-cog" aria-hidden="true"></i>
+                        {{#if is_bot}}
+                            <span class="popover-menu-label">{{t "Manage this bot" }}</span>
+                        {{else}}
+                            <span class="popover-menu-label">{{t "Manage this user" }}</span>
+                        {{/if}}
+                    </a>
+                </li>
+                {{#if (not is_active)}}
                     <li role="none" class="popover-menu-list-item link-item">
                         <a role="menuitem" class="sidebar-popover-reactivate-user popover-menu-link hidden-for-spectators" tabindex="0">
                             <i class="popover-menu-icon zulip-icon zulip-icon-user-plus" aria-hidden="true"></i>
