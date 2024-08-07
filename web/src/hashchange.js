@@ -23,8 +23,8 @@ import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as settings from "./settings";
+import * as settings_helper from "./settings_helper";
 import * as settings_panel_menu from "./settings_panel_menu";
-import * as settings_toggle from "./settings_toggle";
 import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
@@ -417,7 +417,7 @@ function do_hashchange_overlay(old_hash) {
             settings_panel_menu.org_settings.get_set_user_settings_tab(get_settings_tab(section));
             settings_panel_menu.org_settings.get_set_bot_settings_tab(get_settings_tab(section));
         }
-        settings_toggle.goto(base);
+        settings_helper.goto(base);
         return;
     }
 
