@@ -14,7 +14,7 @@
     {{/unless}}
 
     <div class="input-group">
-        <label for="twenty_four_hour_time" class="settings-field-label">{{ settings_label.twenty_four_hour_time }}</label>
+        <label for="{{prefix}}twenty_four_hour_time" class="settings-field-label">{{ settings_label.twenty_four_hour_time }}</label>
         <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time prop-element settings_select bootstrap-focus-style" id="{{prefix}}twenty_four_hour_time" data-setting-widget-type="string">
             {{#each twenty_four_hour_time_values}}
                 <option value='{{ this.value }}'>{{ this.description }}</option>
@@ -22,7 +22,7 @@
         </select>
     </div>
     <div class="input-group">
-        <label for="color_scheme" class="settings-field-label">{{t "Theme" }}</label>
+        <label for="{{prefix}}color_scheme" class="settings-field-label">{{t "Theme" }}</label>
         <select name="color_scheme" class="setting_color_scheme prop-element settings_select bootstrap-focus-style" id="{{prefix}}color_scheme" data-setting-widget-type="number">
             {{> dropdown_options_widget option_values=color_scheme_values}}
         </select>

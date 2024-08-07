@@ -7,7 +7,7 @@
             <form class="grid">
                 {{#if user_has_email_set}}
                 <div class="input-group">
-                    <label class="settings-field-label">{{t "Email" }}</label>
+                    <label class="settings-field-label" for="change_email_button">{{t "Email" }}</label>
                     <div id="change_email_button_container" class="{{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
                         <button id="change_email_button" type="button" class="button rounded tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Change your email' }}" {{#unless user_can_change_email}}disabled="disabled"{{/unless}}>
                             {{current_user.delivery_email}}
@@ -42,7 +42,7 @@
             <form class="password-change-form grid">
                 {{#if user_can_change_password}}
                 <div>
-                    <label class="settings-field-label">{{t "Password" }}</label>
+                    <label class="settings-field-label" for="change_password">{{t "Password" }}</label>
                     <div class="input-group">
                         <button id="change_password" type="button" class="button rounded" data-dismiss="modal">{{t "Change your password" }}</button>
                     </div>
@@ -102,7 +102,7 @@
                   }}
             </div>
             <div class="input-group">
-                <label for="email_address_visibility" class="settings-field-label">{{t "Who can access your email address" }}
+                <label for="user_email_address_visibility" class="settings-field-label">{{t "Who can access your email address" }}
                     {{> ../help_link_widget link="/help/configure-email-visibility" }}
                 </label>
                 <div id="user_email_address_dropdown_container" class="inline-block {{#unless user_has_email_set}}disabled_setting_tooltip{{/unless}}">
