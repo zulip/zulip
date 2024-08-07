@@ -1,11 +1,11 @@
 {{#with profile_field_info}}
 <form class="name-setting profile-field-form" id="edit-custom-profile-field-form-{{id}}" data-profile-field-id="{{id}}">
     <div class="input-group">
-        <label for="name" class="modal-field-label">{{t "Label" }}</label>
+        <label for="id-custom-profile-field-name" class="modal-field-label">{{t "Label" }}</label>
         <input type="text" name="name" id="id-custom-profile-field-name" class="modal_text_input prop-element" value="{{ name }}" maxlength="40" data-setting-widget-type="string" />
     </div>
     <div class="input-group hint_change_container">
-        <label for="hint" class="modal-field-label">{{t "Hint" }}</label>
+        <label for="id-custom-profile-field-hint" class="modal-field-label">{{t "Hint" }}</label>
         <input type="text" name="hint" id="id-custom-profile-field-hint" class="modal_text_input prop-element" value="{{ hint }}" maxlength="80" data-setting-widget-type="string" />
     </div>
     {{#if is_select_field }}
