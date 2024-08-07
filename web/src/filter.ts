@@ -297,6 +297,7 @@ export class Filter {
     _can_mark_messages_read?: boolean;
     requires_adjustment_for_moved_with_target?: boolean;
     narrow_requires_hash_change: boolean;
+    cached_sorted_terms_for_comparison?: string[] = undefined;
 
     constructor(terms: NarrowTerm[]) {
         this._terms = terms;
@@ -884,6 +885,10 @@ export class Filter {
     }
 
     sorted_terms_for_comparison(excluded_operators?: string[]): string[] {
+        if (this.cached_sorted_terms_for_comparison !== undefined) {
+            return this.cached_sorted_terms_for_comparison;
+        }
+
         let filter_terms = this._terms;
         if (excluded_operators) {
             filter_terms = this._terms.filter(
@@ -895,7 +900,8 @@ export class Filter {
             (term) => `${term.negated ? "0" : "1"}-${term.operator}-${term.operand.toLowerCase()}`,
         );
 
-        return simplified_terms.sort(util.strcmp);
+        this.cached_sorted_terms_for_comparison = simplified_terms.sort(util.strcmp);
+        return this.cached_sorted_terms_for_comparison;
     }
 
     predicate(): (message: Message) => boolean {
