@@ -878,12 +878,12 @@ export class Filter {
 
     equals(filter: Filter, excluded_operators?: string[]): boolean {
         return _.isEqual(
-            filter.sorted_terms(excluded_operators),
-            this.sorted_terms(excluded_operators),
+            filter.sorted_terms_for_comparison(excluded_operators),
+            this.sorted_terms_for_comparison(excluded_operators),
         );
     }
 
-    sorted_terms(excluded_operators?: string[]): NarrowTerm[] {
+    sorted_terms_for_comparison(excluded_operators?: string[]): string[] {
         let filter_terms = this._terms;
         if (excluded_operators) {
             filter_terms = this._terms.filter(
@@ -891,11 +891,11 @@ export class Filter {
             );
         }
 
-        return filter_terms.sort((a, b) => {
-            const a_joined = `${a.negated ? "0" : "1"}-${a.operator}-${a.operand}`;
-            const b_joined = `${b.negated ? "0" : "1"}-${b.operator}-${b.operand}`;
-            return util.strcmp(a_joined, b_joined);
-        });
+        const simplified_terms = filter_terms.map(
+            (term) => `${term.negated ? "0" : "1"}-${term.operator}-${term.operand.toLowerCase()}`,
+        );
+
+        return simplified_terms.sort(util.strcmp);
     }
 
     predicate(): (message: Message) => boolean {
