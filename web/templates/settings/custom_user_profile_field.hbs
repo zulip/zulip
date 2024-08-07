@@ -1,15 +1,15 @@
 <div class="custom_user_field" name="{{ field.name }}" data-field-id="{{ field.id }}">
     <span class="custom-user-field-label-wrapper {{#if field.required}}required-field-wrapper{{/if}}">
-        <label class="settings-field-label inline-block title" for="{{ field.name }}">{{ field.name }}</label>
+        <label class="settings-field-label inline-block title" for="id_custom_profile_field_input_{{ field.id }}">{{ field.name }}</label>
         <span class="required-symbol {{#unless is_empty_required_field}}hidden{{/unless}}"> *</span>
     </span>
     <div class="alert-notification custom-field-status"></div>
     <div class="settings-profile-user-field-hint">{{ field.hint }}</div>
     <div class="settings-profile-user-field {{#if is_empty_required_field}}empty-required-field{{/if}} {{#unless editable_by_user}}not-editable-by-user-input-wrapper{{/unless}}">
         {{#if is_long_text_field}}
-        <textarea maxlength="500" class="custom_user_field_value settings_textarea" name="{{ field.id }}" {{#unless editable_by_user}}disabled{{/unless}}>{{ field_value.value }}</textarea>
+        <textarea id="id_custom_profile_field_input_{{ field.id }}" maxlength="500" class="custom_user_field_value settings_textarea" name="{{ field.id }}" {{#unless editable_by_user}}disabled{{/unless}}>{{ field_value.value }}</textarea>
         {{else if is_select_field}}
-        <select class="custom_user_field_value {{#if for_manage_user_modal}}modal_select{{else}}settings_select{{/if}} bootstrap-focus-style" name="{{ field.id }}" {{#unless editable_by_user}}disabled{{/unless}}>
+        <select id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_select{{else}}settings_select{{/if}} bootstrap-focus-style" name="{{ field.id }}" {{#unless editable_by_user}}disabled{{/unless}}>
             <option value=""></option>
             {{#each field_choices}}
                 <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
@@ -24,11 +24,11 @@
           value="{{ field_value.value }}" {{#unless editable_by_user}}disabled{{/unless}}/>
         {{#if editable_by_user}}<span class="remove_date"><i class="fa fa-close"></i></span>{{/if}}
         {{else if is_url_field }}
-        <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_url_input{{else}}settings_url_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" {{#unless editable_by_user}}disabled{{/unless}}/>
+        <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_url_input{{else}}settings_url_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" {{#unless editable_by_user}}disabled{{/unless}}/>
         {{else if is_pronouns_field}}
-        <input class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled{{/unless}}/>
+        <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled{{/unless}}/>
         {{else}}
-        <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled{{/unless}}/>
+        <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled{{/unless}}/>
         {{/if}}
     </div>
 </div>

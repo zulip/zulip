@@ -70,7 +70,7 @@
         </div>
 
         <div class="input-group">
-            <label for="automatically_follow_topics_policy" class="settings-field-label">
+            <label for="{{prefix}}automatically_follow_topics_policy" class="settings-field-label">
                 {{ settings_label.automatically_follow_topics_policy }}
                 {{> ../help_link_widget link="/help/follow-a-topic" }}
             </label>
@@ -81,7 +81,7 @@
         </div>
 
         <div class="input-group">
-            <label for="automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">
+            <label for="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">
                 {{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}
                 {{> ../help_link_widget link="/help/mute-a-topic" }}
             </label>
@@ -139,7 +139,7 @@
         </div>
 
         <div class="input-group">
-            <label for="desktop_icon_count_display" class="settings-field-label">{{ settings_label.desktop_icon_count_display }}</label>
+            <label for="{{prefix}}desktop_icon_count_display" class="settings-field-label">{{ settings_label.desktop_icon_count_display }}</label>
             <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element settings_select bootstrap-focus-style" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
             </select>
@@ -184,7 +184,7 @@
 
         <div class="input-group time-limit-setting">
 
-            <label for="email_notifications_batching_period" class="settings-field-label">
+            <label for="{{prefix}}email_notifications_batching_period_seconds" class="settings-field-label">
                 {{t "Delay before sending message notification emails" }}
             </label>
             <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element settings_select bootstrap-focus-style" id="{{prefix}}email_notifications_batching_period_seconds" data-setting-widget-type="time-limit">
@@ -193,7 +193,7 @@
                 {{/each}}
             </select>
             <div class="dependent-settings-block">
-                <label for="email_notification_batching_period_edit_minutes" class="inline-block">
+                <label for="{{prefix}}email_notification_batching_period_edit_minutes" class="inline-block">
                     {{t 'Delay period (minutes)' }}:
                 </label>
                 <input type="text"
@@ -206,7 +206,7 @@
         </div>
 
         <div class="input-group">
-            <label for="realm_name_in_email_notifications_policy" class="settings-field-label">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
+            <label for="{{prefix}}realm_name_in_email_notifications_policy" class="settings-field-label">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
             <select name="realm_name_in_email_notifications_policy" class="setting_realm_name_in_email_notifications_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}realm_name_in_email_notifications_policy" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=realm_name_in_email_notifications_policy_values}}
             </select>

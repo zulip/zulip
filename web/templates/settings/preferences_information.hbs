@@ -50,14 +50,14 @@
     </div>
 
     <div class="input-group thinner setting-next-is-related">
-        <label for="web_animate_image_previews" class="settings-field-label">{{t "Play animated images" }}</label>
+        <label for="{{prefix}}web_animate_image_previews" class="settings-field-label">{{t "Play animated images" }}</label>
         <select name="web_animate_image_previews" class="setting_web_animate_image_previews prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_animate_image_previews" data-setting-widget-type="string">
             {{> dropdown_options_widget option_values=web_animate_image_previews_values}}
         </select>
     </div>
 
     <div class="input-group">
-        <label for="web_stream_unreads_count_display_policy" class="settings-field-label">{{t "Show unread counts for" }}</label>
+        <label for="{{prefix}}web_stream_unreads_count_display_policy" class="settings-field-label">{{t "Show unread counts for" }}</label>
         <select name="web_stream_unreads_count_display_policy" class="setting_web_stream_unreads_count_display_policy prop-element bootstrap-focus-style settings_select" id="{{prefix}}web_stream_unreads_count_display_policy"  data-setting-widget-type="number">
             {{> dropdown_options_widget option_values=web_stream_unreads_count_display_policy_values}}
         </select>
@@ -73,7 +73,7 @@
     {{/each}}
 
     <div class="input-group">
-        <label for="demote_inactive_streams" class="settings-field-label">{{t "Demote inactive channels" }}
+        <label for="{{prefix}}demote_inactive_streams" class="settings-field-label">{{t "Demote inactive channels" }}
             {{> ../help_link_widget link="/help/manage-inactive-channels" }}
         </label>
         <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element settings_select bootstrap-focus-style" id="{{prefix}}demote_inactive_streams"  data-setting-widget-type="number">
