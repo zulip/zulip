@@ -18,7 +18,7 @@ from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import RequiredStringConstraint
 from zerver.models import Draft, UserProfile
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 ParamT = ParamSpec("ParamT")
 
@@ -150,6 +150,7 @@ def do_edit_draft(draft_id: int, draft: DraftData, user_profile: UserProfile) ->
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
+@transaction.atomic(durable=True)
 def do_delete_draft(draft_id: int, user_profile: UserProfile) -> None:
     """Delete a draft belonging to a particular user."""
     try:
@@ -161,4 +162,4 @@ def do_delete_draft(draft_id: int, user_profile: UserProfile) -> None:
     draft_object.delete()
 
     event = {"type": "drafts", "op": "remove", "draft_id": draft_id}
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
