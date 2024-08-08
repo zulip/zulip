@@ -142,10 +142,12 @@ def do_edit_draft(draft_id: int, draft: DraftData, user_profile: UserProfile) ->
     draft_object.topic = valid_draft_dict["topic"]
     draft_object.recipient_id = valid_draft_dict["recipient_id"]
     draft_object.last_edit_time = valid_draft_dict["last_edit_time"]
-    draft_object.save()
 
-    event = {"type": "drafts", "op": "update", "draft": draft_object.to_dict()}
-    send_event(user_profile.realm, event, [user_profile.id])
+    with transaction.atomic(durable=True):
+        draft_object.save()
+
+        event = {"type": "drafts", "op": "update", "draft": draft_object.to_dict()}
+        send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
 def do_delete_draft(draft_id: int, user_profile: UserProfile) -> None:
