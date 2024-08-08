@@ -781,6 +781,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "can_create_private_channel_group",
             "can_create_public_channel_group",
             "can_create_web_public_channel_group",
+            "can_delete_any_message_group",
             "create_multiuse_invite_group",
             "delete_own_message_policy",
             "direct_message_initiator_group",
@@ -867,6 +868,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def can_add_custom_emoji(self) -> bool:
         return self.has_permission("add_custom_emoji_policy")
+
+    def can_delete_any_message(self) -> bool:
+        return self.has_permission("can_delete_any_message_group")
 
     def can_delete_own_message(self) -> bool:
         return self.has_permission("delete_own_message_policy")

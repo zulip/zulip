@@ -261,34 +261,66 @@ function set_msg_move_limit_setting(property_name) {
     enable_or_disable_related_message_move_time_limit_setting(property_name, disable_setting);
 }
 
-function message_delete_limit_setting_enabled(setting_value) {
+function message_delete_limit_setting_enabled() {
     // This function is used to check whether the time-limit setting
-    // should be enabled. The setting is disabled when delete_own_message_policy
-    // is set to 'admins only' as admins can delete messages irrespective of
-    // time limit.
-    if (setting_value === settings_config.common_message_policy_values.by_admins_only.code) {
+    // should be enabled. The setting is disabled when every user
+    // who is allowed to delete their own messages is also allowed
+    // to delete any message in the organization.
+    const realm_delete_own_message_policy = Number.parseInt(
+        $("#id_realm_delete_own_message_policy").val(),
+        10,
+    );
+    const realm_can_delete_any_message_group_id =
+        settings_components.get_dropdown_list_widget_setting_value(
+            $("#id_realm_can_delete_any_message_group"),
+        );
+    const realm_can_delete_any_message_group_name = user_groups.get_user_group_from_id(
+        realm_can_delete_any_message_group_id,
+    ).name;
+    const common_message_policy_values = settings_config.common_message_policy_values;
+
+    if (realm_delete_own_message_policy === common_message_policy_values.by_admins_only.code) {
+        return false;
+    }
+    if (realm_can_delete_any_message_group_name === "role:administrators") {
+        return true;
+    }
+    if (realm_delete_own_message_policy === common_message_policy_values.by_moderators_only.code) {
+        return false;
+    }
+    if (realm_can_delete_any_message_group_name === "role:moderators") {
+        return true;
+    }
+    if (realm_delete_own_message_policy === common_message_policy_values.by_full_members.code) {
+        return false;
+    }
+    if (realm_can_delete_any_message_group_name === "role:fullmembers") {
+        return true;
+    }
+    if (realm_delete_own_message_policy === common_message_policy_values.by_members.code) {
         return false;
     }
     return true;
 }
 
-function set_delete_own_message_policy_dropdown(setting_value) {
-    $("#id_realm_delete_own_message_policy").val(setting_value);
+function check_disable_message_delete_limit_setting_dropdown() {
     settings_ui.disable_sub_setting_onchange(
-        message_delete_limit_setting_enabled(setting_value),
+        message_delete_limit_setting_enabled(),
         "id_realm_message_content_delete_limit_seconds",
         true,
     );
-    const limit_setting_dropdown_value = settings_components.get_time_limit_dropdown_setting_value(
-        "realm_message_content_delete_limit_seconds",
-    );
-    if (limit_setting_dropdown_value === "custom_period") {
+    if ($("#id_realm_message_content_delete_limit_minutes").length) {
         settings_ui.disable_sub_setting_onchange(
-            message_delete_limit_setting_enabled(setting_value),
+            message_delete_limit_setting_enabled(),
             "id_realm_message_content_delete_limit_minutes",
             true,
         );
     }
+}
+
+function set_delete_own_message_policy_dropdown(setting_value) {
+    $("#id_realm_delete_own_message_policy").val(setting_value);
+    check_disable_message_delete_limit_setting_dropdown();
 }
 
 function set_msg_delete_limit_dropdown() {
@@ -453,6 +485,9 @@ function update_dependent_subsettings(property_name) {
         case "realm_allow_message_editing":
             update_message_edit_sub_settings(realm.realm_allow_message_editing);
             break;
+        case "realm_can_delete_any_message_group":
+            check_disable_message_delete_limit_setting_dropdown();
+            break;
         case "realm_delete_own_message_policy":
             set_delete_own_message_policy_dropdown(realm.realm_delete_own_message_policy);
             break;
@@ -506,6 +541,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
         case "realm_can_create_web_public_channel_group":
+        case "realm_can_delete_any_message_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,
@@ -825,6 +861,8 @@ export function set_up_dropdown_widget_for_realm_group_settings() {
         if (setting_name === "direct_message_permission_group") {
             dropdown_list_item_click_callback =
                 check_disable_direct_message_initiator_group_dropdown;
+        } else if (setting_name === "can_delete_any_message_group") {
+            dropdown_list_item_click_callback = check_disable_message_delete_limit_setting_dropdown;
         }
         set_up_dropdown_widget(
             "realm_" + setting_name,

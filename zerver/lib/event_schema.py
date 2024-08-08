@@ -1045,6 +1045,7 @@ group_setting_type = UnionType(
 group_setting_update_data_type = DictType(
     required_keys=[],
     optional_keys=[
+        ("can_delete_any_message_group", int),
         ("create_multiuse_invite_group", int),
         ("can_access_all_users_group", int),
         ("can_create_public_channel_group", group_setting_type),

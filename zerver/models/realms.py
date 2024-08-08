@@ -308,6 +308,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # Who in the organization is allowed to delete any message.
+    can_delete_any_message_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Who in the organization is allowed to delete messages they themselves sent.
     delete_own_message_policy = models.PositiveSmallIntegerField(
         default=CommonMessagePolicyEnum.EVERYONE
@@ -722,6 +727,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
             id_field_name="can_create_private_channel_group_id",
+        ),
+        can_delete_any_message_group=GroupPermissionSetting(
+            require_system_group=True,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.ADMINISTRATORS,
+            id_field_name="can_delete_any_message_group_id",
         ),
         direct_message_initiator_group=GroupPermissionSetting(
             require_system_group=False,
