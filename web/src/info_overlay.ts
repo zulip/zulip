@@ -130,6 +130,7 @@ This text won't be visible until the user clicks.
 def zulip():
     print "Zulip"
 \`\`\``,
+        usage_html: format_usage_html("Ctrl", "Shift", "C"),
     },
     {
         markdown: `\

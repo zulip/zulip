@@ -731,6 +731,9 @@ export class Typeahead<ItemType extends string | object> {
         switch (pseudo_keycode) {
             case 40: // down arrow
             case 38: // up arrow
+            case 16:
+            case 17:
+                // ctrl and shift keys should not affect the typeahead
                 break;
 
             case 9: // tab
@@ -775,6 +778,11 @@ export class Typeahead<ItemType extends string | object> {
                     pseudo_keycode === 16 &&
                     this.input_element.$element[0]!.id === "stream_message_recipient_topic"
                 ) {
+                    return;
+                }
+                if (pseudo_keycode === 67 && e.ctrlKey && e.shiftKey) {
+                    // Ctrl + Shift + C is used to insert code block syntax, so the
+                    // typeahead should remain open to allow choosing code language
                     return;
                 }
                 if (this.openInputFieldOnKeyUp !== undefined && !this.shown) {
