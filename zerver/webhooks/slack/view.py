@@ -1,16 +1,156 @@
+import re
+from typing import Any, TypeAlias
+
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.data_import.slack import check_token_access, get_slack_api_data
+from zerver.data_import.slack_message_conversion import (
+    SLACK_BOLD_REGEX,
+    SLACK_ITALIC_REGEX,
+    SLACK_STRIKETHROUGH_REGEX,
+    SLACK_USERMENTION_REGEX,
+    convert_link_format,
+    convert_mailto_format,
+    convert_markdown_syntax,
+)
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+FILE_STR = "\n*[{file_name}]({file_link})*"
 ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: {text}"
 VALID_OPTIONS = {"SHOULD_NOT_BE_MAPPED": "0", "SHOULD_BE_MAPPED": "1"}
+
+SlackFileListT: TypeAlias = list[dict[str, str]]
+SlackAPIResponseT: TypeAlias = dict[str, Any]
+
+SLACK_CHANNELMENTION_REGEX = r"(?<=<#)(.*)(?=>)"
+
+
+def is_zulip_slack_bridge_bot_message(payload: WildValue) -> bool:
+    app_api_id = payload.get("api_app_id").tame(check_none_or(check_string))
+    bot_app_id = (
+        payload.get("event", {})
+        .get("bot_profile", {})
+        .get("app_id")
+        .tame(check_none_or(check_string))
+    )
+    return bot_app_id is not None and app_api_id == bot_app_id
+
+
+def convert_mentions(text: str, app_token: str) -> str:
+    tokens = text.split(" ")
+    for iterator in range(len(tokens)):
+        slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, tokens[iterator], re.VERBOSE)
+        slack_channelmention_match = re.search(
+            SLACK_CHANNELMENTION_REGEX, tokens[iterator], re.MULTILINE
+        )
+
+        if slack_usermention_match:
+            # Convert Slack user mentions to a mention-like syntax since there
+            # is no way to map Slack and Zulip users.
+            slack_id = slack_usermention_match.group(2)
+            user_obj = get_slack_user_info(user_id=slack_id, token=app_token)
+            tokens[iterator] = "@**" + user_obj["name"] + "**"
+
+        elif slack_channelmention_match:
+            # Convert Slack channel mentions to a mention-like syntax so that
+            # a mention isn't triggered for a Zulip channel with the same name.
+            channel_info: list[str] = slack_channelmention_match.group(0).split("|")
+            channel_name = channel_info[1]
+            tokens[iterator] = f"**#{channel_name}**" if channel_name else "**#[private channel]**"
+
+    text = " ".join(tokens)
+    return text
+
+
+def get_slack_user_info(user_id: str, token: str) -> SlackAPIResponseT:
+    user_obj = get_slack_api_data(
+        "https://slack.com/api/users.info", get_param="user", token=token, user=user_id
+    )
+    return user_obj
+
+
+def get_slack_channel_info(channel_id: str, token: str) -> SlackAPIResponseT:
+    channel_obj = get_slack_api_data(
+        "https://slack.com/api/conversations.info",
+        get_param="channel",
+        token=token,
+        channel=channel_id,
+    )
+    return channel_obj
+
+
+def convert_to_zulip_markdown(text: str, slack_app_token: str) -> str:
+    # This is a modified version of `convert_to_zulip_markdown` in
+    # `slack_message_conversion.py`, which cannot be used directly
+    # due to differences in the Slack import data and Slack webhook
+    # payloads.
+    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
+    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
+    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
+
+    # Map Slack's mention all: '<!everyone>' to '@**all** '
+    # Map Slack's mention all: '<!channel>' to '@**all** '
+    # Map Slack's mention all: '<!here>' to '@**all** '
+    # No regex for this as it can be present anywhere in the sentence
+    text = text.replace("<!everyone>", "@**all**")
+    text = text.replace("<!channel>", "@**all**")
+    text = text.replace("<!here>", "@**all**")
+
+    text = convert_mentions(text, slack_app_token)
+
+    text, _ = convert_link_format(text)
+    text, _ = convert_mailto_format(text)
+
+    return text
+
+
+def get_message_body(event_data: dict[str, Any]) -> str:
+    body = ZULIP_MESSAGE_TEMPLATE.format(**event_data)
+    for file_obj in event_data["file_obj_list"]:
+        body += FILE_STR.format(**file_obj)
+
+    return body
+
+
+def get_channel_name_str(payload: WildValue, token: str) -> str:
+    channel_id = payload.get("event", {}).get("channel").tame(check_string)
+    channel_obj = get_slack_channel_info(channel_id, token)
+
+    return channel_obj["name"]
+
+
+def get_sender_name_str(payload: WildValue, token: str) -> str:
+    user_id = payload.get("event", {}).get("user").tame(check_string)
+    user_obj = get_slack_user_info(user_id, token)
+
+    return user_obj["name"]
+
+
+def is_challenge_handshake(payload: WildValue) -> bool:
+    return payload.get("type").tame(check_string) == "url_verification"
+
+
+def convert_file_dict(file_dict: WildValue) -> SlackFileListT:
+    file_obj_list = [
+        {
+            "file_link": file_obj.get("permalink").tame(check_string),
+            "file_name": file_obj.get("title").tame(check_string),
+        }
+        for file_obj in file_dict
+    ]
+    return file_obj_list
+
+
+def is_retry_call_from_slack(request: HttpRequest) -> bool:
+    return "X-Slack-Retry-Num" in request.headers
 
 
 @webhook_view("Slack", notify_bot_owner_on_invalid_json=False)
@@ -19,42 +159,81 @@ def api_slack_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_name: str,
-    text: str,
-    channel_name: str,
+    payload: JsonBodyPayload[WildValue],
+    slack_app_token: str,
     channels_map_to_topics: str | None = None,
 ) -> HttpResponse:
-    content = ZULIP_MESSAGE_TEMPLATE.format(message_sender=user_name, text=text)
     topic_name = "Message from Slack"
 
-    if channels_map_to_topics is None:
+    # Handle initial URL verification handshake for Slack Events API.
+    if is_challenge_handshake(payload):
+        challenge = payload.get("challenge").tame(check_string)
         check_send_webhook_message(
             request,
             user_profile,
-            topic_name,
-            content,
+            "Integration events",
+            "Successfully verified webhook URL with Slack!",
         )
-    elif channels_map_to_topics == VALID_OPTIONS["SHOULD_BE_MAPPED"]:
-        # If the webhook URL has a user_specified_topic,
-        # then this topic-channel mapping will not be used.
-        topic_name = f"channel: {channel_name}"
-        check_send_webhook_message(
-            request,
-            user_profile,
-            topic_name,
-            content,
-        )
-    elif channels_map_to_topics == VALID_OPTIONS["SHOULD_NOT_BE_MAPPED"]:
-        # This channel-channel mapping will be used even if
-        # there is a channel specified in the webhook URL.
-        check_send_webhook_message(
-            request,
-            user_profile,
-            topic_name,
-            content,
-            stream=channel_name,
-        )
+        return json_success(request=request, data={"challenge": challenge})
+
+    if is_retry_call_from_slack(request):
+        # A Slack fail condition occurs when we don't respond with HTTP 200
+        # within 3 seconds after Slack calls our endpoint. If this happens,
+        # Slack will retry sending the same payload. This is often triggered
+        # because of we have to do two callbacks for each call. To avoid
+        # sending the same message multiple times, we block subsequent retry
+        # calls from Slack.
+        return json_success(request)
+
+    # Prevent any Zulip messages sent through the Slack Bridge from looping
+    # back here.
+    if is_zulip_slack_bridge_bot_message(payload):
+        return json_success(request)
+
+    check_token_access(slack_app_token)
+
+    event_dict = payload.get("event", {})
+    event_type = event_dict.get("type").tame(check_string)
+    if event_type == "message":
+        file_dict = event_dict.get("files")
+        raw_text = event_dict.get("text", "").tame(check_string)
+
+        event_data: dict[str, Any] = {
+            "text": convert_to_zulip_markdown(raw_text, slack_app_token),
+            "channel": (
+                get_channel_name_str(payload, slack_app_token) if channels_map_to_topics else None
+            ),
+            "message_sender": get_sender_name_str(payload, slack_app_token),
+            "file_obj_list": convert_file_dict(file_dict) if file_dict else [],
+        }
+
+        content = get_message_body(event_data)
+
+        if channels_map_to_topics is None:
+            check_send_webhook_message(request, user_profile, topic_name, content)
+        elif channels_map_to_topics == VALID_OPTIONS["SHOULD_BE_MAPPED"]:
+            # If the webhook URL has a user_specified_topic,
+            # then this topic-channel mapping will not be used.
+            topic_name = f"channel: {event_data['channel']}"
+            check_send_webhook_message(
+                request,
+                user_profile,
+                topic_name,
+                content,
+            )
+        elif channels_map_to_topics == VALID_OPTIONS["SHOULD_NOT_BE_MAPPED"]:
+            # This channel-channel mapping will be used even if
+            # there is a channel specified in the webhook URL.
+            check_send_webhook_message(
+                request,
+                user_profile,
+                topic_name,
+                content,
+                stream=event_data["channel"],
+            )
+        else:
+            raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))
     else:
-        raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))
+        raise UnsupportedWebhookEventTypeError(event_type)
 
     return json_success(request)
