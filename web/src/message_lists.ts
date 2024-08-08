@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import type {MessageContainer} from "./compose_fade";
 import * as inbox_util from "./inbox_util";
 import type {MessageListData} from "./message_list_data";
 import type {Message} from "./message_store";
@@ -8,8 +9,10 @@ import * as ui_util from "./ui_util";
 // TODO(typescript): Move this to message_list_view when it's
 // converted to typescript.
 type MessageListView = {
+    message_containers: Map<number, MessageContainer>;
     update_recipient_bar_background_color: () => void;
     rerender_messages: (messages: Message[], message_content_edited?: boolean) => void;
+    _get_msg_timestring: (message_container: MessageContainer) => string | undefined;
     is_fetched_end_rendered: () => boolean;
     is_fetched_start_rendered: () => boolean;
     first_rendered_message: () => Message | undefined;
