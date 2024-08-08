@@ -23,8 +23,8 @@ import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as settings from "./settings";
+import * as settings_helper from "./settings_helper";
 import * as settings_panel_menu from "./settings_panel_menu";
-import * as settings_toggle from "./settings_toggle";
 import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
@@ -72,22 +72,36 @@ function is_somebody_else_profile_open() {
     );
 }
 
-function handle_invalid_users_section_url(user_settings_tab) {
-    const valid_user_settings_tab_values = new Set(["active", "deactivated", "invitations"]);
-    if (!valid_user_settings_tab_values.has(user_settings_tab)) {
+function handle_invalid_users_section_url(get_user_settings_tab) {
+    const get_valid_user_settings_tab_values = new Set(["active", "deactivated", "invitations"]);
+    if (!get_valid_user_settings_tab_values.has(get_user_settings_tab)) {
         const valid_users_section_url = "#organization/users/active";
         browser_history.update(valid_users_section_url);
         return "active";
     }
-    return user_settings_tab;
+    return get_user_settings_tab;
 }
 
-function get_user_settings_tab(section) {
+function get_settings_tab(section) {
     if (section === "users") {
-        const current_user_settings_tab = hash_parser.get_current_nth_hash_section(2);
-        return handle_invalid_users_section_url(current_user_settings_tab);
+        const get_current_user_settings_tab = hash_parser.get_current_nth_hash_section(2);
+        return handle_invalid_users_section_url(get_current_user_settings_tab);
+    }
+    if (section === "bots") {
+        const get_current_bot_settings_tab = hash_parser.get_current_nth_hash_section(2);
+        return handle_invalid_bots_section_url(get_current_bot_settings_tab);
     }
     return undefined;
+}
+
+function handle_invalid_bots_section_url(get_bot_settings_tab) {
+    const get_valid_bot_settings_tab_values = new Set(["all-bots", "your-bots"]);
+    if (!get_valid_bot_settings_tab_values.has(get_bot_settings_tab)) {
+        const valid_bots_section_url = "#organization/bots/all-bots";
+        browser_history.update(valid_bots_section_url);
+        return "all-bots";
+    }
+    return get_bot_settings_tab;
 }
 
 export function set_hash_to_home_view(triggered_by_escape_key = false) {
@@ -372,8 +386,14 @@ function do_hashchange_overlay(old_hash) {
             }
             settings_panel_menu.org_settings.activate_section_or_default(
                 section,
-                get_user_settings_tab(section),
+                get_settings_tab(section),
             );
+
+            settings_panel_menu.org_settings.activate_section_or_default(
+                section,
+                get_settings_tab(section),
+            );
+
             return;
         }
 
@@ -394,9 +414,10 @@ function do_hashchange_overlay(old_hash) {
             settings_panel_menu.normal_settings.set_current_tab(section);
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
-            settings_panel_menu.org_settings.set_user_settings_tab(get_user_settings_tab(section));
+            settings_panel_menu.org_settings.get_set_user_settings_tab(get_settings_tab(section));
+            settings_panel_menu.org_settings.get_set_bot_settings_tab(get_settings_tab(section));
         }
-        settings_toggle.goto(base);
+        settings_helper.goto(base);
         return;
     }
 
@@ -462,7 +483,11 @@ function do_hashchange_overlay(old_hash) {
     if (base === "organization") {
         settings.build_page();
         admin.build_page();
-        admin.launch(section, get_user_settings_tab(section));
+        if (section === "users") {
+            admin.launch(section, get_settings_tab(section));
+        } else {
+            admin.launch(section, get_settings_tab(section));
+        }
         return;
     }
 

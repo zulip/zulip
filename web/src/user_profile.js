@@ -580,27 +580,65 @@ function handle_remove_stream_subscription(target_user_id, sub, success, failure
     }
 }
 
+export function generate_zuliprc_content(bot) {
+    let token;
+    // For outgoing webhooks, include the token in the zuliprc.
+    // It's needed for authenticating to the Botserver.
+    if (bot.bot_type === 3) {
+        token = bot_data.get_services(bot.user_id)[0].token;
+    }
+    return (
+        "[api]" +
+        "\nemail=" +
+        bot.email +
+        "\nkey=" +
+        bot.api_key +
+        "\nsite=" +
+        realm.realm_url +
+        (token === undefined ? "" : "\ntoken=" + token) +
+        // Some tools would not work in files without a trailing new line.
+        "\n"
+    );
+}
+
+export function generate_zuliprc_url(bot_id) {
+    const bot = bot_data.get(bot_id);
+    const data = generate_zuliprc_content(bot);
+    return encode_zuliprc_as_url(data);
+}
+
+export function encode_zuliprc_as_url(zuliprc) {
+    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
+}
+
 export function show_edit_bot_info_modal(user_id, $container) {
     const bot = people.maybe_get_user_by_id(user_id);
     const owner_id = bot_data.get(user_id).owner_id;
     const owner_full_name = people.get_full_name(owner_id);
     const is_active = people.is_person_active(user_id);
+    const is_bot_owner_current_user = owner_id === current_user.user_id;
 
     if (!bot || !bot_data.get(user_id)) {
         return;
     }
 
+    bot.api_key = bot_data.get(bot.user_id).api_key;
+
     const html_body = render_edit_bot_form({
         user_id,
         is_active,
+        is_bot_owner_current_user,
         email: bot.email,
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
+        bot_type: settings_data.bot_type_id_to_string(bot.bot_type),
+        api_key: bot.api_key,
         owner_full_name,
         current_bot_owner: bot.bot_owner_id,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        zuliprc: "zuliprc",
     });
     $container.append($(html_body));
     let avatar_widget;
@@ -1103,12 +1141,61 @@ export function initialize() {
         }
     });
 
+    $("body").on("click", "button.bot-modal-regenerate-bot-api-key", (e) => {
+        e.preventDefault();
+        const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        channel.post({
+            url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
+            success(data) {
+                const $row = $("#bot-edit-form");
+                $row.find(".bot-modal-info").find(".bot-modal-value").text(data.api_key);
+                $row.find(".bot-modal-info")
+                    .find("#copy_api_key")
+                    .attr("data-api-key", data.api_key);
+                $row.find(".bot-modal-api-key-error").hide();
+            },
+            error(xhr) {
+                if (xhr.responseJSON?.msg) {
+                    const $row = $(e.currentTarget).closest("li");
+                    $row.find(".bot-modal-api-key-error").text(xhr.responseJSON.msg).show();
+                }
+            },
+        });
+    });
+
+    $("body").on("click", "a.download-bot-zuliprc", function () {
+        const $bot_info = $(this).closest("#bot-edit-form");
+        const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
+        $(this).attr("href", generate_zuliprc_url(bot_id));
+    });
+
     new ClipboardJS(".copy-link-to-user-profile", {
         text(trigger) {
             const user_id = $(trigger).attr("data-user-id");
             const user_profile_link = window.location.origin + "/#user/" + user_id;
 
             return user_profile_link;
+        },
+    }).on("success", (e) => {
+        show_copied_confirmation(e.trigger);
+    });
+
+    new ClipboardJS("#copy_api_key", {
+        text(trigger) {
+            const data = $(trigger).attr("data-api-key");
+            return data;
+        },
+    }).on("success", (e) => {
+        show_copied_confirmation(e.trigger);
+    });
+
+    new ClipboardJS("#copy_zuliprcc", {
+        text(trigger) {
+            const $bot_info = $(trigger).closest("#bot-edit-form");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
+            const bot = bot_data.get(bot_id);
+            const data = generate_zuliprc_content(bot);
+            return data;
         },
     }).on("success", (e) => {
         show_copied_confirmation(e.trigger);

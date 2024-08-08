@@ -14,11 +14,11 @@ import * as settings_bots from "./settings_bots";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as settings_helper from "./settings_helper";
 import * as settings_invites from "./settings_invites";
 import * as settings_org from "./settings_org";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
-import * as settings_toggle from "./settings_toggle";
 import * as settings_users from "./settings_users";
 import {current_user, realm} from "./state_data";
 
@@ -233,6 +233,8 @@ export function build_page() {
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
+        all_bots_list_dropdown_widget_name: settings_users.all_bots_list_dropdown_widget_name,
+        your_bots_list_dropdown_widget_name: settings_users.your_bots_list_dropdown_widget_name,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -284,7 +286,7 @@ export function build_page() {
     );
 }
 
-export function launch(section, user_settings_tab) {
+export function launch(section, settings_tab) {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
@@ -292,7 +294,10 @@ export function launch(section, user_settings_tab) {
         settings_panel_menu.org_settings.set_current_tab(section);
     }
     if (section === "users") {
-        settings_panel_menu.org_settings.set_user_settings_tab(user_settings_tab);
+        settings_panel_menu.org_settings.set_user_settings_tab(settings_tab);
     }
-    settings_toggle.goto("organization");
+    if (section === "bots") {
+        settings_panel_menu.org_settings.set_bot_settings_tab(settings_tab);
+    }
+    settings_helper.goto("organization");
 }

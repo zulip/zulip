@@ -15,10 +15,10 @@ import * as people from "./people";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as settings_helper from "./settings_helper";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_preferences from "./settings_preferences";
 import * as settings_sections from "./settings_sections";
-import * as settings_toggle from "./settings_toggle";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
@@ -76,7 +76,7 @@ export function update_lock_icon_in_sidebar() {
     $(".org-settings-list .locked").show();
 
     if (settings_bots.can_create_new_bots()) {
-        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
+        $(".org-settings-list li[data-section='bots'] .locked").hide();
     }
 
     if (settings_data.user_can_add_custom_emoji()) {
@@ -168,7 +168,7 @@ export function launch(section) {
     if (section !== "") {
         settings_panel_menu.normal_settings.set_current_tab(section);
     }
-    settings_toggle.goto("settings");
+    settings_helper.goto("settings");
 }
 
 export function initialize() {

@@ -1051,7 +1051,58 @@ input[type="checkbox"] {
     }
 }
 
-#inactive_bots_list .bot_info .reactivate_bot {
+.bots-edit-form {
+    #zuliprc_section {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .bot-modal-info {
+        margin-bottom: 20px;
+
+        .bot-modal-value-and-button {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+
+            .bot-modal-buttons {
+                .download-bot-zuliprc {
+                    padding: 6px 0;
+                }
+
+                .bot-modal-regenerate-bot-api-key {
+                    position: relative;
+                    margin-left: 5px;
+                    color: hsl(0deg 0% 67%);
+                    transition: all 0.3s ease;
+
+                    &:hover {
+                        color: hsl(0deg 0% 27%);
+                    }
+                }
+
+                .copy-api-key,
+                .copy-zuliprc {
+                    padding: 6px 4px;
+                    margin-left: 5px;
+                    background-color: transparent;
+
+                    #clipboard_image {
+                        margin: 0 -2px 0 0;
+
+                        path {
+                            fill: hsl(51deg 90% 50%);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#inactive_bots_list .bot_modal .reactivate_bot {
     margin-top: 5px;
 }
 
@@ -2054,7 +2105,8 @@ $option_title_width: 180px;
         display: inline-block;
     }
 
-    .user_filters {
+    .user_filters,
+    .bot_filters {
         display: flex;
         float: right;
         flex-wrap: wrap;
@@ -2181,4 +2233,15 @@ $option_title_width: 180px;
 
 #admin-user-list .tab-switcher .ind-tab {
     width: 110px;
+}
+
+#admin-bot-list {
+    .tab-switcher {
+        margin: 2px 0;
+    }
+
+    .tab-switcher .ind-tab {
+        margin-bottom: 10px;
+        width: 110px;
+    }
 }

@@ -1,35 +1,21 @@
 import $ from "jquery";
 
-import * as components from "./components";
 import {$t} from "./i18n";
+import * as settings_helper from "./settings_helper";
 import * as settings_panel_menu from "./settings_panel_menu";
 
-let toggler;
-
-export function goto(tab_name) {
-    if (toggler) {
-        toggler.goto(tab_name);
-    }
-}
-
 export function initialize() {
-    toggler = components.toggle({
-        child_wants_focus: true,
-        values: [
-            {label: $t({defaultMessage: "Personal"}), key: "settings"},
-            {label: $t({defaultMessage: "Organization"}), key: "organization"},
-        ],
-        callback(_name, key) {
-            if (key === "organization") {
-                settings_panel_menu.show_org_settings();
-            } else {
-                settings_panel_menu.show_normal_settings();
-            }
-        },
+    const toggler = settings_helper.create_toggler((_name, key) => {
+        if (key === "organization") {
+            settings_panel_menu.show_org_settings();
+        } else {
+            settings_panel_menu.show_normal_settings();
+        }
     });
 
-    settings_panel_menu.set_key_handlers(toggler);
+    settings_helper.set_toggler(toggler); // Set the toggler instance in settings_helper
 
+    settings_panel_menu.set_key_handlers(toggler);
     toggler.get().appendTo("#settings_overlay_container .tab-container");
 }
 
