@@ -5,6 +5,10 @@ $settings_sidebar_width: 255px;
 
 label {
     margin: 0;
+
+    &:not([for]) {
+        cursor: default;
+    }
 }
 
 label,
