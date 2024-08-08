@@ -4,6 +4,7 @@ import os
 import sys
 
 import django
+import markdown
 from django.template import engines
 from django.template.backends.jinja2 import Jinja2
 
@@ -16,6 +17,8 @@ setup_path()
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 django.setup()
+
+import zerver.lib.markdown.tabbed_sections
 
 
 def escape_curly_braces(markdown_string: str) -> str:
@@ -37,6 +40,24 @@ def fix_relative_path(markdown_string: str) -> str:
     return markdown_string.replace("help/", "help-beta/")
 
 
+def get_imports(markdown_string: str) -> str:
+    imports = ""
+    component_list = []
+
+    if "</Tabs>" in markdown_string:
+        component_list += ["Tabs", "TabItem"]
+
+    if "</Card>" in markdown_string:
+        component_list += ["Card"]
+
+    if component_list:
+        imports += """
+import {{{comma_seperated_components}}} from '@astrojs/starlight/components';
+""".format(comma_seperated_components=", ".join(component_list))
+
+    return imports
+
+
 def insert_frontmatter(markdown_string: str) -> str:
     """
     We use the heading in the first line for the
@@ -48,11 +69,25 @@ def insert_frontmatter(markdown_string: str) -> str:
     title = f"---\ntitle: {heading}\n---\n"
     # Remove the first line since starlight will display the
     # `title` as `H1` anyways.
-    return title + markdown_string.split("\n", 1)[-1]
+    return title + get_imports(markdown_string) + markdown_string.split("\n", 1)[-1]
+
+
+def transform_custom_syntax_to_astro_components(markdown_string: str) -> str:
+    md_engine = markdown.Markdown(
+        extensions=[zerver.lib.markdown.tabbed_sections.makeExtension(is_help_beta=True)]
+    )
+    md_engine.reset()
+
+    lines = markdown_string.split("\n")
+    for preprocessor in md_engine.preprocessors:
+        lines = preprocessor.run(lines)
+
+    return "\n".join(lines)
 
 
 def convert_string_to_mdx(markdown_string: str) -> str:
     result = escape_curly_braces(markdown_string)
+    result = transform_custom_syntax_to_astro_components(result)
     result = fix_relative_path(result)
     return insert_frontmatter(result)
 
