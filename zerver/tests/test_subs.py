@@ -2684,7 +2684,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=28,
+            query_count=24,
             cache_count=8,
             target_users=target_users,
             is_realm_admin=True,
@@ -2759,7 +2759,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=20,
+            query_count=19,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2773,7 +2773,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_remove_unsubbed_user_along_with_subbed(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=16,
             target_users=[self.example_user("cordelia"), self.example_user("iago")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2907,7 +2907,43 @@ class StreamAdminTest(ZulipTestCase):
                 "principals": orjson.dumps([99]).decode(),
             },
         )
-        self.assert_json_error(result, "No such user", status_code=400)
+        self.assert_json_error(result, "No such user with given id", status_code=400)
+
+    def test_user_unsubscribe_theirself(self) -> None:
+        """
+        User Trying to unsubscribe theirself from the stream.
+        where principals has the id of the acting_user performing the unsubscribe action.
+        """
+        admin = self.example_user("iago")
+        self.login_user(admin)
+        self.assertTrue(admin.is_realm_admin)
+
+        stream_name = "hümbüǵ"
+        self.make_stream(stream_name)
+        self.subscribe(admin, stream_name)
+
+        # unsubscring when subscribed.
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([stream_name]).decode(),
+                "principals": orjson.dumps([admin.id]).decode(),
+            },
+        )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 1)
+
+        # unsubscring after already being unsubscribed.
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([stream_name]).decode(),
+                "principals": orjson.dumps([admin.id]).decode(),
+            },
+        )
+
+        json = self.assert_json_success(result)
+        self.assert_length(json["not_removed"], 1)
 
 
 class DefaultStreamTest(ZulipTestCase):
@@ -4686,7 +4722,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(38),
+            self.assert_database_query_count(37),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5157,11 +5193,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         test_user_ids = [user.id for user in test_users]
 
-        # The only known O(N) behavior here is that we call
-        # principal_to_user_profile for each of our users, but it
-        # should be cached.
         with (
-            self.assert_database_query_count(21),
+            self.assert_database_query_count(16),
             self.assert_memcached_count(3),
             mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
         ):
@@ -5247,7 +5280,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invalid_principal]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(result, "No such user", status_code=400)
+        self.assert_json_error(result, "No such user with given email", status_code=400)
 
     def test_subscription_add_invalid_principal(self) -> None:
         invalid_principal = 999
@@ -5260,7 +5293,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invalid_principal]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(result, "No such user", status_code=400)
+        self.assert_json_error(result, "No such user with given id", status_code=400)
 
     def test_subscription_add_principal_other_realm(self) -> None:
         """
@@ -5277,7 +5310,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([principal]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(result, "No such user", status_code=400)
+        self.assert_json_error(result, "No such user with given id", status_code=400)
 
     def helper_check_subs_before_and_after_remove(
         self,
@@ -5517,7 +5550,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(38):
+        with self.assert_database_query_count(37):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5525,7 +5558,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(40):
+        with self.assert_database_query_count(39):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5537,7 +5570,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(49):
+        with self.assert_database_query_count(48):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -6015,7 +6048,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(46):
+        with self.assert_database_query_count(43):
             self.common_subscribe_to_streams(
                 self.user_profile,
                 streams,
