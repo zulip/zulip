@@ -147,6 +147,7 @@ export function is_in_focus(): boolean {
         !overlays.any_active() &&
         !modals.any_active_or_animating() &&
         !$(".home-page-input").is(":focus") &&
-        !$("#search_query").is(":focus")
+        !$("#search_query").is(":focus") &&
+        !$(".navbar-item:visible").is(":focus")
     );
 }
