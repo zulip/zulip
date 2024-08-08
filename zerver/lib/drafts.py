@@ -4,6 +4,7 @@ from functools import wraps
 from typing import Annotated, Any, Concatenate, Literal
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import BaseModel, ConfigDict
@@ -17,7 +18,7 @@ from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import RequiredStringConstraint
 from zerver.models import Draft, UserProfile
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 ParamT = ParamSpec("ParamT")
 
@@ -115,14 +116,15 @@ def do_create_drafts(drafts: list[DraftData], user_profile: UserProfile) -> list
             )
         )
 
-    created_draft_objects = Draft.objects.bulk_create(draft_objects)
+    with transaction.atomic(durable=True):
+        created_draft_objects = Draft.objects.bulk_create(draft_objects)
 
-    event = {
-        "type": "drafts",
-        "op": "add",
-        "drafts": [draft.to_dict() for draft in created_draft_objects],
-    }
-    send_event(user_profile.realm, event, [user_profile.id])
+        event = {
+            "type": "drafts",
+            "op": "add",
+            "drafts": [draft.to_dict() for draft in created_draft_objects],
+        }
+        send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     return created_draft_objects
 
