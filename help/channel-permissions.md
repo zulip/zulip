@@ -62,7 +62,7 @@ administrator can access private channel messages:
 
 <div class="centered_table"></div>
 |                       | Owners and admins | Moderators | Members   | Guests
-|---                    |---                |            |---        |---
+|---                    |---                |---         |---        |---
 | View channel name     | &#10004;          | &#10004;   | &#10004;  | &#9726;
 | Join                  | &#10004;          | &#10004;   | &#10004;  |
 | Unsubscribe           | &#9726;           | &#9726;    | &#9726;   | &#9726;
@@ -93,7 +93,7 @@ for details.
 
 <div class="centered_table"></div>
 |                       | Owners and admins | Moderators | Members   | Guests
-|---                    |---                |            |---        |---
+|---                    |---                |---         |---        |---
 | View channel name     | &#10004;          | &#9726;    | &#9726;   | &#9726;
 | Join                  |                   |            |           |
 | Unsubscribe           | &#9726;           | &#9726;    | &#9726;   | &#9726;
