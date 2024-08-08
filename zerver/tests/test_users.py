@@ -7,7 +7,6 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -65,6 +64,7 @@ from zerver.models import (
     PreregistrationUser,
     RealmAuditLog,
     RealmDomain,
+    RealmSession,
     RealmUserDefault,
     Recipient,
     ScheduledEmail,
@@ -1864,11 +1864,11 @@ class ActivateTest(ZulipTestCase):
 
         result = self.client_get("/json/users")
         self.assert_json_success(result)
-        self.assertEqual(Session.objects.filter(pk=session_key).count(), 1)
+        self.assertEqual(RealmSession.objects.filter(pk=session_key).count(), 1)
 
         with self.captureOnCommitCallbacks(execute=True):
             do_deactivate_user(user, acting_user=None)
-        self.assertEqual(Session.objects.filter(pk=session_key).count(), 0)
+        self.assertEqual(RealmSession.objects.filter(pk=session_key).count(), 0)
 
         result = self.client_get("/json/users")
         self.assert_json_error(

@@ -16,11 +16,11 @@ from zerver.lib.sessions import (
     delete_user_sessions,
     get_expirable_session_var,
     set_expirable_session_var,
-    user_sessions,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Realm, UserProfile
+from zerver.models import Realm, RealmSession, UserProfile
 from zerver.models.realms import get_realm
+from zerver.models.sessions import SessionStore
 
 
 class TestSessions(ZulipTestCase):
@@ -37,11 +37,79 @@ class TestSessions(ZulipTestCase):
         else:
             self.assertIn("_auth_user_id", self.client.session)
 
+    def test_sessionstore_create_model_instance(self) -> None:
+        sesssion_store = SessionStore()
+        session_data: dict[str, int | str] = {
+            "ip_address": "127.0.0.1",
+            "realm_id": 2,
+            "_auth_user_id": "1",
+        }
+
+        realm_session = sesssion_store.create_model_instance(data=session_data)
+
+        self.assertIsInstance(realm_session, RealmSession)
+        self.assertEqual(realm_session.user_id, int(session_data["_auth_user_id"]))
+        self.assertEqual(realm_session.realm_id, session_data["realm_id"])
+        self.assertEqual(realm_session.ip_address, session_data["ip_address"])
+
+    def test_user_session_ip_address(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.assertIn("_auth_user_id", self.client.session)
+
+        self.client_get("/")
+
+        # check if one session with the IP is created for that logged-in user
+        self.assertEqual(
+            RealmSession.objects.filter(user=user_profile, ip_address="127.0.0.1").count(), 1
+        )
+
+        # make a request with different IP
+        self.client_get("/", REMOTE_ADDR="127.0.0.2")
+
+        # check if IP address is updated in the session table
+        self.assertEqual(RealmSession.objects.get(user=user_profile).ip_address, "127.0.0.2")
+
+    def test_anonymous_session_ip_address(self) -> None:
+        # make anonymous request to home
+        self.client_get("/")
+
+        # check if one session with the IP is created for that anonymous user
+        self.assertEqual(RealmSession.objects.filter(user=None, ip_address="127.0.0.1").count(), 1)
+
+        # make a request with different IP
+        self.client_get("/", REMOTE_ADDR="127.0.0.2")
+
+        # check if IP address is updated in the session table
+        self.assertEqual(RealmSession.objects.get(user=None).ip_address, "127.0.0.2")
+
+    def test_session_realm(self) -> None:
+        # make anonymous request to home
+        self.client_get("/")
+        # check if one session with the correct realm is created for that anonymous user.
+        self.assertEqual(
+            RealmSession.objects.filter(realm=get_realm("zulip"), user=None).count(), 1
+        )
+
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.assertIn("_auth_user_id", self.client.session)
+        # check if one session with the correct realm is created for that logged-in user.
+        self.assertEqual(
+            RealmSession.objects.filter(realm=get_realm("zulip"), user=user_profile).count(), 1
+        )
+        # logout the user
+        self.client_post("/accounts/logout/")
+        # check if the user's session is deleted
+        self.assertEqual(
+            RealmSession.objects.filter(realm=get_realm("zulip"), user=user_profile).count(), 0
+        )
+
     def test_delete_session(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         self.assertIn("_auth_user_id", self.client.session)
-        for session in user_sessions(user_profile):
+        for session in RealmSession.objects.filter(user=user_profile):
             delete_session(session)
         result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
@@ -117,12 +185,7 @@ class TestSessions(ZulipTestCase):
         self.login_user(user_profile_3)
         self.assertIn("_auth_user_id", self.client.session)
         change_user_is_active(user_profile_3, False)
-        with self.assertLogs(level="INFO") as info_logs:
-            delete_all_deactivated_user_sessions()
-        self.assertEqual(
-            info_logs.output,
-            [f"INFO:root:Deactivating session for deactivated user {user_profile_3.id}"],
-        )
+        delete_all_deactivated_user_sessions()
         result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
         self.assertTrue('is_spectator":true' in str(result.content))

@@ -2185,7 +2185,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
 
 def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
-    ignored_tables = {"django_session"}
+    ignored_tables = {"django_session", "zerver_realmsession"}
 
     for model in all_models:
         table_name = model._meta.db_table

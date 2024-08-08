@@ -6,8 +6,8 @@ from typing_extensions import override
 
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.sessions import user_sessions
 from zerver.lib.users import get_active_bots_owned_by_user
+from zerver.models import RealmSession
 
 
 class Command(ZulipBaseCommand):
@@ -33,7 +33,7 @@ class Command(ZulipBaseCommand):
             f"Deactivating {user_profile.full_name} ({user_profile.delivery_email}) - {user_profile.realm.string_id}"
         )
         print(f"{user_profile.delivery_email} has the following active sessions:")
-        for session in user_sessions(user_profile):
+        for session in RealmSession.objects.filter(user=user_profile):
             print(session.expire_date, session.get_decoded())
         print()
         print(
