@@ -1,5 +1,6 @@
 from datetime import timedelta
 from operator import itemgetter
+from typing import Literal
 from unittest import mock
 
 import orjson
@@ -9,14 +10,16 @@ from zerver.actions.message_edit import get_mentions_for_message_updates
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import messages_for_ids
 from zerver.lib.message_cache import MessageDict
+from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, NamedUserGroup, Realm, UserProfile, UserTopic
+from zerver.models import Message, NamedUserGroup, Realm, Subscription, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import EditTopicPolicyEnum, WildcardMentionPolicyEnum, get_realm
 from zerver.models.streams import get_stream
@@ -1654,3 +1657,221 @@ class EditMessageTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
+
+    def check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+        self,
+        message_id: int,
+        sender_id: int,
+        stream_topic_target: StreamTopicTarget,
+        visibility_policy: Literal[
+            UserTopic.VisibilityPolicy.FOLLOWED, UserTopic.VisibilityPolicy.UNMUTED
+        ],
+        expected_follow_or_unmute_target_topic: bool | None = None,
+    ) -> None:
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "stream_id": stream_topic_target.stream_id,
+                "topic": stream_topic_target.topic_name,
+            },
+        )
+        self.assert_json_success(result)
+
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(visibility_policy)
+
+        if expected_follow_or_unmute_target_topic:
+            self.assertIn(sender_id, user_ids)
+        else:
+            self.assertNotIn(sender_id, user_ids)
+
+    def test_move_message_to_new_topic_with_automatic_follow_policy(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        shiva = self.example_user("shiva")
+
+        users = [iago, cordelia, hamlet, shiva]
+        stream = self.make_stream("new_stream")
+        original_topic = "original"
+        post_move = "post-move"
+
+        for user in users:
+            self.subscribe(user, stream.name)
+            do_change_user_setting(
+                user,
+                "automatically_follow_topics_policy",
+                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+                acting_user=None,
+            )
+
+        msg_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=stream.name,
+                topic_name=original_topic,
+                content=f"Message sent by {sender.full_name}",
+            )
+            for sender in users
+        ]
+
+        stream_topic_target_original = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=original_topic,
+        )
+
+        user_ids = stream_topic_target_original.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, {iago.id})
+
+        stream_topic_target_post_move = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=post_move,
+        )
+
+        # If the target topic has no message, then the visibility policy
+        # of the sender of first message being moved to the topic is set
+        # to FOLLOWED.
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[2],
+            hamlet.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            True,
+        )
+
+        # If the target topic already has messages in it, then the visibility
+        # policy of the sender of first message being moved to topic is only
+        # set if it is sent before the first preexisting message of target
+        # topic
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[3],
+            shiva.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            False,
+        )
+
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[1],
+            cordelia.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            True,
+        )
+
+        # If the message is moved to a topic in a new private stream with
+        # protected history, then visibility policy of sender is set to
+        # FOLLOWED only if it can be accessed by the sender.
+        private_stream = self.make_stream(
+            "private", invite_only=True, history_public_to_subscribers=False
+        )
+        self.subscribe(iago, private_stream.name)
+        self.subscribe(cordelia, private_stream.name)
+
+        stream_topic_target_post_move = StreamTopicTarget(
+            stream_id=private_stream.id,
+            topic_name=post_move,
+        )
+        user_ids = stream_topic_target_post_move.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, set())
+
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[2],
+            hamlet.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            False,
+        )
+
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[1],
+            cordelia.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            True,
+        )
+
+    def test_move_message_to_new_topic_with_automatic_unmute_policy(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        shiva = self.example_user("shiva")
+
+        users = [iago, cordelia, hamlet, shiva]
+        stream = self.make_stream("new_stream")
+        recipient = stream.recipient
+        original_topic = "original"
+        post_move = "post-move"
+
+        for user in users:
+            self.subscribe(user, stream.name)
+            do_change_user_setting(
+                user,
+                "automatically_unmute_topics_in_muted_streams_policy",
+                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+                acting_user=None,
+            )
+            subscription = Subscription.objects.get(recipient=recipient, user_profile=user)
+            subscription.is_muted = True
+            subscription.save()
+
+        msg_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=stream.name,
+                topic_name=original_topic,
+                content=f"Message sent by {sender.full_name}",
+            )
+            for sender in users
+        ]
+
+        stream_topic_target_original = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=original_topic,
+        )
+
+        user_ids = stream_topic_target_original.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assertEqual(user_ids, {iago.id})
+
+        stream_topic_target_post_move = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=post_move,
+        )
+
+        # If the target topic has no message, then the visibility policy
+        # of the sender of first message being moved to the topic is set
+        # to UNMUTED.
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[2],
+            hamlet.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.UNMUTED,
+            True,
+        )
+
+        # If the target topic already has messages in it, then the visibility
+        # policy of the sender of first message being moved to topic is only
+        # set if it is sent before the first preexisting message of target
+        # topic
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[3],
+            shiva.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.UNMUTED,
+            False,
+        )
+
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[1],
+            cordelia.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.UNMUTED,
+            True,
+        )

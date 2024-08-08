@@ -421,6 +421,41 @@ def get_visibility_policy_after_merge(
     return UserTopic.VisibilityPolicy.INHERIT
 
 
+def apply_automatic_unmute_follow_topics_policy(
+    user_profile: UserProfile,
+    target_stream: Stream,
+    target_topic_name: str,
+) -> None:
+    if (
+        user_profile.automatically_follow_topics_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
+    ):
+        bulk_do_set_user_topic_visibility_policy(
+            [user_profile],
+            target_stream,
+            target_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+    elif (
+        user_profile.automatically_unmute_topics_in_muted_streams_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
+    ):
+        subscription = Subscription.objects.filter(
+            recipient=target_stream.recipient,
+            user_profile=user_profile,
+            active=True,
+            is_user_active=True,
+        ).first()
+
+        if subscription is not None and subscription.is_muted:
+            bulk_do_set_user_topic_visibility_policy(
+                [user_profile],
+                target_stream,
+                target_topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+            )
+
+
 # This must be called already in a transaction, with a write lock on
 # the target_message.
 @transaction.atomic(savepoint=False)
@@ -1038,6 +1073,32 @@ def do_update_message(
                     target_topic_name,
                     visibility_policy=new_visibility_policy,
                 )
+
+    elif (topic_name is not None or new_stream is not None) and stream_being_edited is not None:
+        sender = target_message.sender
+        stream_for_new_topic: Stream = new_stream if new_stream is not None else stream_being_edited
+        assert stream_for_new_topic.recipient_id is not None
+
+        new_topic: str = topic_name if topic_name is not None else orig_topic_name
+        first_messages_in_target_topic = (
+            messages_for_topic(realm.id, stream_for_new_topic.recipient_id, new_topic)
+            .exclude(id__in=[*changed_message_ids])
+            .first()
+        )
+
+        is_target_message_first = False
+        # the target_message would be the first message in the moved topic
+        # either if the moved topic doesn't have any messages, or if the
+        # target_message is sent before the first message in the moved
+        # topic.
+        if (
+            first_messages_in_target_topic is None
+            or target_message.id < first_messages_in_target_topic.id
+        ):
+            is_target_message_first = True
+
+        if not sender.is_bot and sender not in users_losing_access and is_target_message_first:
+            apply_automatic_unmute_follow_topics_policy(sender, target_stream, target_topic_name)
 
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
