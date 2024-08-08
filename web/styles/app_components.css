@@ -1044,11 +1044,6 @@ div.overlay {
 .overlay-messages-container .overlay-message-row {
     padding: 5px 0;
 
-    > div {
-        display: inline-block;
-        vertical-align: top;
-    }
-
     .overlay-message-info-box {
         width: 100%;
         margin-bottom: 10px;

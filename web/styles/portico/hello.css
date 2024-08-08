@@ -197,7 +197,7 @@ ul {
         place-items: center;
     }
 
-    .client-logos div {
+    .client-logos-div {
         transition: all 0.7s ease-out;
         background-position: center;
     }
@@ -679,7 +679,7 @@ ul {
             background: hsl(238deg 28% 21%);
         }
 
-        .client-logos div {
+        .client-logos-div {
             opacity: 0.7;
         }
     }

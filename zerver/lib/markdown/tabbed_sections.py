@@ -33,7 +33,7 @@ NAV_LIST_ITEM_TEMPLATE = """
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
-<div data-tab-key="{data_tab_key}" markdown="1">
+<div class="tab-content" data-tab-key="{data_tab_key}" markdown="1">
 {content}
 </div>
 """.strip()

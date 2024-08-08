@@ -651,11 +651,6 @@
             overflow: hidden;
         }
 
-        .data-container div {
-            display: block;
-            border: none;
-        }
-
         .data-container::after {
             content: " ";
             position: absolute;

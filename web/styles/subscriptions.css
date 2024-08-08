@@ -533,12 +533,13 @@ h4.user_group_setting_subsection_title {
     padding: 15px 10px 11px;
     border-bottom: 1px solid hsl(0deg 0% 93%);
     cursor: pointer;
+    display: flex;
 
     .check {
         width: 25px;
         height: 25px;
         position: relative;
-        margin-right: 8px;
+        margin-right: 12px;
         margin-top: 9px;
         background-size: 60% auto;
         background-repeat: no-repeat;
@@ -584,7 +585,7 @@ h4.user_group_setting_subsection_title {
     .icon {
         width: 35px;
         height: 35px;
-        margin-right: 8px;
+        margin-right: 12px;
         margin-top: 4px;
         background-color: hsl(300deg 100% 25%);
         border-radius: 4px;
@@ -604,6 +605,7 @@ h4.user_group_setting_subsection_title {
     .sub-info-box,
     .group-info-box {
         width: calc(100% - 90px);
+        margin-right: 4px;
 
         .top-bar,
         .bottom-bar {
@@ -633,11 +635,6 @@ h4.user_group_setting_subsection_title {
             margin-right: 5px;
         }
 
-        .top-bar > div {
-            display: inline-block;
-            vertical-align: top;
-        }
-
         .top-bar .stream-name,
         .top-bar .group-name-wrapper {
             font-weight: 600;
@@ -647,20 +644,10 @@ h4.user_group_setting_subsection_title {
             margin-top: 2px;
             line-height: 1.5;
         }
-
-        .bottom-bar > div {
-            display: inline-block;
-            vertical-align: bottom;
-        }
     }
 
     &.active {
         background-color: hsl(0deg 0% 93%);
-    }
-
-    > div {
-        display: inline-block;
-        vertical-align: top;
     }
 
     .check:not(.checked, .disabled):hover svg,
