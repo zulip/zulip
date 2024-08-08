@@ -211,7 +211,7 @@
 /* These pill are similar to .not-editable, but are meant to show
    profile cards when clicked. */
 .panel_user_list > .pill-container,
-.stream_creator_details > .display_only_pill {
+.creator_details > .display_only_pill {
     background-color: hsl(0deg 0% 0% / 7%);
     gap: 2px;
     flex-wrap: nowrap;
@@ -245,7 +245,7 @@
     }
 }
 
-.stream_creator_details > .display_only_pill.inline_with_text_pill {
+.creator_details > .display_only_pill.inline_with_text_pill {
     padding: 0;
 
     > .pill {

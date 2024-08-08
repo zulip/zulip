@@ -17,6 +17,7 @@ from zerver.lib.exceptions import (
     PreviousSettingValueMismatchedError,
     SystemGroupRequiredError,
 )
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
 from zerver.models import (
     GroupGroupMembership,
@@ -49,6 +50,8 @@ class UserGroupDict(TypedDict):
     description: str
     members: list[int]
     direct_subgroup_ids: list[int]
+    creator_id: int | None
+    date_created: int | None
     is_system_group: bool
     can_mention_group: int | AnonymousSettingGroupDict
 
@@ -373,9 +376,22 @@ def user_groups_in_realm_serialized(realm: Realm) -> list[UserGroupDict]:
 
     group_dicts: dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
+        if user_group.creator is not None:
+            creator_id: int | None = user_group.creator.id
+        else:
+            creator_id = None
+
+        # This check is necessary to make mypy happy
+        date_created = (
+            datetime_to_timestamp(user_group.date_created)
+            if user_group.date_created is not None
+            else None
+        )
         group_dicts[user_group.id] = dict(
             id=user_group.id,
             name=user_group.name,
+            creator_id=creator_id,
+            date_created=date_created,
             description=user_group.description,
             members=[],
             direct_subgroup_ids=[],
