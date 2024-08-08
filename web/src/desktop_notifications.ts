@@ -91,9 +91,10 @@ export function permission_state(): string {
     return NotificationAPI.permission;
 }
 
-export function close_notification(message: Message): void {
+export function close_notification(message: Message | number): void {
+    const id = typeof message === "number" ? message : message.id;
     for (const [key, notice_mem_entry] of notice_memory) {
-        if (notice_mem_entry.message_id === message.id) {
+        if (notice_mem_entry.message_id === id) {
             notice_mem_entry.obj.close();
             notice_memory.delete(key);
         }
