@@ -19,7 +19,7 @@ export type DisplayRecipientUser = {
     email: string;
     full_name: string;
     id: number;
-    is_mirror_dummy: boolean;
+    is_mirror_dummy?: boolean;
     unknown_local_echo_user?: boolean;
 };
 

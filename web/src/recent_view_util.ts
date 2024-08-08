@@ -1,5 +1,3 @@
-import type {Message} from "./message_store";
-
 let is_view_visible = false;
 
 export function set_visible(value: boolean): void {
@@ -14,14 +12,25 @@ export function get_topic_key(stream_id: number, topic: string): string {
     return stream_id + ":" + topic.toLowerCase();
 }
 
-export function get_key_from_message(msg: Message): string {
-    if (msg.type === "private") {
+export function get_key_from_conversation_data(
+    data:
+        | {
+              type: "private";
+              to_user_ids: string;
+          }
+        | {
+              type: "stream";
+              stream_id: number;
+              topic: string;
+          },
+): string {
+    if (data.type === "private") {
         // The to_user_ids field on a direct message object is a
         // string containing the user IDs involved in the message in
         // sorted order.
-        return msg.to_user_ids;
+        return data.to_user_ids;
     }
 
     // For messages with type = "stream".
-    return get_topic_key(msg.stream_id, msg.topic);
+    return get_topic_key(data.stream_id, data.topic);
 }
