@@ -344,6 +344,10 @@ function do_hashchange_overlay(old_hash) {
     if (coming_from_overlay && base === old_base) {
         if (base === "channels") {
             // e.g. #channels/29/social/subscribers
+            if (section == "new") {
+                section = "subscribers";
+                right_side_tab = "new";
+            }
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
             stream_settings_ui.change_state(section, undefined, right_side_tab);
             return;
