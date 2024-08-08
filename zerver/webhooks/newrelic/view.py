@@ -112,8 +112,13 @@ def api_newrelic_webhook(
 
     # Handle new format
     else:
+        condition_names_list = payload.get("alertConditionNames").tame(check_list(check_string))
+        if condition_names_list:
+            condition_name_str = ",".join(condition_names_list)
+        else:
+            condition_name_str = "Unknow condition"
         info = {
-            "condition_name": payload.get("condition_name", "Unknown condition").tame(check_string),
+            "condition_name": condition_name_str,
             "details": payload.get("details", "No details.").tame(check_string),
             "incident_url": payload.get("issueUrl", "https://alerts.newrelic.com").tame(
                 check_string
