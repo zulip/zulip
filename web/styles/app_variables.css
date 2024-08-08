@@ -271,6 +271,9 @@
     --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
     --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
 
+    /* Right sidebar */
+    --right-sidebar-padding-right: 8px;
+
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
     --message-actions-popover-min-width: 230px;
