@@ -20,7 +20,7 @@ import type {FieldData, SelectFieldData} from "./settings_components";
 import * as settings_ui from "./settings_ui";
 import type {CustomProfileField} from "./state_data";
 import {current_user, realm} from "./state_data";
-import type {HTMLSelectOneElement, UserExternalAccountData} from "./types";
+import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
 import {place_caret_at_end} from "./ui_util";
 
@@ -772,20 +772,22 @@ function set_up_external_account_field(): void {
     });
 }
 
-export function get_external_account_link(field: UserExternalAccountData): string {
-    assert(field.field_data !== undefined);
-    const field_subtype = field.field_data.subtype;
+export function get_external_account_link(
+    field_data: settings_components.ExternalAccountFieldData,
+    value: string,
+): string {
+    const field_subtype = field_data.subtype;
     let field_url_pattern: string;
 
     if (field_subtype === "custom") {
-        assert(field.field_data.url_pattern !== undefined);
-        field_url_pattern = field.field_data.url_pattern;
+        assert(field_data.url_pattern !== undefined);
+        field_url_pattern = field_data.url_pattern;
     } else {
         const external_account = realm.realm_default_external_accounts[field_subtype];
         assert(external_account !== undefined);
         field_url_pattern = external_account.url_pattern;
     }
-    return field_url_pattern.replace("%(username)s", () => field.value);
+    return field_url_pattern.replace("%(username)s", () => value);
 }
 
 export function set_up(): void {

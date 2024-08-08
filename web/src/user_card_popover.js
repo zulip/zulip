@@ -229,7 +229,7 @@ function get_user_card_popover_data(
     // Filtering out only those profile fields that can be display in the popover and are not empty.
     const field_types = realm.custom_profile_field_types;
     const display_profile_fields = realm.custom_profile_fields
-        .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types))
+        .flatMap((f) => user_profile.get_custom_profile_field_data(user, f, field_types) ?? [])
         .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
     const user_id_string = user.user_id.toString();
