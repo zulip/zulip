@@ -215,8 +215,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         ## And this one isn't, and isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
-        # List data exports for organization (GET) or request one (POST)
-        "/export/realm",
         # Delete a data export.
         "/export/realm/{export_id}",
         # Manage default streams and default stream groups

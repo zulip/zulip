@@ -3728,8 +3728,9 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to the user who requested a [data export](/help/export-your-organization)
-                                when the status of the export changes.
+                                Event sent to the user who requested a public
+                                [data export](/help/export-your-organization)
+                                when the status of the data export changes.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3742,7 +3743,7 @@ paths:
                                   type: array
                                   description: |
                                     An array of dictionaries where each dictionary contains
-                                    data about a single organization export request.
+                                    details about a public data export of the organization.
                                   items:
                                     $ref: "#/components/schemas/RealmExport"
                               example:
@@ -12480,6 +12481,109 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /export/realm:
+    get:
+      operationId: get-realm-exports
+      summary: Get all public data exports
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Fetch all public [data exports](/help/export-your-organization)
+        of the organization.
+
+        **Changes**: New in Zulip 2.1.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      exports:
+                        type: array
+                        description: |
+                          An array of dictionaries where each dictionary contains
+                          details about a public data export of the organization.
+                        items:
+                          $ref: "#/components/schemas/RealmExport"
+                    example:
+                      {
+                        "exports":
+                          [
+                            {
+                              "acting_user_id": 11,
+                              "deleted_timestamp": null,
+                              "export_time": 1722243168.134179,
+                              "export_url": "http://example.zulipchat.com/user_avatars/exports/2/FprbwiF0c_sCN0O-rf-ryFtc/zulip-export-p6yuxc45.tar.gz",
+                              "id": 323,
+                              "failed_timestamp": null,
+                              "pending": false,
+                            },
+                          ],
+                        "msg": "",
+                        "result": "success",
+                      }
+    post:
+      operationId: export-realm
+      summary: Create a public data export
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Create a public [data export](/help/export-your-organization)
+        of the organization.
+
+        !!! warn ""
+
+            **Note**: If you're the administrator of a self-hosted installation,
+            you may be looking for the documentation on [server data export and
+            import][data-export] or [server backups][backups].
+
+        **Changes**: New in Zulip 2.1.
+
+        [data-export]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
+        [backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      id:
+                        type: integer
+                        description: |
+                          The ID of the public data export created.
+
+                          **Changes**: New in Zulip 7.0 (feature level 182).
+                    example: {"id": 1, "result": "success", "msg": ""}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Please request a manual export from zulip-admin@example.com.",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON error response for when the public data export
+                      exceeds the maximum allowed data export size.
   /invites:
     get:
       operationId: get-invites
@@ -20806,41 +20910,54 @@ components:
       type: object
       additionalProperties: false
       description: |
-        Object containing details about a realm export.
+        Object containing details about a
+        [data export](/help/export-your-organization).
       properties:
         id:
           type: integer
           description: |
-            The ID of the export.
+            The ID of the data export.
         acting_user_id:
           type: integer
           description: |
-            The ID of the user who did the export.
+            The ID of the user who created the data export.
         export_time:
           type: number
           description: |
-            The UNIX timestamp of when the export was made.
+            The UNIX timestamp of when the data export was started.
         deleted_timestamp:
           type: number
           nullable: true
           description: |
-            The timestamp of when the export was deleted.
-            If `null`, it wasn't deleted.
+            The UNIX timestamp of when the data export was deleted.
+
+            Will be `null` if the data export has not been deleted.
         failed_timestamp:
           type: number
           nullable: true
           description: |
-            The timestamp of when the export failed.
-            If `null`, it didn't fail.
+            The UNIX timestamp of when the data export failed.
+
+            Will be `null` if the data export succeeded, or if it's
+            still being generated.
         export_url:
           type: string
           nullable: true
           description: |
-            The URL of the export. `null` if there's no URL.
+            The URL to download the generated data export.
+
+            Will be `null` if the data export failed, or if it's
+            still being generated.
         pending:
           type: boolean
           description: |
-            Whether the export is pending or not.
+            Whether the data export is pending, which indicates it
+            is still being generated, or if it succeeded, failed or
+            was deleted before being generated.
+
+            Depending on the size of the organization, it can take
+            anywhere from seconds to an hour to generate the data
+            export.
     UserGroup:
       type: object
       additionalProperties: false
