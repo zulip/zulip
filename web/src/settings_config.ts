@@ -553,6 +553,9 @@ export const preferences_settings_labels = {
     ),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
+    realm_enter_sends: new Handlebars.SafeString(
+        $t_html({defaultMessage: "<kbd>Enter</kbd> sends when composing a message"}),
+    ),
     receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
@@ -617,7 +620,9 @@ export const realm_user_settings_defaults_labels = {
         defaultMessage: "Display availability to other users",
     }),
     realm_presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
-    realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),
+    realm_enter_send: new Handlebars.SafeString(
+        $t_html({defaultMessage: "<kbd>Enter</kbd> sends when composing a message"}),
+    ),
     realm_send_read_receipts: $t({defaultMessage: "Allow other users to view read receipts"}),
     realm_send_private_typing_notifications: $t({
         defaultMessage: "Let recipients see when a user is typing direct messages",

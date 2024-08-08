@@ -577,6 +577,16 @@ input[type="checkbox"] {
     }
 }
 
+#user_enter_sends_label kbd,
+#realm_enter_sends_label kbd {
+    opacity: 0.9;
+    font-size: 11px;
+    color: hsl(0deg 0% 50%);
+    position: relative;
+    bottom: 1px;
+    margin: 0 2px;
+}
+
 .edit-attachment-buttons {
     display: inline-block;
     vertical-align: middle;
