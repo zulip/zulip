@@ -10,6 +10,8 @@ export type SearchData = {
     has_stop_word: boolean;
     stream_query?: string;
     topic_query?: string;
+    query_words_shortened: QueryWord[];
+    size: number;
 };
 
 export type NarrowBannerData = {
