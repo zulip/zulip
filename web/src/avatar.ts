@@ -4,11 +4,11 @@ import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confi
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as upload_widget from "./upload_widget";
-import type {UploadFunction, UploadWidget} from "./upload_widget";
+import type {CropperOptions, UploadFunction, UploadWidget} from "./upload_widget";
 
 export function build_bot_create_widget(): UploadWidget {
     // We have to do strange gyrations with the file input to clear it,
@@ -22,16 +22,30 @@ export function build_bot_create_widget(): UploadWidget {
     const $input_error = $("#bot_avatar_file_input_error");
     const $clear_button = $("#bot_avatar_clear_button");
     const $upload_button = $("#bot_avatar_upload_button");
+    const $save_button = $("#bot_avatar_save_button");
+    const $scale_to_fit_button = $("#bot_avatar_scale_to_fit_button");
+    const $reset_scale_to_fit_button = $("#bot_avatar_reset_button");
     const $preview_text = $("#add_bot_preview_text");
     const $preview_image = $("#add_bot_preview_image");
+    const $other_elements_to_hide = $("#create_bot_form .hideable, .modal__footer");
+    const cropper_options: CropperOptions = {
+        aspectRatio: 1,
+        cropSquare: true,
+    };
+
     return upload_widget.build_widget(
         get_file_input,
         $file_name_field,
         $input_error,
         $clear_button,
         $upload_button,
+        $save_button,
+        $scale_to_fit_button,
+        $reset_scale_to_fit_button,
+        cropper_options,
         $preview_text,
         $preview_image,
+        $other_elements_to_hide,
     );
 }
 
@@ -42,10 +56,20 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
 
     const $file_name_field = $target.find(".edit_bot_avatar_file");
     const $input_error = $target.find(".edit_bot_avatar_error");
-    const $clear_button = $target.find(".edit_bot_avatar_clear_button");
+    const $clear_button = $("#edit_bot_avatar_clear_button");
     const $upload_button = $target.find(".edit_bot_avatar_upload_button");
-    const $preview_text = $target.find(".edit_bot_avatar_preview_text");
+    const $save_button = $("#edit_bot_avatar_save_button");
+    const $scale_to_fit_button = $("#edit_bot_avatar_scale_to_fit_button");
+    const $reset_scale_to_fit_button = $("#edit_bot_reset_button");
+    const $preview_text = $target.find("#edit_bot_avatar_preview_text");
     const $preview_image = $target.find(".edit_bot_avatar_preview_image");
+    const $other_elements_to_hide = $(
+        "#bot-edit-form .hideable, .deactivate_bot_button, .manage-profile-tab-footer, .modal__footer_wrapper, #tab-toggle, #reactivate-bot",
+    );
+    const cropper_options: CropperOptions = {
+        aspectRatio: 1,
+        cropSquare: true,
+    };
 
     return upload_widget.build_widget(
         get_file_input,
@@ -53,8 +77,13 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
         $input_error,
         $clear_button,
         $upload_button,
+        $save_button,
+        $scale_to_fit_button,
+        $reset_scale_to_fit_button,
+        cropper_options,
         $preview_text,
         $preview_image,
+        $other_elements_to_hide,
     );
 }
 
@@ -116,11 +145,18 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         });
     });
 
+    const cropper_options: CropperOptions = {
+        aspectRatio: 1,
+        cropSquare: true,
+    };
+
     upload_widget.build_direct_upload_widget(
         get_file_input,
         $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
         $("#user-avatar-upload-widget .image_upload_button").expectOne(),
         upload_function,
         realm.max_avatar_file_size_mib,
+        $t({defaultMessage: "New profile picture"}),
+        cropper_options,
     );
 }

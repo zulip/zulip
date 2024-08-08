@@ -52,6 +52,12 @@ importers:
       '@uppy/core':
         specifier: ^4.0.1
         version: 4.0.1
+      '@uppy/dashboard':
+        specifier: ^4.0.0
+        version: 4.0.1(@uppy/core@4.0.1)
+      '@uppy/image-editor':
+        specifier: ^3.0.0
+        version: 3.0.0(@uppy/core@4.0.1)
       '@uppy/progress-bar':
         specifier: ^4.0.0
         version: 4.0.0(@uppy/core@4.0.1)
@@ -2636,13 +2642,43 @@ packages:
   '@uppy/core@4.0.1':
     resolution: {integrity: sha512-qrWyjvGGrYWJKIrCwLiPrQPl1Pq+TWk+qA3sattxHm1qhqTUjeogkY1HK6wUOq9+kTJe9Fhxfk/mRmcNC5aJkA==}
 
+  '@uppy/dashboard@4.0.1':
+    resolution: {integrity: sha512-VODcGB6LnuA+GgN1tq48oqts1EcMRSuh4jy2MuytVJk3x1yvsbtE9L6ROX3AAs9r0WTnMYqqhjRk4oocFyenEQ==}
+    peerDependencies:
+      '@uppy/core': ^4.0.1
+
+  '@uppy/image-editor@3.0.0':
+    resolution: {integrity: sha512-lkpazJ3Mtl7pKXjLr7MRIxo27XZt+RBpZdpvc7GN0sg2Cx/VAQaZtgtM9Xc22FZVh5OQ2s2THoNrObnZhNxiNw==}
+    peerDependencies:
+      '@uppy/core': ^4.0.0
+
+  '@uppy/informer@4.0.0':
+    resolution: {integrity: sha512-xIiN7vJuBeOtzkPvECCXonGk7Z0hBktKSeq76/LZ2o7HYyDOhC2DdX8g0EBKM1i3TLTp93JVKERXCyuupLKETQ==}
+    peerDependencies:
+      '@uppy/core': ^4.0.0
+
   '@uppy/progress-bar@4.0.0':
     resolution: {integrity: sha512-hCUjlfGWHlvBPQDO5YBH/8HEr+3+ZEobTblBg0Wbn3ecJSiKkSRi0GkDVp3OMnwfqgK2wm8Ve+tR/5Gds7vE0A==}
     peerDependencies:
       '@uppy/core': ^4.0.0
 
+  '@uppy/provider-views@4.0.0':
+    resolution: {integrity: sha512-sFRPofSuPQ6pgECi0YR1Ml2eEhyIqaIGKwg8XjzhcfVT1POB5B/evQ/ocYJgZyZ2qb1TAKyzeBRbiSH+2C2Uaw==}
+    peerDependencies:
+      '@uppy/core': ^4.0.0
+
+  '@uppy/status-bar@4.0.0':
+    resolution: {integrity: sha512-r5b83zsuH1A9Gdx3MCS0EE5k+/K9AYP4JNO0EBSe956gGm76JOfvkNtedIe4Vv49lZVEB4QztzC1bbkHg5TOdw==}
+    peerDependencies:
+      '@uppy/core': ^4.0.0
+
   '@uppy/store-default@4.0.0':
     resolution: {integrity: sha512-iUB2C7+6NkXoCh8xp06pyn1xeMtQgRuX9F2ahhrXDwNsD6mwKa5wgsJSnnlmXLD6fKVkfne55dLMalJ1pSIr2Q==}
+
+  '@uppy/thumbnail-generator@4.0.0':
+    resolution: {integrity: sha512-nwgRO/LHLzUqzyB1TDl6g8LNmqtkswXpvRNcPij0gOrPTTWjGY6ULv+ywXYiF5baWF2aGS+K62jJSUGBWonx0w==}
+    peerDependencies:
+      '@uppy/core': ^4.0.0
 
   '@uppy/utils@6.0.0':
     resolution: {integrity: sha512-24mvEYlt189setvd0z8l3LJRxiq+W8UAZ3lCHRP1Qzq6rSdd/cVaTiIgV+0ZvNnZMmiEKeKdEcfFG3VeGvE3dg==}
@@ -3358,6 +3394,9 @@ packages:
   clamp@1.0.1:
     resolution: {integrity: sha512-kgMuFyE78OC6Dyu3Dy7vcx4uy97EIbVxJB/B0eJ3bUNAkwdNcxYzgKltnyADiYwsR7SEqkkUPsEUT//OVS6XMA==}
 
+  classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
+
   cldr-annotations-derived-modern@45.0.0:
     resolution: {integrity: sha512-IIgaQV6f9wx09TKfpx/o9A0qWcryoEPR3VkPwj+8Mwthkxtx0uQtYffBNTo7gDhBC1ADwKhOZbyi5eac6I56Tw==}
 
@@ -3636,6 +3675,9 @@ packages:
 
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
+
+  cropperjs@1.5.7:
+    resolution: {integrity: sha512-sGj+G/ofKh+f6A4BtXLJwtcKJgMUsXYVUubfTo9grERiDGXncttefmue/fyQFvn8wfdyoD1KhDRYLfjkJFl0yw==}
 
   cross-spawn@7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
@@ -4455,6 +4497,9 @@ packages:
   execa@8.0.1:
     resolution: {integrity: sha512-VyhnebXciFV2DESc+p6B+y0LjSm0krU4OgJN44qFAhBY0TJ+1V61tYD2+wHusZ6F9n5K+vl8k0sTy7PEfV4qpg==}
     engines: {node: '>=16.17'}
+
+  exifr@7.1.3:
+    resolution: {integrity: sha512-g/aje2noHivrRSLbAUtBPWFbxKdKhgj/xr1vATDdUXPOFYJlQ62Ft0oy+72V6XLIpDJfHs6gXLbBLAolqOXYRw==}
 
   expand-template@2.0.3:
     resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
@@ -6027,6 +6072,9 @@ packages:
     resolution: {integrity: sha512-bsYSSnirtYTWi1+OPMFb0M048evMKyUYe0EbtuGQgq6BVQM1g1W8/KIUJCCvjgI/El0j6Q4WsmMiBwLUBSw8LA==}
     engines: {node: '>= 4.0.0'}
 
+  memoize-one@6.0.0:
+    resolution: {integrity: sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==}
+
   memory-fs@0.2.0:
     resolution: {integrity: sha512-+y4mDxU4rvXXu5UDSGCGNiesFmwCHuefGMoPCO1WYucNYj7DsLqrFaa2fXVI0H+NNiPTwwzKwspn9yTZqUGqng==}
 
@@ -7326,7 +7374,6 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qs@6.11.0:
@@ -7755,6 +7802,9 @@ packages:
 
   shallow-copy@0.0.1:
     resolution: {integrity: sha512-b6i4ZpVuUxB9h5gfCxPiusKYkqTMOjEbBs4wMaFbkfia4yFv92UKZ6Df8WXcKbn08JNL/abvg3FnMAOfakDvUw==}
+
+  shallow-equal@3.1.0:
+    resolution: {integrity: sha512-pfVOw8QZIXpMbhBWvzBISicvToTiM5WBF1EeAUZDDSb5Dt29yl4AYbyywbJFSEsRUMr7gJaxqCdr4L3tQf9wVg==}
 
   sharp@0.32.6:
     resolution: {integrity: sha512-KyLTWwgcR9Oe4d9HwCwNM2l7+J0dUQwn/yf7S0EnTtb0eVS4RxO0eUSvxPtzT4F3SY+C4K6fqdv/DO27sJ/v/w==}
@@ -11643,13 +11693,65 @@ snapshots:
       nanoid: 5.0.7
       preact: 10.22.1
 
+  '@uppy/dashboard@4.0.1(@uppy/core@4.0.1)':
+    dependencies:
+      '@transloadit/prettier-bytes': 0.3.4
+      '@uppy/core': 4.0.1
+      '@uppy/informer': 4.0.0(@uppy/core@4.0.1)
+      '@uppy/provider-views': 4.0.0(@uppy/core@4.0.1)
+      '@uppy/status-bar': 4.0.0(@uppy/core@4.0.1)
+      '@uppy/thumbnail-generator': 4.0.0(@uppy/core@4.0.1)
+      '@uppy/utils': 6.0.0
+      classnames: 2.5.1
+      lodash: 4.17.21
+      memoize-one: 6.0.0
+      nanoid: 5.0.7
+      preact: 10.22.1
+      shallow-equal: 3.1.0
+
+  '@uppy/image-editor@3.0.0(@uppy/core@4.0.1)':
+    dependencies:
+      '@uppy/core': 4.0.1
+      '@uppy/utils': 6.0.0
+      cropperjs: 1.5.7
+      preact: 10.22.1
+
+  '@uppy/informer@4.0.0(@uppy/core@4.0.1)':
+    dependencies:
+      '@uppy/core': 4.0.1
+      '@uppy/utils': 6.0.0
+      preact: 10.22.1
+
   '@uppy/progress-bar@4.0.0(@uppy/core@4.0.1)':
     dependencies:
       '@uppy/core': 4.0.1
       '@uppy/utils': 6.0.0
       preact: 10.22.1
 
+  '@uppy/provider-views@4.0.0(@uppy/core@4.0.1)':
+    dependencies:
+      '@uppy/core': 4.0.1
+      '@uppy/utils': 6.0.0
+      classnames: 2.5.1
+      nanoid: 5.0.7
+      p-queue: 8.0.1
+      preact: 10.22.1
+
+  '@uppy/status-bar@4.0.0(@uppy/core@4.0.1)':
+    dependencies:
+      '@transloadit/prettier-bytes': 0.3.4
+      '@uppy/core': 4.0.1
+      '@uppy/utils': 6.0.0
+      classnames: 2.5.1
+      preact: 10.22.1
+
   '@uppy/store-default@4.0.0': {}
+
+  '@uppy/thumbnail-generator@4.0.0(@uppy/core@4.0.1)':
+    dependencies:
+      '@uppy/core': 4.0.1
+      '@uppy/utils': 6.0.0
+      exifr: 7.1.3
 
   '@uppy/utils@6.0.0':
     dependencies:
@@ -12578,6 +12680,8 @@ snapshots:
 
   clamp@1.0.1: {}
 
+  classnames@2.5.1: {}
+
   cldr-annotations-derived-modern@45.0.0: {}
 
   cldr-annotations-modern@45.0.0: {}
@@ -12860,6 +12964,8 @@ snapshots:
       '@emotion/utils': 0.11.3
 
   create-require@1.1.1: {}
+
+  cropperjs@1.5.7: {}
 
   cross-spawn@7.0.3:
     dependencies:
@@ -13831,6 +13937,8 @@ snapshots:
       onetime: 6.0.0
       signal-exit: 4.1.0
       strip-final-newline: 3.0.0
+
+  exifr@7.1.3: {}
 
   expand-template@2.0.3: {}
 
@@ -15809,6 +15917,8 @@ snapshots:
       '@jsonjoy.com/util': 1.2.0(tslib@2.6.3)
       tree-dump: 1.0.2(tslib@2.6.3)
       tslib: 2.6.3
+
+  memoize-one@6.0.0: {}
 
   memory-fs@0.2.0: {}
 
@@ -18019,6 +18129,8 @@ snapshots:
       kind-of: 6.0.3
 
   shallow-copy@0.0.1: {}
+
+  shallow-equal@3.1.0: {}
 
   sharp@0.32.6:
     dependencies:
