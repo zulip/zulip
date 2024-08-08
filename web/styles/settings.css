@@ -737,6 +737,10 @@ input[type="checkbox"] {
 .settings-profile-user-field {
     margin-top: 5px;
     max-width: fit-content;
+
+    > .settings_url_input {
+        margin-bottom: 0;
+    }
 }
 
 .control-label-disabled {
@@ -1625,6 +1629,10 @@ $option_title_width: 180px;
         .datepicker {
             cursor: default;
         }
+
+        & input[disabled].datepicker {
+            cursor: not-allowed;
+        }
     }
 
     #show_my_user_profile_modal {
@@ -2086,6 +2094,11 @@ $option_title_width: 180px;
     .disabled_label {
         cursor: default;
         opacity: 0.7;
+    }
+
+    /* Needed for settings_checkbox partial. */
+    .inline {
+        display: inline;
     }
 }
 
