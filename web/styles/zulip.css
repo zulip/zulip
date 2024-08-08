@@ -151,6 +151,10 @@ p.n-margin {
     display: none;
 }
 
+.column-align-middle.fluid_layout_width { 
+    margin-left: calc(var(--left-sidebar-width) - (10 * var(--left-sidebar-collapse-widget-gutter)));
+}
+
 .alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
