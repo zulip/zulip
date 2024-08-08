@@ -25,6 +25,16 @@ import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
 import * as util from "./util";
 
+// Inject CSS rule to reduce size of emojis
+const style = document.createElement('style');
+style.innerHTML = `
+    .emoji {
+        width: 20px;
+        height: 20px;
+    }
+`;
+document.head.appendChild(style);
+
 const meta = {
     loaded: false,
 };
