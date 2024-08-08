@@ -132,6 +132,7 @@
            typeahead lines, e.g., between the channel
            name and its description. */
         gap: 0.25ch;
+        font-weight: 500;
     }
 
     .active {
