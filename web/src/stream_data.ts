@@ -82,14 +82,14 @@ class BinaryDict<T> {
         yield* this.falses.values();
     }
 
-    get(k: number): T {
+    get(k: number): T | undefined {
         const res = this.trues.get(k);
 
         if (res !== undefined) {
             return res;
         }
 
-        return this.falses.get(k)!;
+        return this.falses.get(k);
     }
 
     set(k: number, v: T): void {
