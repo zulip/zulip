@@ -444,7 +444,12 @@ export function show(raw_terms, opts) {
                     );
 
                     if (adjusted_terms === null) {
-                        blueslip.error("adjusted_terms impossibly null");
+                        // If the stream was deleted, there will be no change in
+                        // terms. We cannot narrow to the message in this case.
+                        // User likely starred the message and the message's
+                        // stream got deleted. When user clicks on the message
+                        // we reach here. Returning will keep user narrowed to
+                        // the starred messages which what we want here.
                         return;
                     }
 
