@@ -609,6 +609,22 @@ export function process_visible(): void {
     }
 }
 
+function process_selected_message(): void {
+    if (
+        viewport_is_visible_and_focused() &&
+        message_lists.current !== undefined &&
+        message_lists.current.selected_id() !== -1
+    ) {
+        const selected_message = message_lists.current.selected_message();
+        if (
+            unread.message_unread(selected_message) &&
+            message_lists.current.can_mark_messages_read()
+        ) {
+            message_lists.current.select_id(selected_message.id);
+        }
+    }
+}
+
 export function mark_stream_as_read(stream_id: number): void {
     const stream_name = stream_data.get_stream_name_from_id(stream_id);
     bulk_update_read_flags_for_narrow(
@@ -675,6 +691,11 @@ export function initialize(): void {
             // Update many places on the DOM to reflect unread
             // counts.
             process_visible();
+
+            // Check selected message after process_visible
+            // in case the bottom of the message feed isn't
+            // visible.
+            process_selected_message();
         })
         .on("blur", () => {
             window_focused = false;
