@@ -732,6 +732,7 @@ export function dispatch_normal_event(event) {
                 "send_private_typing_notifications",
                 "send_read_receipts",
                 "web_navigate_to_sent_message",
+                "web_suggest_update_timezone",
             ];
 
             const original_home_view = user_settings.web_home_view;
