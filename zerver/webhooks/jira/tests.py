@@ -219,24 +219,24 @@ Adding a comment. Oh, what a comment it is!
 
     def test_comment_event_comment_created(self) -> None:
         expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
-        expected_message = """Hemanth V. Alluri commented on issue: *"Add support for newer format Jira issue comment events"*\n``` quote\nSounds like it’s pretty important. I’ll get this fixed ASAP!\n```"""
+        expected_message = """Hemanth V. Alluri commented on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\nSounds like it’s pretty important. I’ll get this fixed ASAP!\n```"""
         self.check_webhook("comment_created", expected_topic_name, expected_message)
 
     def test_comment_event_comment_created_no_issue_details(self) -> None:
         expected_topic_name = "10000: Upgrade Jira to get the issue title here."
-        expected_message = """Hemanth V. Alluri commented on issue: *"Upgrade Jira to get the issue title here."*\n``` quote\nSounds like it’s pretty important. I’ll get this fixed ASAP!\n```"""
+        expected_message = """Hemanth V. Alluri commented on 10000: Upgrade Jira to get the issue title here.\n``` quote\nSounds like it’s pretty important. I’ll get this fixed ASAP!\n```"""
         self.check_webhook(
             "comment_created_no_issue_details", expected_topic_name, expected_message
         )
 
     def test_comment_event_comment_edited(self) -> None:
         expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
-        expected_message = """Hemanth V. Alluri updated their comment on issue: *"Add support for newer format Jira issue comment events"*\n``` quote\nThis is a very important issue! I’m on it!\n```"""
+        expected_message = """Hemanth V. Alluri updated their comment on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\nThis is a very important issue! I’m on it!\n```"""
         self.check_webhook("comment_updated", expected_topic_name, expected_message)
 
     def test_comment_event_comment_deleted(self) -> None:
         expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
-        expected_message = """Hemanth V. Alluri deleted their comment on issue: *"Add support for newer format Jira issue comment events"*\n``` quote\n~~This is a very important issue! I’m on it!~~\n```"""
+        expected_message = """Hemanth V. Alluri deleted their comment on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\n~~This is a very important issue! I’m on it!~~\n```"""
         self.check_webhook("comment_deleted", expected_topic_name, expected_message)
 
     def test_anomalous_webhook_payload_error(self) -> None:
