@@ -9780,12 +9780,16 @@ paths:
                       subscribed:
                         type: object
                         description: |
-                          A dictionary where the key is the Zulip API email address of the user/bot
+                          A dictionary where the key is the id of the user/bot
                           and the value is a list of the names of the channels that were subscribed
                           to as a result of the query.
+
+                          **Changes**: Before Zulip 10.0 (feature level 281), the
+                          key of the dictionary is the Zulip API email address of the user/bot.
+
                         additionalProperties:
                           description: |
-                            `{email_address}`: List of the names of the channels that were subscribed
+                            `{id}`: List of the names of the channels that were subscribed
                             to as a result of the query.
                           type: array
                           items:
@@ -9793,12 +9797,16 @@ paths:
                       already_subscribed:
                         type: object
                         description: |
-                          A dictionary where the key is the Zulip API email address of the user/bot
+                          A dictionary where the key is the id of the user/bot
                           and the value is a list of the names of the channels that the user/bot is
                           already subscribed to.
+
+                          **Changes**: Before Zulip 10.0 (feature level 281), the
+                          key of the dictionary is the Zulip API email address of the user/bot.
+
                         additionalProperties:
                           description: |
-                            `{email_address}`: List of the names of the channels that the user is
+                            `{id}`: List of the names of the channels that the user is
                             already subscribed to.
                           type: array
                           items:
@@ -9812,11 +9820,10 @@ paths:
                           authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
                     example:
                       {
-                        "already_subscribed":
-                          {"iago@zulip.com": ["testing-help"]},
+                        "already_subscribed": {"1": ["testing-help"]},
                         "msg": "",
                         "result": "success",
-                        "subscribed": {"newbie@zulip.com": ["testing-help"]},
+                        "subscribed": {"2": ["testing-help"]},
                       }
         "400":
           description: Bad request.

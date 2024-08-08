@@ -129,7 +129,7 @@ def add_subscriptions(client: Client) -> None:
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
-    assert "newbie@zulip.com" in result["subscribed"]
+    assert str(user_id) in result["subscribed"]
 
 
 def test_add_subscriptions_already_subscribed(client: Client) -> None:
