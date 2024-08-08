@@ -267,7 +267,10 @@ def zcommand_backend(
 
 @has_request_variables
 def render_message_backend(
-    request: HttpRequest, user_profile: UserProfile, content: str = REQ()
+    request: HttpRequest,
+    user_profile: UserProfile,
+    content: str = REQ("content"),
+    default_code_block_language: str = REQ("default_code_block_language", default=""),
 ) -> HttpResponse:
     message = Message()
     message.sender = user_profile
@@ -277,5 +280,10 @@ def render_message_backend(
     assert client is not None
     message.sending_client = client
 
-    rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
+    rendering_result = render_message_markdown(
+        message,
+        content,
+        realm=user_profile.realm,
+        default_code_block_language=default_code_block_language,
+    )
     return json_success(request, data={"rendered": rendering_result.rendered_content})

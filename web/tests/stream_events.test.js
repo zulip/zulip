@@ -270,6 +270,12 @@ test("update_property", ({override}) => {
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, 3);
     }
+
+    // Test default_code_block_language change event
+    {
+        stream_events.update_property(stream_id, "default_code_block_language", "javascript");
+        assert.equal(sub.default_code_block_language, "javascript");
+    }
 });
 
 test("marked_unsubscribed (code coverage)", () => {

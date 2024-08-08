@@ -13,9 +13,10 @@ import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as pygments_data from "./pygments_data";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
@@ -87,6 +88,7 @@ export function get_active_data() {
 }
 
 export let new_stream_can_remove_subscribers_group_widget = null;
+export let new_stream_default_code_block_language_widget = null;
 
 export function dropdown_setup() {
     new_stream_can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
@@ -110,6 +112,36 @@ export function dropdown_setup() {
         default_text: $t({defaultMessage: "No user groups"}),
         default_id: user_groups.get_user_group_from_name("role:administrators").id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
+    });
+    new_stream_default_code_block_language_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "new_stream_default_code_block_language",
+        get_options() {
+            const options = Object.keys(pygments_data.langs).map((x) => ({
+                name: x,
+                unique_id: x,
+            }));
+
+            const disabled_option = {
+                is_setting_disabled: true,
+                unique_id: "",
+                name: $t({defaultMessage: "No language set"}),
+            };
+
+            options.unshift(disabled_option);
+            return options;
+        },
+        $events_container: $("#subscription_overlay"),
+        default_id: realm.realm_default_code_block_language,
+        unique_id_type: dropdown_widget.DataTypes.STRING,
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            new_stream_default_code_block_language_widget.render();
+        },
     });
 }
 
