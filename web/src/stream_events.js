@@ -92,6 +92,9 @@ export function update_property(stream_id, property, value, other_values) {
             update_stream_setting(sub, value, property);
             stream_list.refresh_pinned_or_unpinned_stream(sub);
             break;
+        case "can_access_stream_topics_group":
+            stream_settings_ui.update_can_access_stream_topics_group_id(sub, value);
+            break;
         case "invite_only":
             stream_settings_ui.update_stream_privacy(sub, {
                 invite_only: value,

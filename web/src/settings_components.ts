@@ -481,6 +481,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_create_web_public_channel_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
+    ["can_access_stream_topics_group", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -840,6 +841,7 @@ export function check_stream_settings_property_changed(
     let proposed_val;
     switch (property_name) {
         case "can_remove_subscribers_group":
+        case "can_access_stream_topics_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "message_retention_days":

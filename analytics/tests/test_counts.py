@@ -108,6 +108,11 @@ class AnalyticsTestCase(ZulipTestCase):
             realm=self.default_realm,
             is_system_group=True,
         )
+        self.everyone_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE,
+            realm=self.default_realm,
+            is_system_group=True,
+        )
 
         # used to generate unique names in self.create_*
         self.name_counter = 100
@@ -166,6 +171,7 @@ class AnalyticsTestCase(ZulipTestCase):
             "realm": self.default_realm,
             "date_created": self.TIME_LAST_HOUR,
             "can_remove_subscribers_group": self.administrators_user_group,
+            "can_access_stream_topics_group": self.everyone_user_group,
         }
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)

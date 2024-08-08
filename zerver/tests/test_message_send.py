@@ -30,7 +30,10 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_post_policy
+from zerver.actions.streams import (
+    do_change_stream_group_based_setting,
+    do_change_stream_post_policy,
+)
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
@@ -2362,6 +2365,127 @@ class StreamMessagesTest(ZulipTestCase):
         )
         self.assertEqual(recent_conversation["max_message_id"], message2_id)
 
+    def test_send_message_in_support_stream(self) -> None:
+        """
+        In the support stream, users not in `can_access_stream_topics_group` are not allowed to send messages in topics created by someone else.
+        """
+        admin_profile = self.example_user("iago")
+        moderator_profile = self.example_user("shiva")
+        first_normal_profile = self.example_user("hamlet")
+        second_normal_profile = self.example_user("othello")
+
+        self.make_stream("support_channel", realm=admin_profile.realm)
+
+        moderators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=admin_profile.realm, is_system_group=True
+        )
+        stream = get_stream("support_channel", admin_profile.realm)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_access_stream_topics_group",
+            moderators_user_group,
+            acting_user=admin_profile,
+        )
+
+        internal_send_stream_message(
+            admin_profile, stream, "Topic created by admin", "Test message by admin user"
+        )
+
+        self.assertEqual(self.get_last_message().content, "Test message by admin user")
+
+        internal_send_stream_message(
+            moderator_profile, stream, "Topic created by admin", "Test message by moderator user"
+        )
+
+        self.assertEqual(self.get_last_message().content, "Test message by moderator user")
+
+        moderator_owned_bot = self.create_test_bot(
+            short_name="modbot",
+            full_name="moderatorbot",
+            user_profile=moderator_profile,
+        )
+
+        internal_send_stream_message(
+            moderator_owned_bot,
+            stream,
+            "Topic created by admin",
+            "Test message by moderator owned bot",
+        )
+
+        self.assertEqual(self.get_last_message().content, "Test message by moderator owned bot")
+
+        # First normal user can't send message in topic created by admin user.
+        with self.assertLogs(level="ERROR") as m:
+            internal_send_stream_message(
+                first_normal_profile,
+                stream,
+                "Topic created by admin",
+                "Test message by normal user",
+            )
+
+        self.assertEqual(
+            m.output[0].split("\n")[0],
+            "ERROR:root:Error queueing internal message by {}: {}".format(
+                "hamlet@zulip.com",
+                "This topic already exists. You are only permitted to send messages in topics created by you.",
+            ),
+        )
+
+        normal_user_owned_bot = self.create_test_bot(
+            short_name="normalbot",
+            full_name="normaluserbot",
+            user_profile=first_normal_profile,
+        )
+
+        # Bot owned by a normal user can't send message in topic created by admin user.
+        with self.assertLogs(level="ERROR") as m:
+            internal_send_stream_message(
+                normal_user_owned_bot,
+                stream,
+                "Topic created by admin",
+                "Test message by normal user owned bot",
+            )
+
+        self.assertEqual(
+            m.output[0].split("\n")[0],
+            "ERROR:root:Error queueing internal message by {}: {}".format(
+                "normalbot-bot@zulip.testserver",
+                "This topic already exists. You are only permitted to send messages in topics created by you.",
+            ),
+        )
+
+        internal_send_stream_message(
+            first_normal_profile,
+            stream,
+            "Topic created by normal user",
+            "Test message by normal user",
+        )
+
+        self.assertEqual(self.get_last_message().content, "Test message by normal user")
+
+        internal_send_stream_message(
+            admin_profile, stream, "Topic created by normal user", "Test message by admin user"
+        )
+
+        self.assertEqual(self.get_last_message().content, "Test message by admin user")
+
+        # Second normal user can't send message in topic created by first normal user.
+        with self.assertLogs(level="ERROR") as m:
+            internal_send_stream_message(
+                second_normal_profile,
+                stream,
+                "Topic created by normal user",
+                "Test message by another normal user",
+            )
+
+        self.assertEqual(
+            m.output[0].split("\n")[0],
+            "ERROR:root:Error queueing internal message by {}: {}".format(
+                "othello@zulip.com",
+                "This topic already exists. You are only permitted to send messages in topics created by you.",
+            ),
+        )
+
 
 class PersonalMessageSendTest(ZulipTestCase):
     def test_personal_to_self(self) -> None:
@@ -3325,4 +3449,37 @@ class CheckMessageTest(ZulipTestCase):
         do_set_realm_property(realm, "mandatory_topics", False, acting_user=None)
         realm.refresh_from_db()
         ret = check_message(sender, client, addressee, message_content, realm)
+        self.assertEqual(ret.message.sender.id, sender.id)
+
+    def test_check_message_support_stream(self) -> None:
+        client = make_client(name="test suite")
+
+        admin_user = self.example_user("iago")
+        sender = self.example_user("hamlet")
+
+        stream_name = "support_channel"
+
+        self.make_stream(stream_name, realm=admin_user.realm)
+
+        moderators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=admin_user.realm, is_system_group=True
+        )
+        stream = get_stream(stream_name, admin_user.realm)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_access_stream_topics_group",
+            moderators_user_group,
+            acting_user=admin_user,
+        )
+
+        topic_name = "query"
+        message_content = "I have a problem"
+
+        internal_send_stream_message(sender, stream, topic_name, message_content)
+
+        self.assertEqual(self.get_last_message().content, message_content)
+
+        addressee = Addressee.for_stream_name(stream_name, topic_name)
+        message_content = "Can anyone help me"
+        ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret.message.sender.id, sender.id)
