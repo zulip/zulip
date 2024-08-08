@@ -7,6 +7,10 @@ $user_status_emoji_width: 24px;
     }
 }
 
+.right-sidebar-items {
+    padding-right: var(--right-sidebar-padding-right);
+}
+
 .right-sidebar-title {
     color: var(--color-text-sidebar-heading);
     font-size: inherit;
@@ -319,11 +323,10 @@ $user_status_emoji_width: 24px;
 
 #userlist-header {
     cursor: pointer;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
+    grid-template-columns: minmax(0, 1fr) 20px;
     align-items: center;
-    margin-right: 10px;
 
     #userlist-title {
         margin: 0;
@@ -331,7 +334,7 @@ $user_status_emoji_width: 24px;
 
     #user_filter_icon {
         opacity: 0.5;
-        margin-right: 5px;
+        justify-self: center;
 
         &:hover {
             opacity: 1;
@@ -361,12 +364,11 @@ $user_status_emoji_width: 24px;
     white-space: nowrap;
     margin-bottom: 10px;
 
-    & input {
+    & .user-list-filter {
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
-        padding-right: 20px;
-        width: calc(100% - 40px - 3px);
+        width: var(100% - var(--right-sidebar-padding-right));
     }
 
     .clear_search_button {
