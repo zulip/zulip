@@ -4,7 +4,7 @@
   "created": 1010000001,
   "currency": "usd",
   "default_currency": "usd",
-  "default_source": "src_NORMALIZED00000000000001",
+  "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,

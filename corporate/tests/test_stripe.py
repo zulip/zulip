@@ -2665,31 +2665,38 @@ class StripeTest(StripeTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "http://zulip.testserver/sponsorship")
 
+        stripe_customer_id = "cus_123"
         # Avoid contacting stripe as we only want to check redirects here.
         with patch(
             "corporate.lib.stripe.customer_has_credit_card_as_default_payment_method",
             return_value=False,
         ):
-            user.realm.plan_type = Realm.PLAN_TYPE_LIMITED
-            user.realm.save()
-            customer = Customer.objects.create(realm=user.realm, stripe_customer_id="cus_123")
-            response = self.client_get("/upgrade/")
-            self.assertEqual(response.status_code, 200)
+            with patch(
+                "stripe.Customer.retrieve",
+                return_value=Mock(id=stripe_customer_id, email="test@zulip.com"),
+            ):
+                user.realm.plan_type = Realm.PLAN_TYPE_LIMITED
+                user.realm.save()
+                customer = Customer.objects.create(
+                    realm=user.realm, stripe_customer_id=stripe_customer_id
+                )
+                response = self.client_get("/upgrade/")
+                self.assertEqual(response.status_code, 200)
 
-            CustomerPlan.objects.create(
-                customer=customer,
-                billing_cycle_anchor=timezone_now(),
-                billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-                tier=CustomerPlan.TIER_CLOUD_STANDARD,
-            )
-            response = self.client_get("/upgrade/")
-            self.assertEqual(response.status_code, 302)
-            self.assertEqual(response["Location"], "http://zulip.testserver/billing")
-
-            with self.settings(CLOUD_FREE_TRIAL_DAYS=30):
+                CustomerPlan.objects.create(
+                    customer=customer,
+                    billing_cycle_anchor=timezone_now(),
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                )
                 response = self.client_get("/upgrade/")
                 self.assertEqual(response.status_code, 302)
                 self.assertEqual(response["Location"], "http://zulip.testserver/billing")
+
+                with self.settings(CLOUD_FREE_TRIAL_DAYS=30):
+                    response = self.client_get("/upgrade/")
+                    self.assertEqual(response.status_code, 302)
+                    self.assertEqual(response["Location"], "http://zulip.testserver/billing")
 
     def test_get_latest_seat_count(self) -> None:
         realm = get_realm("zulip")
