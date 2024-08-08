@@ -402,7 +402,11 @@ export function render_left_panel_superset() {
     scroll_util.get_content_element($("#channels_overlay_container .streams-list")).html(html);
 }
 
-export function update_empty_left_panel_message() {
+export function update_empty_left_panel_message(
+    hidden_ids = new Set(),
+    all_stream_ids = [],
+    left_panel_params = {},
+) {
     // Check if we have any streams in panel to decide whether to
     // display a notice.
     let has_streams;
@@ -419,6 +423,13 @@ export function update_empty_left_panel_message() {
             $("#channels_overlay_container .stream-row:not(.notdisplayed)").length;
     } else {
         has_streams = stream_data.get_unsorted_subs().length;
+    }
+    // Show "no channels match" text if all channels are hidden and there's a search query.
+    if (hidden_ids.size === all_stream_ids.length && left_panel_params.input) {
+        $(".no-streams-to-show").children().hide();
+        $(".no_stream_match_filter_empty_text").show();
+        $(".no-streams-to-show").show();
+        return;
     }
     if (has_streams) {
         $(".no-streams-to-show").hide();
@@ -486,7 +497,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
             .get_content_element($("#channels_overlay_container .streams-list"))
             .append(widgets.get(stream_id));
     }
-    update_empty_left_panel_message();
+    update_empty_left_panel_message(hidden_ids, all_stream_ids, left_panel_params);
 
     // return this for test convenience
     return [...buckets.name, ...buckets.desc];
