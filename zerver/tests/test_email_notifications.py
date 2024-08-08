@@ -461,7 +461,12 @@ class TestFollowupEmails(ZulipTestCase):
             "zerver/emails/account_registered",
         )
 
-    def test_followup_emails_for_regular_realms(self) -> None:
+    def test_emails_for_new_organization_with_existing_account(self) -> None:
+        # The initial account registered email is sent, and its content is for
+        # creating a new organization. Neither of the additional onboarding
+        # emails are scheduled because the user has a user account with the same
+        # email in another realm and that other realm has the same organization
+        # type as the new realm.
         cordelia = self.example_user("cordelia")
         send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
         enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
@@ -469,61 +474,48 @@ class TestFollowupEmails(ZulipTestCase):
             "scheduled_timestamp"
         )
         assert scheduled_emails is not None
-        self.assert_length(scheduled_emails, 3)
+        self.assert_length(scheduled_emails, 1)
         self.assertEqual(
             orjson.loads(scheduled_emails[0].data)["template_prefix"],
             "zerver/emails/account_registered",
         )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"],
-            "zerver/emails/onboarding_zulip_guide",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[2].data)["template_prefix"],
-            "zerver/emails/onboarding_team_to_zulip",
-        )
 
         deliver_scheduled_emails(scheduled_emails[0])
-        from django.core.mail import outbox
 
-        self.assert_length(outbox, 1)
-
-        message = outbox[0]
+        self.assert_length(mail.outbox, 1)
+        message = mail.outbox[0]
         self.assertIn("you have created a new Zulip organization", message.body)
         self.assertNotIn("demo org", message.body)
 
-    def test_followup_emails_for_demo_realms(self) -> None:
+    def test_emails_for_new_demo_organization_with_existing_account(self) -> None:
+        # The initial account registered email is sent, and its content is for
+        # creating a new demo organization. Neither of the additional onboarding
+        # emails are scheduled because the user has a user account with the same
+        # email in another realm and that other realm has the same organization
+        # type as the new realm.
         cordelia = self.example_user("cordelia")
         cordelia.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(
             days=30
         )
         cordelia.realm.save()
         send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
+
         enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
             "scheduled_timestamp"
         )
         assert scheduled_emails is not None
-        self.assert_length(scheduled_emails, 3)
+
+        self.assert_length(scheduled_emails, 1)
         self.assertEqual(
             orjson.loads(scheduled_emails[0].data)["template_prefix"],
             "zerver/emails/account_registered",
         )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"],
-            "zerver/emails/onboarding_zulip_guide",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[2].data)["template_prefix"],
-            "zerver/emails/onboarding_team_to_zulip",
-        )
 
         deliver_scheduled_emails(scheduled_emails[0])
-        from django.core.mail import outbox
 
-        self.assert_length(outbox, 1)
-
-        message = outbox[0]
+        self.assert_length(mail.outbox, 1)
+        message = mail.outbox[0]
         self.assertIn("you have created a new demo Zulip organization", message.body)
 
     def test_onboarding_zulip_guide_with_invalid_org_type(self) -> None:
