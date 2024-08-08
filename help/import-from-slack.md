@@ -154,8 +154,8 @@ in mind about the import process:
 | Multi Channel Guest     | Guest         |
 | Channel creator         | none          |
 
-- Slack threads are imported as topics with names like "2023-05-30
-  Slack thread 1".
+- Slack threads are imported as topics with names that include snippets of the
+  original message, such as "2023-05-30 Hi, can anyone reply if you're o…".
 
 - Message edit history and `@user joined #channel_name` messages are not imported.
 
