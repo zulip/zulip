@@ -19922,11 +19922,16 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/InvalidApiKeyError"
-                  - $ref: "#/components/schemas/MissingArgumentError"
-                  - $ref: "#/components/schemas/IncompatibleParametersError"
-                  - $ref: "#/components/schemas/UserNotAuthorizedError"
+                $ref: "#/components/schemas/RestErrorHandlingSchema"
+              examples:
+                invalid-api-key-error:
+                  $ref: "#/components/examples/InvalidApiKeyErrorExample"
+                missing-argument-error:
+                  $ref: "#/components/examples/MissingArgumentErrorExample"
+                incompatible-parameters-error:
+                  $ref: "#/components/examples/IncompatibleParametersErrorExample"
+                user-not-authorized-error:
+                  $ref: "#/components/examples/UserNotAuthorizedErrorExample"
         "401":
           description: |
             Unauthorized.
@@ -20111,7 +20116,57 @@ components:
         Basic authentication, with the user's email as the username, and the API
         key as the password. The API key can be fetched using the
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
+  examples:
+    InvalidApiKeyErrorExample:
+      value:
+        {"code": "INVALID_API_KEY", "msg": "Invalid API key", "result": "error"}
+      description: |
+        ### Invalid API key
 
+        A typical failed JSON response for when the API key is invalid.
+    UserNotAuthorizedErrorExample:
+      value:
+        {
+          "code": "BAD_REQUEST",
+          "msg": "User not authorized for this query",
+          "result": "error",
+        }
+      description: |
+        ### User not authorized for query
+
+        A typical failed JSON response for when the user is not authorized for
+        a query.
+    MissingArgumentErrorExample:
+      description: |
+        ### Missing request parameter
+
+        A typical failed JSON response for when a required request parameter
+        is not supplied.
+
+        The value of `var_name` contains information about the missing parameter.
+      value:
+        {
+          "code": "REQUEST_VARIABLE_MISSING",
+          "msg": "Missing 'content' argument",
+          "result": "error",
+          "var_name": "content",
+        }
+    IncompatibleParametersErrorExample:
+      description: |
+        ### Incompatible request parameters
+
+        A typical failed JSON response for when two or more, optional
+        parameters are supplied that are incompatible with each other.
+
+        The value of `parameters` in the response is string containing
+        the parameters, separated by commas, that are incompatible.
+      value:
+        {
+          "code": "BAD_REQUEST",
+          "msg": "Unsupported parameter combination: object_id, object_name",
+          "result": "error",
+          "parameters": "object_id, object_name",
+        }
   schemas:
     IgnoredParametersUnsupported:
       type: array
@@ -22574,6 +22629,23 @@ components:
               "result": "error",
               "var_name": "content",
             }
+    RestErrorHandlingSchema:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            parameters:
+              type: string
+              description: |
+                A string containing the parameters, separated by commas,
+                that are incompatible.
+            var_name:
+              type: string
+              description: |
+                It contains the information about the missing parameter.
     IncompatibleParametersError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
