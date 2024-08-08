@@ -78,6 +78,7 @@ class ClientDescriptor:
         pronouns_field_type_supported: bool = True,
         linkifier_url_template: bool = False,
         user_list_incomplete: bool = False,
+        archived_streams: bool = False,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -108,6 +109,7 @@ class ClientDescriptor:
         self.pronouns_field_type_supported = pronouns_field_type_supported
         self.linkifier_url_template = linkifier_url_template
         self.user_list_incomplete = user_list_incomplete
+        self.archived_streams = archived_streams
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -138,6 +140,7 @@ class ClientDescriptor:
             pronouns_field_type_supported=self.pronouns_field_type_supported,
             linkifier_url_template=self.linkifier_url_template,
             user_list_incomplete=self.user_list_incomplete,
+            archived_streams=self.archived_streams,
         )
 
     @override
@@ -174,6 +177,7 @@ class ClientDescriptor:
             d.get("pronouns_field_type_supported", True),
             d.get("linkifier_url_template", False),
             d.get("user_list_incomplete", False),
+            d.get("archived_streams", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
