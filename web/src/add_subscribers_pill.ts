@@ -85,11 +85,7 @@ function generate_pill_html(item: CombinedPill): string {
         return user_pill.generate_pill_html(item);
     }
     assert(item.type === "stream");
-    return render_input_pill({
-        ...item,
-        has_stream: true,
-        display_value: get_display_value_from_item(item),
-    });
+    return stream_pill.generate_pill_html(item);
 }
 
 export function create({

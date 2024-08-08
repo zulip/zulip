@@ -1,5 +1,3 @@
-import render_input_pill from "../templates/input_pill.hbs";
-
 import * as input_pill from "./input_pill";
 import {set_up_stream} from "./pill_typeahead";
 import * as stream_data from "./stream_data";
@@ -52,12 +50,7 @@ export function create($stream_pill_container: JQuery): stream_pill.StreamPillWi
         $container: $stream_pill_container,
         create_item_from_text: create_item_from_stream_name,
         get_text_from_item: stream_pill.get_stream_name_from_item,
-        generate_pill_html: (item) =>
-            render_input_pill({
-                ...item,
-                has_stream: true,
-                display_value: stream_pill.get_display_value_from_item(item),
-            }),
+        generate_pill_html: stream_pill.generate_pill_html,
         get_display_value_from_item: stream_pill.get_display_value_from_item,
     });
     add_default_stream_pills(pill_widget);

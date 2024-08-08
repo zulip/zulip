@@ -33,12 +33,12 @@ peer_data.set_subscribers(sweden.stream_id, [1, 2, 3, 4, 5]);
 
 const denmark_pill = {
     type: "stream",
-    stream: denmark,
+    stream_id: denmark.stream_id,
     show_subscriber_count: true,
 };
 const sweden_pill = {
     type: "stream",
-    stream: sweden,
+    stream_id: sweden.stream_id,
     show_subscriber_count: true,
 };
 
@@ -113,4 +113,19 @@ run_test("get_stream_ids", () => {
 
     const stream_ids = stream_pill.get_stream_ids(widget);
     assert.deepEqual(stream_ids, [101, 102]);
+});
+
+run_test("generate_pill_html", () => {
+    assert.deepEqual(
+        stream_pill.generate_pill_html(denmark_pill),
+        "<div class='pill ' tabindex=0>\n" +
+            '    <span class="pill-label">\n' +
+            '        <span class="pill-value">\n' +
+            '<i class="zulip-icon zulip-icon-hashtag stream-privacy-type-icon" aria-hidden="true"></i>            translated: Denmark: 3 users\n' +
+            "        </span></span>\n" +
+            '    <div class="exit">\n' +
+            '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +
+            "    </div>\n" +
+            "</div>\n",
+    );
 });
