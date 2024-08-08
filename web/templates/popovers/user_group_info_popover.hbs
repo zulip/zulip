@@ -11,18 +11,22 @@
         </li>
         <li role="separator" class="popover-menu-separator"></li>
         <li role="none" class="popover-menu-list-item">
-            <ul class="popover-menu-list popover-group-menu-member-list" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
-                {{#each members}}
-                    <li class="popover-group-menu-member">
-                        {{#if is_bot}}
-                            <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-                        {{else}}
-                            <span class="user_circle {{user_circle_class}} popover_user_presence hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
-                        {{/if}}
-                        <span class="popover-group-menu-member-name">{{full_name}}</span>
-                    </li>
-                {{/each}}
-            </ul>
+            {{#if members.length}}
+                <ul class="popover-menu-list popover-group-menu-member-list" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+                    {{#each members}}
+                        <li class="popover-group-menu-member">
+                            {{#if is_bot}}
+                                <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                            {{else}}
+                                <span class="user_circle {{user_circle_class}} popover_user_presence hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                            {{/if}}
+                            <span class="popover-group-menu-member-name">{{full_name}}</span>
+                        </li>
+                    {{/each}}
+                </ul>
+            {{else}}
+                <span class="popover-group-menu-placeholder"><i>{{t 'This group has no members.'}}</i></span>
+            {{/if}}
         </li>
         {{#unless (or is_guest is_system_group)}}
             <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
