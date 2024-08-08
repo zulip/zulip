@@ -215,11 +215,15 @@ export function initialize_kitchen_sink_stuff() {
 
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
-        // page, the pointer may still need to move.
+        // page, the selected message may still need to move. And
+        // popovers may still need to be closed to be consistent
+        // with message view behavior in the middle of the feed.
 
         if (delta < 0 && message_viewport.at_rendered_top()) {
+            popovers.hide_all();
             navigate.up();
         } else if (delta > 0 && message_viewport.at_rendered_bottom()) {
+            popovers.hide_all();
             navigate.down();
         }
 
@@ -243,7 +247,20 @@ export function initialize_kitchen_sink_stuff() {
 
     $(window).on("resize", _.throttle(resize_handler.handler, 50));
 
-    // Scrolling in overlays. input boxes, and other elements that
+    // Stop propagation of the previous "wheel" event handler for popovers
+    // with scrollable content (e.g. emoji picker, stream picker, giphy) and
+    // message edit form preview/textarea. These aren't handled by the event
+    // handler below because they aren't in the DOM when the web-app is
+    // initialized.
+    message_viewport.$scroll_container.on(
+        "wheel",
+        ".simplebar-content, .scrolling_list, textarea",
+        (e) => {
+            e.stopPropagation();
+        },
+    );
+
+    // Scrolling in overlays, input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
     // propagation in all cases.  Also, ignore the event if the
     // element is already at the top or bottom.  Otherwise we get a
