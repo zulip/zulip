@@ -8,6 +8,10 @@
 {% endblock %}
 
 {% block customhead %}
+{% if enable_gravatar %}<link rel="dns-prefetch" href="https://secure.gravatar.com" />
+{% endif -%}
+{% if s3_avatar_public_url_prefix %}<link rel="dns-prefetch" href="{{ s3_avatar_public_url_prefix }}" />
+{% endif -%}
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link href="{{ static('images/logo/apple-touch-icon-precomposed.png') }}" rel="apple-touch-icon-precomposed" />
 <style>
