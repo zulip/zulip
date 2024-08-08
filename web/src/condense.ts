@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import {$t} from "./i18n";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
@@ -222,7 +223,21 @@ export function condense_and_collapse(elems: JQuery): void {
     // More information here: https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/#avoid-layout-thrashing
     for (const {elem, $content, message, message_height} of rows_to_resize) {
         const long_message = message_height > height_cutoff;
+        const $message_length_controller = $(elem).find(".message_length_controller");
+
         if (long_message) {
+            const $expander = $("<button>")
+                .attr("type", "button")
+                .addClass("message_expander message_length_toggle tippy-zulip-delayed-tooltip")
+                .attr("data-tooltip-template-id", "message-expander-tooltip-template")
+                .text($t({defaultMessage: "Show more"}));
+            $message_length_controller.append($expander);
+            const $condenser = $("<button>")
+                .attr("type", "button")
+                .addClass("message_condenser message_length_toggle tippy-zulip-delayed-tooltip")
+                .attr("data-tooltip-template-id", "message-condenser-tooltip-template")
+                .text($t({defaultMessage: "Show less"}));
+            $message_length_controller.append($condenser);
             // All long messages are flagged as such.
             $content.addClass("could-be-condensed");
         } else {
