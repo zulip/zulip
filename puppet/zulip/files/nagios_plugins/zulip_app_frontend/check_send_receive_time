@@ -128,13 +128,15 @@ send_zulip(
     },
 )
 
-msg_content: list[str] = []
-
-while msg_to_send not in msg_content:
+complete = False
+while not complete:
     messages = get_zulips()
     seconds_diff = time.perf_counter() - time_start
-
-    msg_content = [m["content"] for m in messages]
+    for m in messages:
+        if msg_to_send == m["content"]:
+            zulip_sender.delete_message(m["id"])
+            complete = True
+            break
 
 zulip_recipient.deregister(queue_id)
 
