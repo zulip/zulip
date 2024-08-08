@@ -694,8 +694,6 @@ export function initialize(): void {
 
     $("#lightbox_overlay").on("click", ".lightbox-zoom-reset", () => {
         if (!$("#lightbox_overlay .lightbox-zoom-reset").hasClass("disabled")) {
-            const $img = $("#lightbox_overlay").find<HTMLImageElement>(".image-preview img");
-            open_image($img);
             pan_zoom_control.reset();
         }
     });
