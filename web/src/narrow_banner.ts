@@ -345,12 +345,24 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                         }),
                     };
                 }
+                const recipient = people.get_by_user_id(user_ids[0]);
+                // If the recipient is deactivated, we cannot start the conversation.
+                if (!people.is_person_active(user_ids[0])) {
+                    return {
+                        title: $t(
+                            {
+                                defaultMessage: "You have no direct messages with {person}.",
+                            },
+                            {person: recipient.full_name},
+                        ),
+                    };
+                }
                 return {
                     title: $t(
                         {
                             defaultMessage: "You have no direct messages with {person} yet.",
                         },
-                        {person: people.get_by_user_id(user_ids[0]).full_name},
+                        {person: recipient.full_name},
                     ),
                     html: $t_html(
                         {
@@ -363,6 +375,11 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                                 )}</a>`,
                         },
                     ),
+                };
+            }
+            if (people.get_non_active_user_ids_count(user_ids) !== 0) {
+                return {
+                    title: $t({defaultMessage: "You have no direct messages with these users."}),
                 };
             }
             return {
