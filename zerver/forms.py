@@ -64,6 +64,7 @@ DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
     " Please contact your organization administrator to reactivate it."
 )
 PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
+PASSWORD_TOO_LONG_ERROR = gettext_lazy("The password cannot exceed 100 characters in length.")
 
 
 def email_is_not_mit_mailing_list(email: str) -> None:
@@ -228,6 +229,8 @@ class RegistrationForm(RealmDetailsForm):
             # The frontend code tries to stop the user from submitting the form with a weak password,
             # but if the user bypasses that protection, this error code path will run.
             raise ValidationError(str(PASSWORD_TOO_WEAK_ERROR))
+        if len(password) > RegistrationForm.MAX_PASSWORD_LENGTH:
+            raise ValidationError(str(PASSWORD_TOO_LONG_ERROR))
 
         return password
 
@@ -345,6 +348,8 @@ class LoggingSetPasswordForm(SetPasswordForm):
             # The frontend code tries to stop the user from submitting the form with a weak password,
             # but if the user bypasses that protection, this error code path will run.
             raise ValidationError(str(PASSWORD_TOO_WEAK_ERROR))
+        if len(new_password) > RegistrationForm.MAX_PASSWORD_LENGTH:
+            raise ValidationError(str(PASSWORD_TOO_LONG_ERROR))
 
         return new_password
 
