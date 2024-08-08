@@ -8,6 +8,7 @@ from typing import Any
 import bson
 from django.conf import settings
 from django.forms.models import model_to_dict
+from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
     SubscriberHandler,
@@ -37,12 +38,10 @@ from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
 
-def make_realm(
-    realm_id: int, realm_subdomain: str, domain_name: str, rc_instance: dict[str, Any]
-) -> ZerverFieldsT:
-    created_at = float(rc_instance["_createdAt"].timestamp())
+def make_realm(realm_id: int, realm_subdomain: str, domain_name: str) -> ZerverFieldsT:
+    NOW = float(timezone_now().timestamp())
 
-    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, created_at, "Rocket.Chat")
+    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, "Rocket.Chat")
     realm = build_realm(zerver_realm, realm_id, domain_name)
 
     # We may override these later.
@@ -975,17 +974,12 @@ def rocketchat_data_to_dict(rocketchat_data_dir: str) -> dict[str, Any]:
     codec_options = bson.DEFAULT_CODEC_OPTIONS.with_options(tz_aware=True)
 
     rocketchat_data: dict[str, Any] = {}
-    rocketchat_data["instance"] = []
     rocketchat_data["user"] = []
     rocketchat_data["avatar"] = {"avatar": [], "file": [], "chunk": []}
     rocketchat_data["room"] = []
     rocketchat_data["message"] = []
     rocketchat_data["custom_emoji"] = {"emoji": [], "file": [], "chunk": []}
     rocketchat_data["upload"] = {"upload": [], "file": [], "chunk": []}
-
-    # Get instance
-    with open(os.path.join(rocketchat_data_dir, "instances.bson"), "rb") as fcache:
-        rocketchat_data["instance"] = bson.decode_all(fcache.read(), codec_options)
 
     # Get user
     with open(os.path.join(rocketchat_data_dir, "users.bson"), "rb") as fcache:
@@ -1052,7 +1046,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     realm_id = 0
     domain_name = settings.EXTERNAL_HOST
 
-    realm = make_realm(realm_id, realm_subdomain, domain_name, rocketchat_data["instance"][0])
+    realm = make_realm(realm_id, realm_subdomain, domain_name)
 
     user_id_to_user_map: dict[str, dict[str, Any]] = map_user_id_to_user(rocketchat_data["user"])
     username_to_user_id_map: dict[str, str] = map_username_to_user_id(user_id_to_user_map)
