@@ -207,6 +207,19 @@
     --navbar-content-righthand-offset: 5px;
 
     /*
+    Width of navbar left column
+    40px (Sidebar toggle icon) + 80px (wide logo).
+    */
+    --navbar-left-column-width: 120px;
+    /*
+    Both icon and logo change in width when height of header is reduced
+    30px (Sidebar toggle icon) + 60px (wide logo)
+    */
+    @media (height < $short_navbar_cutoff_height) {
+        --navbar-left-column-width: 90px;
+    }
+
+    /*
     We have a 10px gutter below the header,
     which often needs to be respected by both
     the elements above it and below it on
