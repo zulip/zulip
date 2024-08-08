@@ -1,8 +1,12 @@
+import zoneinfo
+from datetime import datetime
+
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.typed_endpoint_validators import (
     check_int_in,
     check_string_in,
     check_url,
+    convert_to_datetime,
     to_non_negative_int_or_none,
 )
 
@@ -33,3 +37,23 @@ class ValidatorTestCase(ZulipTestCase):
         self.assertEqual(to_non_negative_int_or_none("3.9"), None)
         self.assertEqual(to_non_negative_int_or_none("3.5"), None)
         self.assertEqual(to_non_negative_int_or_none("foo"), None)
+
+    def test_convert_to_datetime(self) -> None:
+        UTC = zoneinfo.ZoneInfo("UTC")
+
+        self.assertEqual(convert_to_datetime("2021-06-01"), datetime(2021, 6, 1, tzinfo=UTC))
+        self.assertEqual(
+            convert_to_datetime("2021-06-01T12:00:00"), datetime(2021, 6, 1, 12, 0, 0, tzinfo=UTC)
+        )
+        self.assertEqual(
+            convert_to_datetime("2021-06-01T12:00:00Z"), datetime(2021, 6, 1, 12, 0, 0, tzinfo=UTC)
+        )
+
+        my_dt = datetime(2021, 6, 1, 12, 0, 0, tzinfo=UTC)
+        self.assertEqual(convert_to_datetime(int(my_dt.timestamp())), my_dt)
+
+        with self.assertRaisesRegex(ValueError, "Not a valid datetime"):
+            convert_to_datetime("random string")
+
+        with self.assertRaisesRegex(ValueError, "Not a valid datetime"):
+            convert_to_datetime(["invalid"])

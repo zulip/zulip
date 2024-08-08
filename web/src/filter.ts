@@ -262,6 +262,13 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
             return user_ids.includes(operand_user.user_id);
         }
+        case "before":
+            // before operator is inclusive, so we need to add 23 hours, 59 minutes and 59 seconds
+            // to check from the end of the day.
+            return message.timestamp <= new Date(operand).getTime() / 1000 + 24 * 60 * 60 - 1;
+        case "after":
+            // after operator is inclusive, so we need to check from the start of the day.
+            return message.timestamp >= new Date(operand).getTime() / 1000;
     }
 
     return true; // unknown operators return true (effectively ignored)
@@ -278,6 +285,41 @@ export function create_user_pill_context(user: User): UserPillItem {
         img_src: avatar_url,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
     };
+}
+
+export function convertPartialDate(date: string, is_before = false): string {
+    const parsed_date = new Date(date);
+    if (!Number.isNaN(parsed_date.getDate())) {
+        if (is_before) {
+            if (date.split("-").length === 1) {
+                parsed_date.setMonth(11);
+                parsed_date.setDate(31);
+            } else if (date.split("-").length === 2) {
+                if ([0, 2, 4, 6, 7, 9, 11].includes(parsed_date.getMonth())) {
+                    parsed_date.setDate(31);
+                } else if (parsed_date.getMonth() === 1 && parsed_date.getFullYear() % 4 === 0) {
+                    parsed_date.setDate(29);
+                } else if (parsed_date.getMonth() === 1) {
+                    parsed_date.setDate(28);
+                } else {
+                    parsed_date.setDate(30);
+                }
+            }
+        }
+
+        const year = parsed_date.getFullYear();
+        const month = (parsed_date.getMonth() + 1).toString().padStart(2, "0");
+        const day = parsed_date.getDate().toString().padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+    }
+    return date;
+}
+
+export function isValidDateOperand(operand: string): boolean {
+    const parsed_date = new Date(operand);
+
+    return !Number.isNaN(parsed_date.getDate());
 }
 
 const USER_OPERATORS = new Set([
@@ -379,6 +421,13 @@ export class Filter {
                     .toLowerCase()
                     .replaceAll(/[\u201C\u201D]/g, '"');
                 break;
+            case "before":
+                operand = convertPartialDate(operand, true);
+                break;
+            case "after":
+                operand = convertPartialDate(operand);
+                break;
+
             default:
                 operand = operand.toString().toLowerCase();
         }
@@ -545,6 +594,10 @@ export class Filter {
                 return term.operand === "public";
             case "topic":
                 return true;
+            case "before":
+            case "after":
+                return isValidDateOperand(term.operand);
+
             case "sender":
             case "from":
             case "dm":
@@ -557,6 +610,7 @@ export class Filter {
                     .every((email) => people.get_by_email(email) !== undefined);
             case "search":
                 return true;
+
             default:
                 blueslip.error("Unexpected search term operator: " + term.operator);
                 return false;
@@ -628,6 +682,8 @@ export class Filter {
             "has-image",
             "has-attachment",
             "search",
+            "before",
+            "after",
         ];
 
         const level = (term_type: string): number => {
@@ -691,6 +747,12 @@ export class Filter {
             // Note: We hack around using this in "describe" below.
             case "is":
                 return verb + "messages that are";
+
+            case "before":
+                return verb + "messages before";
+
+            case "after":
+                return verb + "messages after";
         }
         return "";
     }

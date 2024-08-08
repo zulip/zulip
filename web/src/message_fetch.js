@@ -230,6 +230,34 @@ function handle_operators_supporting_id_based_api(data) {
     return data;
 }
 
+function adjust_datetime_to_utc(data) {
+    // This function modifies the data.narrow filters to adjust the
+    // datetime operands to UTC format. This is required because the
+    // server expects the datetime operands in UTC format.
+
+    const operators_supporting_timestamp = new Set(["before", "after"]);
+    if (data.narrow === undefined) {
+        return data;
+    }
+
+    data.narrow = JSON.parse(data.narrow);
+    data.narrow = data.narrow.map((filter) => {
+        if (operators_supporting_timestamp.has(filter.operator)) {
+            const operand_date = new Date(filter.operand);
+
+            if (filter.operator === "before") {
+                operand_date.setSeconds(operand_date.getSeconds() + 24 * 60 * 60 - 1);
+            }
+            operand_date.setMinutes(operand_date.getMinutes() + operand_date.getTimezoneOffset());
+            filter.operand = operand_date.toUTCString();
+        }
+        return filter;
+    });
+
+    data.narrow = JSON.stringify(data.narrow);
+    return data;
+}
+
 export function load_messages(opts, attempt = 1) {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
@@ -286,6 +314,7 @@ export function load_messages(opts, attempt = 1) {
 
     data.client_gravatar = true;
     data = handle_operators_supporting_id_based_api(data);
+    data = adjust_datetime_to_utc(data);
 
     if (page_params.is_spectator) {
         // This is a bit of a hack; ideally we'd unify this logic in

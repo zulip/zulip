@@ -1,9 +1,12 @@
 import re
 import zoneinfo
 from collections.abc import Collection
+from datetime import datetime
 
+from dateutil import parser
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
+from django.utils.timezone import make_aware
 from django.utils.translation import gettext as _
 from pydantic import AfterValidator, BeforeValidator, NonNegativeInt
 from pydantic_core import PydanticCustomError
@@ -105,3 +108,27 @@ def check_color(var_name: str, val: object) -> str:
     if not matched_results:
         raise ValueError(_("{var_name} is not a valid hex color code").format(var_name=var_name))
     return s
+
+
+def convert_to_datetime(value: object) -> datetime:
+    """
+    Converts an integer (Unix timestamp) or a string to a timezone-aware datetime object in UTC.
+
+    """
+    UTC = zoneinfo.ZoneInfo("UTC")
+    try:
+        if isinstance(value, int):
+            # Treat the integer as a Unix timestamp
+            dt = datetime.fromtimestamp(value, tz=UTC)
+        elif isinstance(value, str):
+            # Parse the string into a naive datetime object
+            dt = parser.parse(value)
+            # If the parsed datetime is naive, make it aware in UTC
+            if dt.tzinfo is None:
+                dt = make_aware(dt, timezone=UTC)
+        else:
+            raise ValueError(_("Not a valid datetime"))
+
+        return dt
+    except (ValueError, OverflowError, TypeError):
+        raise ValueError(_("Not a valid datetime"))

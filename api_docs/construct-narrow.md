@@ -53,6 +53,10 @@ messages](/api/update-message-flags-for-narrow)).
 
 ## Changes
 
+* In Zulip 10.0 (feature level 281), support was added for two new filters,
+  `before:yyyy-mm-dd` and `after:yyyy-mm-dd`, matching messages before
+  and after the specified date (inclusively).
+
 * In Zulip 9.0 (feature level 271), support was added for a new filter
   operator, `with`, which uses a [message ID](#message-ids) for its
   operand, and is designed for creating permanent links to topics.

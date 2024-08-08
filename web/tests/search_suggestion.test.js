@@ -1011,3 +1011,63 @@ test("queries_with_spaces", () => {
     expected = ["channel:office"];
     assert.deepEqual(suggestions.strings, expected);
 });
+
+test("after_before_suggestions", () => {
+    // Blank query should give the default suggestions, which consists of today's date
+    // and the last 4 days.
+    let query = "after:";
+    let suggestions = get_suggestions(query);
+
+    const curr_date = new Date();
+
+    const expected_default_after = [];
+    for (let i = 0; i < 5; i += 1) {
+        expected_default_after.push("after:" + curr_date.toISOString().slice(0, 10));
+        curr_date.setDate(curr_date.getDate() - 1);
+    }
+    assert.deepEqual(suggestions.strings, expected_default_after);
+
+    query = "before:";
+    suggestions = get_suggestions(query);
+
+    curr_date.setTime(Date.now());
+    const expected_default_before = [];
+    for (let i = 0; i < 5; i += 1) {
+        expected_default_before.push("before:" + curr_date.toISOString().slice(0, 10));
+        curr_date.setDate(curr_date.getDate() - 1);
+    }
+    assert.deepEqual(suggestions.strings, expected_default_before);
+
+    query = "after:20";
+    suggestions = get_suggestions(query);
+
+    curr_date.setTime(Date.now());
+    const expected_after = [];
+    for (let i = 0; i < 5; i += 1) {
+        expected_after.push("after:20" + curr_date.toISOString().slice(2, 10));
+        curr_date.setDate(curr_date.getDate() - 1);
+    }
+    assert.deepEqual(suggestions.strings, expected_after);
+
+    query = "before:20";
+    suggestions = get_suggestions(query);
+
+    curr_date.setTime(Date.now());
+    const expected_before = [];
+    for (let i = 0; i < 5; i += 1) {
+        expected_before.push("before:20" + curr_date.toISOString().slice(2, 10));
+        curr_date.setDate(curr_date.getDate() - 1);
+    }
+    assert.deepEqual(suggestions.strings, expected_before);
+
+    // Invalid date should give the default suggestions
+    query = "after:2022-01-42";
+    suggestions = get_suggestions(query);
+
+    assert.deepEqual(suggestions.strings, expected_default_after);
+
+    query = "before:2022-01-42";
+    suggestions = get_suggestions(query);
+
+    assert.deepEqual(suggestions.strings, expected_default_before);
+});

@@ -527,10 +527,29 @@ function assert_not_mark_read_when_searching(additional_terms_to_test) {
     assert.ok(!filter.can_mark_messages_read());
 }
 
+function assert_not_mark_read_with_after_before_operands(additional_terms_to_test = []) {
+    let after_term = [{operator: "after", operand: "2024-01-01"}];
+    let filter = new Filter([...additional_terms_to_test, ...after_term]);
+    assert.ok(!filter.can_mark_messages_read());
+
+    after_term = [{operator: "after", operand: "2024-01-01", negated: true}];
+    filter = new Filter([...additional_terms_to_test, ...after_term]);
+    assert.ok(!filter.can_mark_messages_read());
+
+    let before_term = [{operator: "before", operand: "2024-01-01"}];
+    filter = new Filter([...additional_terms_to_test, ...before_term]);
+    assert.ok(!filter.can_mark_messages_read());
+
+    before_term = [{operator: "before", operand: "2024-01-01", negated: true}];
+    filter = new Filter([...additional_terms_to_test, ...before_term]);
+    assert.ok(!filter.can_mark_messages_read());
+}
+
 test("can_mark_messages_read", () => {
     assert_not_mark_read_with_has_operands();
     assert_not_mark_read_with_is_operands();
     assert_not_mark_read_when_searching();
+    assert_not_mark_read_with_after_before_operands();
 
     const channel_term = [{operator: "channel", operand: "foo"}];
     let filter = new Filter(channel_term);
@@ -538,6 +557,7 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_has_operands(channel_term);
     assert_not_mark_read_with_is_operands(channel_term);
     assert_not_mark_read_when_searching(channel_term);
+    assert_not_mark_read_with_after_before_operands(channel_term);
 
     const channel_negated_operator = [{operator: "channel", operand: "foo", negated: true}];
     filter = new Filter(channel_negated_operator);
@@ -552,6 +572,7 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_has_operands(channel_topic_terms);
     assert_not_mark_read_with_is_operands(channel_topic_terms);
     assert_not_mark_read_when_searching(channel_topic_terms);
+    assert_not_mark_read_with_after_before_operands(channel_topic_terms);
 
     const channel_negated_topic_terms = [
         {operator: "channel", operand: "foo"},
@@ -577,6 +598,8 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_has_operands(dm);
     assert_not_mark_read_when_searching(dm_group);
     assert_not_mark_read_when_searching(dm);
+    assert_not_mark_read_with_after_before_operands(dm_group);
+    assert_not_mark_read_with_after_before_operands(dm);
 
     const is_dm = [{operator: "is", operand: "dm"}];
     filter = new Filter(is_dm);
@@ -584,6 +607,7 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_is_operands(is_dm);
     assert_not_mark_read_with_has_operands(is_dm);
     assert_not_mark_read_when_searching(is_dm);
+    assert_not_mark_read_with_after_before_operands(is_dm);
 
     const in_all = [{operator: "in", operand: "all"}];
     filter = new Filter(in_all);
@@ -591,6 +615,7 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_is_operands(in_all);
     assert_not_mark_read_with_has_operands(in_all);
     assert_not_mark_read_when_searching(in_all);
+    assert_not_mark_read_with_after_before_operands(in_all);
 
     const in_home = [{operator: "in", operand: "home"}];
     const in_home_negated = [{operator: "in", operand: "home", negated: true}];
@@ -599,6 +624,7 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_is_operands(in_home);
     assert_not_mark_read_with_has_operands(in_home);
     assert_not_mark_read_when_searching(in_home);
+    assert_not_mark_read_with_after_before_operands(in_home);
     filter = new Filter(in_home_negated);
     assert.ok(!filter.can_mark_messages_read());
 
@@ -1129,6 +1155,79 @@ test("predicate_basics", ({override}) => {
     const has_reaction = get_predicate([["has", "reaction"]]);
     assert.ok(has_reaction(clean_reactions_message));
     assert.ok(!has_reaction(non_reaction_msg));
+
+    const test_date = new Date("2024-01-01");
+    const test_message = {
+        timestamp: test_date.getTime() / 1000,
+    };
+
+    const after_predicate = get_predicate([["after", "2024-01-01"]]);
+    const before_predicate = get_predicate([["before", "2024-01-01"]]);
+
+    // Both operators are inclusive.
+    assert.ok(after_predicate(test_message));
+    assert.ok(before_predicate(test_message));
+
+    test_date.setDate(test_date.getDate() + 1);
+    test_message.timestamp = test_date.getTime() / 1000;
+
+    assert.ok(after_predicate(test_message));
+    assert.ok(!before_predicate(test_message));
+
+    test_date.setDate(test_date.getDate() - 2);
+    test_message.timestamp = test_date.getTime() / 1000;
+
+    assert.ok(!after_predicate(test_message));
+    assert.ok(before_predicate(test_message));
+
+    // Partial dates
+    let partial_after_predicate = get_predicate([["after", "2024-01"]]);
+    let partial_before_predicate = get_predicate([["before", "2024-01"]]);
+
+    test_message.timestamp = new Date("2024-01-01").getTime() / 1000;
+
+    assert.ok(partial_after_predicate(test_message));
+    assert.ok(partial_before_predicate(test_message));
+
+    partial_after_predicate = get_predicate([["after", "2024"]]);
+    partial_before_predicate = get_predicate([["before", "2024"]]);
+
+    assert.ok(partial_after_predicate(test_message));
+    assert.ok(partial_before_predicate(test_message));
+
+    test_message.timestamp = new Date("2023-01-01").getTime() / 1000;
+
+    assert.ok(!partial_after_predicate(test_message));
+    assert.ok(partial_before_predicate(test_message));
+
+    test_message.timestamp = new Date("2025-01-01").getTime() / 1000;
+
+    assert.ok(partial_after_predicate(test_message));
+    assert.ok(!partial_before_predicate(test_message));
+
+    partial_after_predicate = get_predicate([["after", "2024-02"]]);
+    partial_before_predicate = get_predicate([["before", "2024-02"]]);
+
+    test_message.timestamp = new Date("2024-01-01").getTime() / 1000;
+
+    assert.ok(!partial_after_predicate(test_message));
+    assert.ok(partial_before_predicate(test_message));
+
+    partial_after_predicate = get_predicate([["after", "2023-02"]]);
+    partial_before_predicate = get_predicate([["before", "2023-02"]]);
+
+    assert.ok(partial_after_predicate(test_message));
+    assert.ok(!partial_before_predicate(test_message));
+
+    partial_after_predicate = get_predicate([["after", "2024-04"]]);
+    partial_before_predicate = get_predicate([["before", "2024-04"]]);
+
+    assert.ok(!partial_after_predicate(test_message));
+    assert.ok(partial_before_predicate(test_message));
+
+    // Invalid date should not match.
+    const invalid_after_predicate = get_predicate([["after", "invalid"]]);
+    assert.ok(!invalid_after_predicate(test_message));
 });
 
 test("negated_predicates", () => {
