@@ -1625,3 +1625,25 @@ textarea.new_message_textarea {
         }
     }
 }
+
+.split_messages_toggle {
+    display: inline-block;
+    color: var(--color-text-default);
+}
+
+#split_messages_checkbox {
+    margin-bottom: 2px;
+    cursor: pointer;
+}
+
+.split_message_enumerated {
+    padding-left: 5px;
+    padding-top: 2px;
+    color: hsl(0deg 0 50%);
+}
+
+.split_message_part {
+    padding: 5px;
+    border: 1px solid hsl(0deg 0 50%);
+    border-radius: 8px;
+}

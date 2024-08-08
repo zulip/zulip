@@ -2,8 +2,10 @@ import $ from "jquery";
 
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_split_message_banner from "../templates/compose_banner/split_message_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
+import * as compose_split_messages from "./compose_split_messages";
 import {$t} from "./i18n";
 import * as scroll_util from "./scroll_util";
 import * as stream_data from "./stream_data";
@@ -60,6 +62,7 @@ export const CLASSNAMES = {
     zephyr_not_running: "zephyr_not_running",
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
+    split_messages: "split_messages",
 };
 
 export function get_compose_banner_container($textarea: JQuery): JQuery {
@@ -245,4 +248,32 @@ export function show_stream_not_subscribed_error(sub: StreamSubscription): void 
         hide_close_button: true,
     });
     append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+}
+
+export function update_split_messages_info_banner(): void {
+    if (compose_split_messages.will_split_into_multiple_messages()) {
+        update_or_append_banner(
+            $(split_messages_info_banner_content()),
+            CLASSNAMES.split_messages,
+            $("#compose_banners"),
+        );
+    } else {
+        clear_split_messages_info_banner();
+    }
+}
+
+function split_messages_info_banner_content(): string {
+    const context = {
+        banner_type: INFO,
+        button_text: $t({
+            defaultMessage: "Send as a single message",
+        }),
+        message_count: compose_split_messages.count_message_content_split_parts(),
+        classname: CLASSNAMES.split_messages,
+    };
+    return render_split_message_banner(context);
+}
+
+export function clear_split_messages_info_banner(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.split_messages)}`).remove();
 }

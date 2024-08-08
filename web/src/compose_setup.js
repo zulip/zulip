@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import {unresolve_name} from "../shared/src/resolved_topic";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
@@ -11,6 +12,7 @@ import * as compose_call_ui from "./compose_call_ui";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_send_menu_popover from "./compose_send_menu_popover";
+import * as compose_split_messages from "./compose_split_messages";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -68,6 +70,11 @@ export function initialize() {
         compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
     });
 
+    const debounced_update_split_message_banner = _.debounce(
+        () => compose_banner.update_split_messages_info_banner(),
+        300,
+    );
+
     $("textarea#compose-textarea").on("input propertychange", () => {
         compose_validate.warn_if_topic_resolved(false);
         const compose_text_length = compose_validate.check_overflow_text();
@@ -94,6 +101,11 @@ export function initialize() {
 
         if (compose_state.get_is_content_unedited_restored_draft()) {
             compose_state.set_is_content_unedited_restored_draft(false);
+        }
+
+        // update banner if splitting messages is enabled
+        if (compose_split_messages.is_split_messages_enabled()) {
+            debounced_update_split_message_banner();
         }
     });
 
@@ -206,6 +218,15 @@ export function initialize() {
                 }
                 compose_validate.clear_topic_resolved_warning(true);
             });
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(compose_banner.CLASSNAMES.split_messages)} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            compose.toggle_split_messages();
         },
     );
 
