@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {make_bot} = require("./lib/example_user");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 
@@ -65,12 +66,11 @@ const user_profile = mock_esm("../src/user_profile");
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
 
-const bob = {
+const bob = make_bot({
     email: "bob@example.com",
     user_id: 33,
     full_name: "Bob Roberts",
-    is_bot: true,
-};
+});
 
 run_test("add users with event", ({override}) => {
     people.init();
@@ -116,12 +116,11 @@ run_test("update user with event", ({override}) => {
     people.init();
     people.add_active_user(bob);
 
-    const new_bob = {
+    const new_bob = make_bot({
         email: "bob@example.com",
         user_id: bob.user_id,
         full_name: "The Artist Formerly Known as Bob",
-        is_bot: true,
-    };
+    });
 
     const event = {
         type: "realm_user",

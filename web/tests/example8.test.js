@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {make_user} = require("./lib/example_user");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -33,29 +34,29 @@ const typing_data = zrequire("typing_data");
 const typing_events = zrequire("typing_events");
 
 // Let us add a few users to use as typists.
-const anna = {
+const anna = make_user({
     email: "anna@example.com",
     full_name: "Anna Karenina",
     user_id: 8,
-};
+});
 
-const vronsky = {
+const vronsky = make_user({
     email: "vronsky@example.com",
     full_name: "Alexei Vronsky",
     user_id: 9,
-};
+});
 
-const levin = {
+const levin = make_user({
     email: "levin@example.com",
     full_name: "Konstantin Levin",
     user_id: 10,
-};
+});
 
-const kitty = {
+const kitty = make_user({
     email: "kitty@example.com",
     full_name: "Kitty S",
     user_id: 11,
-};
+});
 
 people.add_active_user(anna);
 people.add_active_user(vronsky);
