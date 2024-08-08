@@ -56,7 +56,7 @@ function test_helper(side_effects) {
     return self;
 }
 
-run_test("update_messages", () => {
+run_test("update_messages", ({override}) => {
     const raw_message = {
         id: 111,
         display_recipient: denmark.name,
@@ -111,6 +111,12 @@ run_test("update_messages", () => {
     const $message_edit_history_modal = $.create("#message-edit-history");
     const $modal = $.create("micromodal").addClass("modal--open");
     $message_edit_history_modal.set_parents_result(".micromodal", $modal);
+
+    const $row = $.create("<stub message row>");
+    const $message_edit = $.create("<stub message edit>");
+    $message_edit.length = 1;
+    $row.set_find_results(".message_edit:hidden", $message_edit);
+    override(message_lists.current, "get_row", () => $row);
 
     // TEST THIS:
     message_events.update_messages(events);
