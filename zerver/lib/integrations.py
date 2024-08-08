@@ -423,7 +423,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("greenhouse", ["hr"], display_name="Greenhouse"),
     WebhookIntegration("groove", ["customer-support"], display_name="Groove"),
     WebhookIntegration("harbor", ["deployment", "productivity"], display_name="Harbor"),
-    WebhookIntegration("hellosign", ["productivity", "hr"], display_name="HelloSign"),
+    WebhookIntegration("dropbox sign", ["productivity", "hr"], display_name="Dropbox Sign"),
     WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
     WebhookIntegration("heroku", ["deployment"], display_name="Heroku"),
     WebhookIntegration("homeassistant", ["misc"], display_name="Home Assistant"),
@@ -759,7 +759,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "greenhouse": [ScreenshotConfig("candidate_stage_change.json", image_name="000.png")],
     "groove": [ScreenshotConfig("ticket_started.json")],
     "harbor": [ScreenshotConfig("scanning_completed.json")],
-    "hellosign": [
+    "dropbox sign": [
         ScreenshotConfig(
             "signatures_signed_by_one_signatory.json",
             payload_as_query_param=True,
