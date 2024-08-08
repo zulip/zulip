@@ -7,6 +7,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Zulip help center',
+			pagination: false,
 		}),
 	],
 });
