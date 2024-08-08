@@ -1255,6 +1255,8 @@ def fetch_shared_channel_users(
     normal_user_ids = set()
     mirror_dummy_user_ids = set()
     added_channels = {}
+    added_bot_users: list[str] = []
+    previous_team_id: str | None = None
     team_id_to_domain: dict[str, str] = {}
     for user in user_list:
         user["is_mirror_dummy"] = False
@@ -1283,8 +1285,27 @@ def fetch_shared_channel_users(
 
     all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {})
     for message in all_messages:
+        if is_integration_bot_message(message, previous_team_id, added_bot_users):
+            # This message is likely from an integration bot. Since Slack's integration
+            # bots doesn't have user profiles, we need to artificially create users for
+            # them to convert their messages.
+            bot_id = message["bot_id"]
+            bot_info = get_slack_api_data(
+                "https://slack.com/api/bots.info", "bot", token=token, bot=bot_id
+            )
+            bot_user = convert_bot_info_to_slack_user(bot_info, previous_team_id)
+
+            team_id = previous_team_id if previous_team_id else ""
+            # previous_team_id will never be None at this point. This is done because mypy
+            # was complaining about the fact that previous_team_id technically can be None.
+
+            bot_user["team_domain"] = get_team_domain(team_id_to_domain, team_id, token)
+            user_list.append(bot_user)
+            added_bot_users.append(bot_id)
+
         user_id = get_message_sending_user(message)
-        if user_id is None or user_id in normal_user_ids:
+        previous_team_id = message["team"] if "team" in message else previous_team_id
+        if user_id is None or user_id in normal_user_ids or user_id in added_bot_users:
             continue
         mirror_dummy_user_ids.add(user_id)
 
@@ -1295,14 +1316,54 @@ def fetch_shared_channel_users(
             "https://slack.com/api/users.info", "user", token=token, user=user_id
         )
         team_id = user["team_id"]
-        if team_id not in team_id_to_domain:
-            team = get_slack_api_data(
-                "https://slack.com/api/team.info", "team", token=token, team=team_id
-            )
-            team_id_to_domain[team_id] = team["domain"]
-        user["team_domain"] = team_id_to_domain[team_id]
+        user["team_domain"] = get_team_domain(team_id_to_domain, team_id, token)
         user["is_mirror_dummy"] = True
         user_list.append(user)
+
+
+def get_team_domain(team_id_to_domain: dict[str, str], team_id: str, token: str) -> str:
+    if team_id not in team_id_to_domain:
+        team = get_slack_api_data(
+            "https://slack.com/api/team.info", "team", token=token, team=team_id
+        )
+        team_id_to_domain[team_id] = team["domain"]
+    return team_id_to_domain[team_id]
+
+
+def is_integration_bot_message(
+    message: ZerverFieldsT, previous_team_id: str | None, added_bot_users: list[str]
+) -> bool:
+    return (
+        message.get("subtype") == "bot_message"
+        and "user" not in message
+        and previous_team_id is not None
+        and message["bot_id"] not in added_bot_users
+    )
+
+
+def convert_bot_info_to_slack_user(bot_info: dict[Any, Any], team_id: str | None) -> ZerverFieldsT:
+    # Obtaining the team_id to construct the Slack user for integration
+    # bots is a bit tricky and hacky. There will be a small chance where
+    # we fail to convert the integration bot to a Slack user, and
+    # consequently, their messages.
+
+    bot_user = {
+        "id": bot_info["id"],
+        "team_id": team_id if team_id else "",
+        "name": bot_info["name"],
+        "deleted": bot_info["deleted"],
+        "is_mirror_dummy": False,
+        "real_name": bot_info["name"],
+        "profile": {
+            "image_32": bot_info["icons"]["image_36"],
+            "bot_id": bot_info["id"],
+            "first_name": bot_info["name"],
+            "avatar_hash": "",
+            "phone": "",
+            "fields": {},
+        },
+    }
+    return bot_user
 
 
 def fetch_team_icons(
