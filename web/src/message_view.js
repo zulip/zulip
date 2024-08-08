@@ -366,6 +366,30 @@ export function show(raw_terms, opts) {
         return;
     }
 
+    if (filter.is_stream_only_narrow()) {
+        if (opts.change_hash === undefined) {
+            update_hash_to_match_filter(filter, opts.trigger);
+        }
+
+        const filter_stream_name = filter.operands("channel")[0];
+        const filter_stream_id = stream_data.get_stream_id(filter_stream_name);
+
+        const active_inbox_filter = inbox_util.current_filter();
+        if (inbox_util.is_visible() && active_inbox_filter) {
+            const inbox_stream_name = active_inbox_filter.operands("channel")[0];
+            const inbox_stream_id = stream_data.get_stream_id(inbox_stream_name);
+
+            if (filter_stream_id === inbox_stream_id) {
+                return;
+            } else {
+                inbox_ui.hide();
+            }
+        }
+
+        inbox_ui.show(filter);
+        return;
+    }
+
     const coming_from_recent_view = recent_view_util.is_visible();
     const coming_from_inbox = inbox_util.is_visible();
 

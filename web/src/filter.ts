@@ -1682,4 +1682,8 @@ export class Filter {
 
         return false;
     }
+
+    is_stream_only_narrow(): boolean {
+        return this._terms.length === 1 && this._terms.some((term) => Filter.term_type(term) === "channel");
+    }
 }

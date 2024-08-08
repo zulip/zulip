@@ -2,6 +2,7 @@ import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
+import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -11,7 +12,11 @@ import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
 
 export function filter(): Filter | undefined {
-    // `Recent Conversations` and `Inbox` return undefined;
+    if (inbox_util.is_visible()) {
+        return inbox_util.filter;
+    }
+
+    // `Recent Conversations` returns undefined;
     return message_lists.current?.data.filter;
 }
 

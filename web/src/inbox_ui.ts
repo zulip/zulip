@@ -15,9 +15,10 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
+import type {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
-import {is_visible, set_visible} from "./inbox_util";
+import {current_filter, is_visible, set_filter, set_visible} from "./inbox_util";
 import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
@@ -36,6 +37,9 @@ import * as user_topics from "./user_topics";
 import * as user_topics_ui from "./user_topics_ui";
 import * as util from "./util";
 import * as views_util from "./views_util";
+import * as stream_topic_history_util from "./stream_topic_history_util";
+import { TopicListWidget, ListInfoNode } from "./topic_list";
+import type {TopicInfo} from "./topic_list_data";
 
 type DirectMessageContext = {
     conversation_key: string;
@@ -180,7 +184,7 @@ function save_data_to_ls(): void {
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
 }
 
-export function show(): void {
+export function show(filter?: Filter): void {
     // Avoid setting col_focus to recipient when moving to inbox from other narrows.
     // We prefer to focus entire row instead of stream name for inbox-header.
     // Since inbox-row doesn't has a collapse button, focus on COLUMNS.COLLAPSE_BUTTON
@@ -188,6 +192,8 @@ export function show(): void {
     if (col_focus === COLUMNS.RECIPIENT) {
         col_focus = COLUMNS.COLLAPSE_BUTTON;
     }
+
+    set_filter(filter);
 
     views_util.show({
         highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_inbox_view,
@@ -676,9 +682,70 @@ export function complete_rerender(): void {
         return;
     }
     load_data_from_ls();
+
+    const narrow_stream_name = current_filter()?.operands("channel")[0];
+    if (narrow_stream_name) {
+        $("#inbox-pane").html(render_inbox_view({
+            normal_view: false,
+            search_val: search_keyword,
+            INBOX_SEARCH_ID,
+        }));
+        const stream_id = stream_data.get_stream_id(narrow_stream_name);
+        // TODO: Handle case where stream_id is undefined.
+        assert(stream_id !== undefined);
+        const widget = new TopicListWidget($("#inbox-list"), stream_id);
+        const formatter = (conversation: TopicInfo): ListInfoNode => {
+            const render = (): string => render_inbox_row({
+                is_stream: false,
+                conversation_key: get_topic_key(stream_id, conversation.topic_name),
+                is_collapsed: false,
+                is_direct: false,
+                is_hidden: false,
+                is_topic: true,
+                topic_url: conversation.url,
+                topic_name: conversation.topic_name,
+                mention_in_unread: conversation.contains_unread_mention,
+                stream_id,
+                unread_count: conversation.unread,
+                all_visibility_policies: user_topics.all_visibility_policies,
+                visibility_policy: user_topics.get_topic_visibility_policy(stream_id, conversation.topic_name),
+                column_indexes: COLUMNS,
+            });
+
+            const eq = (other: ListInfoNode): boolean =>
+                other.type === "topic" && _.isEqual(conversation, other.conversation);
+
+            const key = "t:" + conversation.topic_name;
+
+            return {
+                key,
+                render,
+                type: "topic",
+                conversation,
+                eq,
+            };
+        }
+        widget.build(true, formatter);
+        stream_topic_history_util.get_server_history(stream_id, () => {
+            widget.build(false, formatter);
+        });
+
+        const first_filter = filters.values().next();
+        filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+            ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
+            widget_name: "inbox-filter",
+            item_click_callback: filter_click_handler,
+            $events_container: $("#inbox-main"),
+            default_id: first_filter.done ? undefined : first_filter.value,
+        });
+        filters_dropdown_widget.setup();
+        return;
+    }
+
     const {has_visible_unreads, ...additional_context} = reset_data();
     $("#inbox-pane").html(
         render_inbox_view({
+            normal_view: true,
             search_val: search_keyword,
             INBOX_SEARCH_ID,
             dms_dict,
