@@ -16,6 +16,7 @@ type MessageListView = {
     last_rendered_message: () => Message | undefined;
     show_message_as_read: (message: Message, options: {from?: "pointer" | "server"}) => void;
     show_messages_as_unread: (message_ids: number[]) => void;
+    change_message_id: (old_id: number, new_id: number) => void;
     _render_win_start: number;
     _render_win_end: number;
     sticky_recipient_message_id: number | undefined;
@@ -46,6 +47,8 @@ export type MessageList = {
     has_unread_messages: () => boolean;
     can_mark_messages_read: () => boolean;
     can_mark_messages_read_without_setting: () => boolean;
+    change_message_id: (old_id: number, new_id: number) => boolean;
+    remove_and_rerender: (id: number[]) => void;
     rerender_view: () => void;
     update_muting_and_rerender: () => void;
     prev: () => number | undefined;
