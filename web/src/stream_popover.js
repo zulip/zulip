@@ -570,12 +570,12 @@ export async function build_move_topic_to_stream_popover(
         event.stopPropagation();
     }
 
-    function update_warning_banner(select_stream_id) {
+    function update_warning_banner() {
         // The warning banner only shows when
         // 1) submit button is NOT disabled, and
         // 2) target topic is an existing topic, and
         // 3) propagate_mode is NOT change_one
-        
+
         // submit button
         if ($("#move_topic_modal .dialog_submit_button")[0].disabled) {
             $("#move_topic_modal .move_topic_form_warning_container").html("");
@@ -584,33 +584,38 @@ export async function build_move_topic_to_stream_popover(
 
         // target topic
         if (stream_widget_value !== undefined) {
-            const stream_topics = stream_topic_history.get_recent_topic_names(Number.parseInt(stream_widget_value, 10));
+            const stream_topics = stream_topic_history.get_recent_topic_names(
+                Number.parseInt(stream_widget_value, 10),
+            );
             const {new_topic_name} = get_params_from_form();
             if (!stream_topics.includes(new_topic_name.trim())) {
                 $("#move_topic_modal .move_topic_form_warning_container").html("");
-                return;   
-            }            
+                return;
+            }
         }
-        
+
         // propagate_mode
         if ($("#move_topic_modal select.message_edit_topic_propagate").val() === "change_one") {
             $("#move_topic_modal .move_topic_form_warning_container").html("");
             return;
         }
 
-        $("#move_topic_modal .move_topic_form_warning_container").html(render_message_moving_warning_banner({
-            banner_type: compose_banner.WARNING,
-            hide_close_button: true,
-            classname: "message_moving_warning_banner",
-        }));   
+        $("#move_topic_modal .move_topic_form_warning_container").html(
+            render_message_moving_warning_banner({
+                banner_type: compose_banner.WARNING,
+                hide_close_button: true,
+                classname: "message_moving_warning_banner",
+            }),
+        );
     }
 
     function move_topic_post_render() {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
 
-        $("#move_topic_modal select.message_edit_topic_propagate")[0]?.addEventListener("change", function(){
-            update_warning_banner();
-        })
+        $("#move_topic_modal select.message_edit_topic_propagate")[0]?.addEventListener(
+            "change",
+            () => update_warning_banner(),
+        );
 
         const $topic_input = $("#move_topic_form .move_messages_edit_topic");
         move_topic_to_stream_topic_typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
