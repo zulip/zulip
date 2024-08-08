@@ -255,6 +255,7 @@ def notify_remove_scheduled_message(user_profile: UserProfile, scheduled_message
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
+@transaction.atomic(durable=True)
 def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:
     scheduled_message_object = access_scheduled_message(user_profile, scheduled_message_id)
     scheduled_message_id = scheduled_message_object.id
