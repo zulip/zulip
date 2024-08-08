@@ -64,6 +64,7 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
         "https://slack.com/api/users.list",
         "https://slack.com/api/users.info",
         "https://slack.com/api/team.info",
+        "https://slack.com/api/bots.info",
     ]
     for endpoint in endpoints:
         if request.url and endpoint in request.url:
@@ -95,6 +96,29 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
         except KeyError:
             return (200, {}, orjson.dumps({"ok": False, "error": "user_not_found"}))
         return (200, {}, orjson.dumps({"ok": True, "user": {"id": user_id, "team_id": team_id}}))
+
+    if request.url and "https://slack.com/api/bots.info" in request.url:
+        bot_info_dict = {
+            "B06NWMNUQ3W": {
+                "id": "B06NWMNUQ3W",
+                "deleted": False,
+                "name": "ClickUp",
+                "updated": 1714669546,
+                "app_id": "A3G4A68V9",
+                "icons": {
+                    "image_36": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_36.png",
+                    "image_48": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_48.png",
+                    "image_72": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_72.png",
+                },
+            }
+        }
+        try:
+            bot_id = qs["bot"][0]
+            bot_info = bot_info_dict[bot_id]
+        except KeyError:
+            return (200, {}, orjson.dumps({"ok": False, "error": "bot_not_found"}))
+        return (200, {}, orjson.dumps({"ok": True, "bot": bot_info}))
+
     # Else, https://slack.com/api/team.info
     team_not_found: tuple[int, dict[str, str], bytes] = (
         200,
@@ -145,6 +169,13 @@ class SlackImporter(ZulipTestCase):
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_users_info_url, "user", token=token, user="idontexist")
         self.assertEqual(invalid.exception.args, ("Error accessing Slack API: user_not_found",))
+
+        # Bot info
+        slack_bots_info_url = "https://slack.com/api/bots.info"
+        responses.add_callback(responses.GET, slack_bots_info_url, callback=request_callback)
+        with self.assertRaises(Exception) as invalid:
+            get_slack_api_data(slack_bots_info_url, "XXXYYYZZZ", token=token)
+        self.assertEqual(invalid.exception.args, ("Error accessing Slack API: bot_not_found",))
 
         # Team info
         slack_team_info_url = "https://slack.com/api/team.info"
@@ -326,9 +357,10 @@ class SlackImporter(ZulipTestCase):
             ],
         ]
         messages_mock.return_value = [
-            {"user": "U061A1R2R"},
-            {"user": "U061A5N1G"},
-            {"user": "U061A8H1G"},
+            {"user": "U061A1R2R", "team": "T6LARQE2Z"},
+            {"user": "U061A5N1G", "team": "T6LARQE2Z"},
+            {"user": "U061A8H1G", "team": "T6LARQE2Z"},
+            {"subtype": "bot_message", "text": "", "username": "ClickUp", "bot_id": "B06NWMNUQ3W"},
         ]
         # Users info
         slack_users_info_url = "https://slack.com/api/users.info"
@@ -336,11 +368,15 @@ class SlackImporter(ZulipTestCase):
         # Team info
         slack_team_info_url = "https://slack.com/api/team.info"
         responses.add_callback(responses.GET, slack_team_info_url, callback=request_callback)
+        # Bot info
+        slack_bot_info_url = "https://slack.com/api/bots.info"
+        responses.add_callback(responses.GET, slack_bot_info_url, callback=request_callback)
+
         slack_data_dir = self.fixture_file_name("", type="slack_fixtures")
         fetch_shared_channel_users(users, slack_data_dir, "xoxb-valid-token")
 
         # Normal users
-        self.assert_length(users, 8)
+        self.assert_length(users, 9)
         self.assertEqual(users[0]["id"], "U061A1R2R")
         self.assertEqual(users[0]["is_mirror_dummy"], False)
         self.assertFalse("team_domain" in users[0])
@@ -352,6 +388,7 @@ class SlackImporter(ZulipTestCase):
         # not deterministic.
         later_users = sorted(users[3:], key=lambda x: x["id"])
         expected_users = [
+            ("B06NWMNUQ3W", "ClickUp"),
             ("U061A3E0G", "foreignteam1"),
             ("U061A8H1G", "foreignteam2"),
             ("U11111111", "foreignteam2"),
@@ -360,8 +397,12 @@ class SlackImporter(ZulipTestCase):
         ]
         for expected, found in zip(expected_users, later_users, strict=False):
             self.assertEqual(found["id"], expected[0])
-            self.assertEqual(found["team_domain"], expected[1])
-            self.assertEqual(found["is_mirror_dummy"], True)
+            if "bot_id" in found.get("profile", {}):
+                self.assertEqual(found["real_name"], expected[1])
+                self.assertEqual(found["is_mirror_dummy"], False)
+            else:
+                self.assertEqual(found["team_domain"], expected[1])
+                self.assertEqual(found["is_mirror_dummy"], True)
 
     @mock.patch("zerver.data_import.slack.get_data_file")
     def test_users_to_zerver_userprofile(self, mock_get_data_file: mock.Mock) -> None:
@@ -531,6 +572,35 @@ class SlackImporter(ZulipTestCase):
                 },
                 # Missing the `avatar_hash` value.
             },
+            {
+                "id": "U1MBOTC81",
+                "name": "Integration Bot",
+                "deleted": False,
+                "is_mirror_dummy": False,
+                "real_name": "Integration Bot",
+                "is_integration_bot": True,
+                "profile": {
+                    "image_72": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_512.png",
+                    "bot_id": "B06NWMNUQ3W",
+                    "first_name": "Integration Bot",
+                },
+            },
+            # Test error-handling for a bot user with an unknown avatar URL format.
+            # In reality, we expect the file to have a file extension type to be
+            # `.png` or within the range of `THUMBNAIL_ACCEPT_IMAGE_TYPES`.
+            {
+                "id": "U1RDFEC90",
+                "name": "Unknown Bot",
+                "deleted": False,
+                "is_mirror_dummy": False,
+                "real_name": "Unknown Bot",
+                "is_integration_bot": True,
+                "profile": {
+                    "image_72": "https://avatars.slack-edge.com/2024-05-01/dasdasdasdasdXXXXXX",
+                    "bot_id": "B0DSAMNUQ3W",
+                    "first_name": "Unknown Bot",
+                },
+            },
         ]
 
         mock_get_data_file.return_value = user_data
@@ -546,6 +616,8 @@ class SlackImporter(ZulipTestCase):
             "U015J7JSE": 6,
             "U1RDFEC80": 7,
             "U1ZYFEC91": 8,
+            "U1MBOTC81": 9,
+            "U1RDFEC90": 10,
         }
         slack_data_dir = "./random_path"
         timestamp = int(timezone_now().timestamp())
@@ -558,7 +630,9 @@ class SlackImporter(ZulipTestCase):
                 slack_user_id_to_zulip_user_id,
                 customprofilefield,
                 customprofilefield_value,
-            ) = users_to_zerver_userprofile(slack_data_dir, user_data, 1, timestamp, "test_domain")
+            ) = users_to_zerver_userprofile(
+                slack_data_dir, user_data, 1, timestamp, "testdomain.com"
+            )
 
         # Test custom profile fields
         self.assertEqual(customprofilefield[0]["field_type"], 1)
@@ -579,9 +653,9 @@ class SlackImporter(ZulipTestCase):
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
-        self.assert_length(avatar_list, 8)
+        self.assert_length(avatar_list, 9)
 
-        self.assert_length(zerver_userprofile, 9)
+        self.assert_length(zerver_userprofile, 11)
 
         self.assertEqual(zerver_userprofile[0]["is_staff"], False)
         self.assertEqual(zerver_userprofile[0]["is_bot"], False)
@@ -670,6 +744,19 @@ class SlackImporter(ZulipTestCase):
         )
         self.assertEqual(zerver_userprofile[8]["is_active"], True)
         self.assertEqual(zerver_userprofile[8]["avatar_source"], "G")
+
+        # Test converting Slack's integration bot
+        self.assertEqual(
+            zerver_userprofile[9]["id"], test_slack_user_id_to_zulip_user_id["U1MBOTC81"]
+        )
+        self.assertEqual(zerver_userprofile[9]["is_active"], True)
+        self.assertEqual(zerver_userprofile[9]["avatar_source"], "U")
+
+        self.assertEqual(
+            zerver_userprofile[10]["id"], test_slack_user_id_to_zulip_user_id["U1RDFEC90"]
+        )
+        self.assertEqual(zerver_userprofile[10]["is_active"], True)
+        self.assertEqual(zerver_userprofile[10]["avatar_source"], "G")
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1
