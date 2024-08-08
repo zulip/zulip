@@ -30,6 +30,7 @@ import * as stream_pill from "./stream_pill";
 import * as timerender from "./timerender";
 import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
+import * as util from "./util";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
@@ -64,7 +65,10 @@ function get_common_invitation_data(): {
     if (raw_expires_in === "null") {
         expires_in = null;
     } else if (raw_expires_in === "custom") {
-        expires_in = get_expiration_time_in_minutes();
+        expires_in = util.get_custom_time_in_minutes(
+            custom_expiration_time_unit,
+            custom_expiration_time_input,
+        );
     } else {
         expires_in = Number.parseFloat(raw_expires_in);
     }
@@ -148,7 +152,10 @@ function submit_invitation_form(): void {
             if ($expires_in.val() === "custom") {
                 // Hide the custom inputs if the custom input is set
                 // to one of the dropdown's standard options.
-                const time_in_minutes = get_expiration_time_in_minutes();
+                const time_in_minutes = util.get_custom_time_in_minutes(
+                    custom_expiration_time_unit,
+                    custom_expiration_time_input,
+                );
                 for (const option of Object.values(settings_config.expires_in_values)) {
                     if (option.value === time_in_minutes) {
                         $("#custom-invite-expiration-time").hide();
@@ -261,16 +268,18 @@ function valid_to(time_valid: number): string {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function get_expiration_time_in_minutes(): number {
-    switch (custom_expiration_time_unit) {
-        case "hours":
-            return custom_expiration_time_input * 60;
-        case "days":
-            return custom_expiration_time_input * 24 * 60;
-        case "weeks":
-            return custom_expiration_time_input * 7 * 24 * 60;
-        default:
-            return custom_expiration_time_input;
+function set_custom_expires_on_text(): void {
+    if (util.validate_custom_time_input(custom_expiration_time_input)) {
+        $("#custom_expires_on").text(
+            valid_to(
+                util.get_custom_time_in_minutes(
+                    custom_expiration_time_unit,
+                    custom_expiration_time_input,
+                ),
+            ),
+        );
+    } else {
+        $("#custom_expires_on").text($t({defaultMessage: "Invalid custom time"}));
     }
 }
 
@@ -278,7 +287,7 @@ function set_expires_on_text(): void {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     if ($expires_in.val() === "custom") {
         $("#expires_on").hide();
-        $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
+        set_custom_expires_on_text();
     } else {
         $("#expires_on").show();
         $("#expires_on").text(valid_to(Number.parseFloat($expires_in.val()!)));
@@ -326,14 +335,13 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     e.stopPropagation();
     e.preventDefault();
 
-    const time_unit_choices = ["minutes", "hours", "days", "weeks"];
     const html_body = render_invite_user_modal({
         is_admin: current_user.is_admin,
         is_owner: current_user.is_owner,
         development_environment: page_params.development_environment,
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
-        time_choices: time_unit_choices,
+        time_choices: settings_config.custom_time_unit_values,
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
         can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
@@ -377,12 +385,14 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                     .find(".selected")
                     .attr("data-tab-key");
             }
+            const valid_custom_time = util.validate_custom_time_input(custom_expiration_time_input);
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
-                selected_tab === "invite-email-tab" &&
+                (selected_tab === "invite-email-tab" &&
                     pills.items().length === 0 &&
-                    email_pill.get_current_email(pills) === null,
+                    email_pill.get_current_email(pills) === null) ||
+                    ($expires_in.val() === "custom" && !valid_custom_time),
             );
             if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
@@ -402,9 +412,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         $expires_in.on("change", () => {
             set_custom_time_inputs_visibility();
             set_expires_on_text();
+            toggle_invite_submit_button();
         });
-
-        $("#expires_on").text(valid_to(Number.parseFloat($expires_in.val()!)));
 
         $("#custom-expiration-time-input").on("keydown", (e) => {
             if (e.key === "Enter") {
@@ -414,13 +423,14 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         });
 
         $(".custom-expiration-time").on("change", () => {
-            custom_expiration_time_input = Number.parseFloat(
+            custom_expiration_time_input = util.check_time_input(
                 $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
             custom_expiration_time_unit = $<HTMLSelectOneElement>(
                 "select:not([multiple])#custom-expiration-time-unit",
             ).val()!;
-            $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
+            set_custom_expires_on_text();
+            toggle_invite_submit_button();
         });
 
         $("#invite_check_all_button").on("click", () => {

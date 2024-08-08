@@ -450,3 +450,39 @@ export function format_array_as_list(
 export function get_remaining_time(start_time: number, duration: number): number {
     return Math.max(0, start_time + duration - Date.now());
 }
+
+export function get_custom_time_in_minutes(time_unit: string, time_input: number): number {
+    switch (time_unit) {
+        case "hours":
+            return time_input * 60;
+        case "days":
+            return time_input * 24 * 60;
+        case "weeks":
+            return time_input * 7 * 24 * 60;
+        default:
+            return time_input;
+    }
+}
+
+export function check_time_input(input_value: string, keep_number_as_float = false): number {
+    // This check is important to make sure that inputs like "24a" are
+    // considered invalid and this function returns NaN for such inputs.
+    // Number.parseInt and Number.parseFloat will convert strings like
+    // "24a" to 24.
+    if (Number.isNaN(Number(input_value))) {
+        return Number.NaN;
+    }
+
+    if (keep_number_as_float) {
+        return Number.parseFloat(Number.parseFloat(input_value).toFixed(1));
+    }
+
+    return Number.parseInt(input_value, 10);
+}
+
+export function validate_custom_time_input(time_input: number): boolean {
+    if (Number.isNaN(time_input) || time_input < 0) {
+        return false;
+    }
+    return true;
+}
