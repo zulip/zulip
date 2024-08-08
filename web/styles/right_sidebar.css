@@ -362,17 +362,27 @@ $user_status_emoji_width: 24px;
 }
 
 #user_search_section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 28px;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
     white-space: nowrap;
     margin-bottom: 10px;
 
     & .user-list-filter {
+        grid-area: 1 / 1 / 2 / 3;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
-        width: var(100% - var(--right-sidebar-padding-right));
+        /* Prevent text from colliding with .clear_search_button */
+        padding-right: 28px;
+        /* Push back against inherited styles; let CSS Grid be in
+           charge of the height. */
+        height: auto;
     }
 
     .clear_search_button {
-        margin-left: -1px;
+        grid-area: 1 / 2 / 2 / 3;
+        position: static;
+        padding: 0;
     }
 }
