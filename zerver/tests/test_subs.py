@@ -640,6 +640,44 @@ class TestCreateStreams(ZulipTestCase):
         created_stream = new_streams[0]
         self.assertEqual(created_stream.creator_id, hamlet.id)
 
+    def test_channel_create_message_exists_for_all_policy_types(self) -> None:
+        """
+        Create a channel for each policy type to ensure they all have a "new channel" message.
+        """
+        for policy_key, policy_dict in Stream.PERMISSION_POLICIES.items():
+            channel_creator = self.example_user("desdemona")
+            subdomain = "zulip"
+
+            if policy_key == "public_protected_history":
+                # This is a special channel policy only available in Zephyr realms.
+                channel_creator = self.mit_user("starnine")
+                subdomain = "zephyr"
+
+            self.login_user(channel_creator)
+            new_channel_name = f"New {policy_key} channel"
+            res = self.api_post(
+                channel_creator,
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([{"name": new_channel_name}]).decode(),
+                    "is_web_public": orjson.dumps(policy_dict["is_web_public"]).decode(),
+                    "invite_only": orjson.dumps(policy_dict["invite_only"]).decode(),
+                    "history_public_to_subscribers": orjson.dumps(
+                        policy_dict["history_public_to_subscribers"]
+                    ).decode(),
+                },
+                subdomain=subdomain,
+            )
+            self.assert_json_success(res)
+
+            if policy_key == "public_protected_history":
+                # These do not get channel creation notification.
+                continue
+
+            new_channel = get_stream(new_channel_name, channel_creator.realm)
+            new_channel_events = get_topic_messages(channel_creator, new_channel, "channel events")
+            self.assert_length(new_channel_events, 1)
+
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self) -> None:
