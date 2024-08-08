@@ -11,8 +11,8 @@ the Zulip web app, and our main audience is developers who want to
 understand the system and possibly improve it. Any client should
 be able follow the protocol documented here.
 
-Right now typing indicators are only implemented for direct
-message conversations in the web app.
+Typing indicators are implemented for both direct message conversations
+and channel conversations in the web app.
 
 There are two major roles for users in this system:
 
@@ -102,6 +102,10 @@ potential recipients of the message. The event type for that
 payload is `typing`. See the function `do_send_typing_notification`
 in `zerver/actions/typing.py` for more details.
 
+For channel typing notifications, the server also handles the logic
+for determining which users should receive the typing events based
+on channel subscribers and message visibility.
+
 ## Receiving user
 
 When a user plays the role of a "receiving user," the client handles
@@ -134,6 +138,7 @@ like the following:
 - `remove_typist`
 - `get_group_typists`
 - `get_all_direct_message_typists`
+- `get_channel_typists`
 
 One subtle thing that the client has to do here is to maintain
 timers for typing notifications. The value of
@@ -170,8 +175,13 @@ not let the notifications become too "sticky" either.
 
 ## Roadmap
 
-An area for refinement is to tune the timing values a bit.
-Right now, we are possibly too aggressive about sending `stop`
-messages when users are just pausing to think. It's possible
-to better account for typing speed or other heuristic things
-like how much of the message has already been typed.
+Typing indicators have been implemented for both direct message and
+channel conversations. Future improvements could focus on:
+
+1. Optimizing performance for large channels.
+2. Enhancing the user experience, such as better handling of multiple
+   simultaneous typists in a channel.
+3. Improving the heuristics for when to send "stop" notifications,
+   taking into account factors like typing speed and message length.
+4. Exploring additional customization options for users regarding
+   typing indicators.
