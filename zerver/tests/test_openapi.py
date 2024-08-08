@@ -44,6 +44,7 @@ VARMAP = {
     "boolean": bool,
     "object": dict,
     "NoneType": type(None),
+    "number": float,
 }
 
 
