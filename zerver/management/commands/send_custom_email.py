@@ -67,7 +67,7 @@ class Command(ZulipBaseCommand):
         # This is an additional filter which is composed with the above
         parser.add_argument(
             "--admins-only",
-            help="Filter recipients selected via other options to to only organization administrators",
+            help="Filter recipients selected via other options to only organization administrators",
             action="store_true",
         )
 

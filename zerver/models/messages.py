@@ -42,7 +42,7 @@ class AbstractMessage(models.Model):
         RESOLVE_TOPIC_NOTIFICATION = 2
 
     # IMPORTANT: message.type is not to be confused with the
-    # "recipient type" ("channel" or "direct"), which is is sometimes
+    # "recipient type" ("channel" or "direct"), which is sometimes
     # called message_type in the APIs, CountStats or some variable
     # names. We intend to rename those to recipient_type.
     #

@@ -235,7 +235,7 @@
        the amount of space to the left of the topic
        name. However, CSS subtracts the em-unit width
        of the topic-resolution checkmark to prevent
-       the the topic name from being shifted to the
+       the topic name from being shifted to the
        right. */
     --left-sidebar-topic-indent: calc(
         38px - var(--left-sidebar-topic-resolve-width)
@@ -332,7 +332,7 @@
     /* 46px at 14px/1em */
     --message-box-avatar-column-width: 3.2857em;
     /* Increase the margin here to account for the
-       focus ring, which is is offset by -1px, as well
+       focus ring, which is offset by -1px, as well
        as the vertical height between the hover icons
        and focus ring. */
     --message-box-vertical-margin: calc(
