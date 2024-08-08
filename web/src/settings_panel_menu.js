@@ -7,6 +7,7 @@ import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as popovers from "./popovers";
 import * as scroll_util from "./scroll_util";
+import * as settings_helper from "./settings_helper";
 import * as settings_sections from "./settings_sections";
 import {
     redraw_active_users_list,
@@ -112,11 +113,18 @@ export class SettingsPanelMenu {
         });
 
         this.$main_elem.on("click", "li[data-section]", (e) => {
-            const section = $(e.currentTarget).attr("data-section");
+            let section = $(e.currentTarget).attr("data-section");
 
             if (section === "users") {
                 this.activate_section_or_default(section, this.current_user_settings_tab);
             } else {
+                if (section === "your-bots") {
+                    section = "bots";
+                    this.set_current_tab(section);
+                    this.current_bot_settings_tab = "your-bots";
+                    settings_helper.goto("organization");
+                    this.org_bot_settings_toggler.goto(this.current_bot_settings_tab);
+                }
                 this.activate_section_or_default(section, this.current_bot_settings_tab);
             }
 
