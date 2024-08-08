@@ -432,10 +432,11 @@ export function show(raw_terms, opts) {
                 // location, then we should retarget this narrow operation
                 // to where the message is located now.
                 const narrow_topic = filter.operands("topic")[0];
-                const narrow_stream_name = filter.operands("channel")[0];
-                const narrow_stream_data = stream_data.get_sub(narrow_stream_name);
+                const narrow_stream_data = stream_data.get_possible_sub_by_id_string(
+                    filter.operands("channel")[0],
+                );
                 if (!narrow_stream_data) {
-                    // The stream name is invalid or incorrect in the URL.
+                    // The stream id is invalid or incorrect in the URL.
                     // We reconstruct the narrow with the data from the
                     // target message ID that we have.
                     const adjusted_terms = Filter.adjusted_terms_if_moved(
@@ -1064,52 +1065,52 @@ export function render_message_list_with_selected_message(opts) {
     narrow_history.save_narrow_state_and_flush();
 }
 
-export function activate_stream_for_cycle_hotkey(stream_name) {
+function activate_stream_for_cycle_hotkey(stream_id) {
     // This is the common code for A/D hotkeys.
-    const filter_expr = [{operator: "channel", operand: stream_name}];
+    const filter_expr = [{operator: "channel", operand: stream_id.toString()}];
     show(filter_expr, {});
 }
 
 export function stream_cycle_backward() {
-    const curr_stream = narrow_state.stream_name();
+    const curr_stream_id = narrow_state.stream_id();
 
-    if (!curr_stream) {
+    if (!curr_stream_id) {
         return;
     }
 
-    const stream_name = topic_generator.get_prev_stream(curr_stream);
+    const stream_id = topic_generator.get_prev_stream(curr_stream_id);
 
-    if (!stream_name) {
+    if (!stream_id) {
         return;
     }
 
-    activate_stream_for_cycle_hotkey(stream_name);
+    activate_stream_for_cycle_hotkey(stream_id);
 }
 
 export function stream_cycle_forward() {
-    const curr_stream = narrow_state.stream_name();
+    const curr_stream_id = narrow_state.stream_id();
 
-    if (!curr_stream) {
+    if (!curr_stream_id) {
         return;
     }
 
-    const stream_name = topic_generator.get_next_stream(curr_stream);
+    const stream_id = topic_generator.get_next_stream(curr_stream_id);
 
-    if (!stream_name) {
+    if (!stream_id) {
         return;
     }
 
-    activate_stream_for_cycle_hotkey(stream_name);
+    activate_stream_for_cycle_hotkey(stream_id);
 }
 
 export function narrow_to_next_topic(opts = {}) {
     const curr_info = {
-        stream: narrow_state.stream_name(),
+        stream_id: narrow_state.stream_id(),
         topic: narrow_state.topic(),
     };
 
     const next_narrow = topic_generator.get_next_topic(
-        curr_info.stream,
+        curr_info.stream_id,
         curr_info.topic,
         opts.only_followed_topics,
     );
@@ -1137,7 +1138,7 @@ export function narrow_to_next_topic(opts = {}) {
     }
 
     const filter_expr = [
-        {operator: "channel", operand: next_narrow.stream},
+        {operator: "channel", operand: next_narrow.stream_id.toString()},
         {operator: "topic", operand: next_narrow.topic},
     ];
 
@@ -1195,9 +1196,8 @@ export function narrow_by_topic(target_id, opts) {
         unread_ops.notify_server_message_read(original);
     }
 
-    const stream_name = stream_data.get_stream_name_from_id(original.stream_id);
     const search_terms = [
-        {operator: "channel", operand: stream_name},
+        {operator: "channel", operand: original.stream_id.toString()},
         {operator: "topic", operand: original.topic},
     ];
     opts = {then_select_id: target_id, ...opts};
@@ -1239,7 +1239,7 @@ export function narrow_by_recipient(target_id, opts) {
                 [
                     {
                         operator: "stream",
-                        operand: stream_data.get_stream_name_from_id(message.stream_id),
+                        operand: message.stream_id.toString(),
                     },
                 ],
                 opts,
@@ -1264,10 +1264,9 @@ export function to_compose_target() {
         if (!stream_id) {
             return;
         }
-        const stream_name = stream_data.get_sub_by_id(stream_id).name;
         // If we are composing to a new topic, we narrow to the stream but
         // grey-out the message view instead of narrowing to an empty view.
-        const terms = [{operator: "channel", operand: stream_name}];
+        const terms = [{operator: "channel", operand: stream_id.toString()}];
         const topic = compose_state.topic();
         if (topic !== "") {
             terms.push({operator: "topic", operand: topic});

@@ -111,12 +111,12 @@ run_test("get_unread_ids", () => {
     assert.deepEqual(unread_ids, []);
     assert_unread_info({flavor: "not_found"});
 
-    terms = [{operator: "stream", operand: "bogus"}];
+    terms = [{operator: "stream", operand: "999999"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
-    terms = [{operator: "stream", operand: sub.name}];
+    terms = [{operator: "stream", operand: sub.stream_id.toString()}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
@@ -131,7 +131,7 @@ run_test("get_unread_ids", () => {
     });
 
     terms = [
-        {operator: "stream", operand: "bogus"},
+        {operator: "stream", operand: "9999999"},
         {operator: "topic", operand: "my topic"},
     ];
     set_filter(terms);
@@ -139,7 +139,7 @@ run_test("get_unread_ids", () => {
     assert.deepEqual(unread_ids, []);
 
     terms = [
-        {operator: "stream", operand: sub.name},
+        {operator: "stream", operand: sub.stream_id.toString()},
         {operator: "topic", operand: "my topic"},
     ];
     set_filter(terms);
@@ -226,7 +226,7 @@ run_test("get_unread_ids", () => {
     // destination topic.
     unread.process_loaded_messages([other_topic_message]);
     terms = [
-        {operator: "channel", operand: sub.name},
+        {operator: "channel", operand: sub.stream_id.toString()},
         {operator: "topic", operand: "another topic"},
     ];
     set_filter(terms);
@@ -234,7 +234,7 @@ run_test("get_unread_ids", () => {
     assert.deepEqual(unread_ids, [other_topic_message.id]);
 
     terms = [
-        {operator: "channel", operand: sub.name},
+        {operator: "channel", operand: sub.stream_id.toString()},
         {operator: "topic", operand: "another topic"},
         {operator: "with", operand: stream_msg.id},
     ];
@@ -243,7 +243,7 @@ run_test("get_unread_ids", () => {
     assert.deepEqual(unread_ids, [stream_msg.id]);
 
     terms = [
-        {operator: "channel", operand: sub.name},
+        {operator: "channel", operand: sub.stream_id.toString()},
         {operator: "topic", operand: "another topic"},
         {operator: "with", operand: private_msg.id},
     ];

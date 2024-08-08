@@ -44,7 +44,7 @@ run_test("hash_util", () => {
     encode_decode_operand(operator, operand, "15-Hamlet");
 
     operator = "stream";
-    operand = "frontend";
+    operand = "99";
 
     encode_decode_operand(operator, operand, "99-frontend");
 
@@ -175,11 +175,11 @@ run_test("test_is_in_specified_hash_category", () => {
 
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
-        {negated: false, operator: "stream", operand: "frontend"},
+        {negated: false, operator: "stream", operand: "99"},
     ]);
 
     assert.deepEqual(hash_util.parse_narrow(["narrow", "-stream", "99-frontend"]), [
-        {negated: true, operator: "stream", operand: "frontend"},
+        {negated: true, operator: "stream", operand: "99"},
     ]);
 
     assert.equal(hash_util.parse_narrow(["narrow", "BOGUS"]), undefined);

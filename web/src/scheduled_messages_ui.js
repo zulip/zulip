@@ -8,7 +8,6 @@ import {$t} from "./i18n";
 import * as message_view from "./message_view";
 import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
-import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 
 export function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
@@ -23,7 +22,7 @@ function narrow_via_edit_scheduled_message(compose_args) {
             [
                 {
                     operator: "channel",
-                    operand: stream_data.get_stream_name_from_id(compose_args.stream_id),
+                    operand: compose_args.stream_id,
                 },
                 {operator: "topic", operand: compose_args.topic},
             ],

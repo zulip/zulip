@@ -36,18 +36,18 @@ export function encode_operand(operator: string, operand: string): string {
     }
 
     if (operator === "stream") {
-        return encode_stream_name(operand);
+        return encode_stream_id(operand);
     }
 
     return internal_url.encodeHashComponent(operand);
 }
 
-export function encode_stream_name(operand: string): string {
-    // stream_data prefixes the stream id, but it does not do the
+export function encode_stream_id(stream_id_string: string): string {
+    // stream_data postfixes the stream name, but it does not do the
     // URI encoding piece
-    operand = stream_data.name_to_slug(operand);
+    const slug = stream_data.id_to_slug(Number.parseInt(stream_id_string, 10));
 
-    return internal_url.encodeHashComponent(operand);
+    return internal_url.encodeHashComponent(slug);
 }
 
 export function decode_operand(operator: string, operand: string): string {
@@ -67,7 +67,7 @@ export function decode_operand(operator: string, operand: string): string {
     operand = internal_url.decodeHashComponent(operand);
 
     if (util.canonicalize_stream_synonyms(operator) === "stream") {
-        return stream_data.slug_to_name(operand);
+        return stream_data.slug_to_id_string(operand);
     }
 
     return operand;
@@ -288,7 +288,7 @@ export function validate_group_settings_hash(hash: string): string {
 
 export function decode_stream_topic_from_url(
     url_str: string,
-): {stream_name: string; topic_name?: string} | null {
+): {stream_id: string; topic_name?: string} | null {
     try {
         const url = new URL(url_str);
         if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
@@ -309,12 +309,12 @@ export function decode_stream_topic_from_url(
             return null;
         }
         if (terms.length === 1) {
-            return {stream_name: terms[0].operand};
+            return {stream_id: terms[0].operand};
         }
         if (terms[1]?.operator !== "topic") {
             return null;
         }
-        return {stream_name: terms[0].operand, topic_name: terms[1].operand};
+        return {stream_id: terms[0].operand, topic_name: terms[1].operand};
     } catch {
         return null;
     }

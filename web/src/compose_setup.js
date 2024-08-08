@@ -186,16 +186,16 @@ export function initialize() {
 
                     // Renarrow to the unresolved topic if currently viewing the resolved topic.
                     const current_filter = narrow_state.filter();
-                    const channel_name = sub_store.maybe_get_stream_name(stream_id);
+                    const stream_id_string = stream_id.toString();
                     if (
                         current_filter &&
                         (current_filter.is_conversation_view() ||
                             current_filter.is_conversation_view_with_near()) &&
-                        current_filter.has_topic(channel_name, topic_name)
+                        current_filter.has_topic(stream_id_string, topic_name)
                     ) {
                         message_view.show(
                             [
-                                {operator: "channel", operand: channel_name},
+                                {operator: "channel", operand: stream_id_string},
                                 {operator: "topic", operand: new_topic},
                             ],
                             {},

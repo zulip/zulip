@@ -18,7 +18,6 @@ import type {UserPillItem} from "./search_suggestion";
 import {realm} from "./state_data";
 import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
@@ -75,12 +74,15 @@ type ValidOrInvalidUser =
 const CHANNEL_SYNONYM = "stream";
 const CHANNELS_SYNONYM = "streams";
 
-function zephyr_stream_name_match(message: Message & {type: "stream"}, operand: string): boolean {
+function zephyr_stream_name_match(
+    message: Message & {type: "stream"},
+    stream_name: string,
+): boolean {
     // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
     // TODO: hoist the regex compiling out of the closure
-    const m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(operand);
-    let base_stream_name = operand;
+    const m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(stream_name);
+    let base_stream_name = stream_name;
     if (m?.[1] !== undefined) {
         base_stream_name = m[1];
     }
@@ -88,8 +90,8 @@ function zephyr_stream_name_match(message: Message & {type: "stream"}, operand: 
         /^(un)*/.source + _.escapeRegExp(base_stream_name) + /(\.d)*$/.source,
         "i",
     );
-    const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-    return related_regexp.test(stream_name);
+    const message_stream_name = stream_data.get_stream_name_from_id(message.stream_id);
+    return related_regexp.test(message_stream_name);
 }
 
 function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: string): boolean {
@@ -209,15 +211,12 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
 
-            operand = operand.toLowerCase();
             if (realm.realm_is_zephyr_mirror_realm) {
-                return zephyr_stream_name_match(message, operand);
+                const stream = stream_data.get_possible_sub_by_id_string(operand);
+                return zephyr_stream_name_match(message, stream?.name ?? "");
             }
 
-            // Try to match by stream_id if have a valid sub for
-            // the operand. If we can't find the id, we return false.
-            const stream_id = stream_data.get_stream_id(operand);
-            return stream_id !== undefined && message.stream_id === stream_id;
+            return message.stream_id.toString() === operand;
         }
 
         case "topic":
@@ -291,7 +290,6 @@ const USER_OPERATORS = new Set([
 
 export class Filter {
     _terms: NarrowTerm[];
-    _sub?: StreamSubscription | undefined;
     _sorted_term_types?: string[] = undefined;
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
@@ -354,7 +352,6 @@ export class Filter {
                 break;
 
             case "channel":
-                operand = stream_data.get_name(operand);
                 break;
             case "topic":
                 break;
@@ -493,6 +490,18 @@ export class Filter {
                 }
                 operand = Filter.decodeOperand(parts.join(":"), operator);
 
+                // Check for user-entered channel name. If the name is valid,
+                // convert it to id.
+                if (
+                    (operator === "stream" || operator === "channel") &&
+                    Number.isNaN(Number.parseInt(operand, 10))
+                ) {
+                    const sub = stream_data.get_sub(operand);
+                    if (sub) {
+                        operand = sub.stream_id.toString();
+                    }
+                }
+
                 // We use Filter.operator_to_prefix() to check if the
                 // operator is known.  If it is not known, then we treat
                 // it as a search for the given string (which may contain
@@ -539,7 +548,7 @@ export class Filter {
                 return Number.isInteger(Number(term.operand));
             case "channel":
             case "stream":
-                return stream_data.get_sub(term.operand) !== undefined;
+                return stream_data.get_possible_sub_by_id_string(term.operand) !== undefined;
             case "channels":
             case "streams":
                 return term.operand === "public";
@@ -709,7 +718,7 @@ export class Filter {
                 Filter.canonicalize_operator(term.operator) === expected && !term.negated;
 
             if (is(terms[0], "channel") && is(terms[1], "topic")) {
-                const channel = terms[0].operand;
+                const channel = stream_data.get_sub_by_id_string(terms[0].operand).name;
                 const topic = terms[1].operand;
                 parts.push({
                     type: "channel_topic",
@@ -777,6 +786,18 @@ export class Filter {
                 };
             }
             if (prefix_for_operator !== "") {
+                if (canonicalized_operator === "channel") {
+                    const stream = stream_data.get_possible_sub_by_id_string(operand);
+                    if (stream) {
+                        return {
+                            type: "prefix_for_operator",
+                            prefix_for_operator,
+                            operand: stream.name,
+                        };
+                    }
+                    // Assume the operand is a partially formed name and return
+                    // the operator as the stream name in the next block.
+                }
                 return {
                     type: "prefix_for_operator",
                     prefix_for_operator,
@@ -845,12 +866,11 @@ export class Filter {
             const adjusted_term = {...term};
             if (
                 Filter.canonicalize_operator(term.operator) === "channel" &&
-                !util.lower_same(term.operand, message.display_recipient)
+                term.operand !== message.stream_id.toString()
             ) {
-                adjusted_term.operand = message.display_recipient;
+                adjusted_term.operand = message.stream_id.toString();
                 terms_changed = true;
             }
-
             if (
                 Filter.canonicalize_operator(term.operator) === "topic" &&
                 !util.lower_same(term.operand, message.topic)
@@ -871,9 +891,6 @@ export class Filter {
 
     setup_filter(terms: NarrowTerm[]): void {
         this._terms = this.fix_terms(terms);
-        if (this.has_operator("channel")) {
-            this._sub = stream_data.get_sub_by_name(this.operands("channel")[0]!);
-        }
     }
 
     equals(filter: Filter, excluded_operators?: string[]): boolean {
@@ -912,12 +929,15 @@ export class Filter {
     public_terms(): NarrowTerm[] {
         const safe_to_return = this._terms.filter(
             // Filter out the embedded narrow (if any).
-            (term) =>
-                !(
-                    page_params.narrow_stream !== undefined &&
-                    term.operator === "channel" &&
-                    term.operand.toLowerCase() === page_params.narrow_stream.toLowerCase()
-                ),
+            (term) => {
+                // TODO(stream_id): Ideally we have `page_params.narrow_stream_id`
+                if (page_params.narrow_stream === undefined || term.operator !== "channel") {
+                    return true;
+                }
+                const narrow_stream = stream_data.get_sub_by_name(page_params.narrow_stream);
+                assert(narrow_stream !== undefined);
+                return Number.parseInt(term.operand, 10) === narrow_stream.stream_id;
+            },
         );
         return safe_to_return;
     }
@@ -1130,15 +1150,16 @@ export class Filter {
             return "/#narrow/has/reaction/sender/me";
         }
         if (_.isEqual(term_types, ["channel", "topic", "search"])) {
+            const sub = stream_data.get_possible_sub_by_id_string(this.operands("channel")[0]!);
             // if channel does not exist, redirect to home view
-            if (!this._sub) {
+            if (!sub) {
                 return "#";
             }
             return (
                 "/#narrow/" +
                 CHANNEL_SYNONYM +
                 "/" +
-                stream_data.name_to_slug(this.operands("channel")[0]!) +
+                stream_data.id_to_slug(sub.stream_id) +
                 "/topic/" +
                 this.operands("topic")[0]
             );
@@ -1151,17 +1172,18 @@ export class Filter {
 
         if (term_types[1] === "search") {
             switch (term_types[0]) {
-                case "channel":
+                case "channel": {
+                    const sub = stream_data.get_possible_sub_by_id_string(
+                        this.operands("channel")[0]!,
+                    );
                     // if channel does not exist, redirect to home view
-                    if (!this._sub) {
+                    if (!sub) {
                         return "#";
                     }
                     return (
-                        "/#narrow/" +
-                        CHANNEL_SYNONYM +
-                        "/" +
-                        stream_data.name_to_slug(this.operands("channel")[0]!)
+                        "/#narrow/" + CHANNEL_SYNONYM + "/" + stream_data.id_to_slug(sub.stream_id)
                     );
+                }
                 case "is-dm":
                     return "/#narrow/is/dm";
                 case "is-starred":
@@ -1210,21 +1232,23 @@ export class Filter {
             case "in-all":
                 icon = "home";
                 break;
-            case "channel":
-                if (!this._sub) {
+            case "channel": {
+                const sub = stream_data.get_possible_sub_by_id_string(this.operands("channel")[0]!);
+                if (!sub) {
                     icon = "question-circle-o";
                     break;
                 }
-                if (this._sub.invite_only) {
+                if (sub.invite_only) {
                     zulip_icon = "lock";
                     break;
                 }
-                if (this._sub.is_web_public) {
+                if (sub.is_web_public) {
                     zulip_icon = "globe";
                     break;
                 }
                 zulip_icon = "hashtag";
                 break;
+            }
             case "is-dm":
                 zulip_icon = "user";
                 break;
@@ -1262,11 +1286,11 @@ export class Filter {
             (term_types.length === 2 && _.isEqual(term_types, ["channel", "topic"])) ||
             (term_types.length === 1 && _.isEqual(term_types, ["channel"]))
         ) {
-            if (!this._sub) {
-                const search_text = this.operands("channel")[0];
-                return $t({defaultMessage: "Unknown channel #{search_text}"}, {search_text});
+            const sub = stream_data.get_possible_sub_by_id_string(this.operands("channel")[0]!);
+            if (!sub) {
+                return $t({defaultMessage: "Unknown channel"});
             }
-            return this._sub.name;
+            return sub.name;
         }
         if (
             (term_types.length === 2 && _.isEqual(term_types, ["dm", "near"])) ||
@@ -1481,8 +1505,8 @@ export class Filter {
         return new Filter(terms);
     }
 
-    has_topic(stream_name: string, topic: string): boolean {
-        return this.has_operand("channel", stream_name) && this.has_operand("topic", topic);
+    has_topic(stream_id: string, topic: string): boolean {
+        return this.has_operand("channel", stream_id) && this.has_operand("topic", topic);
     }
 
     sorted_term_types(): string[] {
