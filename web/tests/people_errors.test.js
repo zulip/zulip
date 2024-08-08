@@ -48,7 +48,7 @@ run_test("blueslip", () => {
     blueslip.expect("error", "Unknown user_id");
     people.get_actual_name_from_user_id(9999);
 
-    blueslip.expect("error", "Unknown email for get_user_id");
+    blueslip.expect("error", "Unknown email for get_user_id", 2);
     people.get_user_id(unknown_email);
 
     blueslip.expect("warn", "No user_id provided");
