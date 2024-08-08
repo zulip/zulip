@@ -60,8 +60,6 @@ $user_status_emoji_width: 24px;
 
 #buddy-list-users-matching-view,
 #buddy-list-other-users {
-    width: 90%;
-    margin-left: 10px;
     margin-bottom: 0;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
