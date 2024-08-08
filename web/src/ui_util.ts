@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
+import * as emoji from "./emoji";
 import * as hash_parser from "./hash_parser";
 import * as keydown_util from "./keydown_util";
 
@@ -22,13 +23,31 @@ export function place_caret_at_end(el: HTMLElement): void {
     }
 }
 
-export function replace_emoji_with_text($element: JQuery): void {
+export function process_emoji($element: JQuery): void {
     $element
         .find(".emoji")
         .text(function () {
             if ($(this).is("img")) {
+                // This is a custom emoji, we do not have corresponding unicode
+                // emojis for these so we return original markdown.
                 return $(this).attr("alt") ?? "";
             }
+
+            const emoji_name = $(this).text().slice(1, -1);
+            const emoji_sequence_string = emoji.get_emoji_codepoint(emoji_name);
+            if (emoji_sequence_string !== undefined) {
+                const emoji_sequence_array = emoji_sequence_string.split("-");
+                return String.fromCodePoint(
+                    ...emoji_sequence_array.map((emoji_codepoint) =>
+                        Number.parseInt(emoji_codepoint, 16),
+                    ),
+                );
+            }
+
+            // We never expect to be in this state, return original markdown as fallback.
+            blueslip.error("emoji.get_emoji_codepoint() unexpectedly returned undefined.", {
+                emoji_name,
+            });
             return $(this).text();
         })
         .contents()
