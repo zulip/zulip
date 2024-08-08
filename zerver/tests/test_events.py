@@ -111,6 +111,7 @@ from zerver.actions.user_groups import (
     check_add_user_group,
     check_delete_user_group,
     do_change_user_group_permission_setting,
+    do_deactivate_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_subgroups_from_user_group,
@@ -1856,7 +1857,6 @@ class NormalActionsTest(BaseAction):
                 backend,
                 "can_mention_group",
                 moderators_group,
-                old_setting_api_value=everyone_group.id,
                 acting_user=None,
             )
         check_user_group_update("events[0]", events[0], "can_mention_group")
@@ -1870,7 +1870,6 @@ class NormalActionsTest(BaseAction):
                 backend,
                 "can_mention_group",
                 setting_group,
-                old_setting_api_value=moderators_group.id,
                 acting_user=None,
             )
         check_user_group_update("events[0]", events[0], "can_mention_group")
@@ -1907,6 +1906,11 @@ class NormalActionsTest(BaseAction):
         with self.verify_action() as events:
             remove_subgroups_from_user_group(backend, [api_design], acting_user=None)
         check_user_group_remove_subgroups("events[0]", events[0])
+
+        # Test deactivate event
+        with self.verify_action() as events:
+            do_deactivate_user_group(backend, acting_user=None)
+        check_user_group_update("events[0]", events[0], "deactivated")
 
         # Test remove event
         with self.verify_action() as events:

@@ -19,7 +19,7 @@ from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_emoji import do_remove_realm_emoji
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_groups import check_add_user_group, do_deactivate_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
@@ -2888,6 +2888,27 @@ class MarkdownMentionTest(ZulipTestCase):
         support = self.create_user_group_for_test("support")
 
         content = "We'll add you to @_*support* user group."
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            "<p>We'll add you to "
+            f'<span class="user-group-mention silent" data-user-group-id="{support.id}">support</span>'
+            " user group.</p>",
+        )
+
+        self.assertEqual(rendering_result.mentions_user_group_ids, set())
+
+    def test_deactivated_user_group_mention(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        support = self.create_user_group_for_test("support")
+        do_deactivate_user_group(support, acting_user=None)
+
+        content = "We'll add you to @*support* user group."
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,

@@ -180,9 +180,10 @@ def do_send_create_user_group_event(
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
             can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
+            deactivated=False,
         ),
     )
-    send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
+    send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
 def check_add_user_group(
@@ -213,7 +214,7 @@ def do_send_user_group_update_event(
     user_group: NamedUserGroup, data: dict[str, str | int | AnonymousSettingGroupDict]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
-    send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
+    send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
 @transaction.atomic(savepoint=False)
@@ -435,18 +436,39 @@ def check_delete_user_group(user_group: NamedUserGroup, *, acting_user: UserProf
 
 
 @transaction.atomic(savepoint=False)
+def do_deactivate_user_group(
+    user_group: NamedUserGroup, *, acting_user: UserProfile | None
+) -> None:
+    user_group.deactivated = True
+    user_group.save(update_fields=["deactivated"])
+
+    now = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        modified_user_group_id=user_group.id,
+        event_type=RealmAuditLog.USER_GROUP_DEACTIVATED,
+        event_time=now,
+        acting_user=acting_user,
+    )
+
+    do_send_user_group_update_event(user_group, dict(deactivated=True))
+
+
+@transaction.atomic(savepoint=False)
 def do_change_user_group_permission_setting(
     user_group: NamedUserGroup,
     setting_name: str,
     setting_value_group: UserGroup,
+    old_setting_api_value: int | AnonymousSettingGroupDict | None = None,
     *,
-    old_setting_api_value: int | AnonymousSettingGroupDict,
     acting_user: UserProfile | None,
 ) -> None:
     old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
     user_group.save()
 
+    if old_setting_api_value is None:
+        old_setting_api_value = get_group_setting_value_for_api(old_value)
     new_setting_api_value = get_group_setting_value_for_api(setting_value_group)
 
     if not hasattr(old_value, "named_user_group") and hasattr(
