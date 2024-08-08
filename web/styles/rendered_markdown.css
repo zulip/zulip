@@ -223,11 +223,18 @@
         padding: 0 0.2em;
         box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
         white-space: nowrap;
+
+        margin-left: 2px;
+        margin-right: 2px;
+        display: inline-block;
+        margin-top: 5px;
+
         margin: 0 2px 1px;
 
         .markdown-timestamp-icon {
             align-self: center;
         }
+
     }
 
     /* LaTeX styling */
