@@ -58,6 +58,10 @@
             );
         }
 
+        .new-conversation-button-wrapper {
+            display: flex;
+        }
+
         #left_bar_compose_reply_button_big,
         #new_conversation_button {
             /* Remove the border inherited from `.button` styles. */
