@@ -9,11 +9,11 @@
   "description": "zulip (Zulip Dev)",
   "discount": null,
   "email": "hamlet@zulip.com",
-  "id": "cus_NORMALIZED0001",
+  "id": "NORMALIZED-1",
   "invoice_prefix": "NORMA01",
   "invoice_settings": {
     "custom_fields": null,
-    "default_payment_method": "pm_1P41mkDEQaroqDjsL2RWARi2",
+    "default_payment_method": "pm_NORMALIZED00000000000001",
     "footer": null,
     "rendering_options": null
   },
