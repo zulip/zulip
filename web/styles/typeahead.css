@@ -149,12 +149,16 @@
     }
 }
 
-.typeahead-option-label {
+.typeahead-option-label-container {
     display: flex !important;
     justify-content: space-between;
 
-    > strong {
+    .typeahead-strong-section {
         margin-right: 14px;
+    }
+
+    .typeahead-option-label {
+        color: var(--color-typeahead-option-label);
     }
 }
 
