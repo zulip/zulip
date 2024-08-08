@@ -31,14 +31,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_ignore_travis_pull_request_by_default(self) -> None:
-        self.check_webhook(
-            "pull_request", content_type="application/x-www-form-urlencoded", expect_noop=True
-        )
-
-    def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
-        self.url = f"{self.build_webhook_url()}&ignore_pull_requests=false"
-
+    def test_travis_pull_request(self) -> None:
         self.check_webhook(
             "pull_request",
             self.TOPIC_NAME,
