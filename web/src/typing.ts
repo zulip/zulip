@@ -100,11 +100,11 @@ function get_current_time(): number {
     return Date.now();
 }
 
-function notify_server_start(to: Recipient): void {
+function notify_server_composing_start(to: Recipient): void {
     send_typing_notification_based_on_message_type(to, "start");
 }
 
-function notify_server_stop(to: Recipient): void {
+function notify_server_composing_stop(to: Recipient): void {
     send_typing_notification_based_on_message_type(to, "stop");
 }
 
@@ -136,18 +136,18 @@ export function get_recipient(): Recipient | null {
 }
 
 export function initialize(): void {
-    const worker = {
+    const compose_box_worker = {
         get_current_time,
-        notify_server_start,
-        notify_server_stop,
+        notify_server_composing_start,
+        notify_server_composing_stop,
     };
 
     $(document).on("input", "#compose-textarea", () => {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
         const new_recipient = is_valid_conversation() ? get_recipient() : null;
-        typing_status.update(
-            worker,
+        typing_status.update_composing_status(
+            compose_box_worker,
             new_recipient,
             realm.server_typing_started_wait_period_milliseconds,
             realm.server_typing_stopped_wait_period_milliseconds,
@@ -157,8 +157,8 @@ export function initialize(): void {
     // We send a stop-typing notification immediately when compose is
     // closed/cancelled
     $(document).on("compose_canceled.zulip compose_finished.zulip", () => {
-        typing_status.update(
-            worker,
+        typing_status.update_composing_status(
+            compose_box_worker,
             null,
             realm.server_typing_started_wait_period_milliseconds,
             realm.server_typing_stopped_wait_period_milliseconds,
