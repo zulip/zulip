@@ -181,6 +181,7 @@ run_test("is_stream_editable", ({override}) => {
 
 run_test("get_deletability", ({override}) => {
     current_user.is_admin = true;
+    override(settings_data, "user_can_delete_any_message", () => true);
     override(settings_data, "user_can_delete_own_message", () => false);
     realm.realm_message_content_delete_limit_seconds = null;
     const test_user = {
@@ -204,11 +205,11 @@ run_test("get_deletability", ({override}) => {
         sender_id: 1,
     };
 
-    // Admin can always delete any message
+    // User can delete any message
     assert.equal(message_edit.get_deletability(message), true);
 
-    // Non-admin can't delete message sent by others
-    current_user.is_admin = false;
+    override(settings_data, "user_can_delete_any_message", () => false);
+    // User can't delete message sent by others
     assert.equal(message_edit.get_deletability(message), false);
 
     // Locally echoed messages are not deletable

@@ -178,7 +178,7 @@ export function is_message_sent_by_my_bot(message) {
 }
 
 export function get_deletability(message) {
-    if (current_user.is_admin) {
+    if (settings_data.user_can_delete_any_message()) {
         return true;
     }
 

@@ -14,6 +14,7 @@ const message_lists = zrequire("message_lists");
 const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
+const settings_data = zrequire("settings_data");
 
 const noop = function () {};
 
@@ -136,7 +137,8 @@ function test(label, f) {
 }
 
 // Test functions
-test("my_message_all_actions", () => {
+test("my_message_all_actions", ({override_rewire}) => {
+    override_rewire(settings_data, "user_can_delete_any_message", noop);
     // Set page parameters.
     set_page_params_no_edit_restrictions();
 
@@ -188,7 +190,8 @@ test("my_message_all_actions", () => {
     assert.equal(response.should_display_quote_and_reply, true);
 });
 
-test("not_my_message_view_actions", () => {
+test("not_my_message_view_actions", ({override_rewire}) => {
+    override_rewire(settings_data, "user_can_delete_any_message", noop);
     set_page_params_no_edit_restrictions();
     // Get message that is only viewable
 
@@ -227,7 +230,8 @@ test("not_my_message_view_actions", () => {
     assert.equal(response.move_message_menu_item, undefined);
 });
 
-test("not_my_message_view_source_and_move", () => {
+test("not_my_message_view_source_and_move", ({override_rewire}) => {
+    override_rewire(settings_data, "user_can_delete_any_message", noop);
     set_page_params_no_edit_restrictions();
 
     // Get message that is movable with viewable source
