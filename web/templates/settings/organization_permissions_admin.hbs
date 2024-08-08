@@ -236,9 +236,14 @@
                 {{> settings_save_discard_widget section_name="msg-deletion" }}
             </div>
             <div class="inline-block organization-settings-parent">
-                <label for="org-msg-deletion" class="inline-block">
-                    {{t "Administrators can delete any message." }}
-                </label>
+                <div class="input-group">
+                    <label for="realm_delete_other_message_policy" class="settings-field-label">
+                        {{t "Who can delete any message" }}
+                    </label>
+                    <select name="realm_delete_other_message_policy" id="id_realm_delete_other_message_policy" class="prop-element bootstrap-focus-style settings_select" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
+                    </select>
+                </div>
                 <div class="input-group">
                     <label for="realm_delete_own_message_policy" class="settings-field-label">
                         {{t "Who can delete their own messages" }}

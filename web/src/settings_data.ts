@@ -196,6 +196,9 @@ export function user_can_move_messages_to_another_topic(): boolean {
 export function user_can_delete_own_message(): boolean {
     return user_has_permission(realm.realm_delete_own_message_policy);
 }
+export function user_can_delete_other_message(): boolean {
+    return user_has_permission(realm.realm_delete_other_message_policy);
+}
 
 export function should_mask_unread_count(sub_muted: boolean): boolean {
     if (

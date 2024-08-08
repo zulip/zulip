@@ -229,7 +229,8 @@ def fetch_initial_state_data(
         # user_topic and muted_topics, and receive the duplicate
         # muted_topics data only from older servers that don't yet
         # support user_topic.
-        event_types is None or not want("user_topic")
+        event_types is None
+        or not want("user_topic")
     ):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
 
@@ -332,6 +333,11 @@ def fetch_initial_state_data(
             EditTopicPolicyEnum.ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
         state["realm_delete_own_message_policy"] = (
+            CommonMessagePolicyEnum.ADMINS_ONLY
+            if user_profile is None
+            else realm.delete_own_message_policy
+        )
+        state["realm_delete_other_message_policy"] = (
             CommonMessagePolicyEnum.ADMINS_ONLY
             if user_profile is None
             else realm.delete_own_message_policy
@@ -478,12 +484,12 @@ def fetch_initial_state_data(
                 realm_user_default, property_name
             )
 
-        state["realm_user_settings_defaults"]["emojiset_choices"] = (
-            RealmUserDefault.emojiset_choices()
-        )
-        state["realm_user_settings_defaults"]["available_notification_sounds"] = (
-            get_available_notification_sounds()
-        )
+        state["realm_user_settings_defaults"][
+            "emojiset_choices"
+        ] = RealmUserDefault.emojiset_choices()
+        state["realm_user_settings_defaults"][
+            "available_notification_sounds"
+        ] = get_available_notification_sounds()
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
@@ -736,9 +742,9 @@ def fetch_initial_state_data(
 
         state["user_settings"]["emojiset_choices"] = UserProfile.emojiset_choices()
         state["user_settings"]["timezone"] = canonicalize_timezone(settings_user.timezone)
-        state["user_settings"]["available_notification_sounds"] = (
-            get_available_notification_sounds()
-        )
+        state["user_settings"][
+            "available_notification_sounds"
+        ] = get_available_notification_sounds()
 
     if want("user_status"):
         # We require creating an account to access statuses.
