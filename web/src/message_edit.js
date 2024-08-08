@@ -131,6 +131,21 @@ export function is_message_editable_ignoring_permissions(message) {
     if (currently_echoing_messages.has(message.id)) {
         return false;
     }
+
+    if (message.type === "stream") {
+        const sub = stream_data.get_sub_by_id(message.stream_id);
+
+        // Messages in deactivated streams are not editable.
+        if (sub === undefined) {
+            return false;
+        }
+
+        // Messages in private streams can only edited by subscribed users.
+        if (sub.invite_only && !sub.subscribed) {
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -178,6 +193,20 @@ export function is_message_sent_by_my_bot(message) {
 }
 
 export function get_deletability(message) {
+    if (message.type === "stream") {
+        const sub = stream_data.get_sub_by_id(message.stream_id);
+
+        // Messages in deactivated streams cannot be deleted.
+        if (sub === undefined) {
+            return false;
+        }
+
+        // Messages in private streams can only deleted by subscribed users.
+        if (sub.invite_only && !sub.subscribed) {
+            return false;
+        }
+    }
+
     if (current_user.is_admin) {
         return true;
     }
