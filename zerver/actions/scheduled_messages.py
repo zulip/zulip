@@ -24,7 +24,7 @@ from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
 from zerver.models import Client, Realm, ScheduledMessage, Subscription, UserProfile
 from zerver.models.users import get_system_bot
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES = 10
 
@@ -124,7 +124,7 @@ def notify_update_scheduled_message(
         "op": "update",
         "scheduled_message": scheduled_message.to_dict(),
     }
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
 def edit_scheduled_message(
@@ -252,7 +252,7 @@ def notify_remove_scheduled_message(user_profile: UserProfile, scheduled_message
         "op": "remove",
         "scheduled_message_id": scheduled_message_id,
     }
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
 def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:
@@ -356,7 +356,7 @@ def send_failed_scheduled_message_notification(
     )
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
     # Returns whether there was a scheduled message to attempt
     # delivery on, regardless of whether delivery succeeded.
