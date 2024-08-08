@@ -1,11 +1,12 @@
-import flatpickr from "flatpickr";
 import $ from "jquery";
+import {setFieldText} from "text-field-edit";
 import {z} from "zod";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
 import {Typeahead} from "./bootstrap_typeahead";
 import * as bootstrap_typeahead from "./bootstrap_typeahead";
+import * as flatpickr from "./flatpickr";
 import {$t} from "./i18n";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
@@ -162,11 +163,45 @@ export function initialize_custom_date_type_fields(element_id: string): void {
         return;
     }
 
-    flatpickr($date_picker_elements, {
-        altInput: true,
-        altFormat: "F j, Y",
-        allowInput: true,
-        static: true,
+    // flatpickr($date_picker_elements, {
+    //     altInput: true,
+    //     altFormat: "F j, Y",
+    //     allowInput: true,
+    //     static: true,
+    // Someone clicks the datepicker
+    $(element_id).on("click", ".custom_user_field .datepicker", () => {
+        if (!flatpickr.is_open()) {
+            // Create function for when the date is decided
+            const on_timestamp_selection = (value: string): void => {
+                // Format the date
+                const val = new Date(value);
+                const date_formatted = val.toISOString().slice(0, 10);
+                // Calculate where to write the new date
+                let $target_textarea = $(element_id).find(".custom_user_field .datepicker").eq(0);
+                $target_textarea = $(element_id)
+                    .closest("form")
+                    .find(".custom_user_field .datepicker");
+
+                // Insert the date
+                setFieldText($target_textarea[0]!, date_formatted);
+                $target_textarea.trigger("blur");
+                $target_textarea.trigger("focus");
+            };
+
+            // Create the actual calendar picker
+            const datepickerElement = $(element_id).find(".custom_user_field .datepicker")[0];
+            if (datepickerElement) {
+                // Ensure the element is not undefined
+                flatpickr.show_flatpickr(datepickerElement, on_timestamp_selection, new Date(), {
+                    position: "above center",
+                    altInput: true,
+                    altFormat: "F j, Y",
+                    allowInput: true,
+                });
+            }
+        } else {
+            flatpickr.flatpickr_instance?.close();
+        }
     });
 
     $(element_id)
