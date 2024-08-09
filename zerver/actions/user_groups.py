@@ -425,7 +425,7 @@ def remove_subgroups_from_user_group(
 
 def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: int) -> None:
     event = dict(type="user_group", op="remove", group_id=user_group_id)
-    send_event(realm, event, active_user_ids(realm_id))
+    send_event_on_commit(realm, event, active_user_ids(realm_id))
 
 
 def check_delete_user_group(user_group: NamedUserGroup, *, acting_user: UserProfile) -> None:
