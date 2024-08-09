@@ -1723,8 +1723,8 @@ export class MessageListView {
             // This value is dependent upon space between two `recipient_row` message groups.
             const margin_between_recipient_rows = 10;
             const sticky_or_about_to_be_sticky_header_position =
-                navbar_bottom + header_props.height + margin_between_recipient_rows;
-            if (header_props.top < partially_hidden_header_position) {
+                navbar_bottom + header_props.height / 5 + margin_between_recipient_rows;
+            if (header_props.top < partially_hidden_header_position - header_props.height / 2) {
                 return -1;
             } else if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
                 return 1;
