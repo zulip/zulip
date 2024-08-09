@@ -241,7 +241,7 @@
             /* Ensure that a collapsed message maintains the
                same space around the toggle button as any other
                message-row content. */
-            margin: 4px 0;
+            margin: 0 0 4px;
         }
     }
 
