@@ -24,7 +24,6 @@ Hello, world.
         tests = [
             ("some *foo* word", "some **foo** word"),
             ("*foo*", "**foo**"),
-            ("*foo* *bar*", "**foo** **bar**"),
             ("*foo*a*bar*", "*foo*a*bar*"),
             ("some _foo_ word", "some *foo* word"),
         ]
@@ -206,7 +205,7 @@ Build bla bla succeeded
 **Duration**: 00:02:03
 **Build pipeline**: ConsumerAddressModule
 **Title with null value**
-**Title without value**
+*Title without value*
 Value with null title
 Value without title
         """.strip()

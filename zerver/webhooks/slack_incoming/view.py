@@ -4,7 +4,12 @@ import re
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.data_import.slack_message_conversion import render_attachment, render_block
+from zerver.data_import.slack_message_conversion import (
+    convert_slack_formatting,
+    render_attachment,
+    render_block,
+    replace_links,
+)
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import RequestVariableMissingError
@@ -65,19 +70,6 @@ def api_slack_incoming_webhook(
         body = body.strip()
 
     if body != "":
-        body = replace_formatting(replace_links(body).strip())
+        body = convert_slack_formatting(replace_links(body).strip())
         check_send_webhook_message(request, user_profile, user_specified_topic, body)
     return json_success(request, data={"ok": True})
-
-
-def replace_links(text: str) -> str:
-    return re.sub(r"<(\w+?:\/\/.*?)\|(.*?)>", r"[\2](\1)", text)
-
-
-def replace_formatting(text: str) -> str:
-    # Slack uses *text* for bold, whereas Zulip interprets that as italics
-    text = re.sub(r"([^\w]|^)\*(?!\s+)([^\*\n]+)(?<!\s)\*((?=[^\w])|$)", r"\1**\2**\3", text)
-
-    # Slack uses _text_ for emphasis, whereas Zulip interprets that as nothing
-    text = re.sub(r"([^\w]|^)[_](?!\s+)([^\_\n]+)(?<!\s)[_]((?=[^\w])|$)", r"\1*\2*\3", text)
-    return text
