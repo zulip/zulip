@@ -4,6 +4,8 @@ import assert from "minimalistic-assert";
 import render_input_pill from "../templates/input_pill.hbs";
 import render_search_user_pill from "../templates/search_user_pill.hbs";
 
+import * as compose_actions from "./compose_actions";
+import * as compose_state from "./compose_state";
 import {Filter} from "./filter";
 import * as input_pill from "./input_pill";
 import type {InputPill, InputPillContainer} from "./input_pill";
@@ -75,6 +77,13 @@ function on_pill_exit(
         remove_pill(clicked_pill);
         return;
     }
+    // We need to close the compose box if it's open, for two reasons. (1) its
+    // recipients are about to become out of date, and (2) if it's open, the
+    // global click handler will move
+    if (compose_state.composing()) {
+        compose_actions.cancel();
+    }
+
     // The user-pill-container container class is used exclusively for
     // group-DM search pills, where multiple user pills sit inside a larger
     // pill. The exit icons in those individual user pills should remove
