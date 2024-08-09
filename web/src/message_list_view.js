@@ -1086,6 +1086,13 @@ export class MessageListView {
             }
         }
 
+        const is_conversation_view = message_lists.current.is_combined_feed_view;
+        if (is_conversation_view) {
+            $(".focused-message-list").addClass("combined-feed-view");
+        } else {
+            $(".focused-message-list").removeClass("combined-feed-view");
+        }
+
         return undefined;
     }
 

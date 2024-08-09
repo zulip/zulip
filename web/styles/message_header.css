@@ -147,6 +147,12 @@
                 padding-top: 5px;
             }
         }
+
+        &:hover {
+            .recipient_bar_control_button {
+                visibility: visible !important;
+            }
+        }
     }
 
     .message_header {
@@ -162,6 +168,10 @@
 
         &.sticky_header {
             box-shadow: var(--unread-marker-left) 0 0 0 var(--color-background);
+
+            .recipient_bar_control_button {
+                visibility: visible !important;
+            }
 
             .recipient_row_date {
                 display: block;
@@ -208,6 +218,20 @@
             &::after {
                 font-size: 16px;
             }
+        }
+    }
+}
+
+.visibility-policy-popover-visible {
+    visibility: visible !important;
+    pointer-events: all !important;
+    opacity: 1 !important;
+}
+
+.combined-feed-view .recipient_bar_controls {
+    @media (width > $md_min) {
+        .recipient_bar_control_button {
+            visibility: hidden;
         }
     }
 }
