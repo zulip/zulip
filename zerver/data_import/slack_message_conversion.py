@@ -48,25 +48,25 @@ SLACK_USERMENTION_REGEX = r"""
 # Hence, ~stri~ke doesn't format the word in Slack, but ~~stri~~ke
 # formats the word in Zulip
 SLACK_STRIKETHROUGH_REGEX = r"""
-                             (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
+                             (\n|^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
                              (\~)                                  # followed by an asterisk
-                                 ([ -)+-}—]*)([ -}]+)              # any character except asterisk
+                                 ([^\s~][^~]*[^\s~])([ -}]+)              # any character except asterisk
                              (\~)                                  # followed by an asterisk
-                             ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
+                             (\n|$|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
                              """
 SLACK_ITALIC_REGEX = r"""
-                      (^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
+                      (\n|^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
                       (\_)
-                          ([ -^`~—]*)([ -^`-~]+)                  # any character
+                          ([^\s_][^_]*[^\s_])([ -^`-~]+)                  # any character except _
                       (\_)
-                      ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
+                      (\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
                       """
 SLACK_BOLD_REGEX = r"""
-                    (^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
+                    (\n|^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
                     (\*)
-                        ([ -)+-~—]*)([ -)+-~]+)                   # any character
+                        ([^\s*][^*]*[^\s*])([ -)+-~]+)                   # any character except *
                     (\*)
-                    ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
+                    (\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
                     """
 
 
@@ -87,17 +87,8 @@ def convert_to_zulip_markdown(
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
 ) -> tuple[str, list[int], bool]:
     mentioned_users_id = []
-    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
-    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
-    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
-
-    # Map Slack's mention all: '<!everyone>' to '@**all** '
-    # Map Slack's mention all: '<!channel>' to '@**all** '
-    # Map Slack's mention all: '<!here>' to '@**all** '
-    # No regex for this as it can be present anywhere in the sentence
-    text = text.replace("<!everyone>", "@**all**")
-    text = text.replace("<!channel>", "@**all**")
-    text = text.replace("<!here>", "@**all**")
+    text = convert_slack_formatting(text)
+    text = convert_slack_workspace_mentions(text)
 
     # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
     for cname, ids in added_channels.items():
@@ -125,6 +116,23 @@ def convert_to_zulip_markdown(
     message_has_link = has_link or has_mailto_link
 
     return text, mentioned_users_id, message_has_link
+
+
+def convert_slack_workspace_mentions(text: str) -> str:
+    # Map Slack's <!everyone>, <!channel> and <!here> mentions to @**all**.
+    # No regex for this as it can be present anywhere in the sentence.
+    text = text.replace("<!everyone>", "@**all**")
+    text = text.replace("<!channel>", "@**all**")
+    text = text.replace("<!here>", "@**all**")
+
+    return text
+
+
+def convert_slack_formatting(text: str) -> str:
+    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
+    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
+    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
+    return text
 
 
 def get_user_mentions(
@@ -196,6 +204,12 @@ def convert_mailto_format(text: str) -> tuple[str, bool]:
         has_link = True
         text = text.replace(match.group(0), match.group(1))
     return text, has_link
+
+
+def replace_links(text: str) -> str:
+    text, _ = convert_link_format(text)
+    text, _ = convert_mailto_format(text)
+    return text
 
 
 def render_block(block: WildValue) -> str:
