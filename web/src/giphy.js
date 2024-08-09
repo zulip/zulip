@@ -209,6 +209,7 @@ function toggle_giphy_popover(target) {
         },
         {
             show_as_overlay_on_mobile: true,
+            show_as_overlay_always: false,
         },
     );
 }

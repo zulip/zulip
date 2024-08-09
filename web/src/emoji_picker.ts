@@ -726,6 +726,7 @@ export function toggle_emoji_popover(
         },
         {
             show_as_overlay_on_mobile: true,
+            show_as_overlay_always: false,
         },
     );
 }

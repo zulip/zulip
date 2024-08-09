@@ -57,7 +57,9 @@
                                             {{#if is_system_bot}}
                                             <div class="value">{{t "System bot" }}</div>
                                             {{else}}
-                                            <div class="value">{{t "Bot" }}</div>
+                                            <div class="value">{{t "Bot" }}
+                                                <span class="lowercase">({{user_type}})</span>
+                                            </div>
                                             {{/if}}
                                         {{else}}
                                             <div class="value">{{user_type}}</div>

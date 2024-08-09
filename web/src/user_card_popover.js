@@ -190,6 +190,19 @@ export function toggle_user_card_popover(element, user) {
     );
 }
 
+function toggle_user_card_popover_for_bot_owner(element, user) {
+    show_user_card_popover(
+        user,
+        $(element),
+        false,
+        false,
+        "compose_private_message",
+        "user_card",
+        "right",
+        true,
+    );
+}
+
 function get_user_card_popover_data(
     user,
     has_message_context,
@@ -292,6 +305,7 @@ function show_user_card_popover(
     private_msg_class,
     template_class,
     popover_placement,
+    show_as_overlay,
     on_mount,
 ) {
     let popover_html;
@@ -350,6 +364,7 @@ function show_user_card_popover(
         },
         {
             show_as_overlay_on_mobile: true,
+            show_as_overlay_always: show_as_overlay,
         },
     );
 }
@@ -436,6 +451,7 @@ function toggle_user_card_popover_for_message(element, user, message, on_mount) 
             "respond_personal_button",
             "message_user_card",
             "right",
+            false,
             on_mount,
         );
     }
@@ -519,6 +535,7 @@ function toggle_sidebar_user_card_popover($target) {
         "compose_private_message",
         "user_sidebar",
         "left",
+        false,
         (instance) => {
             /* See comment in get_props_for_popover_centering for explanation of this. */
             $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
@@ -693,19 +710,15 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".view_bot_owner_user_profile", (e) => {
-        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        const user = people.get_by_user_id(user_id);
-        const $target = $(e.currentTarget).closest(".popover-menu-user-type");
-        toggle_user_card_popover($target, user);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     $("body").on("click", ".view_user_profile, .person_picker .pill[data-user-id]", (e) => {
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
-        toggle_user_card_popover(e.target, user);
+        if ($(e.target).closest(".user-card-popover-bot-owner-field").length > 0) {
+            hide_all_user_card_popovers();
+            toggle_user_card_popover_for_bot_owner(e.target, user);
+        } else {
+            toggle_user_card_popover(e.target, user);
+        }
         e.stopPropagation();
         e.preventDefault();
     });

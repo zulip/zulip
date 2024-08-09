@@ -110,6 +110,7 @@ export function toggle_user_group_info_popover(
         },
         {
             show_as_overlay_on_mobile: true,
+            show_as_overlay_always: false,
         },
     );
 }

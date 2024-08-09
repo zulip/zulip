@@ -15,16 +15,14 @@
             </div>
             <div class="popover-menu-user-type">
                 {{#if is_bot}}
-                    {{#if bot_owner}}
-                        <div class="bot_owner" data-tippy-content="{{ bot_owner.full_name }}">{{t "Owner" }}:
-                            <span class="bot-owner-name view_bot_owner_user_profile" data-user-id='{{ bot_owner.user_id }}'>
-                                {{bot_owner.full_name}}
-                            </span>
-                        </div>
-                    {{else if is_system_bot}}
+                    {{#if is_system_bot}}
                         <div>{{t "System bot" }}</div>
                     {{else}}
-                        <div>{{t "Bot" }}</div>
+                        <div>{{t "Bot" }}
+                            {{~#unless (eq user_type "Member")}}
+                                <span class="lowercase">({{user_type}})</span>
+                            {{/unless~}}
+                        </div>
                     {{/if}}
                 {{else}}
                     <div>{{ user_type }}</div>
@@ -123,6 +121,14 @@
             </li>
         {{/if}}
         <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
+        {{#if is_bot}}
+            {{#if bot_owner}}
+                <li role="none" class="popover-menu-list-item user-card-popover-bot-owner-field text-item hidden-for-spectators">
+                    <span class="bot_owner" data-tippy-content="{{ bot_owner.full_name }}">{{t "Bot owner" }}:</span>
+                    {{> ../../user_display_only_pill display_value=bot_owner.full_name user_id=bot_owner.user_id img_src=bot_owner.avatar_url is_active=true}}
+                </li>
+            {{/if}}
+        {{/if}}
         {{#if is_active }}
             {{#if user_email}}
                 <li role="none" class="popover-menu-list-item text-item user-card-popover-email-field hidden-for-spectators">
