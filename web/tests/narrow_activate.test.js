@@ -204,6 +204,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     message_fetch.load_messages_for_narrow = (opts) => {
         // Only validates the anchor and set of fields
+        opts.msg_list.view.last_rendered_message = function () {};
         assert.deepEqual(opts, {
             cont: opts.cont,
             msg_list: opts.msg_list,

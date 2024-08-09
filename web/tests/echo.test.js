@@ -67,8 +67,10 @@ const home_msg_list = {
 message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 
 const echo = zrequire("echo");
+const echo_state = zrequire("echo_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
 
 const general_sub = {
     stream_id: 101,
@@ -84,7 +86,7 @@ run_test("process_from_server for un-echoed messages", () => {
             local_id: "100.1",
         },
     ];
-    echo._patch_waiting_for_ack(waiting_for_ack);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, server_messages);
 });
@@ -122,7 +124,7 @@ run_test("process_from_server for differently rendered messages", ({override}) =
             topic_links: new_value,
         },
     ];
-    echo._patch_waiting_for_ack(waiting_for_ack);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
     disparities = [];
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, []);
@@ -171,7 +173,7 @@ run_test("process_from_server for messages to add to narrow", ({override}) => {
             topic_links: new_value,
         },
     ];
-    echo._patch_waiting_for_ack(waiting_for_ack);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, []);
     assert.deepEqual(messages_to_add_to_narrow, [
@@ -366,10 +368,12 @@ run_test("test reify_message_id", ({override}) => {
     const local_id_float = 103.01;
 
     override(markdown, "render", noop);
+    override(markdown, "get_topic_links", noop);
 
     const message_request = {
         type: "stream",
         stream_id: general_sub.stream_id,
+        topic: "test",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,
@@ -392,6 +396,10 @@ run_test("test reify_message_id", ({override}) => {
 
     assert.ok(message_store_reify_called);
     assert.ok(notifications_reify_called);
+
+    const history = stream_topic_history.find_or_create(general_sub.stream_id);
+    assert.equal(history.max_message_id, 110);
+    assert.equal(history.topics.get("test").message_id, 110);
 });
 
 run_test("reset MockDate", () => {

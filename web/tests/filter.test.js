@@ -433,6 +433,19 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+
+    terms = [
+        {operator: "channel", operand: "foo", negated: false},
+        {operator: "topic", operand: "bar", negated: false},
+    ];
+    filter = new Filter(terms);
+
+    assert.equal(filter.is_in_channel_topic_narrow(), true);
+
+    filter.adjust_with_operand_to_message(12);
+
+    assert.deepEqual(filter.terms(), [...terms, {operator: "with", operand: "12"}]);
+    assert.equal(filter.is_in_channel_topic_narrow(), false);
 });
 
 function assert_not_mark_read_with_has_operands(additional_terms_to_test) {

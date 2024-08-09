@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 
 import {all_messages_data} from "./all_messages_data";
+import {get_max_msg_id_in_topics_waiting_for_ack} from "./echo_state";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
 import * as sub_store from "./sub_store";
@@ -231,6 +232,14 @@ export class PerStreamHistory {
     get_recent_topic_names(): string[] {
         const my_recents = [...this.topics.values()];
 
+        /* Add topics whose messages are not yet acknowledged, hence
+         * not present in our stream_topic_history cache. */
+        const unacked_topics = [
+            ...get_max_msg_id_in_topics_waiting_for_ack(this.stream_id).entries(),
+        ]
+            .filter(([topic, _]) => !this.topics.has(topic))
+            .map(([topic, message_id]) => ({pretty_name: topic, message_id}));
+
         /* Add any older topics with unreads that may not be present
          * in our local cache. */
         const missing_topics = unread.get_missing_topics({
@@ -238,7 +247,7 @@ export class PerStreamHistory {
             topic_dict: this.topics,
         });
 
-        const recents = [...my_recents, ...missing_topics];
+        const recents = [...my_recents, ...unacked_topics, ...missing_topics];
 
         recents.sort((a, b) => b.message_id - a.message_id);
 
@@ -248,7 +257,11 @@ export class PerStreamHistory {
     }
 
     get_max_message_id(): number {
-        return this.max_message_id;
+        const unacked_message_ids_in_stream = [
+            ...get_max_msg_id_in_topics_waiting_for_ack(this.stream_id).values(),
+        ];
+        const max_message_id = Math.max(...unacked_message_ids_in_stream, this.max_message_id);
+        return max_message_id;
     }
 }
 
@@ -346,6 +359,14 @@ export function get_max_message_id(stream_id: number): number {
     const history = find_or_create(stream_id);
 
     return history.get_max_message_id();
+}
+
+export function get_latest_message_id_in_topic(
+    stream_id: number,
+    topic_name: string,
+): number | undefined {
+    const history = find_or_create(stream_id);
+    return history?.topics.get(topic_name)?.message_id;
 }
 
 export function reset(): void {

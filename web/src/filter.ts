@@ -963,6 +963,17 @@ export class Filter {
         return this._terms.length === 1 && this.has_operand("in", "home");
     }
 
+    is_in_channel_topic_narrow(): boolean {
+        if (
+            this.terms().length === 2 &&
+            this.has_operator("channel") &&
+            this.has_operator("topic")
+        ) {
+            return true;
+        }
+        return false;
+    }
+
     is_keyword_search(): boolean {
         return this.has_operator("search");
     }
@@ -1466,6 +1477,13 @@ export class Filter {
 
     _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowTerm[] {
         return terms_mixed_case.map((term: NarrowTerm) => Filter.canonicalize_term(term));
+    }
+
+    adjust_with_operand_to_message(msg_id: number): void {
+        const narrow_terms = this._terms.filter((term) => term.operator !== "with");
+        const adjusted_with_term = {operator: "with", operand: `${msg_id}`};
+        const adjusted_terms = [...narrow_terms, adjusted_with_term];
+        this._terms = adjusted_terms;
     }
 
     filter_with_new_params(params: NarrowTerm): Filter {

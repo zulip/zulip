@@ -65,6 +65,21 @@ function show_all_message_view() {
     });
 }
 
+function require_hash_change(hash) {
+    const terms = hash_util.parse_narrow(hash);
+    // We require hash change if the terms only contain channel and topic
+    // operators so that the topic links can be converted to permalinks.
+    if (
+        terms !== undefined &&
+        terms.length === 2 &&
+        (terms[0].operator === "channel" || terms[0].operator === "stream") &&
+        terms[1].operator === "topic"
+    ) {
+        return true;
+    }
+    return false;
+}
+
 function is_somebody_else_profile_open() {
     return (
         user_profile.get_user_id_if_user_profile_modal_open() !== undefined &&
@@ -198,7 +213,7 @@ function do_hashchange_normal(from_reload) {
                 return false;
             }
             const narrow_opts = {
-                change_hash: false, // already set
+                change_hash: require_hash_change(hash),
                 trigger: "hash change",
                 show_more_topics: false,
             };
