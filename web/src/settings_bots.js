@@ -22,8 +22,9 @@ import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
+import * as util from "./util";
 
-const INCOMING_WEBHOOK_BOT_TYPE = 2;
+const INCOMING_WEBHOOK_BOT_TYPE = "2";
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
 const EMBEDDED_BOT_TYPE = "4";
@@ -198,10 +199,28 @@ export function update_bot_permissions_ui() {
 }
 
 export function add_a_new_bot() {
+    const default_integration_option = {
+        name: $t_html({defaultMessage: "Select an integration"}),
+        unique_id: "",
+    };
+    function get_options_for_integration_input_dropdown_widget() {
+        const options = [
+            default_integration_option,
+            ...realm.realm_incoming_webhook_bots
+                .sort((a, b) => util.strcmp(a.display_name, b.display_name))
+                .map((bot) => ({
+                    name: bot.display_name,
+                    unique_id: bot.name,
+                })),
+        ];
+        return options;
+    }
+
     const html_body = render_add_new_bot_form({
         bot_types: page_params.bot_types,
         realm_embedded_bots: realm.realm_embedded_bots,
         realm_bot_domain: realm.realm_bot_domain,
+        integration_name: get_options_for_integration_input_dropdown_widget(),
     });
 
     let create_avatar_widget;
@@ -213,6 +232,7 @@ export function add_a_new_bot() {
         const payload_url = $("#create_payload_url").val();
         const interface_type = $("#create_interface_type").val();
         const service_name = $("#select_service_name").val();
+        const integration_name = $("#create_integration_name").val();
         const formData = new FormData();
 
         formData.append("csrfmiddlewaretoken", csrf_token);
@@ -221,17 +241,30 @@ export function add_a_new_bot() {
         formData.append("short_name", short_name);
 
         // If the selected bot_type is Outgoing webhook
-        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-            formData.append("payload_url", JSON.stringify(payload_url));
-            formData.append("interface_type", interface_type);
-        } else if (bot_type === EMBEDDED_BOT_TYPE) {
-            formData.append("service_name", service_name);
-            const config_data = {};
-            $(`#config_inputbox [name*='${CSS.escape(service_name)}'] input`).each(function () {
-                config_data[$(this).attr("name")] = $(this).val();
-            });
-            formData.append("config_data", JSON.stringify(config_data));
+        switch (bot_type) {
+            case OUTGOING_WEBHOOK_BOT_TYPE: {
+                formData.append("payload_url", JSON.stringify(payload_url));
+                formData.append("interface_type", interface_type);
+                break;
+            }
+            case EMBEDDED_BOT_TYPE: {
+                formData.append("service_name", service_name);
+                const config_data = {};
+                $(`#config_inputbox [name*='${CSS.escape(service_name)}'] input`).each(function () {
+                    config_data[$(this).attr("name")] = $(this).val();
+                });
+                formData.append("config_data", JSON.stringify(config_data));
+                break;
+            }
+            case INCOMING_WEBHOOK_BOT_TYPE: {
+                // console.log("Bot_type Incoming Webhook");
+                formData.append("integration_name", integration_name);
+                break;
+            }
+            default:
+                break;
         }
+
         for (const [i, file] of Array.prototype.entries.call(
             $("#bot_avatar_file_input")[0].files,
         )) {
@@ -259,6 +292,7 @@ export function add_a_new_bot() {
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
+        $("#integration_name").hide();
         $("#config_inputbox").hide();
         const selected_embedded_bot = "converter";
         $("#select_service_name").val(selected_embedded_bot); // TODO: Use 'select a bot'.
@@ -273,17 +307,27 @@ export function add_a_new_bot() {
             $("#service_name_list").hide();
             $("#select_service_name").removeClass("required");
             $("#config_inputbox").hide();
+            $("#integration_name").hide();
 
             $("#payload_url_inputbox").hide();
             $("#create_payload_url").removeClass("required");
-            if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-                $("#payload_url_inputbox").show();
-                $("#create_payload_url").addClass("required");
-            } else if (bot_type === EMBEDDED_BOT_TYPE) {
-                $("#service_name_list").show();
-                $("#select_service_name").addClass("required");
-                $("#select_service_name").trigger("change");
-                $("#config_inputbox").show();
+            switch (bot_type) {
+                case OUTGOING_WEBHOOK_BOT_TYPE: {
+                    $("#payload_url_inputbox").show();
+                    $("#create_payload_url").addClass("required");
+                    break;
+                }
+                case EMBEDDED_BOT_TYPE: {
+                    $("#service_name_list").show();
+                    $("#select_service_name").addClass("required");
+                    $("#select_service_name").trigger("change");
+                    $("#config_inputbox").show();
+                    break;
+                }
+                case INCOMING_WEBHOOK_BOT_TYPE: {
+                    $("#integration_name").show();
+                    break;
+                }
             }
         });
 
@@ -442,7 +486,9 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
         const api_key = $(e.currentTarget).attr("data-api-key");
-        integration_url_modal.show_generate_integration_url_modal(api_key);
+        const $li = $(e.currentTarget).closest("li");
+        const bot_id = Number.parseInt($li.find(".bot-card-info").attr("data-user-id"), 10);
+        integration_url_modal.show_generate_integration_url_modal(api_key, bot_id);
     });
 
     const clipboard = new ClipboardJS("#copy_zuliprc", {

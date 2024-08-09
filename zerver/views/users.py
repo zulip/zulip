@@ -115,8 +115,9 @@ def deactivate_user_backend(
     user_profile: UserProfile,
     *,
     user_id: PathOnly[int],
-    deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
-    | None = None,
+    deactivation_notification_comment: (
+        Annotated[str, StringConstraints(max_length=2000)] | None
+    ) = None,
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
@@ -452,6 +453,7 @@ def add_bot_backend(
     bot_type: Json[int] = UserProfile.DEFAULT_BOT,
     payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
     service_name: str | None = None,
+    integration_name: str | None = None,
     config_data: Json[Mapping[str, str]] | None = None,
     interface_type: Json[int] = Service.GENERIC,
     default_sending_stream_name: Annotated[
@@ -529,7 +531,6 @@ def add_bot_backend(
         (default_events_register_stream, ignored_sub) = access_stream_by_name(
             user_profile, default_events_register_stream_name
         )
-
     if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT) and service_name:
         check_valid_bot_config(bot_type, service_name, config_data)
 
@@ -562,6 +563,8 @@ def add_bot_backend(
             token=generate_api_key(),
         )
 
+    if integration_name is not None and bot_type is UserProfile.INCOMING_WEBHOOK_BOT:
+        set_bot_config(bot_profile, "integration_name", integration_name)
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
         set_bot_config(bot_profile, "integration_id", service_name)
 
