@@ -151,18 +151,8 @@ $user_status_emoji_width: 24px;
     }
 
     .user_circle {
-        width: var(--length-user-status-circle);
-        height: var(--length-user-status-circle);
         grid-area: starting-anchor-element;
         place-self: center center;
-
-        @media screen and (resolution <= 1x) {
-            /* User circles appear to sag a bit on
-               low-resolution screens, so this fix
-               targets them without disrupting
-               line-height values. */
-            margin-top: -2.5px;
-        }
     }
 
     .user_sidebar_entry.with_avatar .user_circle {
