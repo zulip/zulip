@@ -562,7 +562,7 @@ body.has-overlay-scrollbar {
 
     .column-left .left-sidebar {
         width: var(--left-sidebar-width);
-        padding-left: var(--left-sidebar-collapse-widget-gutter);
+        padding-left: var(--left-sidebar-padding-left);
     }
 
     .column-right .right-sidebar {
@@ -580,7 +580,7 @@ body.has-overlay-scrollbar {
 #compose-content {
     margin-right: var(--right-sidebar-width);
     margin-left: calc(
-        var(--left-sidebar-width) + var(--left-sidebar-collapse-widget-gutter)
+        var(--left-sidebar-width) + var(--left-sidebar-padding-left)
     );
     position: relative;
 }
