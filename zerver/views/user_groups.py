@@ -45,6 +45,7 @@ from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
 
 
+@transaction.atomic(durable=True)
 @require_user_group_edit_permission
 @typed_endpoint
 def add_user_group(
