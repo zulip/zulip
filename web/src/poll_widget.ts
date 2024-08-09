@@ -23,6 +23,11 @@ export type PollWidgetExtraData = {
     options?: string[] | undefined;
 };
 
+export type PollWidgetOutboundData =
+    | NewOptionOutboundData
+    | QuestionOutboundData
+    | VoteOutboundData;
+
 export function activate({
     $elem,
     callback,
@@ -30,9 +35,7 @@ export function activate({
     message,
 }: {
     $elem: JQuery;
-    callback: (
-        data: NewOptionOutboundData | QuestionOutboundData | VoteOutboundData | undefined,
-    ) => void;
+    callback: (data: PollWidgetOutboundData | undefined) => void;
     extra_data: PollWidgetExtraData;
     message: Message;
 }): (events: Event[]) => void {
