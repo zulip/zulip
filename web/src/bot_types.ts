@@ -24,10 +24,19 @@ const embedded_service_schema = z.object({
     config_data: z.record(z.string()),
     service_name: z.string(),
 });
-
+export const incoming_service_schema = z.object({
+    integration_name: z.string(),
+});
 export const services_schema = z.union([
     z.array(outgoing_service_schema),
     z.array(embedded_service_schema),
+    z.array(incoming_service_schema),
+]);
+
+export const service_schema = z.union([
+    outgoing_service_schema,
+    embedded_service_schema,
+    incoming_service_schema,
 ]);
 
 export const server_update_bot_schema = basic_bot_schema.extend({

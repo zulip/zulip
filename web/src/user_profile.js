@@ -785,7 +785,11 @@ export function show_edit_bot_info_modal(user_id, $container) {
             e.preventDefault();
             e.stopPropagation();
             const current_bot_data = bot_data.get(bot.user_id);
-            integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
+            const bot_id = Number($("#bot-edit-form").attr("data-user-id"));
+            integration_url_modal.show_generate_integration_url_modal(
+                current_bot_data.api_key,
+                bot_id,
+            );
         });
     }
 }
