@@ -20,6 +20,7 @@ import * as people from "./people";
 import type {User} from "./people";
 import * as scroll_util from "./scroll_util";
 import {current_user} from "./state_data";
+import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_containers from "./stream_settings_containers";
 import type {SettingsSubscription} from "./stream_settings_data";
@@ -97,6 +98,19 @@ function show_stream_subscription_request_result({
     }
 }
 
+function stream_edit_update_notification_choice(user_pill_ids: number[]): void {
+    const sub = get_sub(current_stream_id);
+    if (!sub) {
+        return;
+    }
+    const [user_id_set] = filter_active_users(user_pill_ids);
+    const subscriber_ids = new Set(peer_data.get_subscribers(current_stream_id));
+    for (const subscriber_id of subscriber_ids) {
+        user_id_set.delete(subscriber_id);
+    }
+    stream_create_subscribers.update_notification_choice_checkbox(user_id_set.size);
+}
+
 export function enable_subscriber_management({
     sub,
     $parent_container,
@@ -118,6 +132,8 @@ export function enable_subscriber_management({
     pill_widget = add_subscribers_pill.create({
         $pill_container,
         get_potential_subscribers,
+        onPillCreateAction: stream_edit_update_notification_choice,
+        onPillRemoveAction: stream_edit_update_notification_choice,
     });
 
     $pill_container.find(".input").on("input", () => {
@@ -181,12 +197,7 @@ function make_list_widget({
     });
 }
 
-function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
-    const sub = get_sub(current_stream_id);
-    if (!sub) {
-        return;
-    }
-
+function filter_active_users(pill_user_ids: number[]): [Set<number>, Set<number>] {
     const deactivated_users = new Set<number>();
     const active_user_ids = pill_user_ids.filter((user_id) => {
         if (!people.is_person_active(user_id)) {
@@ -195,8 +206,16 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         }
         return true;
     });
+    return [new Set(active_user_ids), deactivated_users];
+}
 
-    const user_id_set = new Set(active_user_ids);
+function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
+    const sub = get_sub(current_stream_id);
+    if (!sub) {
+        return;
+    }
+
+    const [user_id_set, deactivated_users] = filter_active_users(pill_user_ids);
 
     if (user_id_set.has(current_user.user_id) && sub.subscribed) {
         // We don't want to send a request to subscribe ourselves
@@ -262,8 +281,13 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
             remove_class: "text-success",
         });
     }
-
-    subscriber_api.add_user_ids_to_stream(user_ids, sub, invite_success, invite_failure);
+    subscriber_api.add_user_ids_to_stream(
+        user_ids,
+        sub,
+        Boolean($("#send_notification_to_new_subscribers").prop("checked")),
+        invite_success,
+        invite_failure,
+    );
 }
 
 function remove_subscriber({

@@ -764,4 +764,21 @@ export function initialize(): void {
             return false;
         },
     });
+
+    tippy.delegate("body", {
+        target: ".send_notification_to_new_subscribers_label.disabled",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const content = $t({
+                defaultMessage:
+                    "Notification message cannot be sent when adding more than 100 users.",
+            });
+            instance.setContent(content);
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }
