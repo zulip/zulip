@@ -1008,6 +1008,7 @@ ul.popover-group-menu-member-list {
         font-weight: 600;
         /* 20px at 18px/1em */
         line-height: 1.1111em;
+        margin-right: 0.8rem;
         color: var(--color-text-full-name);
         word-break: break-word;
     }
@@ -1111,7 +1112,7 @@ ul.popover-group-menu-member-list {
         padding-top: 4px;
 
         & p {
-            margin: 0 0 4px;
+            margin: 0 0.814rem 4px 0;
         }
     }
 
@@ -1134,6 +1135,23 @@ ul.popover-group-menu-member-list {
         line-height: 1.1429em;
         color: var(--color-text-item) !important;
     }
+}
+
+.exit_user_card_popover {
+    color: var(--color-text-item);
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 1.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 0;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
 }
 
 .popover-menu {
