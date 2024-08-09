@@ -76,7 +76,7 @@ export function get_subscriber_count(stream_id: number, include_bots = true): nu
 
     let count = 0;
     for (const user_id of get_user_set(stream_id).keys()) {
-        if (!people.is_valid_bot_user(user_id)) {
+        if (!people.is_valid_bot_user(user_id) && people.is_person_active(user_id)) {
             count += 1;
         }
     }

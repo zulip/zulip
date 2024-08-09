@@ -218,15 +218,26 @@ test("title_data", () => {
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
 });
 
-test("simple search", () => {
+test("filters deactivated users", () => {
     add_canned_users();
 
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
-    const user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
+    let user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
 
     assert.deepEqual(user_ids, [selma.user_id]);
+    assert.ok(buddy_data.matches_filter("selm", selma.user_id));
+
+    // Deactivated users are excluded.
+    people.deactivate(selma);
+
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
+    assert.deepEqual(user_ids, []);
+
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids();
+    assert.equal(user_ids.includes(selma.user_id), false);
+    assert.ok(!buddy_data.matches_filter("selm", selma.user_id));
 });
 
 test("muted users excluded from search", () => {
