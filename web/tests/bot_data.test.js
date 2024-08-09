@@ -54,7 +54,13 @@ const bot_data_params = {
             is_active: true,
             owner_id: 5,
             user_id: 314,
-            services: [{base_url: "http://foo.com", interface: 1, token: "basictoken12345"}],
+            services: [
+                {
+                    base_url: "http://foo.com",
+                    interface: 1,
+                    token: "basictoken12345",
+                },
+            ],
             extra: "This field should be ignored",
         },
     ],
@@ -145,7 +151,13 @@ test("test_basics", () => {
         bot_data.update(43, {
             ...test_bot,
             full_name: "New Bot 1",
-            services: [{interface: 2, base_url: "http://baz.com", token: "zxcvbnm1234567890"}],
+            services: [
+                {
+                    interface: 2,
+                    base_url: "http://baz.com",
+                    token: "zxcvbnm1234567890",
+                },
+            ],
         });
         bot = bot_data.get(43);
         const services = bot_data.get_services(43);
@@ -176,7 +188,12 @@ test("test_basics", () => {
         assert.equal("12345678", services[0].config_data.key);
         bot_data.update(bot_id, {
             ...test_embedded_bot,
-            services: [{config_data: {key: "87654321"}, service_name: "embedded bot service"}],
+            services: [
+                {
+                    config_data: {key: "87654321"},
+                    service_name: "embedded bot service",
+                },
+            ],
         });
         assert.equal("87654321", services[0].config_data.key);
         assert.equal("embedded bot service", services[0].service_name);
