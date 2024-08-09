@@ -26,7 +26,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.users import active_user_ids
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 
 class MemberGroupUserDict(TypedDict):
@@ -35,7 +35,7 @@ class MemberGroupUserDict(TypedDict):
     date_joined: datetime
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def create_user_group_in_database(
     name: str,
     members: list[UserProfile],
@@ -182,7 +182,7 @@ def do_send_create_user_group_event(
             can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
         ),
     )
-    send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
+    send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
 def check_add_user_group(
@@ -213,7 +213,7 @@ def do_send_user_group_update_event(
     user_group: NamedUserGroup, data: dict[str, str | int | AnonymousSettingGroupDict]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
-    send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
+    send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
 @transaction.atomic(savepoint=False)
@@ -425,7 +425,7 @@ def remove_subgroups_from_user_group(
 
 def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: int) -> None:
     event = dict(type="user_group", op="remove", group_id=user_group_id)
-    send_event(realm, event, active_user_ids(realm_id))
+    send_event_on_commit(realm, event, active_user_ids(realm_id))
 
 
 def check_delete_user_group(user_group: NamedUserGroup, *, acting_user: UserProfile) -> None:

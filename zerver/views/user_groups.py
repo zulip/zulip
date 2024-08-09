@@ -45,6 +45,7 @@ from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
 
 
+@transaction.atomic(durable=True)
 @require_user_group_edit_permission
 @typed_endpoint
 def add_user_group(
@@ -95,7 +96,7 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     return json_success(request, data={"user_groups": user_groups})
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 @require_user_group_edit_permission
 @typed_endpoint
 def edit_user_group(
