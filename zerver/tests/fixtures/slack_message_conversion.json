@@ -31,6 +31,11 @@
       "conversion_output": "(~~str ike!~~, text. ~~Also ~~)"
     },
     {
+      "name": "valid_strikethrough_test_2",
+      "input": "~1️⃣ Use the `/task` command~",
+      "conversion_output": "~~1️⃣ Use the `/task` command~~"
+    },
+    {
       "name": "invalid_strikethrough_test",
       "input": "Mid~word~ strike. Also ~~strike~~)",
       "conversion_output": "Mid~word~ strike. Also ~~strike~~)"
@@ -41,14 +46,19 @@
       "conversion_output": "ital ^*lic*, *wo r@d*."
     },
     {
+      "name": "valid_italic_test_2",
+      "input": "_1️⃣ Use the `/task` command_",
+      "conversion_output": "*1️⃣ Use the `/task` command*"
+    },
+    {
       "name": "invalid_italic_test",
       "input": "mid_word_, @_italics_",
       "conversion_output": "mid_word_, @_italics_"
     },
     {
-      "name": "valid_bold_test",
-      "input": "(*text*} and normal :* bold*.",
-      "conversion_output": "(**text**} and normal :** bold**."
+      "name": "valid_bold_test_2",
+      "input": "*1️⃣ Use the `/task` command*",
+      "conversion_output": "**1️⃣ Use the `/task` command**"
     },
     {
       "name": "invalid_bold_test",
@@ -79,6 +89,16 @@
       "name": "italic_and_strike_conversion",
       "input": "_~italic~_ and ~_strike_~",
       "conversion_output": "*~~italic~~* and ~~*strike*~~"
+    },
+    {
+      "name": "unsupported_bold_test",
+      "input": "*foo* *bar*",
+      "conversion_output": "**foo** *bar*"
+    },
+    {
+      "name": "unsupported_bold_test_2",
+      "input": "(*text*} and normal :* bold*.",
+      "conversion_output": "(**text**} and normal :* bold*."
     }
   ]
 }

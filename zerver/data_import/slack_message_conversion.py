@@ -48,25 +48,25 @@ SLACK_USERMENTION_REGEX = r"""
 # Hence, ~stri~ke doesn't format the word in Slack, but ~~stri~~ke
 # formats the word in Zulip
 SLACK_STRIKETHROUGH_REGEX = r"""
-                             (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
+                             (\n|^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
                              (\~)                                  # followed by an asterisk
-                                 ([ -)+-}—]*)([ -}]+)              # any character except asterisk
+                                 ([^\s~][^~]*[^\s~])([ -}]+)              # any character except asterisk
                              (\~)                                  # followed by an asterisk
-                             ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
+                             (\n|$|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
                              """
 SLACK_ITALIC_REGEX = r"""
-                      (^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
+                      (\n|^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
                       (\_)
-                          ([ -^`~—]*)([ -^`-~]+)                  # any character
+                          ([^\s_][^_]*[^\s_])([ -^`-~]+)                  # any character except _
                       (\_)
-                      ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
+                      (\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
                       """
 SLACK_BOLD_REGEX = r"""
-                    (^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
+                    (\n|^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
                     (\*)
-                        ([ -)+-~—]*)([ -)+-~]+)                   # any character
+                        ([^\s*][^*]*[^\s*])([ -)+-~]+)                   # any character except *
                     (\*)
-                    ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
+                    (\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
                     """
 
 
@@ -79,6 +79,94 @@ def get_user_full_name(user: ZerverFieldsT) -> str:
         return user["name"]
 
 
+def convert_slack_workspace_mentions(text: str) -> str:
+    # Map Slack's <!everyone>, <!channel> and <!here> mentions to @**all**.
+    # No regex for this as it can be present anywhere in the sentence.
+    text = text.replace("<!everyone>", "@**all**")
+    text = text.replace("<!channel>", "@**all**")
+    text = text.replace("<!here>", "@**all**")
+
+    return text
+
+
+# Map italic, bold and strikethrough Markdown
+def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
+    """
+    Returns:
+    1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
+    2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
+    3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
+    """
+    for match in re.finditer(regex, text, re.VERBOSE):
+        converted_token = (
+            match.group(1)
+            + zulip_keyword
+            + match.group(3)
+            + match.group(4)
+            + zulip_keyword
+            + match.group(6)
+        )
+        text = text.replace(match.group(0), converted_token)
+    return text
+
+
+def convert_slack_formatting(text: str) -> str:
+    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
+    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
+    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
+    return text
+
+
+def get_user_mentions(
+    token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
+) -> tuple[str, int | None]:
+    slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
+    assert slack_usermention_match is not None
+    short_name = slack_usermention_match.group(4)
+    slack_id = slack_usermention_match.group(2)
+    for user in users:
+        if (user["id"] == slack_id and user["name"] == short_name and short_name) or (
+            user["id"] == slack_id and short_name is None
+        ):
+            full_name = get_user_full_name(user)
+            user_id = slack_user_id_to_zulip_user_id[slack_id]
+            mention = "@**" + full_name + "**"
+            token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
+            return token, user_id
+    return token, None
+
+
+def convert_mailto_format(text: str) -> tuple[str, bool]:
+    """
+    1. Converts '<mailto:foo@foo.com>' to 'mailto:foo@foo.com'
+    2. Converts '<mailto:foo@foo.com|foo@foo.com>' to 'mailto:foo@foo.com'
+    """
+    has_link = False
+    for match in re.finditer(SLACK_MAILTO_REGEX, text, re.VERBOSE):
+        has_link = True
+        text = text.replace(match.group(0), match.group(1))
+    return text, has_link
+
+
+def convert_link_format(text: str) -> tuple[str, bool]:
+    """
+    1. Converts '<https://foo.com>' to 'https://foo.com'
+    2. Converts '<https://foo.com|foo>' to '[foo](https://foo.com)'
+    """
+    has_link = False
+    for match in re.finditer(LINK_REGEX, text, re.VERBOSE):
+        slack_url = match.group(0)
+        base_url = slack_url[1:-1]  # remove "<" & ">"
+        url_parts = base_url.split("|")
+        converted_url = url_parts[0]
+        if 1 < len(url_parts) < 3:  # Check if there's a pipe with text after it
+            converted_url = f"[{url_parts[1]}]({url_parts[0]})"
+
+        has_link = True
+        text = text.replace(slack_url, converted_url)
+    return text, has_link
+
+
 # Markdown mapping
 def convert_to_zulip_markdown(
     text: str,
@@ -87,17 +175,8 @@ def convert_to_zulip_markdown(
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
 ) -> tuple[str, list[int], bool]:
     mentioned_users_id = []
-    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
-    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
-    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
-
-    # Map Slack's mention all: '<!everyone>' to '@**all** '
-    # Map Slack's mention all: '<!channel>' to '@**all** '
-    # Map Slack's mention all: '<!here>' to '@**all** '
-    # No regex for this as it can be present anywhere in the sentence
-    text = text.replace("<!everyone>", "@**all**")
-    text = text.replace("<!channel>", "@**all**")
-    text = text.replace("<!here>", "@**all**")
+    text = convert_slack_formatting(text)
+    text = convert_slack_workspace_mentions(text)
 
     # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
     for cname, ids in added_channels.items():
@@ -127,75 +206,10 @@ def convert_to_zulip_markdown(
     return text, mentioned_users_id, message_has_link
 
 
-def get_user_mentions(
-    token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
-) -> tuple[str, int | None]:
-    slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
-    assert slack_usermention_match is not None
-    short_name = slack_usermention_match.group(4)
-    slack_id = slack_usermention_match.group(2)
-    for user in users:
-        if (user["id"] == slack_id and user["name"] == short_name and short_name) or (
-            user["id"] == slack_id and short_name is None
-        ):
-            full_name = get_user_full_name(user)
-            user_id = slack_user_id_to_zulip_user_id[slack_id]
-            mention = "@**" + full_name + "**"
-            token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
-            return token, user_id
-    return token, None
-
-
-# Map italic, bold and strikethrough Markdown
-def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
-    """
-    Returns:
-    1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
-    2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
-    3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
-    """
-    for match in re.finditer(regex, text, re.VERBOSE):
-        converted_token = (
-            match.group(1)
-            + zulip_keyword
-            + match.group(3)
-            + match.group(4)
-            + zulip_keyword
-            + match.group(6)
-        )
-        text = text.replace(match.group(0), converted_token)
+def replace_links(text: str) -> str:
+    text, _ = convert_link_format(text)
+    text, _ = convert_mailto_format(text)
     return text
-
-
-def convert_link_format(text: str) -> tuple[str, bool]:
-    """
-    1. Converts '<https://foo.com>' to 'https://foo.com'
-    2. Converts '<https://foo.com|foo>' to '[foo](https://foo.com)'
-    """
-    has_link = False
-    for match in re.finditer(LINK_REGEX, text, re.VERBOSE):
-        slack_url = match.group(0)
-        base_url = slack_url[1:-1]  # remove "<" & ">"
-        url_parts = base_url.split("|")
-        converted_url = url_parts[0]
-        if 1 < len(url_parts) < 3:  # Check if there's a pipe with text after it
-            converted_url = f"[{url_parts[1]}]({url_parts[0]})"
-
-        has_link = True
-        text = text.replace(slack_url, converted_url)
-    return text, has_link
-
-
-def convert_mailto_format(text: str) -> tuple[str, bool]:
-    """
-    1. Converts '<mailto:foo@foo.com>' to 'mailto:foo@foo.com'
-    2. Converts '<mailto:foo@foo.com|foo@foo.com>' to 'mailto:foo@foo.com'
-    """
-    has_link = False
-    for match in re.finditer(SLACK_MAILTO_REGEX, text, re.VERBOSE):
-        has_link = True
-        text = text.replace(match.group(0), match.group(1))
-    return text, has_link
 
 
 def render_block(block: WildValue) -> str:
