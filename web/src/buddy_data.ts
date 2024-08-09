@@ -326,6 +326,11 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
             return false;
         }
 
+        if (!people.is_person_active(user_id)) {
+            // Deactivated users are hidden from the right sidebar entirely.
+            return false;
+        }
+
         if (muted_users.is_user_muted(user_id)) {
             // Muted users are hidden from the right sidebar entirely.
             return false;
