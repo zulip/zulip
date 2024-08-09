@@ -183,7 +183,7 @@ export function initiate({
     immediate = false,
     save_compose = true,
     send_after_reload = false,
-    message_html = "Reloading ...",
+    message_html = "Reloading...",
 }) {
     if (immediate) {
         do_reload_app(send_after_reload, save_compose, message_html);
