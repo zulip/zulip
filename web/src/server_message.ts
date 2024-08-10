@@ -4,7 +4,6 @@ const display_recipient_users_schema = z.object({
     id: z.number(),
     email: z.string(),
     full_name: z.string(),
-    is_mirror_dummy: z.boolean(),
 });
 
 export const message_edit_history_schema = z.array(
