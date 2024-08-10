@@ -589,7 +589,7 @@ export function get_pm_people(query: string): (UserGroupPillData | UserPillData)
         topic: compose_state.topic(),
         filter_groups_for_guests: true,
     };
-    const suggestions = get_person_suggestions(query, opts);
+    const suggestions = get_person_suggestions(query, opts, true);
     // We know these aren't mentions because `want_broadcast` was `false`.
     // TODO: In the future we should separate user and mention so we don't have
     // to do this.
@@ -613,6 +613,7 @@ type PersonSuggestionOpts = {
 export function get_person_suggestions(
     query: string,
     opts: PersonSuggestionOpts,
+    exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
     query = typeahead.clean_query_lowercase(query);
 
@@ -702,7 +703,11 @@ export function get_person_suggestions(
     if (filtered_message_persons.length >= cutoff_length) {
         filtered_persons = filtered_message_persons;
     } else {
-        filtered_persons = filter_persons(people.get_realm_users());
+        if (exclude_non_welcome_bots) {
+            filtered_persons = filter_persons(people.get_realm_users_and_welcome_bot());
+        } else {
+            filtered_persons = filter_persons(people.get_realm_users_and_system_bots());
+        }
     }
 
     return typeahead_helper.sort_recipients({
