@@ -19,7 +19,6 @@ export type DisplayRecipientUser = {
     email: string;
     full_name: string;
     id: number;
-    is_mirror_dummy: boolean;
 };
 
 export type DisplayRecipient = string | DisplayRecipientUser[];

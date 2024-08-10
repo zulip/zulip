@@ -70,7 +70,6 @@ const message = {
                 email: "user1@foo.com",
                 id: 1,
                 full_name: "aaron",
-                is_mirror_dummy: false,
             },
             user_id: 1,
         },
