@@ -9265,21 +9265,54 @@ paths:
                           Legacy property for a part of the Zephyr mirroring system.
 
                           **Deprecated**. Clients should ignore this field.
-                    example:
-                      {
-                        "msg": "",
-                        "presences":
-                          {
-                            "10":
-                              {
-                                "idle_timestamp": 1656958530,
-                                "active_timestamp": 1656958520,
-                              },
-                          },
-                        "result": "success",
-                        "server_timestamp": 1656958539.6287155,
-                        "presence_last_update_id": 1000,
-                      }
+              examples:
+                modern-presence-format-example:
+                  description: |
+                    Modern presence format:
+                  value:
+                    {
+                      "msg": "",
+                      "presences":
+                        {
+                          "10":
+                            {
+                              "idle_timestamp": 1656958530,
+                              "active_timestamp": 1656958520,
+                            },
+                        },
+                      "result": "success",
+                      "server_timestamp": 1656958539.6287155,
+                      "presence_last_update_id": 1000,
+                    }
+                legacy-presence-format-example:
+                  description: |
+                    Legacy presence format:
+                  value:
+                    {
+                      "msg": "",
+                      "presences":
+                        {
+                          "user@example.com":
+                            {
+                              "aggregated":
+                                {
+                                  "client": "website",
+                                  "status": "idle",
+                                  "timestamp": 1594825445,
+                                },
+                              "website":
+                                {
+                                  "client": "website",
+                                  "status": "idle",
+                                  "timestamp": 1594825445,
+                                  "pushable": false,
+                                },
+                            },
+                        },
+                      "result": "success",
+                      "server_timestamp": 1656958539.6287155,
+                      "presence_last_update_id": 1000,
+                    }
   /users/me/status:
     post:
       operationId: update-status

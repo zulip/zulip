@@ -73,7 +73,7 @@ class OpenAPIToolsTest(ZulipTestCase):
     """
 
     def test_get_openapi_fixture(self) -> None:
-        actual = get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_BAD_REQ)
+        actual = get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_BAD_REQ)[0]["value"]
         expected = {
             "code": "BAD_REQUEST",
             "msg": "You don't have permission to edit this message",
@@ -1031,9 +1031,17 @@ class OpenAPIAttributesTest(ZulipTestCase):
                             )
                         continue
                     validate_schema(schema)
-                    assert validate_against_openapi_schema(
-                        schema["example"], path, method, status_code
-                    )
+                    if "example" not in schema:
+                        assert "examples" in response["content"]["application/json"]
+                        examples = response["content"]["application/json"]["examples"]
+                        for example in examples:
+                            assert validate_against_openapi_schema(
+                                examples[example]["value"], path, method, status_code
+                            )
+                    else:
+                        assert validate_against_openapi_schema(
+                            schema["example"], path, method, status_code
+                        )
 
 
 class OpenAPIRegexTest(ZulipTestCase):
