@@ -3,7 +3,8 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
-import type {Event, PollWidgetExtraData} from "./poll_widget";
+import type {Event, PollWidgetExtraData, PollWidgetOutboundData} from "./poll_widget";
+import type {TodoWidgetOutboundData} from "./todo_widget";
 
 // TODO: This ZFormExtraData type should be moved to web/src/zform.js when it will be migrated
 type ZFormExtraData = {
@@ -26,13 +27,16 @@ type WidgetOptions = {
     events: Event[];
     $row: JQuery;
     message: Message;
-    post_to_server: (data: {msg_type: string; data: string}) => void;
+    post_to_server: (data: {
+        msg_type: string;
+        data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+    }) => void;
 };
 
 type WidgetValue = Record<string, unknown> & {
     activate: (data: {
         $elem: JQuery;
-        callback: (data: string) => void;
+        callback: (data: string | PollWidgetOutboundData | TodoWidgetOutboundData) => void;
         message: Message;
         extra_data: WidgetExtraData;
     }) => (events: Event[]) => void;
@@ -66,7 +70,9 @@ export function activate(in_opts: WidgetOptions): void {
         return;
     }
 
-    const callback = function (data: string): void {
+    const callback = function (
+        data: string | PollWidgetOutboundData | TodoWidgetOutboundData,
+    ): void {
         post_to_server({
             msg_type: "widget",
             data,

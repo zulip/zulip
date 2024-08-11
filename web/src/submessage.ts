@@ -5,7 +5,9 @@ import * as channel from "./channel";
 import type {MessageList} from "./message_lists";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
+import type {PollWidgetOutboundData} from "./poll_widget";
 import {todo_widget_extra_data_schema} from "./todo_widget";
+import type {TodoWidgetOutboundData} from "./todo_widget";
 import * as widgetize from "./widgetize";
 
 export type Submessage = {
@@ -215,8 +217,14 @@ export function handle_event(submsg: Submessage): void {
 
 export function make_server_callback(
     message_id: number,
-): (opts: {msg_type: string; data: string}) => void {
-    return function (opts: {msg_type: string; data: string}) {
+): (opts: {
+    msg_type: string;
+    data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+}) => void {
+    return function (opts: {
+        msg_type: string;
+        data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+    }) {
         const url = "/json/submessage";
 
         void channel.post({
