@@ -6,11 +6,11 @@
 
 {% block content %}
 <p>
-    {{ _("Here are some tips for keeping your Zulip conversations organized with topics.") }}
+    {{ _("Here are some tips for keeping your Red Bangle conversations organized with topics.") }}
 </p>
 
 <p>
-    {{ _("In Zulip, <b>channels</b> determine who gets a message. <b>Topics</b> tell you what the message is about.")}} {{ _("Using topics, you can read Zulip one conversation at a time. You'll see each message in context, no matter how many different discussions are going on.") }}
+    {{ _("In Red Bangle, <b>channels</b> determine who gets a message. <b>Topics</b> tell you what the message is about.")}} {{ _("Using topics, you can read Red Bangle one conversation at a time. You'll see each message in context, no matter how many different discussions are going on.") }}
 </p>
 
 <img class="responsive-width" src="{{ email_images_base_url }}/channels-and-topics.png" alt="{{ _('Channels and topics in the Zulip app') }}"/>
@@ -25,12 +25,12 @@
     {% trans %}Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to <a href="{{ move_messages_link }}">move messages</a>, <a href="{{ rename_topics_link }}">rename topics</a>, or even <a href="{{ move_channels_link }}">move a topic to a different channel</a>.{% endtrans %}
 </p>
 
-<a class="button" href="{{ realm_url }}">{{ _("Go to Zulip") }}</a>
+<a class="button" href="{{ realm_url }}">{{ _("Go to Red Bangle") }}</a>
 
 {% endblock %}
 
-{% block manage_preferences %}
+<!--{% block manage_preferences %}-->
 
-<p><a href="{{ unsubscribe_link }}">{% trans %}Unsubscribe from welcome emails for {{ realm_name }}{% endtrans %}</a></p>
+<!--<p><a href="{{ unsubscribe_link }}">{% trans %}Unsubscribe from welcome emails for {{ realm_name }}{% endtrans %}</a></p>-->
 
 {% endblock %}

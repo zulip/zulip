@@ -1,7 +1,3 @@
-Support URL: {{ support_url }}
-
-Website: {{ website }}
-
 Organization type: {{ organization_type }}
 
 Description:

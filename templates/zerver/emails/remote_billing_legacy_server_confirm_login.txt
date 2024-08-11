@@ -1,4 +1,4 @@
-{% trans %}Either you, or someone on your behalf, has requested a log in link to manage the Zulip plan for {{ remote_server_hostname }}.{% endtrans %}
+{% trans %}Either you, or someone on your behalf, has requested a log in link to manage the Red Bangle plan for {{ remote_server_hostname }}.{% endtrans %}
 
 
 {% trans %}Click the link below to log in.{% endtrans %} {% trans %}This link will expire in {{ validity_in_hours }} hours.{% endtrans %}

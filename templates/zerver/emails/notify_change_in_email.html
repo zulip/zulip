@@ -7,10 +7,10 @@
 {% block content %}
 <p>{{ _("Hi,") }}</p>
 <p>
-    {% trans new_email=macros.email_tag(new_email), support_email=macros.email_tag(support_email) %}The email associated with your Zulip account was recently changed to {{ new_email }}. If you did not request this change, please contact us immediately at {{ support_email }}.{% endtrans %}
+    {% trans new_email=macros.email_tag(new_email), support_email=macros.email_tag(support_email) %}The email associated with your Red Bangle account was recently changed to {{ new_email }}. If you did not request this change, please contact us immediately at {{ support_email }}.{% endtrans %}
 </p>
 <p>
     {{ _("Best,") }}<br />
-    {{ _("Team Zulip") }}
+    {{ _("Team Red Bangle") }}
 </p>
 {% endblock %}

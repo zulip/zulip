@@ -10,5 +10,5 @@
 <p>{% trans realm_url=macros.link_tag(realm_url), old_email=macros.email_tag(old_email), new_email=macros.email_tag(new_email) %}We received a request to change the email address for the Zulip account on {{ realm_url }} from {{ old_email }} to {{ new_email }}. To confirm this change, please click below:{% endtrans %}
     <a class="button" href="{{ activate_url }}">{{_('Confirm email change') }}</a></p>
 
-<p>{% trans support_email=macros.email_tag(support_email) %}If you did not request this change, please contact us immediately at {{ support_email }}.{% endtrans %}</p>
+<!--<p>{% trans support_email=macros.email_tag(support_email) %}If you did not request this change, please contact us immediately at {{ support_email }}.{% endtrans %}</p>-->
 {% endblock %}

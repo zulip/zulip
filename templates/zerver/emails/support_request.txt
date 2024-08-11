@@ -1,5 +1,3 @@
-Support URL: {{ support_url }}
-
 Subject: {{ request_subject }}
 
 Message:

@@ -7,8 +7,8 @@
 {% block content %}
 <p>{% trans %}Hi,{% endtrans %}</p>
 
-<p>{% trans realm_url=macros.link_tag(realm_url), new_email=macros.email_tag(new_email) %}We received a request to add the email address {{ new_email }} to your Zulip demo organization account on {{ realm_url }}. To confirm this update and set a password for this account, please click below:{% endtrans %}
+<p>{% trans realm_url=macros.link_tag(realm_url), new_email=macros.email_tag(new_email) %}We received a request to add the email address {{ new_email }} to your Red Bangle demo organization account on {{ realm_url }}. To confirm this update and set a password for this account, please click below:{% endtrans %}
     <a class="button" href="{{ activate_url }}">{{_('Confirm and set password') }}</a></p>
 
-<p>{% trans support_email=macros.email_tag(support_email) %}If you did not request this change, please contact us immediately at {{ support_email }}.{% endtrans %}</p>
+<!--<p>{% trans support_email=macros.email_tag(support_email) %}If you did not request this change, please contact us immediately at {{ support_email }}.{% endtrans %}</p>-->
 {% endblock %}

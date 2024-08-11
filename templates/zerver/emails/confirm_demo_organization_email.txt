@@ -4,7 +4,7 @@ Hi,
 
 
 {% trans -%}
-We received a request to add the email address {{ new_email }} to your Zulip demo organization account on {{ realm_url }}. To confirm this update and set a password for this account, please click below:
+We received a request to add the email address {{ new_email }} to your Red Bangle demo organization account on {{ realm_url }}. To confirm this update and set a password for this account, please click below:
 {%- endtrans %}
 
 

@@ -7,7 +7,7 @@
 {% block content %}
 <p>{% trans %}Dear former administrators of {{ realm_name }},{% endtrans %}</p>
 
-<p>{% trans realm_url=macros.link_tag(realm_url) %}One of your administrators requested reactivation of the previously deactivated Zulip organization hosted at {{ realm_url }}.{% endtrans %}</p>
+<p>{% trans realm_url=macros.link_tag(realm_url) %}One of your administrators requested reactivation of the previously deactivated Red Bangle organization hosted at {{ realm_url }}.{% endtrans %}</p>
 
 <p>
     {{ _('Click the button below to reactivate your organization.') }}
@@ -16,11 +16,11 @@
 
 <p>{% trans %}If the request was in error, you can take no action and this link will expire in 24 hours.{% endtrans %}</p>
 
-<p>
-    {% if corporate_enabled %}
-        {{macros.contact_us_zulip_cloud(support_email)}}
-    {% else %}
-        {{macros.contact_us_self_hosted(support_email)}}
-    {% endif %}
-</p>
+<!--<p>-->
+<!--    {% if corporate_enabled %}-->
+<!--        {{macros.contact_us_zulip_cloud(support_email)}}-->
+<!--    {% else %}-->
+<!--        {{macros.contact_us_self_hosted(support_email)}}-->
+<!--    {% endif %}-->
+<!--</p>-->
 {% endblock %}

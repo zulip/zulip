@@ -1,5 +1,5 @@
-{{ _("Your request for Zulip sponsorship has been approved! Your organization has been upgraded to the Zulip Community plan.") }}
+{{ _("Your request for Red Bangle sponsorship has been approved! Your organization has been upgraded to the Red Bangle Community plan.") }}
 {{ plans_link }}
 
-{{ _("If you could list Zulip as a sponsor on your website, we would really appreciate it!") }}
+{{ _("If you could list Red Bangle as a sponsor on your website, we would really appreciate it!") }}
 {{ link_to_zulip }}

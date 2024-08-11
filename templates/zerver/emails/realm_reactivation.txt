@@ -1,7 +1,7 @@
 {% trans %}Dear former administrators of {{ realm_name }},{% endtrans %}
 
 
-{% trans %}One of your administrators requested reactivation of the previously deactivated Zulip organization hosted at {{ realm_url }}.{% endtrans %}
+{% trans %}One of your administrators requested reactivation of the previously deactivated Red Bangle organization hosted at {{ realm_url }}.{% endtrans %}
 
 
 {{ _('Click the link below to reactivate your organization.') }}
@@ -13,5 +13,5 @@
 {% if corporate_enabled %}
     {% trans %}Do you have questions or feedback to share? Contact us at {{ support_email }} — we'd love to help!{% endtrans %}
 {% else %}
-    {% trans %}If you have any questions, please contact this Zulip server's administrators at {{ support_email }}.{% endtrans %}
+    {% trans %}If you have any questions, please contact this Red Bangle server's administrators at {{ support_email }}.{% endtrans %}
 {% endif %}

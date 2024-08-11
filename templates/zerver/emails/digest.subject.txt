@@ -1,1 +1,1 @@
-{% trans %}Zulip digest for {{ realm_name }}{% endtrans %}
+{% trans %}Red Bangle digest for {{ realm_name }}{% endtrans %}

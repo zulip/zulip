@@ -1,4 +1,4 @@
-{{ _('Welcome to Zulip!') }}
+{{ _('Welcome to Red Bangle!') }}
 
 {% if realm_creation %}
     {% if is_demo_organization %}

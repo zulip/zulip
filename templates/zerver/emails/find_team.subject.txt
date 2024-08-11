@@ -1,5 +1,5 @@
 {% if account_found %}
-    {{ _("Your Zulip accounts") }}
+    {{ _("Your Red Bangle accounts") }}
 {% else %}
-    {{ _("No Zulip accounts found") }}
+    {{ _("No Red Bangle accounts found") }}
 {% endif %}

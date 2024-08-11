@@ -1,6 +1,6 @@
 {{ _("Hi again,") }}
 
-{% trans %}This is a friendly reminder that {{ referrer_name }} ({{ referrer_email }}) wants you to join them on Zulip -- the team communication tool designed for productivity.{% endtrans %}
+{% trans %}This is a friendly reminder that {{ referrer_name }} ({{ referrer_email }}) wants you to join them on Red Bangle -- the team communication tool designed for productivity.{% endtrans %}
 
 {{ _("To get started, click the link below.") }}
     <{{ activate_url }}>

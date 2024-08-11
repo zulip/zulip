@@ -6,7 +6,7 @@
 
 {% block content %}
 <p>
-    {% trans %}Either you, or someone on your behalf, has requested a log in link to manage the Zulip plan for <b>{{ remote_server_hostname }}</b>.{% endtrans %}
+    {% trans %}Either you, or someone on your behalf, has requested a log in link to manage the Red Bangle plan for <b>{{ remote_server_hostname }}</b>.{% endtrans %}
 </p>
 <p>
     {% trans %}
@@ -20,7 +20,7 @@
 <p>
     <a class="button" href="{{ confirmation_url }}">{{ _("Log in") }}</a>
 </p>
-<p>
-    {% trans billing_contact_email=macros.email_tag(billing_contact_email) %}Questions? <a href="{{ billing_help_link }}">Learn more</a> or contact {{ billing_contact_email }}.{% endtrans %}
-</p>
+<!--<p>-->
+<!--    {% trans billing_contact_email=macros.email_tag(billing_contact_email) %}Questions? <a href="{{ billing_help_link }}">Learn more</a> or contact {{ billing_contact_email }}.{% endtrans %}-->
+<!--</p>-->
 {% endblock %}

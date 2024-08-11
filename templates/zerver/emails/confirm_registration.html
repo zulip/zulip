@@ -7,13 +7,13 @@
 {% block content %}
 <p>
     {% if create_realm %}
-    {{ _("You have requested a new Zulip organization:") }}
+    {{ _("You have requested a new Red Bangle organization:") }}
     <ul>
         <li>{% trans %}Organization URL: {{ organization_url }}{% endtrans %}</li>
         <li>{% trans %}Organization type: {{ organization_type }}{% endtrans %}</li>
     </ul>
     {% else %}
-    {{ _("You recently signed up for Zulip. Awesome!") }}
+    {{ _("You recently signed up for Red Bangle. Awesome!") }}
     {% endif %}
 </p>
 <p>
@@ -24,11 +24,11 @@
     {% endif %}
     <a class="button" href="{{ activate_url }}">{{ _("Complete registration") }}</a>
 </p>
-<p>
-    {% if corporate_enabled %}
-        {{macros.contact_us_zulip_cloud(support_email)}}
-    {% else %}
-        {{macros.contact_us_self_hosted(support_email)}}
-    {% endif %}
-</p>
+<!--<p>-->
+<!--    {% if corporate_enabled %}-->
+<!--        {{macros.contact_us_zulip_cloud(support_email)}}-->
+<!--    {% else %}-->
+<!--        {{macros.contact_us_self_hosted(support_email)}}-->
+<!--    {% endif %}-->
+<!--</p>-->
 {% endblock %}

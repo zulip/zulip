@@ -1,5 +1,5 @@
 {% if create_realm %}
-{{ _("Create your Zulip organization") }}
+{{ _("Create your Red Bangle organization") }}
 {% else %}
-{{ _("Activate your Zulip account") }}
+{{ _("Activate your Red Bangle account") }}
 {% endif %}

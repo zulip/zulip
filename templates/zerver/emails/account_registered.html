@@ -7,29 +7,29 @@
 {% block content %}
 {% if realm_creation %}
 {% if is_demo_organization %}
-<p>
-    {% trans demo_organizations_help_link="https://zulip.com/help/demo-organizations" %}Congratulations, you have created a new Zulip demo organization. Note
-    that this organization will be automatically deleted in 30 days. Learn more
-    about demo organizations <a
-    href="{{ demo_organizations_help_link }}">here</a>!
-    {% endtrans %}
-</p>
+<!--<p>-->
+<!--    {% trans demo_organizations_help_link="https://zulip.com/help/demo-organizations" %}Congratulations, you have created a new Zulip demo organization. Note-->
+<!--    that this organization will be automatically deleted in 30 days. Learn more-->
+<!--    about demo organizations <a-->
+<!--    href="{{ demo_organizations_help_link }}">here</a>!-->
+<!--    {% endtrans %}-->
+<!--</p>-->
 {% else %}
 <p>
-    {% trans %}Congratulations, you have created a new Zulip
+    {% trans %}Congratulations, you have created a new Red Bangle
     organization: <b>{{ realm_name }}</b>.{% endtrans %}
 </p>
 {% endif %}
 {% else %}
-<p>{{ _('Welcome to Zulip!') }}</p>
+<p>{{ _('Welcome to Red Bangle!') }}</p>
 <p>
-    {% trans %}You've joined the Zulip organization <b>{{ realm_name }}</b>.
+    {% trans %}You've joined the Red Bangle organization <b>{{ realm_name }}</b>.
     {% endtrans %}
 </p>
 {% endif %}
 
 <p>
-    {% trans apps_page_link="https://zulip.com/apps/" %}You will use the following info to log into the Zulip web, <a href="{{ apps_page_link }}">mobile and desktop</a> apps:{% endtrans %}
+<!--    {% trans apps_page_link="https://zulip.com/apps/" %}You will use the following info to log into the Zulip web, <a href="{{ apps_page_link }}">mobile and desktop</a> apps:{% endtrans %}-->
     <ul>
         <li>{% trans organization_url=macros.link_tag(realm_url) %}Organization URL: {{ organization_url }}{% endtrans %}<br /></li>
         {% if ldap %}
@@ -45,12 +45,12 @@
     <a class="button" href="{{ realm_url }}">{{ _('Go to organization') }}</a>
 </p>
 
-<p>
-    {% trans %}If you are new to Zulip, check out our <a href="{{ getting_user_started_link }}">Getting started guide</a>!{% endtrans %}
-    {% if is_realm_admin %}
-    {% trans %}We also have a guide for <a href="{{ getting_organization_started_link }}">Setting up your organization</a>.{% endtrans %}
-    {% endif %}
-</p>
+<!--<p>-->
+<!--&lt;!&ndash;    {% trans %}If you are new to Red , check out our <a href="{{ getting_user_started_link }}">Getting started guide</a>!{% endtrans %}&ndash;&gt;-->
+<!--    {% if is_realm_admin %}-->
+<!--    {% trans %}We also have a guide for <a href="{{ getting_organization_started_link }}">Setting up your organization</a>.{% endtrans %}-->
+<!--    {% endif %}-->
+<!--</p>-->
 
 <p>
     {% if corporate_enabled %}

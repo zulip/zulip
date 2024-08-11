@@ -1,4 +1,4 @@
-{% trans %}Click the link below to confirm your email and log in to Zulip plan management for {{remote_realm_host}}.{% endtrans %}
+{% trans %}Click the link below to confirm your email and log in to Red Bangle plan management for {{remote_realm_host}}.{% endtrans %}
 
 
 {{ _("Confirm and log in") }}: {{ confirmation_url }}
