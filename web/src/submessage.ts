@@ -5,6 +5,7 @@ import * as channel from "./channel";
 import type {MessageList} from "./message_lists";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
+import {todo_widget_extra_data_schema} from "./todo_widget";
 import * as widgetize from "./widgetize";
 
 export type Submessage = {
@@ -34,13 +35,6 @@ const poll_widget_extra_data_schema = z
     .object({
         question: z.string().optional(),
         options: z.array(z.string()).optional(),
-    })
-    .nullable();
-
-export const todo_widget_extra_data_schema = z
-    .object({
-        task_list_title: z.string().optional(),
-        tasks: z.array(z.object({task: z.string(), desc: z.string()})).optional(),
     })
     .nullable();
 
