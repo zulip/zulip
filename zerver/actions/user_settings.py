@@ -109,7 +109,9 @@ def send_delivery_email_update_events(
 
 
 @transaction.atomic(savepoint=False)
-def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
+def do_change_user_delivery_email(
+    user_profile: UserProfile, new_email: str, *, acting_user: UserProfile | None
+) -> None:
     delete_user_profile_caches([user_profile], user_profile.realm_id)
 
     user_profile.delivery_email = new_email
@@ -140,7 +142,7 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
-        acting_user=user_profile,
+        acting_user=acting_user,
         modified_user=user_profile,
         event_type=AuditLogEventType.USER_EMAIL_CHANGED,
         event_time=event_time,

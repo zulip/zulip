@@ -135,7 +135,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     assert result.status_code == 200
 
     # Reset the email value so we can run this again
-    do_change_user_delivery_email(user_profile, registered_email)
+    do_change_user_delivery_email(user_profile, registered_email, acting_user=None)
 
     # Initial email with new account information for normal user
     send_account_registered_email(user_profile)

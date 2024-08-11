@@ -24,4 +24,4 @@ class Command(ZulipBaseCommand):
         realm = self.get_realm(options)
         user_profile = self.get_user(old_email, realm)
 
-        do_change_user_delivery_email(user_profile, new_email)
+        do_change_user_delivery_email(user_profile, new_email, acting_user=None)

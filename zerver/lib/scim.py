@@ -317,7 +317,7 @@ class ZulipSCIMUser(SCIMUser):
             check_change_full_name(self.obj, full_name_new_value, acting_user=None)
 
         if email_new_value:
-            do_change_user_delivery_email(self.obj, email_new_value)
+            do_change_user_delivery_email(self.obj, email_new_value, acting_user=None)
 
         if role_new_value is not None:
             do_change_user_role(self.obj, role_new_value, acting_user=None)
