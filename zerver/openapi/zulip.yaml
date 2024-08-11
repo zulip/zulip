@@ -22591,6 +22591,7 @@ components:
             is_admin: {}
             is_guest: {}
             is_billing_admin: {}
+            is_deleted: {}
             is_bot: {}
             bot_type:
               nullable: true
@@ -22665,6 +22666,12 @@ components:
             A boolean specifying whether the user is a billing administrator.
 
             **Changes**: New in Zulip 5.0 (feature level 73).
+        is_deleted:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is deleted.
+
+            **Changes**: New in Zulip 10.0 (feature level 284).
         is_bot:
           type: boolean
           description: |

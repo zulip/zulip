@@ -136,6 +136,7 @@ def create_mirror_user_if_needed(
                 full_name=email_to_fullname(email),
                 active=False,
                 is_mirror_dummy=True,
+                is_deleted=False,
             )
         except IntegrityError:
             return get_user_by_delivery_email(email, realm)

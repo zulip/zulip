@@ -1482,6 +1482,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         is_bot: false,
         is_moderator: false,
         is_billing_admin: false,
+        is_deleted: false,
         // We explicitly don't set `avatar_url` for fake person objects so that fallback code
         // will ask the server or compute a gravatar URL only once we need the avatar URL,
         // it's important for performance that we not hash every user's email to get gravatar URLs.

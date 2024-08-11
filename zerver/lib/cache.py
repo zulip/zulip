@@ -450,6 +450,7 @@ realm_user_dict_fields: list[str] = [
     "role",
     "is_billing_admin",
     "is_bot",
+    "is_deleted",
     "timezone",
     "date_joined",
     "bot_owner_id",
