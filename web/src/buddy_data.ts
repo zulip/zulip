@@ -336,6 +336,11 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
             return false;
         }
 
+        if (person.is_deleted) {
+            // Deleted users are not real users and should not be shown.
+            return false;
+        }
+
         return true;
     });
 

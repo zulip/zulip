@@ -1750,7 +1750,9 @@ export function initialize(my_user_id: number, params: StateData["people"]): voi
     }
 
     for (const person of params.realm_non_active_users) {
-        non_active_user_dict.set(person.user_id, person);
+        if (!person.is_deleted) {
+            non_active_user_dict.set(person.user_id, person);
+        }
         _add_user(person);
     }
 
