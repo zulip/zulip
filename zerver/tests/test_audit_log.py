@@ -278,7 +278,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user = self.example_user("hamlet")
         new_email = "test@example.com"
-        do_change_user_delivery_email(user, new_email)
+        do_change_user_delivery_email(user, new_email, acting_user=user)
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 event_type=AuditLogEventType.USER_EMAIL_CHANGED, event_time__gte=now

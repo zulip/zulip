@@ -2161,7 +2161,9 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
         with self.verify_action(num_events=2, client_gravatar=False) as events:
-            do_change_user_delivery_email(self.user_profile, "newhamlet@zulip.com")
+            do_change_user_delivery_email(
+                self.user_profile, "newhamlet@zulip.com", acting_user=self.user_profile
+            )
 
         check_realm_user_update("events[0]", events[0], "delivery_email")
         check_realm_user_update("events[1]", events[1], "avatar_fields")
@@ -2180,7 +2182,9 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
         with self.verify_action(num_events=3, client_gravatar=False) as events:
-            do_change_user_delivery_email(self.user_profile, "newhamlet@zulip.com")
+            do_change_user_delivery_email(
+                self.user_profile, "newhamlet@zulip.com", acting_user=self.user_profile
+            )
 
         check_realm_user_update("events[0]", events[0], "delivery_email")
         check_realm_user_update("events[1]", events[1], "avatar_fields")
@@ -2189,7 +2193,9 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[1]["person"]["avatar_url_medium"], str)
 
         # Reset hamlet's email to original email.
-        do_change_user_delivery_email(self.user_profile, "hamlet@zulip.com")
+        do_change_user_delivery_email(
+            self.user_profile, "hamlet@zulip.com", acting_user=self.user_profile
+        )
 
         self.set_up_db_for_testing_user_access()
         cordelia = self.example_user("cordelia")
@@ -2201,7 +2207,7 @@ class NormalActionsTest(BaseAction):
         )
         self.user_profile = self.example_user("polonius")
         with self.verify_action(num_events=0, state_change_expected=False):
-            do_change_user_delivery_email(cordelia, "newcordelia@zulip.com")
+            do_change_user_delivery_email(cordelia, "newcordelia@zulip.com", acting_user=None)
 
     def test_change_realm_authentication_methods(self) -> None:
         def fake_backends() -> Any:
