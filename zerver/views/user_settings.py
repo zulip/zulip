@@ -117,7 +117,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
             return redirect_to_deactivation_notice()
 
         validate_email_change_request(user_profile, new_email)
-        do_change_user_delivery_email(user_profile, new_email)
+        do_change_user_delivery_email(user_profile, new_email, acting_user=user_profile)
 
     user_profile = UserProfile.objects.get(id=email_change_object.user_profile_id)
     context = {"realm_name": user_profile.realm.name, "new_email": new_email}
