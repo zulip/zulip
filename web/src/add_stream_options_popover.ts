@@ -13,14 +13,14 @@ export function initialize(): void {
         theme: "popover-menu",
         onShow(instance) {
             const can_create_streams =
-                settings_data.user_can_create_private_streams() ||
-                settings_data.user_can_create_public_streams() ||
-                settings_data.user_can_create_web_public_streams();
+                settings_data.user_can_create_private_streams();
+//              ||   settings_data.user_can_create_public_streams() ||
+//                 settings_data.user_can_create_web_public_streams();
 
             if (!can_create_streams) {
                 // If the user can't create streams, we directly
                 // navigate them to the Stream settings subscribe UI.
-                window.location.assign("#channels/all");
+//                 window.location.assign("#channels/all");
                 // Returning false from an onShow handler cancels the show.
                 return false;
             }

@@ -140,13 +140,14 @@ export function user_can_subscribe_other_users(): boolean {
 }
 
 export function user_can_create_private_streams(): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
-    return user_groups.is_user_in_group(
-        realm.realm_can_create_private_channel_group,
-        current_user.user_id,
-    );
+//     if (page_params.is_spectator) {
+//         return false;
+//     }
+//     return user_groups.is_user_in_group(
+//         realm.realm_can_create_private_channel_group,
+//         current_user.user_id,
+//     );
+    return current_user.is_admin;
 }
 
 export function user_can_create_public_streams(): boolean {

@@ -59,13 +59,13 @@
                 </div>
                 <div class="nothing-selected">
                     {{#if can_create_streams}}
-                    <button type="button" class="create_stream_button animated-purple-button">{{t 'Create channel' }}</button>
-                    <span>
-                        {{#tr}}
-                            First time? Read our <z-link>guidelines</z-link> for creating and naming channels.
-                            {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                        {{/tr}}
-                    </span>
+                    <button type="button" style="background-color: #e30421" class="create_stream_button animated-purple-button">{{t 'Create channel' }}</button>
+{{!--                     <span> --}}
+{{!--                         {{#tr}} --}}
+{{!--                             First time? Read our <z-link>guidelines</z-link> for creating and naming channels. --}}
+{{!--                             {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}} --}}
+{{!--                         {{/tr}} --}}
+{{!--                     </span> --}}
                     {{/if}}
                 </div>
                 <div id="stream_settings" class="settings" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
