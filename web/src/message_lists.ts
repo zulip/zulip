@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as inbox_util from "./inbox_util";
 import type {MessageListData} from "./message_list_data";
+import * as message_list_data_cache from "./message_list_data_cache";
 import type {Message} from "./message_store";
 import * as ui_util from "./ui_util";
 
@@ -132,12 +133,23 @@ export function update_current_message_list(msg_list: MessageList | undefined): 
     current = msg_list;
     if (current !== undefined) {
         rendered_message_lists.set(current.id, current);
+        message_list_data_cache.add(current.data);
         current.view.$list.addClass("focused-message-list");
     }
 }
 
 export function all_rendered_message_lists(): MessageList[] {
     return [...rendered_message_lists.values()];
+}
+
+export function non_rendered_data(): MessageListData[] {
+    const rendered_data = new Set(rendered_message_lists.keys());
+    return message_list_data_cache.all().filter((data) => {
+        if (data.rendered_message_list_id === undefined) {
+            return true;
+        }
+        return !rendered_data.has(data.rendered_message_list_id);
+    });
 }
 
 export function add_rendered_message_list(msg_list: MessageList): void {

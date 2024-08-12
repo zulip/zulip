@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import * as alert_words from "./alert_words";
-import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_ui from "./compose_ui";
@@ -448,12 +447,14 @@ export function reify_message_id(local_id: string, server_id: number): void {
 }
 
 export function update_message_lists({old_id, new_id}: {old_id: number; new_id: number}): void {
-    if (all_messages_data !== undefined) {
-        all_messages_data.change_message_id(old_id, new_id);
-    }
+    // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.change_message_id(old_id, new_id);
         msg_list.view.change_message_id(old_id, new_id);
+    }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        msg_list_data.change_message_id(old_id, new_id);
     }
 }
 
@@ -555,10 +556,13 @@ export function message_send_error(message_id: number, error_response: string): 
 }
 
 function abort_message(message: Message): void {
-    // Remove in all lists in which it exists
-    all_messages_data.remove([message.id]);
+    // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
+    }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        msg_list_data.remove([message.id]);
     }
 }
 

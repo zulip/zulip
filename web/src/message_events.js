@@ -14,6 +14,7 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_events_util from "./message_events_util";
 import * as message_helper from "./message_helper";
+import * as message_list_data_cache from "./message_list_data_cache";
 import * as message_lists from "./message_lists";
 import * as message_notifications from "./message_notifications";
 import * as message_store from "./message_store";
@@ -118,6 +119,17 @@ export function update_messages(events) {
     let any_message_content_edited = false;
     let any_stream_changed = false;
     let local_cache_missing_messages = false;
+
+    // Clear message list data cache since the local data for the
+    // filters might no longer be accurate.
+    //
+    // TODO: Add logic to update the message list data cache.
+    // Special care needs to be taken to ensure that the cache is
+    // updated correctly when the message is moved to a different
+    // stream or topic. Also, we need to update message lists like
+    // `is:starred`, `is:mentioned`, etc. when the message flags are
+    // updated.
+    message_list_data_cache.clear();
 
     for (const event of events) {
         const anchor_message = message_store.get(event.message_id);
@@ -552,10 +564,15 @@ export function update_messages(events) {
 }
 
 export function remove_messages(message_ids) {
-    all_messages_data.remove(message_ids);
+    // Update the rendered data first since it is most user visible.
     for (const list of message_lists.all_rendered_message_lists()) {
         list.remove_and_rerender(message_ids);
     }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        msg_list_data.remove(message_ids);
+    }
+
     recent_senders.update_topics_of_deleted_message_ids(message_ids);
     recent_view_ui.update_topics_of_deleted_message_ids(message_ids);
     starred_messages.remove(message_ids);

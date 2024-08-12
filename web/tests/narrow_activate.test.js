@@ -197,6 +197,9 @@ run_test("basics", ({override, override_rewire}) => {
         visibly_empty: () => false,
         first: () => ({id: 900}),
         last: () => ({id: 1100}),
+        filter: {
+            equals: () => false,
+        },
     };
 
     $("#navbar-fixed-container").set_height(40);

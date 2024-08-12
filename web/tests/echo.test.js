@@ -65,6 +65,7 @@ const home_msg_list = {
     change_message_id: noop,
 };
 message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
+message_lists.non_rendered_data = () => [];
 
 const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
