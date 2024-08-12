@@ -8,7 +8,12 @@
     {
       "name": "slack_link_with_pipe",
       "input": ">Google logo today:\n><https://foo.com|foo>\n>Kinda boring",
-      "conversion_output": ">Google logo today:\n>https://foo.com|foo\n>Kinda boring"
+      "conversion_output": ">Google logo today:\n>[foo](https://foo.com)\n>Kinda boring"
+    },
+    {
+      "name": "slack_link_with_pipes",
+      "input": ">Google logo today:\n><https://foo.com|foo|oof>\n>Kinda boring",
+      "conversion_output": ">Google logo today:\n>[foo|oof](https://foo.com)\n>Kinda boring"
     },
     {
       "name": "slack_link2",
