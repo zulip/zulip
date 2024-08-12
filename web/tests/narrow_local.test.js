@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
-const all_messages_data = mock_esm("../src/all_messages_data");
+const all_messages_data = zrequire("../src/all_messages_data");
 
 const {Filter} = zrequire("../src/filter");
 const {MessageListData} = zrequire("../src/message_list_data");
@@ -44,7 +44,7 @@ function test_with(fixture) {
         final_select_id: undefined,
     };
 
-    all_messages_data.all_messages_data = {
+    all_messages_data.__Rewire__("all_messages_data", {
         fetch_status: {
             has_found_newest: () => fixture.has_found_newest,
         },
@@ -61,13 +61,14 @@ function test_with(fixture) {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages.at(-1);
         },
-    };
+    });
 
     narrow_state.__Rewire__("get_first_unread_info", () => fixture.unread_info);
 
     message_view.maybe_add_local_messages({
         id_info,
         msg_data,
+        superset_data: all_messages_data.all_messages_data,
     });
 
     assert.deepEqual(id_info, fixture.expected_id_info);

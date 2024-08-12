@@ -29,6 +29,7 @@ import * as message_fetch from "./message_fetch";
 import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
+import * as message_list_data_cache from "./message_list_data_cache";
 import * as message_lists from "./message_lists";
 import * as message_scroll_state from "./message_scroll_state";
 import * as message_store from "./message_store";
@@ -141,6 +142,8 @@ function create_and_update_message_list(filter, id_info, opts) {
     }
 
     if (!restore_rendered_list) {
+        // If we don't have a cached message list for the narrow, we
+        // need to construct one from scratch.
         let msg_data = new MessageListData({
             filter,
             excludes_muted_topics,
@@ -150,10 +153,24 @@ function create_and_update_message_list(filter, id_info, opts) {
         // with no server help) and we have the message we want to select.
         // Also update id_info accordingly.
         if (!filter.requires_adjustment_for_moved_with_target) {
-            maybe_add_local_messages({
-                id_info,
-                msg_data,
-            });
+            const superset_datasets = message_list_data_cache.get_superset_datasets(filter);
+            for (const superset_data of superset_datasets) {
+                maybe_add_local_messages({
+                    id_info,
+                    msg_data,
+                    superset_data,
+                });
+
+                if (id_info.local_select_id) {
+                    // We have the message we want to select.
+                    break;
+                }
+
+                msg_data = new MessageListData({
+                    filter,
+                    excludes_muted_topics,
+                });
+            }
         }
 
         if (!id_info.local_select_id) {
@@ -849,13 +866,13 @@ function min_defined(a, b) {
     return a < b ? a : b;
 }
 
-function load_local_messages(msg_data) {
+function load_local_messages(msg_data, superset_data) {
     // This little helper loads messages into our narrow message
     // data and returns true unless it's visibly empty.  We use this for
-    // cases when our local cache (all_messages_data) has at least
+    // cases when our local cache (superset_data) has at least
     // one message the user will expect to see in the new narrow.
 
-    const in_msgs = all_messages_data.all_messages();
+    const in_msgs = superset_data.all_messages();
     msg_data.add_messages(in_msgs);
 
     return !msg_data.visibly_empty();
@@ -883,6 +900,7 @@ export function maybe_add_local_messages(opts) {
     //  - add messages into our message list from our local cache
     const id_info = opts.id_info;
     const msg_data = opts.msg_data;
+    const superset_data = opts.superset_data;
     const filter = msg_data.filter;
     const unread_info = narrow_state.get_first_unread_info(filter);
 
@@ -933,7 +951,7 @@ export function maybe_add_local_messages(opts) {
         // need to look at unread here.
         id_info.final_select_id = min_defined(id_info.target_id, unread_info.msg_id);
 
-        if (!load_local_messages(msg_data)) {
+        if (!load_local_messages(msg_data, superset_data)) {
             return;
         }
 
@@ -959,16 +977,18 @@ export function maybe_add_local_messages(opts) {
         // Without unread messages or a target ID, we're narrowing to
         // the very latest message or first unread if matching the narrow allows.
 
-        if (!all_messages_data.fetch_status.has_found_newest()) {
-            // If all_messages_data is not caught up, then we cannot
+        if (!superset_data.fetch_status.has_found_newest()) {
+            // If superset_data is not caught up, then we cannot
             // populate the latest messages for the target narrow
             // correctly from there, so we must go to the server.
             return;
         }
-        if (!load_local_messages(msg_data)) {
+
+        if (!load_local_messages(msg_data, superset_data)) {
             return;
         }
-        // Otherwise, we have matching messages, and all_messages_data
+
+        // Otherwise, we have matching messages, and superset_data
         // is caught up, so the last message in our now-populated
         // msg_data object must be the last message matching the
         // narrow the server could give us, so we can render locally.
@@ -985,20 +1005,20 @@ export function maybe_add_local_messages(opts) {
 
     // TODO: We could improve on this next condition by considering
     // cases where
-    // `all_messages_data.fetch_status.has_found_oldest()`; which
+    // `superset_data.fetch_status.has_found_oldest()`; which
     // would come up with e.g. `near: 0` in a small organization.
     //
     // And similarly for `near: max_int` with has_found_newest.
     if (
-        all_messages_data.visibly_empty() ||
-        id_info.target_id < all_messages_data.first().id ||
-        id_info.target_id > all_messages_data.last().id
+        superset_data.visibly_empty() ||
+        id_info.target_id < superset_data.first().id ||
+        id_info.target_id > superset_data.last().id
     ) {
         // If the target message is outside the range that we had
         // available for local population, we must go to the server.
         return;
     }
-    if (!load_local_messages(msg_data)) {
+    if (!load_local_messages(msg_data, superset_data)) {
         return;
     }
     if (msg_data.get(id_info.target_id)) {
