@@ -170,13 +170,19 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
 def convert_link_format(text: str) -> tuple[str, bool]:
     """
     1. Converts '<https://foo.com>' to 'https://foo.com'
-    2. Converts '<https://foo.com|foo>' to 'https://foo.com|foo'
+    2. Converts '<https://foo.com|foo>' to '[foo](https://foo.com)'
     """
     has_link = False
     for match in re.finditer(LINK_REGEX, text, re.VERBOSE):
-        converted_text = match.group(0).replace(">", "").replace("<", "")
+        slack_url = match.group(0)
+        base_url = slack_url[1:-1]  # remove "<" & ">"
+        url_parts = base_url.split("|")
+        converted_url = url_parts[0]
+        if 1 < len(url_parts) < 3:  # Check if there's a pipe with text after it
+            converted_url = f"[{url_parts[1]}]({url_parts[0]})"
+
         has_link = True
-        text = text.replace(match.group(0), converted_text)
+        text = text.replace(slack_url, converted_url)
     return text, has_link
 
 
