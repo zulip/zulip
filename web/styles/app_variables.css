@@ -328,6 +328,10 @@
         --message-box-markdown-aligned-vertical-space: 5px;
     }
 
+    /* Shared sidebar typography and effects values. */
+    --font-weight-sidebar-heading: 600;
+    --letter-spacing-sidebar-heading: 0.0469em;
+
     /*
     Message box elements and values.
     */
