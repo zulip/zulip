@@ -24,6 +24,8 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     change_user_is_active,
     do_change_can_create_users,
+    do_change_can_forge_sender,
+    do_change_is_billing_admin,
     do_change_user_role,
     do_deactivate_user,
     do_delete_user,
@@ -928,6 +930,56 @@ class PermissionTest(ZulipTestCase):
             {"profile_data": orjson.dumps(new_profile_data).decode()},
         )
         self.assert_json_error(result, "Insufficient permission")
+
+    def test_do_change_user_special_permissions(self) -> None:
+        desdemona = self.example_user("desdemona")
+        do_change_can_forge_sender(desdemona, True)
+
+        last_realm_audit_log = RealmAuditLog.objects.last()
+        assert last_realm_audit_log is not None
+
+        self.assertEqual(
+            last_realm_audit_log.event_type, AuditLogEventType.USER_SPECIAL_PERMISSION_CHANGED
+        )
+        self.assertEqual(last_realm_audit_log.modified_user, desdemona)
+        expected_extra_data = {
+            "property": "can_forge_sender",
+            RealmAuditLog.OLD_VALUE: False,
+            RealmAuditLog.NEW_VALUE: True,
+        }
+        self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
+
+        do_change_can_create_users(desdemona, True)
+
+        last_realm_audit_log = RealmAuditLog.objects.last()
+        assert last_realm_audit_log is not None
+
+        self.assertEqual(
+            last_realm_audit_log.event_type, AuditLogEventType.USER_SPECIAL_PERMISSION_CHANGED
+        )
+        self.assertEqual(last_realm_audit_log.modified_user, desdemona)
+        expected_extra_data = {
+            "property": "can_create_users",
+            RealmAuditLog.OLD_VALUE: False,
+            RealmAuditLog.NEW_VALUE: True,
+        }
+        self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
+
+        do_change_is_billing_admin(desdemona, True)
+
+        last_realm_audit_log = RealmAuditLog.objects.last()
+        assert last_realm_audit_log is not None
+
+        self.assertEqual(
+            last_realm_audit_log.event_type, AuditLogEventType.USER_SPECIAL_PERMISSION_CHANGED
+        )
+        self.assertEqual(last_realm_audit_log.modified_user, desdemona)
+        expected_extra_data = {
+            "property": "is_billing_admin",
+            RealmAuditLog.OLD_VALUE: False,
+            RealmAuditLog.NEW_VALUE: True,
+        }
+        self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
 
 
 class QueryCountTest(ZulipTestCase):
