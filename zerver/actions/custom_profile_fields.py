@@ -12,15 +12,16 @@ from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.users import active_user_ids
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 def notify_realm_custom_profile_fields(realm: Realm) -> None:
     fields = custom_profile_fields_for_realm(realm.id)
     event = dict(type="custom_profile_fields", fields=[f.as_dict() for f in fields])
-    send_event(realm, event, active_user_ids(realm.id))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
+@transaction.atomic(durable=True)
 def try_add_realm_default_custom_profile_field(
     realm: Realm,
     field_subtype: str,
@@ -44,6 +45,7 @@ def try_add_realm_default_custom_profile_field(
     return custom_profile_field
 
 
+@transaction.atomic(durable=True)
 def try_add_realm_custom_profile_field(
     realm: Realm,
     name: str,
@@ -74,6 +76,7 @@ def try_add_realm_custom_profile_field(
     return custom_profile_field
 
 
+@transaction.atomic(durable=True)
 def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField) -> None:
     """
     Deleting a field will also delete the user profile data
@@ -98,6 +101,7 @@ def remove_custom_profile_field_value_if_required(
         CustomProfileFieldValue.objects.filter(field=field, value__in=removed_values).delete()
 
 
+@transaction.atomic(durable=True)
 def try_update_realm_custom_profile_field(
     realm: Realm,
     field: CustomProfileField,
@@ -133,6 +137,7 @@ def try_update_realm_custom_profile_field(
     notify_realm_custom_profile_fields(realm)
 
 
+@transaction.atomic(durable=True)
 def try_reorder_realm_custom_profile_fields(realm: Realm, order: Iterable[int]) -> None:
     order_mapping = {_[1]: _[0] for _ in enumerate(order)}
     custom_profile_fields = CustomProfileField.objects.filter(realm=realm)
