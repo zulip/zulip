@@ -11,6 +11,7 @@
 
 .left-sidebar-title {
     color: var(--color-text-sidebar-heading);
+    opacity: var(--opacity-sidebar-heading);
     font-size: inherit;
     font-weight: var(--font-weight-sidebar-heading);
     letter-spacing: var(--letter-spacing-sidebar-heading);
@@ -74,7 +75,7 @@
     }
 
     & li {
-        & a:hover {
+        & .sidebar-topic-name:hover {
             text-decoration: none;
         }
 
@@ -236,6 +237,7 @@
         }
 
         & li#show-more-direct-messages {
+            color: var(--color-text-sidebar-action-heading);
             font-size: var(--font-size-sidebar-action-heading);
             font-weight: var(--font-weight-sidebar-action-heading);
             letter-spacing: var(--letter-spacing-sidebar-action-heading);
@@ -256,7 +258,8 @@
 
 #toggle-direct-messages-section-icon,
 #toggle-top-left-navigation-area-icon {
-    opacity: 0.7;
+    color: var(--color-text-sidebar-heading);
+    opacity: var(--opacity-sidebar-heading);
 
     &.fa-caret-right {
         position: relative;
@@ -364,8 +367,14 @@ ul.filters {
     /* Streams take a standard row height. */
     line-height: var(--line-height-sidebar-row);
 
-    & a {
+    .sidebar-topic-name,
+    .left-sidebar-navigation-label-container {
         color: inherit;
+
+        &:hover {
+            /* Push back against a:hover color in dark_theme.css */
+            color: inherit !important;
+        }
 
         &:focus {
             text-decoration: none;
@@ -966,7 +975,8 @@ li.top_left_scheduled_messages {
     display: none;
 }
 
-.sidebar-topic-name {
+.sidebar-topic-name,
+.sidebar-topic-action-heading {
     cursor: pointer;
     grid-area: row-content;
     padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
@@ -987,14 +997,30 @@ li.top_left_scheduled_messages {
     span.sidebar-topic-name-inner {
         white-space: pre;
     }
+
+    &:hover {
+        color: inherit;
+    }
+
+    &:focus {
+        text-decoration: none;
+    }
 }
 
 .sidebar-topic-action-heading {
+    color: var(--color-text-sidebar-action-heading);
     font-size: var(--font-size-sidebar-action-heading);
     font-weight: var(--font-weight-sidebar-action-heading);
     font-variant: var(--font-variant-sidebar-action-heading);
     font-feature-settings: var(--font-feature-settings-sidebar-action-heading);
     text-transform: var(--text-transform-sidebar-action-heading);
+
+    &:hover {
+        text-decoration: none;
+        /* Push back against a:hover color in dark_theme.css
+           Eventually this will take redesigned hover colors. */
+        color: var(--color-text-sidebar-action-heading) !important;
+    }
 }
 
 .topic-list-filter {
@@ -1300,7 +1326,7 @@ li.topic-list-item {
         font-weight: var(--font-weight-sidebar-action-heading);
         font-variant: var(--font-variant-sidebar-action-heading);
         text-transform: var(--text-transform-sidebar-action-heading);
-        color: inherit;
+        color: var(--color-text-sidebar-action-heading);
         text-decoration: none;
     }
 
@@ -1557,6 +1583,7 @@ li.topic-list-item {
         color: inherit;
 
         .hide-more-direct-messages-text {
+            color: var(--color-text-sidebar-action-heading);
             font-size: var(--font-size-sidebar-action-heading);
             font-weight: var(--font-weight-sidebar-action-heading);
             font-variant: var(--font-variant-sidebar-action-heading);
