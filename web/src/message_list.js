@@ -48,6 +48,8 @@ export class MessageList {
             });
         }
 
+        this.data.set_rendered_message_list_id(this.id);
+
         // TODO: This property should likely just be inlined into
         // having the MessageListView code that needs to access it
         // query .data.filter directly.

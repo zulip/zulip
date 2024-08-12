@@ -46,6 +46,11 @@ export class MessageListData {
     // This is a callback that is called when messages are added to the message list.
     add_messages_callback?: (messages: Message[], recipient_order_changed: boolean) => void;
 
+    // ID of the MessageList for which this MessageListData is the data.
+    // Using ID instead of the MessageList object itself to avoid circular dependencies
+    // and to allow MessageList objects to be easily garbage collected.
+    rendered_message_list_id: number | undefined;
+
     // MessageListData is a core data structure for keeping track of a
     // contiguous block of messages matching a given narrow that can
     // be displayed in a Zulip message feed.
@@ -62,6 +67,10 @@ export class MessageListData {
         this.excludes_muted_topics = excludes_muted_topics;
         this._local_only = new Set();
         this._selected_id = -1;
+    }
+
+    set_rendered_message_list_id(rendered_message_list_id: number | undefined): void {
+        this.rendered_message_list_id = rendered_message_list_id;
     }
 
     set_add_messages_callback(
