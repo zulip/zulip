@@ -263,6 +263,7 @@ $user_status_emoji_width: 24px;
         "row-content ending-anchor-element" var(--line-height-sidebar-row)
         "row-content ." auto / minmax(0, 1fr) 26px;
     align-content: baseline;
+    margin-right: var(--width-simplebar-scroll-hover);
 
     .user-name-and-status-emoji {
         display: flex;
@@ -326,6 +327,7 @@ $user_status_emoji_width: 24px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) 20px;
     align-items: center;
+    margin-right: var(--width-simplebar-scroll-hover);
 
     #userlist-title {
         margin: 0;
