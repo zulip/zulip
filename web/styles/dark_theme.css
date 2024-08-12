@@ -38,10 +38,6 @@
     & ul.filters {
         color: hsl(0deg 0% 100% / 80%);
 
-        & a:hover {
-            color: inherit;
-        }
-
         .has-unmuted-mentions .unread_mention_info {
             color: hsl(236deg 33% 90%);
         }
