@@ -1,0 +1,5 @@
+.non-clickable-sidebar-heading {
+    font-size: 1.15rem;
+    pointer-events: none;
+    cursor: default;
+}
