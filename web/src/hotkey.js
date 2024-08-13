@@ -858,6 +858,18 @@ export function process_hotkey(e, hotkey) {
             return true;
         }
 
+        if (event_name === "down_arrow" && $(":focus").attr("id") === "search_query") {
+            $("#search_query").trigger("blur");
+            message_scroll_state.set_keyboard_triggered_current_scroll(true);
+            navigate.down(true);
+        }
+
+        if (event_name === "up_arrow" && $(":focus").attr("id") === "search_query") {
+            $("#search_query").trigger("blur");
+            message_scroll_state.set_keyboard_triggered_current_scroll(true);
+            navigate.up(true);
+        }
+
         if (
             ((event_name === "down_arrow" || event_name === "page_down" || event_name === "end") &&
                 compose_state.focus_in_empty_compose()) ||
