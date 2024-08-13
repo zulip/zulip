@@ -38,5 +38,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(set_emoji_author, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            set_emoji_author, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

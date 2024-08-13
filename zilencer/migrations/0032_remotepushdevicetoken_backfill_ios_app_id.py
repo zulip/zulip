@@ -32,5 +32,6 @@ class Migration(migrations.Migration):
             # The updated table is still valid with the old schema;
             # so to reverse, a no-op suffices.
             reverse_sql=[],
+            elidable=True,
         ),
     ]

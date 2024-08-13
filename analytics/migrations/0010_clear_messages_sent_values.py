@@ -24,5 +24,5 @@ class Migration(migrations.Migration):
     dependencies = [("analytics", "0009_remove_messages_to_stream_stat")]
 
     operations = [
-        migrations.RunPython(clear_message_sent_by_message_type_values),
+        migrations.RunPython(clear_message_sent_by_message_type_values, elidable=True),
     ]

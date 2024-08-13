@@ -46,5 +46,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(
             fix_plans_on_free_trial_with_changes_in_schedule,
+            elidable=True,
         ),
     ]

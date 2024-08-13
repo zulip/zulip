@@ -26,5 +26,6 @@ class Migration(migrations.Migration):
                     END;
             """,
             reverse_sql="",
+            elidable=True,
         ),
     ]

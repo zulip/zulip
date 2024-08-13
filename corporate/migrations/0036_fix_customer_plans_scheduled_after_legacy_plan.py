@@ -36,5 +36,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_customer_plans_scheduled_after_legacy_plan),
+        migrations.RunPython(fix_customer_plans_scheduled_after_legacy_plan, elidable=True),
     ]

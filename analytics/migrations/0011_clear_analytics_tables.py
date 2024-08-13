@@ -23,5 +23,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(clear_analytics_tables),
+        migrations.RunPython(clear_analytics_tables, elidable=True),
     ]

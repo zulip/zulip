@@ -72,5 +72,7 @@ class Migration(migrations.Migration):
                 to="zerver.ArchivedMessage",
             ),
         ),
-        migrations.RunPython(fix_attachment_caches, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            fix_attachment_caches, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            "DELETE FROM analytics_usercount WHERE property = 'active_users_audit:is_bot:day'"
+            "DELETE FROM analytics_usercount WHERE property = 'active_users_audit:is_bot:day'",
+            elidable=True,
         )
     ]

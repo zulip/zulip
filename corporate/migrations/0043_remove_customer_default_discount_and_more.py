@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
             field=models.IntegerField(default=0),
         ),
         # Populate the new discounted price fields based on existing default discount.
-        migrations.RunPython(calculate_discounted_price),
+        migrations.RunPython(calculate_discounted_price, elidable=True),
         migrations.RemoveField(
             model_name="customer",
             name="default_discount",

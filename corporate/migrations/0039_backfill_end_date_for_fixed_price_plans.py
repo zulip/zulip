@@ -58,5 +58,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(
             backfill_end_date_for_fixed_price_plans,
+            elidable=True,
         ),
     ]

@@ -164,5 +164,6 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             copy_and_update_message_edit_history,
             reverse_code=migrations.RunPython.noop,
+            elidable=True,
         ),
     ]
