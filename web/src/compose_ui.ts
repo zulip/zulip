@@ -114,8 +114,15 @@ export function insert_and_scroll_into_view(
     content: string,
     $textarea: JQuery<HTMLTextAreaElement>,
     replace_all = false,
+    replace_all_without_undo_support = false,
 ): void {
-    if (replace_all) {
+    if (replace_all_without_undo_support) {
+        // setFieldText is very slow and noticeable when inserting 10k+
+        // characters of text like from a drafted response,
+        // but we use it since we want to support `undo`. If we don't want
+        // to support `undo`, we can use a faster method.
+        $textarea.val(content);
+    } else if (replace_all) {
         setFieldText($textarea[0]!, content);
     } else {
         insertTextIntoField($textarea[0]!, content);
