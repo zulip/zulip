@@ -47,9 +47,9 @@ def purge_nagios_messages(apps: StateApps, schema_editor: BaseDatabaseSchemaEdit
                            FOR UPDATE
                         """
                     ).format(
-                        realm_id=bot_realm.id,
-                        sender_id=sender_id,
-                        recipient_id=recipient_id,
+                        realm_id=Literal(bot_realm.id),
+                        sender_id=Literal(sender_id),
+                        recipient_id=Literal(recipient_id),
                         batch_size=Literal(batch_size),
                     )
                     cursor.execute(message_id_query)
