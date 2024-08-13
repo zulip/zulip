@@ -1017,6 +1017,16 @@ export function get_non_active_human_ids(): number[] {
     return human_ids;
 }
 
+export function get_non_active_user_ids_count(user_ids: number[]): number {
+    let count = 0;
+    for (const user_id of user_ids) {
+        if (non_active_user_dict.has(user_id)) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
 export function get_bot_ids(): number[] {
     const bot_ids = [];
 

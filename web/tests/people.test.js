@@ -335,6 +335,7 @@ test_people("basics", ({override}) => {
     // Now deactivate isaac
     people.deactivate(isaac);
     assert.equal(people.get_non_active_human_ids().length, 1);
+    assert.equal(people.get_non_active_user_ids_count([isaac.user_id]), 1);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), true);
