@@ -8,31 +8,9 @@ from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import migrations, models
-from django.db.backends.base.schema import BaseDatabaseSchemaEditor
-from django.db.migrations.state import StateApps
 from django.db.models.functions import Upper
 
 from zerver.models.streams import generate_email_token_for_stream
-
-
-def migrate_existing_attachment_data(
-    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
-) -> None:
-    Attachment = apps.get_model("zerver", "Attachment")
-    Recipient = apps.get_model("zerver", "Recipient")
-    Stream = apps.get_model("zerver", "Stream")
-
-    attachments = Attachment.objects.all()
-    for entry in attachments:
-        owner = entry.owner
-        entry.realm = owner.realm
-        for message in entry.messages.all():
-            if owner == message.sender and message.recipient.type == Recipient.STREAM:
-                stream = Stream.objects.get(id=message.recipient.type_id)
-                is_realm_public = not stream.realm.is_zephyr_mirror_realm and not stream.invite_only
-                entry.is_realm_public = entry.is_realm_public or is_realm_public
-
-        entry.save()
 
 
 class Migration(migrations.Migration):
@@ -895,10 +873,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 on_delete=django.db.models.deletion.CASCADE,
                 to="zerver.Realm",
             ),
-        ),
-        migrations.RunPython(
-            code=migrate_existing_attachment_data,
-            elidable=True,
         ),
         migrations.AddField(
             model_name="subscription",
