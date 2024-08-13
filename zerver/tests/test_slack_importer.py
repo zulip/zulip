@@ -1297,6 +1297,184 @@ class SlackImporter(ZulipTestCase):
             zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
         )
 
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
+    def test_channel_message_to_zerver_message_with_integration_bots(
+        self, mock_build_usermessage: mock.Mock
+    ) -> None:
+        user_data = [
+            {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
+            {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
+            {
+                "id": "B06NWMNUQ3W",  # Bot user
+                "name": "ClickUp",
+                "deleted": False,
+                "real_name": "ClickUp",
+            },
+        ]
+
+        slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "B06NWMNUQ3W": 43}
+
+        all_messages: list[dict[str, Any]] = [
+            {
+                "subtype": "bot_message",
+                "text": "",
+                "username": "ClickUp",
+                "attachments": [
+                    {
+                        "id": 1,
+                        "color": "008844",
+                        "fallback": "dsdaddsa",
+                        "text": "Added assignee Pieter\n\nby Pieter\n_<https://app.clickup.com/25567147/v/s/43687023|The Goodiest of Cstdddddsdd> &gt; <https://app.clickup.com/25567147/v/li/901601846060|dsad>_",
+                        "title": "dsdaddsa",
+                        "title_link": "https://app.clickup.com/t/86cv0v5my",
+                        "mrkdwn_in": ["text"],
+                    }
+                ],
+                "type": "message",
+                "ts": "1712027355.830689",
+                "bot_id": "B06NWMNUQ3W",
+                "app_id": "A3G4A68V9",
+                "channel_name": "general",
+            },
+            {
+                "subtype": "bot_message",
+                "text": "",
+                "username": "ClickUp",
+                "attachments": [
+                    {
+                        "id": 1,
+                        "blocks": [
+                            {
+                                "type": "section",
+                                "block_id": "qvtCh",
+                                "text": {
+                                    "type": "mrkdwn",
+                                    "text": "<https://app.clickup.com/t/86cv0v5my| dsda>",
+                                    "verbatim": False,
+                                },
+                            },
+                            {
+                                "type": "section",
+                                "block_id": "7LtRa",
+                                "text": {
+                                    "type": "mrkdwn",
+                                    "text": "Task Created\nBy Pieter\n",
+                                    "verbatim": False,
+                                },
+                            },
+                            {
+                                "type": "section",
+                                "block_id": "XgOBF",
+                                "fields": [
+                                    {
+                                        "type": "mrkdwn",
+                                        "text": "_<https://app.clickup.com/25567147/v/s/43687023|The Goodiest of Cstdddddsdd> &gt; <https://app.clickup.com/25567147/v/li/901601846060|dsad>_",
+                                        "verbatim": False,
+                                    }
+                                ],
+                            },
+                        ],
+                        "color": "#656f7d",
+                        "fallback": "[no preview available]",
+                    }
+                ],
+                "type": "message",
+                "ts": "1712026462.647119",
+                "bot_id": "B06NWMNUQ3W",
+                "app_id": "A3G4A68V9",
+                "channel_name": "general",
+            },
+            {
+                "subtype": "bot_message",
+                "text": "",
+                "username": "ClickUp",
+                "attachments": [
+                    {
+                        "id": 1,
+                        "color": "656f7d",
+                        "fallback": "Buy Ingredients!",
+                        "text": "New comment:  where can I buy it?\n\nby Pieter\n_<https://app.clickup.com/25567147/v/s/43687023|The Goodiest of Cstdddddsdd> &gt; <https://app.clickup.com/25567147/v/li/901601846060|dsad>_",
+                        "title": "Buy Ingredients!",
+                        "title_link": "https://app.clickup.com/t/86cuy8e4y?comment=90160026391938",
+                        "mrkdwn_in": ["text"],
+                    }
+                ],
+                "type": "message",
+                "ts": "1711032565.114789",
+                "bot_id": "B06NWMNUQ3W",
+                "app_id": "A3G4A68V9",
+                "channel_name": "general",
+            },
+        ]
+
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
+        dm_members: DMMembersT = {}
+
+        zerver_usermessage: list[dict[str, Any]] = []
+        subscriber_map: dict[int, set[int]] = {}
+        added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
+
+        (
+            zerver_message,
+            zerver_usermessage,
+            attachment,
+            uploads,
+            reaction,
+        ) = channel_message_to_zerver_message(
+            1,
+            user_data,
+            slack_user_id_to_zulip_user_id,
+            slack_recipient_name_to_zulip_recipient_id,
+            all_messages,
+            [],
+            subscriber_map,
+            added_channels,
+            dm_members,
+            "domain",
+            set(),
+            convert_slack_threads=True,
+        )
+        # functioning already tested in helper function
+        self.assertEqual(zerver_usermessage, [])
+        # subtype: channel_join is filtered
+        self.assert_length(zerver_message, 3)
+
+        self.assertEqual(uploads, [])
+        self.assertEqual(attachment, [])
+
+        expected_message_attachment = """## [dsdaddsa](https://app.clickup.com/t/86cv0v5my)
+
+Added assignee Pieter
+
+by Pieter
+*[The Goodiest of Cstdddddsdd](https://app.clickup.com/25567147/v/s/43687023) &gt; [dsad](https://app.clickup.com/25567147/v/li/901601846060)*
+""".strip()
+        self.assertEqual(zerver_message[0]["content"], expected_message_attachment)
+        self.assertEqual(zerver_message[0]["sender"], slack_user_id_to_zulip_user_id["B06NWMNUQ3W"])
+
+        expected_message_block = """[ dsda](https://app.clickup.com/t/86cv0v5my)
+
+Task Created
+By Pieter
+
+*[The Goodiest of Cstdddddsdd](https://app.clickup.com/25567147/v/s/43687023) &gt; [dsad](https://app.clickup.com/25567147/v/li/901601846060)*
+""".strip()
+        self.assertEqual(zerver_message[1]["content"], expected_message_block)
+        self.assertEqual(zerver_message[1]["sender"], slack_user_id_to_zulip_user_id["B06NWMNUQ3W"])
+
+        expected_message_block_2 = """## [Buy Ingredients!](https://app.clickup.com/t/86cuy8e4y?comment=90160026391938)
+
+New comment:  where can I buy it?
+
+by Pieter
+*[The Goodiest of Cstdddddsdd](https://app.clickup.com/25567147/v/s/43687023) &gt; [dsad](https://app.clickup.com/25567147/v/li/901601846060)*
+""".strip()
+        self.assertEqual(zerver_message[2]["content"], expected_message_block_2)
+        self.assertEqual(zerver_message[2]["sender"], slack_user_id_to_zulip_user_id["B06NWMNUQ3W"])
+
     @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
     def test_convert_slack_workspace_messages(
