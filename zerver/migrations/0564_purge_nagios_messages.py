@@ -87,10 +87,9 @@ def purge_nagios_messages(apps: StateApps, schema_editor: BaseDatabaseSchemaEdit
 
 class Migration(migrations.Migration):
     atomic = False
-    elidable = True
 
     dependencies = [
         ("zerver", "0563_zulipinternal_can_delete"),
     ]
 
-    operations = [migrations.RunPython(purge_nagios_messages)]
+    operations = [migrations.RunPython(purge_nagios_messages, elidable=True)]

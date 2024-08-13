@@ -26,5 +26,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(delete_messages_sent_to_stream_stat),
+        migrations.RunPython(delete_messages_sent_to_stream_stat, elidable=True),
     ]

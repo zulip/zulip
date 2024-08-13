@@ -18,7 +18,8 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             """
         DELETE FROM zerver_usertopic WHERE id NOT IN (SELECT max(id) FROM zerver_usertopic GROUP BY (user_profile_id, stream_id, upper(topic_name::text)));
-        """
+        """,
+            elidable=True,
         ),
         migrations.AddConstraint(
             model_name="usertopic",

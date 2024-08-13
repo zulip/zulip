@@ -24,5 +24,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(update_legacy_plan_next_invoice_date),
+        migrations.RunPython(update_legacy_plan_next_invoice_date, elidable=True),
     ]

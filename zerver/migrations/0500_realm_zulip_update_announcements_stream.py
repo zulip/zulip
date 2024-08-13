@@ -36,5 +36,6 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             set_initial_value_for_zulip_update_announcements_stream,
             reverse_code=migrations.RunPython.noop,
+            elidable=True,
         ),
     ]

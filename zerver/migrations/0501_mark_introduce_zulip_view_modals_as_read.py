@@ -71,5 +71,6 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             mark_introduce_zulip_view_modals_as_read,
             reverse_code=mark_introduce_zulip_view_modals_as_unread,
+            elidable=True,
         ),
     ]

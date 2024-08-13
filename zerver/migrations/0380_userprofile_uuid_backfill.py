@@ -36,5 +36,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(backfill_user_profile_uuid, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            backfill_user_profile_uuid, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

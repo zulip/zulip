@@ -35,5 +35,7 @@ class Migration(migrations.Migration):
             name="plan_type",
             field=models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_MANAGED),
         ),
-        migrations.RunPython(renumber_plan_types, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            renumber_plan_types, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

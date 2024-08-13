@@ -202,7 +202,9 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(BUILD_BAD_MOVES_TABLE, elidable=True),
         migrations.RunSQL(BROADEN_MOVES, elidable=True),
-        migrations.RunPython(log_extra_usermessage_rows, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            log_extra_usermessage_rows, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
         migrations.RunSQL(
             """
             DELETE FROM zerver_usermessage

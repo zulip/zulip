@@ -43,5 +43,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(reupload_realm_emoji, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            reupload_realm_emoji, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

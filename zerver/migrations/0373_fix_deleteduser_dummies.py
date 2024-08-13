@@ -83,5 +83,6 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             fix_dummy_users,
             reverse_code=migrations.RunPython.noop,
+            elidable=True,
         )
     ]

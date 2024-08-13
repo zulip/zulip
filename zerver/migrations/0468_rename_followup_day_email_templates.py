@@ -91,5 +91,6 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             update_for_followup_day_email_templates_rename,
             reverse_code=revert_followup_day_email_templates_rename,
+            elidable=True,
         ),
     ]

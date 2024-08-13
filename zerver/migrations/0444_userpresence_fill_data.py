@@ -66,4 +66,6 @@ class Migration(migrations.Migration):
         ("zerver", "0443_userpresence_new_table_schema"),
     ]
 
-    operations = [migrations.RunPython(fill_new_columns, reverse_code=clear_new_columns)]
+    operations = [
+        migrations.RunPython(fill_new_columns, reverse_code=clear_new_columns, elidable=True)
+    ]
