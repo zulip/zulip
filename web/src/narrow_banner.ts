@@ -332,8 +332,9 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                 };
             }
             if (!first_operand.includes(",")) {
+                const recipient_user = people.get_by_user_id(user_ids[0]);
                 // You have no direct messages with this person
-                if (people.is_current_user(first_operand)) {
+                if (people.is_current_user(recipient_user.email)) {
                     return {
                         title: $t({
                             defaultMessage:
