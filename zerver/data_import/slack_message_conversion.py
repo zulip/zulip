@@ -1,3 +1,4 @@
+import json
 import re
 from itertools import zip_longest
 from typing import Any, Literal, TypeAlias, TypedDict, cast
@@ -11,6 +12,7 @@ from zerver.lib.validator import (
     check_string,
     check_string_in,
     check_url,
+    to_wild_value,
 )
 
 # stubs
@@ -215,10 +217,12 @@ def replace_links(text: str) -> str:
 def render_block(block: WildValue) -> str:
     # https://api.slack.com/reference/block-kit/blocks
     block_type = block["type"].tame(
-        check_string_in(["actions", "context", "divider", "header", "image", "input", "section"])
+        check_string_in(
+            ["actions", "context", "divider", "header", "image", "input", "section", "rich_text"]
+        )
     )
-    if block_type == "actions":
-        # Unhandled
+    unhandled_types = ["actions", "rich_text"]
+    if block_type in unhandled_types:
         return ""
     elif block_type == "context" and block.get("elements"):
         pieces = []
@@ -358,4 +362,16 @@ def render_attachment(attachment: WildValue) -> str:
         time = attachment["ts"].tame(check_int)
         pieces.append(f"<time:{time}>")
 
+    return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+
+
+def process_slack_block_and_attachment(message: ZerverFieldsT) -> str:
+    slack_message: WildValue = to_wild_value("slack_message", json.dumps(message))
+    pieces: list[str] = []
+
+    if slack_message.get("blocks"):
+        pieces += map(render_block, slack_message["blocks"])
+
+    if slack_message.get("attachments"):
+        pieces += map(render_attachment, slack_message["attachments"])
     return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
