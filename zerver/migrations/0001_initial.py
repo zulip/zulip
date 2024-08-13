@@ -54,6 +54,153 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
 """
     operations = [
         migrations.CreateModel(
+            name="PreregistrationUser",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("email", models.EmailField(max_length=75)),
+                ("invited_at", models.DateTimeField(auto_now=True)),
+                ("status", models.IntegerField(default=0)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Recipient",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("type_id", models.IntegerField(db_index=True)),
+                ("type", models.PositiveSmallIntegerField(db_index=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Huddle",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("huddle_hash", models.CharField(db_index=True, max_length=40, unique=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Realm",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("domain", models.CharField(db_index=True, max_length=40, unique=True)),
+                ("name", models.CharField(max_length=40, null=True)),
+                ("restricted_to_domain", models.BooleanField(default=True)),
+                ("invite_required", models.BooleanField(default=False)),
+                ("invite_by_admins_only", models.BooleanField(default=False)),
+                ("mandatory_topics", models.BooleanField(default=False)),
+                ("show_digest_email", models.BooleanField(default=True)),
+                ("name_changes_disabled", models.BooleanField(default=False)),
+                ("date_created", models.DateTimeField(default=django.utils.timezone.now)),
+                ("deactivated", models.BooleanField(default=False)),
+            ],
+            options={
+                "permissions": (("administer", "Administer a realm"),),
+            },
+        ),
+        migrations.CreateModel(
+            name="RealmAlias",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("domain", models.CharField(db_index=True, max_length=80, unique=True)),
+                (
+                    "realm",
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="RealmEmoji",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.TextField()),
+                ("img_url", models.TextField()),
+                (
+                    "realm",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="RealmFilter",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("pattern", models.TextField()),
+                ("url_format_string", models.TextField()),
+                (
+                    "realm",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="ScheduledJob",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("scheduled_timestamp", models.DateTimeField()),
+                ("type", models.PositiveSmallIntegerField()),
+                ("data", models.TextField()),
+                ("filter_id", models.IntegerField(null=True)),
+                ("filter_string", models.CharField(max_length=100)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Client",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(db_index=True, max_length=30, unique=True)),
+            ],
+        ),
+        migrations.CreateModel(
             name="UserProfile",
             fields=[
                 (
@@ -144,18 +291,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             },
         ),
         migrations.CreateModel(
-            name="Client",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
-                ),
-                ("name", models.CharField(db_index=True, max_length=30, unique=True)),
-            ],
-        ),
-        migrations.CreateModel(
             name="DefaultStream",
             fields=[
                 (
@@ -164,18 +299,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                         auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-            ],
-        ),
-        migrations.CreateModel(
-            name="Huddle",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
-                ),
-                ("huddle_hash", models.CharField(db_index=True, max_length=40, unique=True)),
             ],
         ),
         migrations.CreateModel(
@@ -197,20 +320,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ("has_attachment", models.BooleanField(db_index=True, default=False)),
                 ("has_image", models.BooleanField(db_index=True, default=False)),
                 ("has_link", models.BooleanField(db_index=True, default=False)),
-            ],
-        ),
-        migrations.CreateModel(
-            name="PreregistrationUser",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
-                ),
-                ("email", models.EmailField(max_length=75)),
-                ("invited_at", models.DateTimeField(auto_now=True)),
-                ("status", models.IntegerField(default=0)),
             ],
         ),
         migrations.CreateModel(
@@ -238,99 +347,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             ],
         ),
         migrations.CreateModel(
-            name="Realm",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
-                ),
-                ("domain", models.CharField(db_index=True, max_length=40, unique=True)),
-                ("name", models.CharField(max_length=40, null=True)),
-                ("restricted_to_domain", models.BooleanField(default=True)),
-                ("invite_required", models.BooleanField(default=False)),
-                ("invite_by_admins_only", models.BooleanField(default=False)),
-                ("mandatory_topics", models.BooleanField(default=False)),
-                ("show_digest_email", models.BooleanField(default=True)),
-                ("name_changes_disabled", models.BooleanField(default=False)),
-                ("date_created", models.DateTimeField(default=django.utils.timezone.now)),
-                ("deactivated", models.BooleanField(default=False)),
-            ],
-            options={
-                "permissions": (("administer", "Administer a realm"),),
-            },
-        ),
-        migrations.CreateModel(
-            name="RealmAlias",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
-                ),
-                ("domain", models.CharField(db_index=True, max_length=80, unique=True)),
-                (
-                    "realm",
-                    models.ForeignKey(
-                        null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
-                    ),
-                ),
-            ],
-        ),
-        migrations.CreateModel(
-            name="RealmEmoji",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
-                ),
-                ("name", models.TextField()),
-                ("img_url", models.TextField()),
-                (
-                    "realm",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
-                    ),
-                ),
-            ],
-        ),
-        migrations.CreateModel(
-            name="RealmFilter",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
-                ),
-                ("pattern", models.TextField()),
-                ("url_format_string", models.TextField()),
-                (
-                    "realm",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
-                    ),
-                ),
-            ],
-        ),
-        migrations.CreateModel(
-            name="Recipient",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
-                ),
-                ("type_id", models.IntegerField(db_index=True)),
-                ("type", models.PositiveSmallIntegerField(db_index=True)),
-            ],
-        ),
-        migrations.CreateModel(
             name="Referral",
             fields=[
                 (
@@ -347,22 +363,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                         on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
                     ),
                 ),
-            ],
-        ),
-        migrations.CreateModel(
-            name="ScheduledJob",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
-                ),
-                ("scheduled_timestamp", models.DateTimeField()),
-                ("type", models.PositiveSmallIntegerField()),
-                ("data", models.TextField()),
-                ("filter_id", models.IntegerField(null=True)),
-                ("filter_string", models.CharField(max_length=100)),
             ],
         ),
         migrations.CreateModel(
@@ -566,17 +566,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             unique_together={("realm", "name")},
         ),
         migrations.AddField(
-            model_name="realm",
-            name="notifications_stream",
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="+",
-                to="zerver.Stream",
-            ),
-        ),
-        migrations.AddField(
             model_name="preregistrationuser",
             name="realm",
             field=models.ForeignKey(
@@ -589,11 +578,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             field=models.ForeignKey(
                 null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
             ),
-        ),
-        migrations.AddField(
-            model_name="preregistrationuser",
-            name="streams",
-            field=models.ManyToManyField(to="zerver.Stream"),
         ),
         migrations.AddField(
             model_name="message",
@@ -634,26 +618,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
         ),
         migrations.AddField(
             model_name="userprofile",
-            name="default_events_register_stream",
-            field=models.ForeignKey(
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="+",
-                to="zerver.Stream",
-            ),
-        ),
-        migrations.AddField(
-            model_name="userprofile",
-            name="default_sending_stream",
-            field=models.ForeignKey(
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="+",
-                to="zerver.Stream",
-            ),
-        ),
-        migrations.AddField(
-            model_name="userprofile",
             name="groups",
             field=models.ManyToManyField(
                 blank=True,
@@ -686,30 +650,10 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             name="search_tsvector",
             field=SearchVectorField(null=True),
         ),
-        migrations.AddIndex(
-            model_name="message",
-            index=GinIndex(
-                "search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"
-            ),
-        ),
-        migrations.RunSQL(
-            sql=fts_sql,
-        ),
-        migrations.AlterModelManagers(
-            name="userprofile",
-            managers=[
-                ("objects", django.contrib.auth.models.UserManager()),
-            ],
-        ),
         migrations.AlterField(
             model_name="preregistrationuser",
             name="email",
             field=models.EmailField(max_length=254),
-        ),
-        migrations.AlterField(
-            model_name="preregistrationuser",
-            name="streams",
-            field=models.ManyToManyField(to="zerver.Stream"),
         ),
         migrations.AlterField(
             model_name="pushdevicetoken",
@@ -731,14 +675,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             name="last_login",
             field=models.DateTimeField(blank=True, null=True, verbose_name="last login"),
         ),
-        migrations.AddIndex(
-            model_name="message",
-            index=models.Index(Upper("subject"), name="upper_subject_idx"),
-        ),
-        migrations.AddIndex(
-            model_name="stream",
-            index=models.Index(Upper("name"), name="upper_stream_name_idx"),
-        ),
         migrations.AddField(
             model_name="userprofile",
             name="left_side_userlist",
@@ -753,10 +689,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 )
             },
         ),
-        migrations.AddIndex(
-            model_name="userprofile",
-            index=models.Index(Upper("email"), name="upper_userprofile_email_idx"),
-        ),
         migrations.AlterField(
             model_name="userprofile",
             name="is_active",
@@ -766,10 +698,6 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             model_name="userprofile",
             name="is_bot",
             field=models.BooleanField(db_index=True, default=False),
-        ),
-        migrations.AddIndex(
-            model_name="preregistrationuser",
-            index=models.Index(Upper("email"), name="upper_preregistration_email_idx"),
         ),
         migrations.AlterField(
             model_name="userprofile",
@@ -903,5 +831,76 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             model_name="userprofile",
             name="tos_version",
             field=models.CharField(max_length=10, null=True),
+        ),
+        # AddField operations that create import cycles should happen
+        # after those that can be squashed.
+        migrations.AddField(
+            model_name="preregistrationuser",
+            name="streams",
+            field=models.ManyToManyField(to="zerver.Stream"),
+        ),
+        migrations.AddField(
+            model_name="realm",
+            name="notifications_stream",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="zerver.Stream",
+            ),
+        ),
+        migrations.AddField(
+            model_name="userprofile",
+            name="default_events_register_stream",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="zerver.Stream",
+            ),
+        ),
+        migrations.AddField(
+            model_name="userprofile",
+            name="default_sending_stream",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="zerver.Stream",
+            ),
+        ),
+        # These indexes seem to not squash properly.
+        migrations.AddIndex(
+            model_name="userprofile",
+            index=models.Index(Upper("email"), name="upper_userprofile_email_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="preregistrationuser",
+            index=models.Index(Upper("email"), name="upper_preregistration_email_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="message",
+            index=GinIndex(
+                "search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"
+            ),
+        ),
+        migrations.AddIndex(
+            model_name="message",
+            index=models.Index(Upper("subject"), name="upper_subject_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="stream",
+            index=models.Index(Upper("name"), name="upper_stream_name_idx"),
+        ),
+        migrations.AlterModelManagers(
+            name="userprofile",
+            managers=[
+                ("objects", django.contrib.auth.models.UserManager()),
+            ],
+        ),
+        # Set up full-text search indexes.
+        migrations.RunSQL(
+            sql=fts_sql,
         ),
     ]
