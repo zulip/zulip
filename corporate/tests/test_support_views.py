@@ -22,6 +22,7 @@ from corporate.models import (
     get_current_plan_by_customer,
     get_customer_by_realm,
 )
+from zerver.actions.create_realm import do_create_realm
 from zerver.actions.invites import do_create_multiuse_invite_link
 from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
 from zerver.actions.user_settings import do_change_user_setting
@@ -1402,6 +1403,29 @@ class TestSupportEndpoint(ZulipTestCase):
             "request for sponsored hosting has been approved", messages[0].message.content
         )
         self.assert_length(messages, 1)
+
+    def test_approve_sponsorship_deactivated_realm(self) -> None:
+        support_admin = self.example_user("iago")
+        with self.settings(BILLING_ENABLED=True):
+            limited_realm = do_create_realm("limited", "limited")
+            self.assertEqual(limited_realm.plan_type, Realm.PLAN_TYPE_LIMITED)
+            billing_session = RealmBillingSession(
+                user=support_admin, realm=limited_realm, support_session=True
+            )
+            billing_session.update_customer_sponsorship_status(True)
+        limited_realm.deactivated = True
+        limited_realm.save()
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_post(
+            "/activity/support",
+            {"realm_id": f"{limited_realm.id}", "approve_sponsorship": "true"},
+        )
+        self.assertIn(b"Realm has been deactivated", result.content)
+        limited_realm.refresh_from_db()
+        self.assertEqual(limited_realm.plan_type, Realm.PLAN_TYPE_LIMITED)
 
     def test_activate_or_deactivate_realm(self) -> None:
         cordelia = self.example_user("cordelia")

@@ -3946,6 +3946,9 @@ class RealmBillingSession(BillingSession):
 
         from zerver.actions.message_send import internal_send_private_message
 
+        if self.realm.deactivated:
+            raise SupportRequestError("Realm has been deactivated")
+
         self.do_change_plan_type(tier=None, is_sponsored=True)
         if customer is not None and customer.sponsorship_pending:
             customer.sponsorship_pending = False
