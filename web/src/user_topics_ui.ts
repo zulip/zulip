@@ -8,6 +8,7 @@ import * as overlays from "./overlays";
 import * as popover_menus from "./popover_menus";
 import * as recent_view_ui from "./recent_view_ui";
 import * as settings_user_topics from "./settings_user_topics";
+import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as unread_ui from "./unread_ui";
@@ -88,6 +89,10 @@ export function toggle_topic_visibility_policy(message: Message): void {
 
     const stream_id = message.stream_id;
     const topic = message.topic;
+
+    if (!stream_data.is_subscribed(stream_id)) {
+        return;
+    }
 
     if (
         user_topics.is_topic_muted(stream_id, topic) ||
