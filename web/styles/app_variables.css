@@ -546,6 +546,7 @@
     --color-background-modal: hsl(0deg 0% 98%);
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 100%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
+    --color-topic-indent-border: hsl(0deg 0% 0% / 19%);
     --color-outline-focus: hsl(215deg 47% 50%);
     --color-background-search: hsl(0deg 0% 100%);
     --color-background-search-option-hover: hsl(0deg 0% 94%);
@@ -952,6 +953,7 @@
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 0% / 20%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
+    --color-topic-indent-border: hsl(0deg 0% 100% / 19%);
     --color-background-search: hsl(0deg 0% 20%);
     --color-background-search-option-hover: hsl(0deg 0% 30%);
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
