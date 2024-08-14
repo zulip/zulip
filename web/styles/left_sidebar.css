@@ -891,13 +891,17 @@ li.top_left_scheduled_messages {
 
 .topic-box,
 .searching-for-more-topics {
-    margin-left: var(--left-sidebar-toggle-width-offset);
     grid-template-columns:
         0 var(--left-sidebar-icon-column-width) var(
             --left-sidebar-icon-content-gap
         )
         minmax(0, 1fr) minmax(0, max-content)
         30px 0;
+}
+
+.searching-for-more-topics {
+    margin-left: var(--left-sidebar-toggle-width-offset);
+    height: var(--line-height-sidebar-row-prominent);
 }
 
 .topic_search_section {
@@ -1083,9 +1087,46 @@ ul.topic-list {
     font-weight: normal;
 }
 
+ul.topic-list::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    /* 12px at 16px/1em */
+    top: 0.75em;
+    bottom: 0.75em;
+    left: 9px;
+    border: 1px solid var(--color-topic-indent-border);
+    border-right: 0;
+    border-radius: 9px 0 0 9px;
+    width: 6px;
+    pointer-events: none;
+}
+
+ul.topic-list::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    /* -14px at 16px/1em */
+    top: -0.875em;
+    /* 12px at 16px/1em */
+    bottom: 0.75em;
+    left: 16px;
+    width: 8px;
+    border-bottom: 1px solid var(--color-topic-indent-border);
+    pointer-events: none;
+}
+
+/* The grouping border should not be shown
+   on zoomed-in views. */
+.zoom-in .topic-list::before,
+.zoom-in .topic-list::after {
+    border: 0;
+}
+
 li.topic-list-item {
     position: relative;
     padding-right: 5px;
+    margin-left: var(--left-sidebar-toggle-width-offset);
 }
 
 .dm-box {
