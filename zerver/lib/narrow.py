@@ -594,6 +594,9 @@ class NarrowBuilder:
                     realm=self.realm,
                 )
 
+            if user_profiles == []:
+                return query.where(maybe_negate(false()))
+
             recipient = recipient_for_user_profiles(
                 user_profiles=user_profiles,
                 forwarded_mirror_message=False,
