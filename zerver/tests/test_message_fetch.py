@@ -3920,6 +3920,18 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
         self.exercise_bad_narrow_operand("dm", invalid_operands)
 
+    def test_bad_narrow_dm_empty_list(self) -> None:
+        self.login("hamlet")
+        post_params = {
+            "anchor": "0",
+            "num_before": "0",
+            "num_after": "0",
+            "narrow": orjson.dumps([{"operand": [], "operator": "dm"}]).decode(),
+        }
+        result = self.client_get("/json/messages", post_params)
+        messages = self.assert_json_success(result)["messages"]
+        self.assertEqual(messages, [])
+
     def test_message_without_rendered_content(self) -> None:
         """Older messages may not have rendered_content in the database"""
         m = self.get_last_message()
