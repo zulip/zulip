@@ -342,8 +342,13 @@
         color: inherit;
     }
 
-    /* these are converting grey things to "new grey" */
-    :disabled,
+    /* these are converting grey things to "new grey".
+       :disabled rules are exploded for CSS selector performance reasons. */
+    button:disabled,
+    option:disabled,
+    select:disabled,
+    textarea:disabled,
+    input:disabled,
     input:not([type="radio"]):read-only,
     textarea:read-only,
     #organization-permissions .dropdown-widget-button:disabled,
