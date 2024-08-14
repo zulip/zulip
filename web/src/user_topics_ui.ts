@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
@@ -94,21 +95,31 @@ export function toggle_topic_visibility_policy(message: Message): void {
         return;
     }
 
-    if (
-        user_topics.is_topic_muted(stream_id, topic) ||
-        user_topics.is_topic_unmuted(stream_id, topic)
-    ) {
-        user_topics.set_user_topic_visibility_policy(
-            stream_id,
-            topic,
-            user_topics.all_visibility_policies.INHERIT,
-        );
-    } else {
-        if (sub_store.get(stream_id)?.is_muted) {
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    if (sub.is_muted) {
+        if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
+            user_topics.set_user_topic_visibility_policy(
+                stream_id,
+                topic,
+                user_topics.all_visibility_policies.INHERIT,
+                true,
+            );
+        } else {
             user_topics.set_user_topic_visibility_policy(
                 stream_id,
                 topic,
                 user_topics.all_visibility_policies.UNMUTED,
+                true,
+            );
+        }
+    } else {
+        if (user_topics.is_topic_muted(stream_id, topic)) {
+            user_topics.set_user_topic_visibility_policy(
+                stream_id,
+                topic,
+                user_topics.all_visibility_policies.INHERIT,
                 true,
             );
         } else {
