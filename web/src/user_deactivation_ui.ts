@@ -115,6 +115,29 @@ export function confirm_bot_deactivation(
     });
 }
 
+export function confirm_deletion(
+    user_id: number,
+    handle_confirm: () => void,
+    loading_spinner: boolean,
+): void {
+    const user = people.get_by_user_id(user_id);
+    const opts: {
+        username: string;
+    } = {
+        username: user.full_name,
+    };
+
+    const html_body = render_settings_reactivation_user_modal(opts);
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Delete {name}"}, {name: user.full_name}),
+        // help_link: "/help/deactivate-or-reactivate-a-user#reactivating-a-user",
+        html_body,
+        on_click: handle_confirm,
+        loading_spinner,
+    });
+}
+
 export function confirm_reactivation(
     user_id: number,
     handle_confirm: () => void,
