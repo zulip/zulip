@@ -212,7 +212,7 @@ function get_column_count_for_table($table: JQuery): number {
 
 export function render_empty_list_message_if_needed(
     $container: JQuery,
-    filter_value: string,
+    filter_value?: string,
 ): void {
     let empty_list_message = $container.attr("data-empty");
 
