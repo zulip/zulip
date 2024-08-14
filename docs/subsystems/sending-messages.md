@@ -103,7 +103,7 @@ This section details the ways in which it is different:
 
 ## Local echo
 
-An essential feature for a good chat is experience is local echo
+An essential feature for a good chat experience is local echo
 (i.e. having the message appear in the feed the moment the user hits
 send, before the network round trip to the server). This is essential
 both for freeing up the compose box (for the user to send more
@@ -114,7 +114,7 @@ for emoji) would just render the raw text the user entered in the
 browser, and then replace it with data from the server when it
 changes.
 
-Zulip aims for a near-perfect local echo experience, which requires is
+Zulip aims for a near-perfect local echo experience, which is
 why our [Markdown system](markdown.md) requires both
 an authoritative (backend) Markdown implementation and a secondary
 (frontend) Markdown implementation, the latter used only for the local

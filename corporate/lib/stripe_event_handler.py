@@ -55,7 +55,7 @@ def stripe_event_handler_decorator(
                 "description": e.error_description,
             }
             event.save(update_fields=["status", "handler_error"])
-            if type(stripe_object) == stripe.Invoice:
+            if isinstance(stripe_object, stripe.Invoice):
                 # For Invoice processing errors, send email to billing support.
                 send_email(
                     "zerver/emails/error_processing_invoice",

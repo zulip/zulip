@@ -18,7 +18,46 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 10.0
+
+**Feature level 280**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_create_web_public_channel_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to create web-public channels.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `create_web_public_stream_policy` property, as the permission to create
+  web-public channels is now controlled by `can_create_web_public_channel_group`
+  setting.
+* [`POST /register`](/api/register-queue): `realm_create_web_public_stream_policy`
+  field is deprecated, having been replaced by `can_create_web_public_channel_group`.
+  Notably, this backwards-compatible `realm_create_web_public_stream_policy` value
+  now contains the superset of the true value that best approximates the actual
+  permission setting.
+
+Feature levels 278-279 are reserved for future use in 9.x maintenance
+releases.
+
 ## Changes in Zulip 9.0
+
+**Feature level 277**
+
+No changes; feature level used for Zulip 9.0 release.
+
+**Feature level 276**
+
+* [Markdown message formatting](/api/message-formatting#image-previews):
+  Image preview elements not contain a `data-original-dimensions`
+  attribute containing the dimensions of the original image.
+
+**Feature level 275**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_animate_image_previews` setting, which controls how
+  animated images should be played in the web/desktop app message feed.
 
 **Feature level 274**
 
@@ -871,8 +910,8 @@ No changes; feature level used for Zulip 7.0 release.
 
 **Feature level 182**
 
-* `POST /export/realm`: This endpoint now returns the ID of the data
-  export object created by the request.
+* [`POST /export/realm`](/api/export-realm): This endpoint now returns the ID
+  of the data export object created by the request.
 
 **Feature level 181**
 
@@ -2418,7 +2457,10 @@ No changes; feature level used for Zulip 3.0 release.
   window cached in a client.
 * Added `is_web_public` field to Stream objects.  This field is
   intended to support web-public streams.
-* Added `/export/realm` endpoints for triggering a data export.
+* [`GET /export/realm`](/api/get-realm-exports): Added endpoint for
+  fetching public data exports.
+  [`POST /export/realm`](/api/export-realm): Added endpoint for
+  triggering a public data export.
 * `PATCH /realm`: Added `invite_to_stream_policy`,
   `create_stream_policy`, `digest_emails_enabled`, `digest_weekday`,
   `user_group_edit_policy`, and `avatar_changes_disabled` organization settings.

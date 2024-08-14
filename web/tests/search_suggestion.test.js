@@ -11,6 +11,7 @@ const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 
 const direct_message_group_data = zrequire("direct_message_group_data");
 
+const {Filter} = zrequire("filter");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
@@ -67,7 +68,7 @@ function init() {
 }
 
 function get_suggestions(query, pill_query = "") {
-    return search.get_suggestions(pill_query, query);
+    return search.get_suggestions(Filter.parse(pill_query), Filter.parse(query));
 }
 
 function test(label, f) {
@@ -893,7 +894,7 @@ test("people_suggestions", ({override, mock_template}) => {
     test_full_name("dm:ted@zulip.com", expectedString);
     test_full_name("dm-including:ted@zulip.com", expectedString);
 
-    expectedString = example_avatar_url + "?s=50";
+    expectedString = example_avatar_url;
 
     function test_avatar_url(q, avatar_url) {
         return suggestions.lookup_table.get(q).description_html.includes(avatar_url);

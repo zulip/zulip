@@ -25,7 +25,6 @@ normal_queues = [
     "thumbnail",
     "user_activity",
     "user_activity_interval",
-    "user_presence",
 ]
 
 mobile_notification_shards = int(
@@ -163,12 +162,17 @@ def check_rabbitmq_queues() -> None:
         text=True,
     ).strip()
     queue_stats: dict[str, dict[str, Any]] = {}
+
     check_queues = normal_queues
     if mobile_notification_shards > 1:
+        # For sharded queue workers, where there's a separate queue
+        # for each shard, we need to make sure none of those are
+        # backlogged.
         check_queues += [
             f"missedmessage_mobile_notifications_shard{d}"
             for d in range(1, mobile_notification_shards + 1)
         ]
+
     queues_to_check = set(check_queues).intersection(set(queues_with_consumers))
     for queue in queues_to_check:
         fn = queue + ".stats"

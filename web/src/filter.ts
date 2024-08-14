@@ -297,6 +297,7 @@ export class Filter {
     _can_mark_messages_read?: boolean;
     requires_adjustment_for_moved_with_target?: boolean;
     narrow_requires_hash_change: boolean;
+    cached_sorted_terms_for_comparison?: string[] | undefined = undefined;
 
     constructor(terms: NarrowTerm[]) {
         this._terms = terms;
@@ -871,6 +872,7 @@ export class Filter {
 
     setup_filter(terms: NarrowTerm[]): void {
         this._terms = this.fix_terms(terms);
+        this.cached_sorted_terms_for_comparison = undefined;
         if (this.has_operator("channel")) {
             this._sub = stream_data.get_sub_by_name(this.operands("channel")[0]!);
         }
@@ -878,12 +880,16 @@ export class Filter {
 
     equals(filter: Filter, excluded_operators?: string[]): boolean {
         return _.isEqual(
-            filter.sorted_terms(excluded_operators),
-            this.sorted_terms(excluded_operators),
+            filter.sorted_terms_for_comparison(excluded_operators),
+            this.sorted_terms_for_comparison(excluded_operators),
         );
     }
 
-    sorted_terms(excluded_operators?: string[]): NarrowTerm[] {
+    sorted_terms_for_comparison(excluded_operators?: string[]): string[] {
+        if (!excluded_operators && this.cached_sorted_terms_for_comparison !== undefined) {
+            return this.cached_sorted_terms_for_comparison;
+        }
+
         let filter_terms = this._terms;
         if (excluded_operators) {
             filter_terms = this._terms.filter(
@@ -891,11 +897,22 @@ export class Filter {
             );
         }
 
-        return filter_terms.sort((a, b) => {
-            const a_joined = `${a.negated ? "0" : "1"}-${a.operator}-${a.operand}`;
-            const b_joined = `${b.negated ? "0" : "1"}-${b.operator}-${b.operand}`;
-            return util.strcmp(a_joined, b_joined);
-        });
+        const sorted_simplified_terms = filter_terms
+            .map((term) => {
+                let operand = term.operand;
+                if (term.operator === "channel" || term.operator === "topic") {
+                    operand = operand.toLowerCase();
+                }
+
+                return `${term.negated ? "0" : "1"}-${term.operator}-${operand}`;
+            })
+            .sort(util.strcmp);
+
+        if (!excluded_operators) {
+            this.cached_sorted_terms_for_comparison = sorted_simplified_terms;
+        }
+
+        return sorted_simplified_terms;
     }
 
     predicate(): (message: Message) => boolean {

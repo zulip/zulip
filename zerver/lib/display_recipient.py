@@ -151,7 +151,7 @@ def bulk_fetch_user_display_recipients(
     direct_message_group_recipient_ids = [
         get_recipient_id(tup) for tup in direct_message_group_tuples
     ]
-    huddle_recipient_id_to_user_ids = bulk_get_direct_message_group_user_ids(
+    user_ids_in_direct_message_groups = bulk_get_direct_message_group_user_ids(
         direct_message_group_recipient_ids
     )
 
@@ -161,7 +161,7 @@ def bulk_fetch_user_display_recipients(
     }
 
     for recipient_id in direct_message_group_recipient_ids:
-        direct_message_group_user_ids = huddle_recipient_id_to_user_ids[recipient_id]
+        direct_message_group_user_ids = user_ids_in_direct_message_groups[recipient_id]
         user_ids_to_fetch |= direct_message_group_user_ids
 
     # Fetch the needed user dictionaries.
@@ -174,7 +174,7 @@ def bulk_fetch_user_display_recipients(
         result[recipient_id] = display_recipients
 
     for recipient_id in direct_message_group_recipient_ids:
-        user_ids = sorted(huddle_recipient_id_to_user_ids[recipient_id])
+        user_ids = sorted(user_ids_in_direct_message_groups[recipient_id])
         display_recipients = [user_display_recipients[user_id] for user_id in user_ids]
         result[recipient_id] = display_recipients
 

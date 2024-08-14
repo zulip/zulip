@@ -298,14 +298,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Who in the organization is allowed to create streams.
-    create_web_public_stream_policy = models.PositiveSmallIntegerField(
-        default=CreateWebPublicStreamPolicyEnum.OWNERS_ONLY
-    )
-
     can_create_public_channel_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
     can_create_private_channel_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+    can_create_web_public_channel_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
@@ -646,7 +645,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
-        create_web_public_stream_policy=int,
         default_code_block_language=str,
         default_language=str,
         delete_own_message_policy=int,
@@ -743,11 +741,27 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             default_group_name=SystemGroups.EVERYONE,
             id_field_name="direct_message_permission_group_id",
         ),
+        can_create_web_public_channel_group=GroupPermissionSetting(
+            require_system_group=True,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.OWNERS,
+            id_field_name="can_create_web_public_channel_group_id",
+            allowed_system_groups=[
+                SystemGroups.MODERATORS,
+                SystemGroups.ADMINISTRATORS,
+                SystemGroups.OWNERS,
+                SystemGroups.NOBODY,
+            ],
+        ),
     )
 
     REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
         "can_create_private_channel_group",
         "can_create_public_channel_group",
+        "can_create_web_public_channel_group",
         "direct_message_initiator_group",
         "direct_message_permission_group",
     ]
@@ -1102,10 +1116,12 @@ def get_realm_by_id(realm_id: int) -> Realm:
 
 
 def get_realm_with_settings(realm_id: int) -> Realm:
-    # Prefetch all the settings that can be set to anonymous groups.
+    # Prefetch the following settings:
+    # * All the settings that can be set to anonymous groups.
     # This also prefetches can_access_all_users_group setting,
     # even when it cannot be set to anonymous groups because
     # the setting is used when fetching users in the realm.
+    # * Announcements streams.
     return Realm.objects.select_related(
         "can_access_all_users_group",
         "can_access_all_users_group__named_user_group",
@@ -1113,10 +1129,15 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_create_public_channel_group__named_user_group",
         "can_create_private_channel_group",
         "can_create_private_channel_group__named_user_group",
+        "can_create_web_public_channel_group",
+        "can_create_web_public_channel_group__named_user_group",
         "direct_message_initiator_group",
         "direct_message_initiator_group__named_user_group",
         "direct_message_permission_group",
         "direct_message_permission_group__named_user_group",
+        "new_stream_announcements_stream",
+        "signup_announcements_stream",
+        "zulip_update_announcements_stream",
     ).get(id=realm_id)
 
 
@@ -1162,6 +1183,12 @@ def get_corresponding_policy_value_for_group_setting(
     # If the group setting is not set to one of the role based groups
     # that the previous enum setting allowed, then just return the
     # enum value corresponding to largest group.
+    if group_setting_name == "can_create_web_public_channel_group":
+        # Largest group allowed to create web-public channels is
+        # moderators group.
+        assert valid_policy_enums == Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES
+        return Realm.POLICY_MODERATORS_ONLY
+
     assert valid_policy_enums == Realm.COMMON_POLICY_TYPES
     return Realm.POLICY_MEMBERS_ONLY
 

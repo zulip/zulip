@@ -1,10 +1,13 @@
+import render_input_pill from "../templates/input_pill.hbs";
+
 import * as blueslip from "./blueslip";
-import type {InputPillConfig, InputPillContainer, InputPillItem} from "./input_pill";
+import type {EmojiRenderingDetails} from "./emoji";
+import type {InputPillConfig, InputPillContainer} from "./input_pill";
 import * as input_pill from "./input_pill";
 import type {User} from "./people";
 import * as people from "./people";
 import {realm} from "./state_data";
-import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 import * as user_status from "./user_status";
 
 // This will be used for pills for things like composing
@@ -14,6 +17,11 @@ export type UserPill = {
     type: "user";
     user_id?: number;
     email: string;
+    full_name: string | undefined;
+    img_src?: string;
+    deactivated?: boolean;
+    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
+    should_add_guest_user_indicator?: boolean;
 };
 
 export type UserPillWidget = InputPillContainer<UserPill>;
@@ -22,9 +30,9 @@ export type UserPillData = {type: "user"; user: User};
 
 export function create_item_from_email(
     email: string,
-    current_items: CombinedPillItem[],
+    current_items: CombinedPill[],
     pill_config?: InputPillConfig | undefined,
-): InputPillItem<UserPill> | undefined {
+): UserPill | undefined {
     // For normal Zulip use, we need to validate the email for our realm.
     const user = people.get_by_email(email);
 
@@ -39,7 +47,7 @@ export function create_item_from_email(
             // is the email itself.
             return {
                 type: "user",
-                display_value: email,
+                full_name: undefined,
                 email,
             };
         }
@@ -60,11 +68,9 @@ export function create_item_from_email(
 
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
 
-    // We must supply display_value for the widget to work.  Everything
-    // else is for our own use in callbacks.
-    const item: InputPillItem<UserPill> = {
+    const item: UserPill = {
         type: "user",
-        display_value: user.full_name,
+        full_name: user.full_name,
         user_id: user.user_id,
         email: user.email,
         img_src: avatar_url,
@@ -86,7 +92,7 @@ export function create_item_from_email(
     return item;
 }
 
-export function get_email_from_item(item: InputPillItem<UserPill>): string {
+export function get_email_from_item(item: UserPill): string {
     return item.email;
 }
 
@@ -99,9 +105,9 @@ export function append_person(opts: {
     const avatar_url = people.small_avatar_url_for_person(person);
     const status_emoji_info = user_status.get_status_emoji(opts.person.user_id);
 
-    const pill_data: InputPillItem<UserPill> = {
+    const pill_data: UserPill = {
         type: "user",
-        display_value: person.full_name,
+        full_name: person.full_name,
         user_id: person.user_id,
         email: person.email,
         img_src: avatar_url,
@@ -159,6 +165,31 @@ export function append_user(user: User, pills: UserPillWidget | CombinedPillCont
     }
 }
 
+export function get_display_value_from_item(item: UserPill): string {
+    return item.full_name ?? item.email;
+}
+
+export function generate_pill_html(item: UserPill, show_user_status_emoji = false): string {
+    let status_emoji_info;
+    let has_status;
+    if (show_user_status_emoji) {
+        has_status = item.status_emoji_info !== undefined;
+        if (has_status) {
+            status_emoji_info = item.status_emoji_info;
+        }
+    }
+    return render_input_pill({
+        display_value: get_display_value_from_item(item),
+        has_image: item.img_src !== undefined,
+        deactivated: item.deactivated,
+        should_add_guest_user_indicator: item.should_add_guest_user_indicator,
+        user_id: item.user_id,
+        img_src: item.img_src,
+        has_status,
+        status_emoji_info,
+    });
+}
+
 export function create_pills(
     $pill_container: JQuery,
     pill_config?: InputPillConfig | undefined,
@@ -168,6 +199,8 @@ export function create_pills(
         pill_config,
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,
+        get_display_value_from_item,
+        generate_pill_html,
     });
     return pills;
 }

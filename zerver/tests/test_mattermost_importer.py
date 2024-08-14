@@ -345,7 +345,7 @@ class MatterMostImporter(ZulipTestCase):
 
         user_handler = UserHandler()
         subscriber_handler = SubscriberHandler()
-        huddle_id_mapper = IdMapper[frozenset[str]]()
+        direct_message_group_id_mapper = IdMapper[frozenset[str]]()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
 
@@ -361,7 +361,7 @@ class MatterMostImporter(ZulipTestCase):
             direct_message_group_data=mattermost_data["direct_channel"],
             user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,
-            huddle_id_mapper=huddle_id_mapper,
+            direct_message_group_id_mapper=direct_message_group_id_mapper,
             user_id_mapper=user_id_mapper,
             realm_id=3,
             team_name=team_name,
@@ -370,10 +370,12 @@ class MatterMostImporter(ZulipTestCase):
         self.assert_length(zerver_huddle, 1)
         direct_message_group_members = frozenset(mattermost_data["direct_channel"][1]["members"])
 
-        self.assertTrue(huddle_id_mapper.has(direct_message_group_members))
+        self.assertTrue(direct_message_group_id_mapper.has(direct_message_group_members))
         self.assertEqual(
             subscriber_handler.get_users(
-                direct_message_group_id=huddle_id_mapper.get(direct_message_group_members)
+                direct_message_group_id=direct_message_group_id_mapper.get(
+                    direct_message_group_members
+                )
             ),
             {1, 2, 3},
         )

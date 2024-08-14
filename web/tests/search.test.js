@@ -52,11 +52,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         return html;
     });
 
-    let expected_suggestion_parts = [];
-    mock_template("search_description.hbs", false, (data, html) => {
-        assert.deepStrictEqual(data.parts, expected_suggestion_parts);
-        return html;
-    });
     let expected_pill_display_value = "";
     let input_pill_displayed = false;
     mock_template("input_pill.hbs", true, (data, html) => {
@@ -135,7 +130,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                                         has_image: true,
                                         id: 7,
                                         img_src:
-                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
+                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
                                     },
                                 },
                             ],
@@ -154,7 +149,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                                         has_image: true,
                                         id: 7,
                                         img_src:
-                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
+                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
                                     },
                                 },
                             ],
@@ -173,7 +168,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                                         has_image: true,
                                         id: 7,
                                         img_src:
-                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
+                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
                                     },
                                 },
                             ],
@@ -200,13 +195,13 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             let expected_value = `<div class="search_list_item">\n    <span>Search for zo</span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[1]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[3]), expected_value);
 
             /* Test sorter */
@@ -234,13 +229,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                     operand: "ver",
                 },
             ];
-            expected_suggestion_parts = [
-                {
-                    operand: "ver",
-                    prefix_for_operator: "search for",
-                    type: "prefix_for_operator",
-                },
-            ];
             expected_pill_display_value = null;
             _setup(terms);
             input_pill_displayed = false;
@@ -253,13 +241,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                 {
                     negated: false,
                     operator: "channel",
-                    operand: "Verona",
-                },
-            ];
-            expected_suggestion_parts = [
-                {
-                    type: "prefix_for_operator",
-                    prefix_for_operator: "channel",
                     operand: "Verona",
                 },
             ];
@@ -370,13 +351,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             negated: false,
             operator: "search",
             operand: "ver",
-        },
-    ];
-    expected_suggestion_parts = [
-        {
-            operand: "ver",
-            prefix_for_operator: "search for",
-            type: "prefix_for_operator",
         },
     ];
     expected_pill_display_value = "ver";

@@ -841,7 +841,6 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             bot_creation_policy=10,
-            create_web_public_stream_policy=10,
             invite_to_stream_policy=10,
             message_retention_days=10,
             video_chat_provider=10,
@@ -1558,7 +1557,6 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
@@ -1663,6 +1661,60 @@ class RealmAPITest(ZulipTestCase):
 
             realm = self.update_with_api(setting_name, value)
             self.assertEqual(getattr(realm, setting_name), user_group.usergroup_ptr)
+
+        if setting_permission_configuration.require_system_group:
+            leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
+
+            value = orjson.dumps(leadership_group.id).decode()
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                value = orjson.dumps(
+                    {
+                        "new": leadership_group.id,
+                    }
+                ).decode()
+
+            result = self.client_patch("/json/realm", {setting_name: value})
+            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                admins_group = NamedUserGroup.objects.get(
+                    name=SystemGroups.ADMINISTRATORS, realm=realm
+                )
+                moderators_group = NamedUserGroup.objects.get(
+                    name=SystemGroups.MODERATORS, realm=realm
+                )
+                value = orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id, leadership_group.id],
+                        }
+                    }
+                ).decode()
+                result = self.client_patch("/json/realm", {setting_name: value})
+                self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+                value = orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id, moderators_group.id],
+                        }
+                    }
+                ).decode()
+                result = self.client_patch("/json/realm", {setting_name: value})
+                self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+                value = orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id],
+                        }
+                    }
+                ).decode()
+                realm = self.update_with_api(setting_name, value)
+                self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
 
     def do_test_realm_permission_group_setting_update_api_with_anonymous_groups(
         self, setting_name: str
@@ -1897,14 +1949,18 @@ class RealmAPITest(ZulipTestCase):
                 with self.subTest(property=prop):
                     self.do_test_realm_update_api(prop)
 
+        check_add_user_group(
+            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
+        )
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
 
-        check_add_user_group(
-            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
-        )
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+            if Realm.REALM_PERMISSION_GROUP_SETTINGS[prop].require_system_group:
+                # Anonymous system groups aren't relevant when
+                # restricted to system groups.
+                continue
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api_with_anonymous_groups(prop)
 
@@ -1946,6 +2002,7 @@ class RealmAPITest(ZulipTestCase):
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
             web_channel_default_view=UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
+            web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
             desktop_icon_count_display=UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES,
             notification_sound=["zulip", "ding"],
@@ -2010,7 +2067,7 @@ class RealmAPITest(ZulipTestCase):
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
-            "Incompatible values for 'dense_mode' and 'web_font_size_px' settings.",
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
         )
 
         data = {"web_font_size_px": 16, "dense_mode": orjson.dumps(False).decode()}
@@ -2048,7 +2105,7 @@ class RealmAPITest(ZulipTestCase):
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
-            "Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.",
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
         )
 
         data = {"web_line_height_percent": 140, "dense_mode": orjson.dumps(False).decode()}
@@ -2079,14 +2136,14 @@ class RealmAPITest(ZulipTestCase):
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
-            "Incompatible values for 'dense_mode' and 'web_font_size_px' settings.",
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
         )
 
         data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
         result = self.client_patch("/json/realm/user_settings_defaults", data)
         self.assert_json_error(
             result,
-            "Incompatible values for 'dense_mode' and 'web_line_height_percent' settings.",
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
         )
 
         data = {

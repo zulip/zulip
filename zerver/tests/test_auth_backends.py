@@ -7346,7 +7346,6 @@ class TestAdminSetBackends(ZulipTestCase):
                 "/json/realm",
                 {
                     "authentication_methods": orjson.dumps(
-                        # Github is not a supported authentication backend right now.
                         {"Email": True, "Dev": True, "AzureAD": False}
                     ).decode()
                 },
@@ -7361,13 +7360,27 @@ class TestAdminSetBackends(ZulipTestCase):
                 "/json/realm",
                 {
                     "authentication_methods": orjson.dumps(
-                        # Github is not a supported authentication backend right now.
                         {"Email": True, "Dev": True, "AzureAD": True}
                     ).decode()
                 },
             )
             self.assert_json_error(
                 result, "Authentication method AzureAD is not available on your current plan."
+            )
+
+            # With BILLING_ENABLED=False, no such restrictions apply.
+            with self.settings(BILLING_ENABLED=False):
+                result = self.client_patch(
+                    "/json/realm",
+                    {
+                        "authentication_methods": orjson.dumps(
+                            {"Email": True, "Dev": True, "AzureAD": True}
+                        ).decode()
+                    },
+                )
+            self.assert_json_success(result)
+            self.assertEqual(
+                realm.authentication_methods_dict(), {"Dev": True, "Email": True, "AzureAD": True}
             )
 
 

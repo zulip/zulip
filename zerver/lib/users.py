@@ -7,7 +7,6 @@ from email.headerregistry import Address
 from operator import itemgetter
 from typing import Any, TypedDict
 
-import dateutil.parser as date_parser
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
@@ -510,18 +509,18 @@ def format_user_row(
         full_name=row["full_name"],
         timezone=canonicalize_timezone(row["timezone"]),
         is_active=row["is_active"],
-        date_joined=row["date_joined"].isoformat(),
+        # Only send day level precision date_joined data to spectators.
+        date_joined=row["date_joined"].date().isoformat()
+        if acting_user is None
+        else row["date_joined"].isoformat(timespec="minutes"),
         delivery_email=delivery_email,
     )
 
     if acting_user is None:
         # Remove data about other users which are not useful to spectators
         # or can reveal personal information about a user.
-        # Only send day level precision date_joined data to spectators.
         del result["is_billing_admin"]
         del result["timezone"]
-        assert isinstance(result["date_joined"], str)
-        result["date_joined"] = str(date_parser.parse(result["date_joined"]).date())
 
     # Zulip clients that support using `GET /avatar/{user_id}` as a
     # fallback if we didn't send an avatar URL in the user object pass
@@ -720,7 +719,7 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 
 
 def get_subscribers_of_target_user_subscriptions(
-    target_users: list[UserProfile], include_deactivated_users_for_huddles: bool = False
+    target_users: list[UserProfile], include_deactivated_users_for_dm_groups: bool = False
 ) -> dict[int, set[int]]:
     target_user_ids = [user.id for user in target_users]
     target_user_subscriptions = (
@@ -748,7 +747,7 @@ def get_subscribers_of_target_user_subscriptions(
         active=True,
     )
 
-    if include_deactivated_users_for_huddles:
+    if include_deactivated_users_for_dm_groups:
         subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
             Q(recipient__type=Recipient.STREAM, is_user_active=True)
             | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
@@ -917,7 +916,7 @@ def get_accessible_user_ids(
     realm: Realm, user_profile: UserProfile, include_deactivated_users: bool = False
 ) -> list[int]:
     subscribers_dict_of_target_user_subscriptions = get_subscribers_of_target_user_subscriptions(
-        [user_profile], include_deactivated_users_for_huddles=include_deactivated_users
+        [user_profile], include_deactivated_users_for_dm_groups=include_deactivated_users
     )
     users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
         [user_profile], realm, include_deactivated_users=include_deactivated_users

@@ -40,8 +40,6 @@
         opacity: 0.5;
         line-height: 0;
         border-radius: 4px;
-        /* Leave room for the focus outline. */
-        margin-right: 1px;
 
         &:not(:focus-visible) {
             outline: none;
@@ -63,12 +61,6 @@
         flex-wrap: wrap;
         gap: 2px;
         align-self: center;
-    }
-
-    .search-input-and-pills.freshly-opened {
-        > .pill {
-            border-color: var(--focus-outline-input-pill);
-        }
     }
 
     .navbar-search:not(.expanded) {
@@ -169,6 +161,7 @@
     .input-append {
         position: relative;
         width: 100%;
+        box-sizing: border-box;
         margin-bottom: 0;
     }
 
@@ -214,14 +207,13 @@
 
         /* Override styles for .pill-container that aren't relevant for search. */
         &.pill-container {
+            /* Pill container should display the same background
+               color as the search typeahead. */
+            background-color: var(--color-background-search);
             /* Maintain only a column gap. */
             gap: 0 5px;
-
-            @media (height < $short_navbar_cutoff_height) {
-                /* Lose the luxury of padding in short navbar settings. */
-                padding-top: 0;
-                padding-bottom: 0;
-            }
+            /* Override padding. */
+            padding: 0;
         }
 
         .pill {
@@ -248,7 +240,11 @@
         }
 
         .user-pill-container {
-            gap: 5px;
+            gap: 2px 5px;
+            /* Don't enforce a height, as user-pill containers
+               can contain multiple user pills that wrap onto
+               new lines. */
+            height: unset;
 
             > .pill-label {
                 min-width: fit-content;
@@ -346,7 +342,7 @@
         }
 
         .search_list_item .pill-container {
-            margin-left: 5px;
+            margin: 1px 5px;
             /* This contains only one pill, which handles its own border */
             border: none;
             cursor: pointer;

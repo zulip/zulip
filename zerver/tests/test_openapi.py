@@ -1,7 +1,6 @@
 import inspect
 import os
 import types
-from collections import abc
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any, Union, get_args, get_origin
 from unittest.mock import MagicMock, patch
@@ -74,7 +73,7 @@ class OpenAPIToolsTest(ZulipTestCase):
     """
 
     def test_get_openapi_fixture(self) -> None:
-        actual = get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_BAD_REQ)
+        actual = get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_BAD_REQ)[0]["value"]
         expected = {
             "code": "BAD_REQUEST",
             "msg": "You don't have permission to edit this message",
@@ -216,8 +215,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         ## And this one isn't, and isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
-        # List data exports for organization (GET) or request one (POST)
-        "/export/realm",
         # Delete a data export.
         "/export/realm/{export_id}",
         # Manage default streams and default stream groups
@@ -318,7 +315,8 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         val = 6
         for t in types:
             if isinstance(t, tuple):
-                return t  # e.g. (list, dict) or (list, str)
+                # e.g. (list, dict) or (list, str)
+                return t  # nocoverage
             v = priority.get(t, 6)
             if v < val:
                 val = v
@@ -340,11 +338,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         elif origin in (Union, types.UnionType):
             subtypes = [self.get_standardized_argument_type(st) for st in get_args(t)]
             return self.get_type_by_priority(subtypes)
-        elif origin in [list, abc.Sequence]:
-            [st] = get_args(t)
-            return (list, self.get_standardized_argument_type(st))
-        elif origin in [dict, abc.Mapping]:
-            return dict
         raise AssertionError(f"Unknown origin {origin}")
 
     def render_openapi_type_exception(
@@ -1038,9 +1031,17 @@ class OpenAPIAttributesTest(ZulipTestCase):
                             )
                         continue
                     validate_schema(schema)
-                    assert validate_against_openapi_schema(
-                        schema["example"], path, method, status_code
-                    )
+                    if "example" not in schema:
+                        assert "examples" in response["content"]["application/json"]
+                        examples = response["content"]["application/json"]["examples"]
+                        for example in examples:
+                            assert validate_against_openapi_schema(
+                                examples[example]["value"], path, method, status_code
+                            )
+                    else:
+                        assert validate_against_openapi_schema(
+                            schema["example"], path, method, status_code
+                        )
 
 
 class OpenAPIRegexTest(ZulipTestCase):

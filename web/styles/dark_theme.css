@@ -160,10 +160,6 @@
 
     #scroll-to-bottom-button-container {
         background: transparent;
-
-        & span {
-            color: hsl(0deg 0% 27%);
-        }
     }
 
     .main-view-banner {
@@ -345,7 +341,7 @@
     .popover a {
         color: inherit;
     }
-
+  
     .active .autocomplete_secondary {
         opacity: 0.6;
         color: hsl(0deg 0% 100%);
@@ -354,6 +350,13 @@
 
     /* these are converting grey things to "new grey" */
     :disabled,
+    /* these are converting grey things to "new grey".
+       :disabled rules are exploded for CSS selector performance reasons. */
+    button:disabled,
+    option:disabled,
+    select:disabled,
+    textarea:disabled,
+    input:disabled,
     input:not([type="radio"]):read-only,
     textarea:read-only,
     #organization-permissions .dropdown-widget-button:disabled,
@@ -394,6 +397,10 @@
 
     .rendered_markdown .message_inline_image {
         background: hsl(0deg 0% 100% / 3%);
+
+        img.image-loading-placeholder {
+            content: url("../images/loading/loader-white.svg");
+        }
 
         &:hover {
             background: hsl(0deg 0% 100% / 15%);
@@ -506,7 +513,6 @@
     }
 
     #compose-content {
-        background-color: hsl(228deg 11% 17%);
         border-color: hsl(0deg 0% 0% / 60%);
     }
 
@@ -521,10 +527,6 @@
     .overlay-message-row .overlay-message-info-box,
     .preview_message_area {
         border-color: hsl(0deg 0% 0% / 40%);
-    }
-
-    .preview_message_area {
-        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     .top-navbar-border {
@@ -543,7 +545,7 @@
         background-color: hsl(212deg 28% 8% / 75%);
     }
 
-    & div.overlay .flex.overlay-content > div,
+    & div.overlay .flex.overlay-content > .overlay-container,
     #settings_page,
     .informational-overlays .overlay-content {
         box-shadow: 0 0 30px hsl(212deg 32% 7%);
@@ -552,7 +554,7 @@
     #draft_overlay,
     #scheduled_messages_overlay_container,
     #message-edit-history-overlay-container {
-        .flex.overlay-content > div {
+        .flex.overlay-content > .overlay-container {
             box-shadow: 0 0 30px hsl(213deg 31% 0%);
             background-color: var(--color-background);
         }
@@ -708,7 +710,6 @@
     .subscriber-list-box .subscriber_list_container .subscriber-list td,
     .member-list-box,
     .member-list-box .member_list_container .member-list td,
-    #subscription_overlay .subsection-parent div,
     #subscription_overlay .settings-radio-input-parent,
     #settings_page .sidebar-wrapper,
     #settings_page .sidebar-wrapper *,
@@ -901,8 +902,8 @@
     .streams_subheader {
         color: hsl(240deg 11% 85%);
 
-        & span::before,
-        span::after {
+        & .streams_subheader_name::before,
+        .streams_subheader_name::after {
             border-color: hsl(240deg 11% 85%);
         }
     }
@@ -963,7 +964,8 @@
     .color_animated_button {
         background-color: hsl(211deg 29% 14%);
 
-        * {
+        .zulip-icon,
+        .color-animated-button-text {
             color: hsl(0deg 0% 100%);
         }
 
@@ -1000,21 +1002,21 @@
     .todo-widget {
         & label.checkbox {
             & input[type="checkbox"] {
-                ~ span {
+                ~ .custom-checkbox {
                     border-color: hsl(185deg 40% 45%);
                     opacity: 0.7;
                 }
 
-                &:hover ~ span {
+                &:hover ~ .custom-checkbox {
                     background-color: hsl(185deg 20% 20%);
                     border-color: hsl(185deg 40% 35%);
                 }
 
-                &:checked ~ span {
+                &:checked ~ .custom-checkbox {
                     background-color: hsl(185deg 40% 45%);
                 }
 
-                &:focus ~ span {
+                &:focus ~ .custom-checkbox {
                     outline-color: hsl(0deg 0% 100% / 0%);
                 }
             }

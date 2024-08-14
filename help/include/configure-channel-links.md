@@ -8,7 +8,7 @@ channel.
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, select your preferred option from the
+1. Under **Navigation**, select your preferred option from the
    **Channel links in the left sidebar go to** dropdown.
 
 {end_tabs}

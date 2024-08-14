@@ -179,14 +179,20 @@
 
     /*
     Height of the search box, which appears in the header.
-    On very short screens, the search box's height becomes
-    the height of its parent (i.e. the header height).
     */
-    --search-box-height: 28px;
+    --search-box-height: 32px;
     --search-box-width: 150px;
 
     @media (width < $md_min) {
         --search-box-width: 40px;
+    }
+
+    /*
+        On very short screens, the search box's height becomes
+        is reduced to fit the available space.
+    */
+    @media (height < $short_navbar_cutoff_height) {
+        --search-box-height: 28px;
     }
 
     /*
@@ -237,7 +243,15 @@
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
-    --left-sidebar-width: 270px;
+    --left-sidebar-right-margin: 12px;
+    /* 287px at 14px/1em */
+    --left-sidebar-max-width: calc(20.5em - var(--left-sidebar-right-margin));
+    /* Sidebar width is 1/3 of the screen at smaller
+       sizes, but gets held to the left sidebar's max width.
+       This is very useful for areas in the CSS codebase
+       that rely on this value, but not necessarily as
+       applied to `width:` or `max-width:`. */
+    --left-sidebar-width: min(33.3333%, var(--left-sidebar-max-width));
     /* 40px (toggle icon) + 5px (gap) + 20px logo + 10px right margin */
     --left-sidebar-width-with-realm-icon-logo: 75px;
     --right-sidebar-width: 250px;
@@ -256,6 +270,13 @@
        the smaller line-height. */
     --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
     --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
+
+    /* Right sidebar */
+    --right-sidebar-padding-right: 8px;
+    /* Vlad's design adds 2px of extra padding beyond the
+       space created by the padding-left on .right-sidebar,
+       which separates the right sidebar from the message area. */
+    --right-sidebar-padding-left: 2px;
 
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
@@ -411,6 +432,14 @@
     */
     --browser-overlay-scrollbar-width: 10px;
 
+    /*
+    Sometimes it's necessary to keep elements, especially those with hover
+    controls or other interactivity, from appearing beneath Simplebar scroll
+    bars.
+    */
+    --width-simplebar-scroll: 11px;
+    --width-simplebar-scroll-hover: 15px;
+
     /* This is a rough estimate for height occupied by Recent Conversations filters.
        We expect `resize.ts` to update this once UI is initialized. */
     --recent-topics-filters-height: 50px;
@@ -454,6 +483,9 @@
     */
     --max-unmaximized-compose-height: 40vh;
 
+    /* Maximum height of the message-edit and preview areas. */
+    --max-message-edit-height: 24em;
+
     /*
     Line height of the message buttons in compose box. Here it's necessary
     to control this value uniformly and precisely to avoid issues with
@@ -484,6 +516,13 @@
     visually consistent with that of it's parent popover.
     */
     --popover-tippy-arrow-before-offset: -6.5px;
+
+    /*
+    Padding used in headers for sortable columns in table to make sure
+    that the arrow is visible completely for different screen widths,
+    languages and font-size including when hovering over the header.
+    */
+    --table-header-sortable-column-padding-right: 1em;
 
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
@@ -561,6 +600,8 @@
     --color-recent-view-link-hover: hsl(214deg 40% 58%);
 
     /* Compose box colors */
+    --color-compose-box-background: hsl(232deg 30% 92%);
+    --color-compose-message-content-background: hsl(0deg 0% 100%);
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
     --color-compose-send-button-background: hsl(240deg 96% 68%);
     --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
@@ -633,6 +674,7 @@
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(0deg 0% 43%);
     --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
+    --color-text-user-card-secondary: var(--grey-550);
     --color-text-url: hsl(200deg 100% 40%);
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
@@ -678,17 +720,26 @@
     --color-tab-picker-icon: hsl(200deg 100% 40%);
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
-    --color-copy-btn: color-mix(in srgb, var(--grey-600) 70%, transparent);
+    /* hsl(229deg 9% 36%) corresponds to --grey-600.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent);
     --color-copy-btn-hover: var(--green-600);
+    /* hsl(144deg 84% 22%) corresponds to --green-600.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
     --color-copy-btn-bg-hover: color-mix(
-        in srgb,
-        var(--green-600) 8%,
+        in oklch,
+        hsl(144deg 84% 22%) 8%,
         transparent
     );
     --color-copy-btn-active: var(--green-500);
+    /* hsl(146deg 90% 27%) corresponds to --green-500.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
     --color-copy-btn-bg-active: color-mix(
-        in srgb,
-        var(--green-500) 12%,
+        in oklch,
+        hsl(146deg 90% 27%) 12%,
         transparent
     );
 
@@ -869,6 +920,7 @@
     --color-active-dropdown-item: hsl(0deg 0% 0%);
     --background-color-active-dropdown-item: hsl(220deg 12% 4.9% / 5%);
     --background-color-active-typeahead-item: hsl(221.14deg 89.74% 92.35%);
+    --color-typeahead-option-label: var(--grey-500);
 }
 
 %dark-theme {
@@ -954,6 +1006,12 @@
     --color-recent-view-link-hover: hsl(208deg 64% 52%);
 
     /* Compose box colors */
+    --color-compose-box-background: hsl(228deg 11% 17%);
+    --color-compose-message-content-background: color-mix(
+        in srgb,
+        var(--color-compose-box-background),
+        hsl(0deg 0% 0%) 20%
+    );
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
     --color-compose-send-control-button: hsl(240deg 30% 70%);
     --color-compose-send-control-button-background: transparent;
@@ -1026,6 +1084,7 @@
     --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
     --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
     --color-text-sidebar-popover-menu: hsl(236deg 33% 90%);
+    --color-text-user-card-secondary: var(--grey-400);
     /* 75% opacity of --color-text-default against --color-background.
        We use color-mix here to avoid defining a separate, compounding
        `opacity` property, and also to preserve a record of the
@@ -1075,17 +1134,26 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
-    --color-copy-btn: color-mix(in srgb, var(--grey-300) 70%, transparent);
+    /* hsl(229deg 9% 65%) corresponds to --grey-350.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
+    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 65%) 70%, transparent);
     --color-copy-btn-hover: var(--green-300);
+    /* hsl(144deg 84% 22%) corresponds to --green-600.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
     --color-copy-btn-bg-hover: color-mix(
-        in srgb,
-        var(--green-600) 8%,
+        in oklch,
+        hsl(144deg 84% 22%) 8%,
         transparent
     );
     --color-copy-btn-active: var(--green-300);
+    /* hsl(139deg 54% 40%) corresponds to --green-400.
+       We use the hsl() equivalent directly since postcss-color-mix-function
+       cannot dynamically resolve var() arguments. */
     --color-copy-btn-bg-active: color-mix(
-        in srgb,
-        var(--green-400) 17%,
+        in oklch,
+        hsl(139deg 54% 40%) 17%,
         transparent
     );
 
@@ -1244,6 +1312,7 @@
     --background-color-active-typeahead-item: hsl(
         226.35deg 82.53% 55.1% / 38.82%
     );
+    --color-typeahead-option-label: var(--grey-400);
 }
 
 @media screen {

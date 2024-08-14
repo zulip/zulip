@@ -136,13 +136,5 @@ class zulip::profile::base {
     mode   => '0750',
   }
 
-  file { "${zulip::common::nagios_plugins_dir}/zulip_base":
-    require => Package[$zulip::common::nagios_plugins],
-    recurse => true,
-    purge   => true,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_base',
-  }
+  zulip::nagios_plugins { 'zulip_base': }
 }

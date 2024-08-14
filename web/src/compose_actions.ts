@@ -347,7 +347,13 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     }
 
     if (opts.content !== undefined) {
-        compose_ui.insert_and_scroll_into_view(opts.content, $("textarea#compose-textarea"), true);
+        const replace_all_without_undo_support = true;
+        compose_ui.insert_and_scroll_into_view(
+            opts.content,
+            $("textarea#compose-textarea"),
+            false,
+            replace_all_without_undo_support,
+        );
         $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
         // If we were provided with message content, we might need to
         // display that it's too long.

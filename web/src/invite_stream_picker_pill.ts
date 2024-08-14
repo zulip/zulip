@@ -2,7 +2,8 @@ import * as input_pill from "./input_pill";
 import {set_up_stream} from "./pill_typeahead";
 import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
-import type {CombinedPillItem} from "./typeahead_helper";
+import type {StreamPill} from "./stream_pill";
+import type {CombinedPill} from "./typeahead_helper";
 
 type SetUpPillTypeaheadConfig = {
     pill_widget: stream_pill.StreamPillWidget;
@@ -11,8 +12,8 @@ type SetUpPillTypeaheadConfig = {
 
 function create_item_from_stream_name(
     stream_name: string,
-    current_items: CombinedPillItem[],
-): input_pill.InputPillItem<stream_pill.StreamPill> | undefined {
+    current_items: CombinedPill[],
+): StreamPill | undefined {
     const stream_prefix_required = false;
     const get_allowed_streams = stream_data.get_invite_stream_data;
     const show_stream_sub_count = false;
@@ -49,6 +50,8 @@ export function create($stream_pill_container: JQuery): stream_pill.StreamPillWi
         $container: $stream_pill_container,
         create_item_from_text: create_item_from_stream_name,
         get_text_from_item: stream_pill.get_stream_name_from_item,
+        generate_pill_html: stream_pill.generate_pill_html,
+        get_display_value_from_item: stream_pill.get_display_value_from_item,
     });
     add_default_stream_pills(pill_widget);
     set_up_pill_typeahead({pill_widget, $pill_container: $stream_pill_container});

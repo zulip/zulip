@@ -1,13 +1,18 @@
+import assert from "minimalistic-assert";
+
+import render_input_pill from "../templates/input_pill.hbs";
+
 import {$t} from "./i18n";
-import type {InputPillContainer, InputPillItem} from "./input_pill";
+import type {InputPillContainer} from "./input_pill";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
-import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 
 export type StreamPill = {
     type: "stream";
-    stream: StreamSubscription;
+    stream_id: number;
+    show_subscriber_count: boolean;
 };
 
 export type StreamPillWidget = InputPillContainer<StreamPill>;
@@ -24,11 +29,11 @@ function format_stream_name_and_subscriber_count(sub: StreamSubscription): strin
 
 export function create_item_from_stream_name(
     stream_name: string,
-    current_items: CombinedPillItem[],
+    current_items: CombinedPill[],
     stream_prefix_required = true,
     get_allowed_streams: () => StreamSubscription[] = stream_data.get_unsorted_subs,
     show_subscriber_count = true,
-): InputPillItem<StreamPill> | undefined {
+): StreamPill | undefined {
     stream_name = stream_name.trim();
     if (stream_prefix_required) {
         if (!stream_name.startsWith("#")) {
@@ -47,39 +52,51 @@ export function create_item_from_stream_name(
         return undefined;
     }
 
-    if (
-        current_items.some(
-            (item) => item.type === "stream" && item.stream.stream_id === sub.stream_id,
-        )
-    ) {
+    if (current_items.some((item) => item.type === "stream" && item.stream_id === sub.stream_id)) {
         return undefined;
-    }
-
-    let display_value = sub.name;
-    if (show_subscriber_count) {
-        display_value = format_stream_name_and_subscriber_count(sub);
     }
 
     return {
         type: "stream",
-        display_value,
-        stream: sub,
+        show_subscriber_count,
+        stream_id: sub.stream_id,
     };
 }
 
-export function get_stream_name_from_item(item: InputPillItem<StreamPill>): string {
-    return item.stream.name;
+export function get_stream_name_from_item(item: StreamPill): string {
+    const stream = stream_data.get_sub_by_id(item.stream_id);
+    assert(stream !== undefined);
+    return stream.name;
 }
 
 export function get_user_ids(pill_widget: StreamPillWidget | CombinedPillContainer): number[] {
     let user_ids = pill_widget
         .items()
         .flatMap((item) =>
-            item.type === "stream" ? peer_data.get_subscribers(item.stream.stream_id) : [],
+            item.type === "stream" ? peer_data.get_subscribers(item.stream_id) : [],
         );
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
     return user_ids;
+}
+
+export function get_display_value_from_item(item: StreamPill): string {
+    const stream = stream_data.get_sub_by_id(item.stream_id);
+    assert(stream !== undefined);
+    if (item.show_subscriber_count) {
+        return format_stream_name_and_subscriber_count(stream);
+    }
+    return stream.name;
+}
+
+export function generate_pill_html(item: StreamPill): string {
+    const stream = stream_data.get_sub_by_id(item.stream_id);
+    assert(stream !== undefined);
+    return render_input_pill({
+        has_stream: true,
+        stream,
+        display_value: get_display_value_from_item(item),
+    });
 }
 
 export function append_stream(
@@ -87,21 +104,17 @@ export function append_stream(
     pill_widget: StreamPillWidget | CombinedPillContainer,
     show_subscriber_count = true,
 ): void {
-    let display_value = stream.name;
-    if (show_subscriber_count) {
-        display_value = format_stream_name_and_subscriber_count(stream);
-    }
     pill_widget.appendValidatedData({
         type: "stream",
-        display_value,
-        stream,
+        show_subscriber_count,
+        stream_id: stream.stream_id,
     });
     pill_widget.clear_text();
 }
 
 export function get_stream_ids(pill_widget: StreamPillWidget | CombinedPillContainer): number[] {
     const items = pill_widget.items();
-    return items.flatMap((item) => (item.type === "stream" ? item.stream.stream_id : []));
+    return items.flatMap((item) => (item.type === "stream" ? item.stream_id : []));
 }
 
 export function filter_taken_streams(

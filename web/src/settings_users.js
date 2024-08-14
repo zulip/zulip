@@ -278,7 +278,8 @@ function human_info(person) {
 
     info.can_modify = current_user.is_admin;
     info.is_current_user = people.is_my_user_id(person.user_id);
-    info.cannot_deactivate = info.is_current_user || (person.is_owner && !current_user.is_owner);
+    info.cannot_deactivate =
+        person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner());
     info.display_email = person.delivery_email;
     info.img_src = people.small_avatar_url_for_person(person);
 
@@ -492,8 +493,12 @@ function handle_deactivation($tbody) {
         const $row = $(e.target).closest(".user_row");
         const user_id = Number($row.attr("data-user-id"));
 
+        let url = "/json/users/" + encodeURIComponent(user_id);
+        if (user_id === current_user.user_id) {
+            url = "/json/users/me";
+        }
+
         function handle_confirm() {
-            const url = "/json/users/" + encodeURIComponent(user_id);
             let data = {};
             if ($(".send_email").is(":checked")) {
                 data = {
@@ -501,7 +506,14 @@ function handle_deactivation($tbody) {
                 };
             }
 
-            dialog_widget.submit_api_request(channel.del, url, data);
+            const opts = {};
+            if (user_id === current_user.user_id) {
+                opts.success_continuation = () => {
+                    window.location.href = "/login/";
+                };
+            }
+
+            dialog_widget.submit_api_request(channel.del, url, data, opts);
         }
 
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);

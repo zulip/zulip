@@ -32,7 +32,12 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file, ratelimit_rule
+from zerver.lib.test_helpers import (
+    avatar_disk_path,
+    consume_response,
+    get_test_image_file,
+    ratelimit_rule,
+)
 from zerver.lib.upload import sanitize_name, upload_message_attachment
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
@@ -248,6 +253,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.logout()
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
+            consume_response(response)
 
         # Deny file access since rate limited
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
@@ -260,6 +266,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
             response = self.client_get(download_url)
             self.assertEqual(response.status_code, 200)
+            consume_response(response)
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
             response = self.client_get(download_url)
             self.assertEqual(response.status_code, 302)
@@ -346,6 +353,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         )
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.headers["Content-Type"], "image/png")
+        consume_response(response)
 
     def test_removed_file_download(self) -> None:
         """
@@ -390,6 +398,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.headers["Content-Type"], "image/png")
+        consume_response(response)
 
         response = self.client_get(
             f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.png",

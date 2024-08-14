@@ -55,21 +55,11 @@ export function user_can_change_logo(): boolean {
 }
 
 function user_has_permission(policy_value: number): boolean {
-    /* At present, nobody and by_owners_only is not present in
-     * common_policy_values, but we include a check for it here,
-     * so that code using create_web_public_stream_policy_values
-     * or other supersets can use this function. */
-    if (policy_value === settings_config.create_web_public_stream_policy_values.nobody.code) {
-        return false;
-    }
-
-    if (current_user.is_owner) {
-        return true;
-    }
-
-    if (
-        policy_value === settings_config.create_web_public_stream_policy_values.by_owners_only.code
-    ) {
+    /* At present, nobody is not present in common_policy_values,
+     * but we include a check for it here, so that code using
+     * email_invite_to_realm_policy_values or other supersets can
+     * use this function. */
+    if (policy_value === settings_config.email_invite_to_realm_policy_values.nobody.code) {
         return false;
     }
 
@@ -116,12 +106,6 @@ function user_has_permission(policy_value: number): boolean {
 }
 
 export function user_can_invite_users_by_email(): boolean {
-    if (
-        realm.realm_invite_to_realm_policy ===
-        settings_config.email_invite_to_realm_policy_values.nobody.code
-    ) {
-        return false;
-    }
     return user_has_permission(realm.realm_invite_to_realm_policy);
 }
 
@@ -164,7 +148,14 @@ export function user_can_create_web_public_streams(): boolean {
         return false;
     }
 
-    return user_has_permission(realm.realm_create_web_public_stream_policy);
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    return user_groups.is_user_in_group(
+        realm.realm_can_create_web_public_channel_group,
+        current_user.user_id,
+    );
 }
 
 export function user_can_move_messages_between_streams(): boolean {

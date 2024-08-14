@@ -15,7 +15,7 @@ is your first time using Zulip.
 
 {settings_tab|preferences}
 
-2. Under **Advanced**, configure **Demote inactive channels**.
+2. Under **Information**, configure **Demote inactive channels**.
 
 {end_tabs}
 

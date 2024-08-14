@@ -791,3 +791,8 @@ def ratelimit_rule(
 
     with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
         yield
+
+
+def consume_response(response: HttpResponseBase) -> None:
+    assert response.streaming
+    collections.deque(response, maxlen=0)

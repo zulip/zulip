@@ -1,6 +1,3 @@
-# https://github.com/typeddjango/django-stubs/issues/1698
-# mypy: disable-error-code="explicit-override"
-
 from typing import TypedDict
 
 from django.conf import settings
@@ -72,7 +69,7 @@ class MissedMessageEmailAddress(models.Model):
 
 
 class NotificationTriggers:
-    # "direct_message" is for 1:1 direct messages as well as huddles
+    # "direct_message" is for 1:1 and group direct messages
     DIRECT_MESSAGE = "direct_message"
     MENTION = "mentioned"
     TOPIC_WILDCARD_MENTION = "topic_wildcard_mentioned"

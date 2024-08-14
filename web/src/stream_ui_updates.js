@@ -408,7 +408,7 @@ export function update_setting_element(sub, setting_name) {
     const $elem = $(`#id_${CSS.escape(setting_name)}`);
     const $subsection = $elem.closest(".settings-subsection-parent");
     if ($subsection.find(".save-button-controls").hasClass("hide")) {
-        settings_org.discard_stream_property_element_changes($elem);
+        settings_org.discard_stream_property_element_changes($elem, sub);
     } else {
         settings_org.discard_stream_settings_subsection_changes($subsection, sub);
     }

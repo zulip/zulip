@@ -130,6 +130,8 @@
 }
 
 .user-card-popover-actions {
+    --color-text-item: var(--color-text-user-card-secondary);
+
     .custom-profile-field-value {
         display: flex;
         align-items: center;
@@ -176,6 +178,8 @@
 
 .custom-user-url-field {
     display: flex;
+    /* Maintain space between URL and copy icon. */
+    gap: 3px;
     overflow: hidden;
 
     .custom-profile-fields-link {
@@ -185,13 +189,18 @@
     }
 
     .copy-custom-field-url {
+        /* Don't flex; preserve 20px space for icon. */
+        flex: 0 0 20px;
+        /* Make button a flex item to center icon. */
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background-color: transparent;
         border: 0;
         padding: 0;
 
         #clipboard_image {
-            /* Adjust margin to align the copy icon */
-            margin: -2px 0 0 6px;
+            margin: 0;
 
             &:hover path {
                 fill: hsl(204deg 100% 40%);
@@ -317,7 +326,8 @@ ul.popover-group-menu-member-list {
     }
 }
 
-.popover-group-menu-member {
+.popover-group-menu-member,
+.popover-group-menu-placeholder {
     display: flex;
     align-items: center;
     padding: 0 10px;
@@ -330,7 +340,8 @@ ul.popover-group-menu-member-list {
 }
 
 .popover-group-menu-description,
-.popover-group-menu-member-name {
+.popover-group-menu-member-name,
+.popover-group-menu-placeholder {
     color: var(--color-text-popover-menu);
 }
 
@@ -990,6 +1001,7 @@ ul.popover-group-menu-member-list {
     .popover-menu-user-info {
         width: max-content;
         align-self: center;
+        overflow: hidden;
     }
 
     .popover-menu-user-full-name {
@@ -1009,6 +1021,8 @@ ul.popover-group-menu-member-list {
         /* 16px at 14px/1em */
         line-height: 1.1428em;
         color: var(--color-text-item);
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .user_circle_empty {

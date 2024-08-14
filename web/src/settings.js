@@ -105,6 +105,7 @@ export function build_page() {
             settings_config.web_mark_read_on_scroll_policy_values,
         web_channel_default_view_values: settings_config.web_channel_default_view_values,
         user_list_style_values: settings_config.user_list_style_values,
+        web_animate_image_previews_values: settings_config.web_animate_image_previews_values,
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
         color_scheme_values: settings_config.color_scheme_values,
@@ -155,6 +156,7 @@ export function open_settings_overlay() {
         on_close() {
             browser_history.exit_overlay();
             flatpickr.close_all();
+            settings_panel_menu.mobile_deactivate_section();
         },
     });
 }

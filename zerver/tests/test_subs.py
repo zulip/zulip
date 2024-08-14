@@ -120,7 +120,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import CommonPolicyEnum, CreateWebPublicStreamPolicyEnum, get_realm
+from zerver.models.realms import CommonPolicyEnum, get_realm
 from zerver.models.streams import get_default_stream_groups, get_stream
 from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
 from zerver.views.streams import compose_views
@@ -810,7 +810,8 @@ class StreamAdminTest(ZulipTestCase):
 
         self.assertFalse(user_profile.can_create_web_public_streams())
         self.assertTrue(owner.can_create_web_public_streams())
-        # As per create_web_public_stream_policy, only owners can create web-public streams by default.
+        # As per can_create_web_public_channel_group, only owners
+        # can create web-public streams by default.
         with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
             list_to_streams(
                 streams_raw,
@@ -974,30 +975,36 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Must be an organization administrator")
 
-        do_set_realm_property(
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
             realm,
-            "create_web_public_stream_policy",
-            CreateWebPublicStreamPolicyEnum.OWNERS_ONLY,
+            "can_create_web_public_channel_group",
+            owners_group,
             acting_user=None,
         )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Insufficient permission")
 
-        do_set_realm_property(
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
             realm,
-            "create_web_public_stream_policy",
-            CreateWebPublicStreamPolicyEnum.NOBODY,
+            "can_create_web_public_channel_group",
+            nobody_group,
             acting_user=None,
         )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Insufficient permission")
 
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "create_web_public_stream_policy",
-            CreateWebPublicStreamPolicyEnum.OWNERS_ONLY,
+            "can_create_web_public_channel_group",
+            owners_group,
             acting_user=None,
         )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
@@ -3403,7 +3410,9 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(result, "color is not a valid hex color code")
+        self.assert_json_error(
+            result, "Invalid subscription_data[0]: Value error, color is not a valid hex color code"
+        )
 
     def test_set_color_missing_stream_id(self) -> None:
         """
@@ -3420,7 +3429,9 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(result, "stream_id key is missing from subscription_data[0]")
+        self.assert_json_error(
+            result, 'subscription_data[0]["stream_id"] field is missing: Field required'
+        )
 
     def test_set_color_unsubscribed_stream_id(self) -> None:
         """
@@ -3468,7 +3479,9 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(result, "value key is missing from subscription_data[0]")
+        self.assert_json_error(
+            result, 'subscription_data[0]["value"] field is missing: Field required'
+        )
 
     def test_set_stream_wildcard_mentions_notify(self) -> None:
         """
@@ -3733,7 +3746,9 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(result, f"{property_name} is not a string")
+        self.assert_json_error(
+            result, "Invalid subscription_data[0]: Value error, color is not a valid hex color code"
+        )
 
     def test_json_subscription_property_invalid_stream(self) -> None:
         test_user = self.example_user("hamlet")
@@ -3838,7 +3853,9 @@ class SubscriptionRestApiTest(ZulipTestCase):
         # incorrect color format
         subscriptions = [{"name": "my_test_stream_3", "color": "#0g0g0g"}]
         result = self.common_subscribe_to_streams(user, subscriptions, allow_fail=True)
-        self.assert_json_error(result, 'subscriptions[0]["color"] is not a valid hex color code')
+        self.assert_json_error(
+            result, "Invalid subscriptions[0]: Value error, add.color is not a valid hex color code"
+        )
 
     def test_api_valid_property(self) -> None:
         """
@@ -3881,7 +3898,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         result = self.api_patch(
             user,
             "/api/v1/users/me/subscriptions/121",
-            {"property": "is_muted", "value": "somevalue"},
+            {"property": "is_muted", "value": orjson.dumps(True).decode()},
         )
         self.assert_json_error(result, "Invalid channel ID")
 
@@ -3896,8 +3913,11 @@ class SubscriptionRestApiTest(ZulipTestCase):
             result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
             self.assert_json_error(result, expected_message)
 
-        check_for_error(["foo"], "add[0] is not a dict")
-        check_for_error([{"bogus": "foo"}], "name key is missing from add[0]")
+        check_for_error(
+            ["foo"],
+            "Invalid add[0]: Input should be a valid dictionary or instance of AddSubscriptionData",
+        )
+        check_for_error([{"bogus": "foo"}], 'add[0]["name"] field is missing: Field required')
         check_for_error([{"name": {}}], 'add[0]["name"] is not a string')
 
     def test_bad_principals(self) -> None:
@@ -3909,7 +3929,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "principals": orjson.dumps([{}]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "principals is not an allowed_type")
+        self.assert_json_error(result, 'principals["list[str]"][0] is not a string')
 
     def test_bad_delete_parameters(self) -> None:
         user = self.example_user("hamlet")
@@ -4357,84 +4377,6 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.common_subscribe_to_streams(self.test_user, [stream_name], allow_fail=True)
         self.assert_json_error(result, "Invalid character in channel name, at position 4.")
 
-    def _test_user_settings_for_creating_streams(
-        self,
-        stream_policy: str,
-        *,
-        invite_only: bool,
-        is_web_public: bool,
-    ) -> None:
-        user_profile = self.example_user("cordelia")
-        realm = user_profile.realm
-
-        do_set_realm_property(realm, stream_policy, CommonPolicyEnum.ADMINS_ONLY, acting_user=None)
-        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
-        result = self.common_subscribe_to_streams(
-            user_profile,
-            ["new_stream1"],
-            invite_only=invite_only,
-            is_web_public=is_web_public,
-            allow_fail=True,
-        )
-        self.assert_json_error(result, "Insufficient permission")
-
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-        self.common_subscribe_to_streams(user_profile, ["new_stream1"], invite_only=invite_only)
-
-        do_set_realm_property(
-            realm, stream_policy, CommonPolicyEnum.MODERATORS_ONLY, acting_user=None
-        )
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        # Make sure that we are checking the permission with a full member,
-        # as full member is the user just below moderator in the role hierarchy.
-        self.assertFalse(user_profile.is_provisional_member)
-        result = self.common_subscribe_to_streams(
-            user_profile,
-            ["new_stream2"],
-            allow_fail=True,
-            invite_only=invite_only,
-            is_web_public=is_web_public,
-        )
-        self.assert_json_error(result, "Insufficient permission")
-
-        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
-        self.common_subscribe_to_streams(user_profile, ["new_stream2"], invite_only=invite_only)
-
-        do_set_realm_property(realm, stream_policy, CommonPolicyEnum.MEMBERS_ONLY, acting_user=None)
-        do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=None)
-        result = self.common_subscribe_to_streams(
-            user_profile,
-            ["new_stream3"],
-            invite_only=invite_only,
-            is_web_public=is_web_public,
-            allow_fail=True,
-        )
-        self.assert_json_error(result, "Not allowed for guest users")
-
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        self.common_subscribe_to_streams(
-            self.test_user,
-            ["new_stream4"],
-            invite_only=invite_only,
-            is_web_public=is_web_public,
-        )
-
-        do_set_realm_property(
-            realm, stream_policy, CommonPolicyEnum.FULL_MEMBERS_ONLY, acting_user=None
-        )
-        do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
-        result = self.common_subscribe_to_streams(
-            user_profile,
-            ["new_stream5"],
-            invite_only=invite_only,
-            is_web_public=is_web_public,
-            allow_fail=True,
-        )
-        self.assert_json_error(result, "Insufficient permission")
-
-        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
-        self.common_subscribe_to_streams(user_profile, ["new_stream3"], invite_only=invite_only)
-
     def _test_group_based_settings_for_creating_streams(
         self,
         stream_policy: str,
@@ -4532,8 +4474,10 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
     def test_user_settings_for_creating_web_public_streams(self) -> None:
-        self._test_user_settings_for_creating_streams(
-            "create_web_public_stream_policy", invite_only=False, is_web_public=True
+        self._test_group_based_settings_for_creating_streams(
+            "can_create_web_public_channel_group",
+            invite_only=False,
+            is_web_public=True,
         )
 
     def test_stream_creator_id(self) -> None:
@@ -4577,12 +4521,6 @@ class SubscriptionAPITest(ZulipTestCase):
 
             # Other streams that weren't created using the api should have no creator.
             self.assertIsNone(stream["creator_id"])
-
-    def test_web_public_stream_policies(self) -> None:
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_create_web_public_streams()
-
-        self.check_has_permission_policies("create_web_public_stream_policy", validation_func)
 
     def test_user_settings_for_subscribing_other_users(self) -> None:
         """

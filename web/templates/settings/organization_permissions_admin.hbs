@@ -81,12 +81,11 @@
                   label=admin_settings_label.realm_enable_spectator_access
                   is_disabled=disable_enable_spectator_access_setting
                   help_link="/help/public-access-option"}}
-                <div class="input-group realm_create_web_public_stream_policy">
-                    <label for="realm_create_web_public_stream_policy" class="settings-field-label">{{t "Who can create web-public channels" }}</label>
-                    <select name="realm_create_web_public_stream_policy" id="id_realm_create_web_public_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=create_web_public_stream_policy_values}}
-                    </select>
-                </div>
+
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_create_web_public_channel_group"
+                  label=(t 'Who can create web-public channels')
+                  value_type="number"}}
 
                 {{> ../dropdown_widget_with_label
                   widget_name="realm_can_create_private_channel_group"

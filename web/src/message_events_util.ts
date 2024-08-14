@@ -1,56 +1,84 @@
+import {z} from "zod";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_notifications from "./compose_notifications";
-import * as message_helper from "./message_helper";
 import * as message_lists from "./message_lists";
+import type {MessageList, RenderInfo} from "./message_lists";
+import * as message_store from "./message_store";
+import type {Message} from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as unread_ops from "./unread_ops";
 import * as util from "./util";
 
-// TODO: Move this function to 'message_util.ts' once #30702 is merged.
-export function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) {
-    const ids = [];
+const msg_match_narrow_api_response_schema = z.object({
+    messages: z.record(
+        z.string(),
+        z.object({
+            match_content: z.string(),
+            match_subject: z.string(),
+        }),
+    ),
+});
+
+export function maybe_add_narrowed_messages(
+    messages: Message[],
+    msg_list: MessageList,
+    callback: (messages: Message[], msg_list: MessageList) => RenderInfo | undefined,
+    attempt = 1,
+): void {
+    const ids: number[] = [];
 
     for (const elem of messages) {
         ids.push(elem.id);
     }
 
-    channel.get({
+    void channel.get({
         url: "/json/messages/matches_narrow",
         data: {
             msg_ids: JSON.stringify(ids),
             narrow: JSON.stringify(narrow_state.public_search_terms()),
         },
         timeout: 5000,
-        success(data) {
+        success(raw_data) {
+            const data = msg_match_narrow_api_response_schema.parse(raw_data);
+
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
                 // We unnarrowed or moved to Recent Conversations in the meantime.
                 return;
             }
 
-            let new_messages = [];
-            const elsewhere_messages = [];
+            let new_messages: Message[] = [];
+            const elsewhere_messages: Message[] = [];
 
             for (const elem of messages) {
                 if (Object.hasOwn(data.messages, elem.id)) {
-                    util.set_match_data(elem, data.messages[elem.id]);
+                    util.set_match_data(elem, data.messages[elem.id]!);
                     new_messages.push(elem);
                 } else {
                     elsewhere_messages.push(elem);
                 }
             }
 
-            // This second call to process_new_message in the
-            // insert_new_messages code path is designed to replace
-            // our slightly stale message object with the latest copy
-            // from the message_store. This helps in very rare race
-            // conditions, where e.g. the current user's name was
+            // We replace our slightly stale message object with the
+            // latest copy from the message_store. This helps in very
+            // rare race conditions, where e.g. the current user's name was
             // edited in between when they sent the message and when
             // we hear back from the server and can echo the new
             // message.
-            new_messages = new_messages.map((message) =>
-                message_helper.process_new_message(message),
-            );
+            new_messages = new_messages.map((new_msg) => {
+                const cached_msg = message_store.get_cached_message(new_msg.id);
+                if (cached_msg !== undefined) {
+                    // Copy the match topic and content over from the new_msg to
+                    // cached_msg. Also unlike message_helper.process_new_message, we
+                    // are not checking if new_msg has match_topic, the upstream code
+                    // ensure that.
+                    util.set_match_data(cached_msg, new_msg);
+                    return cached_msg;
+                }
+
+                return new_msg;
+            });
 
             callback(new_messages, msg_list);
             unread_ops.process_visible();

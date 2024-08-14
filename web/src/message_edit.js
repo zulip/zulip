@@ -1420,3 +1420,45 @@ export function is_message_oldest_or_newest(
         error: error_callback,
     });
 }
+
+export function show_preview_area($element) {
+    const $row = rows.get_closest_row($element);
+    const $msg_edit_content = $row.find(".message_edit_content");
+    const edit_height = $msg_edit_content.height();
+    const content = $msg_edit_content.val();
+
+    // Disable unneeded compose_control_buttons as we don't
+    // need them in preview mode.
+    $row.addClass("preview_mode");
+    $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
+
+    $msg_edit_content.hide();
+    $row.find(".markdown_preview").hide();
+    $row.find(".undo_markdown_preview").show();
+    const $preview_message_area = $row.find(".preview_message_area");
+    // Set the preview area to the edit height to keep from
+    // having the preview jog the size of the message-edit box.
+    $preview_message_area.css({height: edit_height + "px"});
+    $preview_message_area.show();
+
+    compose_ui.render_and_show_preview(
+        $row.find(".markdown_preview_spinner"),
+        $row.find(".preview_content"),
+        content,
+    );
+}
+
+export function clear_preview_area($element) {
+    const $row = rows.get_closest_row($element);
+
+    // While in preview mode we disable unneeded compose_control_buttons,
+    // so here we are re-enabling those compose_control_buttons
+    $row.removeClass("preview_mode");
+    $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
+
+    $row.find(".message_edit_content").show();
+    $row.find(".undo_markdown_preview").hide();
+    $row.find(".preview_message_area").hide();
+    $row.find(".preview_content").empty();
+    $row.find(".markdown_preview").show();
+}

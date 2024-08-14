@@ -134,6 +134,7 @@
            typeahead lines, e.g., between the channel
            name and its description. */
         gap: 0.25ch;
+        font-weight: 500;
     }
 
     .active {
@@ -151,12 +152,16 @@
     }
 }
 
-.typeahead-option-label {
+.typeahead-option-label-container {
     display: flex !important;
     justify-content: space-between;
 
     > strong {
         margin-right: 14px;
+    }
+
+    .typeahead-option-label {
+        color: var(--color-typeahead-option-label);
     }
 }
 

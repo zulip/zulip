@@ -144,7 +144,6 @@ class zulip::app_frontend_base {
     'thumbnail',
     'user_activity',
     'user_activity_interval',
-    'user_presence',
   ]
 
   if $zulip::common::total_memory_mb > 24000 {
@@ -158,7 +157,11 @@ class zulip::app_frontend_base {
   } else {
     $uwsgi_default_processes = 3
   }
-  $mobile_notification_shards = Integer(zulipconf('application_server','mobile_notification_shards', 1))
+
+  # Not the different naming scheme for sharded workers, where each gets its own queue,
+  # vs when multiple workers service the same queue.
+  $thumbnail_workers = Integer(zulipconf('application_server', 'thumbnail_workers', 1))
+  $mobile_notification_shards = Integer(zulipconf('application_server', 'mobile_notification_shards', 1))
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
 
   $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
@@ -236,15 +239,7 @@ class zulip::app_frontend_base {
     content => template('zulip/logrotate/zulip.template.erb'),
   }
 
-  file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":
-    require => Package[$zulip::common::nagios_plugins],
-    recurse => true,
-    purge   => true,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_app_frontend',
-  }
+  zulip::nagios_plugins {'zulip_app_frontend': }
 
   # This cron job does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
   zulip::cron { 'fetch-tor-exit-nodes':

@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
@@ -11,6 +13,7 @@ import * as message_events_util from "./message_events_util";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
+import type {DisplayRecipientUser, Message, RawMessage} from "./message_store";
 import * as message_util from "./message_util";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -21,17 +24,84 @@ import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
+import type {TopicLink} from "./types";
 import * as util from "./util";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
-const waiting_for_id = new Map();
-let waiting_for_ack = new Map();
+type ServerMessage = RawMessage & {local_id?: string};
+
+const send_message_api_response_schema = z.object({
+    id: z.number(),
+    automatic_new_visibility_policy: z.number().optional(),
+});
+
+type MessageRequestObject = {
+    sender_id: number;
+    queue_id: null | string;
+    topic: string;
+    content: string;
+    to: string;
+    draft_id: string | undefined;
+};
+
+type PrivateMessageObject = {
+    type: "private";
+    reply_to: string;
+    private_message_recipient: string;
+    to_user_ids: string | undefined;
+};
+
+type StreamMessageObject = {
+    type: "stream";
+    stream_id: number;
+};
+
+type MessageRequest = MessageRequestObject & (PrivateMessageObject | StreamMessageObject);
+
+type LocalEditRequest = Partial<{
+    raw_content: string | undefined;
+    content: string;
+    orig_content: string;
+    orig_raw_content: string | undefined;
+    new_topic: string;
+    new_stream_id: number;
+    starred: boolean;
+    historical: boolean;
+    collapsed: boolean;
+    alerted: boolean;
+    mentioned: boolean;
+    mentioned_me_directly: boolean;
+}>;
+
+type LocalMessage = MessageRequestObject & {
+    raw_content: string;
+    flags: string[];
+    is_me_message: boolean;
+    content_type: string;
+    sender_email: string;
+    sender_full_name: string;
+    avatar_url?: string | null | undefined;
+    timestamp: number;
+    local_id: string;
+    locally_echoed: boolean;
+    resend: boolean;
+    id: number;
+    topic_links: TopicLink[];
+} & (
+        | (StreamMessageObject & {display_recipient?: string})
+        | (PrivateMessageObject & {display_recipient?: DisplayRecipientUser[]})
+    );
+
+type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
+
+const waiting_for_id = new Map<string, Message>();
+let waiting_for_ack = new Map<string, Message>();
 
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
 // avoid sending duplicate requests.
-function show_retry_spinner($row) {
+function show_retry_spinner($row: JQuery): boolean {
     const $retry_spinner = $row.find(".refresh-failed-message");
 
     if (!$retry_spinner.hasClass("rotating")) {
@@ -41,7 +111,7 @@ function show_retry_spinner($row) {
     return true;
 }
 
-function hide_retry_spinner($row) {
+function hide_retry_spinner($row: JQuery): boolean {
     const $retry_spinner = $row.find(".refresh-failed-message");
 
     if ($retry_spinner.hasClass("rotating")) {
@@ -51,7 +121,7 @@ function hide_retry_spinner($row) {
     return true;
 }
 
-function show_message_failed(message_id, failed_msg) {
+function show_message_failed(message_id: number, failed_msg: string): void {
     // Failed to send message, so display inline retry/cancel
     message_live_update.update_message_in_all_views(message_id, ($row) => {
         $row.find(".slow-send-spinner").addClass("hidden");
@@ -61,20 +131,34 @@ function show_message_failed(message_id, failed_msg) {
     });
 }
 
-function show_failed_message_success(message_id) {
+function show_failed_message_success(message_id: number): void {
     // Previously failed message succeeded
     message_live_update.update_message_in_all_views(message_id, ($row) => {
         $row.find(".message_failed").toggleClass("hide", true);
     });
 }
 
-function failed_message_success(message_id) {
-    message_store.get(message_id).failed_request = false;
+function failed_message_success(message_id: number): void {
+    message_store.get(message_id)!.failed_request = false;
     show_failed_message_success(message_id);
 }
 
-function resend_message(message, $row, {on_send_message_success, send_message}) {
-    message.content = message.raw_content;
+function resend_message(
+    message: Message,
+    $row: JQuery,
+    {
+        on_send_message_success,
+        send_message,
+    }: {
+        on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
+        send_message: (
+            request: Message,
+            on_success: (raw_data: unknown) => void,
+            error: (response: string, _server_error_code: string) => void,
+        ) => void;
+    },
+): void {
+    message.content = message.raw_content!;
     if (show_retry_spinner($row)) {
         // retry already in in progress
         return;
@@ -82,7 +166,8 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
 
     message.resend = true;
 
-    function on_success(data) {
+    function on_success(raw_data: unknown): void {
+        const data = send_message_api_response_schema.parse(raw_data);
         const message_id = data.id;
         message.locally_echoed = true;
 
@@ -94,7 +179,7 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
         failed_message_success(message_id);
     }
 
-    function on_error(response, _server_error_code) {
+    function on_error(response: string, _server_error_code: string): void {
         message_send_error(message.id, response);
         setTimeout(() => {
             hide_retry_spinner($row);
@@ -105,7 +190,7 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
     send_message(message, on_success, on_error);
 }
 
-export function build_display_recipient(message) {
+export function build_display_recipient(message: LocalMessage): DisplayRecipientUser[] | string {
     if (message.type === "stream") {
         return stream_data.get_stream_name_from_id(message.stream_id);
     }
@@ -120,24 +205,7 @@ export function build_display_recipient(message) {
     const display_recipient = emails.map((email) => {
         email = email.trim();
         const person = people.get_by_email(email);
-        if (person === undefined) {
-            // For unknown users, we return a skeleton object.
-            //
-            // This allows us to support zephyr mirroring situations
-            // where the server might dynamically create users in
-            // response to messages being sent to their email address.
-            //
-            // TODO: It might be cleaner for the web app for such
-            // dynamic user creation to happen inside a separate API
-            // call when the pill is constructed, and then enforcing
-            // the requirement that we have an actual user object in
-            // `people.js` when sending messages.
-            return {
-                email,
-                full_name: email,
-                unknown_local_echo_user: true,
-            };
-        }
+        assert(person !== undefined);
 
         if (person.user_id === message.sender_id) {
             sender_in_display_recipients = true;
@@ -168,49 +236,61 @@ export function build_display_recipient(message) {
     return display_recipient;
 }
 
-export function insert_local_message(message_request, local_id_float, insert_new_messages) {
+export function insert_local_message(
+    message_request: MessageRequest,
+    local_id_float: number,
+    insert_new_messages: (
+        messages: LocalMessage[],
+        send_by_this_client: boolean,
+        deliver_locally: boolean,
+    ) => Message[],
+): Message {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
-    let message = {...message_request};
+    const raw_content = message_request.content;
+    const topic = message_request.topic;
 
-    message.raw_content = message.content;
-
-    // NOTE: This will parse synchronously. We're not using the async pipeline
-    message = {
-        ...message,
-        ...markdown.render(message.raw_content),
+    const local_message: LocalMessage = {
+        ...message_request,
+        ...markdown.render(raw_content),
+        raw_content,
+        content_type: "text/html",
+        sender_email: people.my_current_email(),
+        sender_full_name: people.my_full_name(),
+        avatar_url: current_user.avatar_url,
+        timestamp: Date.now() / 1000,
+        local_id: local_id_float.toString(),
+        locally_echoed: true,
+        id: local_id_float,
+        resend: false,
+        is_me_message: false,
+        topic_links: topic ? markdown.get_topic_links(topic) : [],
     };
 
-    message.content_type = "text/html";
-    message.sender_email = people.my_current_email();
-    message.sender_full_name = people.my_full_name();
-    message.avatar_url = current_user.avatar_url;
-    message.timestamp = Date.now() / 1000;
-    message.local_id = local_id_float.toString();
-    message.locally_echoed = true;
-    message.id = local_id_float;
-    if (message.topic === undefined) {
-        message.topic_links = [];
-    } else {
-        message.topic_links = markdown.get_topic_links(message.topic);
-    }
+    local_message.display_recipient = build_display_recipient(local_message);
 
-    message.display_recipient = build_display_recipient(message);
-
-    [message] = insert_new_messages([message], true, true);
-
+    const [message] = insert_new_messages([local_message], true, true);
+    assert(message !== undefined);
+    assert(message.local_id !== undefined);
     waiting_for_id.set(message.local_id, message);
     waiting_for_ack.set(message.local_id, message);
 
     return message;
 }
 
-export function is_slash_command(content) {
+export function is_slash_command(content: string): boolean {
     return !content.startsWith("/me") && content.startsWith("/");
 }
 
-export function try_deliver_locally(message_request, insert_new_messages) {
+export function try_deliver_locally(
+    message_request: MessageRequest,
+    insert_new_messages: (
+        messages: LocalMessage[],
+        send_by_this_client: boolean,
+        deliver_locally: boolean,
+    ) => Message[],
+): Message | undefined {
     // Checks if the message request can be locally echoed, and if so,
     // adds a local echoed copy of the message to appropriate message lists.
     //
@@ -227,6 +307,7 @@ export function try_deliver_locally(message_request, insert_new_messages) {
     // views that we might navigate to before we get a response from
     // the server.
     if (
+        message_request.type === "private" &&
         message_request.to_user_ids &&
         !people.user_can_initiate_direct_message_thread(message_request.to_user_ids) &&
         !message_util.get_direct_message_permission_hints(message_request.to_user_ids)
@@ -265,7 +346,7 @@ export function try_deliver_locally(message_request, insert_new_messages) {
     return message;
 }
 
-export function edit_locally(message, request) {
+export function edit_locally(message: Message, request: LocalEditRequest): Message {
     // Responsible for doing the rendering work of locally editing the
     // content of a message.  This is used in several code paths:
     // * Editing a message where a message was locally echoed but
@@ -278,6 +359,7 @@ export function edit_locally(message, request) {
     const message_content_edited = raw_content !== undefined && message.raw_content !== raw_content;
 
     if (request.new_topic !== undefined || request.new_stream_id !== undefined) {
+        assert(message.type === "stream");
         const new_stream_id = request.new_stream_id;
         const new_topic = request.new_topic;
         stream_topic_history.remove_messages({
@@ -310,9 +392,9 @@ export function edit_locally(message, request) {
             // is important in case
             // markdown.contains_backend_only_syntax(message) is true.
             message.content = request.content;
-            message.mentioned = request.mentioned;
-            message.mentioned_me_directly = request.mentioned_me_directly;
-            message.alerted = request.alerted;
+            message.mentioned = request.mentioned ?? false;
+            message.mentioned_me_directly = request.mentioned_me_directly ?? false;
+            message.alerted = request.alerted ?? false;
         } else {
             // Otherwise, we Markdown-render the message; this resets
             // all flags, so we need to restore those flags that are
@@ -345,7 +427,7 @@ export function edit_locally(message, request) {
     return message;
 }
 
-export function reify_message_id(local_id, server_id) {
+export function reify_message_id(local_id: string, server_id: number): void {
     const message = waiting_for_id.get(local_id);
     waiting_for_id.delete(local_id);
 
@@ -367,7 +449,7 @@ export function reify_message_id(local_id, server_id) {
     recent_view_data.reify_message_id_if_available(opts);
 }
 
-export function update_message_lists({old_id, new_id}) {
+export function update_message_lists({old_id, new_id}: {old_id: number; new_id: number}): void {
     if (all_messages_data !== undefined) {
         all_messages_data.change_message_id(old_id, new_id);
     }
@@ -377,26 +459,37 @@ export function update_message_lists({old_id, new_id}) {
     }
 }
 
-export function process_from_server(messages) {
+export function process_from_server(messages: ServerMessage[]): ServerMessage[] {
     const msgs_to_rerender_or_add_to_narrow = [];
+    // For messages that weren't locally echoed, we go through the
+    // "main" codepath that doesn't have to id reconciliation.  We
+    // simply return non-echo messages to our caller.
     const non_echo_messages = [];
 
     for (const message of messages) {
         // In case we get the sent message before we get the send ACK, reify here
 
         const local_id = message.local_id;
+
+        if (local_id === undefined) {
+            // The server only returns local_id to the client whose
+            // queue_id was in the message send request, aka the
+            // client that sent it. Messages sent by another client,
+            // or where we didn't pass a local ID to the server,
+            // cannot have been locally echoed.
+            non_echo_messages.push(message);
+            continue;
+        }
+
         const client_message = waiting_for_ack.get(local_id);
         if (client_message === undefined) {
-            // For messages that weren't locally echoed, we go through
-            // the "main" codepath that doesn't have to id reconciliation.
-            // We simply return non-echo messages to our caller.
             non_echo_messages.push(message);
             continue;
         }
 
         reify_message_id(local_id, message.id);
 
-        if (message_store.get(message.id).failed_request) {
+        if (message_store.get(message.id)?.failed_request) {
             failed_message_success(message.id);
         }
 
@@ -421,7 +514,7 @@ export function process_from_server(messages) {
         // the backend.
         client_message.timestamp = message.timestamp;
 
-        client_message.topic_links = message.topic_links;
+        client_message.topic_links = message.topic_links ?? [];
         client_message.is_me_message = message.is_me_message;
         client_message.submessages = message.submessages;
 
@@ -454,21 +547,21 @@ export function process_from_server(messages) {
     return non_echo_messages;
 }
 
-export function _patch_waiting_for_ack(data) {
+export function _patch_waiting_for_ack(data: Map<string, Message>): void {
     // Only for testing
     waiting_for_ack = data;
 }
 
-export function message_send_error(message_id, error_response) {
+export function message_send_error(message_id: number, error_response: string): void {
     // Error sending message, show inline
-    const message = message_store.get(message_id);
+    const message = message_store.get(message_id)!;
     message.failed_request = true;
     message.show_slow_send_spinner = false;
 
     show_message_failed(message_id, error_response);
 }
 
-function abort_message(message) {
+function abort_message(message: Message): void {
     // Remove in all lists in which it exists
     all_messages_data.remove([message.id]);
     for (const msg_list of message_lists.all_rendered_message_lists()) {
@@ -476,7 +569,7 @@ function abort_message(message) {
     }
 }
 
-export function display_slow_send_loading_spinner(message) {
+export function display_slow_send_loading_spinner(message: Message): void {
     const $rows = message_lists.all_rendered_row_for_message_id(message.id);
     if (message.locally_echoed && !message.failed_request) {
         message.show_slow_send_spinner = true;
@@ -488,9 +581,36 @@ export function display_slow_send_loading_spinner(message) {
     }
 }
 
-export function initialize({on_send_message_success, send_message}) {
-    function on_failed_action(selector, callback) {
-        $("#main_div").on("click", selector, function (e) {
+export function initialize({
+    on_send_message_success,
+    send_message,
+}: {
+    on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
+    send_message: (
+        request: Message,
+        on_success: (raw_data: unknown) => void,
+        error: (response: string, _server_error_code: string) => void,
+    ) => void;
+}): void {
+    function on_failed_action(
+        selector: string,
+        callback: (
+            message: Message,
+            $row: JQuery,
+            {
+                on_send_message_success,
+                send_message,
+            }: {
+                on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
+                send_message: (
+                    request: Message,
+                    on_success: (raw_data: unknown) => void,
+                    error: (response: string, _server_error_code: string) => void,
+                ) => void;
+            },
+        ) => void,
+    ): void {
+        $("#main_div").on("click", selector, function (this: HTMLElement, e) {
             e.stopPropagation();
             const $row = $(this).closest(".message_row");
             const local_id = rows.local_echo_id($row);

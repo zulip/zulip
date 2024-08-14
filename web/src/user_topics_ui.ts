@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
@@ -8,6 +9,7 @@ import * as overlays from "./overlays";
 import * as popover_menus from "./popover_menus";
 import * as recent_view_ui from "./recent_view_ui";
 import * as settings_user_topics from "./settings_user_topics";
+import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as unread_ui from "./unread_ui";
@@ -89,21 +91,35 @@ export function toggle_topic_visibility_policy(message: Message): void {
     const stream_id = message.stream_id;
     const topic = message.topic;
 
-    if (
-        user_topics.is_topic_muted(stream_id, topic) ||
-        user_topics.is_topic_unmuted(stream_id, topic)
-    ) {
-        user_topics.set_user_topic_visibility_policy(
-            stream_id,
-            topic,
-            user_topics.all_visibility_policies.INHERIT,
-        );
-    } else {
-        if (sub_store.get(stream_id)?.is_muted) {
+    if (!stream_data.is_subscribed(stream_id)) {
+        return;
+    }
+
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    if (sub.is_muted) {
+        if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
+            user_topics.set_user_topic_visibility_policy(
+                stream_id,
+                topic,
+                user_topics.all_visibility_policies.INHERIT,
+                true,
+            );
+        } else {
             user_topics.set_user_topic_visibility_policy(
                 stream_id,
                 topic,
                 user_topics.all_visibility_policies.UNMUTED,
+                true,
+            );
+        }
+    } else {
+        if (user_topics.is_topic_muted(stream_id, topic)) {
+            user_topics.set_user_topic_visibility_policy(
+                stream_id,
+                topic,
+                user_topics.all_visibility_policies.INHERIT,
                 true,
             );
         } else {

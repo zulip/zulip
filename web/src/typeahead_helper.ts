@@ -10,7 +10,7 @@ import {MAX_ITEMS} from "./bootstrap_typeahead";
 import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
 import type {LanguageSuggestion, SlashCommandSuggestion} from "./composebox_typeahead";
-import type {InputPillContainer, InputPillItem} from "./input_pill";
+import type {InputPillContainer} from "./input_pill";
 import * as people from "./people";
 import type {PseudoMentionUser, User} from "./people";
 import * as pm_conversations from "./pm_conversations";
@@ -36,7 +36,6 @@ export type UserOrMentionPillData = UserOrMention & {
 
 export type CombinedPill = StreamPill | UserGroupPill | UserPill;
 export type CombinedPillContainer = InputPillContainer<CombinedPill>;
-export type CombinedPillItem = InputPillItem<CombinedPill>;
 
 export function build_highlight_regex(query: string): RegExp {
     const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");

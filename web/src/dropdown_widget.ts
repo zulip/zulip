@@ -35,7 +35,7 @@ export type Option = {
     stream?: StreamSubscription;
 };
 
-type DropdownWidgetOptions = {
+export type DropdownWidgetOptions = {
     widget_name: string;
     // You can bold the selected `option` by setting `option.bold_current_selection` to `true`.
     // Currently, not implemented for stream names.

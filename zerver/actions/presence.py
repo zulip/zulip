@@ -11,8 +11,6 @@ from zerver.lib.presence import (
     format_legacy_presence_dict,
     user_presence_datetime_with_date_joined_default,
 )
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import Client, UserPresence, UserProfile
 from zerver.models.clients import get_client
@@ -286,14 +284,12 @@ def update_user_presence(
     status: int,
     new_user_input: bool,
 ) -> None:
-    event = {
-        "user_profile_id": user_profile.id,
-        "status": status,
-        "time": datetime_to_timestamp(log_time),
-        "client": client.name,
-    }
-
-    queue_json_publish("user_presence", event)
-
+    logger.debug(
+        "Processing presence update for user %s, client %s, status %s",
+        user_profile.id,
+        client,
+        status,
+    )
+    do_update_user_presence(user_profile, client, log_time, status)
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)

@@ -491,17 +491,7 @@ run_test("realm settings", ({override}) => {
         assert.equal(realm[parameter_name], 1);
     }
 
-    let update_called = false;
-    let event = event_fixtures.realm__update__create_web_public_stream_policy;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
-        assert_same(property, "create_web_public_stream_policy");
-        update_called = true;
-    };
-    dispatch(event);
-    assert_same(realm.realm_create_web_public_stream_policy, 2);
-    assert_same(update_called, true);
-
-    event = event_fixtures.realm__update__invite_to_stream_policy;
+    let event = event_fixtures.realm__update__invite_to_stream_policy;
     test_realm_integer(event, "realm_invite_to_stream_policy");
 
     event = event_fixtures.realm__update__bot_creation_policy;
@@ -553,9 +543,9 @@ run_test("realm settings", ({override}) => {
     dispatch(event);
     assert_same(realm.realm_default_code_block_language, "javascript");
 
-    update_called = false;
+    let update_called = false;
     stream_settings_ui.update_stream_privacy_choices = (property) => {
-        assert_same(property, "create_web_public_stream_policy");
+        assert_same(property, "can_create_web_public_channel_group");
         update_called = true;
     };
     event = event_fixtures.realm__update__enable_spectator_access;
@@ -1030,6 +1020,26 @@ run_test("user_settings", ({override}) => {
         user_settings.web_home_view = "all_messages";
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
+    }
+    {
+        event = event_fixtures.user_settings__web_animate_image_previews_always;
+        user_settings.web_animate_image_previews = "on_hover";
+        dispatch(event);
+        assert.equal(user_settings.web_animate_image_previews, "always");
+    }
+
+    {
+        event = event_fixtures.user_settings__web_animate_image_previews_on_hover;
+        user_settings.web_animate_image_previews = "never";
+        dispatch(event);
+        assert.equal(user_settings.web_animate_image_previews, "on_hover");
+    }
+
+    {
+        event = event_fixtures.user_settings__web_animate_image_previews_never;
+        user_settings.web_animate_image_previews = "always";
+        dispatch(event);
+        assert.equal(user_settings.web_animate_image_previews, "never");
     }
 
     {

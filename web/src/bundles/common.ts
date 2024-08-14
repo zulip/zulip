@@ -15,5 +15,3 @@ import "../../styles/alerts.css";
 import "../../styles/modal.css";
 import "../../styles/progress_bar.css";
 import "../../styles/pygments.css";
-import "@uppy/core/dist/style.css";
-import "@uppy/progress-bar/dist/style.css";

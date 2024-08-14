@@ -7,6 +7,11 @@ $user_status_emoji_width: 24px;
     }
 }
 
+.right-sidebar-items {
+    padding-right: var(--right-sidebar-padding-right);
+    padding-left: var(--right-sidebar-padding-left);
+}
+
 .right-sidebar-title {
     color: var(--color-text-sidebar-heading);
     font-size: inherit;
@@ -55,8 +60,6 @@ $user_status_emoji_width: 24px;
 
 #buddy-list-users-matching-view,
 #buddy-list-other-users {
-    width: 90%;
-    margin-left: 10px;
     margin-bottom: 0;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
@@ -179,7 +182,7 @@ $user_status_emoji_width: 24px;
     user-select: none;
     font-weight: 600;
     margin: 0;
-    padding: 5px;
+    padding: 5px 5px 5px 0;
 }
 
 .buddy-list-subsection-header.no-display {
@@ -260,6 +263,7 @@ $user_status_emoji_width: 24px;
         "row-content ending-anchor-element" var(--line-height-sidebar-row)
         "row-content ." auto / minmax(0, 1fr) 26px;
     align-content: baseline;
+    margin-right: var(--width-simplebar-scroll-hover);
 
     .user-name-and-status-emoji {
         display: flex;
@@ -319,11 +323,11 @@ $user_status_emoji_width: 24px;
 
 #userlist-header {
     cursor: pointer;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
+    grid-template-columns: minmax(0, 1fr) 20px;
     align-items: center;
-    margin-right: 10px;
+    margin-right: var(--width-simplebar-scroll-hover);
 
     #userlist-title {
         margin: 0;
@@ -331,7 +335,7 @@ $user_status_emoji_width: 24px;
 
     #user_filter_icon {
         opacity: 0.5;
-        margin-right: 5px;
+        justify-self: center;
 
         &:hover {
             opacity: 1;
@@ -358,18 +362,27 @@ $user_status_emoji_width: 24px;
 }
 
 #user_search_section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 28px;
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
     white-space: nowrap;
     margin-bottom: 10px;
 
-    & input {
+    & .user-list-filter {
+        grid-area: 1 / 1 / 2 / 3;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
-        padding-right: 20px;
-        width: calc(100% - 40px - 3px);
+        /* Prevent text from colliding with .clear_search_button */
+        padding-right: 28px;
+        /* Push back against inherited styles; let CSS Grid be in
+           charge of the height. */
+        height: auto;
     }
 
     .clear_search_button {
-        margin-left: -1px;
+        grid-area: 1 / 2 / 2 / 3;
+        position: static;
+        padding: 0;
     }
 }

@@ -138,6 +138,7 @@ const get_content_element = () => {
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
+
     set_message_for_message_content($content, undefined);
 
     // Fend off dumb security bugs by forcing devs to be
@@ -423,7 +424,10 @@ run_test("timestamp", ({mock_template}) => {
     rm.update_elements($content);
 
     // Final asserts
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nThu, Jan 1, 1970, 12:00 AM');
+    assert.equal(
+        $timestamp.html(),
+        '<i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>\nThu, Jan 1, 1970, 12:00 AM',
+    );
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });
 
@@ -442,11 +446,17 @@ run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
     // We will temporarily change the 24h setting for this test.
     override(user_settings, "twenty_four_hour_time", true);
     rm.update_elements($content);
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15, 2020, 20:40');
+    assert.equal(
+        $timestamp.html(),
+        '<i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>\nWed, Jul 15, 2020, 20:40',
+    );
 
     override(user_settings, "twenty_four_hour_time", false);
     rm.update_elements($content);
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15, 2020, 8:40 PM');
+    assert.equal(
+        $timestamp.html(),
+        '<i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>\nWed, Jul 15, 2020, 8:40 PM',
+    );
 });
 
 run_test("timestamp-error", () => {

@@ -310,31 +310,28 @@ def normalize_comment(comment: str) -> str:
 
 
 def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) -> str:
-    title = get_issue_title(payload)
-    return '{author} commented on issue: *"{title}"\
-*\n``` quote\n{comment}\n```\n'.format(
+    return "{author} commented on {issue_string}\
+\n``` quote\n{comment}\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
-        title=title,
+        issue_string=get_issue_string(payload, with_title=True),
         comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
     )
 
 
 def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) -> str:
-    title = get_issue_title(payload)
-    return '{author} updated their comment on issue: *"{title}"\
-*\n``` quote\n{comment}\n```\n'.format(
+    return "{author} updated their comment on {issue_string}\
+\n``` quote\n{comment}\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
-        title=title,
+        issue_string=get_issue_string(payload, with_title=True),
         comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
     )
 
 
 def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) -> str:
-    title = get_issue_title(payload)
-    return '{author} deleted their comment on issue: *"{title}"\
-*\n``` quote\n~~{comment}~~\n```\n'.format(
+    return "{author} deleted their comment on {issue_string}\
+\n``` quote\n~~{comment}~~\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
-        title=title,
+        issue_string=get_issue_string(payload, with_title=True),
         comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
     )
 

@@ -2,7 +2,7 @@ import Handlebars from "handlebars/runtime";
 
 import * as common from "./common";
 import {default_html_elements, intl} from "./i18n";
-import * as util from "./util";
+import {postprocess_content} from "./postprocess_content";
 
 // Below, we register Zulip-specific extensions to the Handlebars API.
 //
@@ -112,7 +112,7 @@ Handlebars.registerHelper("tr", function (options) {
 
 Handlebars.registerHelper(
     "rendered_markdown",
-    (content) => new Handlebars.SafeString(util.clean_user_content_links(content)),
+    (content) => new Handlebars.SafeString(postprocess_content(content)),
 );
 
 Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());

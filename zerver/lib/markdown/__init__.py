@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from functools import lru_cache
 from re import Match, Pattern
 from typing import Any, Generic, Optional, TypeAlias, TypedDict, TypeVar, cast
-from urllib.parse import parse_qs, quote, urlencode, urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qs, quote, urljoin, urlsplit, urlunsplit
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -55,7 +55,11 @@ from zerver.lib.mention import (
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
-from zerver.lib.thumbnail import user_uploads_or_external
+from zerver.lib.thumbnail import (
+    MarkdownImageMetadata,
+    get_user_upload_previews,
+    rewrite_thumbnailed_images,
+)
 from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
@@ -114,6 +118,7 @@ class MessageRenderingResult:
     links_for_preview: set[str]
     user_ids_with_alert_words: set[int]
     potential_attachment_path_ids: list[str]
+    thumbnail_spinners: set[str]
 
 
 @dataclass
@@ -125,6 +130,7 @@ class DbData:
     sent_by_bot: bool
     stream_names: dict[str, int]
     translate_emoticons: bool
+    user_upload_previews: dict[str, MarkdownImageMetadata | None]
 
 
 # Format version of the Markdown rendering; stored along with rendered
@@ -615,18 +621,21 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if data_id is not None:
             a.set("data-id", data_id)
         img = SubElement(a, "img")
-        if (
-            settings.THUMBNAIL_IMAGES
-            and (not already_thumbnailed)
-            and user_uploads_or_external(image_url)
-        ):
-            # We strip leading '/' from relative URLs here to ensure
-            # consistency in what gets passed to /thumbnail
-            image_url = image_url.lstrip("/")
-            img.set("src", "/thumbnail?" + urlencode({"url": image_url, "size": "thumbnail"}))
-            img.set(
-                "data-src-fullsize", "/thumbnail?" + urlencode({"url": image_url, "size": "full"})
-            )
+        if image_url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
+            path_id = image_url[len("/user_uploads/") :]
+
+            # We should have pulled the preview data for this image
+            # (even if that's "no preview yet") from the database
+            # before rendering; is_image should have enforced that.
+            assert path_id in self.zmd.zulip_db_data.user_upload_previews
+
+            # Insert a placeholder image spinner.  We post-process
+            # this content (see rewrite_thumbnailed_images in
+            # zerver.lib.thumbnail), looking specifically for this
+            # tag, and may re-write it into the thumbnail URL if it
+            # already exists when the message is sent.
+            img.set("class", "image-loading-placeholder")
+            img.set("src", "/static/images/loading/loader-black.svg")
         else:
             img.set("src", image_url)
 
@@ -723,6 +732,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
             return False
+
+        # Check against the previews we generated -- if we didn't have
+        # a row for the ImageAttachment, then its header didn't parse
+        # as a valid image type which libvips handles.
+        if url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
+            path_id = url[len("/user_uploads/") :]
+            return path_id in self.zmd.zulip_db_data.user_upload_previews
 
         return any(parsed_url.path.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
 
@@ -2610,6 +2626,7 @@ def do_convert(
         links_for_preview=set(),
         user_ids_with_alert_words=set(),
         potential_attachment_path_ids=[],
+        thumbnail_spinners=set(),
     )
 
     _md_engine.zulip_message = message
@@ -2623,6 +2640,7 @@ def do_convert(
     _md_engine.url_embed_data = url_embed_data
 
     # Pre-fetch data from the DB that is used in the Markdown thread
+    user_upload_previews = None
     if message_realm is not None:
         # Here we fetch the data structures needed to render
         # mentions/stream mentions from the database, but only
@@ -2645,6 +2663,7 @@ def do_convert(
         else:
             active_realm_emoji = {}
 
+        user_upload_previews = get_user_upload_previews(message_realm.id, content)
         _md_engine.zulip_db_data = DbData(
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,
@@ -2653,6 +2672,7 @@ def do_convert(
             sent_by_bot=sent_by_bot,
             stream_names=stream_name_info,
             translate_emoticons=translate_emoticons,
+            user_upload_previews=user_upload_previews,
         )
 
     try:
@@ -2662,6 +2682,15 @@ def do_convert(
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
         rendering_result.rendered_content = unsafe_timeout(5, lambda: _md_engine.convert(content))
+
+        # Post-process the result with the rendered image previews:
+        if user_upload_previews is not None:
+            content_with_thumbnails, thumbnail_spinners = rewrite_thumbnailed_images(
+                rendering_result.rendered_content, user_upload_previews
+            )
+            rendering_result.thumbnail_spinners = thumbnail_spinners
+            if content_with_thumbnails is not None:
+                rendering_result.rendered_content = content_with_thumbnails
 
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering

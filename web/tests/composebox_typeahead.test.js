@@ -50,6 +50,7 @@ const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
+const user_pill = zrequire("user_pill");
 const stream_data = zrequire("stream_data");
 const stream_list_sort = zrequire("stream_list_sort");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -846,7 +847,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         onPillCreate() {},
         onPillRemove() {},
         appendValidatedData(item) {
-            appended_names.push(item.display_value);
+            appended_names.push(user_pill.get_display_value_from_item(item));
         },
     }));
     compose_pm_pill.initialize({
@@ -1130,7 +1131,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 actual_value = options.highlighter_html(othello_item);
                 expected_value =
                     `    <span class="user_circle_empty user_circle"></span>\n` +
-                    `    <img class="typeahead-image" src="http://zulip.zulipdev.com/avatar/${othello.user_id}?s&#x3D;50" />\n` +
+                    `    <img class="typeahead-image" src="/avatar/${othello.user_id}" />\n` +
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>    <span class="autocomplete_secondary">othello@zulip.com</span>' +
                     "</div>\n";

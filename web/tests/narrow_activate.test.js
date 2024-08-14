@@ -156,7 +156,7 @@ function stub_message_list() {
     };
 }
 
-run_test("basics", ({override}) => {
+run_test("basics", ({override, override_rewire}) => {
     stub_message_list();
     activity_ui.set_cursor_and_filter();
 
@@ -168,6 +168,7 @@ run_test("basics", ({override}) => {
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
     override(buddy_list, "populate", noop);
+    override_rewire(message_view, "try_rendering_locally_for_same_narrow", noop);
 
     const helper = test_helper({override});
     const terms = [{operator: "stream", operand: "Denmark"}];

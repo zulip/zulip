@@ -1,8 +1,12 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+
+import render_input_pill from "../templates/input_pill.hbs";
+import render_search_user_pill from "../templates/search_user_pill.hbs";
 
 import {Filter} from "./filter";
 import * as input_pill from "./input_pill";
-import type {InputPillContainer} from "./input_pill";
+import type {InputPill, InputPillContainer} from "./input_pill";
 import * as people from "./people";
 import type {User} from "./people";
 import type {NarrowTerm} from "./state_data";
@@ -12,14 +16,9 @@ import type {UserStatusEmojiInfo} from "./user_status";
 export type SearchUserPill = {
     type: "search_user";
     operator: string;
-    // TODO: It would be nice if we just call this `search_string` instead of
-    // `display_value`, because we don't actually display this value for user
-    // pills, but `display_value` is needed to hook into the generic input pill
-    // logic and it would be a decent amount of work to change that.
-    display_value: string;
     negated: boolean;
     users: {
-        display_value: string;
+        full_name: string;
         user_id: number;
         email: string;
         img_src: string;
@@ -32,8 +31,9 @@ export type SearchUserPill = {
 type SearchPill =
     | {
           type: "search";
-          display_value: string;
-          description_html: string;
+          operator: string;
+          operand: string;
+          negated: boolean | undefined;
       }
     | SearchUserPill;
 
@@ -41,20 +41,71 @@ export type SearchPillWidget = InputPillContainer<SearchPill>;
 
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_terms = Filter.parse(search_string);
-    if (!search_terms.every((term) => Filter.is_valid_search_term(term))) {
+    assert(search_terms.length === 1);
+    const search_term = search_terms[0]!;
+    if (!Filter.is_valid_search_term(search_term)) {
         // This will cause pill validation to fail and trigger a shake animation.
         return undefined;
     }
-    const description_html = Filter.search_description_as_html(search_terms);
     return {
-        display_value: search_string,
         type: "search",
-        description_html,
+        operator: search_term.operator,
+        operand: search_term.operand,
+        negated: search_term.negated,
     };
 }
 
 export function get_search_string_from_item(item: SearchPill): string {
-    return item.display_value;
+    const sign = item.negated ? "-" : "";
+    return `${sign}${item.operator}: ${get_search_operand(item)}`;
+}
+
+// This is called when the a pill is closed. We have custom logic here
+// because group user pills have pills inside of them, and it's possible
+// to e.g. remove a user from a group-DM pill without deleting the whole
+// DM pill.
+function on_pill_exit(
+    clicked_pill: HTMLElement,
+    all_pills: InputPill<SearchPill>[],
+    remove_pill: (pill: HTMLElement) => void,
+): void {
+    const $user_pill_container = $(clicked_pill).parents(".user-pill-container");
+    if (!$user_pill_container.length) {
+        // This is just a regular search pill, so we don't need to do fancy logic.
+        remove_pill(clicked_pill);
+        return;
+    }
+    // The user-pill-container container class is used exclusively for
+    // group-DM search pills, where multiple user pills sit inside a larger
+    // pill. The exit icons in those individual user pills should remove
+    // just that pill, not the outer pill.
+    const user_id_string = $(clicked_pill).closest(".pill").attr("data-user-id");
+    assert(user_id_string !== undefined);
+    const user_id = Number.parseInt(user_id_string, 10);
+
+    // First get the outer pill that contains the user pills.
+    const outer_idx = all_pills.findIndex((pill) => pill.$element[0] === $user_pill_container[0]);
+    assert(outer_idx !== -1);
+    const user_container_pill = all_pills[outer_idx]!.item;
+    assert(user_container_pill?.type === "search_user");
+
+    // If there's only one user in this pill, delete the whole pill.
+    if (user_container_pill.users.length === 1) {
+        assert(user_container_pill.users[0]!.user_id === user_id);
+        remove_pill($user_pill_container[0]!);
+        return;
+    }
+
+    // Remove the user id from the pill data.
+    const user_idx = user_container_pill.users.findIndex((user) => user.user_id === user_id);
+    assert(user_idx !== -1);
+    user_container_pill.users.splice(user_idx, 1);
+
+    // Remove the user pill from the DOM.
+    const $outer_container = all_pills[outer_idx]!.$element;
+    const $user_pill = $($outer_container.children(".pill")[user_idx]!);
+    assert($user_pill.attr("data-user-id") === user_id.toString());
+    $user_pill.remove();
 }
 
 export function create_pills($pill_container: JQuery): SearchPillWidget {
@@ -64,6 +115,17 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         get_text_from_item: get_search_string_from_item,
         split_text_on_comma: false,
         convert_to_pill_on_enter: false,
+        generate_pill_html(item) {
+            if (item.type === "search_user") {
+                return render_search_user_pill(item);
+            }
+            const display_value = get_search_string_from_item(item);
+            return render_input_pill({
+                display_value,
+            });
+        },
+        get_display_value_from_item: get_search_string_from_item,
+        on_pill_exit,
     });
     // We don't automatically create pills on paste. When the user
     // presses enter, we validate the input then.
@@ -77,15 +139,12 @@ function append_user_pill(
     operator: string,
     negated: boolean,
 ): void {
-    const sign = negated ? "-" : "";
-    const search_string = sign + operator + ":" + users.map((user) => user.email).join(",");
     const pill_data: SearchUserPill = {
         type: "search_user",
         operator,
-        display_value: search_string,
         negated,
         users: users.map((user) => ({
-            display_value: user.full_name,
+            full_name: user.full_name,
             user_id: user.user_id,
             email: user.email,
             img_src: people.small_avatar_url_for_person(user),
@@ -156,8 +215,16 @@ export function set_search_bar_contents(
     }
 }
 
-export function get_current_search_string_for_widget(pill_widget: SearchPillWidget): string {
-    const items = pill_widget.items();
-    const search_strings = items.map((item) => item.display_value);
-    return search_strings.join(" ");
+function get_search_operand(item: SearchPill): string {
+    if (item.type === "search_user") {
+        return item.users.map((user) => user.email).join(",");
+    }
+    return item.operand;
+}
+
+export function get_current_search_pill_terms(pill_widget: SearchPillWidget): NarrowTerm[] {
+    return pill_widget.items().map((item) => ({
+        ...item,
+        operand: get_search_operand(item),
+    }));
 }

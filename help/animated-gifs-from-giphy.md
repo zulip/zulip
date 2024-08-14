@@ -32,7 +32,7 @@ message](/help/preview-your-message-before-sending) before sending to
 see what the message will look like.
 
 Note that some organizations disable [previews of linked
-images](/help/allow-image-link-previews).
+images](/help/image-video-and-website-previews).
 
 ## Restrict maximum rating of GIFs retrieved from GIPHY
 

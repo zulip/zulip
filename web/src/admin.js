@@ -194,6 +194,7 @@ export function build_page() {
         user_list_style_values: settings_config.user_list_style_values,
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
+        web_animate_image_previews_values: settings_config.web_animate_image_previews_values,
         color_scheme_values: settings_config.color_scheme_values,
         web_home_view_values: settings_config.web_home_view_values,
         settings_object: realm_user_settings_defaults,
@@ -210,8 +211,6 @@ export function build_page() {
         realm_name_in_email_notifications_policy_values:
             settings_config.realm_name_in_email_notifications_policy_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
-        create_web_public_stream_policy_values:
-            settings_config.create_web_public_stream_policy_values,
         disable_enable_spectator_access_setting:
             !realm.server_web_public_streams_enabled || !realm.zulip_plan_is_not_limited,
         realm_push_notifications_enabled: realm.realm_push_notifications_enabled,

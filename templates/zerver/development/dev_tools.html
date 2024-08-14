@@ -121,6 +121,32 @@
                 </ul>
             </li>
         </ul>
+        <h2>Development instructions for Help Center (Beta)</h2>
+        <p>
+            These commands are to run the project for an ongoing migration for our help center docs to use
+            <a href="https://github.com/withastro/starlight">@astrojs/starlight</a>. You can track the
+            progress for the project at <a href="https://github.com/zulip/zulip/issues/30450">#30450</a>.
+        </p>
+        <ul>
+            <li>
+                <code>./tools/build-help-center</code> will convert the existing help center MD files to MDX.
+                It will also create a production build for the converted MDX files. You can run
+                <code>./tools/convert-help-center-docs-to-mdx</code> to convert the files separately.
+                You can run <code>pnpm build</code> within the <code>help-beta</code> directory
+                to run the build step separately.
+            </li>
+            <li>
+                <code>./tools/run-dev --help-center</code> will host the generated build on
+                <code>/help-beta</code> url. You will need to have run the build steps before this step.
+                The docs search will work with this flag.
+            </li>
+            <li>
+                <code>./tools/run-dev --help-center-dev-server</code> will run a dev server at
+                <code>/help-beta</code> that supports hot reload. But, with this flag, the search will not work.
+                 This mode is ideal when you&#39;re editing a document and want to visualize the changes quickly.
+                You will need the converted MDX files to be already generated before you run this step.
+            </li>
+        </ul>
     </div>
 </div>
 
