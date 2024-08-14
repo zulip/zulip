@@ -23,12 +23,16 @@ def purge_nagios_messages(apps: StateApps, schema_editor: BaseDatabaseSchemaEdit
             (settings.NAGIOS_STAGING_SEND_BOT, settings.NAGIOS_STAGING_RECEIVE_BOT),
         ]
         for sender_email, recipient_email in nagios_bot_tuples:
-            sender_id = UserProfile.objects.get(
-                delivery_email=sender_email, realm_id=bot_realm.id
-            ).id
-            recipient_id = UserProfile.objects.get(
-                delivery_email=recipient_email, realm_id=bot_realm.id
-            ).recipient_id
+            try:
+                sender_id = UserProfile.objects.get(
+                    delivery_email=sender_email, realm_id=bot_realm.id
+                ).id
+                recipient_id = UserProfile.objects.get(
+                    delivery_email=recipient_email, realm_id=bot_realm.id
+                ).recipient_id
+            except UserProfile.DoesNotExist:
+                # If these special users don't exist, there's nothing to do.
+                continue
 
             batch_size = 10000
             while True:
