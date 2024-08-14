@@ -69,6 +69,8 @@
 
 ## Change your call provider
 
+{!admin-only.md!}
+
 By default, Zulip integrates with
 [Jitsi Meet](https://jitsi.org/jitsi-meet/), a fully-encrypted, 100% open
 source video conferencing solution. Organization administrators can also
@@ -80,8 +82,8 @@ supported by Zulip are:
 * [BigBlueButton integration](/integrations/doc/big-blue-button)
 
 If you choose BigBlueButton as the call provider, there will be a single button
-(<i class="fa fa-video-camera"></i>) for starting a call. The call is initiated
-with cameras turned off.
+(<i class="zulip-icon zulip-icon-video-call"></i>) for starting a call in the
+compose box. The call is initiated with cameras turned off.
 
 !!! tip ""
 
