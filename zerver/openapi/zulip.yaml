@@ -9508,7 +9508,9 @@ paths:
                       topics:
                         type: array
                         description: |
-                          An array of `topic` objects.
+                          An array of objects with information about user-accessible
+                          topics in the specified channel, sorted by recency (i.e.,
+                          the topic with the most recent message is ordered first).
                         items:
                           type: object
                           additionalProperties: false
