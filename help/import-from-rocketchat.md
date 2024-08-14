@@ -35,7 +35,8 @@ Rocket.Chat does not provide an official data export feature, so the Zulip
 import tool works by importing data from a Rocket.Chat database dump.
 
 If you're self-hosting your Rocket.Chat instance, you can create a
-database dump using the `mongodump` utility.
+database dump using the `mongodump` utility. Make sure your Rocket.Chat
+server is **NOT** shut down while creating database dump using `mongodump`.
 
 If your organization is hosted on Rocket.Chat Cloud or another hosting
 provider that doesn't provide you with database access, you will need
