@@ -806,7 +806,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
         ScreenshotConfig("event_for_exception_python.json"),
         ScreenshotConfig("issue_assigned_to_team.json", "002.png"),
     ],
-    "slack": [ScreenshotConfig("message_info.txt")],
+    "slack": [ScreenshotConfig("message_with_normal_text.json")],
     "sonarqube": [ScreenshotConfig("error.json")],
     "sonarr": [ScreenshotConfig("sonarr_episode_grabbed.json")],
     "splunk": [ScreenshotConfig("search_one_result.json")],
