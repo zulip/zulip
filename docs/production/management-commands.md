@@ -5,6 +5,9 @@ line. To help with this, Zulip ships with over 100 command-line tools
 implemented using the [Django management commands
 framework][django-management].
 
+Because management commands require server shell access, Zulip Cloud
+users will need to contact support for situations requiring them.
+
 ## Running management commands
 
 Start by logging in as the `zulip` user on the Zulip server. Then run
