@@ -400,7 +400,7 @@ def process_message_attachment(
         logging.info("Replacing invalid attachment name with random uuid: %s", file_name)
         sanitized_name = uuid.uuid4().hex
 
-    if len(sanitized_name) >= 255:  # nocoverage
+    if len(sanitized_name.encode("utf-8")) >= 255:  # nocoverage
         logging.info("Replacing too long attachment name with random uuid: %s", file_name)
         sanitized_name = uuid.uuid4().hex
 
