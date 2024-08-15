@@ -44,6 +44,7 @@ VARMAP = {
     "boolean": bool,
     "object": dict,
     "NoneType": type(None),
+    "number": float,
 }
 
 
@@ -423,17 +424,25 @@ do not match the types declared in the implementation of {function.__name__}.\n"
             # matching that of our OpenAPI spec. If not so, hint that the
             # Json[T] wrapper might be missing from the type annotation.
             if actual_param.request_var_name in json_request_var_names:
-                self.assertEqual(
-                    actual_param_schema.get("contentMediaType"),
-                    "application/json",
-                    USE_JSON_CONTENT_TYPE_HINT.format(
-                        param_name=actual_param.param_name,
-                        param_type=actual_param.param_type,
-                    ),
-                )
-                # actual_param_schema is a json_schema. Reference:
-                # https://docs.pydantic.dev/latest/api/json_schema/#pydantic.json_schema.GenerateJsonSchema.json_schema
-                actual_param_schema = actual_param_schema["contentSchema"]
+                # skipping this check for send_message_backend 'to' parameter because it is a
+                # special case where the content type of the parameter is application/json but the
+                # parameter may or may not be JSON encoded since previously we also accepted a raw
+                # string and some ad-hoc bot might still depend on sending a raw string.
+                if (
+                    function.__name__ != "send_message_backend"
+                    or actual_param.param_name != "req_to"
+                ):
+                    self.assertEqual(
+                        actual_param_schema.get("contentMediaType"),
+                        "application/json",
+                        USE_JSON_CONTENT_TYPE_HINT.format(
+                            param_name=actual_param.param_name,
+                            param_type=actual_param.param_type,
+                        ),
+                    )
+                    # actual_param_schema is a json_schema. Reference:
+                    # https://docs.pydantic.dev/latest/api/json_schema/#pydantic.json_schema.GenerateJsonSchema.json_schema
+                    actual_param_schema = actual_param_schema["contentSchema"]
             elif "contentMediaType" in actual_param_schema:
                 function_schema_type = schema_type(actual_param_schema, defs_mapping)
                 # We do not specify that the content type of int or bool
