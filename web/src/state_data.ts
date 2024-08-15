@@ -267,6 +267,7 @@ const realm_schema = z.object({
     realm_can_create_public_channel_group: z.number(),
     realm_can_create_private_channel_group: z.number(),
     realm_can_create_web_public_channel_group: z.number(),
+    realm_can_delete_any_message_group: z.number(),
     realm_create_multiuse_invite_group: z.number(),
     realm_create_private_stream_policy: z.number(),
     realm_date_created: z.number(),

@@ -227,6 +227,11 @@ run_test("user_can_move_messages_between_streams_nobody_case", () => {
     assert.equal(settings_data.user_can_move_messages_between_streams(), false);
 });
 
+test_realm_group_settings(
+    "realm_can_delete_any_message_group",
+    settings_data.user_can_delete_any_message,
+);
+
 test_message_policy(
     "user_can_delete_own_message",
     "realm_delete_own_message_policy",
