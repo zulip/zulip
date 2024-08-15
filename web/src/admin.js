@@ -183,6 +183,7 @@ export function build_page() {
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         realm_invite_required: realm.realm_invite_required,
         policy_values: settings_config.common_policy_values,
+        realm_can_delete_any_message_group: realm.realm_can_delete_any_message_group,
         realm_delete_own_message_policy: realm.realm_delete_own_message_policy,
         DELETE_OWN_MESSAGE_POLICY_ADMINS_ONLY:
             settings_config.common_message_policy_values.by_admins_only.code,

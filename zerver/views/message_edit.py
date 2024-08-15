@@ -148,8 +148,7 @@ def update_message_backend(
 
 
 def validate_can_delete_message(user_profile: UserProfile, message: Message) -> None:
-    if user_profile.is_realm_admin:
-        # Admin can delete any message, any time.
+    if user_profile.can_delete_any_message():
         return
     if message.sender != user_profile and message.sender.bot_owner_id != user_profile.id:
         # Users can only delete messages sent by them or by their bots.

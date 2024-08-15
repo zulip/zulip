@@ -157,7 +157,7 @@ IGNORED_PHRASES = [
     # Used in message-move-time-limit setting label
     r"does not apply to moderators and administrators",
     # Used in message-delete-time-limit setting label
-    r"does not apply to administrators",
+    r"does not apply to users who can delete any message",
     # Used as indicator with names for guest users.
     r"guest",
     # Used in pills for deactivated users.
