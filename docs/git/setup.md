@@ -60,8 +60,8 @@ And, if none of the above are to your liking, try [one of these][gitbook-guis].
 [gitbook-install]: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 [github-join]: https://github.com/join
 [gitbook-setup]: https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup
-[gitbook-other-envs-bash]: https://git-scm.com/book/en/v2/Git-in-Other-Environments-Git-in-Bash
-[gitbook-other-envs-zsh]: https://git-scm.com/book/en/v2/Git-in-Other-Environments-Git-in-Zsh
+[gitbook-other-envs-bash]: https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Bash
+[gitbook-other-envs-zsh]: https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Zsh
 [gitgui-gitcola]: https://git-cola.github.io/
 [gitgui-gitg]: https://wiki.gnome.org/Apps/Gitg
 [gitgui-gitk]: https://git-scm.com/docs/gitk
