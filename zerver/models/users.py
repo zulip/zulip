@@ -603,6 +603,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         ROLE_GUEST: gettext_lazy("Guest"),
     }
 
+    # Mapping of role ids to simple string identifiers for the roles,
+    # to be used in API contexts such as SCIM provisioning.
+    ROLE_ID_TO_API_NAME = {
+        ROLE_REALM_OWNER: "owner",
+        ROLE_REALM_ADMINISTRATOR: "administrator",
+        ROLE_MODERATOR: "moderator",
+        ROLE_MEMBER: "member",
+        ROLE_GUEST: "guest",
+    }
+    ROLE_API_NAME_TO_ID = {v: k for k, v in ROLE_ID_TO_API_NAME.items()}
+
     class Meta:
         indexes = [
             models.Index(Upper("email"), name="upper_userprofile_email_idx"),
