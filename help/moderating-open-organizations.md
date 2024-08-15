@@ -39,7 +39,7 @@ problematic behavior.
   [edit](/help/restrict-message-editing-and-deletion#configure-message-editing-permissions)
   and
   [delete](/help/restrict-message-editing-and-deletion#configure-message-deletion-permissions)
-  their own messages, and set time limits on message editing and deletion.
+  messages, and set time limits on message editing and deletion.
 * If you are concerned about impersonation, you can [prevent users from changing
   their name](/help/restrict-name-and-email-changes#restrict-name-changes), or
   [require unique

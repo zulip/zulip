@@ -36,17 +36,15 @@ irretrievably) removes the message from Zulip.
 
 ## Configure message deletion permissions
 
-!!! tip ""
-
-    Administrators can always delete any message.
-
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
 1. Under **Message deletion**:
+    - Configure **Who can delete any message**.
     - Configure **Who can delete their own messages**.
-    - Configure **Time limit for deleting messages**.
+    - Configure **Time limit for deleting messages**, which restricts
+      your own messages.
 
 {!save-changes.md!}
 
