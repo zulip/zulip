@@ -59,6 +59,8 @@ test("basics", () => {
     stream_create_subscribers_data.add_user_ids(all_user_ids);
     assert.deepEqual(stream_create_subscribers_data.sorted_user_ids(), [400, 101, 102, 103]);
 
+    assert.equal(stream_create_subscribers_data.get_added_user_count(), 4);
+
     stream_create_subscribers_data.remove_user_ids([101, 103]);
     assert.deepEqual(stream_create_subscribers_data.sorted_user_ids(), [400, 102]);
     assert.deepEqual(stream_create_subscribers_data.get_potential_subscribers(), [

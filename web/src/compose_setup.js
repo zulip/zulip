@@ -294,7 +294,7 @@ export function initialize() {
 
             const sub = sub_store.get(stream_id);
 
-            subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
+            subscriber_api.add_user_ids_to_stream([user_id], sub, true, success, xhr_failure);
         },
     );
 

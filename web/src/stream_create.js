@@ -300,6 +300,9 @@ function create_stream() {
     }
 
     data.message_retention_days = JSON.stringify(message_retention_selection);
+    data.send_notification_to_new_users = Boolean(
+        $("#send_notification_to_new_subscribers").prop("checked"),
+    );
 
     let announce =
         stream_data.get_new_stream_announcements_stream() !== "" &&

@@ -7,6 +7,10 @@ import {current_user} from "./state_data";
 let user_id_set: Set<number>;
 let soft_remove_user_id_set: Set<number>;
 
+export function get_added_user_count(): number {
+    return user_id_set.size - soft_remove_user_id_set.size;
+}
+
 export function initialize_with_current_user(): void {
     user_id_set = new Set([current_user.user_id]);
     soft_remove_user_id_set = new Set();

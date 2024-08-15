@@ -20,6 +20,7 @@ import * as people from "./people";
 import type {User} from "./people";
 import * as scroll_util from "./scroll_util";
 import {current_user} from "./state_data";
+import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_containers from "./stream_settings_containers";
 import type {SettingsSubscription} from "./stream_settings_data";
@@ -97,6 +98,10 @@ function show_stream_subscription_request_result({
     }
 }
 
+function stream_edit_update_notification_choice(user_pill_ids: number[]): void {
+    stream_create_subscribers.update_notification_choice_checkbox(user_pill_ids.length);
+}
+
 export function enable_subscriber_management({
     sub,
     $parent_container,
@@ -118,6 +123,8 @@ export function enable_subscriber_management({
     pill_widget = add_subscribers_pill.create({
         $pill_container,
         get_potential_subscribers,
+        onPillCreateAction: stream_edit_update_notification_choice,
+        onPillRemoveAction: stream_edit_update_notification_choice,
     });
 
     $pill_container.find(".input").on("input", () => {
@@ -263,7 +270,13 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         });
     }
 
-    subscriber_api.add_user_ids_to_stream(user_ids, sub, invite_success, invite_failure);
+    subscriber_api.add_user_ids_to_stream(
+        user_ids,
+        sub,
+        Boolean($("#send_notification_to_new_subscribers").prop("checked")),
+        invite_success,
+        invite_failure,
+    );
 }
 
 function remove_subscriber({
