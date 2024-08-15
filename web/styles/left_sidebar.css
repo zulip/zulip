@@ -1111,9 +1111,19 @@ ul.topic-list::after {
     /* 12px at 16px/1em */
     bottom: 0.75em;
     left: 16px;
+    /* The bottom bracket should avoid colliding
+       with the checkmark on resolved topics, as
+       would otherwise happen when the last topic
+       in a list is resolved. */
     width: 8px;
     border-bottom: 1px solid var(--color-topic-indent-border);
     pointer-events: none;
+}
+
+ul.topic-list:has(.show-more-topics)::after {
+    /* When the show all topics control is displayed,
+       extend the bottom bracket. */
+    width: 18px;
 }
 
 /* The grouping border should not be shown
