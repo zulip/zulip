@@ -511,6 +511,9 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     const profile_data = realm.custom_profile_fields
         .flatMap((f) => get_custom_profile_field_data(user, f, field_types) ?? [])
         .filter((f) => f.name !== undefined);
+    original_values = {
+        user_id: user.user_id.toString(),
+    };
     const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;
     // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
     // or if the user profile belongs to a bot whose owner has opened the user profile. However, we don't
