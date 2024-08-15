@@ -364,18 +364,6 @@ function handle_message_row_edit_keydown(e) {
                 composebox_typeahead.handle_enter($(e.target), e);
                 return;
             }
-        } else if ($(".typeahead:visible").length > 0) {
-            // Accepting typeahead is handled by the typeahead library.
-            return;
-        } else if (
-            $(e.target).hasClass("message_edit_topic") ||
-            $(e.target).hasClass("message_edit_topic_propagate")
-        ) {
-            // Enter should save the topic edit, as long as it's
-            // not being used to accept typeahead.
-            const $row = $(e.target).closest(".message_row");
-            save_message_row_edit($row);
-            e.stopPropagation();
         }
     } else if (e.key === "Escape") {
         end_if_focused_on_message_row_edit();
