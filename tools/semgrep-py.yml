@@ -266,6 +266,10 @@ rules:
           @typed_endpoint
           def $F(..., *, ...)-> ...:
             ...
+      - pattern-not-inside: |
+          @typed_endpoint
+          def $F(..., *args, ...)-> ...:
+            ...
     message: |
       @typed_endpoint should not be used without keyword-only parameters.
       Make parameters to be parsed from the request as keyword-only,
