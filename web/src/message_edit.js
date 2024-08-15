@@ -56,7 +56,7 @@ import * as util from "./util";
 // Storing textarea makes it easy to get the current content.
 export const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
-let currently_topic_editing_messages = [];
+let currently_topic_editing_message_ids = [];
 const currently_echoing_messages = new Map();
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
@@ -1287,19 +1287,19 @@ export function move_topic_containing_message_to_stream(
     toast_params,
 ) {
     function reset_modal_ui() {
-        currently_topic_editing_messages = currently_topic_editing_messages.filter(
+        currently_topic_editing_message_ids = currently_topic_editing_message_ids.filter(
             (id) => id !== message_id,
         );
         dialog_widget.hide_dialog_spinner();
     }
-    if (currently_topic_editing_messages.includes(message_id)) {
+    if (currently_topic_editing_message_ids.includes(message_id)) {
         ui_report.client_error(
             $t_html({defaultMessage: "A Topic Move already in progress."}),
             $("#move_topic_modal #dialog_error"),
         );
         return;
     }
-    currently_topic_editing_messages.push(message_id);
+    currently_topic_editing_message_ids.push(message_id);
 
     const request = {
         stream_id: new_stream_id,
