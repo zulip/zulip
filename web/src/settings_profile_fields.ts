@@ -242,6 +242,7 @@ function open_custom_profile_field_form_modal(): void {
                 ":checked",
             ),
             required: $("#profile-field-required").is(":checked"),
+            editable_by_user: $("#profile_field_editable_by_user").is(":checked"),
         };
         const url = "/json/realm/profile_fields";
         const opts = {
@@ -461,6 +462,7 @@ function open_edit_form_modal(this: HTMLElement): void {
             choices,
             display_in_profile_summary: field.display_in_profile_summary === true,
             required: field.required,
+            editable_by_user: field.editable_by_user,
             is_select_field: field.type === field_types.SELECT.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),

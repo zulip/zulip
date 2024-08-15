@@ -409,6 +409,10 @@
     .pill-container {
         border-style: solid;
         border-width: 1px;
+
+        &.not-editable-by-user {
+            opacity: 0.5;
+        }
     }
 
     .settings-profile-user-field {
