@@ -1330,6 +1330,36 @@ input.settings_text_input {
     }
 }
 
+.copy-btn {
+    display: flex;
+    border-radius: 4px;
+    color: var(--color-copy-btn);
+    /* 2px at 16px/1em */
+    padding: 0.125em;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-copy-btn-hover);
+    }
+
+    &:active {
+        color: var(--color-copy-btn-active);
+    }
+
+    &.copy-btn-square {
+        &:hover,
+        :focus-visible {
+            background-color: var(--color-copy-btn-square-bg-hover);
+        }
+
+        &:active {
+            background-color: var(--color-copy-btn-square-bg-active);
+            color: var(--color-copy-btn-square-active);
+        }
+    }
+}
+
 .text-success {
     color: hsl(120.91deg 32.04% 40.39%);
 }

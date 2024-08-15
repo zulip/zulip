@@ -748,22 +748,24 @@
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
     --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent);
-    --color-copy-btn-hover: var(--green-600);
-    /* hsl(144deg 84% 22%) corresponds to --green-600.
-       We use the hsl() equivalent directly since postcss-color-mix-function
-       cannot dynamically resolve var() arguments. */
-    --color-copy-btn-bg-hover: color-mix(
+    --color-copy-btn-hover: var(--grey-600);
+    /* --grey-600, opacity 0.07 */
+    --color-copy-btn-square-bg-hover: color-mix(
         in oklch,
-        hsl(144deg 84% 22%) 8%,
+        hsla(229deg 9% 36%) 7%,
         transparent
     );
-    --color-copy-btn-active: var(--green-500);
-    /* hsl(146deg 90% 27%) corresponds to --green-500.
-       We use the hsl() equivalent directly since postcss-color-mix-function
-       cannot dynamically resolve var() arguments. */
-    --color-copy-btn-bg-active: color-mix(
+    /* --grey-600, opacity 0.7 */
+    --color-copy-btn-active: color-mix(
         in oklch,
-        hsl(146deg 90% 27%) 12%,
+        hsla(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-copy-btn-square-active: var(--grey-600);
+    /* --grey-600, opacity 0.11 */
+    --color-copy-btn-square-bg-active: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 11%,
         transparent
     );
 
@@ -1201,26 +1203,28 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
-    /* hsl(229deg 9% 65%) corresponds to --grey-350.
+    /* hsl(229deg 10% 70%) corresponds to --grey-400.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
-    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 65%) 70%, transparent);
-    --color-copy-btn-hover: var(--green-300);
-    /* hsl(144deg 84% 22%) corresponds to --green-600.
-       We use the hsl() equivalent directly since postcss-color-mix-function
-       cannot dynamically resolve var() arguments. */
-    --color-copy-btn-bg-hover: color-mix(
+    --color-copy-btn: color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent);
+    --color-copy-btn-hover: var(--grey-300);
+    /* --grey-400, opacity 0.14 */
+    --color-copy-btn-square-bg-hover: color-mix(
         in oklch,
-        hsl(144deg 84% 22%) 8%,
+        hsl(230deg 9% 60%) 14%,
         transparent
     );
-    --color-copy-btn-active: var(--green-300);
-    /* hsl(139deg 54% 40%) corresponds to --green-400.
-       We use the hsl() equivalent directly since postcss-color-mix-function
-       cannot dynamically resolve var() arguments. */
-    --color-copy-btn-bg-active: color-mix(
+    /* --grey-300, opacity 0.7 */
+    --color-copy-btn-active: color-mix(
         in oklch,
-        hsl(139deg 54% 40%) 17%,
+        hsl(229deg 10% 70%) 70%,
+        transparent
+    );
+    --color-copy-btn-square-active: var(--grey-300);
+    /* --grey-400, opacity 0.18 */
+    --color-copy-btn-square-bg-active: color-mix(
+        in oklch,
+        hsl(229deg 9% 60%) 18%,
         transparent
     );
 
