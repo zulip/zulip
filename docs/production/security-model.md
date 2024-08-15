@@ -129,8 +129,9 @@ strength allowed is controlled by two settings in
 
   - Message content can only ever be modified by the original author.
 
-  - Any message visible to an organization owner or administrator can
-    be deleted at any time by that administrator.
+  - Organization administrators can configure who has permission to
+    delete their own message, and who can delete other users'
+    messages that they can see.
 
   - See
     [Restrict message editing and deletion](https://zulip.com/help/restrict-message-editing-and-deletion)
