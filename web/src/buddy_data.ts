@@ -42,6 +42,8 @@ export function get_user_circle_class(user_id: number): string {
             return "user_circle_green";
         case "idle":
             return "user_circle_idle";
+        case "deactivated":
+            return "user_circle_slashed";    
         default:
             return "user_circle_empty";
     }

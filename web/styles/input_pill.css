@@ -16,6 +16,7 @@
         align-items: center;
         max-width: 100%;
         min-width: 0;
+        position: relative;
 
         height: var(--height-input-pill);
         margin: 0;
@@ -37,6 +38,7 @@
             width: var(--length-input-pill-image);
             min-width: var(--length-input-pill-image);
             border-radius: 4px 0 0 4px;
+            display: block;
         }
 
         .zulip-icon {
@@ -98,9 +100,9 @@
                 opacity: 1;
             }
         }
-
         &.deactivated-pill {
             background-color: var(--color-background-deactivated-user-pill);
+            opacity: 0.7;
 
             &:focus {
                 border-color: var(--color-focus-outline-deactivated-user-pill);
@@ -116,6 +118,15 @@
                     --color-background-exit-hover-deactivated-user-pill
                 );
             }
+        }
+        .slashed-circle-icon {
+            position: absolute;
+            bottom: -4px;
+            left: 12px;
+            opacity: 1;
+            color: #FFFFFFFB;
+            font-size: 12px;
+            font-weight: 900;
         }
     }
 

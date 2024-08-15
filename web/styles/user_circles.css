@@ -25,6 +25,16 @@
     border-color: hsl(0deg 0% 50%);
 }
 
+.user_circle.user_circle_slashed::after {
+    content: "\f05e"; /* Unicode for FontAwesome's 'ban' icon */
+    font-family: FontAwesome, "Source Sans 3 VF", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 13px;
+}
+
 .user_circle_empty_line {
     border-color: hsl(0deg 0% 50%);
 
