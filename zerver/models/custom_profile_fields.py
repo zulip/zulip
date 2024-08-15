@@ -82,6 +82,9 @@ class CustomProfileField(models.Model):
     display_in_profile_summary = models.BooleanField(default=False)
     required = models.BooleanField(default=False)
 
+    # Whether regular users can edit this field on their own account.
+    editable_by_user = models.BooleanField(default=True, db_default=True)
+
     SHORT_TEXT = 1
     LONG_TEXT = 2
     SELECT = 3
@@ -170,6 +173,7 @@ class CustomProfileField(models.Model):
             "field_data": self.field_data,
             "order": self.order,
             "required": self.required,
+            "editable_by_user": self.editable_by_user,
         }
         if self.display_in_profile_summary:
             data_as_dict["display_in_profile_summary"] = True

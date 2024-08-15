@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 296**:
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a new
+  parameter `editable_by_user` to custom profile field objects, which indicates whether
+  regular users can edit the value of the profile field on their own account.
+
 **Feature level 295**
 
 * [`GET /export/realm/consents`](/api/get-realm-export-consents): Added

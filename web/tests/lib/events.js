@@ -141,6 +141,7 @@ exports.fixtures = {
                 order: 1,
                 display_in_profile_summary: false,
                 required: false,
+                editable_by_user: true,
             },
             {
                 id: 2,
@@ -151,6 +152,7 @@ exports.fixtures = {
                 order: 2,
                 display_in_profile_summary: false,
                 required: false,
+                editable_by_user: false,
             },
         ],
     },
