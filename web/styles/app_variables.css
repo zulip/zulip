@@ -539,6 +539,14 @@
     --color-background-navbar: hsl(0deg 0% 97%);
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
+    /* We mix an opaque version with the background for
+       replicating the color on .sidebar-topic-check, which
+       will mask a portion of the topic-grouping bracket. */
+    --color-background-opaque-hover-narrow-filter: color-mix(
+        in srgb,
+        hsl(120deg 12.3% 71.4%) 38%,
+        hsl(0deg 0% 94%)
+    );
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 80%);
@@ -946,6 +954,14 @@
     --color-background-navbar: hsl(0deg 0% 13%);
     --color-background-active-narrow-filter: hsl(200deg 17% 18%);
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
+    /* We mix an opaque version with the background for
+       replicating the color on .sidebar-topic-check, which
+       will mask a portion of the topic-grouping bracket. */
+    --color-background-opaque-hover-narrow-filter: color-mix(
+        in srgb,
+        hsl(136deg 25% 73%) 20%,
+        hsl(0deg 0% 11%)
+    );
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
