@@ -752,6 +752,18 @@ class PermissionTest(ZulipTestCase):
         new_profile_data = []
         cordelia = self.example_user("cordelia")
 
+        # Setting editable_by_user to false shouldn't affect admin's ability
+        # to modify the profile field for other users.
+        biography_field = CustomProfileField.objects.get(name="Biography", realm=realm)
+
+        data = {}
+        data["editable_by_user"] = "false"
+        result = self.client_patch(f"/json/realm/profile_fields/{biography_field.id}", info=data)
+        self.assert_json_success(result)
+
+        biography_field.refresh_from_db()
+        self.assertFalse(biography_field.editable_by_user)
+
         # Test for all type of data
         fields = {
             "Phone number": "short text data",

@@ -1476,7 +1476,9 @@ class NormalActionsTest(BaseAction):
 
         # Test event for removing custom profile data
         with self.verify_action() as events:
-            check_remove_custom_profile_field_value(self.user_profile, field_id)
+            check_remove_custom_profile_field_value(
+                self.user_profile, field_id, acting_user=self.user_profile
+            )
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 

@@ -479,7 +479,7 @@ def validate_user_custom_profile_field(
 
 
 def validate_user_custom_profile_data(
-    realm_id: int, profile_data: list[ProfileDataElementUpdateDict]
+    realm_id: int, profile_data: list[ProfileDataElementUpdateDict], acting_user: UserProfile
 ) -> None:
     # This function validate all custom field values according to their field type.
     for item in profile_data:
@@ -488,6 +488,13 @@ def validate_user_custom_profile_data(
             field = CustomProfileField.objects.get(id=field_id)
         except CustomProfileField.DoesNotExist:
             raise JsonableError(_("Field id {id} not found.").format(id=field_id))
+
+        if not acting_user.is_realm_admin and not field.editable_by_user:
+            raise JsonableError(
+                _(
+                    "You are not allowed to change this field. Contact an administrator to update it."
+                )
+            )
 
         try:
             validate_user_custom_profile_field(realm_id, field, item["value"])
