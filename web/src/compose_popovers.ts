@@ -17,7 +17,7 @@ export function initialize(): void {
         placement: "top",
         onShow(instance) {
             assert(instance.reference instanceof HTMLElement);
-            const parent_row = rows.get_closest_row(instance.reference);
+            const parent_row = rows.get_closest_row($(instance.reference));
             let preview_mode_on;
             // If the popover is opened from a message edit form, we want to
             // infer the preview mode from that row, else from the compose box.

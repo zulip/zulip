@@ -126,8 +126,8 @@ export function get_closest_group(element: HTMLElement): JQuery {
     return $(element).closest("div.recipient_row");
 }
 
-export function get_closest_row(element: HTMLElement): JQuery {
-    return $(element).closest("div.message_row");
+export function get_closest_row($element: JQuery): JQuery {
+    return $element.closest("div.message_row");
 }
 
 export function first_message_in_group($message_group: JQuery): JQuery {
