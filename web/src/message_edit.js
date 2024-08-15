@@ -957,6 +957,7 @@ export function save_message_row_edit($row) {
             stream_id,
             $banner_container,
             stream_wildcard_mention,
+            scheduling_message: false,
         });
 
         if (!is_stream_message_mentions_valid) {
