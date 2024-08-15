@@ -503,6 +503,50 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             ["Cannot update current plan for realm-name-5 to end on 2020-01-01."], result
         )
 
+    def test_configure_temporary_courtesy_plan(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        remote_realm = RemoteRealm.objects.get(name="realm-name-4")
+        # Cannot configure courtesy plan to end in the past.
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{remote_realm.id}",
+                "temporary_courtesy_plan": "2010-03-01",
+            },
+        )
+        self.assert_in_success_response(
+            ["Cannot configure a courtesy plan for realm-name-4 to end on 2010-03-01."],
+            result,
+        )
+        # Cannot configure courtesy plan if there is a current plan for billing entity.
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{remote_realm.id}",
+                "temporary_courtesy_plan": "2050-03-01",
+            },
+        )
+        self.assert_in_success_response(
+            ["Cannot configure a courtesy plan for realm-name-4 because of current plan."],
+            result,
+        )
+        remote_realm = RemoteRealm.objects.get(name="realm-name-2")
+        assert remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_MANAGED
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{remote_realm.id}",
+                "temporary_courtesy_plan": "2050-03-01",
+            },
+        )
+        self.assert_in_success_response(
+            ["Temporary courtesy plan for realm-name-2 configured to end on 2050-03-01."],
+            result,
+        )
+        remote_realm.refresh_from_db()
+        assert remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY
+
     def test_discount_support_actions_when_upgrade_scheduled(self) -> None:
         remote_realm = RemoteRealm.objects.get(name="realm-name-4")
         billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
