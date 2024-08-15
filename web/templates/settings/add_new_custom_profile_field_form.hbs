@@ -50,5 +50,11 @@
                 {{t 'Required field' }}
             </label>
         </div>
+        {{> settings_checkbox
+          prefix="profile_field_"
+          setting_name="editable_by_user"
+          is_checked=true
+          label=(t "Users can edit this field")
+          }}
     </div>
 </form>

@@ -52,5 +52,11 @@
             {{t 'Required field' }}
         </label>
     </div>
+    {{> settings_checkbox
+      prefix="id-custom-profile-field-"
+      setting_name="editable-by-user"
+      is_checked= editable_by_user
+      label=(t "Users can edit this field")
+      }}
 </form>
 {{/with}}

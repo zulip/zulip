@@ -763,6 +763,18 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".settings-profile-user-field.not-editable-by-user-input-wrapper",
+        content: $t({
+            defaultMessage:
+                "You are not allowed to change this field. Contact an administrator to update it.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".popover-contains-shift-hotkey",
         trigger: "mouseenter",
         placement: "top",
