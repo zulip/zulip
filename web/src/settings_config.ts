@@ -84,6 +84,21 @@ export const user_list_style_values = {
     // },
 };
 
+export const web_animate_image_previews_values = {
+    always: {
+        code: "always",
+        description: $t({defaultMessage: "Always"}),
+    },
+    on_hover: {
+        code: "on_hover",
+        description: $t({defaultMessage: "On hover"}),
+    },
+    never: {
+        code: "never",
+        description: $t({defaultMessage: "Only in image viewer"}),
+    },
+};
+
 export const web_stream_unreads_count_display_policy_values = {
     all_streams: {
         code: 1,
@@ -283,29 +298,6 @@ export const wildcard_mention_policy_values = {
     },
     nobody: {
         order: 6,
-        code: 6,
-        description: $t({defaultMessage: "Nobody"}),
-    },
-};
-
-export const create_web_public_stream_policy_values = {
-    by_moderators_only: {
-        order: 1,
-        code: 4,
-        description: $t({defaultMessage: "Admins and moderators"}),
-    },
-    by_admins_only: {
-        order: 2,
-        code: 2,
-        description: $t({defaultMessage: "Admins only"}),
-    },
-    by_owners_only: {
-        order: 3,
-        code: 7,
-        description: $t({defaultMessage: "Owners only"}),
-    },
-    nobody: {
-        order: 4,
         code: 6,
         description: $t({defaultMessage: "Nobody"}),
     },
@@ -552,7 +544,7 @@ export const user_role_map = new Map(user_role_array.map((role) => [role.code, r
 
 export const preferences_settings_labels = {
     default_language_settings_label: $t({defaultMessage: "Language"}),
-    dense_mode: $t({defaultMessage: "Dense mode"}),
+    dense_mode: $t({defaultMessage: "Compact mode"}),
     display_emoji_reaction_users: new Handlebars.SafeString(
         $t_html({
             defaultMessage:

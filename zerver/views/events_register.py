@@ -1,19 +1,20 @@
-from collections.abc import Sequence
-from typing import TypeAlias
+from typing import Annotated, TypeAlias
 
+from annotated_types import Len
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.compatibility import is_pronouns_field_type_supported
-from zerver.lib.events import do_events_register
+from zerver.lib.events import ClientCapabilities, do_events_register
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_bool, check_dict, check_int, check_list, check_string
+from zerver.lib.typed_endpoint import ApiParamConfig, DocumentationStatus, typed_endpoint
 from zerver.models import Stream, UserProfile
 
 
@@ -24,59 +25,36 @@ def _default_all_public_streams(user_profile: UserProfile, all_public_streams: b
         return user_profile.default_all_public_streams
 
 
-def _default_narrow(
-    user_profile: UserProfile, narrow: Sequence[Sequence[str]]
-) -> Sequence[Sequence[str]]:
+def _default_narrow(user_profile: UserProfile, narrow: list[list[str]]) -> list[list[str]]:
     default_stream: Stream | None = user_profile.default_events_register_stream
     if not narrow and default_stream is not None:
         narrow = [["stream", default_stream.name]]
     return narrow
 
 
-NarrowT: TypeAlias = Sequence[Sequence[str]]
+NarrowT: TypeAlias = list[Annotated[list[str], Len(min_length=2, max_length=2)]]
 
 
-@has_request_variables
+@typed_endpoint
 def events_register_backend(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
-    apply_markdown: bool = REQ(default=False, json_validator=check_bool),
-    client_gravatar_raw: bool | None = REQ(
-        "client_gravatar", default=None, json_validator=check_bool
-    ),
-    slim_presence: bool = REQ(default=False, json_validator=check_bool),
-    all_public_streams: bool | None = REQ(default=None, json_validator=check_bool),
-    include_subscribers: bool = REQ(default=False, json_validator=check_bool),
-    client_capabilities: dict[str, bool] | None = REQ(
-        json_validator=check_dict(
-            [
-                # This field was accidentally made required when it was added in v2.0.0-781;
-                # this was not realized until after the release of Zulip 2.1.2. (It remains
-                # required to help ensure backwards compatibility of client code.)
-                ("notification_settings_null", check_bool),
-            ],
-            [
-                # Any new fields of `client_capabilities` should be optional. Add them here.
-                ("bulk_message_deletion", check_bool),
-                ("user_avatar_url_field_optional", check_bool),
-                ("stream_typing_notifications", check_bool),
-                ("user_settings_object", check_bool),
-                ("linkifier_url_template", check_bool),
-                ("user_list_incomplete", check_bool),
-            ],
-            value_validator=check_bool,
-        ),
-        default=None,
-    ),
-    event_types: Sequence[str] | None = REQ(json_validator=check_list(check_string), default=None),
-    fetch_event_types: Sequence[str] | None = REQ(
-        json_validator=check_list(check_string), default=None
-    ),
-    narrow: NarrowT = REQ(
-        json_validator=check_list(check_list(check_string, length=2)), default=[]
-    ),
-    queue_lifespan_secs: int = REQ(json_validator=check_int, default=0, documentation_pending=True),
+    *,
+    apply_markdown: Json[bool] = False,
+    client_gravatar_raw: Annotated[Json[bool | None], ApiParamConfig("client_gravatar")] = None,
+    slim_presence: Json[bool] = False,
+    all_public_streams: Json[bool] | None = None,
+    include_subscribers: Json[bool] = False,
+    client_capabilities: Json[ClientCapabilities] | None = None,
+    event_types: Json[list[str]] | None = None,
+    fetch_event_types: Json[list[str]] | None = None,
+    narrow: Json[NarrowT] | None = None,
+    queue_lifespan_secs: Annotated[
+        Json[int], ApiParamConfig(documentation_status=DocumentationStatus.DOCUMENTATION_PENDING)
+    ] = 0,
 ) -> HttpResponse:
+    if narrow is None:
+        narrow = []
     if client_gravatar_raw is None:
         client_gravatar = maybe_user_profile.is_authenticated
     else:
@@ -121,7 +99,7 @@ def events_register_backend(
         include_streams = False
 
     if client_capabilities is None:
-        client_capabilities = {}
+        client_capabilities = ClientCapabilities(notification_settings_null=False)
 
     client = RequestNotes.get_notes(request).client
     assert client is not None

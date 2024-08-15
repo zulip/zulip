@@ -211,12 +211,14 @@ from zerver.lib.test_helpers import (
     create_dummy_file,
     get_subscription,
     get_test_image_file,
+    read_test_image_file,
     reset_email_visibility_to_everyone_in_zulip_realm,
     stdout_suppressed,
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
+from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
@@ -225,6 +227,7 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     Attachment,
     CustomProfileField,
+    ImageAttachment,
     Message,
     MultiuseInvite,
     NamedUserGroup,
@@ -258,6 +261,7 @@ from zerver.tornado.event_queue import (
     send_web_reload_client_events,
 )
 from zerver.views.realm_playgrounds import access_playground_by_id
+from zerver.worker.thumbnail import ensure_thumbnails
 
 
 class BaseAction(ZulipTestCase):
@@ -935,7 +939,7 @@ class NormalActionsTest(BaseAction):
         content = "embed_content"
         rendering_result = render_message_markdown(message, content)
         with self.verify_action(state_change_expected=False) as events:
-            do_update_embedded_data(self.user_profile, message, content, rendering_result)
+            do_update_embedded_data(self.user_profile, message, rendering_result)
         check_update_message(
             "events[0]",
             events[0],
@@ -1026,6 +1030,27 @@ class NormalActionsTest(BaseAction):
             has_topic=True,
             has_new_stream_id=True,
             is_embedded_update_only=False,
+        )
+
+    def test_thumbnail_event(self) -> None:
+        iago = self.example_user("iago")
+        url = upload_message_attachment(
+            "img.png", "image/png", read_test_image_file("img.png"), self.example_user("iago")
+        )
+        path_id = url[len("/user_upload/") + 1 :]
+        self.send_stream_message(iago, "Verona", f"[img.png]({url})")
+
+        # Generating a thumbnail for an image sends a message update event
+        with self.verify_action(state_change_expected=False) as events:
+            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
+        check_update_message(
+            "events[0]",
+            events[0],
+            is_stream_message=False,
+            has_content=False,
+            has_topic=False,
+            has_new_stream_id=False,
+            is_embedded_update_only=True,
         )
 
     def test_update_message_flags(self) -> None:
@@ -1651,13 +1676,13 @@ class NormalActionsTest(BaseAction):
                 client_id=client.id,
             )
 
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], not away_val)
         check_user_status(
-            "events[0]",
-            events[0],
+            "events[2]",
+            events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_user_settings_update("events[1]", events[1])
-        check_update_global_notifications("events[2]", events[2], not away_val)
         check_presence(
             "events[3]",
             events[3],
@@ -1679,13 +1704,13 @@ class NormalActionsTest(BaseAction):
                 client_id=client.id,
             )
 
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], not away_val)
         check_user_status(
-            "events[0]",
-            events[0],
+            "events[2]",
+            events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_user_settings_update("events[1]", events[1])
-        check_update_global_notifications("events[2]", events[2], not away_val)
         check_presence(
             "events[3]",
             events[3],
@@ -1707,9 +1732,9 @@ class NormalActionsTest(BaseAction):
                 client_id=client.id,
             )
 
-        check_user_status("events[0]", events[0], {"away"})
-        check_user_settings_update("events[1]", events[1])
-        check_update_global_notifications("events[2]", events[2], not away_val)
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], not away_val)
+        check_user_status("events[2]", events[2], {"away"})
         check_presence(
             "events[3]",
             events[3],
@@ -3117,7 +3142,7 @@ class NormalActionsTest(BaseAction):
         msg_id_2 = self.send_stream_message(hamlet, "Verona")
         messages = [Message.objects.get(id=msg_id), Message.objects.get(id=msg_id_2)]
         with self.verify_action(state_change_expected=True) as events:
-            do_delete_messages(self.user_profile.realm, messages)
+            do_delete_messages(self.user_profile.realm, messages, acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3138,7 +3163,7 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(
             state_change_expected=True, bulk_message_deletion=False, num_events=2
         ) as events:
-            do_delete_messages(self.user_profile.realm, messages)
+            do_delete_messages(self.user_profile.realm, messages, acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3154,7 +3179,7 @@ class NormalActionsTest(BaseAction):
         msg_id_2 = self.send_stream_message(hamlet, "test_stream1")
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True, num_events=2) as events:
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
 
         check_stream_update("events[0]", events[0])
         self.assertEqual(events[0]["property"], "first_message_id")
@@ -3176,7 +3201,7 @@ class NormalActionsTest(BaseAction):
         )
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True) as events:
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3193,7 +3218,7 @@ class NormalActionsTest(BaseAction):
         )
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True, bulk_message_deletion=False) as events:
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
         check_delete_message(
             "events[0]",
             events[0],
@@ -3210,13 +3235,13 @@ class NormalActionsTest(BaseAction):
         msg_id = self.send_stream_message(user_profile, "Verona")
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True):
-            do_delete_messages(self.user_profile.realm, [message])
+            do_delete_messages(self.user_profile.realm, [message], acting_user=None)
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
     def test_do_delete_message_with_no_messages(self) -> None:
         with self.verify_action(num_events=0, state_change_expected=False) as events:
-            do_delete_messages(self.user_profile.realm, [])
+            do_delete_messages(self.user_profile.realm, [], acting_user=None)
         self.assertEqual(events, [])
 
     def test_add_attachment(self) -> None:
@@ -3415,7 +3440,6 @@ class RealmPropertyActionTest(BaseAction):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[1000, 2000],
-            create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
@@ -3747,14 +3771,18 @@ class RealmPropertyActionTest(BaseAction):
                 self.do_set_realm_permission_group_setting_test(prop)
 
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+            if Realm.REALM_PERMISSION_GROUP_SETTINGS[prop].require_system_group:
+                # Anonymous system groups aren't relevant when
+                # restricted to system groups.
+                continue
             with self.settings(SEND_DIGEST_EMAILs=True):
                 self.do_set_realm_permission_group_setting_to_anonymous_groups_test(prop)
 
     def do_set_realm_user_default_setting_test(self, name: str) -> None:
         bool_tests: list[bool] = [True, False, True]
         test_values: dict[str, Any] = dict(
-            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
-            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
+            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_COMPACT],
+            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_COMPACT],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
             web_home_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
@@ -3762,6 +3790,7 @@ class RealmPropertyActionTest(BaseAction):
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
             web_channel_default_view=UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
+            web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
             desktop_icon_count_display=UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES,
             notification_sound=["zulip", "ding"],
@@ -3891,6 +3920,7 @@ class UserDisplayActionTest(BaseAction):
             web_mark_read_on_scroll_policy=[2, 3, 1],
             web_channel_default_view=[2, 1],
             user_list_style=[1, 2, 3],
+            web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=[1, 2, 3],
             web_font_size_px=[12, 16, 18],
             web_line_height_percent=[105, 120, 160],

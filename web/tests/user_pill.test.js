@@ -27,17 +27,17 @@ const isaac = {
 const bogus_item = {
     email: "bogus@example.com",
     type: "user",
-    display_value: "bogus@example.com",
+    full_name: undefined,
     // status_emoji_info: undefined,
 };
 
 const isaac_item = {
     email: "isaac@example.com",
-    display_value: "Isaac Newton",
+    full_name: "Isaac Newton",
     type: "user",
     user_id: isaac.user_id,
     deactivated: false,
-    img_src: `http://zulip.zulipdev.com/avatar/${isaac.user_id}?s=50`,
+    img_src: `/avatar/${isaac.user_id}`,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
@@ -46,11 +46,11 @@ const inaccessible_user_id = 103;
 
 const inaccessible_user_item = {
     email: "user103@example.com",
-    display_value: "translated: Unknown user",
+    full_name: "translated: Unknown user",
     type: "user",
     user_id: inaccessible_user_id,
     deactivated: false,
-    img_src: `http://zulip.zulipdev.com/avatar/${inaccessible_user_id}?s=50`,
+    img_src: `/avatar/${inaccessible_user_id}`,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
@@ -108,7 +108,7 @@ test("append", () => {
     function fake_append(opts) {
         appended = true;
         assert.equal(opts.email, isaac.email);
-        assert.equal(opts.display_value, isaac.full_name);
+        assert.equal(opts.full_name, isaac.full_name);
         assert.equal(opts.user_id, isaac.user_id);
         assert.equal(opts.img_src, isaac_item.img_src);
     }

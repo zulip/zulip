@@ -357,7 +357,7 @@ function image_to_zulip_markdown(
     const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
     const title = deduplicate_newlines(node.getAttribute("title") ?? "");
     // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") ?? "";
+    return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
 function within_single_element(html_fragment: HTMLElement): boolean {
@@ -565,7 +565,7 @@ export function paste_handler_converter(paste_html: string): string {
 
             const className = codeElement.getAttribute("class") ?? "";
             const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? ""
+                ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
                 : (className.match(/language-(\S+)/) ?? [null, ""])[1];
 
             assert(options.fence !== undefined);
@@ -745,6 +745,13 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
             event.stopPropagation();
             paste_html = maybe_transform_html(paste_html, paste_text);
             const text = paste_handler_converter(paste_html);
+            if (trimmed_paste_text !== text) {
+                // Pasting formatted text is a two-step process: First
+                // we paste unformatted text, then overwrite it with
+                // formatted text, so that undo restores the
+                // pre-formatting syntax.
+                add_text_and_select(trimmed_paste_text, $textarea);
+            }
             compose_ui.insert_and_scroll_into_view(text, $textarea);
         }
     }

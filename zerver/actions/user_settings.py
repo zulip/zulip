@@ -418,7 +418,7 @@ def update_scheduled_email_notifications_time(
     )
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,
@@ -471,6 +471,8 @@ def do_change_user_setting(
     if setting_name == "default_language":
         assert isinstance(setting_value, str)
         event["language_name"] = get_language_name(setting_value)
+
+    transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
 
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
@@ -530,8 +532,6 @@ def do_change_user_setting(
 
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
-
-        transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
 
         send_user_email_update_event(user_profile)
         notify_avatar_url_change(user_profile)

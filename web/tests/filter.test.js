@@ -412,7 +412,7 @@ test("basics", () => {
     assert.ok(filter.includes_full_stream_history());
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
-    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view());
     assert.ok(filter.can_bucket_by("channel", "topic", "with"));
     assert.ok(!filter.is_conversation_view_with_near());
 
@@ -1500,7 +1500,7 @@ test("describe", ({mock_template}) => {
         {operator: "channel", operand: "devel"},
         {operator: "has", operand: "image", negated: true},
     ];
-    string = "channel devel, exclude messages with one or more image";
+    string = "channel devel, exclude messages with images";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
@@ -1514,7 +1514,7 @@ test("describe", ({mock_template}) => {
         {operator: "has", operand: "image", negated: true},
         {operator: "channel", operand: "devel"},
     ];
-    string = "exclude messages with one or more image, channel devel";
+    string = "exclude messages with images, channel devel";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [];
@@ -1821,6 +1821,60 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     assert.deepEqual(filter.terms(), [
         {operator: "dm", operand: "user3@zulip.com", negated: false},
     ]);
+
+    // When message id attached to `with` operator is found locally,
+    // and is present in the same narrow as the original one, then
+    // no hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "17", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.narrow_requires_hash_change, false);
+
+    // When message id attached to `with` operator is not found
+    // locally, but messages fetched are in same narrow as
+    // original narrow, then no hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "1", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    // now messages are fetched from server, and a single
+    // fetched message is used to adjust narrow terms.
+    filter.try_adjusting_for_moved_with_target(messages["17"]);
+    assert.deepEqual(filter.narrow_requires_hash_change, false);
+
+    // When message id attached to `with` operator is found locally,
+    // and is not present in the same narrow as the original one,
+    // then hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "12", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    assert.deepEqual(filter.narrow_requires_hash_change, true);
+
+    // When message id attached to `with` operator is not found
+    // locally, and messages fetched are in different narrow from
+    // original narrow, then hash change is required.
+    terms = [
+        {operator: "channel", operand: "Verona", negated: false},
+        {operator: "topic", operand: "Test 2", negated: false},
+        {operator: "with", operand: "1", negated: false},
+    ];
+    filter = new Filter(terms);
+    filter.try_adjusting_for_moved_with_target();
+    // now messages are fetched from server, and a single
+    // fetched message is used to adjust narrow terms.
+    filter.try_adjusting_for_moved_with_target(messages["12"]);
+    assert.deepEqual(filter.narrow_requires_hash_change, true);
 });
 
 function make_private_sub(name, stream_id) {
@@ -2004,7 +2058,7 @@ test("navbar_helpers", () => {
         {
             terms: is_dm,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: "translated: Direct message feed",
             redirect_url_with_search: "/#narrow/is/dm",
         },
@@ -2085,7 +2139,7 @@ test("navbar_helpers", () => {
         {
             terms: dm,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([joe.full_name]),
             redirect_url_with_search:
                 "/#narrow/dm/" + joe.user_id + "-" + parseOneAddress(joe.email).local,
@@ -2093,14 +2147,14 @@ test("navbar_helpers", () => {
         {
             terms: dm_group,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([joe.full_name, steve.full_name]),
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + steve.user_id + "-group",
         },
         {
             terms: dm_with_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: "translated: alice (guest)",
             redirect_url_with_search:
                 "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
@@ -2108,14 +2162,14 @@ test("navbar_helpers", () => {
         {
             terms: dm_group_including_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: "translated: alice (guest) and joe",
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },
         {
             terms: dm_group_including_missing_person,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([
                 joe.full_name,
                 steve.full_name,
@@ -2156,7 +2210,7 @@ test("navbar_helpers", () => {
         {
             terms: dm_near,
             is_common_narrow: false,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([joe.full_name]),
             redirect_url_with_search: "#",
         },
@@ -2236,7 +2290,7 @@ test("navbar_helpers", () => {
         {
             terms: dm_with_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([alice.full_name]),
             redirect_url_with_search:
                 "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
@@ -2244,7 +2298,7 @@ test("navbar_helpers", () => {
         {
             terms: dm_group_including_guest,
             is_common_narrow: true,
-            icon: "envelope",
+            zulip_icon: "user",
             title: properly_separated_names([alice.full_name, joe.full_name]),
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },

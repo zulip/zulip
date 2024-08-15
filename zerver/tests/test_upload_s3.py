@@ -22,6 +22,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.thumbnail import (
     DEFAULT_AVATAR_SIZE,
     MEDIUM_AVATAR_SIZE,
+    THUMBNAIL_OUTPUT_FORMATS,
     BadImageError,
     resize_avatar,
     resize_emoji,
@@ -147,7 +148,23 @@ class S3Test(ZulipTestCase):
         for n in range(1, 5):
             url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
             path_ids.append(re.sub(r"/user_uploads/", "", url))
+
+        # Put an image in, which gets thumbnailed
+        with self.captureOnCommitCallbacks(execute=True):
+            url = upload_message_attachment(
+                "img.png", "image/png", read_test_image_file("img.png"), user_profile
+            )
+            image_path_id = re.sub(r"/user_uploads/", "", url)
+            path_ids.append(image_path_id)
+
         found_paths = [r[0] for r in all_message_attachments()]
+        self.assertEqual(sorted(found_paths), sorted(path_ids))
+
+        found_paths = [r[0] for r in all_message_attachments(include_thumbnails=True)]
+        for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS:
+            if thumbnail_format.animated:
+                continue
+            path_ids.append(f"thumbnail/{image_path_id}/{thumbnail_format!s}")
         self.assertEqual(sorted(found_paths), sorted(path_ids))
 
     @use_s3_backend

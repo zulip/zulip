@@ -46,7 +46,7 @@
                     {% if remote_server.plan_type == SPONSORED_PLAN_TYPE %}
                         <p class="support-section-header">On 100% sponsored Zulip Community plan 🎉</p>
                     {% endif %}
-                    {% if remote_servers_support_data[remote_server.id].sponsorship_data.default_discount %}
+                    {% if remote_servers_support_data[remote_server.id].sponsorship_data.has_discount %}
                         <p class="support-section-header">Has a discount 💸</p>
                     {% endif %}
                     <b>Contact email</b>: {{ remote_server.contact_email }}

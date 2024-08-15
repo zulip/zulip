@@ -1,6 +1,3 @@
-# https://github.com/typeddjango/django-stubs/issues/1698
-# mypy: disable-error-code="explicit-override"
-
 from email.headerregistry import Address
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import uuid4
@@ -65,7 +62,6 @@ class UserBaseSettings(models.Model):
     # Values for it are URL suffix after `#`.
     web_home_view = models.TextField(default="inbox")
     web_escape_navigates_to_home_view = models.BooleanField(default=True)
-    dense_mode = models.BooleanField(default=True)
     fluid_layout_width = models.BooleanField(default=False)
     high_contrast_mode = models.BooleanField(default=False)
     translate_emoticons = models.BooleanField(default=False)
@@ -80,12 +76,18 @@ class UserBaseSettings(models.Model):
 
     # Information density is established through
     # adjustments to the font size and line height.
-    WEB_FONT_SIZE_PX_LEGACY = 14
-    WEB_LINE_HEIGHT_PERCENT_LEGACY = 122
-    web_font_size_px = models.PositiveSmallIntegerField(default=WEB_FONT_SIZE_PX_LEGACY)
+    WEB_FONT_SIZE_PX_COMPACT = 14
+    WEB_FONT_SIZE_PX_DEFAULT = 16
+    WEB_LINE_HEIGHT_PERCENT_COMPACT = 122
+    WEB_LINE_HEIGHT_PERCENT_DEFAULT = 140
+    dense_mode = models.BooleanField(default=False)
+    web_font_size_px = models.PositiveSmallIntegerField(default=WEB_FONT_SIZE_PX_DEFAULT)
     web_line_height_percent = models.PositiveSmallIntegerField(
-        default=WEB_LINE_HEIGHT_PERCENT_LEGACY
+        default=WEB_LINE_HEIGHT_PERCENT_DEFAULT
     )
+
+    # UI setting to control how animated images are played.
+    web_animate_image_previews = models.TextField(default="on_hover")
 
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
@@ -348,6 +350,7 @@ class UserBaseSettings(models.Model):
         web_mark_read_on_scroll_policy=int,
         web_channel_default_view=int,
         user_list_style=int,
+        web_animate_image_previews=str,
         web_stream_unreads_count_display_policy=int,
         web_font_size_px=int,
         web_line_height_percent=int,
@@ -777,8 +780,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "add_custom_emoji_policy",
             "can_create_private_channel_group",
             "can_create_public_channel_group",
+            "can_create_web_public_channel_group",
             "create_multiuse_invite_group",
-            "create_web_public_stream_policy",
             "delete_own_message_policy",
             "direct_message_initiator_group",
             "direct_message_permission_group",
@@ -842,7 +845,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_create_web_public_streams(self) -> bool:
         if not self.realm.web_public_streams_enabled():
             return False
-        return self.has_permission("create_web_public_stream_policy")
+        return self.has_permission("can_create_web_public_channel_group")
 
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")

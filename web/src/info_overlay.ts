@@ -12,23 +12,24 @@ import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
+import {postprocess_content} from "./postprocess_content";
 import * as rendered_markdown from "./rendered_markdown";
 import * as scroll_util from "./scroll_util";
+import {current_user} from "./state_data";
 import {user_settings} from "./user_settings";
-import * as util from "./util";
 
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 export let toggler: Toggle | undefined;
 
 function format_usage_html(...keys: string[]): string {
-    const get_formatted_keys: () => string = () => keys.map((key) => `<kbd>${key}</kbd>`).join("+");
     return $t_html(
         {
             defaultMessage: "(or <key-html></key-html>)",
         },
         {
-            "key-html": get_formatted_keys,
+            "key-html": () => keys.map((key) => `<kbd>${key}</kbd>`).join("+"),
         },
     );
 }
@@ -157,7 +158,7 @@ def zulip():
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
         output_html:
-            '<p><time datetime="2023-05-28T08:00:00Z"><i class="fa fa-clock-o"></i>Sun, May 28, 2023, 1:30 PM</time></p>',
+            '<p><time datetime="2023-05-28T08:00:00Z"><i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>Sun, May 28, 2023, 1:30 PM</time></p>',
     },
     {
         markdown: `/poll What did you drink this morning?
@@ -267,7 +268,7 @@ export function set_up_toggler(): void {
                 raw_content: row.markdown,
                 ...markdown.render(row.markdown),
             };
-            row.output_html = util.clean_user_content_links(message.content);
+            row.output_html = postprocess_content(message.content);
         }
     }
 
@@ -277,7 +278,11 @@ export function set_up_toggler(): void {
     });
     $(".informational-overlays .overlay-body").append($markdown_help);
 
-    const $search_operators = $(render_search_operator());
+    const $search_operators = $(
+        render_search_operator({
+            can_access_all_public_channels: !page_params.is_spectator && !current_user.is_guest,
+        }),
+    );
     $(".informational-overlays .overlay-body").append($search_operators);
 
     const $keyboard_shortcuts = $(render_keyboard_shortcut());

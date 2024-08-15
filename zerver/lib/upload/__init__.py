@@ -10,6 +10,7 @@ from urllib.parse import unquote, urljoin
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.utils.translation import gettext as _
 
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
@@ -21,6 +22,7 @@ from zerver.lib.thumbnail import (
     MEDIUM_AVATAR_SIZE,
     THUMBNAIL_ACCEPT_IMAGE_TYPES,
     BadImageError,
+    maybe_thumbnail,
     resize_avatar,
     resize_emoji,
 )
@@ -61,6 +63,7 @@ def create_attachment(
         size=len(file_data),
         content_type=content_type,
     )
+    maybe_thumbnail(attachment, file_data)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
@@ -136,20 +139,21 @@ def upload_message_attachment(
     path_id = upload_backend.generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
-    upload_backend.upload_message_attachment(
-        path_id,
-        content_type,
-        file_data,
-        user_profile,
-    )
-    create_attachment(
-        uploaded_file_name,
-        path_id,
-        content_type,
-        file_data,
-        user_profile,
-        target_realm,
-    )
+    with transaction.atomic():
+        upload_backend.upload_message_attachment(
+            path_id,
+            content_type,
+            file_data,
+            user_profile,
+        )
+        create_attachment(
+            uploaded_file_name,
+            path_id,
+            content_type,
+            file_data,
+            user_profile,
+            target_realm,
+        )
     return f"/user_uploads/{path_id}"
 
 
@@ -196,8 +200,8 @@ def delete_message_attachments(path_ids: list[str]) -> None:
     return upload_backend.delete_message_attachments(path_ids)
 
 
-def all_message_attachments() -> Iterator[tuple[str, datetime]]:
-    return upload_backend.all_message_attachments()
+def all_message_attachments(include_thumbnails: bool = False) -> Iterator[tuple[str, datetime]]:
+    return upload_backend.all_message_attachments(include_thumbnails)
 
 
 # Avatar image uploads

@@ -940,6 +940,12 @@ def api_github_webhook(
     return json_success(request)
 
 
+def is_empty_pull_request_review_event(payload: WildValue) -> bool:
+    action = payload["action"].tame(check_string)
+    changes = payload.get("changes", {})
+    return action == "edited" and len(changes) == 0
+
+
 def get_zulip_event_name(
     header_event: str,
     payload: WildValue,
@@ -970,6 +976,14 @@ def get_zulip_event_name(
             return "pull_request_auto_merge"
         if action in IGNORED_PULL_REQUEST_ACTIONS:
             return None
+    elif header_event == "pull_request_review":
+        if is_empty_pull_request_review_event(payload):
+            # When submitting a review, GitHub has a bug where it'll
+            # send a duplicate empty "edited" event for the main
+            # review body. Ignore those, to avoid triggering
+            # duplicate notifications.
+            return None
+        return "pull_request_review"
     elif header_event == "push":
         if is_merge_queue_push_event(payload):
             return None

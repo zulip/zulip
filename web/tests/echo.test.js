@@ -12,6 +12,7 @@ const {current_user} = require("./lib/zpage_params");
 const compose_notifications = mock_esm("../src/compose_notifications");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
+const message_events_util = mock_esm("../src/message_events_util");
 
 let disparities = [];
 
@@ -39,6 +40,13 @@ message_lists.current = {
         rerender_messages: noop,
         change_message_id: noop,
     },
+    data: {
+        filter: {
+            can_apply_locally() {
+                return true;
+            },
+        },
+    },
     change_message_id: noop,
 };
 const home_msg_list = {
@@ -46,12 +54,20 @@ const home_msg_list = {
         rerender_messages: noop,
         change_message_id: noop,
     },
+    data: {
+        filter: {
+            can_apply_locally() {
+                return true;
+            },
+        },
+    },
     preserver_rendered_state: true,
     change_message_id: noop,
 };
 message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 
 const echo = zrequire("echo");
+const echo_state = zrequire("echo_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 
@@ -69,7 +85,7 @@ run_test("process_from_server for un-echoed messages", () => {
             local_id: "100.1",
         },
     ];
-    echo._patch_waiting_for_ack(waiting_for_ack);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, server_messages);
 });
@@ -107,12 +123,59 @@ run_test("process_from_server for differently rendered messages", ({override}) =
             topic_links: new_value,
         },
     ];
-    echo._patch_waiting_for_ack(waiting_for_ack);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
     disparities = [];
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, []);
     assert.equal(disparities.length, 1);
     assert.deepEqual(messages_to_rerender, [
+        {
+            content: server_messages[0].content,
+            timestamp: new_value,
+            is_me_message: new_value,
+            submessages: new_value,
+            topic_links: new_value,
+        },
+    ]);
+});
+
+run_test("process_from_server for messages to add to narrow", ({override}) => {
+    let messages_to_add_to_narrow = [];
+
+    override(message_lists.current.data.filter, "can_apply_locally", () => false);
+    override(message_events_util, "maybe_add_narrowed_messages", (msgs, msg_list) => {
+        messages_to_add_to_narrow = msgs;
+        assert.equal(msg_list, message_lists.current);
+    });
+
+    const old_value = "old_value";
+    const new_value = "new_value";
+    const waiting_for_ack = new Map([
+        [
+            "100.1",
+            {
+                content: "<p>rendered message</p>",
+                timestamp: old_value,
+                is_me_message: old_value,
+                submessages: old_value,
+                topic_links: old_value,
+            },
+        ],
+    ]);
+    const server_messages = [
+        {
+            local_id: "100.1",
+            content: "<p>rendered message</p>",
+            timestamp: new_value,
+            is_me_message: new_value,
+            submessages: new_value,
+            topic_links: new_value,
+        },
+    ];
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
+    const non_echo_messages = echo.process_from_server(server_messages);
+    assert.deepEqual(non_echo_messages, []);
+    assert.deepEqual(messages_to_add_to_narrow, [
         {
             content: server_messages[0].content,
             timestamp: new_value,
@@ -155,13 +218,13 @@ run_test("build_display_recipient", () => {
 
     message = {
         type: "private",
-        private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
+        private_message_recipient: "cordelia@zulip.com",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,
     };
     display_recipient = echo.build_display_recipient(message);
-    assert.equal(display_recipient.length, 3);
+    assert.equal(display_recipient.length, 2);
 
     let iago = display_recipient.find((recipient) => recipient.email === "iago@zulip.com");
     assert.equal(iago.full_name, "Iago");
@@ -172,11 +235,6 @@ run_test("build_display_recipient", () => {
     );
     assert.equal(cordelia.full_name, "Cordelia");
     assert.equal(cordelia.id, 21);
-
-    const hamlet = display_recipient.find((recipient) => recipient.email === "hamlet@zulip.com");
-    assert.equal(hamlet.full_name, "hamlet@zulip.com");
-    assert.equal(hamlet.id, undefined);
-    assert.equal(hamlet.unknown_local_echo_user, true);
 
     message = {
         type: "private",
@@ -279,7 +337,7 @@ run_test("insert_local_message direct message", ({override}) => {
     let insert_message_called = false;
 
     const insert_new_messages = ([message]) => {
-        assert.equal(message.display_recipient.length, 3);
+        assert.equal(message.display_recipient.length, 2);
         insert_message_called = true;
         return [message];
     };
@@ -289,7 +347,7 @@ run_test("insert_local_message direct message", ({override}) => {
     });
 
     const message_request = {
-        private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
+        private_message_recipient: "cordelia@zulip.com",
         type: "private",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",

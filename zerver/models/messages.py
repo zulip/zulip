@@ -1,6 +1,3 @@
-# https://github.com/typeddjango/django-stubs/issues/1698
-# mypy: disable-error-code="explicit-override"
-
 import time
 from datetime import timedelta
 from typing import Any
@@ -150,7 +147,7 @@ class Message(AbstractMessage):
     # A detail worth noting:
     # * "direct" was introduced in 2023 with the goal of
     #   deprecating the original "private" and becoming the
-    #   preferred way to indicate a personal or huddle
+    #   preferred way to indicate a personal or direct_message_group
     #   Recipient type via the API.
     API_RECIPIENT_TYPES = ["direct", "private", "stream", "channel"]
 
@@ -663,6 +660,18 @@ class ArchivedUserMessage(AbstractUserMessage):
     def __str__(self) -> str:
         recipient_string = self.message.recipient.label()
         return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
+
+
+class ImageAttachment(models.Model):
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    path_id = models.TextField(db_index=True, unique=True)
+
+    original_width_px = models.IntegerField()
+    original_height_px = models.IntegerField()
+    frames = models.IntegerField()
+
+    # Contains a list of zerver.lib.thumbnail.StoredThumbnailFormat objects, serialized
+    thumbnail_metadata = models.JSONField(default=list, null=False)
 
 
 class AbstractAttachment(models.Model):

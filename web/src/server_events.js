@@ -11,6 +11,7 @@ import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
 import * as server_events_dispatch from "./server_events_dispatch";
+import {server_message_schema} from "./server_message";
 import * as ui_report from "./ui_report";
 import * as watchdog from "./watchdog";
 
@@ -66,7 +67,7 @@ function get_events_success(events) {
     const dispatch_event = function dispatch_event(event) {
         switch (event.type) {
             case "message": {
-                const msg = event.message;
+                const msg = server_message_schema.parse(event.message);
                 msg.flags = event.flags;
                 if (event.local_message_id) {
                     msg.local_id = event.local_message_id;
@@ -121,7 +122,7 @@ function get_events_success(events) {
                 // messages, only one of which was sent by this client,
                 // correctly.
 
-                message_events.insert_new_messages(messages, sent_by_this_client);
+                message_events.insert_new_messages(messages, sent_by_this_client, false);
             }
         } catch (error) {
             blueslip.error("Failed to insert new messages", undefined, error);

@@ -128,7 +128,7 @@ configuration, you can access the feed from the channel menu.
 [Learn more]({channel_feed_help_url}).
 - You can also [configure]({automatically_go_to_conversation_help_url}) whether Zulip
 automatically takes you to the conversation to which you sent a message, if you
-aren't already viewing it.
+aren't already viewing it (on by default).
 - You can now [filter]({find_a_dm_conversation_help_url}) direct message
 conversations in the left sidebar to conversations that include a specific
 person.
@@ -136,6 +136,55 @@ person.
             channel_feed_help_url="/help/channel-feed",
             automatically_go_to_conversation_help_url="/help/mastering-the-compose-box#automatically-go-to-conversation-where-you-sent-a-message",
             find_a_dm_conversation_help_url="/help/direct-messages#find-a-direct-message-conversation",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=7,
+        message="""
+**Web and desktop updates**
+- To make reading more comfortable, Zulip has been redesigned with a larger font
+size and line spacing. If you prefer to see more content at once, [enable
+compact mode]({settings_preferences_url}) to go back to the previous design.
+- The main search has been redesigned with pills for [search
+filters]({search_help_url}), making it easier to use.
+- Pasted [channel and topic URLs]({link_help_url}) are now automatically
+converted into nicely formatted links.
+""".format(
+            settings_preferences_url="/#settings/preferences",
+            search_help_url="/help/search-for-messages",
+            link_help_url="/help/link-to-a-message-or-conversation",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=8,
+        message=(
+            """
+- New image uploads now load much faster in all Zulip apps.
+- In the desktop and web apps, you can now [configure]({image_previews_help_url})
+previews of animated images to **always show** the animation, show it **when you
+hover** over the image with your mouse (default), or **not show** it at all. You can
+always see the animated image by opening it in the [image
+viewer]({view_images_help_url})."""
+            + (
+                """
+
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since December
+2023, in the [blog post]({blog_post_9_0_url}) announcing today's release of
+Zulip Server 9.0.
+"""
+                if settings.CORPORATE_ENABLED
+                else """
+
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_9_0_url}) to learn about additional
+feature highlights in Zulip Server 9.0, and other Zulip project updates.
+"""
+            )
+        ).format(
+            image_previews_help_url="/help/allow-image-link-previews",
+            view_images_help_url="/help/view-images-and-videos",
+            blog_post_9_0_url="https://blog.zulip.com/zulip-server-9-0",
         ),
     ),
 ]

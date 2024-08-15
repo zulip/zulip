@@ -11,7 +11,7 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import type {User} from "./people";
-import type {NarrowTerm} from "./state_data";
+import {type NarrowTerm, current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -625,10 +625,16 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     if (last.operator === "search" && common.phrase_match(last.operand, "streams")) {
         search_string = "streams:public";
     }
+    let description_html;
+    if (page_params.is_spectator || current_user.is_guest) {
+        description_html = "All public channels that you can view";
+    } else {
+        description_html = "All public channels";
+    }
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
             search_string,
-            description_html: "All public channels in organization",
+            description_html,
             is_people: false,
             incompatible_patterns: [
                 {operator: "is", operand: "dm"},
@@ -720,25 +726,25 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
             search_string: "has:link",
-            description_html: "messages that contain links",
+            description_html: "messages with links",
             is_people: false,
             incompatible_patterns: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
-            description_html: "messages that contain images",
+            description_html: "messages with images",
             is_people: false,
             incompatible_patterns: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
-            description_html: "messages that contain attachments",
+            description_html: "messages with attachments",
             is_people: false,
             incompatible_patterns: [{operator: "has", operand: "attachment"}],
         },
         {
             search_string: "has:reaction",
-            description_html: "messages that contain reactions",
+            description_html: "messages with reactions",
             is_people: false,
             incompatible_patterns: [{operator: "has", operand: "reaction"}],
         },
@@ -842,19 +848,57 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
     return search_strings.join(" ");
 }
 
+function suggestions_for_current_filter(): SuggestionLine[] {
+    if (narrow_state.stream_name() && narrow_state.topic() !== "") {
+        return [
+            get_default_suggestion_line([
+                {
+                    operator: "channel",
+                    operand: narrow_state.stream_name()!,
+                },
+            ]),
+            get_default_suggestion_line(narrow_state.search_terms()),
+        ];
+    }
+    if (narrow_state.pm_emails_string()) {
+        return [
+            get_default_suggestion_line([
+                {
+                    operator: "is",
+                    operand: "dm",
+                },
+            ]),
+            get_default_suggestion_line(narrow_state.search_terms()),
+        ];
+    }
+    return [get_default_suggestion_line(narrow_state.search_terms())];
+}
+
 class Attacher {
     result: SuggestionLine[] = [];
     prev = new Set<string>();
     base: SuggestionLine;
+    add_current_filter: boolean;
 
-    constructor(base: SuggestionLine) {
+    constructor(base: SuggestionLine, search_query_is_empty: boolean, add_current_filter: boolean) {
         this.base = base;
+        this.add_current_filter = add_current_filter;
+        // Sometimes we add suggestions with the current filter in case
+        // the user wants to search within the current filter. For an empty
+        // search query, we put the current filter suggestions at the start
+        // of the list.
+        if (search_query_is_empty && this.add_current_filter) {
+            this.add_current_filter = false;
+            for (const current_filter_line of suggestions_for_current_filter()) {
+                this.push(current_filter_line);
+            }
+        }
     }
 
     push(suggestion_line: SuggestionLine): void {
         const search_string = suggestion_search_string(suggestion_line);
-        if (!this.prev.has(search_string)) {
-            this.prev.add(search_string);
+        if (!this.prev.has(search_string.toLowerCase())) {
+            this.prev.add(search_string.toLowerCase());
             this.result.push(suggestion_line);
         }
     }
@@ -926,14 +970,16 @@ class Attacher {
     }
 }
 
-export function get_search_result(query_from_pills: string, query_from_text: string): Suggestion[] {
+export function get_search_result(
+    pill_search_terms: NarrowTerm[],
+    text_search_terms: NarrowTerm[],
+    add_current_filter = false,
+): Suggestion[] {
     let suggestion_line: SuggestionLine;
 
     // search_terms correspond to the terms for the query in the input.
     // This includes the entire query entered in the searchbox.
     // terms correspond to the terms for the entire query entered in the searchbox.
-    const pill_search_terms = Filter.parse(query_from_pills);
-    const text_search_terms = Filter.parse(query_from_text);
     let all_search_terms = [...pill_search_terms, ...text_search_terms];
 
     // `last` will always be a text term, not a pill term. If there is no
@@ -971,7 +1017,7 @@ export function get_search_result(query_from_pills: string, query_from_text: str
 
     const base_terms = [...pill_search_terms, ...text_search_terms.slice(0, -1)];
     const base = get_default_suggestion_line(base_terms);
-    const attacher = new Attacher(base);
+    const attacher = new Attacher(base, all_search_terms.length === 0, add_current_filter);
 
     // Display the default first, unless it has invalid terms.
     if (last.operator === "search") {
@@ -1053,13 +1099,14 @@ export function get_search_result(query_from_pills: string, query_from_text: str
 }
 
 export function get_suggestions(
-    query_from_pills: string,
-    query_from_text: string,
+    pill_search_terms: NarrowTerm[],
+    text_search_terms: NarrowTerm[],
+    add_current_filter = false,
 ): {
     strings: string[];
     lookup_table: Map<string, Suggestion>;
 } {
-    const result = get_search_result(query_from_pills, query_from_text);
+    const result = get_search_result(pill_search_terms, text_search_terms, add_current_filter);
     return finalize_search_result(result);
 }
 

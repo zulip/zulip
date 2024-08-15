@@ -3,11 +3,12 @@
 import copy
 import logging
 import time
-from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Sequence
 from typing import Any
 
 from django.conf import settings
 from django.utils.translation import gettext as _
+from typing_extensions import NotRequired, TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
@@ -54,6 +55,7 @@ from zerver.lib.subscription_info import (
     gather_subscriptions_helper,
     get_web_public_subs,
 )
+from zerver.lib.thumbnail import THUMBNAIL_OUTPUT_FORMATS
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
@@ -301,6 +303,13 @@ def fetch_initial_state_data(
                 realm, "can_create_private_channel_group", Realm.COMMON_POLICY_TYPES
             )
         )
+        state["realm_create_web_public_stream_policy"] = (
+            get_corresponding_policy_value_for_group_setting(
+                realm,
+                "can_create_web_public_channel_group",
+                Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
+            )
+        )
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
@@ -381,6 +390,16 @@ def fetch_initial_state_data(
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
+        state["server_thumbnail_formats"] = [
+            {
+                "name": str(thumbnail_format),
+                "max_width": thumbnail_format.max_width,
+                "max_height": thumbnail_format.max_height,
+                "format": thumbnail_format.extension,
+                "animated": thumbnail_format.animated,
+            }
+            for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS
+        ]
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
@@ -561,7 +580,9 @@ def fetch_initial_state_data(
             realm.can_create_public_channel_group_id in settings_user_recursive_group_ids
         )
 
-        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
+        state["can_create_web_public_streams"] = (
+            realm.can_create_web_public_channel_group_id in settings_user_recursive_group_ids
+        )
         # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
         # 102); we can remove this once we no longer need to support
         # legacy mobile app versions that read the old property.
@@ -1218,7 +1239,6 @@ def apply_event(
                 )
 
             policy_permission_dict = {
-                "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
             }
@@ -1238,13 +1258,6 @@ def apply_event(
                 state[policy_permission_dict[event["property"]]] = user_profile.has_permission(
                     event["property"]
                 )
-
-            # Finally, we need to recompute this value from its inputs.
-            state["can_create_streams"] = (
-                state["can_create_private_streams"]
-                or state["can_create_public_streams"]
-                or state["can_create_web_public_streams"]
-            )
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
                 state["realm_" + key] = value
@@ -1257,7 +1270,11 @@ def apply_event(
                     )
                     state["realm_email_auth_enabled"] = value["Email"]["enabled"]
 
-                if key in ["can_create_public_channel_group", "can_create_private_channel_group"]:
+                if key in [
+                    "can_create_public_channel_group",
+                    "can_create_private_channel_group",
+                    "can_create_web_public_channel_group",
+                ]:
                     if key == "can_create_public_channel_group":
                         state["realm_create_public_stream_policy"] = (
                             get_corresponding_policy_value_for_group_setting(
@@ -1267,7 +1284,7 @@ def apply_event(
                             )
                         )
                         state["can_create_public_streams"] = user_profile.has_permission(key)
-                    else:
+                    elif key == "can_create_private_channel_group":
                         state["realm_create_private_stream_policy"] = (
                             get_corresponding_policy_value_for_group_setting(
                                 user_profile.realm,
@@ -1276,6 +1293,15 @@ def apply_event(
                             )
                         )
                         state["can_create_private_streams"] = user_profile.has_permission(key)
+                    else:
+                        state["realm_create_web_public_stream_policy"] = (
+                            get_corresponding_policy_value_for_group_setting(
+                                user_profile.realm,
+                                "can_create_web_public_channel_group",
+                                Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
+                            )
+                        )
+                        state["can_create_web_public_streams"] = user_profile.has_permission(key)
 
                     state["can_create_streams"] = (
                         state["can_create_private_streams"]
@@ -1628,6 +1654,20 @@ def apply_event(
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
 
+class ClientCapabilities(TypedDict):
+    # This field was accidentally made required when it was added in v2.0.0-781;
+    # this was not realized until after the release of Zulip 2.1.2. (It remains
+    # required to help ensure backwards compatibility of client code.)
+    notification_settings_null: bool
+    # Any new fields of `client_capabilities` should be optional. Add them here.
+    bulk_message_deletion: NotRequired[bool]
+    user_avatar_url_field_optional: NotRequired[bool]
+    stream_typing_notifications: NotRequired[bool]
+    user_settings_object: NotRequired[bool]
+    linkifier_url_template: NotRequired[bool]
+    user_list_incomplete: NotRequired[bool]
+
+
 def do_events_register(
     user_profile: UserProfile | None,
     realm: Realm,
@@ -1641,7 +1681,7 @@ def do_events_register(
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    client_capabilities: Mapping[str, bool] = {},
+    client_capabilities: ClientCapabilities = ClientCapabilities(notification_settings_null=False),
     narrow: Collection[NarrowTerm] = [],
     fetch_event_types: Collection[str] | None = None,
     spectator_requested_language: str | None = None,
@@ -1670,8 +1710,11 @@ def do_events_register(
         event_types_set = None
 
     # Fetch the realm object again to prefetch all the
-    # group settings which support anonymous groups
+    # settings that will be used in 'fetch_initial_state_data'
     # to avoid unnecessary DB queries.
+    # The settings include:
+    # * group settings which support anonymous groups
+    # * announcements streams
     realm = get_realm_with_settings(realm_id=realm.id)
 
     if user_profile is None:

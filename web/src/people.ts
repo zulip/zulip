@@ -14,12 +14,7 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import type {
-    StateData,
-    cross_realm_bot_schema,
-    profile_datum_schema,
-    user_schema,
-} from "./state_data";
+import type {StateData, profile_datum_schema, user_schema} from "./state_data";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {is_user_in_group} from "./user_groups";
@@ -43,20 +38,18 @@ export type PseudoMentionUser = {
     idx: number;
 };
 
-export type CrossRealmBot = z.infer<typeof cross_realm_bot_schema>;
-
 let people_dict: FoldDict<User>;
 let people_by_name_dict: FoldDict<User>;
 let people_by_user_id_dict: Map<number, User>;
 let active_user_dict: Map<number, User>;
 let non_active_user_dict: Map<number, User>;
-let cross_realm_dict: Map<number, CrossRealmBot>;
+let cross_realm_dict: Map<number, User>;
 let pm_recipient_count_dict: Map<number, number>;
 let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
 
 export let INACCESSIBLE_USER_NAME: string;
-export let WELCOME_BOT: CrossRealmBot;
+export let WELCOME_BOT: User;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
@@ -725,12 +718,6 @@ export function exclude_me_from_string(user_ids_string: string): string {
     return user_ids.join(",");
 }
 
-export function format_small_avatar_url(raw_url: string): string {
-    const url = new URL(raw_url, window.location.origin);
-    url.search += (url.search ? "&" : "") + "s=50";
-    return url.href;
-}
-
 export function sender_is_bot(message: Message): boolean {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);
@@ -797,21 +784,19 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
 
 function gravatar_url_for_email(email: string): string {
     const hash = md5(email.toLowerCase());
-    const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
-    const small_avatar_url = format_small_avatar_url(avatar_url);
-    return small_avatar_url;
+    return "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
 }
 
 export function small_avatar_url_for_person(person: User): string {
     if (person.avatar_url) {
-        return format_small_avatar_url(person.avatar_url);
+        return person.avatar_url;
     }
 
     if (person.avatar_url === null) {
         return gravatar_url_for_email(person.email);
     }
 
-    return format_small_avatar_url(`/avatar/${person.user_id}`);
+    return `/avatar/${person.user_id}`;
 }
 
 function medium_gravatar_url_for_email(email: string): string {
@@ -883,7 +868,7 @@ export function small_avatar_url(message: Message): string {
     // or if the avatar was missing. We do this verbosely to avoid false
     // positives on line coverage (we don't do branch checking).
     if (message.avatar_url) {
-        return format_small_avatar_url(message.avatar_url);
+        return message.avatar_url;
     }
 
     if (person && person.avatar_url === undefined) {
@@ -892,7 +877,7 @@ export function small_avatar_url(message: Message): string {
         // required to take advantage of the user_avatar_url_field_optional
         // optimization, which saves a huge amount of network traffic on
         // servers with 10,000s of user accounts.
-        return format_small_avatar_url(`/avatar/${person.user_id}`);
+        return `/avatar/${person.user_id}`;
     }
 
     // For computing the user's email, we first trust the person
@@ -1403,7 +1388,7 @@ export const is_person_active = (user_id: number): boolean => {
     return active_user_dict.has(user_id);
 };
 
-export function add_cross_realm_user(person: CrossRealmBot): void {
+export function add_cross_realm_user(person: User): void {
     if (!people_dict.has(person.email)) {
         _add_user(person);
     }
@@ -1522,7 +1507,6 @@ function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser
                 full_name: message.sender_full_name,
                 id: message.sender_id,
                 email: message.sender_email,
-                is_mirror_dummy: false,
             },
         ];
     } else if (message.type === "private") {
@@ -1541,10 +1525,6 @@ export function extract_people_from_message(message: MessageWithBooleans): void 
 
     // Add new people involved in this message to the people list
     for (const person of involved_people) {
-        if (person.unknown_local_echo_user) {
-            continue;
-        }
-
         const user_id = person.id;
 
         if (people_by_user_id_dict.has(user_id)) {
@@ -1620,10 +1600,6 @@ export function maybe_incr_recipient_count(
     // Track the number of direct messages we've sent to this person
     // to improve autocomplete
     for (const recip of message.display_recipient) {
-        if (recip.unknown_local_echo_user) {
-            continue;
-        }
-
         const user_id = recip.id;
         incr_recipient_count(user_id);
     }

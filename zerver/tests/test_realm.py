@@ -42,6 +42,7 @@ from zerver.lib.realm_description import get_realm_rendered_description, get_rea
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.upload import delete_message_attachments, upload_message_attachment
 from zerver.models import (
     Attachment,
@@ -840,7 +841,6 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             bot_creation_policy=10,
-            create_web_public_stream_policy=10,
             invite_to_stream_policy=10,
             message_retention_days=10,
             video_chat_provider=10,
@@ -1370,7 +1370,7 @@ class RealmTest(ZulipTestCase):
         ]
         self.assertEqual(sorted(user_group_names), sorted(expected_system_group_names))
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     def test_do_create_realm_notify_bouncer(self) -> None:
         dummy_send_realms_only_response = {
             "result": "success",
@@ -1557,7 +1557,6 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
@@ -1662,6 +1661,60 @@ class RealmAPITest(ZulipTestCase):
 
             realm = self.update_with_api(setting_name, value)
             self.assertEqual(getattr(realm, setting_name), user_group.usergroup_ptr)
+
+        if setting_permission_configuration.require_system_group:
+            leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
+
+            value = orjson.dumps(leadership_group.id).decode()
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                value = orjson.dumps(
+                    {
+                        "new": leadership_group.id,
+                    }
+                ).decode()
+
+            result = self.client_patch("/json/realm", {setting_name: value})
+            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                admins_group = NamedUserGroup.objects.get(
+                    name=SystemGroups.ADMINISTRATORS, realm=realm
+                )
+                moderators_group = NamedUserGroup.objects.get(
+                    name=SystemGroups.MODERATORS, realm=realm
+                )
+                value = orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id, leadership_group.id],
+                        }
+                    }
+                ).decode()
+                result = self.client_patch("/json/realm", {setting_name: value})
+                self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+                value = orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id, moderators_group.id],
+                        }
+                    }
+                ).decode()
+                result = self.client_patch("/json/realm", {setting_name: value})
+                self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+                value = orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [admins_group.id],
+                        }
+                    }
+                ).decode()
+                realm = self.update_with_api(setting_name, value)
+                self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
 
     def do_test_realm_permission_group_setting_update_api_with_anonymous_groups(
         self, setting_name: str
@@ -1896,14 +1949,18 @@ class RealmAPITest(ZulipTestCase):
                 with self.subTest(property=prop):
                     self.do_test_realm_update_api(prop)
 
+        check_add_user_group(
+            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
+        )
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
 
-        check_add_user_group(
-            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
-        )
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+            if Realm.REALM_PERMISSION_GROUP_SETTINGS[prop].require_system_group:
+                # Anonymous system groups aren't relevant when
+                # restricted to system groups.
+                continue
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api_with_anonymous_groups(prop)
 
@@ -1936,8 +1993,8 @@ class RealmAPITest(ZulipTestCase):
     def do_test_realm_default_setting_update_api(self, name: str) -> None:
         bool_tests: list[bool] = [False, True]
         test_values: dict[str, Any] = dict(
-            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
-            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
+            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_COMPACT],
+            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_COMPACT],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
             web_home_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
@@ -1945,6 +2002,7 @@ class RealmAPITest(ZulipTestCase):
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
             web_channel_default_view=UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
+            web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
             desktop_icon_count_display=UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES,
             notification_sound=["zulip", "ding"],
@@ -1987,7 +2045,118 @@ class RealmAPITest(ZulipTestCase):
             # settings in RealmUserDefault table will be used.
             if prop in ["default_language", "enable_login_emails", "enable_marketing_emails"]:
                 continue
+            if prop in ["dense_mode"]:
+                # Testing this is complicated, see test_update_default_information_density_settings.
+                continue
             self.do_test_realm_default_setting_update_api(prop)
+
+    def test_update_default_information_density_settings(self) -> None:
+        realm = get_realm("zulip")
+
+        # Start with the legacy settings configuration
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        realm_user_default.dense_mode = True
+        realm_user_default.web_font_size_px = RealmUserDefault.WEB_FONT_SIZE_PX_COMPACT
+        realm_user_default.web_line_height_percent = (
+            RealmUserDefault.WEB_LINE_HEIGHT_PERCENT_COMPACT
+        )
+        realm_user_default.save()
+        self.login("iago")
+
+        data: dict[str, str | int] = {"web_font_size_px": 16}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
+        )
+
+        data = {"web_font_size_px": 16, "dense_mode": orjson.dumps(False).decode()}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 16)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"web_font_size_px": 20}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 20)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        # Check dense_mode is still false when both the
+        # settings are set to legacy values.
+        data = {"web_font_size_px": 14}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.web_line_height_percent, 122)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"dense_mode": orjson.dumps(True).decode()}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.dense_mode, True)
+
+        data = {"web_line_height_percent": 140}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
+        )
+
+        data = {"web_line_height_percent": 140, "dense_mode": orjson.dumps(False).decode()}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_line_height_percent, 140)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"web_line_height_percent": 130}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_line_height_percent, 130)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        # Check dense_mode is still false when both the
+        # settings are set to legacy values.
+        data = {"web_line_height_percent": 122}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.web_line_height_percent, 122)
+        self.assertEqual(realm_user_default.dense_mode, False)
+
+        data = {"dense_mode": orjson.dumps(True).decode(), "web_font_size_px": 16}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
+        )
+
+        data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_error(
+            result,
+            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
+        )
+
+        data = {
+            "dense_mode": orjson.dumps(True).decode(),
+            "web_font_size_px": 14,
+            "web_line_height_percent": 122,
+        }
+        result = self.client_patch("/json/realm/user_settings_defaults", data)
+        self.assert_json_success(result)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.web_font_size_px, 14)
+        self.assertEqual(realm_user_default.web_line_height_percent, 122)
+        self.assertEqual(realm_user_default.dense_mode, True)
 
     def test_invalid_default_notification_sound_value(self) -> None:
         result = self.client_patch(

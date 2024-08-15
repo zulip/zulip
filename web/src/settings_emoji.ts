@@ -309,6 +309,9 @@ function show_modal(): void {
         loading_spinner: true,
         on_click: add_custom_emoji,
         post_render: add_custom_emoji_post_render,
+        on_shown() {
+            $("#emoji_name").trigger("focus");
+        },
     });
 }
 

@@ -47,6 +47,7 @@ from zerver.models import (
     MutedUser,
     NamedUserGroup,
     OnboardingStep,
+    OnboardingUserMessage,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -135,6 +136,7 @@ ALL_ZULIP_TABLES = {
     "zerver_emailchangestatus",
     "zerver_groupgroupmembership",
     "zerver_huddle",
+    "zerver_imageattachment",
     "zerver_message",
     "zerver_missedmessageemailaddress",
     "zerver_multiuseinvite",
@@ -769,6 +771,13 @@ def get_realm_config() -> Config:
         include_rows="realm_id__in",
     )
 
+    Config(
+        table="zerver_onboardingusermessage",
+        model=OnboardingUserMessage,
+        virtual_parent=realm_config,
+        custom_fetch=custom_fetch_onboarding_usermessage,
+    )
+
     user_profile_config = Config(
         custom_tables=[
             "zerver_userprofile",
@@ -1125,39 +1134,48 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         r["id"] for r in response["zerver_userprofile"] + response["zerver_userprofile_mirrordummy"]
     }
 
-    # First we get all huddles involving someone in the realm.
-    realm_huddle_subs = Subscription.objects.select_related("recipient").filter(
+    # First we get all direct message groups involving someone in the realm.
+    realm_direct_message_group_subs = Subscription.objects.select_related("recipient").filter(
         recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__in=user_profile_ids
     )
-    realm_huddle_recipient_ids = {sub.recipient_id for sub in realm_huddle_subs}
+    realm_direct_message_group_recipient_ids = {
+        sub.recipient_id for sub in realm_direct_message_group_subs
+    }
 
     # Mark all Direct Message groups whose recipient ID contains a cross-realm user.
-    unsafe_huddle_recipient_ids = set()
+    unsafe_direct_message_group_recipient_ids = set()
     for sub in Subscription.objects.select_related("user_profile").filter(
-        recipient__in=realm_huddle_recipient_ids
+        recipient__in=realm_direct_message_group_recipient_ids
     ):
         if sub.user_profile.realm_id != realm.id:
             # In almost every case the other realm will be zulip.com
-            unsafe_huddle_recipient_ids.add(sub.recipient_id)
+            unsafe_direct_message_group_recipient_ids.add(sub.recipient_id)
 
-    # Now filter down to just those huddles that are entirely within the realm.
+    # Now filter down to just those direct message groups that are
+    # entirely within the realm.
     #
     # This is important for ensuring that the User objects needed
     # to import it on the other end exist (since we're only
     # exporting the users from this realm), at the cost of losing
     # some of these cross-realm messages.
-    huddle_subs = [
-        sub for sub in realm_huddle_subs if sub.recipient_id not in unsafe_huddle_recipient_ids
+    direct_message_group_subs = [
+        sub
+        for sub in realm_direct_message_group_subs
+        if sub.recipient_id not in unsafe_direct_message_group_recipient_ids
     ]
-    huddle_recipient_ids = {sub.recipient_id for sub in huddle_subs}
-    huddle_ids = {sub.recipient.type_id for sub in huddle_subs}
+    direct_message_group_recipient_ids = {sub.recipient_id for sub in direct_message_group_subs}
+    direct_message_group_ids = {sub.recipient.type_id for sub in direct_message_group_subs}
 
-    huddle_subscription_dicts = make_raw(huddle_subs)
-    huddle_recipients = make_raw(Recipient.objects.filter(id__in=huddle_recipient_ids))
+    direct_message_group_subscription_dicts = make_raw(direct_message_group_subs)
+    direct_message_group_recipients = make_raw(
+        Recipient.objects.filter(id__in=direct_message_group_recipient_ids)
+    )
 
-    response["_huddle_recipient"] = huddle_recipients
-    response["_huddle_subscription"] = huddle_subscription_dicts
-    response["zerver_huddle"] = make_raw(DirectMessageGroup.objects.filter(id__in=huddle_ids))
+    response["_huddle_recipient"] = direct_message_group_recipients
+    response["_huddle_subscription"] = direct_message_group_subscription_dicts
+    response["zerver_huddle"] = make_raw(
+        DirectMessageGroup.objects.filter(id__in=direct_message_group_ids)
+    )
 
 
 def custom_fetch_scheduled_messages(response: TableData, context: Context) -> None:
@@ -1195,6 +1213,18 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
     rows = make_raw(realmauditlog_objects)
 
     response["zerver_realmauditlog"] = rows
+
+
+def custom_fetch_onboarding_usermessage(response: TableData, context: Context) -> None:
+    realm = context["realm"]
+    response["zerver_onboardingusermessage"] = []
+
+    onboarding_usermessage_query = OnboardingUserMessage.objects.filter(realm=realm)
+    for onboarding_usermessage in onboarding_usermessage_query:
+        onboarding_usermessage_obj = model_to_dict(onboarding_usermessage)
+        onboarding_usermessage_obj["flags_mask"] = onboarding_usermessage.flags.mask
+        del onboarding_usermessage_obj["flags"]
+        response["zerver_onboardingusermessage"].append(onboarding_usermessage_obj)
 
 
 def fetch_usermessages(

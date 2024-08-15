@@ -49,6 +49,7 @@ from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscript
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
@@ -73,6 +74,7 @@ from zerver.lib.test_helpers import (
     instrument_url,
     queries_captured,
 )
+from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
@@ -277,6 +279,18 @@ Output:
     TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(
         token=r"[a-z0-9_]{24}"
     )
+
+    @override
+    def assertEqual(self, first: Any, second: Any, msg: Any = "") -> None:
+        if isinstance(first, str) and isinstance(second, str):
+            if first != second:
+                raise AssertionError(
+                    "Actual and expected outputs do not match; showing diff.\n"
+                    + diff_strings(first, second)
+                    + str(msg)
+                )
+        else:
+            super().assertEqual(first, second, msg)
 
     def set_http_headers(self, extra: dict[str, str], skip_user_agent: bool = False) -> None:
         if "subdomain" in extra:
@@ -2005,6 +2019,14 @@ Output:
         user_group.direct_subgroups.set(direct_subgroups)
         return user_group
 
+    @contextmanager
+    def thumbnail_formats(self, *thumbnail_formats: ThumbnailFormat) -> Iterator[None]:
+        with (
+            mock.patch("zerver.lib.thumbnail.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
+            mock.patch("zerver.views.upload.THUMBNAIL_OUTPUT_FORMATS", thumbnail_formats),
+        ):
+            yield
+
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     @contextmanager
@@ -2566,8 +2588,8 @@ class BouncerTestCase(ZulipTestCase):
             # we can safely pick the first value.
             data = {k: v[0] for k, v in params.items()}
         assert request.url is not None  # allow mypy to infer url is present.
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
+        assert settings.ZULIP_SERVICES_URL is not None
+        local_url = request.url.replace(settings.ZULIP_SERVICES_URL, "")
         if request.method == "POST":
             result = self.uuid_post(self.server_uuid, local_url, data, subdomain="", **kwargs)
         elif request.method == "GET":
@@ -2575,9 +2597,9 @@ class BouncerTestCase(ZulipTestCase):
         return (result.status_code, result.headers, result.content)
 
     def add_mock_response(self) -> None:
-        # Match any endpoint with the PUSH_NOTIFICATION_BOUNCER_URL.
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + r".*")
+        # Match any endpoint with the ZULIP_SERVICES_URL.
+        assert settings.ZULIP_SERVICES_URL is not None
+        COMPILED_URL = re.compile(settings.ZULIP_SERVICES_URL + r".*")
         responses.add_callback(responses.POST, COMPILED_URL, callback=self.request_callback)
         responses.add_callback(responses.GET, COMPILED_URL, callback=self.request_callback)
 

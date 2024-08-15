@@ -19,8 +19,6 @@ export type DisplayRecipientUser = {
     email: string;
     full_name: string;
     id: number;
-    is_mirror_dummy: boolean;
-    unknown_local_echo_user?: boolean;
 };
 
 export type DisplayRecipient = string | DisplayRecipientUser[];
@@ -66,6 +64,7 @@ export type RawMessage = {
 } & (
     | {
           type: "private";
+          topic_links?: undefined;
       }
     | {
           type: "stream";
@@ -117,7 +116,16 @@ export type Message = (
 ) & {
     clean_reactions: Map<string, MessageCleanReaction>;
 
+    // Local echo state cluster of fields.
     locally_echoed?: boolean;
+    failed_request?: boolean;
+    show_slow_send_spinner?: boolean;
+    resend?: boolean;
+    local_id?: string;
+
+    // The original markup for the message, which we'll have if we
+    // sent it or if we fetched it (usually, because the current user
+    // tried to edit the message).
     raw_content?: string;
 
     // Added in `message_helper.process_new_message`.

@@ -43,6 +43,14 @@ to inquire.
     server](https://zulip.readthedocs.io/en/stable/production/authentication-methods.html)
     to support the option.
 
+!!! tip ""
+
+    Before disabling an authentication method, test that you can
+    successfully log in with one of the remaining authentication methods.
+    The [`change_auth_backends` management
+    command](https://zulip.readthedocs.io/en/stable/production/management-commands.html)
+    can help if you accidentally lock out all administrators.
+
 {start_tabs}
 
 {settings_tab|auth-methods}

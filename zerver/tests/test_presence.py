@@ -263,9 +263,6 @@ class UserPresenceTests(ZulipTestCase):
 
         # In tests, the presence update is processed immediately rather than in the background
         # in the queue worker, so we see it reflected immediately.
-        # In production, our presence update may be processed with some delay, so the last_update_id
-        # might not include it yet. In such a case, we'd see the original value of -1 returned,
-        # due to there being no new data to return.
         last_update_id = UserPresence.objects.latest("last_update_id").last_update_id
         self.assertEqual(json["presence_last_update_id"], last_update_id)
 
@@ -323,12 +320,14 @@ class UserPresenceTests(ZulipTestCase):
         UserPresence.objects.all().delete()
 
         params = dict(status="idle", last_update_id=-1)
-        # Make do_update_user_presence a noop. This simulates a production-like environment
-        # where the update is processed in a queue worker, so hamlet may not see his update
-        # reflected back to him in the response. Therefore it is as if there is no presence
-        # data.
+        # Make do_update_user_presence a noop. This simulates a scenario as if there
+        # is no presence data.
+        # This is not a realistic situation, because the presence update that the user
+        # is making will by itself bump the last_update_id which will be reflected
+        # here in the response - but it's still good to test the code is robust
+        # and works fine in such an edge case.
         # In such a situation, he should get his last_update_id=-1 back.
-        with mock.patch("zerver.worker.user_presence.do_update_user_presence"):
+        with mock.patch("zerver.actions.presence.do_update_user_presence"):
             result = self.client_post("/json/users/me/presence", params)
         json = self.assert_json_success(result)
 
@@ -340,7 +339,7 @@ class UserPresenceTests(ZulipTestCase):
         # like an old slim_presence client would due to an implementation
         # prior to the introduction of last_update_id.
         params = dict(status="idle")
-        with mock.patch("zerver.worker.user_presence.do_update_user_presence"):
+        with mock.patch("zerver.actions.presence.do_update_user_presence"):
             result = self.client_post("/json/users/me/presence", params)
         json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), set())

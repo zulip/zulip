@@ -44,7 +44,9 @@
         display: flex;
         align-items: center;
 
-        & > * {
+        .recent-view-table-link,
+        .recent-view-table-unread-count,
+        & > .zulip-icon {
             outline: 0;
         }
 
@@ -88,7 +90,7 @@
         width: 10px;
     }
 
-    .fa-envelope {
+    .zulip-icon-user {
         /* Legacy 11.2px size at 14px/1em. */
         font-size: 0.8em;
         text-align: center;
@@ -121,6 +123,10 @@
     .table_fix_head table th {
         padding: 8px;
         text-align: left;
+
+        &[data-sort] {
+            padding-right: var(--table-header-sortable-column-padding-right);
+        }
     }
 
     #recent_view_filter_buttons {

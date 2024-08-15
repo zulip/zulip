@@ -25,10 +25,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-const show_step: ($process: JQuery, step: number) => void = function (
-    $process: JQuery,
-    step: number,
-) {
+const show_step = function ($process: JQuery, step: number): void {
     $process
         .find("[data-step]")
         .hide()

@@ -50,7 +50,7 @@ def user_alert_words(user_profile: UserProfile) -> list[str]:
     return list(AlertWord.objects.filter(user_profile=user_profile).values_list("word", flat=True))
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) -> list[str]:
     existing_words_lower = {word.lower() for word in user_alert_words(user_profile)}
 
@@ -72,7 +72,7 @@ def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) ->
     return user_alert_words(user_profile)
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[str]) -> list[str]:
     # TODO: Ideally, this would be a bulk query, but Django doesn't have a `__iexact`.
     # We can clean this up if/when PostgreSQL has more native support for case-insensitive fields.

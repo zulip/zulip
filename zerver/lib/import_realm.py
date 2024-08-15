@@ -56,6 +56,7 @@ from zerver.models import (
     MutedUser,
     NamedUserGroup,
     OnboardingStep,
+    OnboardingUserMessage,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -148,6 +149,7 @@ ID_MAP: dict[str, dict[int, int]] = {
     "analytics_usercount": {},
     "realmuserdefault": {},
     "scheduledmessage": {},
+    "onboardingusermessage": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -514,7 +516,7 @@ def re_map_foreign_keys(
     """
 
     # See comments in bulk_import_user_message_data.
-    assert "usermessage" not in related_table
+    assert related_table != "usermessage"
 
     re_map_foreign_keys_internal(
         data[table],
@@ -692,7 +694,7 @@ def update_model_ids(model: Any, data: TableData, related_table: TableName) -> N
     # Important: remapping usermessage rows is
     # not only unnecessary, it's expensive and can cause
     # memory errors. We don't even use ids from ID_MAP.
-    assert "usermessage" not in table
+    assert table != "usermessage"
 
     old_id_list = current_table_ids(data, table)
     allocated_id_list = allocate_ids(model, len(data[table]))
@@ -1456,9 +1458,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         default_user_profile_id=None,  # Fail if there is no user set
     )
 
-    # We need to have this check as the emoji files are only present in the data
-    # importer from Slack
-    # For Zulip export, this doesn't exist
+    # We need to have this check as the emoji files may not
+    # be present in import data from other services.
     if os.path.exists(os.path.join(import_dir, "emoji")):
         import_uploads(
             realm,
@@ -1493,6 +1494,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     # Import zerver_message and zerver_usermessage
     import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
+
+    if "zerver_onboardingusermessage" in data:
+        fix_bitfield_keys(data, "zerver_onboardingusermessage", "flags")
+        re_map_foreign_keys(data, "zerver_onboardingusermessage", "realm", related_table="realm")
+        re_map_foreign_keys(
+            data, "zerver_onboardingusermessage", "message", related_table="message"
+        )
+        update_model_ids(OnboardingUserMessage, data, "onboardingusermessage")
+        bulk_import_model(data, OnboardingUserMessage)
 
     if "zerver_scheduledmessage" in data:
         fix_datetime_fields(data, "zerver_scheduledmessage")

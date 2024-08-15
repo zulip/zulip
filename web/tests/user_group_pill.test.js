@@ -68,13 +68,11 @@ const admins_pill = {
     group_id: admins.id,
     group_name: admins.name,
     type: "user_group",
-    display_value: "translated HTML: " + admins.name + ": " + admins.members.length + " users",
 };
 const testers_pill = {
     group_id: testers.id,
     group_name: testers.name,
     type: "user_group",
-    display_value: "translated HTML: " + testers.name + ": " + testers.members.length + " users",
 };
 const everyone_pill = {
     group_id: everyone.id,
@@ -83,7 +81,6 @@ const everyone_pill = {
     // While we can programmatically set the user count below,
     // calculating it would almost mimic the entire display function
     // here, reducing the usefulness of the test.
-    display_value: "translated HTML: translated: Everyone: 5 users",
 };
 
 const groups = [admins, testers, everyone];
@@ -102,6 +99,21 @@ run_test("create_item", () => {
     test_create_item("admins", [admins_pill], undefined);
     test_create_item("unknown", [], undefined);
     test_create_item("role:everyone", [], everyone_pill);
+});
+
+run_test("display_value", () => {
+    assert.deepEqual(
+        user_group_pill.display_pill(admins),
+        "translated HTML: " + admins.name + ": " + admins.members.length + " users",
+    );
+    assert.deepEqual(
+        user_group_pill.display_pill(testers),
+        "translated HTML: " + testers.name + ": " + testers.members.length + " users",
+    );
+    assert.deepEqual(
+        user_group_pill.display_pill(everyone),
+        "translated HTML: translated: Everyone: 5 users",
+    );
 });
 
 run_test("get_stream_id", () => {

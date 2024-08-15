@@ -35,7 +35,8 @@ Rocket.Chat does not provide an official data export feature, so the Zulip
 import tool works by importing data from a Rocket.Chat database dump.
 
 If you're self-hosting your Rocket.Chat instance, you can create a
-database dump using the `mongodump` utility.
+database dump using the `mongodump` utility. Make sure your Rocket.Chat
+server is **NOT** shut down while creating database dump using `mongodump`.
 
 If your organization is hosted on Rocket.Chat Cloud or another hosting
 provider that doesn't provide you with database access, you will need
@@ -127,6 +128,8 @@ keep in mind about the import process:
 
 - Messages longer than Zulip's limit of 10,000 characters are not
   imported.
+
+- Livechat channels/messages are not imported.
 
 - Messages from Rocket.Chat Discussions are imported as topics
   inside the Zulip channel corresponding to the parent channel of the

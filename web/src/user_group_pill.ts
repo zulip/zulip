@@ -1,7 +1,7 @@
 import {$t_html} from "./i18n";
-import type {InputPillContainer, InputPillItem} from "./input_pill";
+import type {InputPillContainer} from "./input_pill";
 import * as people from "./people";
-import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 import type {UserGroup} from "./user_groups";
 import * as user_groups from "./user_groups";
 
@@ -18,7 +18,7 @@ export type UserGroupPillData = UserGroup & {
     is_silent?: boolean;
 };
 
-function display_pill(group: UserGroup): string {
+export function display_pill(group: UserGroup): string {
     const group_members = get_group_members(group);
     return $t_html(
         {defaultMessage: "{group_name}: {group_size, plural, one {# user} other {# users}}"},
@@ -28,8 +28,8 @@ function display_pill(group: UserGroup): string {
 
 export function create_item_from_group_name(
     group_name: string,
-    current_items: CombinedPillItem[],
-): InputPillItem<UserGroupPill> | undefined {
+    current_items: CombinedPill[],
+): UserGroupPill | undefined {
     group_name = group_name.trim();
     const group = user_groups.get_user_group_from_name(group_name);
     if (!group) {
@@ -42,13 +42,12 @@ export function create_item_from_group_name(
 
     return {
         type: "user_group",
-        display_value: display_pill(group),
         group_id: group.id,
         group_name: group.name,
     };
 }
 
-export function get_group_name_from_item(item: InputPillItem<UserGroupPill>): string {
+export function get_group_name_from_item(item: UserGroupPill): string {
     return item.group_name;
 }
 
@@ -76,7 +75,6 @@ function get_group_members(user_group: UserGroup): number[] {
 export function append_user_group(group: UserGroup, pill_widget: CombinedPillContainer): void {
     pill_widget.appendValidatedData({
         type: "user_group",
-        display_value: display_pill(group),
         group_id: group.id,
         group_name: group.name,
     });

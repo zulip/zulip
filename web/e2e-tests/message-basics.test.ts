@@ -179,8 +179,6 @@ async function search_and_check(
 ): Promise<void> {
     await page.click(".search_icon");
     await page.waitForSelector(".navbar-search.expanded", {visible: true});
-    // Close the "in: home" pill
-    await page.click(".navbar-search .pill-close-button");
     await common.select_item_via_typeahead(page, "#search_query", search_str, item_to_select);
     // Enter to trigger search
     await page.keyboard.press("Enter");
@@ -193,8 +191,6 @@ async function search_and_check(
 async function search_silent_user(page: Page, str: string, item: string): Promise<void> {
     await page.click(".search_icon");
     await page.waitForSelector(".navbar-search.expanded", {visible: true});
-    // Close the "in: home" pill
-    await page.click(".navbar-search .pill-close-button");
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     // Enter to trigger search
     await page.keyboard.press("Enter");

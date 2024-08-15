@@ -3,16 +3,16 @@ import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_notifications from "./compose_notifications";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import * as direct_message_group_data from "./direct_message_group_data";
 import * as drafts from "./drafts";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
+import * as message_events_util from "./message_events_util";
 import * as message_helper from "./message_helper";
 import * as message_lists from "./message_lists";
 import * as message_notifications from "./message_notifications";
@@ -35,87 +35,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) {
-    const ids = [];
-
-    for (const elem of messages) {
-        ids.push(elem.id);
-    }
-
-    channel.get({
-        url: "/json/messages/matches_narrow",
-        data: {
-            msg_ids: JSON.stringify(ids),
-            narrow: JSON.stringify(narrow_state.public_search_terms()),
-        },
-        timeout: 5000,
-        success(data) {
-            if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
-                // We unnarrowed or moved to Recent Conversations in the meantime.
-                return;
-            }
-
-            let new_messages = [];
-            const elsewhere_messages = [];
-
-            for (const elem of messages) {
-                if (Object.hasOwn(data.messages, elem.id)) {
-                    util.set_match_data(elem, data.messages[elem.id]);
-                    new_messages.push(elem);
-                } else {
-                    elsewhere_messages.push(elem);
-                }
-            }
-
-            // This second call to process_new_message in the
-            // insert_new_messages code path is designed to replace
-            // our slightly stale message object with the latest copy
-            // from the message_store. This helps in very rare race
-            // conditions, where e.g. the current user's name was
-            // edited in between when they sent the message and when
-            // we hear back from the server and can echo the new
-            // message.
-            new_messages = new_messages.map((message) =>
-                message_helper.process_new_message(message),
-            );
-
-            callback(new_messages, msg_list);
-            unread_ops.process_visible();
-            compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
-        },
-        error(xhr) {
-            if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
-                return;
-            }
-            if (xhr.status === 400) {
-                // This narrow was invalid -- don't retry it, and don't display the message.
-                return;
-            }
-            if (attempt >= 5) {
-                // Too many retries -- bail out.  However, this means the `messages` are potentially
-                // missing from the search results view.  Since this is a very unlikely circumstance
-                // (Tornado is up, Django is down for 5 retries, user is in a search view that it
-                // cannot apply itself) and the failure mode is not bad (it will simply fail to
-                // include live updates of new matching messages), just log an error.
-                blueslip.error(
-                    "Failed to determine if new message matches current narrow, after 5 tries",
-                );
-                return;
-            }
-            // Backoff on retries, with full jitter: up to 2s, 4s, 8s, 16s, 32s
-            const delay = Math.random() * 2 ** attempt * 2000;
-            setTimeout(() => {
-                if (msg_list === message_lists.current) {
-                    // Don't actually try again if we un-narrowed
-                    // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, callback, attempt + 1);
-                }
-            }, delay);
-        },
-    });
-}
-
-export function insert_new_messages(messages, sent_by_this_client) {
+export function insert_new_messages(messages, sent_by_this_client, deliver_locally) {
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
@@ -133,7 +53,22 @@ export function insert_new_messages(messages, sent_by_this_client) {
             // new messages match the narrow, and use that to
             // determine which new messages to add to the current
             // message list (or display a notification).
-            maybe_add_narrowed_messages(messages, list, message_util.add_new_messages);
+
+            if (deliver_locally) {
+                // However, this is a local echo attempt, we can't ask
+                // the server about the match, since we don't have a
+                // final message ID. In that situation, we do nothing
+                // and echo.process_from_server will call
+                // message_events_util.maybe_add_narrowed_messages
+                // once the message is fully delivered.
+                continue;
+            }
+
+            message_events_util.maybe_add_narrowed_messages(
+                messages,
+                list,
+                message_util.add_new_messages,
+            );
             continue;
         }
 
@@ -312,6 +247,12 @@ export function update_messages(events) {
             ) {
                 changed_compose = true;
                 compose_state.topic(new_topic);
+
+                if (stream_changed) {
+                    compose_state.set_stream_id(new_stream_id);
+                    compose_recipient.on_compose_select_recipient_update();
+                }
+
                 compose_validate.warn_if_topic_resolved(true);
                 compose_fade.set_focused_recipient("stream");
             }
@@ -464,6 +405,7 @@ export function update_messages(events) {
                     message_view.show(current_filter.terms(), {
                         then_select_id: current_selected_id,
                         trigger: "stream/topic change",
+                        force_rerender: true,
                     });
                 }
             }
@@ -504,7 +446,7 @@ export function update_messages(events) {
                         updated_messages.map((msg) => msg.id),
                     );
                     // For filters that cannot be processed locally, ask server.
-                    maybe_add_narrowed_messages(
+                    message_events_util.maybe_add_narrowed_messages(
                         event_messages,
                         message_lists.current,
                         message_util.add_messages,

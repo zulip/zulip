@@ -12,7 +12,6 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -47,6 +46,7 @@ from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    activate_push_notification_service,
     create_s3_buckets,
     get_test_image_file,
     most_recent_message,
@@ -69,6 +69,7 @@ from zerver.models import (
     MutedUser,
     NamedUserGroup,
     OnboardingStep,
+    OnboardingUserMessage,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -435,6 +436,16 @@ class RealmImportExportTest(ExportFile):
         realm_user_default.default_language = "de"
         realm_user_default.save()
 
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, realm.id)
+        onboarding_message_id = self.send_stream_message(
+            welcome_bot, str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), recipient_realm=realm
+        )
+        OnboardingUserMessage.objects.create(
+            realm=realm,
+            message_id=onboarding_message_id,
+            flags=OnboardingUserMessage.flags.starred,
+        )
+
         self.export_realm_and_create_auditlog(realm)
 
         data = read_json("realm.json")
@@ -486,6 +497,15 @@ class RealmImportExportTest(ExportFile):
         self.assertFalse("realm" in exported_namedusergroups[2])
         self.assertFalse("direct_members" in exported_namedusergroups[2])
         self.assertFalse("direct_subgroups" in exported_namedusergroups[2])
+
+        exported_onboarding_usermessages = data["zerver_onboardingusermessage"]
+        self.assert_length(exported_onboarding_usermessages, 1)
+        self.assertEqual(exported_onboarding_usermessages[0]["message"], onboarding_message_id)
+        self.assertEqual(
+            exported_onboarding_usermessages[0]["flags_mask"],
+            OnboardingUserMessage.flags.starred.mask,
+        )
+        self.assertEqual(exported_onboarding_usermessages[0]["realm"], realm.id)
 
         data = read_json("messages-000001.json")
         um = UserMessage.objects.all()[0]
@@ -931,6 +951,19 @@ class RealmImportExportTest(ExportFile):
         realm_user_default.default_language = "de"
         realm_user_default.twenty_four_hour_time = True
         realm_user_default.save()
+
+        # Data to test import of onboarding usermessages
+        onboarding_message_id = self.send_stream_message(
+            cross_realm_bot,
+            str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            "onboarding message",
+            recipient_realm=original_realm,
+        )
+        OnboardingUserMessage.objects.create(
+            realm=original_realm,
+            message_id=onboarding_message_id,
+            flags=OnboardingUserMessage.flags.starred,
+        )
 
         # We want to have an extra, malformed RealmEmoji with no .author
         # to test that upon import that gets fixed.
@@ -1488,6 +1521,17 @@ class RealmImportExportTest(ExportFile):
                 "twenty_four_hour_time": realm_user_default.twenty_four_hour_time,
             }
 
+        @getter
+        def get_onboarding_usermessages(r: Realm) -> set[tuple[str, Any]]:
+            tups = {
+                (rec.message.content, rec.flags.mask)
+                for rec in OnboardingUserMessage.objects.filter(realm_id=r.id)
+            }
+            self.assertEqual(
+                tups, {("onboarding message", OnboardingUserMessage.flags.starred.mask)}
+            )
+            return tups
+
         return getters
 
     def test_import_realm_with_invalid_email_addresses_fails_validation(self) -> None:
@@ -1542,7 +1586,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(realm_user_default.default_language, "en")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     def test_import_realm_notify_bouncer(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
 

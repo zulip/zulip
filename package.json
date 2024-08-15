@@ -8,13 +8,14 @@
     "@babel/register": "^7.6.2",
     "@fontsource-variable/open-sans": "^5.0.9",
     "@formatjs/intl": "^2.0.0",
+    "@gfx/zopfli": "^1.0.15",
     "@giphy/js-components": "^5.13.0",
     "@giphy/js-fetch-api": "^5.6.0",
     "@koa/bodyparser": "^5.0.0",
     "@sentry/browser": "^7.51.2",
-    "@uppy/core": "^3.0.2",
-    "@uppy/progress-bar": "^3.0.1",
-    "@uppy/xhr-upload": "^3.0.2",
+    "@uppy/core": "^4.0.1",
+    "@uppy/progress-bar": "^4.0.0",
+    "@uppy/xhr-upload": "^4.0.1",
     "@zxcvbn-ts/core": "^3.0.1",
     "@zxcvbn-ts/language-common": "^3.0.2",
     "@zxcvbn-ts/language-en": "^3.0.1",
@@ -25,6 +26,7 @@
     "clean-css": "^5.1.0",
     "clipboard": "^2.0.4",
     "colord": "^2.9.3",
+    "compression-webpack-plugin": "^11.1.0",
     "core-js": "^3.37.0",
     "css-loader": "^7.1.1",
     "css-minimizer-webpack-plugin": "^7.0.0",
@@ -113,7 +115,7 @@
     "@types/turndown": "^5.0.1",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
-    "babel-plugin-istanbul": "^6.1.1",
+    "babel-plugin-istanbul": "^7.0.0",
     "babel-plugin-rewire-ts": "^1.4.0",
     "callsites": "^3.1.0",
     "cldr-annotations-derived-modern": "^45.0.0",
@@ -159,7 +161,6 @@
       "source-map@^0.6": "npm:source-map-js@1.0.1"
     },
     "patchedDependencies": {
-      "@uppy/core@3.13.0": "patches/@uppy__core@3.10.1.patch",
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
       "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
     }

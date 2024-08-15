@@ -118,7 +118,7 @@ With the compact option, only status emoji are shown.
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, select **Compact** or **Show status and text** for the
+1. Under **Information**, select **Compact** or **Show status and text** for the
    user list style.
 
 !!! tip ""

@@ -51,14 +51,46 @@ const message_events = mock_esm("../src/message_events", {
 
 const server_events = zrequire("server_events");
 
+const message = {
+    id: 1,
+    sender_id: 2,
+    content: "hello",
+    recipient_id: 3,
+    timestamp: 100000000,
+    client: "website",
+    subject: "server_test",
+    topic_links: [],
+    is_me_message: false,
+    reactions: [
+        {
+            emoji_name: "foo",
+            emoji_code: "bar",
+            reaction_type: "unicode_emoji",
+            user: {
+                email: "user1@foo.com",
+                id: 1,
+                full_name: "aaron",
+            },
+            user_id: 1,
+        },
+    ],
+    submessages: [],
+    sender_full_name: "user1",
+    sender_email: "user2@foo.com",
+    sender_realm_str: "foo",
+    display_recipient: "test",
+    type: "stream",
+    stream_id: 1,
+    avatar_url: "bar",
+    content_type: "text/html",
+};
+
 server_events.finished_initial_fetch();
 
 run_test("message_event", ({override}) => {
     const event = {
         type: "message",
-        message: {
-            content: "hello",
-        },
+        message,
         flags: [],
     };
 
@@ -102,7 +134,7 @@ run_test("event_dispatch_error", () => {
 run_test("event_new_message_error", () => {
     setup();
 
-    const data = {events: [{type: "message", id: 1, other: "thing", message: {}}]};
+    const data = {events: [{type: "message", id: 1, other: "thing", message}]};
     channel.get = (options) => {
         options.success(data);
     };

@@ -229,6 +229,7 @@ function bot_info(bot_user_id) {
     info.full_name = bot_user.full_name;
     info.bot_owner_id = owner_id;
     info.user_role_text = people.get_user_type(bot_user_id);
+    info.img_src = people.small_avatar_url_for_person(bot_user);
 
     // Convert bot type id to string for viewing to the users.
     info.bot_type = settings_data.bot_type_id_to_string(bot_user.bot_type);
@@ -247,6 +248,11 @@ function bot_info(bot_user_id) {
 
     // It's always safe to show the real email addresses for bot users
     info.display_email = bot_user.email;
+
+    if (owner_id) {
+        info.is_bot_owner_active = people.is_person_active(owner_id);
+        info.owner_img_src = people.small_avatar_url_for_person(people.get_by_user_id(owner_id));
+    }
 
     return info;
 }
@@ -272,8 +278,10 @@ function human_info(person) {
 
     info.can_modify = current_user.is_admin;
     info.is_current_user = people.is_my_user_id(person.user_id);
-    info.cannot_deactivate = info.is_current_user || (person.is_owner && !current_user.is_owner);
+    info.cannot_deactivate =
+        person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner());
     info.display_email = person.delivery_email;
+    info.img_src = people.small_avatar_url_for_person(person);
 
     // TODO: This is not shown in deactivated users table and it is
     // controlled by `display_last_active_column` We might just want
@@ -414,7 +422,7 @@ export function update_user_data(user_id, new_data) {
 
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
-        $user_row.find(".user_name .view_user_profile").text(new_data.full_name);
+        $user_row.find(".pill-container .view_user_profile .pill-value").text(new_data.full_name);
     }
 
     if (new_data.role !== undefined) {
@@ -485,8 +493,12 @@ function handle_deactivation($tbody) {
         const $row = $(e.target).closest(".user_row");
         const user_id = Number($row.attr("data-user-id"));
 
+        let url = "/json/users/" + encodeURIComponent(user_id);
+        if (user_id === current_user.user_id) {
+            url = "/json/users/me";
+        }
+
         function handle_confirm() {
-            const url = "/json/users/" + encodeURIComponent(user_id);
             let data = {};
             if ($(".send_email").is(":checked")) {
                 data = {
@@ -494,7 +506,14 @@ function handle_deactivation($tbody) {
                 };
             }
 
-            dialog_widget.submit_api_request(channel.del, url, data);
+            const opts = {};
+            if (user_id === current_user.user_id) {
+                opts.success_continuation = () => {
+                    window.location.href = "/login/";
+                };
+            }
+
+            dialog_widget.submit_api_request(channel.del, url, data, opts);
         }
 
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);

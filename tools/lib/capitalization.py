@@ -73,6 +73,7 @@ IGNORED_PHRASES = [
     r"and",
     r"bot",
     r"e\.g\.",
+    r"email",
     r"enabled",
     r"signups",
     # Placeholders

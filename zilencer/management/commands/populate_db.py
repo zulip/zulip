@@ -44,7 +44,7 @@ from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
-from zerver.lib.types import ProfileFieldData
+from zerver.lib.types import AnalyticsDataUploadLevel, ProfileFieldData
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -79,7 +79,10 @@ from zilencer.views import update_remote_realm_data_for_server
 
 # Disable the push notifications bouncer to avoid enqueuing updates in
 # maybe_enqueue_audit_log_upload during early setup.
-settings.PUSH_NOTIFICATION_BOUNCER_URL = None
+settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
+settings.ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
+settings.ZULIP_SERVICE_SECURITY_ALERTS = False
+settings.ANALYTICS_DATA_UPLOAD_LEVEL = AnalyticsDataUploadLevel.NONE
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
@@ -109,10 +112,14 @@ def clear_database() -> None:
     # and; we only need to flush memcached if we're populating a
     # database that would be used with it (i.e. zproject.dev_settings).
     if default_cache["BACKEND"] == "zerver.lib.singleton_bmemcached.SingletonBMemcached":
-        bmemcached.Client(
+        memcached_client = bmemcached.Client(
             (default_cache["LOCATION"],),
             **default_cache["OPTIONS"],
-        ).flush_all()
+        )
+        try:
+            memcached_client.flush_all()
+        finally:
+            memcached_client.disconnect_all()
 
     model: Any = None  # Hack because mypy doesn't know these are model classes
 
@@ -243,11 +250,11 @@ class Command(ZulipBaseCommand):
         parser.add_argument("--max-topics", type=int, help="The number of maximum topics to create")
 
         parser.add_argument(
-            "--huddles",
-            dest="num_huddles",
+            "--direct-message-groups",
+            dest="num_direct_message_groups",
             type=int,
             default=3,
-            help="The number of huddles to create.",
+            help="The number of direct message groups to create.",
         )
 
         parser.add_argument(
@@ -261,10 +268,10 @@ class Command(ZulipBaseCommand):
         parser.add_argument("--threads", type=int, default=1, help="The number of threads to use.")
 
         parser.add_argument(
-            "--percent-huddles",
+            "--percent-direct-message-groups",
             type=float,
             default=15,
-            help="The percent of messages to be huddles.",
+            help="The percent of messages to be direct message groups.",
         )
 
         parser.add_argument(
@@ -300,7 +307,7 @@ class Command(ZulipBaseCommand):
         # Suppress spammy output from the push notifications logger
         push_notifications_logger.disabled = True
 
-        if options["percent_huddles"] + options["percent_personals"] > 100:
+        if options["percent_direct_message_groups"] + options["percent_personals"] > 100:
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
 
@@ -930,8 +937,8 @@ class Command(ZulipBaseCommand):
 
         user_profiles_ids = [user_profile.id for user_profile in user_profiles]
 
-        # Create several initial huddles
-        for i in range(options["num_huddles"]):
+        # Create several initial direct message groups
+        for i in range(options["num_direct_message_groups"]):
             get_or_create_direct_message_group(
                 random.sample(user_profiles_ids, random.randint(3, 4))
             )
@@ -1160,7 +1167,7 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # Create some test messages, including:
 # - multiple streams
 # - multiple subjects per stream
-# - multiple huddles
+# - multiple direct message groups
 # - multiple personal conversations
 # - multiple messages per subject
 # - both single and multi-line content
@@ -1186,13 +1193,15 @@ def generate_and_send_messages(
         recipient.id
         for recipient in Recipient.objects.filter(type=Recipient.STREAM, type_id__in=stream_ids)
     ]
-    recipient_huddles: list[int] = [
+    recipient_direct_message_groups: list[int] = [
         h.id for h in Recipient.objects.filter(type=Recipient.DIRECT_MESSAGE_GROUP)
     ]
 
-    huddle_members: dict[int, list[int]] = {}
-    for h in recipient_huddles:
-        huddle_members[h] = [s.user_profile.id for s in Subscription.objects.filter(recipient_id=h)]
+    direct_message_group_members: dict[int, list[int]] = {}
+    for h in recipient_direct_message_groups:
+        direct_message_group_members[h] = [
+            s.user_profile.id for s in Subscription.objects.filter(recipient_id=h)
+        ]
 
     # Generate different topics for each stream
     possible_topic_names = {}
@@ -1235,12 +1244,14 @@ def generate_and_send_messages(
                 message.recipient = get_recipient_by_id(recipient_id)
             elif message_type == Recipient.DIRECT_MESSAGE_GROUP:
                 message.recipient = get_recipient_by_id(recipient_id)
-        elif randkey <= random_max * options["percent_huddles"] / 100.0:
+        elif randkey <= random_max * options["percent_direct_message_groups"] / 100.0:
             message_type = Recipient.DIRECT_MESSAGE_GROUP
-            message.recipient = get_recipient_by_id(random.choice(recipient_huddles))
+            message.recipient = get_recipient_by_id(random.choice(recipient_direct_message_groups))
         elif (
             randkey
-            <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.0
+            <= random_max
+            * (options["percent_direct_message_groups"] + options["percent_personals"])
+            / 100.0
         ):
             message_type = Recipient.PERSONAL
             personals_pair = random.choice(personals_pairs)
@@ -1250,7 +1261,7 @@ def generate_and_send_messages(
             message.recipient = get_recipient_by_id(random.choice(recipient_streams))
 
         if message_type == Recipient.DIRECT_MESSAGE_GROUP:
-            sender_id = random.choice(huddle_members[message.recipient.id])
+            sender_id = random.choice(direct_message_group_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
         elif message_type == Recipient.PERSONAL:
             message.recipient = Recipient.objects.get(

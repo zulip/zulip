@@ -157,6 +157,11 @@
  *   This is useful for custom situations where we want to trigger the
  *   typeahead to do a lookup after selecting an option, when the user
  *   is making multiple related selections in a row.
+ *
+ * 19. Add `hideOnEmptyAfterBackspace` option, default false.
+ *
+ *   This allows us to prevent the typeahead menu from being displayed
+ *   when a pill is deleted using the backspace key.
  * ============================================================ */
 
 import $ from "jquery";
@@ -270,6 +275,7 @@ export class Typeahead<ItemType extends string | object> {
     // Used for custom situations where we want to hide the typeahead
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
+    hideOnEmptyAfterBackspace: boolean;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -310,6 +316,7 @@ export class Typeahead<ItemType extends string | object> {
         this.shouldHighlightFirstResult = options.shouldHighlightFirstResult ?? (() => true);
         this.updateElementContent = options.updateElementContent ?? true;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
+        this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
 
         this.listen();
     }
@@ -448,6 +455,19 @@ export class Typeahead<ItemType extends string | object> {
                     }
                     return [0, gap];
                 },
+                onShow(instance) {
+                    if (input_element.type === "textarea") {
+                        // Since we use an offset which can partially hide typeahead
+                        // at certain caret positions, we need to push it back into
+                        // view once we have rendered the typeahead. The movement
+                        // feels like an animation to the user.
+                        setTimeout(() => {
+                            // This detects any overflows by default and adjusts
+                            // the placement of typeahead.
+                            void instance.popperInstance?.update();
+                        }, 0);
+                    }
+                },
                 // We have event handlers to hide the typeahead, so we
                 // don't want tippy to hide it for us.
                 hideOnClick: false,
@@ -488,7 +508,7 @@ export class Typeahead<ItemType extends string | object> {
         this.query =
             this.input_element.type === "contenteditable"
                 ? this.input_element.$element.text()
-                : this.input_element.$element.val() ?? "";
+                : (this.input_element.$element.val() ?? "");
 
         if (
             (!this.helpOnEmptyStrings || hideOnEmpty) &&
@@ -541,7 +561,9 @@ export class Typeahead<ItemType extends string | object> {
             const option_label_html = this.option_label(matching_items, item);
 
             if (option_label_html) {
-                $item_html.append($(option_label_html)).addClass("typeahead-option-label");
+                $item_html
+                    .addClass("typeahead-option-label-container")
+                    .append($(option_label_html).addClass("typeahead-option-label"));
             }
             return $i;
         });
@@ -700,6 +722,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keyup(e: JQuery.KeyUpEvent): void {
+        this.mouse_moved_since_typeahead = false;
         // NOTE: Ideally we can ignore meta keyup calls here but
         // it's better to just trigger the lookup call to update the list in case
         // it did modify the query. For example, `Command + delete` on Mac
@@ -762,6 +785,10 @@ export class Typeahead<ItemType extends string | object> {
                     // lookahead in case it needs to make UI changes first (e.g. widening
                     // the search bar).
                     this.openInputFieldOnKeyUp();
+                }
+                if (pseudo_keycode === 8) {
+                    this.lookup(this.hideOnEmptyAfterBackspace);
+                    return;
                 }
                 this.lookup(false);
         }
@@ -856,6 +883,7 @@ type TypeaheadOptions<ItemType> = {
     dropup?: boolean;
     header_html?: () => string | false;
     helpOnEmptyStrings?: boolean;
+    hideOnEmptyAfterBackspace?: boolean;
     matcher?: (item: ItemType, query: string) => boolean;
     on_escape?: () => void;
     openInputFieldOnKeyUp?: () => void;

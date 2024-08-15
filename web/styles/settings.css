@@ -401,7 +401,8 @@ select.settings_select {
 
 .user_role,
 .profile_field_type,
-.bot_type {
+.bot_type,
+.last_active {
     word-break: normal;
 }
 
@@ -550,8 +551,8 @@ input[type="checkbox"] {
     }
 }
 
-.organization-settings-parent > div:first-of-type {
-    margin-top: 10px;
+.organization-settings-parent {
+    padding-top: 10px;
 }
 
 #id_org_profile_preview {
@@ -562,8 +563,8 @@ input[type="checkbox"] {
     margin-bottom: 20px;
 }
 
-.inline-block.organization-permissions-parent div:first-of-type {
-    margin-top: 10px;
+.inline-block.organization-permissions-parent {
+    padding-top: 10px;
 }
 
 .language_selection_widget .language_selection_button {
@@ -1155,22 +1156,72 @@ input[type="checkbox"] {
 
 #api_key_form,
 #change_password_modal {
-    .password-div {
-        position: relative;
+    .settings-password-div {
+        display: flex;
+        flex-wrap: wrap;
 
-        & input[type="text"] {
-            margin-bottom: 10px;
+        .modal-field-label {
+            /* Keep the label to its own
+               line in the wrapping flexbox. */
+            flex: 0 0 100%;
         }
 
-        .password_visibility_toggle {
-            position: absolute;
-            left: 194px;
-            top: 32px;
-            width: 14px;
-            opacity: 0.6;
+        .password-input-row {
+            display: flex;
+            margin-bottom: 10px;
+            /* This helps us in making sure that the
+               password_visibility_toggle does not look
+               misaligned in small screens where that component
+               increases in height on small screens. */
+            max-height: 2em;
 
-            &:hover {
-                opacity: 1;
+            .modal_password_input {
+                /* The usual width of input is 206px, but we reduce
+                   it by 30px to make way for the padding. */
+                width: 176px;
+                padding-right: 30px;
+                /* Override the original 10px value so that we can
+                   set the margin-bottom in the parent div instead. */
+                margin-bottom: 0;
+            }
+
+            .password_visibility_toggle {
+                /* We're going to use flexbox, not
+                   positioning, to get the clear button
+                   over top of the input. This -2em
+                   margin accomplishes that, in tandem
+                   with the 2em width of this element,
+                   which is shared with the ending
+                   anchor element in left sidebar header
+                   rows. We're using em instead of pixels
+                   so the whitespace between the input box
+                   and the icon doesn't decrease when the
+                   icon's font-size increases when switching
+                   from 14px info density to 16px info density
+                   mode. */
+                width: 2em;
+                margin-left: -2em;
+
+                /* Make the button itself a flex container,
+                   so we can perfectly center the X icon. */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                opacity: 0.6;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            .settings-forgot-password {
+                /* Make the link itself a flex container,
+                   so we can perfectly center the text
+                   in relation to the input box. */
+                display: flex;
+                align-items: center;
+                margin-left: 10px;
             }
         }
     }
@@ -1207,7 +1258,7 @@ label.preferences-radio-choice-label {
             cursor: not-allowed;
         }
 
-        &:checked + span {
+        &:checked + .preferences-radio-choice-text {
             font-weight: 600;
         }
     }
@@ -1759,6 +1810,10 @@ $option_title_width: 180px;
 }
 
 @media (width < $lg_min) {
+    .settings-email-column {
+        display: none;
+    }
+
     .upload-size {
         display: none;
     }

@@ -34,6 +34,8 @@ const MESSAGE_SENT_CLASSNAMES = {
 
 export const CLASSNAMES = {
     ...MESSAGE_SENT_CLASSNAMES,
+    non_interleaved_view_messages_fading: "non_interleaved_view_messages_fading",
+    interleaved_view_messages_fading: "interleaved_view_messages_fading",
     // unmute topic notifications are styled like warnings but have distinct behaviour
     unmute_topic_notification: "unmute_topic_notification warning-style",
     // warnings
@@ -145,6 +147,14 @@ export function clear_unmute_topic_notifications(): void {
 
 export function clear_search_view_banner(): void {
     $(`#compose_banners .${CSS.escape(CLASSNAMES.search_view)}`).remove();
+}
+
+export function clear_non_interleaved_view_messages_fading_banner(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.non_interleaved_view_messages_fading)}`).remove();
+}
+
+export function clear_interleaved_view_messages_fading_banner(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.interleaved_view_messages_fading)}`).remove();
 }
 
 export function clear_all(): void {

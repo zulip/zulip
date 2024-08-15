@@ -137,11 +137,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         sort_recipients_called = true;
         return users;
     });
-    mock_template("input_pill.hbs", true, (data, html) => {
-        assert.equal(typeof data.display_value, "string");
-        assert.equal(typeof data.has_image, "boolean");
-        return html;
-    });
+    mock_template("input_pill.hbs", true, (_data, html) => html);
     let input_pill_typeahead_called = false;
     const $fake_input = $.create(".input");
     $fake_input.before = noop;
@@ -153,6 +149,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         $container,
         create_item_from_text: noop,
         get_text_from_item: noop,
+        get_display_value_from_item: noop,
     });
 
     let update_func_called = false;
@@ -229,11 +226,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         sort_streams_called = true;
         return streams;
     });
-    mock_template("input_pill.hbs", true, (data, html) => {
-        assert.equal(typeof data.display_value, "string");
-        assert.equal(typeof data.has_image, "boolean");
-        return html;
-    });
+    mock_template("input_pill.hbs", true, (_data, html) => html);
     let input_pill_typeahead_called = false;
     const $fake_input = $.create(".input");
     $fake_input.before = noop;
@@ -245,6 +238,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         $container,
         create_item_from_text: noop,
         get_text_from_item: noop,
+        get_display_value_from_item: noop,
     });
 
     let update_func_called = false;
@@ -317,11 +311,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
 
 run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     override_typeahead_helper(override_rewire);
-    mock_template("input_pill.hbs", true, (data, html) => {
-        assert.equal(typeof data.display_value, "string");
-        assert.equal(typeof data.has_image, "boolean");
-        return html;
-    });
+    mock_template("input_pill.hbs", true, (_data, html) => html);
     let input_pill_typeahead_called = false;
     const $fake_input = $.create(".input");
     $fake_input.before = noop;
@@ -333,6 +323,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         $container,
         create_item_from_text: noop,
         get_text_from_item: noop,
+        get_display_value_from_item: noop,
     });
 
     let update_func_called = false;

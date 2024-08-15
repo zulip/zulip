@@ -20,8 +20,9 @@ import type {FieldData, SelectFieldData} from "./settings_components";
 import * as settings_ui from "./settings_ui";
 import type {CustomProfileField} from "./state_data";
 import {current_user, realm} from "./state_data";
-import type {HTMLSelectOneElement, UserExternalAccountData} from "./types";
+import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
+import {place_caret_at_end} from "./ui_util";
 
 type FieldChoice = {
     value: string;
@@ -280,6 +281,9 @@ function open_custom_profile_field_form_modal(): void {
         on_click: create_profile_field,
         post_render: set_up_form_fields,
         loading_spinner: true,
+        on_shown() {
+            $("#profile_field_type").trigger("focus");
+        },
     });
 }
 
@@ -552,7 +556,7 @@ function open_edit_form_modal(this: HTMLElement): void {
             }
 
             if (Object.keys(deleted_values).length !== 0) {
-                const edit_select_field_modal_callback: () => void = () => {
+                const edit_select_field_modal_callback = (): void => {
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
                 };
                 dialog_widget.close(edit_select_field_modal_callback);
@@ -572,6 +576,9 @@ function open_edit_form_modal(this: HTMLElement): void {
         on_click: submit_form,
         post_render: set_initial_values_of_profile_field,
         loading_spinner: true,
+        on_shown() {
+            place_caret_at_end($("#id-custom-profile-field-name")[0]!);
+        },
     });
 }
 
@@ -765,20 +772,22 @@ function set_up_external_account_field(): void {
     });
 }
 
-export function get_external_account_link(field: UserExternalAccountData): string {
-    assert(field.field_data !== undefined);
-    const field_subtype = field.field_data.subtype;
+export function get_external_account_link(
+    field_data: settings_components.ExternalAccountFieldData,
+    value: string,
+): string {
+    const field_subtype = field_data.subtype;
     let field_url_pattern: string;
 
     if (field_subtype === "custom") {
-        assert(field.field_data.url_pattern !== undefined);
-        field_url_pattern = field.field_data.url_pattern;
+        assert(field_data.url_pattern !== undefined);
+        field_url_pattern = field_data.url_pattern;
     } else {
         const external_account = realm.realm_default_external_accounts[field_subtype];
         assert(external_account !== undefined);
         field_url_pattern = external_account.url_pattern;
     }
-    return field_url_pattern.replace("%(username)s", () => field.value);
+    return field_url_pattern.replace("%(username)s", () => value);
 }
 
 export function set_up(): void {

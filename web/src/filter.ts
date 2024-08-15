@@ -296,11 +296,14 @@ export class Filter {
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
     requires_adjustment_for_moved_with_target?: boolean;
+    narrow_requires_hash_change: boolean;
+    cached_sorted_terms_for_comparison?: string[] | undefined = undefined;
 
     constructor(terms: NarrowTerm[]) {
         this._terms = terms;
         this.setup_filter(terms);
         this.requires_adjustment_for_moved_with_target = this.has_operator("with");
+        this.narrow_requires_hash_change = false;
     }
 
     static canonicalize_operator(operator: string): string {
@@ -533,6 +536,7 @@ export class Filter {
                 return ["home", "all"].includes(term.operand);
             case "id":
             case "near":
+            case "with":
                 return Number.isInteger(Number(term.operand));
             case "channel":
             case "stream":
@@ -665,7 +669,7 @@ export class Filter {
 
             // Note: We hack around using this in "describe" below.
             case "has":
-                return verb + "messages with one or more";
+                return verb + "messages with";
 
             case "id":
                 return verb + "message ID";
@@ -868,6 +872,7 @@ export class Filter {
 
     setup_filter(terms: NarrowTerm[]): void {
         this._terms = this.fix_terms(terms);
+        this.cached_sorted_terms_for_comparison = undefined;
         if (this.has_operator("channel")) {
             this._sub = stream_data.get_sub_by_name(this.operands("channel")[0]!);
         }
@@ -875,12 +880,16 @@ export class Filter {
 
     equals(filter: Filter, excluded_operators?: string[]): boolean {
         return _.isEqual(
-            filter.sorted_terms(excluded_operators),
-            this.sorted_terms(excluded_operators),
+            filter.sorted_terms_for_comparison(excluded_operators),
+            this.sorted_terms_for_comparison(excluded_operators),
         );
     }
 
-    sorted_terms(excluded_operators?: string[]): NarrowTerm[] {
+    sorted_terms_for_comparison(excluded_operators?: string[]): string[] {
+        if (!excluded_operators && this.cached_sorted_terms_for_comparison !== undefined) {
+            return this.cached_sorted_terms_for_comparison;
+        }
+
         let filter_terms = this._terms;
         if (excluded_operators) {
             filter_terms = this._terms.filter(
@@ -888,11 +897,22 @@ export class Filter {
             );
         }
 
-        return filter_terms.sort((a, b) => {
-            const a_joined = `${a.negated ? "0" : "1"}-${a.operator}-${a.operand}`;
-            const b_joined = `${b.negated ? "0" : "1"}-${b.operator}-${b.operand}`;
-            return util.strcmp(a_joined, b_joined);
-        });
+        const sorted_simplified_terms = filter_terms
+            .map((term) => {
+                let operand = term.operand;
+                if (term.operator === "channel" || term.operator === "topic") {
+                    operand = operand.toLowerCase();
+                }
+
+                return `${term.negated ? "0" : "1"}-${term.operator}-${operand}`;
+            })
+            .sort(util.strcmp);
+
+        if (!excluded_operators) {
+            this.cached_sorted_terms_for_comparison = sorted_simplified_terms;
+        }
+
+        return sorted_simplified_terms;
     }
 
     predicate(): (message: Message) => boolean {
@@ -1223,7 +1243,7 @@ export class Filter {
                 zulip_icon = "hashtag";
                 break;
             case "is-dm":
-                icon = "envelope";
+                zulip_icon = "user";
                 break;
             case "is-starred":
                 zulip_icon = "star-filled";
@@ -1232,7 +1252,7 @@ export class Filter {
                 zulip_icon = "at-sign";
                 break;
             case "dm":
-                icon = "envelope";
+                zulip_icon = "user";
                 break;
             case "is-resolved":
                 icon = "check";
@@ -1483,7 +1503,9 @@ export class Filter {
     }
 
     sorted_term_types(): string[] {
-        if (this._sorted_term_types === undefined) {
+        // We need to rebuild the sorted_term_types if at all our narrow
+        // is updated (through `with` operator).
+        if (this._sorted_term_types === undefined || this.narrow_requires_hash_change) {
             this._sorted_term_types = this._build_sorted_term_types();
         }
         return this._sorted_term_types;
@@ -1571,7 +1593,11 @@ export class Filter {
 
     is_conversation_view(): boolean {
         const term_type = this.sorted_term_types();
-        if (_.isEqual(term_type, ["channel", "topic"]) || _.isEqual(term_type, ["dm"])) {
+        if (
+            _.isEqual(term_type, ["channel", "topic", "with"]) ||
+            _.isEqual(term_type, ["channel", "topic"]) ||
+            _.isEqual(term_type, ["dm"])
+        ) {
             return true;
         }
         return false;
@@ -1619,6 +1645,9 @@ export class Filter {
 
         const adjusted_terms = Filter.adjusted_terms_if_moved(this._terms, message);
         if (adjusted_terms) {
+            // If the narrow terms are adjusted, then we need to update the
+            // hash user entered, to point to the updated narrow.
+            this.narrow_requires_hash_change = true;
             this.setup_filter(adjusted_terms);
         }
         this.requires_adjustment_for_moved_with_target = false;

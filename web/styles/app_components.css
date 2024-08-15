@@ -1,7 +1,8 @@
 /* Reusable, object-oriented CSS base components for the Zulip web app
    (not included in the portico CSS) */
 
-.flex {
+.flex,
+.show.flex {
     width: 100%;
     height: 100%;
     display: flex;
@@ -149,7 +150,18 @@ input::placeholder {
         }
 
         &.small {
-            font-size: 0.8rem;
+            /* This value was 0.8rem in the past. When using rem,
+               the root font size was 16px when the base font-size was
+               14px. Now, we have two modes, one with 14px base
+               font-size and one with 16px base font-size. We multiply
+               by (16 / 14 * 0.8 = 0.9143) so rem equivalent value
+               will remain the same in the legacy 14px mode, while
+               scaling the size up for 16px mode. The font-size will
+               resolve in pixels.
+               TODO: Refactor this part to either use `em` or `rem`
+               and not this temporary hack of using calc() and
+               variables. */
+            font-size: calc(0.9143 * var(--base-font-size-px));
             min-width: inherit;
             padding: 6px 10px;
         }
@@ -690,7 +702,7 @@ div.overlay {
     color: hsl(0deg 0% 0%);
     border-radius: 4px;
 
-    & span {
+    .color-animated-button-text {
         color: hsl(0deg 0% 0%);
     }
 
@@ -699,7 +711,7 @@ div.overlay {
         background-color: hsl(240deg 96% 68%);
         color: hsl(0deg 0% 100%);
 
-        & span {
+        .color-animated-button-text {
             color: hsl(0deg 0% 100%);
             transition: all 0.2s ease;
         }
@@ -707,7 +719,8 @@ div.overlay {
         transition: all 0.2s ease;
     }
 
-    * {
+    .zulip-icon,
+    .color-animated-button-text {
         padding: 6px 3px;
     }
 
@@ -741,7 +754,7 @@ div.overlay {
         word-break: normal;
 
         &[data-sort] {
-            padding-right: 0.88em;
+            padding-right: var(--table-header-sortable-column-padding-right);
         }
 
         &.active::after,
@@ -783,6 +796,10 @@ div.overlay {
     .actions {
         width: 1%;
         white-space: nowrap;
+    }
+
+    th.actions {
+        padding-right: 1em;
     }
 
     & th,
@@ -1026,11 +1043,6 @@ div.overlay {
 
 .overlay-messages-container .overlay-message-row {
     padding: 5px 0;
-
-    > div {
-        display: inline-block;
-        vertical-align: top;
-    }
 
     .overlay-message-info-box {
         width: 100%;

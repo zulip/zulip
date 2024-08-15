@@ -10,7 +10,7 @@
             <span class="fa fa-ban slashed-circle-icon"></span>
             {{/if}}
             <span class="pill-label">
-                <span class="pill-value">{{ this.display_value }}</span>
+                <span class="pill-value">{{ this.full_name }}</span>
                 {{~#if this.should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
                 {{~#if deactivated}}&nbsp;{{~/if~}}
                 {{~#if this.status_emoji_info~}}

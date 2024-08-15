@@ -23,7 +23,11 @@ from zerver.lib.home import (
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_user_messages, queries_captured
+from zerver.lib.test_helpers import (
+    activate_push_notification_service,
+    get_user_messages,
+    queries_captured,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
@@ -128,6 +132,7 @@ class HomeTest(ZulipTestCase):
         "realm_can_access_all_users_group",
         "realm_can_create_private_channel_group",
         "realm_can_create_public_channel_group",
+        "realm_can_create_web_public_channel_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
@@ -219,6 +224,7 @@ class HomeTest(ZulipTestCase):
         "server_presence_offline_threshold_seconds",
         "server_presence_ping_interval_seconds",
         "server_supported_permission_settings",
+        "server_thumbnail_formats",
         "server_timestamp",
         "server_typing_started_expiry_period_milliseconds",
         "server_typing_started_wait_period_milliseconds",
@@ -262,7 +268,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(54),
+            self.assert_database_query_count(52),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -567,7 +573,7 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(54),
+            self.assert_database_query_count(52),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
@@ -599,7 +605,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(49):
+        with self.assert_database_query_count(47):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
@@ -972,7 +978,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
         self.assertEqual(page_params["state_data"]["max_message_id"], -1)
 
-    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @activate_push_notification_service()
     def test_get_billing_info(self) -> None:
         user = self.example_user("desdemona")
         user.role = UserProfile.ROLE_REALM_OWNER
@@ -1128,7 +1134,7 @@ class HomeTest(ZulipTestCase):
         # If the server doesn't have the push bouncer configured,
         # remote billing should be shown anyway, as the billing endpoint
         # is supposed show a useful error page.
-        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=None, CORPORATE_ENABLED=False):
+        with self.settings(ZULIP_SERVICE_PUSH_NOTIFICATIONS=False, CORPORATE_ENABLED=False):
             billing_info = get_billing_info(user)
         self.assertTrue(billing_info.show_remote_billing)
 

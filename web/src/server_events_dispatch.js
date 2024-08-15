@@ -205,7 +205,6 @@ export function dispatch_normal_event(event) {
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 create_multiuse_invite_group: noop,
-                create_web_public_stream_policy: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
@@ -266,12 +265,9 @@ export function dispatch_normal_event(event) {
                             gear_menu.rerender();
                         }
 
-                        if (
-                            event.property === "create_web_public_stream_policy" ||
-                            event.property === "enable_spectator_access"
-                        ) {
+                        if (event.property === "enable_spectator_access") {
                             stream_settings_ui.update_stream_privacy_choices(
-                                "create_web_public_stream_policy",
+                                "can_create_web_public_channel_group",
                             );
                         }
                     }
@@ -293,7 +289,8 @@ export function dispatch_normal_event(event) {
 
                                 if (
                                     key === "can_create_public_channel_group" ||
-                                    key === "can_create_private_channel_group"
+                                    key === "can_create_private_channel_group" ||
+                                    key === "can_create_web_public_channel_group"
                                 ) {
                                     stream_settings_ui.update_stream_privacy_choices(key);
                                 }
@@ -728,6 +725,7 @@ export function dispatch_normal_event(event) {
                 "translate_emoticons",
                 "display_emoji_reaction_users",
                 "user_list_style",
+                "web_animate_image_previews",
                 "web_stream_unreads_count_display_policy",
                 "starred_message_counts",
                 "send_stream_typing_notifications",
@@ -778,6 +776,12 @@ export function dispatch_normal_event(event) {
             if (event.property === "demote_inactive_streams") {
                 stream_list.update_streams_sidebar();
                 stream_list_sort.set_filter_out_inactives();
+            }
+            if (event.property === "web_animate_image_previews") {
+                // Rerender the whole message list UI
+                for (const msg_list of message_lists.all_rendered_message_lists()) {
+                    msg_list.rerender();
+                }
             }
             if (event.property === "web_stream_unreads_count_display_policy") {
                 stream_list.update_dom_unread_counts_visibility();

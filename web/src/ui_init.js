@@ -126,6 +126,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
 import * as theme from "./theme";
+import * as thumbnail from "./thumbnail";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -191,7 +192,11 @@ function initialize_compose_box() {
 }
 
 function initialize_message_feed_errors() {
-    $("#message_feed_errors_container").html(render_message_feed_errors());
+    $("#message_feed_errors_container").html(
+        render_message_feed_errors({
+            is_guest: current_user.is_guest,
+        }),
+    );
 }
 
 export function initialize_kitchen_sink_stuff() {
@@ -426,6 +431,7 @@ export function initialize_everything(state_data) {
     if (page_params.is_spectator) {
         theme.initialize_theme_for_spectator();
     }
+    thumbnail.initialize();
     widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();

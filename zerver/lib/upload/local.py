@@ -52,8 +52,16 @@ def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
     assert_is_local_storage_path(type, file_path)
 
     if os.path.isfile(file_path):
-        # This removes the file but the empty folders still remain.
         os.remove(file_path)
+
+        # Remove as many directories up the tree as are now empty
+        directory = os.path.dirname(file_path)
+        while directory != settings.LOCAL_UPLOADS_DIR:
+            try:
+                os.rmdir(directory)
+                directory = os.path.dirname(directory)
+            except OSError:
+                break
         return True
     file_name = path.split("/")[-1]
     logging.warning("%s does not exist. Its entry in the database will be removed.", file_name)
@@ -83,7 +91,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         path_id: str,
         content_type: str,
         file_data: bytes,
-        user_profile: UserProfile,
+        user_profile: UserProfile | None,
     ) -> None:
         write_local_file("files", path_id, file_data)
 
@@ -96,9 +104,14 @@ class LocalUploadBackend(ZulipUploadBackend):
         return delete_local_file("files", path_id)
 
     @override
-    def all_message_attachments(self) -> Iterator[tuple[str, datetime]]:
+    def all_message_attachments(
+        self, include_thumbnails: bool = False
+    ) -> Iterator[tuple[str, datetime]]:
         assert settings.LOCAL_UPLOADS_DIR is not None
-        for dirname, _, files in os.walk(settings.LOCAL_UPLOADS_DIR + "/files"):
+        top = settings.LOCAL_UPLOADS_DIR + "/files"
+        for dirname, subdirnames, files in os.walk(top):
+            if not include_thumbnails and dirname == top and "thumbnail" in subdirnames:
+                subdirnames.remove("thumbnail")
             for f in files:
                 fullpath = os.path.join(dirname, f)
                 yield (

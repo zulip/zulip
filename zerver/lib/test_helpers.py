@@ -37,6 +37,7 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
+from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Client, Message, RealmUserDefault, Subscription, UserMessage, UserProfile
 from zerver.models.clients import clear_client_cache, get_client
@@ -76,6 +77,53 @@ def stub_event_queue_user_events(
         mock.patch("zerver.lib.events.get_user_events", return_value=user_events_return),
     ):
         yield
+
+
+class activate_push_notification_service(override_settings):  # noqa: N801
+    """
+    Activating the push notification service involves a few different settings
+    that are logically related, and ordinarily set correctly in computed_settings.py
+    based on the admin-configured settings.
+    Having tests deal with overriding all the necessary settings every time they
+    want to simulate using the push notification service would be too
+    cumbersome, so we provide a convenient helper.
+    Can be used as either a context manager or a decorator applied to a test method
+    or class, just like original override_settings.
+    """
+
+    def __init__(
+        self, zulip_services_url: str | None = None, submit_usage_statistics: bool = False
+    ) -> None:
+        if zulip_services_url is None:
+            zulip_services_url = settings.ZULIP_SERVICES_URL
+        assert zulip_services_url is not None
+
+        # Ordinarily the ANALYTICS_DATA_UPLOAD_LEVEL setting is computed based on these
+        # ZULIP_SERVICE_* configured settings; but because these settings here won't get
+        # processed through computed_settings, we need to set ANALYTICS_DATA_UPLOAD_LEVEL
+        # manually.
+        # The logic here is:
+        # (1) If the currently active ANALYTICS_DATA_UPLOAD_LEVEL is lower than what's
+        #     demanded to enable push notifications, then we need to override it to
+        #     this minimum level (i.e. BILLING).
+        # (2) Otherwise, the test must have already somehow set up a higher level
+        #     of data upload, so we should leave it alone.
+        if settings.ANALYTICS_DATA_UPLOAD_LEVEL < AnalyticsDataUploadLevel.BILLING:
+            analytics_data_upload_level = AnalyticsDataUploadLevel.BILLING
+        else:  # nocoverage
+            analytics_data_upload_level = settings.ANALYTICS_DATA_UPLOAD_LEVEL
+
+        # Finally, the data upload level can be elevated by the submit_usage_statistics
+        # argument.
+        if submit_usage_statistics:
+            analytics_data_upload_level = AnalyticsDataUploadLevel.ALL
+
+        super().__init__(
+            ZULIP_SERVICES_URL=zulip_services_url,
+            ANALYTICS_DATA_UPLOAD_LEVEL=analytics_data_upload_level,
+            ZULIP_SERVICE_PUSH_NOTIFICATIONS=True,
+            ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS=submit_usage_statistics,
+        )
 
 
 @contextmanager
@@ -557,7 +605,11 @@ def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     @override_settings(LOCAL_AVATARS_DIR=None)
     @override_settings(LOCAL_FILES_DIR=None)
     def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
-        with mock.patch("zerver.lib.upload.upload_backend", S3UploadBackend()):
+        backend = S3UploadBackend()
+        with (
+            mock.patch("zerver.lib.upload.upload_backend", backend),
+            mock.patch("zerver.worker.thumbnail.upload_backend", backend),
+        ):
             return method(*args, **kwargs)
 
     return new_method
@@ -739,3 +791,8 @@ def ratelimit_rule(
 
     with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
         yield
+
+
+def consume_response(response: HttpResponseBase) -> None:
+    assert response.streaming
+    collections.deque(response, maxlen=0)

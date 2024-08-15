@@ -7,6 +7,7 @@ from typing import Any
 
 import boto3
 import botocore
+import magic
 import pyvips
 from botocore.client import Config
 from django.conf import settings
@@ -14,7 +15,7 @@ from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-from zerver.lib.mime_types import guess_extension, guess_type
+from zerver.lib.mime_types import guess_extension
 
 # From zerver.lib.thumbnail
 DEFAULT_EMOJI_SIZE = 64
@@ -142,29 +143,50 @@ def thumbnail_local_emoji(apps: StateApps) -> None:
         if total_processed % 100 == 0:
             print(f"Processed {total_processed} custom emoji")
 
+        old_file_name = emoji.file_name
         try:
-            old_file_name = emoji.file_name
-            content_type = guess_type(old_file_name)[0]
+            base_path = os.path.join(
+                settings.LOCAL_AVATARS_DIR, str(emoji.realm_id), "emoji/images"
+            )
+            copy_from_path = f"{base_path}/{old_file_name}.original"
+            if not os.path.exists(copy_from_path) and os.path.exists(
+                f"{base_path}/{old_file_name}"
+            ):
+                # Imports currently don't write ".original" files, so check without that
+                copy_from_path = f"{base_path}/{old_file_name}"
+                if not os.path.exists(copy_from_path):
+                    raise SkipImageError("Failed to read .original file: Does not exist")
+
+            with open(copy_from_path, "rb") as fh:
+                original_bytes = fh.read()
+
+            # We used to accept any bytes which pillow could
+            # thumbnail, with any filename, and would use the
+            # guessed-from-filename content-type when serving the
+            # emoji.  Examine the bytes of the image to verify that it
+            # is an image of reasonable type, and then derive the real
+            # filename extension (which we will still use for deriving
+            # content-type at serving time) from that.  This ensures
+            # that the contents are a valid image, and that we put the
+            # right content-type on it when served -- the filename
+            # used for the initial upload becomes completely
+            # irrelevant.
+            content_type = magic.from_buffer(original_bytes[:1024], mime=True)
+
             if content_type not in VALID_EMOJI_CONTENT_TYPE:
                 raise SkipImageError(f"Invalid content-type: {content_type}")
 
             new_file_name = get_emoji_file_name(content_type, emoji.id)
             if old_file_name == new_file_name:
                 continue
-            base_path = os.path.join(
-                settings.LOCAL_AVATARS_DIR, str(emoji.realm_id), "emoji/images"
-            )
+
             print(f"{base_path}/{old_file_name} -> {base_path}/{new_file_name}")
             try:
                 if os.path.exists(f"{base_path}/{new_file_name}.original"):
                     os.unlink(f"{base_path}/{new_file_name}.original")
-                os.link(
-                    f"{base_path}/{old_file_name}.original", f"{base_path}/{new_file_name}.original"
-                )
-                with open(f"{base_path}/{new_file_name}.original", "rb") as fh:
-                    original_bytes = fh.read()
+                os.link(copy_from_path, f"{base_path}/{new_file_name}.original")
             except OSError as e:
-                raise SkipImageError(f"Failed to read original file: {e}")
+                raise SkipImageError(f"Failed to update .original file: {e}")
 
             animated, still = resize_emoji(original_bytes, new_file_name)
             try:
@@ -172,6 +194,7 @@ def thumbnail_local_emoji(apps: StateApps) -> None:
                     fh.write(animated)
 
                 if still is not None:
+                    os.makedirs(f"{base_path}/still", exist_ok=True)
                     filename_no_extension = os.path.splitext(new_file_name)[0]
                     with open(f"{base_path}/still/{filename_no_extension}.png", "wb") as fh:
                         fh.write(still)
@@ -182,7 +205,11 @@ def thumbnail_local_emoji(apps: StateApps) -> None:
             emoji.save(update_fields=["file_name"])
         except SkipImageError as e:
             logging.warning(
-                "Failed to re-thumbnail %s/emoji/images/%s: %s", emoji.realm_id, emoji.file_name, e
+                "Failed to re-thumbnail emoji id %d with %s/emoji/images/%s: %s",
+                emoji.id,
+                emoji.realm_id,
+                emoji.file_name,
+                e,
             )
             new_file_name = get_emoji_file_name("image/png", emoji.id)
             try:
@@ -219,13 +246,29 @@ def thumbnail_s3(apps: StateApps) -> None:
         old_file_name = emoji.file_name
         try:
             base_path = os.path.join(str(emoji.realm_id), "emoji/images")
+            copy_from_path = f"{base_path}/{old_file_name}.original"
             try:
-                old_data = avatar_bucket.Object(f"{base_path}/{old_file_name}.original").get()
+                old_data = avatar_bucket.Object(copy_from_path).get()
                 original_bytes = old_data["Body"].read()
-            except botocore.exceptions.ClientError as e:
-                raise SkipImageError(f"Failed to read original file: {e}")
+            except botocore.exceptions.ClientError:
+                # Imports currently don't write ".original" files, so check without that
+                try:
+                    copy_from_path = f"{base_path}/{old_file_name}"
+                    old_data = avatar_bucket.Object(f"{base_path}/{old_file_name}").get()
+                except botocore.exceptions.ClientError as e:
+                    raise SkipImageError(f"Failed to read .original file: {e}")
+                original_bytes = old_data["Body"].read()
 
-            content_type = old_data["ContentType"]
+            # We used to accept any bytes which pillow could
+            # thumbnail, with any filename, and would store the
+            # guessed-from-filename content-type in S3, to be used
+            # when serving the emoji.  Examine the bytes of the image
+            # to verify that it is an image of reasonable type, and
+            # then both store that content-type in S3 (for later
+            # serving), as well as using it to derive the right
+            # filename extension (for clarity).
+            content_type = magic.from_buffer(original_bytes[:1024], mime=True)
+
             if content_type not in VALID_EMOJI_CONTENT_TYPE:
                 raise SkipImageError(f"Invalid content-type: {content_type}")
 
@@ -242,7 +285,7 @@ def thumbnail_s3(apps: StateApps) -> None:
 
             print(f"{base_path}/{old_file_name} -> {base_path}/{new_file_name}")
             avatar_bucket.Object(f"{base_path}/{new_file_name}.original").copy_from(
-                CopySource=f"{settings.S3_AVATAR_BUCKET}/{base_path}/{old_file_name}.original",
+                CopySource=f"{settings.S3_AVATAR_BUCKET}/{copy_from_path}",
                 MetadataDirective="REPLACE",
                 Metadata=metadata,
                 ContentType=content_type,
@@ -272,7 +315,11 @@ def thumbnail_s3(apps: StateApps) -> None:
             emoji.save(update_fields=["file_name"])
         except SkipImageError as e:
             logging.warning(
-                "Failed to re-thumbnail %s/emoji/images/%s: %s", emoji.realm_id, emoji.file_name, e
+                "Failed to re-thumbnail emoji id %d with %s/emoji/images/%s: %s",
+                emoji.id,
+                emoji.realm_id,
+                emoji.file_name,
+                e,
             )
             new_file_name = get_emoji_file_name("image/png", emoji.id)
             try:

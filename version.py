@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "9.0-dev+git"
+ZULIP_VERSION = "10.0-dev+git"
 
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(
@@ -13,8 +13,8 @@ if os.path.exists(zulip_git_version_file):
 ZULIP_VERSION = lines.pop(0).strip()
 ZULIP_MERGE_BASE = lines.pop(0).strip()
 
-LATEST_MAJOR_VERSION = "8.0"
-LATEST_RELEASE_VERSION = "8.4"
+LATEST_MAJOR_VERSION = "9.0"
+LATEST_RELEASE_VERSION = "9.1"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/2023/12/15/zulip-8-0-released/"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 272  # Last bumped for "POST /user_uploads"
+API_FEATURE_LEVEL = 280  # Last bumped for can_create_web_public_channel_group
 
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 272  # Last bumped for "POST /user_uploads"
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (285, 1)  # bumped 2024-07-12 for adding textarea-caret
+PROVISION_VERSION = (290, 1)  # bumped 2024-08-12 to add zopfli compression

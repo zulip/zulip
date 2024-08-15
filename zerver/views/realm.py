@@ -25,7 +25,6 @@ from zerver.actions.realm_settings import (
     do_set_realm_zulip_update_announcements_stream,
     parse_and_set_setting_value_if_required,
     validate_authentication_methods_dict_from_api,
-    validate_plan_for_authentication_methods,
 )
 from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
@@ -53,7 +52,6 @@ from zerver.models.realms import (
     BotCreationPolicyEnum,
     CommonMessagePolicyEnum,
     CommonPolicyEnum,
-    CreateWebPublicStreamPolicyEnum,
     DigestWeekdayEnum,
     EditTopicPolicyEnum,
     InviteToRealmPolicyEnum,
@@ -61,7 +59,10 @@ from zerver.models.realms import (
     OrgTypeEnum,
     WildcardMentionPolicyEnum,
 )
-from zerver.views.user_settings import check_settings_values
+from zerver.views.user_settings import (
+    check_information_density_setting_values,
+    check_settings_values,
+)
 
 
 def parse_jitsi_server_url(value: str, special_values_map: Mapping[str, str | None]) -> str | None:
@@ -141,9 +142,9 @@ def update_realm(
     bot_creation_policy: Json[BotCreationPolicyEnum] | None = None,
     can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_private_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_web_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
-    create_web_public_stream_policy: Json[CreateWebPublicStreamPolicyEnum] | None = None,
     invite_to_stream_policy: Json[CommonPolicyEnum] | None = None,
     move_messages_between_streams_policy: Json[MoveMessagesBetweenStreamsPolicyEnum] | None = None,
     user_group_edit_policy: Json[CommonPolicyEnum] | None = None,
@@ -177,7 +178,14 @@ def update_realm(
         Json[int] | None, ApiParamConfig("can_access_all_users_group")
     ] = None,
 ) -> HttpResponse:
-    realm = user_profile.realm
+    # Realm object is being refetched here to make sure that we
+    # do not use stale object from cache which can happen when a
+    # previous request tried updating multiple settings in a single
+    # request.
+    #
+    # TODO: Change the cache flushing strategy to make sure cache
+    # does not contain stale objects.
+    realm = Realm.objects.get(id=user_profile.realm_id)
 
     # Additional validation/error checking beyond types go here, so
     # the entire request can succeed or fail atomically.
@@ -190,7 +198,6 @@ def update_realm(
         validate_authentication_methods_dict_from_api(realm, authentication_methods)
         if True not in authentication_methods.values():
             raise JsonableError(_("At least one authentication method must be enabled."))
-        validate_plan_for_authentication_methods(realm, authentication_methods)
 
     if video_chat_provider is not None and video_chat_provider not in {
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
@@ -628,6 +635,7 @@ def update_realm_user_settings_defaults(
         Annotated[int, check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)]
     ]
     | None = None,
+    web_animate_image_previews: Literal["always", "on_hover", "never"] | None = None,
     email_address_visibility: Json[
         Annotated[int, check_int_in_validator(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)]
     ]
@@ -638,6 +646,16 @@ def update_realm_user_settings_defaults(
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
 
     realm_user_default = RealmUserDefault.objects.get(realm=user_profile.realm)
+
+    if (
+        dense_mode is not None
+        or web_font_size_px is not None
+        or web_line_height_percent is not None
+    ):
+        check_information_density_setting_values(
+            realm_user_default, dense_mode, web_font_size_px, web_line_height_percent
+        )
+
     request_settings = {k: v for k, v in locals().items() if k in RealmUserDefault.property_types}
     for k, v in request_settings.items():
         if v is not None and getattr(realm_user_default, k) != v:

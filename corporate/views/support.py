@@ -104,7 +104,7 @@ class DemoRequestForm(forms.Form):
     role = forms.CharField(max_length=MAX_INPUT_LENGTH)
     organization_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
     organization_type = forms.CharField()
-    organization_website = forms.URLField(required=True)
+    organization_website = forms.URLField(required=True, assume_scheme="https")
     expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
     message = forms.CharField(widget=forms.Textarea)
 
@@ -549,6 +549,7 @@ def support(
             realm_data = get_data_for_cloud_support_view(billing_session)
             realm_support_data[realm.id] = realm_data
         context["realm_support_data"] = realm_support_data
+        context["SPONSORED_PLAN_TYPE"] = Realm.PLAN_TYPE_STANDARD_FREE
 
     def get_realm_owner_emails_as_string(realm: Realm) -> str:
         return ", ".join(

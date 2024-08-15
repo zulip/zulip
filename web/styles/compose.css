@@ -119,7 +119,7 @@
 
 /* Main geometry for this element is in zulip.css */
 #compose-content {
-    background-color: hsl(232deg 30% 92%);
+    background-color: var(--color-compose-box-background);
     padding: 7px 7px 8px;
     border: 1px solid hsl(0deg 0% 0% / 10%);
     border-radius: 9px 9px 0 0;
@@ -352,6 +352,8 @@
 #preview_message_area {
     margin-right: calc(var(--composebox-buttons-width) * -1);
     padding-right: var(--composebox-buttons-width);
+    background-color: var(--color-compose-message-content-background);
+    color: var(--color-text-default);
 }
 
 .surround-formatting-buttons-row {
@@ -825,14 +827,13 @@
 
 textarea.new_message_textarea {
     display: table-cell;
-    padding: 5px;
+    padding: 5px 5px 0;
     height: 1.5em;
     max-height: 22em;
     margin: 0;
     resize: none !important;
     border-radius: 3px 3px 0 0;
     border: none;
-    background-color: hsl(0deg 0% 100%);
     scrollbar-width: thin;
     scrollbar-color: hsl(0deg 0% 50%) transparent;
     box-shadow: none;
@@ -1249,7 +1250,7 @@ textarea.new_message_textarea {
             vdot menu icon, so that it is hidden when all compose buttons fit
             in the main row below the compose box. So, this is the same as
             the media query for .show_popover_buttons. */
-            @media (((width < 1398px) and (width >= $xl_min)) or (width < 1158px)) {
+            @media (((width < 1418px) and (width >= $xl_min)) or (width < 1178px)) {
                 display: block;
 
                 .compose_control_menu {
@@ -1263,7 +1264,7 @@ textarea.new_message_textarea {
             we hide and show in a popover instead when they no longer fit in a
             single row. The media query below handles the hiding and showing of the
             buttons from the main row of compose buttons below the compose box. */
-            @media (((width < 1398px) and (width >= $xl_min)) or (width < 1158px)) {
+            @media (((width < 1418px) and (width >= $xl_min)) or (width < 1178px)) {
                 display: none;
             }
         }
@@ -1272,7 +1273,7 @@ textarea.new_message_textarea {
             /* This is similar to show_popover_buttons, but it's only for those
             compose buttons that we hide, and show in the popover only when the
             screen gets extremely narrow. */
-            @media ((width < 596px) or ((width < 919px) and (width >= $md_min))) {
+            @media ((width < 596px) or ((width < 939px) and (width >= $md_min))) {
                 display: none;
             }
         }
@@ -1280,7 +1281,7 @@ textarea.new_message_textarea {
         &.show_in_popover {
             /* This is to show the popover 2 buttons in the popover, only when
             they are hidden in the main row below the compose box. */
-            @media ((width < 596px) or ((width < 919px) and (width >= $md_min))) {
+            @media ((width < 596px) or ((width < 939px) and (width >= $md_min))) {
                 display: flex;
             }
         }
@@ -1358,15 +1359,10 @@ textarea.new_message_textarea {
 }
 
 .preview_message_area {
-    padding: 5px;
-    /* the maximum height the textarea gets to. */
-    max-height: 308px;
-    /* the minimum height the textarea collapses to. */
-    min-height: 42px;
+    padding: 5px 5px 0;
     overflow: auto;
 
     border-radius: 3px 3px 0 0;
-    background-color: hsl(0deg 0% 100%);
     cursor: not-allowed;
 }
 
@@ -1398,32 +1394,6 @@ textarea.new_message_textarea {
         padding-left: 5px;
         color: var(--color-compose-chevron-arrow);
         font-weight: lighter;
-    }
-}
-
-.typeahead.dropdown-menu {
-    .typeahead-menu {
-        list-style: none;
-        margin: 4px 0;
-        max-height: min(248px, 95vh);
-        overflow-y: auto;
-
-        .simplebar-content {
-            min-width: max-content;
-        }
-    }
-
-    .typeahead-header {
-        margin: 0;
-        padding: 4px 10px;
-        border-top: 1px solid hsl(0deg 0% 0% / 20%);
-        display: flex;
-        align-items: center;
-    }
-
-    #typeahead-header-text {
-        color: var(--color-dropdown-item);
-        font-size: 12px;
     }
 }
 

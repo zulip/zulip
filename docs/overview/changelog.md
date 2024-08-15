@@ -3,56 +3,106 @@
 This page contains the release history for the Zulip server. See also the
 [Zulip release lifecycle](../overview/release-lifecycle.md).
 
-## Zulip 9.x series
-
-### 9.0 -- unreleased
+## Zulip Server 10.x series (development)
 
 This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
 log][commit-log] for an up-to-date list of all changes.
 
+### Zulip Server 10.0
+
+_Unreleased_
+
+#### Upgrade notes for 10.0
+
+- None yet.
+
+## Zulip Server 9.x series
+
+### Zulip Server 9.1
+
+_Released 2024-08-02_
+
+- Clarified upgrade notes and installer error messages. Improved
+  documentation to smooth the process of upgrading Ubuntu 20.04 to
+  22.04 before upgrading to Zulip 9.x. Installations currently running
+  Ubuntu 20.04 should first upgrade to the latest Zulip 8.x release,
+  and then follow the [Zulip host OS upgrade
+  instructions](../production/upgrade.md#upgrading-the-operating-system)
+  in preparation for upgrading to Zulip 9.x.
+- Improved web and mobile app loading times and bandwidth usage by
+  tuning API response compression and removing some unnecessary
+  entropy in user object payloads.
+- Fixed how Zulip handles a GitHub quirk, to avoid duplicate
+  notifications when pull request reviews are submitted.
+- Fixed a rare race condition that could cause uploaded images to be
+  displayed as a perpetual loading spinner.
+- Fixed video player controls appearing in the lightbox bottom
+  carousel.
+- Fix several minor visual bugs, most notably with composebox
+  typeahead overflowing incorrectly.
+- Fixed a subtle live-update bug rerendering the inbox view.
+- Fixed a couple of subtle performance issues involving the analytics
+  cron job and listing invitations in organization settings.
+- Updated documentation for a couple of integrations.
+- Updated translations.
+
+### Zulip Server 9.0
+
+_Released 2024-07-25_
+
 #### Highlights
 
-- Added support for Ubuntu 24.04. Dropped support for Ubuntu 20.04.
-- Added a configurable "Zulip updates" system that sends automated
-  messages describing changes to Zulip that are relevant to end
-  users. See the upgrade notes for details.
-- Streams have been renamed to Channels. The functionality remains
-  exactly the same, and bots do not need to be updated.
-- The All messages view has been renamed to Combined feed, and
-  its internals have been reworked, fixing many subtle bugs.
-- The main message feed search feature has been redesigned with
-  user-friendly pills for search operators.
-- When you paste content into the compose box, Zulip will now do its
-  best to preserve the formatting, including links, bulleted lists,
-  bold, italics, and more. Pasting as plain text remains an
-  alternative option.
-- Clicking a channel in the left sidebar now, by default, navigates
-  you to the most recent topic in the channel, rather than the
-  interleaved channel feed view. This behavior is controlled by a new
-  setting.
+- Added support for Ubuntu 24.04, and dropped support for Ubuntu 20.04.
+- To make it easier to discover what’s new in Zulip, important product changes
+  are now announced via automated messages, which are shipped with the Zulip
+  server version that includes the new feature. See the upgrade notes for
+  details.
+- To better match terminology familiar from other apps, “streams” have been
+  renamed to “channels” across the app in this release. The functionality
+  remains exactly the same, and integrations do not need to be updated for this
+  transition.
+- For clarity and consistency, three key message views that show multiple
+  conversations at once are now labeled “Combined feed” (previously “All
+  messages”), “Channel feed”, and “Direct message feed”.
+- To make reading more comfortable, Zulip has been redesigned with a larger font
+  size and line spacing. Because personal preferences vary, the previous design
+  remains available via the compact mode setting.
+- Redesigned the main search with pills for search filters, making it easier to
+  use.
+- When you paste content into the compose box, Zulip will now do its best to
+  preserve the formatting, including links, bulleted lists, bold, italics, and
+  more. If you don’t need the formatting, you can undo it with `Ctrl+Z`, or
+  paste as plain text.
+- To make it easier to read your messages topic-by-topic, channel links in the
+  left sidebar now take you directly to the top topic in the channel. You can
+  configure them to go to the channel feed instead (previously the only option).
 - To quote and reply to part of a message, you can now select the part
   that you want to quote.
 - The right sidebar has been redesigned to highlight users in the
   current channel or direct message conversation. You can also now
   hide the channel/user lists in the sidebars to reduce distraction.
-- When you start composing, the most recently edited draft for the
-  conversation you are composing to now automatically appears in the
-  compose box. You can always save a draft and start a new message
-  using the send options menu next to the Send button.
-- Added a new top-level view to show reactions to your messages, as
-  well as new search operators to search followed topics or messages
-  with emoji reactions.
+- When you start composing, the most recently edited draft for the conversation
+  you are composing to now automatically appears in the compose box. You can
+  always save a draft for later and start a new message.
+- Added a Reactions view to show how others have responded to your messages with
+  emoji reactions. You can also search all messages with reactions.
 - If you'd prefer not to see notifications when others type, you can
   now disable them.
 - Topics and messages now load much faster when you open the web or
   desktop app.
-- Zulip's new-user and new-organization onboarding experiences have
-  been completely reworked.
-- Redesigned all popovers with a more modern visual style and improved
-  accessibility for screen readers.
-- Added a new `with` narrow filter operator for implementing permanent
-  links to topics designed to handle topics being renamed or marked as
+- Uploaded images are now thumbnailed, making images load much faster
+  in all clients. Newly uploaded animated images shown in the message
+  feed now only animate on hover by default rather than continuously,
+  with a user setting to control the animation. (Previously uploaded
+  images, and image previews of third-party links, continue to
+  directly use the original image).
+- The onboarding experience has been redesigned to introduce core Zulip concepts
+  when they first become relevant.
+- Redesigned all popovers with a cleaner look, better icons, and improved screen
+  reader accessibility.
+- Added a new `with` narrow parameter for implementing permanent links
+  to topics designed to handle topics being renamed or marked as
   resolved. This operator is not used in 9.0, but likely will be used
   by the topic-link Markdown feature starting with a 9.x maintenance
   release.
@@ -64,7 +114,7 @@ log][commit-log] for an up-to-date list of all changes.
 - Sending a message to a different conversation now, by default,
   navigates to that conversation; a new setting controls this behavior.
 - Added new `Alt+P` keyboard shortcut to toggle the Markdown preview
-  in the compose box.
+  in the compose box and message edit UI.
 - Added new `Shift+V` keyboard shortcut to view read receipts.
 - The `Shift+M` keyboard shortcut for muting now works in the recent
   conversations and inbox views.
@@ -102,9 +152,10 @@ log][commit-log] for an up-to-date list of all changes.
   messages without disabling them entirely.
 - Added support for requiring unique names in an organization.
 - Added support for marking a custom profile field as required.
-- Added controls whether users should be subscribed to the
-  organization's default channels in invitations and the SCIM
-  integration.
+- Added setting to disable adding new guest users to any initial streams
+  when their accounts are provisioned via SCIM.
+- Fixed user creation to add the user to the streams that are default
+  at the time of user creation, rather than at the time of invitation.
 - Added a confirmation notice when moving a single message, linking to
   its new location.
 - Redesigned the channel creation interface to be more intuitive.
@@ -131,7 +182,10 @@ log][commit-log] for an up-to-date list of all changes.
   pills.
 - Improved the efficiency of Zulip's internal statistics system, both
   in terms of CPU and storage usage.
+- Improved topics used by the incoming email system for emails with an
+  empty subject line.
 - Improved tooltips to better clarify how drafts work.
+- Improved the mobile web compose area experience.
 - Improved left sidebar channel menu to be divided between personal
   and administrator actions, like the topic menu, and to link directly
   to the personal tab if one doesn't have channel admin permissions.
@@ -140,7 +194,8 @@ log][commit-log] for an up-to-date list of all changes.
 - Improved performance/scalability of the Zulip server, including more
   efficient algorithms for fetching message history and presence.
 - New incoming webhook integrations for Patreon and GitHub Sponsors,
-  and reimplemented the Grafana integration.
+  and reimplemented the Grafana integration. Removed integrations for
+  some defunct products, like Solano CI.
 - Simplified the process for configuring integrations with custom
   filtering of events, and rewrote the documentation for most
   integrations for readability and simplicity.
@@ -156,11 +211,12 @@ log][commit-log] for an up-to-date list of all changes.
 - Fixed several subtle bugs involving message feed scroll position.
 - Fixed the Home/End keyboard shortcuts not behaving correctly in very
   long views.
+- Reworked the internals of the combined feed view, fixing many subtle bugs.
 - Fixed several subtle scrolling, flickering, and live-update bugs in
   the recent conversations view.
 - Fixed several bugs involving uploading files while editing messages.
 - Fixed dozens of subtle layout bugs in the web app.
-- Fixed several live-update bugs when moving messages.
+- Fixed several live-update bugs when moving or deleting messages.
 - Fixed several bugs impacting the public access experience.
 - Fixed several bugs involving the compose box, its banners, and tooltips.
 - Fixed several race condition bugs affecting the server and web app.
@@ -170,7 +226,7 @@ log][commit-log] for an up-to-date list of all changes.
   export API that enabled it.
 - Removed multiple queue workers, reducing memory usage.
 - Reimplemented image processing (avatars, logos, custom emoji, etc.)
-  using libvips as preparation for a new image thumbnailing system.
+  using libvips as part of the transition to the new image thumbnailing system.
 - Major API/internals changes towards supporting granting permissions
   to custom groups, not just the built-in roles. User-facing
   functionality is coming soon in a future release.
@@ -182,6 +238,9 @@ log][commit-log] for an up-to-date list of all changes.
 
 #### Upgrade notes for 9.0
 
+- Servers running Ubuntu 20.04 must [upgrade their operating system to Ubuntu
+  22.04](../production/upgrade.md#upgrading-the-operating-system)
+  before upgrading to Zulip 9.0.
 - This release introduces a new [Zulip updates](https://zulip.com/help/configure-automated-notices#zulip-update-announcements) feature, which
   announces significant product changes and new features via automated
   messages to a configurable channel. Generally, these announcements will
@@ -191,6 +250,51 @@ log][commit-log] for an up-to-date list of all changes.
   to give time to potentially reconfigure which channel to use. You can
   override the delay by running `./manage.py send_zulip_update_announcements --skip-delay`
   once you've done any necessary configuration updates.
+- We've reworked how Zulip's mobile push notifications service is
+  configured to be easier to understand, more extensible, and avoid
+  hardcoding URLs unnecessarily. The old settings names are fully
+  supported with identical behavior, so no action is required before
+  upgrading.
+
+  Once you've upgraded, while you're [updating your settings.py
+  documentation][update-settings-docs], we recommend updating
+  `/etc/zulip/settings.py` to use the modern settings names: Replacing
+  `PUSH_NOTIFICATIONS_BOUNCER_URL = "https://push.zulipchat.com"` with
+  `ZULIP_SERVICE_PUSH_NOTIFICATIONS = True` and renaming
+  `SUBMIT_USAGE_STATISTICS` to
+  `ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS`, if you have either of those
+  settings enabled. It's important not to set both the old and new
+  settings: The legacy settings will be ignored if the modern ones are
+  present.
+
+  The one minor functional change in this restructuring is that it is
+  now possible to configure sharing usage statistics with the Zulip
+  developers without attempting to send mobile push notifications via
+  the service, by setting `ZULIP_SERVICE_PUSH_NOTIFICATIONS = False`
+  and `ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS=True`.
+
+- The Zulip server now thumbnails uploaded images for faster loading
+  and reduced bandwidth usage; note that only images uploaded after
+  upgrading to 9.0 benefit from this feature at present. Previews of
+  linked images/websites continue to use the original third-party
+  images, and thus have not yet been optimized in this way.
+- Installations that any point in the past enabled the
+  `THUMBNAIL_IMAGES` setting may have broken image previews on
+  messages containing previews of third-party image links while that
+  setting was enabled, due to incompatibilities between its approach
+  and the new thumbnailing system. The `THUMBNAIL_IMAGES` setting was
+  part of the experimental Thumbor-based thumbnailing system, which
+  was offered as an option starting with Zulip 1.9.0 but removed 3
+  years ago in Zulip 4.0. We recommend using [this chat.zulip.org
+  thread][thumbor-remediation-topic] to discuss remediation options
+  for this issue before upgrading to 9.0 if you believe your
+  installation may have used this setting.
+- We're aware of a slow memory leak in the new image thumbnailing
+  queue worker. The leak is slow enough that for most installations,
+  this is managed fully by the weekly server restart that Zulip does
+  to manage memory leak risk. Installations with very little free
+  memory that use a lot of images should consider adding a couple
+  gigabytes of swap before upgrading to avoid memory pressure.
 - The Zulip server now contains a KaTeX server worker, designed to
   make bulk-rendering LaTeX efficient. It has minimal memory
   footprint, but can be disabled using the `katex_server` [deployment
@@ -201,7 +305,27 @@ log][commit-log] for an up-to-date list of all changes.
   `0544_copy_avatar_images`, which re-thumbnails every uploaded avatar
   using Zulip's new image-processing pipeline.
 
+[thumbor-remediation-topic]: https://chat.zulip.org/#narrow/stream/31-production-help/topic/THUMBNAIL_IMAGES.20remediation
+
 ## Zulip Server 8.x series
+
+### Zulip Server 8.5
+
+_Released 2024-07-31_
+
+- Fixed failures installing/upgrading Debian systems by removing the
+  Apache Arrow apt repository as a dependency, which suffers from an
+  annual problem with expired GPG signatures.
+- Improved documentation for upgrading the Ubuntu version.
+- Fixed `manage.py register_server --rotate-key` crashing without
+  having written its secrets if the `zulip` user had permission to write
+  to `/etc/zulip/zulip-secrets.conf`, but not its parent directory.
+- Fixed client-provided HTTP authentication headers being incorrectly
+  forwarded in S3 requests, causing authentication errors.
+- Removed the Gitter data import tool (Gitter no longer exports data
+  in the format it supported).
+- Upgraded Python dependencies.
+- Updated translations.
 
 ### Zulip Server 8.4
 
@@ -4047,7 +4171,8 @@ _Released 2015-10-19_
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 9.0](#upgrade-notes-for-90)
+- [Draft upgrade notes for 10.0](#upgrade-notes-for-100)
+- [Upgrade notes for 9.0](#upgrade-notes-for-90)
 - [Upgrade notes for 8.0](#upgrade-notes-for-80)
 - [Upgrade notes for 7.0](#upgrade-notes-for-70)
 - [Upgrade notes for 6.0](#upgrade-notes-for-60)

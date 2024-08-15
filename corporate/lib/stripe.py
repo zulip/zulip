@@ -690,7 +690,9 @@ class UpgradePageContext(TypedDict):
 
 
 class SponsorshipRequestForm(forms.Form):
-    website = forms.URLField(max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH, required=False)
+    website = forms.URLField(
+        max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH, required=False, assume_scheme="https"
+    )
     organization_type = forms.IntegerField()
     description = forms.CharField(widget=forms.Textarea)
     expected_total_users = forms.CharField(widget=forms.Textarea)
@@ -3943,6 +3945,9 @@ class RealmBillingSession(BillingSession):
                 raise SupportRequestError(error_message)
 
         from zerver.actions.message_send import internal_send_private_message
+
+        if self.realm.deactivated:
+            raise SupportRequestError("Realm has been deactivated")
 
         self.do_change_plan_type(tier=None, is_sponsored=True)
         if customer is not None and customer.sponsorship_pending:

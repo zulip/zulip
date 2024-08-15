@@ -1,5 +1,10 @@
 # Mastering the compose box
 
+Here is an overview of all the information and actions you can take in Zulip's
+compose box.
+
+![Compose box information and actions](/static/images/help/compose-actions.png)
+
 ## Composing to a different conversation
 
 When composing a message, Zulip lets you view a different
@@ -68,7 +73,7 @@ currently composing to.
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, toggle **Automatically go to conversation
+1. Under **Navigation**, toggle **Automatically go to conversation
 where you sent a message**, as desired.
 
 {end_tabs}

@@ -91,7 +91,6 @@ zulip-workers:zulip_events_missedmessage_mobile_notifications   RUNNING   pid 11
 zulip-workers:zulip_events_outgoing_webhooks                    RUNNING   pid 11358, uptime 19:40:17
 zulip-workers:zulip_events_user_activity                        RUNNING   pid 11365, uptime 19:40:14
 zulip-workers:zulip_events_user_activity_interval               RUNNING   pid 11376, uptime 19:40:11
-zulip-workers:zulip_events_user_presence                        RUNNING   pid 11384, uptime 19:40:08
 ```
 
 If you see any services showing a status other than `RUNNING`, or you

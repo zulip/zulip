@@ -41,8 +41,12 @@ const MAXIMUM_BLOCK_HEIGHT_IN_EMS = BODY_FONT_CONTENT_BOX / BODY_FONT_EM_SIZE;
 // but in the awkward stage where legacy values are in play for
 // certain things (e.g., calculating line-height-based offsets for
 // emoji alignment), it's necessary to have access to these values.
-const LEGACY_LINE_HEIGHT_UNITLESS = 1.214;
-const LEGACY_FONT_SIZE_PX = 14;
+export const LEGACY_LINE_HEIGHT_UNITLESS = 1.214;
+export const LEGACY_FONT_SIZE_PX = 14;
+export const LEGACY_LINE_HEIGHT_PERCENT = 122;
+
+export const NON_COMPACT_MODE_FONT_SIZE_PX = 16;
+export const NON_COMPACT_MODE_LINE_HEIGHT_PERCENT = 140;
 
 function set_vertical_alignment_values(line_height_unitless: number): void {
     // We work in ems to keep this agnostic to the font size.

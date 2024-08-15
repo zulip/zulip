@@ -20,6 +20,7 @@ import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_notifications from "./settings_notifications";
+import * as settings_preferences from "./settings_preferences";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_ui from "./settings_ui";
 import {current_user, realm} from "./state_data";
@@ -123,7 +124,6 @@ export function get_org_type_dropdown_options() {
 }
 
 const simple_dropdown_properties = [
-    "realm_create_web_public_stream_policy",
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
     "realm_add_custom_emoji_policy",
@@ -362,7 +362,7 @@ function set_digest_emails_weekday_visibility() {
 
 function set_create_web_public_stream_dropdown_visibility() {
     settings_components.change_element_block_display_property(
-        "id_realm_create_web_public_stream_policy",
+        "id_realm_can_create_web_public_channel_group",
         realm.server_web_public_streams_enabled &&
             realm.zulip_plan_is_not_limited &&
             realm.realm_enable_spectator_access,
@@ -505,6 +505,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_can_access_all_users_group":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_create_web_public_channel_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,
@@ -730,7 +731,7 @@ export function sync_realm_settings(property) {
     }
 }
 
-export function save_organization_settings(data, $save_button, patch_url) {
+export function save_organization_settings(data, $save_button, patch_url, success_continuation) {
     const $subsection_parent = $save_button.closest(".settings-subsection-parent");
     const $save_btn_container = $subsection_parent.find(".save-button-controls");
     const $failed_alert_elem = $subsection_parent.find(".subsection-failed-status p");
@@ -741,6 +742,9 @@ export function save_organization_settings(data, $save_button, patch_url) {
         success() {
             $failed_alert_elem.hide();
             settings_components.change_save_button_state($save_btn_container, "succeeded");
+            if (success_continuation !== undefined) {
+                success_continuation();
+            }
         },
         error(xhr) {
             settings_components.change_save_button_state($save_btn_container, "failed");
@@ -801,6 +805,7 @@ function set_up_dropdown_widget(
             if (setting_type === "group") {
                 $(dropdown.popper).css("min-width", "300px");
                 $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
+                $(dropdown.popper).find(".simplebar-content").css("min-width", "100%");
             }
         },
     });
@@ -949,6 +954,7 @@ export function register_save_discard_widget_handlers(
         const $save_button = $(e.currentTarget);
         const $subsection_elem = $save_button.closest(".settings-subsection-parent");
         let data;
+        let success_continuation;
         if (!for_realm_default_settings) {
             data = settings_components.populate_data_for_realm_settings_request($subsection_elem);
         } else {
@@ -956,8 +962,22 @@ export function register_save_discard_widget_handlers(
                 settings_components.populate_data_for_default_realm_settings_request(
                     $subsection_elem,
                 );
+
+            if (
+                data.dense_mode !== undefined ||
+                data.web_font_size_px !== undefined ||
+                data.web_line_height_percent !== undefined
+            ) {
+                success_continuation = () => {
+                    settings_preferences.update_information_density_settings_visibility(
+                        $("#realm-user-default-settings"),
+                        realm_user_settings_defaults,
+                        data,
+                    );
+                };
+            }
         }
-        save_organization_settings(data, $save_button, patch_url);
+        save_organization_settings(data, $save_button, patch_url, success_continuation);
     });
 }
 

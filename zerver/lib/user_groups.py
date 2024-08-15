@@ -300,9 +300,8 @@ def access_user_group_for_setting(
         )
         return named_user_group.usergroup_ptr
 
-    # The API would not allow passing the setting parameter as a Dict
-    # if require_system_group is true for a setting.
-    assert permission_configuration.require_system_group is False
+    if permission_configuration.require_system_group:
+        raise SystemGroupRequiredError(setting_name)
 
     user_group = update_or_create_user_group_for_setting(
         user_profile.realm,

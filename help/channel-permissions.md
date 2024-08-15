@@ -62,7 +62,7 @@ administrator can access private channel messages:
 
 <div class="centered_table"></div>
 |                       | Owners and admins | Moderators | Members   | Guests
-|---                    |---                |            |---        |---
+|---                    |---                |---         |---        |---
 | View channel name     | &#10004;          | &#10004;   | &#10004;  | &#9726;
 | Join                  | &#10004;          | &#10004;   | &#10004;  |
 | Unsubscribe           | &#9726;           | &#9726;    | &#9726;   | &#9726;
@@ -81,7 +81,8 @@ administrator can access private channel messages:
 
 <span class="legend_symbol">&#9726;</span><span class="legend_label">If subscribed to the channel</span>
 
-<span class="legend_symbol">&#10038;</span><span class="legend_label">
+<span class="legend_symbol">&#10038;</span>
+<span class="legend_label">
 Configurable. See [Channel posting policy](/help/channel-posting-policy),
 [Configure who can add users][add-users], and
 [Configure who can remove users][remove-users]
@@ -92,7 +93,7 @@ for details.
 
 <div class="centered_table"></div>
 |                       | Owners and admins | Moderators | Members   | Guests
-|---                    |---                |            |---        |---
+|---                    |---                |---         |---        |---
 | View channel name     | &#10004;          | &#9726;    | &#9726;   | &#9726;
 | Join                  |                   |            |           |
 | Unsubscribe           | &#9726;           | &#9726;    | &#9726;   | &#9726;
@@ -111,7 +112,8 @@ for details.
 
 <span class="legend_symbol">&#9726;</span><span class="legend_label">If subscribed to the channel</span>
 
-<span class="legend_symbol">&#10038;</span><span class="legend_label">
+<span class="legend_symbol">&#10038;</span>
+<span class="legend_label">
 Configurable, but at minimum must be subscribed to the channel.
 See [Channel posting policy](/help/channel-posting-policy),
 [Configure who can add users][add-users], and

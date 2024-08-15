@@ -304,8 +304,10 @@ html {
     font-weight: 400;
 }
 
-.thanks-page div {
-    text-align: center;
+.thanks-page {
+    .white-box {
+        text-align: center;
+    }
 }
 
 .lead {

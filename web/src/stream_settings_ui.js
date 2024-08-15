@@ -22,6 +22,7 @@ import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {postprocess_content} from "./postprocess_content";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
@@ -39,7 +40,6 @@ import * as stream_settings_components from "./stream_settings_components";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
-import * as util from "./util";
 
 export function is_sub_already_present(sub) {
     return stream_ui_updates.row_for_stream_id(sub.stream_id).length > 0;
@@ -133,7 +133,7 @@ export function update_stream_description(sub, description, rendered_description
 
     // Update stream row
     const $sub_row = stream_ui_updates.row_for_stream_id(sub.stream_id);
-    $sub_row.find(".description").html(util.clean_user_content_links(sub.rendered_description));
+    $sub_row.find(".description").html(postprocess_content(sub.rendered_description));
 
     // Update stream settings
     stream_edit.update_stream_description(sub);
@@ -935,7 +935,7 @@ export function update_stream_privacy_choices(policy) {
     if (policy === "can_create_public_channel_group") {
         stream_settings_components.update_public_stream_privacy_option_state($container);
     }
-    if (policy === "create_web_public_stream_policy") {
+    if (policy === "can_create_web_public_channel_group") {
         stream_ui_updates.update_web_public_stream_privacy_option_state($container);
     }
 }

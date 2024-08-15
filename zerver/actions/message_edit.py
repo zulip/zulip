@@ -187,7 +187,7 @@ def maybe_send_resolve_topic_notifications(
     # For that reason, we apply a short grace period during which
     # such an undo action will just delete the previous notification
     # message instead.
-    if maybe_delete_previous_resolve_topic_notification(stream, new_topic_name):
+    if maybe_delete_previous_resolve_topic_notification(user_profile, stream, new_topic_name):
         return None, True
 
     # Compute the users who either sent or reacted to messages that
@@ -222,7 +222,9 @@ def maybe_send_resolve_topic_notifications(
     return resolved_topic_message_id, False
 
 
-def maybe_delete_previous_resolve_topic_notification(stream: Stream, topic: str) -> bool:
+def maybe_delete_previous_resolve_topic_notification(
+    user_profile: UserProfile, stream: Stream, topic: str
+) -> bool:
     assert stream.recipient_id is not None
     last_message = messages_for_topic(stream.realm_id, stream.recipient_id, topic).last()
 
@@ -238,7 +240,7 @@ def maybe_delete_previous_resolve_topic_notification(stream: Stream, topic: str)
     if time_difference > settings.RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS:
         return False
 
-    do_delete_messages(stream.realm, [last_message])
+    do_delete_messages(stream.realm, [last_message], acting_user=user_profile)
     return True
 
 
@@ -364,33 +366,30 @@ def update_user_message_flags(
 def do_update_embedded_data(
     user_profile: UserProfile,
     message: Message,
-    content: str | None,
-    rendering_result: MessageRenderingResult,
+    rendered_content: str | MessageRenderingResult,
 ) -> None:
-    timestamp = timezone_now()
+    ums = UserMessage.objects.filter(message=message.id)
+    update_fields = ["rendered_content"]
+    if isinstance(rendered_content, MessageRenderingResult):
+        update_user_message_flags(rendered_content, ums)
+        message.rendered_content = rendered_content.rendered_content
+        message.rendered_content_version = markdown_version
+        update_fields.append("rendered_content_version")
+    else:
+        message.rendered_content = rendered_content
+    message.save(update_fields=update_fields)
+
+    update_message_cache([message])
     event: dict[str, Any] = {
         "type": "update_message",
         "user_id": None,
-        "edit_timestamp": datetime_to_timestamp(timestamp),
+        "edit_timestamp": datetime_to_timestamp(timezone_now()),
         "message_id": message.id,
+        "message_ids": [message.id],
+        "content": message.content,
+        "rendered_content": message.rendered_content,
         "rendering_only": True,
     }
-    changed_messages = [message]
-    rendered_content: str | None = None
-
-    ums = UserMessage.objects.filter(message=message.id)
-
-    if content is not None:
-        update_user_message_flags(rendering_result, ums)
-        rendered_content = rendering_result.rendered_content
-        message.rendered_content = rendered_content
-        message.rendered_content_version = markdown_version
-        event["content"] = content
-        event["rendered_content"] = rendered_content
-
-    message.save(update_fields=["content", "rendered_content"])
-
-    event["message_ids"] = update_message_cache(changed_messages)
 
     def user_info(um: UserMessage) -> dict[str, Any]:
         return {

@@ -28,18 +28,18 @@ const germany = {
     invite_only: true,
 };
 
-peer_data.set_subscribers(denmark.stream_id, [1, 2, 3, 77]);
+peer_data.set_subscribers(denmark.stream_id, [1, 2, 77]);
 peer_data.set_subscribers(sweden.stream_id, [1, 2, 3, 4, 5]);
 
 const denmark_pill = {
     type: "stream",
-    display_value: "Denmark: 3 users",
-    stream: denmark,
+    stream_id: denmark.stream_id,
+    show_subscriber_count: true,
 };
 const sweden_pill = {
     type: "stream",
-    display_value: "translated: Sweden: 5 users",
-    stream: sweden,
+    stream_id: sweden.stream_id,
+    show_subscriber_count: true,
 };
 
 const subs = [denmark, sweden, germany];
@@ -82,6 +82,19 @@ run_test("create_item", () => {
     test_create_item("#germany", [], undefined, true, stream_data.get_invite_stream_data);
 });
 
+run_test("display_value", () => {
+    assert.deepEqual(
+        stream_pill.get_display_value_from_item(denmark_pill),
+        "translated: Denmark: 3 users",
+    );
+    assert.deepEqual(
+        stream_pill.get_display_value_from_item(sweden_pill),
+        "translated: Sweden: 5 users",
+    );
+    sweden_pill.show_subscriber_count = false;
+    assert.deepEqual(stream_pill.get_display_value_from_item(sweden_pill), "Sweden");
+});
+
 run_test("get_stream_id", () => {
     assert.equal(stream_pill.get_stream_name_from_item(denmark_pill), denmark.name);
 });
@@ -100,4 +113,19 @@ run_test("get_stream_ids", () => {
 
     const stream_ids = stream_pill.get_stream_ids(widget);
     assert.deepEqual(stream_ids, [101, 102]);
+});
+
+run_test("generate_pill_html", () => {
+    assert.deepEqual(
+        stream_pill.generate_pill_html(denmark_pill),
+        "<div class='pill ' tabindex=0>\n" +
+            '    <span class="pill-label">\n' +
+            '        <span class="pill-value">\n' +
+            '<i class="zulip-icon zulip-icon-hashtag stream-privacy-type-icon" aria-hidden="true"></i>            translated: Denmark: 3 users\n' +
+            "        </span></span>\n" +
+            '    <div class="exit">\n' +
+            '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +
+            "    </div>\n" +
+            "</div>\n",
+    );
 });

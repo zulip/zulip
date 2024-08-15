@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const {make_stream} = require("./lib/test_stream");
 const {realm} = require("./lib/zpage_params");
 
 // In the Zulip app you can narrow your message stream by topic, by
@@ -21,12 +22,12 @@ const stream_data = zrequire("stream_data");
 // realm, since we want to test the "normal" codepath.
 realm.realm_is_zephyr_mirror_realm = false;
 
-const denmark_stream = {
+const denmark_stream = make_stream({
     color: "blue",
     name: "Denmark",
     stream_id: 101,
     subscribed: false,
-};
+});
 
 run_test("filter", () => {
     stream_data.clear_subscriptions();

@@ -11,8 +11,8 @@ labels: ["bug"]
 **Zulip Server and web app version:**
 
 - [ ] Zulip Cloud (`*.zulipchat.com`)
-- [ ] Zulip Server 8.0+
-- [ ] Zulip Server 7.0+
-- [ ] Zulip Server 6.0+
-- [ ] Zulip Server 5.0 or older
+- [ ] Zulip Server 9.x
+- [ ] Zulip Server 8.x
+- [ ] Zulip Server 7.x
+- [ ] Zulip Server 6.x or older
 - [ ] Other or not sure

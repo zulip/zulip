@@ -23,6 +23,7 @@ var pills = input_pill.create({
     $container: $pill_container,
     create_item_from_text: user_pill.create_item_from_email,
     get_text_from_item: user_pill.get_email_from_item,
+    get_display_value_from_item: user_pill.get_display_value_from_item,
 });
 ```
 
@@ -30,8 +31,7 @@ You can look at `web/src/user_pill.ts` to see how the above
 methods are implemented. Essentially you just need to convert
 from raw data (like an email) to structured data (like an object
 with display_value, email, and user_id for a user), and vice
-versa. The most important field to supply is `display_value`.
-For user pills `pill_item.display_value === user.full_name`.
+versa.
 
 ## Typeahead
 

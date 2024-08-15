@@ -263,13 +263,6 @@ exports.fixtures = {
         value: 1,
     },
 
-    realm__update__create_web_public_stream_policy: {
-        type: "realm",
-        op: "update",
-        property: "create_web_public_stream_policy",
-        value: 2,
-    },
-
     realm__update__default_code_block_language: {
         type: "realm",
         op: "update",
@@ -1021,6 +1014,27 @@ exports.fixtures = {
         op: "update",
         property: "user_list_style",
         value: 2,
+    },
+
+    user_settings__web_animate_image_previews_always: {
+        type: "user_settings",
+        op: "update",
+        property: "web_animate_image_previews",
+        value: "always",
+    },
+
+    user_settings__web_animate_image_previews_never: {
+        type: "user_settings",
+        op: "update",
+        property: "web_animate_image_previews",
+        value: "never",
+    },
+
+    user_settings__web_animate_image_previews_on_hover: {
+        type: "user_settings",
+        op: "update",
+        property: "web_animate_image_previews",
+        value: "on_hover",
     },
 
     user_settings__web_channel_default_view: {

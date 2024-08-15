@@ -308,7 +308,7 @@ class DeleteMessageTest(ZulipTestCase):
             m.side_effect = AssertionError(
                 "Events should be sent only after the transaction commits."
             )
-            do_delete_messages(hamlet.realm, [message])
+            do_delete_messages(hamlet.realm, [message], acting_user=None)
 
     def test_delete_message_in_unsubscribed_private_stream(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -347,17 +347,17 @@ class DeleteMessageTest(ZulipTestCase):
         first_message_id = message_ids[0]
 
         message = Message.objects.get(id=message_ids[3])
-        do_delete_messages(realm, [message])
+        do_delete_messages(realm, [message], acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, first_message_id)
 
         first_message = Message.objects.get(id=first_message_id)
-        do_delete_messages(realm, [first_message])
+        do_delete_messages(realm, [first_message], acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, message_ids[1])
 
         all_messages = Message.objects.filter(id__in=message_ids)
         with self.assert_database_query_count(24):
-            do_delete_messages(realm, all_messages)
+            do_delete_messages(realm, all_messages, acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, None)

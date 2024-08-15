@@ -39,7 +39,7 @@ organization settings:
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, click on the **Home view** dropdown
+1. Under **Navigation**, click on the **Home view** dropdown
    and select a view.
 
 1. To see your changes in action, open a new Zulip tab, or use a keyboard
@@ -71,7 +71,7 @@ shortcut.
 
 {settings_tab|preferences}
 
-1. Under **Advanced**, toggle **Escape key navigates to
+1. Under **Navigation**, toggle **Escape key navigates to
    home view**, as desired.
 
 {end_tabs}
