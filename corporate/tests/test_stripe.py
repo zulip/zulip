@@ -7352,7 +7352,9 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(success_message, "Fixed price offer deleted")
         result = self.client_get("/activity/remote/support", {"q": "example.com"})
         self.assert_not_in_success_response(["Next plan information:"], result)
-        self.assert_in_success_response(["Fixed price", "Annual amount in dollars"], result)
+        self.assert_in_success_response(
+            ["Configure fixed price plan", "Annual amount in dollars"], result
+        )
 
     @responses.activate
     @mock_stripe()
