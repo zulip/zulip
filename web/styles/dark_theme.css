@@ -458,12 +458,6 @@
             .search_icon {
             opacity: 0.75;
         }
-
-        /* Colors are inherited in light theme */
-        .navbar-search .search_icon,
-        .navbar-search .search_close_button {
-            color: hsl(0deg 0% 78%);
-        }
     }
 
     .new-style .button.no-style {

@@ -17,7 +17,7 @@
         font-size: 17px;
         border: none;
         background-color: transparent;
-        color: hsl(0deg 0% 0%);
+        color: var(--color-search-icons);
         opacity: 0.5;
         cursor: default;
 
@@ -40,6 +40,9 @@
         opacity: 0.5;
         line-height: 0;
         border-radius: 4px;
+        /* Reset iOS button defaults. */
+        color: var(--color-search-icons);
+        padding: 0;
 
         &:not(:focus-visible) {
             outline: none;
