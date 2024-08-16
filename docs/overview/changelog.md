@@ -1970,7 +1970,7 @@ _Released 2021-05-13_
 - "Recent topics" is no longer beta, no longer an overlay, supports
   composing messages, and is now the default view. The previous
   default view, "All messages", is still available, and the default
-  view can now be configured via "Display settings".
+  view can now be configured via "Preference".
 - Completed API documentation for Zulip's real-time events system. It
   is now possible to write a decent Zulip client with minimal
   interaction with the Zulip server development team.
