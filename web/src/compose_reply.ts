@@ -79,14 +79,9 @@ export function respond_to_message(opts: {
                 });
                 return;
             }
-            const current_filter = narrow_state.filter();
-            assert(current_filter !== undefined);
-            const first_term = current_filter.terms()[0];
-            assert(first_term !== undefined);
-            const first_operator = first_term.operator;
-            const first_operand = first_term.operand;
 
-            if (first_operator === "stream" && !stream_data.is_subscribed_by_name(first_operand)) {
+            const narrow_stream_id = narrow_state.stream_id();
+            if (narrow_stream_id && !stream_data.is_subscribed(narrow_stream_id)) {
                 compose_actions.start({
                     message_type: "stream",
                     trigger: "empty_narrow_compose",
