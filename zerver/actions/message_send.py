@@ -86,6 +86,7 @@ from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
+    IdempotentMessage,
     Message,
     Realm,
     Recipient,
@@ -102,6 +103,17 @@ from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
+
+
+def message_is_idempotent(user: UserProfile, local_id: str, queue_id: str) -> bool:
+    sent_message_local_id = f"{user.realm_id}:{user.id}:<{queue_id}>:{local_id}"
+
+    try:
+        IdempotentMessage.objects.create(key=sent_message_local_id)
+    except IntegrityError:
+        return False
+
+    return True
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -1397,6 +1409,13 @@ def check_send_message(
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
 ) -> SentMessageResult:
+    if (
+        local_id
+        and sender_queue_id
+        and not message_is_idempotent(sender, local_id, sender_queue_id)
+    ):
+        raise JsonableError(_("Duplicate message"))
+
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
         message = check_message(

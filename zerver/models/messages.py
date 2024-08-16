@@ -648,6 +648,15 @@ def get_usermessage_by_message_id(user_profile: UserProfile, message_id: int) ->
         return None
 
 
+class IdempotentMessage(models.Model):
+    # key has the following format: realm_id:user.id:<queue_id>:local_id
+    key = models.CharField(max_length=150, db_index=True, unique=True)
+    time_sent = models.DateTimeField(
+        default=timezone_now,
+        db_index=True,
+    )
+
+
 class ArchivedUserMessage(AbstractUserMessage):
     """Used as a temporary holding place for deleted UserMessages objects
     before they are permanently deleted.  This is an important part of

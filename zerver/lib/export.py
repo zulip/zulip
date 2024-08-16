@@ -134,6 +134,7 @@ ALL_ZULIP_TABLES = {
     "zerver_defaultstreamgroup_streams",
     "zerver_draft",
     "zerver_emailchangestatus",
+    "zerver_idempotentmessage",
     "zerver_groupgroupmembership",
     "zerver_huddle",
     "zerver_imageattachment",
@@ -220,6 +221,8 @@ NON_EXPORTED_TABLES = {
     "otp_static_staticdevice",
     "otp_static_statictoken",
     "otp_totp_totpdevice",
+    # This table is just used to ensure message idempotency, so it's not exported.
+    "zerver_idempotentmessage",
     # These archive tables should not be exported (they are to support
     # restoring content accidentally deleted due to software bugs in
     # the retention policy feature)
