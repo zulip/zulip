@@ -4,14 +4,14 @@ class kandra::ksplice_uptrack {
     file { '/etc/uptrack':
       ensure => directory,
       owner  => 'root',
-      group  => 'root',
-      mode   => '0755',
+      group  => 'adm',
+      mode   => '0750',
     }
     file { '/etc/uptrack/uptrack.conf':
       ensure  => file,
       owner   => 'root',
-      group   => 'root',
-      mode    => '0644',
+      group   => 'adm',
+      mode    => '0640',
       content => template('kandra/uptrack/uptrack.conf.erb'),
     }
     $setup_apt_repo_file = "${facts['zulip_scripts_path']}/lib/setup-apt-repo"
