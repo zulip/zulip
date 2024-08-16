@@ -206,4 +206,4 @@ set +x
 echo
 echo
 echo ">>> Install started successfully!  Provisioning takes 5-6min."
-echo "    sleep 360 && ssh root@$HOSTNAME"
+echo "    sleep 360 && tsh ssh root@$HOSTNAME"
