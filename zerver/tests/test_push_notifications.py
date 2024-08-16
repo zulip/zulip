@@ -4087,7 +4087,8 @@ class TestAPNs(PushNotificationTest):
         # Mark the messages as read and test whether
         # the count decreases correctly.
         for i, message_id in enumerate(message_ids):
-            do_update_message_flags(user_profile, "add", "read", [message_id])
+            with self.captureOnCommitCallbacks(execute=True):
+                do_update_message_flags(user_profile, "add", "read", [message_id])
             self.assertEqual(get_apns_badge_count(user_profile), 0)
             self.assertEqual(get_apns_badge_count_future(user_profile), num_messages - i - 1)
 
@@ -5073,10 +5074,10 @@ class TestClearOnRead(ZulipTestCase):
             message_id__in=message_ids,
         ).update(flags=F("flags").bitor(UserMessage.flags.active_mobile_push_notification))
 
-        with mock_queue_publish("zerver.actions.message_flags.queue_json_publish") as mock_publish:
+        with mock_queue_publish("zerver.actions.message_flags.queue_event_on_commit") as m:
             assert stream.recipient_id is not None
             do_mark_stream_messages_as_read(hamlet, stream.recipient_id)
-            queue_items = [c[0][1] for c in mock_publish.call_args_list]
+            queue_items = [c[0][1] for c in m.call_args_list]
             groups = [item["message_ids"] for item in queue_items]
 
         self.assert_length(groups, 1)

@@ -15,7 +15,7 @@ from zerver.lib.message import (
     format_unread_message_details,
     get_raw_unread_data,
 )
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
@@ -252,9 +252,9 @@ def do_clear_mobile_push_notifications_for_ids(
         }
         if settings.MOBILE_NOTIFICATIONS_SHARDS > 1:  # nocoverage
             shard_id = user_profile_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
-            queue_json_publish(f"missedmessage_mobile_notifications_shard{shard_id}", notice)
+            queue_event_on_commit(f"missedmessage_mobile_notifications_shard{shard_id}", notice)
         else:
-            queue_json_publish("missedmessage_mobile_notifications", notice)
+            queue_event_on_commit("missedmessage_mobile_notifications", notice)
 
 
 def do_update_message_flags(
