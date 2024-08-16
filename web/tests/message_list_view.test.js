@@ -803,7 +803,12 @@ test("render_windows", ({mock_template}) => {
     reset_list({count: 51});
     verify_no_move_range(0, 51); // This is the whole list
 
+    // Start a new list with more messages. Note that the order of
+    // these checks matters; each time we call `verify_move` or
+    // `verify_move_and_no_move_range`, we are moving the currently
+    // selected position in the list.
     reset_list({count: 450});
+
     // 250 messages rendered, with the last 50 in the move range
     verify_no_move_range(0, 200);
 
@@ -819,11 +824,13 @@ test("render_windows", ({mock_template}) => {
         move_end: 250,
     });
 
+    // If we now jump to a message ID close enough to the end of the
+    // range, the render window is limited.
     verify_move_and_no_move_range(350, {
-        // top maxes out at 450
         move_end: 450,
     });
 
+    // Now jump the selected ID close to the start again.
     verify_move_and_no_move_range(124, {
         move_start: 0,
         move_end: 250,
