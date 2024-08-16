@@ -451,13 +451,12 @@ function create_copy_to_clipboard_handler(
     clipboard.on("success", () => {
         // Hide the Tippy and source box after a 600ms delay
         const tippy_timeout_in_ms = 600;
-        show_copied_confirmation(
-            the($row.find(".copy_message")),
-            () => {
+        show_copied_confirmation(the($row.find(".copy_message")), {
+            timeout_in_ms: tippy_timeout_in_ms,
+            on_hide_callback() {
                 end_message_row_edit($row);
             },
-            tippy_timeout_in_ms,
-        );
+        });
     });
 }
 

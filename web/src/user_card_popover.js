@@ -390,7 +390,9 @@ function init_email_clipboard() {
                 $copy_email_icon.removeClass("hide_copy_icon");
                 const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
                 copy_email_clipboard.on("success", (e) => {
-                    show_copied_confirmation(e.trigger);
+                    show_copied_confirmation(e.trigger, {
+                        show_check_icon: true,
+                    });
                 });
             }
         }
@@ -837,7 +839,9 @@ function register_click_handlers() {
             return $(trigger).parent().find(".custom-profile-field-link").attr("href");
         },
     }).on("success", (e) => {
-        show_copied_confirmation(e.trigger);
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
     });
 }
 

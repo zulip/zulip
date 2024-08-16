@@ -1358,6 +1358,10 @@ input.settings_text_input {
             color: var(--color-copy-btn-square-active);
         }
     }
+
+    &.copy-btn-success {
+        color: var(--color-copy-btn-success);
+    }
 }
 
 .text-success {

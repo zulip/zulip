@@ -762,6 +762,7 @@
         hsl(229deg 9% 36%) 11%,
         transparent
     );
+    --color-copy-btn-success: var(--green-500);
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 0% / 10%);
@@ -1215,6 +1216,7 @@
         hsl(229deg 9% 60%) 18%,
         transparent
     );
+    --color-copy-btn-success: var(--green-300);
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 100% / 15%);
