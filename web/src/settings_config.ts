@@ -177,7 +177,7 @@ export const information_section_checkbox_group: DisplaySettings = {
 export const get_information_density_preferences = (): DisplaySettings => ({
     render_group: page_params.development_environment,
     settings: {
-        user_display_settings: ["web_font_size_px", "web_line_height_percent"],
+        user_preference: ["web_font_size_px", "web_line_height_percent"],
     },
 });
 
