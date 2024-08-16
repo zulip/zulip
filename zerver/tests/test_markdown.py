@@ -2140,7 +2140,7 @@ class MarkdownMentionTest(ZulipTestCase):
             rendering_result = render_message_markdown(msg, content)
             self.assertEqual(
                 rendering_result.rendered_content,
-                f'<p><span class="user-mention" data-user-id="*">@{stream_wildcard}</span> test</p>',
+                f'<p><span class="user-mention channel-wildcard-mention" data-user-id="*">@{stream_wildcard}</span> test</p>',
             )
             self.assertFalse(rendering_result.mentions_topic_wildcard)
             self.assertTrue(rendering_result.mentions_stream_wildcard)
@@ -2363,7 +2363,7 @@ class MarkdownMentionTest(ZulipTestCase):
             rendering_result = render_message_markdown(msg, content)
             self.assertEqual(
                 rendering_result.rendered_content,
-                f'<p><span class="user-mention silent" data-user-id="*">{wildcard}</span></p>',
+                f'<p><span class="user-mention channel-wildcard-mention silent" data-user-id="*">{wildcard}</span></p>',
             )
             self.assertFalse(rendering_result.mentions_stream_wildcard)
 
@@ -2566,7 +2566,7 @@ class MarkdownMentionTest(ZulipTestCase):
         def assert_silent_mention(content: str, wildcard: str) -> None:
             expected = (
                 "<blockquote>\n<p>"
-                f'<span class="user-mention silent" data-user-id="*">{wildcard}</span>'
+                f'<span class="user-mention channel-wildcard-mention silent" data-user-id="*">{wildcard}</span>'
                 "</p>\n</blockquote>"
             )
             rendering_result = render_message_markdown(message, content)

@@ -1,22 +1,30 @@
+# Zulip Netlify integration
+
 Get Zulip notifications for your Netlify deployments!
+
+{start_tabs}
 
 1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
-1. Go to your Netlify project, and click **Settings**. Click **Build & deploy**, and select **Deploy notifications**.
-   Click **Add Notification**, and select **Outgoing webhook**.
+1. Go to your Netlify project, and click **Settings**. Click **Build & deploy**,
+   and select **Deploy notifications**.
+   Click **Add Notification**, and select **HTTP POST request**.
 
-1. Select an **Event**, and set **URL to notify** to the URL constructed above. Click **Save**.
+1. Select an **Event**, and set **URL to notify** to the URL generated above.
+   Click **Save**.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/netlify/001.png)
 
-!!! tip ""
+### Related documentation
 
-    For more information regarding Netlify webhooks, see: [Netlify's webhook documentation][1].
+- [Netlify HTTP Post Request documentation](https://docs.netlify.com/site-deploys/notifications/#http-post-request)
 
-[1]: https://www.netlify.com/docs/webhooks/
+{!webhooks-url-specification.md!}

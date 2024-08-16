@@ -371,7 +371,7 @@ export class MessageListView {
     }
 
     // Number of messages to render at a time
-    _RENDER_WINDOW_SIZE = 400;
+    _RENDER_WINDOW_SIZE = 250;
     // Number of messages away from edge of render window at which we
     // trigger a re-render
     _RENDER_THRESHOLD = 50;

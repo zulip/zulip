@@ -591,22 +591,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # us, pre-thumbnailing.
     avatar_hash = models.CharField(null=True, max_length=64)
 
-    # TODO: TUTORIAL_STATUS was originally an optimization designed to
-    # allow us to skip querying the OnboardingStep table when loading
-    # /. This optimization is no longer effective, so it's possible we
-    # should delete it.
-    TUTORIAL_WAITING = "W"
-    TUTORIAL_STARTED = "S"
-    TUTORIAL_FINISHED = "F"
-    TUTORIAL_STATES = (
-        (TUTORIAL_WAITING, "Waiting"),
-        (TUTORIAL_STARTED, "Started"),
-        (TUTORIAL_FINISHED, "Finished"),
-    )
-    tutorial_status = models.CharField(
-        default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1
-    )
-
     zoom_token = models.JSONField(default=None, null=True)
 
     objects = UserManager()
@@ -781,6 +765,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "can_create_private_channel_group",
             "can_create_public_channel_group",
             "can_create_web_public_channel_group",
+            "can_delete_any_message_group",
             "create_multiuse_invite_group",
             "delete_own_message_policy",
             "direct_message_initiator_group",
@@ -867,6 +852,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def can_add_custom_emoji(self) -> bool:
         return self.has_permission("add_custom_emoji_policy")
+
+    def can_delete_any_message(self) -> bool:
+        return self.has_permission("can_delete_any_message_group")
 
     def can_delete_own_message(self) -> bool:
         return self.has_permission("delete_own_message_policy")

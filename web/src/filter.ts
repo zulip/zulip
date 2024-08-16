@@ -508,7 +508,11 @@ export class Filter {
                 // terms list. This is done so that the last active filter is correctly
                 // detected by the `get_search_result` function (in search_suggestions.ts).
                 maybe_add_search_terms();
-                term = {negated, operator, operand};
+                term = {
+                    negated,
+                    operator: Filter.canonicalize_operator(operator),
+                    operand,
+                };
                 terms.push(term);
             }
         }

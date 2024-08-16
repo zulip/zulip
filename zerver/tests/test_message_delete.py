@@ -7,9 +7,13 @@ from django.db import IntegrityError
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, UserProfile
+from zerver.models import Message, NamedUserGroup, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import CommonMessagePolicyEnum, get_realm
 from zerver.models.streams import get_stream
 
@@ -29,12 +33,17 @@ class DeleteMessageTest(ZulipTestCase):
 
     def test_delete_message_by_user(self) -> None:
         def set_message_deleting_params(
-            delete_own_message_policy: int, message_content_delete_limit_seconds: int | str
+            can_delete_any_message_group: NamedUserGroup,
+            delete_own_message_policy: int,
+            message_content_delete_limit_seconds: int | str,
         ) -> None:
             self.login("iago")
             result = self.client_patch(
                 "/json/realm",
                 {
+                    "can_delete_any_message_group": orjson.dumps(
+                        {"new": can_delete_any_message_group.id}
+                    ).decode(),
                     "delete_own_message_policy": orjson.dumps(delete_own_message_policy).decode(),
                     "message_content_delete_limit_seconds": orjson.dumps(
                         message_content_delete_limit_seconds
@@ -48,7 +57,12 @@ class DeleteMessageTest(ZulipTestCase):
             result = self.client_delete(f"/json/messages/{msg_id}")
             return result
 
-        def test_delete_message_by_owner(msg_id: int) -> "TestHttpResponse":
+        def test_delete_message_by_moderator(msg_id: int) -> "TestHttpResponse":
+            self.login("shiva")
+            result = self.client_delete(f"/json/messages/{msg_id}")
+            return result
+
+        def test_delete_message_by_sender(msg_id: int) -> "TestHttpResponse":
             self.login("hamlet")
             result = self.client_delete(f"/json/messages/{msg_id}")
             return result
@@ -58,13 +72,27 @@ class DeleteMessageTest(ZulipTestCase):
             result = self.client_delete(f"/json/messages/{msg_id}")
             return result
 
+        realm = get_realm("zulip")
+
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+
         # Test if message deleting is not allowed(default).
-        set_message_deleting_params(CommonMessagePolicyEnum.ADMINS_ONLY, "unlimited")
+        set_message_deleting_params(
+            administrators_system_group, CommonMessagePolicyEnum.ADMINS_ONLY, "unlimited"
+        )
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         msg_id = self.send_stream_message(hamlet, "Denmark")
 
-        result = test_delete_message_by_owner(msg_id=msg_id)
+        result = test_delete_message_by_sender(msg_id=msg_id)
         self.assert_json_error(result, "You don't have permission to delete this message")
 
         result = test_delete_message_by_other_user(msg_id=msg_id)
@@ -75,7 +103,9 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test if message deleting is allowed.
         # Test if time limit is None(no limit).
-        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, "unlimited")
+        set_message_deleting_params(
+            administrators_system_group, CommonMessagePolicyEnum.EVERYONE, "unlimited"
+        )
         msg_id = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id)
         message.date_sent -= timedelta(seconds=600)
@@ -84,11 +114,13 @@ class DeleteMessageTest(ZulipTestCase):
         result = test_delete_message_by_other_user(msg_id=msg_id)
         self.assert_json_error(result, "You don't have permission to delete this message")
 
-        result = test_delete_message_by_owner(msg_id=msg_id)
+        result = test_delete_message_by_sender(msg_id=msg_id)
         self.assert_json_success(result)
 
         # Test if time limit is non-zero.
-        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, 240)
+        set_message_deleting_params(
+            administrators_system_group, CommonMessagePolicyEnum.EVERYONE, 240
+        )
         msg_id_1 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_1)
         message.date_sent -= timedelta(seconds=120)
@@ -102,9 +134,9 @@ class DeleteMessageTest(ZulipTestCase):
         result = test_delete_message_by_other_user(msg_id=msg_id_1)
         self.assert_json_error(result, "You don't have permission to delete this message")
 
-        result = test_delete_message_by_owner(msg_id=msg_id_1)
+        result = test_delete_message_by_sender(msg_id=msg_id_1)
         self.assert_json_success(result)
-        result = test_delete_message_by_owner(msg_id=msg_id_2)
+        result = test_delete_message_by_sender(msg_id=msg_id_2)
         self.assert_json_error(result, "The time limit for deleting this message has passed")
 
         # No limit for admin.
@@ -113,10 +145,52 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test multiple delete requests with no latency issues
         msg_id = self.send_stream_message(hamlet, "Denmark")
-        result = test_delete_message_by_owner(msg_id=msg_id)
+        result = test_delete_message_by_sender(msg_id=msg_id)
         self.assert_json_success(result)
-        result = test_delete_message_by_owner(msg_id=msg_id)
+        result = test_delete_message_by_sender(msg_id=msg_id)
         self.assert_json_error(result, "Invalid message(s)")
+
+        # Test if message deletion is allowed when every member can delete any message.
+        set_message_deleting_params(
+            members_system_group, CommonMessagePolicyEnum.ADMINS_ONLY, "unlimited"
+        )
+        msg_id_1 = self.send_stream_message(hamlet, "Denmark")
+        msg_id_2 = self.send_stream_message(hamlet, "Denmark")
+        msg_id_3 = self.send_stream_message(hamlet, "Denmark")
+
+        result = test_delete_message_by_other_user(msg_id=msg_id_1)
+        self.assert_json_success(result)
+
+        result = test_delete_message_by_sender(msg_id=msg_id_2)
+        self.assert_json_success(result)
+
+        result = test_delete_message_by_admin(msg_id=msg_id_3)
+        self.assert_json_success(result)
+
+        # Test if there is no time limit to delete messages for users who can delete
+        # any message.
+        set_message_deleting_params(moderators_system_group, CommonMessagePolicyEnum.EVERYONE, 240)
+        msg_id_1 = self.send_stream_message(hamlet, "Denmark")
+        message = Message.objects.get(id=msg_id_1)
+        message.date_sent -= timedelta(seconds=120)
+        message.save()
+
+        msg_id_2 = self.send_stream_message(hamlet, "Denmark")
+        message = Message.objects.get(id=msg_id_2)
+        message.date_sent -= timedelta(seconds=360)
+        message.save()
+
+        result = test_delete_message_by_other_user(msg_id=msg_id_1)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_sender(msg_id=msg_id_1)
+        self.assert_json_success(result)
+
+        result = test_delete_message_by_sender(msg_id=msg_id_2)
+        self.assert_json_error(result, "The time limit for deleting this message has passed")
+
+        result = test_delete_message_by_moderator(msg_id=msg_id_2)
+        self.assert_json_success(result)
 
         # Test handling of 500 error caused by multiple delete requests due to latency.
         # see issue #11219.
@@ -126,24 +200,30 @@ class DeleteMessageTest(ZulipTestCase):
             mock.patch("zerver.views.message_edit.access_message", return_value=(None, None)),
         ):
             m.side_effect = IntegrityError()
-            result = test_delete_message_by_owner(msg_id=msg_id)
+            result = test_delete_message_by_sender(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
             m.side_effect = Message.DoesNotExist()
-            result = test_delete_message_by_owner(msg_id=msg_id)
+            result = test_delete_message_by_sender(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
 
     def test_delete_message_sent_by_bots(self) -> None:
         iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
         def set_message_deleting_params(
-            delete_own_message_policy: int, message_content_delete_limit_seconds: int | str
+            can_delete_any_message_group: NamedUserGroup,
+            delete_own_message_policy: int,
+            message_content_delete_limit_seconds: int | str,
         ) -> None:
             result = self.api_patch(
                 iago,
                 "/api/v1/realm",
                 {
+                    "can_delete_any_message_group": orjson.dumps(
+                        {"new": can_delete_any_message_group.id}
+                    ).decode(),
                     "delete_own_message_policy": orjson.dumps(delete_own_message_policy).decode(),
                     "message_content_delete_limit_seconds": orjson.dumps(
                         message_content_delete_limit_seconds
@@ -156,6 +236,10 @@ class DeleteMessageTest(ZulipTestCase):
             result = self.api_delete(iago, f"/api/v1/messages/{msg_id}")
             return result
 
+        def test_delete_message_by_moderator(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(shiva, f"/api/v1/messages/{msg_id}")
+            return result
+
         def test_delete_message_by_bot_owner(msg_id: int) -> "TestHttpResponse":
             result = self.api_delete(hamlet, f"/api/v1/messages/{msg_id}")
             return result
@@ -164,32 +248,52 @@ class DeleteMessageTest(ZulipTestCase):
             result = self.api_delete(cordelia, f"/api/v1/messages/{msg_id}")
             return result
 
-        set_message_deleting_params(CommonMessagePolicyEnum.ADMINS_ONLY, "unlimited")
+        realm = get_realm("zulip")
+
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+
+        set_message_deleting_params(
+            moderators_system_group, CommonMessagePolicyEnum.ADMINS_ONLY, "unlimited"
+        )
 
         hamlet = self.example_user("hamlet")
         test_bot = self.create_test_bot("test-bot", hamlet)
+        msg_id_1 = self.send_stream_message(test_bot, "Denmark")
+        msg_id_2 = self.send_stream_message(test_bot, "Denmark")
+
+        result = test_delete_message_by_other_user(msg_id_1)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id_1)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        # Admins and moderators can delete any message.
+        result = test_delete_message_by_moderator(msg_id_1)
+        self.assert_json_success(result)
+
+        result = test_delete_message_by_admin(msg_id_2)
+        self.assert_json_success(result)
+
         msg_id = self.send_stream_message(test_bot, "Denmark")
+        set_message_deleting_params(
+            administrators_system_group, CommonMessagePolicyEnum.EVERYONE, "unlimited"
+        )
 
         result = test_delete_message_by_other_user(msg_id)
         self.assert_json_error(result, "You don't have permission to delete this message")
 
         result = test_delete_message_by_bot_owner(msg_id)
-        self.assert_json_error(result, "You don't have permission to delete this message")
-
-        result = test_delete_message_by_admin(msg_id)
         self.assert_json_success(result)
 
         msg_id = self.send_stream_message(test_bot, "Denmark")
-        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, "unlimited")
-
-        result = test_delete_message_by_other_user(msg_id)
-        self.assert_json_error(result, "You don't have permission to delete this message")
-
-        result = test_delete_message_by_bot_owner(msg_id)
-        self.assert_json_success(result)
-
-        msg_id = self.send_stream_message(test_bot, "Denmark")
-        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, 600)
+        set_message_deleting_params(
+            administrators_system_group, CommonMessagePolicyEnum.EVERYONE, 600
+        )
 
         message = Message.objects.get(id=msg_id)
         message.date_sent = timezone_now() - timedelta(seconds=700)
@@ -206,12 +310,16 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Check that the bot can also delete the messages sent by them
         # depending on the realm permissions for message deletion.
-        set_message_deleting_params(CommonMessagePolicyEnum.ADMINS_ONLY, 600)
+        set_message_deleting_params(
+            administrators_system_group, CommonMessagePolicyEnum.ADMINS_ONLY, 600
+        )
         msg_id = self.send_stream_message(test_bot, "Denmark")
         result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
         self.assert_json_error(result, "You don't have permission to delete this message")
 
-        set_message_deleting_params(CommonMessagePolicyEnum.EVERYONE, 600)
+        set_message_deleting_params(
+            administrators_system_group, CommonMessagePolicyEnum.EVERYONE, 600
+        )
         message = Message.objects.get(id=msg_id)
         message.date_sent = timezone_now() - timedelta(seconds=700)
         message.save()
@@ -223,6 +331,84 @@ class DeleteMessageTest(ZulipTestCase):
         message.save()
         result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
         self.assert_json_success(result)
+
+    def test_delete_message_according_to_can_delete_any_message_group(self) -> None:
+        def check_delete_message_by_sender(sender_name: str, error_msg: str | None = None) -> None:
+            sender = self.example_user(sender_name)
+            msg_id = self.send_stream_message(sender, "Verona")
+            self.login_user(sender)
+            result = self.client_delete(f"/json/messages/{msg_id}")
+            if error_msg is None:
+                self.assert_json_success(result)
+            else:
+                self.assert_json_error(result, error_msg)
+
+        def check_delete_message_by_other_user(
+            sender_name: str, other_user_name: str, error_msg: str | None = None
+        ) -> None:
+            sender = self.example_user(sender_name)
+            other_user = self.example_user(other_user_name)
+            msg_id = self.send_stream_message(sender, "Verona")
+            self.login_user(other_user)
+            result = self.client_delete(f"/json/messages/{msg_id}")
+            if error_msg is None:
+                self.assert_json_success(result)
+            else:
+                self.assert_json_error(result, error_msg)
+
+        realm = get_realm("zulip")
+
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_delete_any_message_group",
+            administrators_system_group,
+            acting_user=None,
+        )
+        do_set_realm_property(
+            realm,
+            "delete_own_message_policy",
+            CommonMessagePolicyEnum.EVERYONE,
+            acting_user=None,
+        )
+
+        # Only admins can delete any message. Everyone else can only delete their
+        # own message.
+        check_delete_message_by_sender("shiva")
+        check_delete_message_by_other_user(
+            "hamlet", "shiva", "You don't have permission to delete this message"
+        )
+        check_delete_message_by_other_user("hamlet", "iago")
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_delete_any_message_group",
+            moderators_system_group,
+            acting_user=None,
+        )
+        do_set_realm_property(
+            realm,
+            "delete_own_message_policy",
+            CommonMessagePolicyEnum.ADMINS_ONLY,
+            acting_user=None,
+        )
+
+        # Admins and moderators can delete any message. No one else can delete any
+        # message.
+        check_delete_message_by_sender(
+            "cordelia", "You don't have permission to delete this message"
+        )
+        check_delete_message_by_sender("shiva")
+        check_delete_message_by_other_user("iago", "shiva")
+        check_delete_message_by_other_user(
+            "hamlet", "cordelia", "You don't have permission to delete this message"
+        )
 
     def test_delete_message_according_to_delete_own_message_policy(self) -> None:
         def check_delete_message_by_sender(sender_name: str, error_msg: str | None = None) -> None:

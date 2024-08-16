@@ -9,6 +9,7 @@ import pyvips
 from django.conf import settings
 
 import zerver.lib.upload
+from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.create_user import copy_default_settings
@@ -321,7 +322,9 @@ class S3Test(ZulipTestCase):
             self.client_post("/json/users/me/avatar", {"file": image_file})
 
         source_user_profile = self.example_user("hamlet")
-        target_user_profile = self.example_user("othello")
+        target_user_profile = do_create_user(
+            "user@zulip.com", "password", get_realm("zulip"), "user", acting_user=None
+        )
 
         copy_default_settings(source_user_profile, target_user_profile)
 

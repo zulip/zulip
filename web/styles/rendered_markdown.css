@@ -186,6 +186,19 @@
         }
     }
 
+    .user-mention,
+    .user-group-mention {
+        /* We have to explicitly mention this for compose box preview
+           where cursor is set to not-allowed */
+        cursor: pointer;
+    }
+
+    /* We show the same cursor as the parent element for `@all`
+       mention */
+    .user-mention-all {
+        cursor: inherit;
+    }
+
     .user-mention[data-user-id="*"],
     .user-group-mention,
     .topic-mention {

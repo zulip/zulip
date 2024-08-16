@@ -174,6 +174,11 @@ const one_time_notice_schema = z.object({
     type: z.literal("one_time_notice"),
 });
 
+const one_time_action_schema = z.object({
+    name: z.string(),
+    type: z.literal("one_time_action"),
+});
+
 export const thumbnail_format_schema = z.object({
     name: z.string(),
     max_width: z.number(),
@@ -182,12 +187,7 @@ export const thumbnail_format_schema = z.object({
     animated: z.boolean(),
 });
 
-/* We may introduce onboarding step of types other than 'one time notice'
-in future. Earlier, we had 'hotspot' and 'one time notice' as the two
-types. We can simply do:
-const onboarding_step_schema = z.union([one_time_notice_schema, other_type_schema]);
-to avoid major refactoring when new type is introduced in the future. */
-export const onboarding_step_schema = one_time_notice_schema;
+export const onboarding_step_schema = z.union([one_time_notice_schema, one_time_action_schema]);
 
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
@@ -267,6 +267,7 @@ const realm_schema = z.object({
     realm_can_create_public_channel_group: z.number(),
     realm_can_create_private_channel_group: z.number(),
     realm_can_create_web_public_channel_group: z.number(),
+    realm_can_delete_any_message_group: z.number(),
     realm_create_multiuse_invite_group: z.number(),
     realm_create_private_stream_policy: z.number(),
     realm_date_created: z.number(),

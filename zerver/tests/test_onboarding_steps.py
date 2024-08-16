@@ -2,7 +2,7 @@ from typing_extensions import override
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
-from zerver.lib.onboarding_steps import ONE_TIME_NOTICES, get_next_onboarding_steps
+from zerver.lib.onboarding_steps import ALL_ONBOARDING_STEPS, get_next_onboarding_steps
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import OnboardingStep
 from zerver.models.realms import get_realm
@@ -25,12 +25,13 @@ class TestGetNextOnboardingSteps(ZulipTestCase):
 
         do_mark_onboarding_step_as_read(self.user, "intro_inbox_view_modal")
         onboarding_steps = get_next_onboarding_steps(self.user)
-        self.assert_length(onboarding_steps, 5)
+        self.assert_length(onboarding_steps, 6)
         self.assertEqual(onboarding_steps[0]["name"], "intro_recent_view_modal")
         self.assertEqual(onboarding_steps[1]["name"], "first_stream_created_banner")
         self.assertEqual(onboarding_steps[2]["name"], "jump_to_conversation_banner")
         self.assertEqual(onboarding_steps[3]["name"], "non_interleaved_view_messages_fading")
         self.assertEqual(onboarding_steps[4]["name"], "interleaved_view_messages_fading")
+        self.assertEqual(onboarding_steps[5]["name"], "narrow_to_dm_with_welcome_bot_new_user")
 
         with self.settings(TUTORIAL_ENABLED=False):
             onboarding_steps = get_next_onboarding_steps(self.user)
@@ -39,13 +40,18 @@ class TestGetNextOnboardingSteps(ZulipTestCase):
     def test_all_onboarding_steps_done(self) -> None:
         self.assertNotEqual(get_next_onboarding_steps(self.user), [])
 
-        for one_time_notice in ONE_TIME_NOTICES:  # nocoverage
-            do_mark_onboarding_step_as_read(self.user, one_time_notice.name)
+        for onboarding_step in ALL_ONBOARDING_STEPS:  # nocoverage
+            do_mark_onboarding_step_as_read(self.user, onboarding_step.name)
 
         self.assertEqual(get_next_onboarding_steps(self.user), [])
 
 
 class TestOnboardingSteps(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        OnboardingStep.objects.filter(user=self.example_user("hamlet")).delete()
+
     def test_do_mark_onboarding_step_as_read(self) -> None:
         user = self.example_user("hamlet")
         do_mark_onboarding_step_as_read(user, "intro_inbox_view_modal")

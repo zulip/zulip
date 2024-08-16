@@ -14,6 +14,7 @@ const message_lists = zrequire("message_lists");
 const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
+const user_groups = zrequire("user_groups");
 
 const noop = function () {};
 
@@ -69,6 +70,15 @@ const me = {
     is_admin: false,
     is_guest: false,
 };
+
+const everyone = {
+    name: "role:everyone",
+    id: 2,
+    members: new Set([999, 1000, 2000]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+user_groups.initialize({realm_user_groups: [everyone]});
 
 // Helper functions:
 function add_initialize_users() {
@@ -139,7 +149,7 @@ function test(label, f) {
 test("my_message_all_actions", () => {
     // Set page parameters.
     set_page_params_no_edit_restrictions();
-
+    realm.realm_can_delete_any_message_group = everyone.id;
     // Get message with maximum permissions available
     // Initialize message list
     const list = init_message_list();
@@ -191,7 +201,7 @@ test("my_message_all_actions", () => {
 test("not_my_message_view_actions", () => {
     set_page_params_no_edit_restrictions();
     // Get message that is only viewable
-
+    realm.realm_can_delete_any_message_group = everyone.id;
     const list = init_message_list();
     message_lists.set_current(list);
 
@@ -229,7 +239,7 @@ test("not_my_message_view_actions", () => {
 
 test("not_my_message_view_source_and_move", () => {
     set_page_params_no_edit_restrictions();
-
+    realm.realm_can_delete_any_message_group = everyone.id;
     // Get message that is movable with viewable source
 
     const list = init_message_list();

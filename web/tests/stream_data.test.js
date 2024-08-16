@@ -123,7 +123,6 @@ test("basics", () => {
     assert.equal(stream_data.get_sub("web_public_stream"), web_public_stream);
     assert.ok(stream_data.is_web_public(web_public_stream.stream_id));
 
-    assert.deepEqual(stream_data.home_view_stream_names(), ["social"]);
     assert.deepEqual(stream_data.subscribed_streams(), ["social", "test"]);
     assert.deepEqual(stream_data.get_colors(), ["red", "yellow"]);
     assert.deepEqual(stream_data.subscribed_stream_ids(), [social.stream_id, test.stream_id]);
@@ -699,14 +698,6 @@ const jazy = {
     subscribed: false,
     is_muted: true,
 };
-
-test("is_muted", () => {
-    stream_data.add_sub(tony);
-    stream_data.add_sub(jazy);
-    assert.ok(!stream_data.is_stream_muted_by_name("tony"));
-    assert.ok(stream_data.is_stream_muted_by_name("jazy"));
-    assert.ok(stream_data.is_stream_muted_by_name("EEXISTS"));
-});
 
 test("is_new_stream_announcements_stream_muted", () => {
     stream_data.add_sub(tony);

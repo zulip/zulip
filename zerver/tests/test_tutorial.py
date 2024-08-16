@@ -4,7 +4,6 @@ from typing_extensions import override
 from zerver.actions.message_send import internal_send_private_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import message_stream_count, most_recent_message
-from zerver.models import UserProfile
 from zerver.models.users import get_system_bot
 
 
@@ -27,21 +26,6 @@ class TutorialTests(ZulipTestCase):
             # set this to true for welcome_bot in the codebase.
             disable_external_notifications=True,
         )
-
-    def test_tutorial_status(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-
-        cases = [
-            ("started", UserProfile.TUTORIAL_STARTED),
-            ("finished", UserProfile.TUTORIAL_FINISHED),
-        ]
-        for incoming_status, expected_db_status in cases:
-            params = dict(status=incoming_status)
-            result = self.client_post("/json/users/me/tutorial_status", params)
-            self.assert_json_success(result)
-            user = self.example_user("hamlet")
-            self.assertEqual(user.tutorial_status, expected_db_status)
 
     def test_response_to_pm_for_app(self) -> None:
         user = self.example_user("hamlet")

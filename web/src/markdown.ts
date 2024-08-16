@@ -200,13 +200,13 @@ function parse_with_options(
                 let classes;
                 let display_text;
                 if (silently) {
-                    classes = "user-mention silent";
+                    classes = "user-mention channel-wildcard-mention silent";
                     display_text = mention;
                 } else {
                     // Stream Wildcard mention
                     mentioned_stream_wildcard = true;
                     display_text = "@" + mention;
-                    classes = "user-mention";
+                    classes = "user-mention channel-wildcard-mention";
                 }
 
                 return `<span class="${classes}" data-user-id="*">${_.escape(display_text)}</span>`;
@@ -334,8 +334,8 @@ function parse_with_options(
         silencedMentionHandler(quote: string): string {
             // Silence quoted personal and stream wildcard mentions.
             quote = quote.replaceAll(
-                /(<span class="user-mention)(" data-user-id="(\d+|\*)">)@/g,
-                "$1 silent$2",
+                /(<span class="user-mention( channel-wildcard-mention)?)(" data-user-id="(\d+|\*)">)@/g,
+                "$1 silent$3",
             );
 
             // Silence quoted topic wildcard mentions.

@@ -1928,6 +1928,8 @@ class UserMentionPattern(CompiledInlineProcessor):
             text = f"@{name}"
             if topic_wildcard:
                 el.set("class", "topic-mention")
+            elif stream_wildcard:
+                el.set("class", "user-mention channel-wildcard-mention")
             else:
                 el.set("class", "user-mention")
             if silent:

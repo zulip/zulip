@@ -1242,7 +1242,7 @@ test("parse", () => {
     // "stream" was renamed to "channel"
     string = "stream:Foo topic:Bar yo";
     terms = [
-        {operator: "stream", operand: "Foo"},
+        {operator: "channel", operand: "Foo"},
         {operator: "topic", operand: "Bar"},
         {operator: "search", operand: "yo"},
     ];
@@ -1313,7 +1313,7 @@ test("parse", () => {
 
     // "streams" was renamed to "channels"
     string = "streams:public";
-    terms = [{operator: "streams", operand: "public"}];
+    terms = [{operator: "channels", operand: "public"}];
     _test();
 
     string = "channel:foo :emoji: are cool";

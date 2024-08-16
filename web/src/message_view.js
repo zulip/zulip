@@ -282,6 +282,7 @@ export function try_rendering_locally_for_same_narrow(filter, opts) {
 
     message_lists.current.data.filter = filter;
     update_hash_to_match_filter(filter, "retarget message location");
+    message_view_header.render_title_area();
     return true;
 }
 
@@ -1064,52 +1065,53 @@ export function render_message_list_with_selected_message(opts) {
     narrow_history.save_narrow_state_and_flush();
 }
 
-export function activate_stream_for_cycle_hotkey(stream_name) {
+export function activate_stream_for_cycle_hotkey(stream_id) {
+    const stream_name = stream_data.get_stream_name_from_id(stream_id);
     // This is the common code for A/D hotkeys.
     const filter_expr = [{operator: "channel", operand: stream_name}];
     show(filter_expr, {});
 }
 
 export function stream_cycle_backward() {
-    const curr_stream = narrow_state.stream_name();
+    const curr_stream_id = narrow_state.stream_id();
 
-    if (!curr_stream) {
+    if (!curr_stream_id) {
         return;
     }
 
-    const stream_name = topic_generator.get_prev_stream(curr_stream);
+    const stream_id = topic_generator.get_prev_stream(curr_stream_id);
 
-    if (!stream_name) {
+    if (!stream_id) {
         return;
     }
 
-    activate_stream_for_cycle_hotkey(stream_name);
+    activate_stream_for_cycle_hotkey(stream_id);
 }
 
 export function stream_cycle_forward() {
-    const curr_stream = narrow_state.stream_name();
+    const curr_stream_id = narrow_state.stream_id();
 
-    if (!curr_stream) {
+    if (!curr_stream_id) {
         return;
     }
 
-    const stream_name = topic_generator.get_next_stream(curr_stream);
+    const stream_id = topic_generator.get_next_stream(curr_stream_id);
 
-    if (!stream_name) {
+    if (!stream_id) {
         return;
     }
 
-    activate_stream_for_cycle_hotkey(stream_name);
+    activate_stream_for_cycle_hotkey(stream_id);
 }
 
 export function narrow_to_next_topic(opts = {}) {
     const curr_info = {
-        stream: narrow_state.stream_name(),
+        stream_id: narrow_state.stream_id(),
         topic: narrow_state.topic(),
     };
 
     const next_narrow = topic_generator.get_next_topic(
-        curr_info.stream,
+        curr_info.stream_id,
         curr_info.topic,
         opts.only_followed_topics,
     );
@@ -1136,8 +1138,9 @@ export function narrow_to_next_topic(opts = {}) {
         return;
     }
 
+    const stream_name = stream_data.get_stream_name_from_id(next_narrow.stream_id);
     const filter_expr = [
-        {operator: "channel", operand: next_narrow.stream},
+        {operator: "channel", operand: stream_name},
         {operator: "topic", operand: next_narrow.topic},
     ];
 

@@ -265,61 +265,63 @@ function add_row(sub) {
     stream_list.stream_sidebar.set_row(sub.stream_id, row);
 }
 
+const develSub = {
+    name: "devel",
+    stream_id: 1000,
+    color: "blue",
+    pin_to_top: true,
+    subscribed: true,
+};
+
+const RomeSub = {
+    name: "Rome",
+    stream_id: 2000,
+    color: "blue",
+    pin_to_top: true,
+    subscribed: true,
+};
+
+const testSub = {
+    name: "test",
+    stream_id: 3000,
+    color: "blue",
+    pin_to_top: true,
+    subscribed: true,
+};
+
+const announceSub = {
+    name: "announce",
+    stream_id: 4000,
+    color: "green",
+    pin_to_top: false,
+    subscribed: true,
+};
+
+const DenmarkSub = {
+    name: "Denmark",
+    stream_id: 5000,
+    color: "green",
+    pin_to_top: false,
+    subscribed: true,
+};
+
+const carSub = {
+    name: "cars",
+    stream_id: 6000,
+    color: "green",
+    pin_to_top: false,
+    subscribed: true,
+};
+
 function initialize_stream_data() {
     // pinned streams
-    const develSub = {
-        name: "devel",
-        stream_id: 1000,
-        color: "blue",
-        pin_to_top: true,
-        subscribed: true,
-    };
     add_row(develSub);
-
-    const RomeSub = {
-        name: "Rome",
-        stream_id: 2000,
-        color: "blue",
-        pin_to_top: true,
-        subscribed: true,
-    };
     add_row(RomeSub);
-
-    const testSub = {
-        name: "test",
-        stream_id: 3000,
-        color: "blue",
-        pin_to_top: true,
-        subscribed: true,
-    };
     add_row(testSub);
 
     // unpinned streams
-    const announceSub = {
-        name: "announce",
-        stream_id: 4000,
-        color: "green",
-        pin_to_top: false,
-        subscribed: true,
-    };
     add_row(announceSub);
-
-    const DenmarkSub = {
-        name: "Denmark",
-        stream_id: 5000,
-        color: "green",
-        pin_to_top: false,
-        subscribed: true,
-    };
     add_row(DenmarkSub);
-
-    const carSub = {
-        name: "cars",
-        stream_id: 6000,
-        color: "green",
-        pin_to_top: false,
-        subscribed: true,
-    };
     add_row(carSub);
 
     stream_list.build_stream_list();
@@ -520,18 +522,18 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
     assert.ok(active_subheader_flag);
     assert.ok(inactive_subheader_flag);
 
-    const streams = stream_list_sort.get_streams();
+    const streams = stream_list_sort.get_stream_ids();
 
     assert.deepEqual(streams, [
         // three groups: pinned, normal, dormant
-        "devel",
-        "Rome",
-        "test",
+        develSub.stream_id,
+        RomeSub.stream_id,
+        testSub.stream_id,
         //
-        "announce",
-        "Denmark",
+        announceSub.stream_id,
+        DenmarkSub.stream_id,
         //
-        "cars",
+        carSub.stream_id,
     ]);
 
     const denmark_sub = stream_data.get_sub("Denmark");
@@ -681,6 +683,9 @@ test_ui("rename_stream", ({mock_template}) => {
 
     stream_list.rename_stream(sub);
     assert.equal($unread_count.text(), "99");
+
+    // Reset for the next initialize_stream_data()
+    develSub.name = "devel"; // Resets
 });
 
 test_ui("refresh_pin", ({override, override_rewire, mock_template}) => {

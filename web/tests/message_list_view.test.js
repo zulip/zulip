@@ -764,8 +764,9 @@ test("render_windows", ({mock_template}) => {
     }
 
     function verify_no_move_range(start, end) {
-        // In our render window, there are up to 300 positions in
-        // the list where we can move the pointer without forcing
+        // In our render window, there are up to 150 positions in
+        // the list (with potentially 50 at the start if the range
+        // starts with 0) where we can move the pointer without forcing
         // a re-render.  The code avoids hasty re-renders for
         // performance reasons.
         for (const idx of _.range(start, end)) {
@@ -786,44 +787,84 @@ test("render_windows", ({mock_template}) => {
         assert.equal(view._render_win_end, end);
     }
 
+    function verify_move_and_no_move_range(move_target, opts = {}) {
+        // When we move to position X, we expect 250/2 = 125 messages on
+        // either side, unless that goes outside the `count`, in which
+        // case we'll specify it in `opts`.
+        const move_start = opts.move_start ?? move_target - 125;
+        const move_end = opts.move_end ?? move_target + 125;
+        verify_move(move_target, [move_start, move_end]);
+        // the no-move range is a 50 buffer on each side
+        const no_move_start = opts.no_move_start ?? move_start + 50;
+        const no_move_end = move_end - 50;
+        verify_no_move_range(no_move_start, no_move_end);
+    }
+
     reset_list({count: 51});
-    verify_no_move_range(0, 51);
+    verify_no_move_range(0, 51); // This is the whole list
 
+    // Start a new list with more messages. Note that the order of
+    // these checks matters; each time we call `verify_move` or
+    // `verify_move_and_no_move_range`, we are moving the currently
+    // selected position in the list.
     reset_list({count: 450});
-    verify_no_move_range(0, 350);
 
-    verify_move(350, [150, 450]);
-    verify_no_move_range(200, 400);
+    // 250 messages rendered, with the last 50 in the move range
+    verify_no_move_range(0, 200);
 
-    verify_move(199, [0, 400]);
-    verify_no_move_range(50, 350);
+    verify_move_and_no_move_range(350, {
+        // top maxes out at 450
+        move_end: 450,
+    });
 
-    verify_move(350, [150, 450]);
-    verify_no_move_range(200, 400);
+    // We load more than 125 on the upper end, because we load the full 250
+    // messages and 124 is less than half of that.
+    verify_move_and_no_move_range(124, {
+        move_start: 0,
+        move_end: 250,
+    });
 
-    verify_move(199, [0, 400]);
-    verify_no_move_range(0, 350);
+    // If we now jump to a message ID close enough to the end of the
+    // range, the render window is limited.
+    verify_move_and_no_move_range(350, {
+        move_end: 450,
+    });
 
-    verify_move(400, [200, 450]);
+    // Now jump the selected ID close to the start again.
+    verify_move_and_no_move_range(124, {
+        move_start: 0,
+        move_end: 250,
+        // The first 50 aren't in a move range, because we can't load earlier
+        // messages than 0.
+        no_move_start: 0,
+    });
+
+    verify_move_and_no_move_range(400, {
+        // top maxes out at 450
+        move_end: 450,
+    });
 
     reset_list({count: 800});
-    verify_no_move_range(0, 350);
+    verify_no_move_range(0, 200);
 
-    verify_move(350, [150, 550]);
-    verify_no_move_range(200, 500);
+    verify_move_and_no_move_range(350);
 
-    verify_move(500, [300, 700]);
-    verify_no_move_range(350, 650);
+    verify_move_and_no_move_range(500);
 
-    verify_move(650, [450, 800]);
-    verify_no_move_range(500, 750);
+    verify_move_and_no_move_range(750, {
+        // top maxes out at 800
+        move_end: 800,
+    });
 
-    verify_move(499, [299, 699]);
-    verify_no_move_range(349, 649);
+    verify_move_and_no_move_range(499);
 
-    verify_move(348, [148, 548]);
-    verify_no_move_range(198, 398);
+    verify_move_and_no_move_range(348);
 
-    verify_move(197, [0, 400]);
-    verify_no_move_range(0, 350);
+    // We load more than 125 on the upper end, because we load the full 250
+    // messages and 122 is less than half of that.
+    verify_move_and_no_move_range(122, {
+        move_start: 0,
+        move_end: 250,
+        no_move_start: 0,
+    });
 });

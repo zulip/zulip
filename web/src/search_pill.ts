@@ -65,21 +65,22 @@ export function get_search_string_from_item(item: SearchPill): string {
 // to e.g. remove a user from a group-DM pill without deleting the whole
 // DM pill.
 function on_pill_exit(
-    clicked_pill: HTMLElement,
+    clicked_element: HTMLElement,
     all_pills: InputPill<SearchPill>[],
     remove_pill: (pill: HTMLElement) => void,
 ): void {
-    const $user_pill_container = $(clicked_pill).parents(".user-pill-container");
+    const $user_pill_container = $(clicked_element).parents(".user-pill-container");
     if (!$user_pill_container.length) {
         // This is just a regular search pill, so we don't need to do fancy logic.
-        remove_pill(clicked_pill);
+        const $clicked_pill = $(clicked_element).closest(".pill");
+        remove_pill($clicked_pill[0]!);
         return;
     }
     // The user-pill-container container class is used exclusively for
     // group-DM search pills, where multiple user pills sit inside a larger
     // pill. The exit icons in those individual user pills should remove
     // just that pill, not the outer pill.
-    const user_id_string = $(clicked_pill).closest(".pill").attr("data-user-id");
+    const user_id_string = $(clicked_element).closest(".pill").attr("data-user-id");
     assert(user_id_string !== undefined);
     const user_id = Number.parseInt(user_id_string, 10);
 

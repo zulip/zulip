@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 282**
+
+* `POST users/me/tutorial_status`: Removed this undocumented endpoint,
+  as the state that it maintained has been replaced by a cleaner
+  `onboarding_steps` implementation.
+
+**Feature level 281**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Added a new realm setting `realm_can_delete_any_message_group` which is a
+  [group-setting value](/api/group-setting-values) describing the set of
+  users with permission to delete any message in the organization.
+
 **Feature level 280**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

@@ -82,14 +82,14 @@ class BinaryDict<T> {
         yield* this.falses.values();
     }
 
-    get(k: number): T {
+    get(k: number): T | undefined {
         const res = this.trues.get(k);
 
         if (res !== undefined) {
             return res;
         }
 
-        return this.falses.get(k)!;
+        return this.falses.get(k);
     }
 
     set(k: number, v: T): void {
@@ -433,11 +433,6 @@ export function all_subscribed_streams_are_in_home_view(): boolean {
     return subscribed_subs().every((sub) => !sub.is_muted);
 }
 
-export function home_view_stream_names(): string[] {
-    const home_view_subs = subscribed_subs().filter((sub) => !sub.is_muted);
-    return home_view_subs.map((sub) => sub.name);
-}
-
 export function canonicalized_name(stream_name: string): string {
     return stream_name.toString().toLowerCase();
 }
@@ -455,15 +450,6 @@ export function get_color(stream_id: number | undefined): string {
 
 export function is_muted(stream_id: number): boolean {
     const sub = sub_store.get(stream_id);
-    // Return true for undefined streams
-    if (sub === undefined) {
-        return true;
-    }
-    return sub.is_muted;
-}
-
-export function is_stream_muted_by_name(stream_name: string): boolean {
-    const sub = get_sub(stream_name);
     // Return true for undefined streams
     if (sub === undefined) {
         return true;

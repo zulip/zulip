@@ -58,6 +58,7 @@ class SponsorshipRequestDict(TypedDict):
 @dataclass
 class SponsorshipData:
     sponsorship_pending: bool = False
+    has_discount: bool = False
     monthly_discounted_price: int | None = None
     annual_discounted_price: int | None = None
     original_monthly_plan_price: int | None = None
@@ -132,14 +133,17 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
     pending = customer.sponsorship_pending
     licenses = customer.minimum_licenses
     plan_tier = customer.required_plan_tier
+    has_discount = False
     sponsorship_request = None
     monthly_discounted_price = None
     annual_discounted_price = None
     original_monthly_plan_price = None
     original_annual_plan_price = None
     if customer.monthly_discounted_price:
+        has_discount = True
         monthly_discounted_price = customer.monthly_discounted_price
     if customer.annual_discounted_price:
+        has_discount = True
         annual_discounted_price = customer.annual_discounted_price
     if plan_tier is not None:
         original_monthly_plan_price = get_price_per_license(
@@ -173,6 +177,7 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
 
     return SponsorshipData(
         sponsorship_pending=pending,
+        has_discount=has_discount,
         monthly_discounted_price=monthly_discounted_price,
         annual_discounted_price=annual_discounted_price,
         original_monthly_plan_price=original_monthly_plan_price,
