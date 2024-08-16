@@ -157,7 +157,7 @@ export const twenty_four_hour_time_values = {
 
 export type DisplaySettings = {
     settings: {
-        user_display_settings: string[];
+        user_preference: string[];
     };
     render_group?: boolean;
 };
