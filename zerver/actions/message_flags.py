@@ -55,7 +55,7 @@ def do_mark_all_as_read(user_profile: UserProfile, *, timeout: float | None = No
         if timeout is not None and time.monotonic() >= start_time + timeout:
             return None
 
-        with transaction.atomic(savepoint=False):
+        with transaction.atomic(durable=True):
             query = (
                 UserMessage.select_for_update_query()
                 .filter(user_profile=user_profile)
