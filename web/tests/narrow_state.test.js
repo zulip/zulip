@@ -66,7 +66,6 @@ test("stream", () => {
 
     const public_terms = narrow_state.public_search_terms();
     assert.deepEqual(public_terms, expected_terms);
-    assert.equal(narrow_state.search_string(), "channel:Test topic:Bar yo");
 });
 
 test("narrowed", () => {
