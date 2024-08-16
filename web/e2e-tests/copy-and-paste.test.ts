@@ -130,9 +130,11 @@ async function test_copying_messages_from_several_topics(page: Page): Promise<vo
 async function copy_paste_test(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector(".message-list .message_row", {visible: true});
-    // Assert that there is only one message list.
-    assert.equal((await page.$$(".message-list")).length, 1);
+    let message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(
+        `.message-list[data-message-list-id='${message_list_id}'] .message_row`,
+        {visible: true},
+    );
 
     await common.send_multiple_messages(page, [
         {stream_name: "Verona", topic: "copy-paste-topic #1", content: "copy paste test A"},
@@ -151,7 +153,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     ]);
 
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    const message_list_id = await common.get_current_msg_list_id(page, true);
+    message_list_id = await common.get_current_msg_list_id(page, true);
     await common.check_messages_sent(page, message_list_id, [
         ["Verona > copy-paste-topic #1", ["copy paste test A", "copy paste test B"]],
         [
