@@ -706,7 +706,11 @@ export function dispatch_normal_event(event) {
                 break;
             }
 
+<<<<<<< HEAD
             const user_preferences= [
+=======
+            const user_preferences = [
+>>>>>>> 703052dcbb (Change 'display settings' to 'preferences' in web/src/server_events_dispatch.js (line:709))
                 "color_scheme",
                 "web_font_size_px",
                 "web_line_height_percent",
