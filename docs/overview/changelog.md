@@ -3932,7 +3932,7 @@ _Released 2016-08-25_
   Zulip.
 - Added support for using Ubuntu 16.04 in production.
 - Added a powerful and complete realm import/export tool.
-- Added nice UI for selecting a default language to display settings.
+- Added nice UI for selecting a default language to preference.
 - Added UI for searching streams in left sidebar with hotkeys.
 - Added Semaphore, Bitbucket, and HelloWorld (example) integrations.
 - Added new webhook-based integration for Trello.
