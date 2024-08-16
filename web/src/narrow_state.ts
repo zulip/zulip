@@ -53,10 +53,6 @@ export function public_search_terms(
     return current_filter.public_terms();
 }
 
-export function search_string(filter?: Filter): string {
-    return Filter.unparse(search_terms(filter));
-}
-
 // Collect terms which appear only once into a map,
 // and discard those which appear more than once.
 function collect_single(terms: NarrowTerm[]): Map<string, string> {
