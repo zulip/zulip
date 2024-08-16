@@ -155,24 +155,24 @@ def do_mark_stream_messages_as_read(
     return count
 
 
+@transaction.atomic(savepoint=False)
 def do_mark_muted_user_messages_as_read(
     user_profile: UserProfile,
     muted_user: UserProfile,
 ) -> int:
-    with transaction.atomic(savepoint=False):
-        query = (
-            UserMessage.select_for_update_query()
-            .filter(user_profile=user_profile, message__sender=muted_user)
-            .extra(where=[UserMessage.where_unread()])  # noqa: S610
-        )
-        message_ids = list(query.values_list("message_id", flat=True))
+    query = (
+        UserMessage.select_for_update_query()
+        .filter(user_profile=user_profile, message__sender=muted_user)
+        .extra(where=[UserMessage.where_unread()])  # noqa: S610
+    )
+    message_ids = list(query.values_list("message_id", flat=True))
 
-        if len(message_ids) == 0:
-            return 0
+    if len(message_ids) == 0:
+        return 0
 
-        count = query.update(
-            flags=F("flags").bitor(UserMessage.flags.read),
-        )
+    count = query.update(
+        flags=F("flags").bitor(UserMessage.flags.read),
+    )
 
     event = asdict(
         ReadMessagesEvent(
@@ -182,7 +182,7 @@ def do_mark_muted_user_messages_as_read(
     )
     event_time = timezone_now()
 
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
     do_clear_mobile_push_notifications_for_ids([user_profile.id], message_ids)
 
     do_increment_logging_stat(
