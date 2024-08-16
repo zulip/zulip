@@ -706,7 +706,7 @@ export function dispatch_normal_event(event) {
                 break;
             }
 
-            const user_display_settings = [
+            const user_preference = [
                 "color_scheme",
                 "web_font_size_px",
                 "web_line_height_percent",
