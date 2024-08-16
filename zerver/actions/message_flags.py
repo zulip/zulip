@@ -273,7 +273,7 @@ def do_update_message_flags(
     flagattr = getattr(UserMessage.flags, flag)
     flag_target = flagattr if is_adding else 0
 
-    with transaction.atomic(savepoint=False):
+    with transaction.atomic(durable=True):
         if flag == "read" and not is_adding:
             # We have an invariant that all stream messages marked as
             # unread must be in streams the user is subscribed to.
@@ -359,38 +359,40 @@ def do_update_message_flags(
         else:
             to_update.update(flags=F("flags").bitand(~flagattr))
 
-    event = {
-        "type": "update_message_flags",
-        "op": operation,
-        "operation": operation,
-        "flag": flag,
-        "messages": messages,
-        "all": False,
-    }
+        event = {
+            "type": "update_message_flags",
+            "op": operation,
+            "operation": operation,
+            "flag": flag,
+            "messages": messages,
+            "all": False,
+        }
 
-    if flag == "read" and not is_adding:
-        # When removing the read flag (i.e. marking messages as
-        # unread), extend the event with an additional object with
-        # details on the messages required to update the client's
-        # `unread_msgs` data structure.
-        raw_unread_data = get_raw_unread_data(user_profile, messages)
-        event["message_details"] = format_unread_message_details(user_profile.id, raw_unread_data)
+        if flag == "read" and not is_adding:
+            # When removing the read flag (i.e. marking messages as
+            # unread), extend the event with an additional object with
+            # details on the messages required to update the client's
+            # `unread_msgs` data structure.
+            raw_unread_data = get_raw_unread_data(user_profile, messages)
+            event["message_details"] = format_unread_message_details(
+                user_profile.id, raw_unread_data
+            )
 
-    send_event(user_profile.realm, event, [user_profile.id])
+        send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
-    if flag == "read" and is_adding:
-        event_time = timezone_now()
-        do_clear_mobile_push_notifications_for_ids([user_profile.id], messages)
+        if flag == "read" and is_adding:
+            event_time = timezone_now()
+            do_clear_mobile_push_notifications_for_ids([user_profile.id], messages)
 
-        do_increment_logging_stat(
-            user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
-        )
-        do_increment_logging_stat(
-            user_profile,
-            COUNT_STATS["messages_read_interactions::hour"],
-            None,
-            event_time,
-            increment=min(1, count),
-        )
+            do_increment_logging_stat(
+                user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
+            )
+            do_increment_logging_stat(
+                user_profile,
+                COUNT_STATS["messages_read_interactions::hour"],
+                None,
+                event_time,
+                increment=min(1, count),
+            )
 
     return count

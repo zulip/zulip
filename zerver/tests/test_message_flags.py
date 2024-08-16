@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
-from django.db import connection, transaction
+from django.db import connection
 from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
@@ -1603,8 +1603,7 @@ class MessageAccessTests(ZulipTestCase):
 
         # Starring private stream messages you didn't receive fails.
         self.login("cordelia")
-        with transaction.atomic():
-            result = self.change_star(message_ids)
+        result = self.change_star(message_ids)
         self.assert_json_error(result, "Invalid message(s)")
 
         stream_name = "private_stream_2"
@@ -1619,8 +1618,7 @@ class MessageAccessTests(ZulipTestCase):
         # can't see it if you didn't receive the message and are
         # not subscribed.
         self.login("cordelia")
-        with transaction.atomic():
-            result = self.change_star(message_ids)
+        result = self.change_star(message_ids)
         self.assert_json_error(result, "Invalid message(s)")
 
         # But if you subscribe, then you can star the message
@@ -1661,8 +1659,7 @@ class MessageAccessTests(ZulipTestCase):
 
         guest_user = self.example_user("polonius")
         self.login_user(guest_user)
-        with transaction.atomic():
-            result = self.change_star(message_id)
+        result = self.change_star(message_id)
         self.assert_json_error(result, "Invalid message(s)")
 
         # Subscribed guest users can access public stream messages sent before they join
@@ -1693,15 +1690,13 @@ class MessageAccessTests(ZulipTestCase):
 
         guest_user = self.example_user("polonius")
         self.login_user(guest_user)
-        with transaction.atomic():
-            result = self.change_star(message_id)
+        result = self.change_star(message_id)
         self.assert_json_error(result, "Invalid message(s)")
 
         # Guest user can't access messages of subscribed private streams if
         # history is not public to subscribers
         self.subscribe(guest_user, stream_name)
-        with transaction.atomic():
-            result = self.change_star(message_id)
+        result = self.change_star(message_id)
         self.assert_json_error(result, "Invalid message(s)")
 
         # Guest user can access messages of subscribed private streams if
