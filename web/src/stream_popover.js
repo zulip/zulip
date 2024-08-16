@@ -3,12 +3,14 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_message_moving_warning_banner from "../templates/modal_banner/message_moving_warning_banner.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
@@ -26,6 +28,7 @@ import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_components from "./stream_settings_components";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
@@ -557,6 +560,7 @@ export async function build_move_topic_to_stream_popover(
         stream_widget_value = $(event.currentTarget).attr("data-unique-id");
 
         update_submit_button_disabled_state(stream_widget_value);
+        update_warning_banner();
         set_stream_topic_typeahead();
         render_selected_stream();
 
@@ -565,8 +569,54 @@ export async function build_move_topic_to_stream_popover(
         event.stopPropagation();
     }
 
+    function update_warning_banner() {
+        // The warning banner only shows when
+        // 1) submit button is NOT disabled, and
+        // 2) target topic is an existing topic, and
+        // 3) propagate_mode is NOT change_one
+
+        // submit button
+        if ($("#move_topic_modal .dialog_submit_button")[0].disabled) {
+            $("#move_topic_modal .move_topic_form_warning_container").html("");
+            return;
+        }
+
+        // target topic
+        if (stream_widget_value !== undefined) {
+            const {new_topic_name} = get_params_from_form();
+            if (
+                !stream_topic_history.stream_has_topic(
+                    Number.parseInt(stream_widget_value, 10),
+                    new_topic_name,
+                )
+            ) {
+                $("#move_topic_modal .move_topic_form_warning_container").html("");
+                return;
+            }
+        }
+
+        // propagate_mode
+        if ($("#move_topic_modal select.message_edit_topic_propagate").val() === "change_one") {
+            $("#move_topic_modal .move_topic_form_warning_container").html("");
+            return;
+        }
+
+        $("#move_topic_modal .move_topic_form_warning_container").html(
+            render_message_moving_warning_banner({
+                banner_type: compose_banner.WARNING,
+                hide_close_button: true,
+                classname: "message_moving_warning_banner",
+            }),
+        );
+    }
+
     function move_topic_post_render() {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
+
+        $("#move_topic_modal select.message_edit_topic_propagate")[0]?.addEventListener(
+            "change",
+            () => update_warning_banner(),
+        );
 
         const $topic_input = $("#move_topic_form .move_messages_edit_topic");
         move_topic_to_stream_topic_typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
@@ -581,6 +631,7 @@ export async function build_move_topic_to_stream_popover(
             const select_stream_id = current_stream_id;
             $topic_input.on("input", () => {
                 update_submit_button_disabled_state(select_stream_id);
+                update_warning_banner();
             });
             return;
         }
@@ -609,6 +660,7 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(stream_widget_value);
+            update_warning_banner();
         });
     }
 

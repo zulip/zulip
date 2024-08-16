@@ -86,6 +86,17 @@ export function stream_has_topics(stream_id: number): boolean {
     return history.has_topics();
 }
 
+export function stream_has_topic(stream_id: number, topic_name: string): boolean {
+    if (!stream_dict.has(stream_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(stream_id);
+    assert(history !== undefined);
+
+    return history.has_topic(topic_name);
+}
+
 export type TopicHistoryEntry = {
     count: number;
     message_id: number;
@@ -124,6 +135,10 @@ export class PerStreamHistory {
 
     has_topics(): boolean {
         return this.topics.size !== 0;
+    }
+
+    has_topic(topic_name: string): boolean {
+        return this.topics.has(topic_name);
     }
 
     update_stream_with_message_id(message_id: number): void {

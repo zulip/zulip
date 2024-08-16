@@ -307,6 +307,25 @@ test("test_stream_has_topics", () => {
     assert.equal(stream_topic_history.stream_has_topics(stream_id), true);
 });
 
+test("test_stream_has_topic", () => {
+    const stream_id = 88;
+    const topic_name = "fake topic name";
+
+    assert.equal(stream_topic_history.stream_has_topic(stream_id, topic_name), false);
+
+    stream_topic_history.find_or_create(stream_id);
+
+    assert.equal(stream_topic_history.stream_has_topic(stream_id, topic_name), false);
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 888,
+        topic_name,
+    });
+
+    assert.equal(stream_topic_history.stream_has_topic(stream_id, topic_name), true);
+});
+
 test("server_history_end_to_end", () => {
     stream_topic_history.reset();
 
