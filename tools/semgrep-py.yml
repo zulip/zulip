@@ -72,6 +72,7 @@ rules:
       include:
         - "**/migrations"
       exclude:
+        - zerver/migrations/0001_squashed_0569.py
         - zerver/migrations/0032_verify_all_medium_avatar_images.py
         - zerver/migrations/0104_fix_unreads.py
         - zerver/migrations/0206_stream_rendered_description.py
@@ -93,6 +94,7 @@ rules:
       exclude:
         - analytics/migrations/0008_add_count_indexes.py
         - zerver/migrations/0001_initial.py
+        - zerver/migrations/0001_squashed_0569.py
         - zerver/migrations/0082_index_starred_user_messages.py
         - zerver/migrations/0083_index_mentioned_user_messages.py
         - zerver/migrations/0095_index_unread_user_messages.py
