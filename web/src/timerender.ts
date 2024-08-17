@@ -18,9 +18,13 @@ import * as util from "./util.ts";
 
 let next_timerender_id = 0;
 
-export let display_time_zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+export let display_time_zone = browser_time_zone();
 
 const formatter_map = new Map<string, Intl.DateTimeFormat>();
+
+export function browser_time_zone(): string {
+    return new Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
 
 export function clear_for_testing(): void {
     next_timerender_id = 0;
@@ -549,4 +553,20 @@ export function should_display_profile_incomplete_alert(timestamp: number): bool
         return true;
     }
     return false;
+}
+
+export function browser_canonicalize_timezone(uncanonicalized_timezone: string): string {
+    try {
+        // we use the runtime's default locale, to match _browser_time_zone_.
+        const canonicalized_timezone = new Intl.DateTimeFormat(undefined, {
+            timeZone: uncanonicalized_timezone,
+        }).resolvedOptions().timeZone;
+        return canonicalized_timezone;
+    } catch {
+        return "";
+    }
+}
+
+export function is_browser_timezone_same_as(uncanonicalized_target_timezone: string): boolean {
+    return browser_time_zone() === browser_canonicalize_timezone(uncanonicalized_target_timezone);
 }
