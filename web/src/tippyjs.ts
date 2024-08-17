@@ -173,6 +173,19 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".fa-exclamation-triangle",
+        placement: "right",
+        appendTo: () => document.body,
+        onShow(instance) {
+            instance.setContent("You are not currently subscribed to this channel.");
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+        maxWidth: 320,
+    });
+
+    tippy.delegate("body", {
         target: ".tippy-left-sidebar-tooltip",
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
