@@ -87,7 +87,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         ),
         '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -104,7 +104,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         ),
         '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -121,7 +121,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         ),
         '<div class="message_inline_image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -137,7 +137,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         ),
         '<div class="message_inline_image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy">' +
             "</a>" +
             "</div>",
     );

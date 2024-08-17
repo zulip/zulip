@@ -8,6 +8,9 @@ export PGHOST=/var/run/postgresql/
 WALG_DELTA_MAX_STEPS=$(crudini --get /etc/zulip/zulip.conf postgresql backups_incremental 2>/dev/null)
 export WALG_DELTA_MAX_STEPS
 
+WALG_COMPRESSION_METHOD=$(crudini --get /etc/zulip/zulip.conf postgresql backups_compression_method 2>/dev/null)
+export WALG_COMPRESSION_METHOD
+
 s3_backups_bucket=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_bucket 2>/dev/null)
 
 if [ "$s3_backups_bucket" != "" ] || [ -n "$WALG_S3_PREFIX" ]; then

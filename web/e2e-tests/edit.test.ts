@@ -97,7 +97,11 @@ async function test_edit_private_message(page: Page): Promise<void> {
 async function edit_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector(".message-list .message_row", {visible: true});
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(
+        `.message-list[data-message-list-id='${message_list_id}'] .message_row`,
+        {visible: true},
+    );
 
     await test_stream_message_edit(page);
     await test_edit_message_with_slash_me(page);

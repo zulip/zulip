@@ -556,6 +556,7 @@
     --color-search-shadow-wide: hsl(0deg 0% 0% / 25%);
     --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
+    --color-search-icons: hsl(0deg 0% 0%);
     --color-background-image-loader: hsl(0deg 0% 0% / 10%);
     --color-icon-purple: hsl(240deg 35% 60%);
     --color-background-popover-menu: hsl(0deg 0% 100%);
@@ -958,6 +959,7 @@
     --color-background-search-option-hover: hsl(0deg 0% 30%);
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
+    --color-search-icons: hsl(0deg 0% 78%);
     --color-background-image-loader: hsl(0deg 0% 100% / 10%);
     --color-background-popover-menu: hsl(0deg 0% 17%);
     --color-border-popover-menu-separator: hsl(0deg 0% 0% / 40%);

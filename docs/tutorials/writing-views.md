@@ -136,9 +136,11 @@ one of several bad outcomes:
   validation that has the problems from the last bullet point.
 
 In Zulip, we solve this problem with a special decorator called
-`has_request_variables` which allows a developer to declare the
+`typed_endpoint` which allows a developer to declare the
 arguments a view function takes and validate their types all within
-the `def` line of the function. We like this framework because we
+the `def` line of the function. This framework uses
+[Pydantic V2](https://docs.pydantic.dev/dev/) to perform data validation
+and parsing for the view arguments. We like this framework because we
 have found it makes the validation code compact, readable, and
 conveniently located in the same place as the method it is validating
 arguments for.
@@ -147,20 +149,26 @@ Here's an example:
 
 ```py
 from zerver.decorator import require_realm_admin
-from zerver.lib.request import has_request_variables, REQ
+from zerver.lib.typed_endpoint import typed_endpoint
 
 @require_realm_admin
-@has_request_variables
-def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
-                        full_name=REQ()):
+@typed_endpoint
+def create_user_backend(
+        request: HttpRequest,
+        user_profile: UserProfile,
+        *,
+        email: str,
+        password: str,
+        full_name: str,
+    ):
     # ... code here
 ```
 
-You will notice the special `REQ()` in the keyword arguments to
-`create_user_backend`. `has_request_variables` parses the declared
-keyword arguments of the decorated function, and for each that has an
-instance of `REQ` as the default value, it extracts the HTTP parameter
-with that name from the request, parses it as JSON, and passes it to
+The `typed_endpoint` decorator parses the declared
+[keyword-only arguments](https://docs.python.org/3/glossary.html#term-parameter)
+of the decorated function, and for each argument that has been declared,
+it extracts the HTTP parameter with that name from the request,
+parses it according to the type annotation, and then passes it to
 the function. It will return an nicely JSON formatted HTTP 400 error
 in the event that an argument is missing, doesn't parse as JSON, or
 otherwise is invalid.
@@ -168,37 +176,85 @@ otherwise is invalid.
 `require_realm_admin` is another decorator which checks the
 authorization of the given `user_profile` to make sure it belongs to a
 realm administrator (and thus has permission to create a user); we
-show it here primarily to show how `has_request_variables` should be
+show it here primarily to show how `typed_endpoint` should be
 the inner decorator.
 
-The implementation of `has_request_variables` is documented in detail
+The implementation of `typed_endpoint` is documented in detail
 in
-[zerver/lib/request.py](https://github.com/zulip/zulip/blob/main/zerver/lib/request.py))
+[zerver/lib/typed_endpoint.py](https://github.com/zulip/zulip/blob/main/zerver/lib/typed_endpoint.py)
 
-REQ also helps us with request variable validation. For example:
+Pydantic also helps us with request variable validation. For example:
 
-- `msg_ids = REQ(json_validator=check_list(check_int))` will check
-  that the `msg_ids` HTTP parameter is a list of integers, marshalled
-  as JSON, and pass it into the function as the `msg_ids` Python
+- `msg_ids: Json[list[int]]` will check that the `msg_ids`
+  HTTP parameter is a list of integers, marshalled as JSON,
+  and pass it into the function as the `msg_ids` Python
   keyword argument.
 
-- `streams_raw = REQ("subscriptions", json_validator=check_list(check_string))`
+- `streams_raw: Annotated[Json[list[str]], ApiParamConfig("subscriptions")]`
   will check that the "subscriptions" HTTP parameter is a list of
   strings, marshalled as JSON, and pass it into the function with the
   Python keyword argument `streams_raw`.
 
-- `message_id=REQ(converter=to_non_negative_int)` will check that the
-  `message_id` HTTP parameter is a string containing a non-negative
-  integer (`converter` differs from `json_validator` in that it does
-  not automatically marshall the input from JSON).
+- `message_id: Json[NonNegativeInt]` will check that the `message_id`
+  HTTP parameter is a string containing a JSON encoded non-negative
+  integer.
 
-- Since there is no need to JSON-encode strings, usually simply
-  `my_string=REQ()` is correct. One can pass, for example,
-  `str_validator=check_string_in(...)` where one wants to run a
+[Annotated](https://docs.python.org/3/library/typing.html#typing.Annotated)
+can be used in combination with
+[Pydantic's validators](https://docs.pydantic.dev/latest/api/functional_validators/)
+to provide additional validation for the arguments.
+
+- `name: Annotated[str, StringConstraints(max_length=60)]` will check that the
+  `name` HTTP parameter is a string containing up to 60 characters.
+
+- Since there is no need to JSON-encode strings
+  (lists, integers, bools and complex objects require JSON encoding), usually simply
+  `my_string: str` is correct. One can pass, for example,
+  `Annotated[str, check_string_in_validator(...)]` where one wants to run a
   validator on the value of a string.
 
+Default values can be specified for optional arguments similar to how we would specify
+default values in regular python function.
+
+- `is_default_stream: Json[bool] = False` will assign False to the `is_default_stream` argument
+  if no value is specified when making a request to the endpoint.
+
+- We can use `None` as the default value for optional arguments when we don't
+  want to specify any specific default value, for example,
+  `narrow: Json[list[NarrowParameter]] | None = None`. This does not allow the
+  caller to pass `None` as the value, the only way `narrow` can be set to `None` is
+  by using the default value.
+
+[Pydantic models](https://docs.pydantic.dev/latest/concepts/models/) can be used to
+define the schema of complex objects that can be passed to the endpoint.
+
+Here's an example:
+
+```py
+from typing import Annotated
+
+from pydantic import BaseModel, StringConstraints, model_validator
+
+class AddSubscriptionData(BaseModel):
+    name: str
+    color: str | None = None
+    description: (
+        Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)] | None
+    ) = None
+
+    @model_validator(mode="after")
+    def validate_terms(self) -> "AddSubscriptionData":
+        # ... Validation logic here
+        return self
+```
+
+- `add: Json[list[AddSubscriptionData]]` will require the `add` argument to be a list of objects
+  having the keys that are specified in the `AddSubscriptionData` model.
+
+- `@model_validator` can be used to specify additional validation logic for the model.
+
 See
-[zerver/lib/validator.py](https://github.com/zulip/zulip/blob/main/zerver/lib/validator.py)
+[zerver/lib/typed_endpoint_validators.py](https://github.com/zulip/zulip/blob/main/zerver/lib/typed_endpoint_validators.py)
 for more validators and their documentation.
 
 ### Deciding which HTTP verb to use
@@ -251,7 +307,7 @@ function is such that all user input validation happens in the view
 code (i.e. all 400 type errors are thrown there), and the actions code
 is responsible for atomically executing the change (this is usually
 signalled by having the actions function have a name starting with
-`do_`. So in most cases, errors in an actions function will be the
+`do_`). So in most cases, errors in an actions function will be the
 result of an operational problem (e.g., lost connection to the
 database) and lead to a 500 error. If an actions function is
 responsible for validation as well, it should have a name starting
@@ -261,10 +317,12 @@ For example, in [zerver/views/realm.py](https://github.com/zulip/zulip/blob/main
 
 ```py
 @require_realm_admin
-@has_request_variables
+@typed_endpoint
 def update_realm(
-    request: HttpRequest, user_profile: UserProfile,
-    name: Optional[str]=REQ(str_validator=check_string, default=None),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    name: Annotated[str | None, StringConstraints(max_length=Realm.MAX_REALM_NAME_LENGTH)] = None,
     # ...
 ):
     realm = user_profile.realm
@@ -343,12 +401,13 @@ If the webhook does not have an option to provide a bot email, use the
 `request.client` fields of a request:
 
 ```py
-@webhook_view('PagerDuty')
-@has_request_variables
-def api_pagerduty_webhook(request, user_profile,
-                          payload=REQ(argument_type='body'),
-                          stream=REQ(default='pagerduty'),
-                          topic=REQ(default=None)):
+@webhook_view("PagerDuty", all_event_types=ALL_EVENT_TYPES)
+@typed_endpoint
+def api_pagerduty_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    payload: JsonBodyPayload[WildValue],
 ```
 
 `request.client` will be the result of `get_client("ZulipPagerDutyWebhook")`
