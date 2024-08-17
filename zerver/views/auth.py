@@ -156,6 +156,7 @@ def create_preregistration_realm(
 def maybe_send_to_registration(
     request: HttpRequest,
     email: str,
+    *,
     full_name: str = "",
     mobile_flow_otp: str | None = None,
     desktop_flow_otp: str | None = None,
