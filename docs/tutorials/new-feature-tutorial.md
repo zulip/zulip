@@ -433,12 +433,14 @@ annotation).
 ```diff
  # zerver/views/realm.py
 
+ @typed_endpoint
  def update_realm(
      request: HttpRequest,
      user_profile: UserProfile,
-     name: Optional[str] = REQ(str_validator=check_string, default=None),
+     *,
+     name: str | None,
      # ...
-+    mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
++    mandatory_topics: Json[bool] | None = None,
      # ...
  ):
      # ...

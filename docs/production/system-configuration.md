@@ -296,6 +296,13 @@ value. Also supported is "[S3 Reduced Redundancy][s3-rr]", by setting
 [s3-ia]: https://aws.amazon.com/s3/storage-classes/#Infrequent_access
 [s3-rr]: https://aws.amazon.com/s3/reduced-redundancy/
 
+#### `backups_compression_method`
+
+What compression method to use when storing backups; defaults to `lz4`, which is
+fast but does not compress particularly well. Other options are `lzma`, `zstd`,
+and `brotl`; `lzma` provides the best (and slowest) compression, while `zstd`
+and `brotli` are middling compromises.
+
 #### `missing_dictionaries`
 
 If set to a true value during initial database creation, uses PostgreSQL's
