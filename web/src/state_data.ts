@@ -262,7 +262,7 @@ const realm_schema = z.object({
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),
-    realm_bot_creation_policy: NOT_TYPED_YET,
+    realm_bot_creation_policy: z.number(),
     realm_bot_domain: z.string(),
     realm_can_access_all_users_group: z.number(),
     realm_can_create_public_channel_group: z.number(),
