@@ -236,13 +236,19 @@ export function name_to_slug(name: string): string {
     return `${stream_id}-${name}`;
 }
 
-export function slug_to_name(slug: string): string {
+export function slug_to_stream_id(slug: string): number | undefined {
     /*
     Modern stream slugs look like this, where 42
     is a stream id:
 
         42
         42-stream-name
+
+    The ID might point to a stream that's hidden from our user (perhaps
+    doesn't exist). If so, most likely the user doesn't have permission to
+    see the stream's existence -- like with a guest user for any stream
+    they're not in, or any non-admin with a private stream they're not in.
+    Could be that whoever wrote the link just made something up.
 
     We have legacy slugs that are just the name
     of the stream:
@@ -259,29 +265,29 @@ export function slug_to_name(slug: string): string {
 
     If there is any ambiguity about whether a stream slug
     is old or modern, we prefer modern, as long as the integer
-    prefix matches a real stream id.  Eventually we will
-    stop supporting the legacy slugs, which only matter now
-    because people have linked to Zulip threads in things like
-    GitHub conversations.  We migrated to modern slugs in
-    early 2018.
+    prefix matches a real stream id. We return undefined if the
+    operand has an unexpected shape, or has the old shape (stream
+    name but no ID) and we don't know of a stream by the given name.
     */
-    const m = /^(\d+)(-.*)?$/.exec(slug);
-    if (m) {
-        const stream_id = Number.parseInt(m[1]!, 10);
-        const sub = sub_store.get(stream_id);
-        if (sub) {
-            return sub.name;
-        }
-        // if nothing was found above, we try to match on the stream
-        // name in the somewhat unlikely event they had a historical
-        // link to a stream like 4-horsemen
+
+    // "New" (2018) format: ${stream_id}-${stream_name} .
+    const match = /^(\d+)(-.*)?$/.exec(slug);
+    const newFormatStreamId = match ? Number.parseInt(match[1]!, 10) : null;
+    if (newFormatStreamId && stream_info.get(newFormatStreamId)) {
+        return newFormatStreamId;
     }
 
-    /*
-    We are dealing with a pre-2018 slug that doesn't have the
-    stream id as a prefix.
-    */
-    return slug;
+    // Old format: just stream name.  This case is relevant indefinitely,
+    // so that links in old conversations (including off-platform like GitHub)
+    // continue to work.
+    const stream = get_sub_by_name(slug);
+    if (stream) {
+        return stream.stream_id;
+    }
+
+    // Unexpected shape, or the old shape and we don't know of a stream with
+    // the given name.
+    return undefined;
 }
 
 export function delete_sub(stream_id: number): void {
