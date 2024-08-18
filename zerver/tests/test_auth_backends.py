@@ -3253,14 +3253,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
 
         # Now test with an invalid role value.
-        idps_dict["test_idp"]["extra_attrs"] = ["zulip_role"]
-        sync_custom_attrs_dict = {
-            "zulip": {
-                "saml": {
-                    "role": "zulip_role",
-                }
-            }
-        }
         with (
             self.settings(
                 SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
@@ -3298,12 +3290,36 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.social_auth_test(
                 account_data_dict,
                 subdomain="zulip",
-                extra_attributes=dict(zulip_role=[""]),
+                extra_attributes=dict(mobilePhone=[""], zulip_role=[""]),
             )
         data = load_subdomain_token(result)
         self.assertEqual(data["email"], self.email)
         self.user_profile.refresh_from_db()
         self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
+        phone_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=phone_field
+        ).value
+        self.assertEqual(phone_field_value, "123412341234")
+
+        # Verify with none of these attributes sent at all.
+        with self.settings(
+            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
+            SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes=dict(),
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
+        phone_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=phone_field
+        ).value
+        self.assertEqual(phone_field_value, "123412341234")
 
         # Disable syncing of role in SOCIAL_AUTH_SYNC_ATTRS_DICT, while keeping
         # role in extra_attrs. This edge case means the attribute will be read from the
@@ -3395,7 +3411,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 result = self.social_auth_test(
                     account_data_dict,
                     subdomain="zulip",
-                    extra_attributes=dict(mobilePhone=["123412341234"], birthday=["2021-01-01"]),
+                    extra_attributes=dict(
+                        mobilePhone=["123412341234"], title=["some title"], birthday=["2021-01-01"]
+                    ),
                 )
         data = load_subdomain_token(result)
         self.assertEqual(data["email"], self.email)

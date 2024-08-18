@@ -1676,9 +1676,10 @@ def social_auth_sync_user_attributes(
                 continue
             new_role = UserProfile.ROLE_API_NAME_TO_ID[attr_value]
         elif field_name.startswith("custom__"):
-            custom_profile_field_name_to_value[field_name.removeprefix("custom__")] = (
-                extra_attrs.get(attr_name)
-            )
+            attr_value = extra_attrs.get(attr_name)
+            if attr_value is None:
+                continue
+            custom_profile_field_name_to_value[field_name.removeprefix("custom__")] = attr_value
         else:
             backend.logger.warning(
                 "Ignoring unsupported UserProfile field %s in SOCIAL_AUTH_SYNC_ATTRS_DICT",
