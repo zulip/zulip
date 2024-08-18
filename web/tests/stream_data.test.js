@@ -166,16 +166,21 @@ test("basics", () => {
     assert.ok(!stream_data.is_default_stream_id(social.stream_id));
     assert.ok(!stream_data.is_default_stream_id(999999));
 
-    assert.equal(stream_data.slug_to_name("2-social"), "social");
-    assert.equal(stream_data.slug_to_name("2-whatever"), "social");
-    assert.equal(stream_data.slug_to_name("2"), "social");
-
+    // "new" correct url formats
+    assert.equal(stream_data.slug_to_stream_id("2-social"), 2);
+    assert.equal(stream_data.slug_to_stream_id("2"), 2);
+    // we still get 2 because it's a valid stream id
+    assert.equal(stream_data.slug_to_stream_id("2-whatever"), 2);
+    // invalid stream id
+    assert.equal(stream_data.slug_to_stream_id("999-social"), undefined);
     // legacy
-    assert.equal(stream_data.slug_to_name("25-or-6-to-4"), "25-or-6-to-4");
-    assert.equal(stream_data.slug_to_name("2something"), "2something");
+    assert.equal(stream_data.slug_to_stream_id("social"), 2);
 
-    assert.equal(stream_data.slug_to_name("99-whatever"), "99-whatever");
-    assert.equal(stream_data.slug_to_name("99whatever"), "99whatever");
+    // invalid formats
+    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), undefined);
+    assert.equal(stream_data.slug_to_stream_id("2something"), undefined);
+    assert.equal(stream_data.slug_to_stream_id("99-whatever"), undefined);
+    assert.equal(stream_data.slug_to_stream_id("99whatever"), undefined);
 
     // sub_store
     assert.equal(sub_store.get(-3), undefined);

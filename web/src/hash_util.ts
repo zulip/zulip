@@ -67,7 +67,13 @@ export function decode_operand(operator: string, operand: string): string {
     operand = internal_url.decodeHashComponent(operand);
 
     if (util.canonicalize_stream_synonyms(operator) === "stream") {
-        return stream_data.slug_to_name(operand);
+        const stream_id = stream_data.slug_to_stream_id(operand);
+        if (stream_id) {
+            const stream = stream_data.get_sub_by_id(stream_id);
+            if (stream) {
+                return stream.name;
+            }
+        }
     }
 
     return operand;
