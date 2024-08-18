@@ -1,6 +1,9 @@
+from typing import Annotated
+
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic import Json, NonNegativeInt
 
 from zerver.actions.scheduled_messages import (
     check_schedule_message,
@@ -9,48 +12,57 @@ from zerver.actions.scheduled_messages import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.topic import REQ_topic
-from zerver.lib.validator import check_bool, check_int, check_string_in, to_non_negative_int
+from zerver.lib.typed_endpoint import (
+    ApiParamConfig,
+    OptionalTopic,
+    PathOnly,
+    typed_endpoint,
+    typed_endpoint_without_parameters,
+)
+from zerver.lib.typed_endpoint_validators import check_string_in_validator
 from zerver.models import Message, UserProfile
 
 
-@has_request_variables
+@typed_endpoint_without_parameters
 def fetch_scheduled_messages(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     return json_success(
         request, data={"scheduled_messages": get_undelivered_scheduled_messages(user_profile)}
     )
 
 
-@has_request_variables
+@typed_endpoint
 def delete_scheduled_messages(
     request: HttpRequest,
     user_profile: UserProfile,
-    scheduled_message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+    *,
+    scheduled_message_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     delete_scheduled_message(user_profile, scheduled_message_id)
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def update_scheduled_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    scheduled_message_id: int = REQ(converter=to_non_negative_int, path_only=True),
-    req_type: str | None = REQ(
-        "type", str_validator=check_string_in(Message.API_RECIPIENT_TYPES), default=None
-    ),
-    req_to: str | None = REQ("to", default=None),
-    topic_name: str | None = REQ_topic(),
-    message_content: str | None = REQ("content", default=None),
-    scheduled_delivery_timestamp: int | None = REQ(json_validator=check_int, default=None),
+    *,
+    scheduled_message_id: PathOnly[NonNegativeInt],
+    req_type: Annotated[
+        Annotated[str, check_string_in_validator(Message.API_RECIPIENT_TYPES)] | None,
+        ApiParamConfig("type"),
+    ] = None,
+    to: Json[int | list[int]] | None = None,
+    topic_name: OptionalTopic = None,
+    message_content: Annotated[str | None, ApiParamConfig("content")] = None,
+    scheduled_delivery_timestamp: Json[int] | None = None,
 ) -> HttpResponse:
     if (
         req_type is None
-        and req_to is None
+        and to is None
         and topic_name is None
         and message_content is None
         and scheduled_delivery_timestamp is None
@@ -59,7 +71,7 @@ def update_scheduled_message_backend(
 
     recipient_type_name = None
     if req_type:
-        if req_to is None:
+        if to is None:
             raise JsonableError(_("Recipient required when updating type of scheduled message."))
         else:
             recipient_type_name = req_type
@@ -80,10 +92,10 @@ def update_scheduled_message_backend(
         recipient_type_name = "private"
 
     message_to = None
-    if req_to is not None:
+    if to is not None:
         # Because the recipient_type_name may not be updated/changed,
         # we extract these updated recipient IDs in edit_scheduled_message.
-        message_to = req_to
+        message_to = to
 
     deliver_at = None
     if scheduled_delivery_timestamp is not None:
@@ -110,16 +122,20 @@ def update_scheduled_message_backend(
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def create_scheduled_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    req_type: str = REQ("type", str_validator=check_string_in(Message.API_RECIPIENT_TYPES)),
-    req_to: str = REQ("to"),
-    topic_name: str | None = REQ_topic(),
-    message_content: str = REQ("content"),
-    scheduled_delivery_timestamp: int = REQ(json_validator=check_int),
-    read_by_sender: bool | None = REQ(json_validator=check_bool, default=None),
+    *,
+    req_type: Annotated[
+        Annotated[str, check_string_in_validator(Message.API_RECIPIENT_TYPES)],
+        ApiParamConfig("type"),
+    ],
+    req_to: Annotated[Json[int | list[int]], ApiParamConfig("to")],
+    message_content: Annotated[str, ApiParamConfig("content")],
+    scheduled_delivery_timestamp: Json[int],
+    topic_name: OptionalTopic = None,
+    read_by_sender: Json[bool] | None = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":

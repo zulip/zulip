@@ -91,7 +91,7 @@ class ScheduledMessageTest(ZulipTestCase):
         result = self.do_schedule_message(
             "direct", [othello.email], content + " 4", scheduled_delivery_timestamp
         )
-        self.assert_json_error(result, "Recipient list may only contain user IDs")
+        self.assert_json_error(result, 'to["int"] is not an integer')
 
     def create_scheduled_message(self) -> None:
         content = "Test message"

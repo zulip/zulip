@@ -363,9 +363,12 @@ def has_request_variables(
                 #
                 # TODO: Either run validators for path_only parameters
                 # or don't declare them using REQ.
-                assert func_var_name in kwargs
+
+                # no coverage because has_request_variables will be removed once
+                # all the endpoints have been migrated to use typed_endpoint.
+                assert func_var_name in kwargs  # nocoverage
             if func_var_name in kwargs:
-                continue
+                continue  # nocoverage
             assert func_var_name is not None
 
             post_var_name: str | None
