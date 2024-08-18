@@ -2,7 +2,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words";
-import {all_messages_data} from "./all_messages_data";
 import * as compose_fade from "./compose_fade";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_recipient from "./compose_recipient";
@@ -42,10 +41,6 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     direct_message_group_data.process_loaded_messages(messages);
 
-    // all_messages_data is the data that we use to populate
-    // other lists, so we always update this
-    message_util.add_new_messages_data(messages, all_messages_data);
-
     let need_user_to_scroll = false;
     for (const list of message_lists.all_rendered_message_lists()) {
         if (!list.data.filter.can_apply_locally()) {
@@ -84,6 +79,14 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
             narrow_state.is_message_feed_visible() && list === message_lists.current;
         if (is_currently_visible && render_info && render_info.need_user_to_scroll) {
             need_user_to_scroll = true;
+        }
+    }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        if (!msg_list_data.filter.can_apply_locally()) {
+            message_list_data_cache.remove(msg_list_data.filter);
+        } else {
+            message_util.add_new_messages_data(messages, msg_list_data);
         }
     }
 
