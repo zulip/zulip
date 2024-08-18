@@ -73,11 +73,12 @@ export function add_new_messages_data(
       }
     | undefined {
     if (!msg_list_data.fetch_status.has_found_newest()) {
+        const filtered_msgs = msg_list_data.valid_non_duplicated_messages(messages);
         // The reasoning in add_new_messages applies here as well;
         // we're trying to maintain a data structure that's a
         // contiguous range of message history, so we can't append a
         // new message that might not be adjacent to that range.
-        msg_list_data.fetch_status.update_expected_max_message_id(messages);
+        msg_list_data.fetch_status.update_expected_max_message_id(filtered_msgs);
         return undefined;
     }
     return msg_list_data.add_messages(messages);

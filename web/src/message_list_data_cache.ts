@@ -88,3 +88,12 @@ export function get_superset_datasets(filter: Filter): MessageListData[] {
 
     return [...superset_datasets, all_messages_data.all_messages_data];
 }
+
+export function remove(filter: Filter): void {
+    for (const [key, cached_data] of cache.entries()) {
+        if (cached_data.filter.equals(filter)) {
+            cache.delete(key);
+            return;
+        }
+    }
+}
