@@ -133,7 +133,7 @@ def edit_scheduled_message(
     client: Client,
     scheduled_message_id: int,
     recipient_type_name: str | None,
-    message_to: str | None,
+    message_to: int | list[int] | None,
     topic_name: str | None,
     message_content: str | None,
     deliver_at: datetime | None,
