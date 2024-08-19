@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Collection, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
@@ -5,7 +6,7 @@ from typing import TypedDict
 
 from django.conf import settings
 from django.db import connection, transaction
-from django.db.models import F, Prefetch, QuerySet
+from django.db.models import F, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import With
@@ -345,59 +346,75 @@ def get_group_setting_value_for_api(
     )
 
 
+def get_setting_value_for_user_group_object(
+    setting_value_group: UserGroup,
+    direct_members_dict: dict[int, list[int]],
+    direct_subgroups_dict: dict[int, list[int]],
+) -> int | AnonymousSettingGroupDict:
+    if hasattr(setting_value_group, "named_user_group"):
+        return setting_value_group.id
+
+    direct_members = []
+    if setting_value_group.id in direct_members_dict:
+        direct_members = direct_members_dict[setting_value_group.id]
+
+    direct_subgroups = []
+    if setting_value_group.id in direct_subgroups_dict:
+        direct_subgroups = direct_subgroups_dict[setting_value_group.id]
+
+    return AnonymousSettingGroupDict(
+        direct_members=direct_members,
+        direct_subgroups=direct_subgroups,
+    )
+
+
 def user_groups_in_realm_serialized(realm: Realm) -> list[UserGroupDict]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
     Django's ORM doesn't properly support the left join between
     UserGroup and UserGroupMembership that we need.
     """
-    realm_groups = (
-        NamedUserGroup.objects.select_related(
-            "can_mention_group", "can_mention_group__named_user_group"
-        )
-        # Using prefetch_related results in one query for each field. This is fine
-        # for now but would be problematic when more settings would be added.
-        #
-        # TODO: We should refactor it such that we only make two queries - one
-        # to fetch all the realm groups and the second to fetch all the groups
-        # that they point to and then set the setting fields for realm groups
-        # accordingly in Python.
-        .prefetch_related(
-            Prefetch("can_mention_group__direct_members", queryset=UserProfile.objects.only("id")),
-            Prefetch(
-                "can_mention_group__direct_subgroups", queryset=NamedUserGroup.objects.only("id")
-            ),
-        )
-        .filter(realm=realm)
+    realm_groups = NamedUserGroup.objects.select_related(
+        "can_mention_group", "can_mention_group__named_user_group"
+    ).filter(realm=realm)
+
+    membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
+        "user_group_id", "user_profile_id"
     )
+
+    group_membership = GroupGroupMembership.objects.filter(subgroup__realm=realm).values_list(
+        "subgroup_id", "supergroup_id"
+    )
+
+    group_members = defaultdict(list)
+    for user_group_id, user_profile_id in membership:
+        group_members[user_group_id].append(user_profile_id)
+
+    group_subgroups = defaultdict(list)
+    for subgroup_id, supergroup_id in group_membership:
+        group_subgroups[supergroup_id].append(subgroup_id)
 
     group_dicts: dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
+        direct_member_ids = []
+        if user_group.id in group_members:
+            direct_member_ids = group_members[user_group.id]
+
+        direct_subgroup_ids = []
+        if user_group.id in group_subgroups:
+            direct_subgroup_ids = group_subgroups[user_group.id]
+
         group_dicts[user_group.id] = dict(
             id=user_group.id,
             name=user_group.name,
             description=user_group.description,
-            members=[],
-            direct_subgroup_ids=[],
+            members=direct_member_ids,
+            direct_subgroup_ids=direct_subgroup_ids,
             is_system_group=user_group.is_system_group,
-            can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
+            can_mention_group=get_setting_value_for_user_group_object(
+                user_group.can_mention_group, group_members, group_subgroups
+            ),
         )
-
-    membership = (
-        UserGroupMembership.objects.filter(user_group__realm=realm)
-        .exclude(user_group__named_user_group=None)
-        .values_list("user_group_id", "user_profile_id")
-    )
-    for user_group_id, user_profile_id in membership:
-        group_dicts[user_group_id]["members"].append(user_profile_id)
-
-    group_membership = (
-        GroupGroupMembership.objects.filter(subgroup__realm=realm)
-        .exclude(supergroup__named_user_group=None)
-        .values_list("subgroup_id", "supergroup_id")
-    )
-    for subgroup_id, supergroup_id in group_membership:
-        group_dicts[supergroup_id]["direct_subgroup_ids"].append(subgroup_id)
 
     for group_dict in group_dicts.values():
         group_dict["members"] = sorted(group_dict["members"])
