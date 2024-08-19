@@ -1466,7 +1466,6 @@ export function with_first_message_id(
         url: "/json/messages",
         data,
         success(data) {
-            // TODO:  Sync this with the actual data structure we receive here.
             const {messages} = z
                 .object({messages: z.array(z.object({id: z.number()}))})
                 .parse(data);
@@ -1502,7 +1501,6 @@ export function is_message_oldest_or_newest(
         url: "/json/messages",
         data,
         success(data) {
-            // TODO:  Sync this with the actual data structure we receive here.
             const {messages} = z
                 .object({messages: z.array(z.object({id: z.number()}))})
                 .parse(data);
