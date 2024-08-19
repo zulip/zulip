@@ -199,7 +199,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     f"<h3>{name}</h3>",
                     f"<b>Remote realm host:</b> {host}<br />",
                     "<b>Date created</b>: 01 December 2023",
-                    "<b>Org type</b>: Unspecified<br />",
+                    "<b>Organization type</b>: Unspecified<br />",
                     "<b>Has remote realms</b>: True<br />",
                     "📶 Push notification status:",
                 ],
@@ -1155,7 +1155,7 @@ class TestSupportEndpoint(ZulipTestCase):
             )
             m.assert_called_once_with(get_realm("zulip"), 70, acting_user=iago)
             self.assert_in_success_response(
-                ["Org type of zulip changed from Business to Government"], result
+                ["Organization type of zulip changed from Business to Government"], result
             )
 
     def test_attach_discount(self) -> None:
