@@ -1,4 +1,4 @@
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     <b>Billing collection method</b><br />
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
@@ -10,7 +10,7 @@
 </form>
 
 {% if current_plan.status == current_plan.ACTIVE %}
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     <b>Plan end date</b><br />
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
@@ -20,7 +20,7 @@
 </form>
 {% endif %}
 
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     <b>Modify current plan</b><br />
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
