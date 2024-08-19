@@ -95,9 +95,16 @@ messages](/api/update-message-flags-for-narrow)).
 
 ### Message IDs
 
-The `near`, `id` and `with` operators use message IDs for their
-operands. The `near` and `id` operators are documented in the help
-center [here](/help/search-for-messages#search-by-message-id).
+The `id` and `with` operators use message IDs for their operands. The
+message ID operand for these two operators may be encoded as either a
+number or a string.
+
+* `id:12345`: Search for only the message with ID `12345`.
+* `with:12345`: Search for the conversation that contains the message
+  with ID `12345`.
+
+The `id` operator returns the message with the specified ID if it exists,
+and if it can be accessed by the user.
 
 The `with` operator is designed to be used for permanent links to topics,
 which means they should continue to work when the topic is
@@ -108,14 +115,15 @@ with the `channel`/`topic`/`dm` operators corresponding to the current
 conversation containing that message, and replacing any such filters
 included in the narrow.
 
-* `with:12345`: Search for the conversation that contains the message
-  with ID `12345`.
-* `near:12345`: Search messages around the message with ID `12345`.
-* `id:12345`: Search for only the message with ID `12345`.
-
-The message ID operand for the `with` and `id` operators may be encoded
-as either a number or a string. The message ID operand for the `near`
-operator must be encoded as a string.
+The [help center](/help/search-for-messages#search-by-message-id) also
+documents the `near` operator for searching for messages by ID, but
+this narrow operator has no effect on filtering messages when sent to
+the server. In practice, when the `near` operator is used to search for
+messages, or is part of a URL fragment, the value of its operand should
+instead be used for the value of the `anchor` parameter in endpoints
+that also accept a `narrow` parameter; see
+[GET /messages][anchor-get-messages] and
+[POST /messages/flags/narrow][anchor-post-flags].
 
 **Changes**: Prior to Zulip 8.0 (feature level 194), the message ID
 operand for the `id` operator needed to be encoded as a string.
@@ -171,3 +179,5 @@ user 1234, and user 5678, the correct JSON-encoded query is:
 
 [view-profile]: /help/view-someones-profile
 [browse-channels]: /help/introduction-to-channels#browse-and-subscribe-to-channels
+[anchor-get-messages]: /api/get-messages#parameter-anchor
+[anchor-post-flags]: /api/update-message-flags-for-narrow#parameter-anchor
