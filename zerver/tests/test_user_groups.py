@@ -106,8 +106,9 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
 
         othello = self.example_user("othello")
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
         setting_group = self.create_or_update_anonymous_group_for_setting(
-            [othello], [admins_system_group]
+            [othello], [admins_system_group, hamletcharacters_group]
         )
         new_user_group = check_add_user_group(
             realm,
@@ -121,12 +122,11 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[10]["name"], "newgroup2")
         self.assertEqual(user_groups[10]["description"], "")
         self.assertEqual(user_groups[10]["members"], [othello.id])
-        self.assertEqual(
-            user_groups[10]["can_mention_group"],
-            AnonymousSettingGroupDict(
-                direct_members=[othello.id],
-                direct_subgroups=[admins_system_group.id],
-            ),
+        assert isinstance(user_groups[10]["can_mention_group"], AnonymousSettingGroupDict)
+        self.assertEqual(user_groups[10]["can_mention_group"].direct_members, [othello.id])
+        self.assertCountEqual(
+            user_groups[10]["can_mention_group"].direct_subgroups,
+            [admins_system_group.id, hamletcharacters_group.id],
         )
 
     def test_get_direct_user_groups(self) -> None:
