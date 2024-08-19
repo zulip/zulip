@@ -99,14 +99,14 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to channel feed from topic view**: <kbd>S</kbd>
 
-* **Go to your direct message feed**: <kbd>Shift</kbd> + <kbd>P</kbd>
+* **Go to direct message feed**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
 * **Zoom to message in conversation context**: <kbd>Z</kbd> — This view does not mark messages as read.
 
 * **Cycle between channel views**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 
-* **Go to Combined feed**: <kbd>A</kbd> — Shows all unmuted messages.
+* **Go to combined feed**: <kbd>A</kbd> — Shows all unmuted messages.
 
 * **Go to the conversation you are composing to**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
 
