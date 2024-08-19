@@ -1099,6 +1099,7 @@ def bulk_remove_subscriptions(
     )
 
 
+@transaction.atomic(durable=True)
 def do_change_subscription_property(
     user_profile: UserProfile,
     sub: Subscription,
@@ -1149,7 +1150,7 @@ def do_change_subscription_property(
             stream_id=stream.id,
         )
 
-        send_event(user_profile.realm, in_home_view_event, [user_profile.id])
+        send_event_on_commit(user_profile.realm, in_home_view_event, [user_profile.id])
 
     event = dict(
         type="subscription",
@@ -1158,7 +1159,7 @@ def do_change_subscription_property(
         value=database_value,
         stream_id=stream.id,
     )
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
 def send_change_stream_permission_notification(
