@@ -244,6 +244,9 @@ def convert_direct_message_group_data(
     for direct_message_group in direct_message_group_data:
         if len(direct_message_group["members"]) > 2:
             direct_message_group_members = frozenset(direct_message_group["members"])
+            if direct_message_group_id_mapper.has(direct_message_group_members):
+                logging.info("Duplicate direct message group found in the export data. Skipping.")
+                continue
             direct_message_group_id = direct_message_group_id_mapper.get(
                 direct_message_group_members
             )
