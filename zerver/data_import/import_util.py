@@ -475,9 +475,10 @@ def build_stream(
     return stream_dict
 
 
-def build_direct_message_group(direct_message_group_id: int) -> ZerverFieldsT:
+def build_direct_message_group(direct_message_group_id: int, group_size: int) -> ZerverFieldsT:
     direct_message_group = DirectMessageGroup(
         id=direct_message_group_id,
+        group_size=group_size,
     )
     return model_to_dict(direct_message_group)
 

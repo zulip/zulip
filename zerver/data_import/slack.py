@@ -606,7 +606,9 @@ def channels_to_zerver_stream(
         nonlocal direct_message_group_id_count, recipient_id_count, subscription_id_count
 
         for mpim in mpims:
-            direct_message_group = build_direct_message_group(direct_message_group_id_count)
+            direct_message_group = build_direct_message_group(
+                direct_message_group_id_count, len(mpim["members"])
+            )
             realm["zerver_huddle"].append(direct_message_group)
 
             added_mpims[mpim["name"]] = (mpim["id"], direct_message_group_id_count)

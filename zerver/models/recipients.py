@@ -140,6 +140,8 @@ class DirectMessageGroup(models.Model):
     # Foreign key to the Recipient object for this DirectMessageGroup.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
+    group_size = models.IntegerField()
+
     # TODO: The model still uses the old "zerver_huddle" database table.
     # As a part of the migration of "Huddle" to "DirectMessageGroup"
     # it needs to be renamed to "zerver_directmessagegroup".
@@ -165,7 +167,8 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
     direct_message_group_hash = get_direct_message_group_hash(id_list)
     with transaction.atomic():
         (direct_message_group, created) = DirectMessageGroup.objects.get_or_create(
-            huddle_hash=direct_message_group_hash
+            huddle_hash=direct_message_group_hash,
+            group_size=len(id_list),
         )
         if created:
             recipient = Recipient.objects.create(
