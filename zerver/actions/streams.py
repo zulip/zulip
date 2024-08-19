@@ -1504,27 +1504,26 @@ def send_change_stream_description_notification(
         )
 
 
+@transaction.atomic(durable=True)
 def do_change_stream_description(
     stream: Stream, new_description: str, *, acting_user: UserProfile
 ) -> None:
     old_description = stream.description
-
-    with transaction.atomic():
-        stream.description = new_description
-        stream.rendered_description = render_stream_description(new_description, stream.realm)
-        stream.save(update_fields=["description", "rendered_description"])
-        RealmAuditLog.objects.create(
-            realm=stream.realm,
-            acting_user=acting_user,
-            modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-            event_time=timezone_now(),
-            extra_data={
-                RealmAuditLog.OLD_VALUE: old_description,
-                RealmAuditLog.NEW_VALUE: new_description,
-                "property": "description",
-            },
-        )
+    stream.description = new_description
+    stream.rendered_description = render_stream_description(new_description, stream.realm)
+    stream.save(update_fields=["description", "rendered_description"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_description,
+            RealmAuditLog.NEW_VALUE: new_description,
+            "property": "description",
+        },
+    )
 
     event = dict(
         type="stream",
@@ -1535,7 +1534,7 @@ def do_change_stream_description(
         value=new_description,
         rendered_description=stream.rendered_description,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
 
     send_change_stream_description_notification(
         stream,
