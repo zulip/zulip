@@ -417,7 +417,7 @@ def support(
         elif org_type is not None:
             current_realm_type = realm.org_type
             do_change_realm_org_type(realm, org_type, acting_user=acting_user)
-            msg = f"Org type of {realm.string_id} changed from {get_org_type_display_name(current_realm_type)} to {get_org_type_display_name(org_type)} "
+            msg = f"Organization type of {realm.string_id} changed from {get_org_type_display_name(current_realm_type)} to {get_org_type_display_name(org_type)} "
             context["success_message"] = msg
         elif new_subdomain is not None:
             old_subdomain = realm.string_id
