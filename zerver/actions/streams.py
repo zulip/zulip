@@ -1417,6 +1417,7 @@ def do_change_stream_post_policy(
     )
 
 
+@transaction.atomic(durable=True)
 def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -> None:
     old_name = stream.name
     stream.name = new_name
@@ -1459,7 +1460,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         stream_id=stream.id,
         name=old_name,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
         internal_send_stream_message(
