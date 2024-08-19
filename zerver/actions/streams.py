@@ -1365,25 +1365,25 @@ def send_change_stream_post_policy_notification(
         )
 
 
+@transaction.atomic(durable=True)
 def do_change_stream_post_policy(
     stream: Stream, stream_post_policy: int, *, acting_user: UserProfile
 ) -> None:
     old_post_policy = stream.stream_post_policy
-    with transaction.atomic():
-        stream.stream_post_policy = stream_post_policy
-        stream.save(update_fields=["stream_post_policy"])
-        RealmAuditLog.objects.create(
-            realm=stream.realm,
-            acting_user=acting_user,
-            modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-            event_time=timezone_now(),
-            extra_data={
-                RealmAuditLog.OLD_VALUE: old_post_policy,
-                RealmAuditLog.NEW_VALUE: stream_post_policy,
-                "property": "stream_post_policy",
-            },
-        )
+    stream.stream_post_policy = stream_post_policy
+    stream.save(update_fields=["stream_post_policy"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_post_policy,
+            RealmAuditLog.NEW_VALUE: stream_post_policy,
+            "property": "stream_post_policy",
+        },
+    )
 
     event = dict(
         op="update",
@@ -1393,7 +1393,7 @@ def do_change_stream_post_policy(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
 
     # Backwards-compatibility code: We removed the
     # is_announcement_only property in early 2020, but we send a
@@ -1407,7 +1407,7 @@ def do_change_stream_post_policy(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
 
     send_change_stream_post_policy_notification(
         stream,
