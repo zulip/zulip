@@ -3999,7 +3999,7 @@ class RealmBillingSession(BillingSession):
                     end_link="](/help/linking-to-zulip-website)",
                 )
                 internal_send_private_message(notification_bot, user, message)
-        return f"Sponsorship approved for {self.billing_entity_display_name}"
+        return f"Sponsorship approved for {self.billing_entity_display_name}; Emailed organization owners and billing admins."
 
     @override
     def is_sponsored(self) -> bool:

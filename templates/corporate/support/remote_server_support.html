@@ -91,16 +91,17 @@
                 {% endwith %}
 
                 {% if remote_server.deactivated %}
-                <div class="remote-support-sponsorship-container">
+                <div class="support-sponsorship-container">
                     {% with %}
                         {% set sponsorship_data = remote_servers_support_data[remote_server.id].sponsorship_data %}
                         {% include 'corporate/support/sponsorship_details.html' %}
                     {% endwith %}
                 </div>
                 {% elif remote_server.plan_type != SPONSORED_PLAN_TYPE %}
-                <div class="remote-support-sponsorship-container">
+                <div class="support-sponsorship-container">
                     {% with %}
                         {% set sponsorship_data = remote_servers_support_data[remote_server.id].sponsorship_data %}
+                        {% set PLAN_TYPES = REMOTE_PLAN_TIERS %}
                         {% set remote_id = remote_server.id %}
                         {% set remote_type = "remote_server_id" %}
                         {% set has_fixed_price = remote_servers_support_data[remote_server.id].plan_data.has_fixed_price %}

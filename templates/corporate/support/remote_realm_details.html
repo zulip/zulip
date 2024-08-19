@@ -45,7 +45,7 @@
     {% endwith %}
 
     {% if remote_server_deactivated %}
-    <div class="remote-support-sponsorship-container">
+    <div class="support-sponsorship-container">
         {% with %}
             {% set sponsorship_data = support_data[remote_realm.id].sponsorship_data %}
             {% set dollar_amount = dollar_amount %}
@@ -53,9 +53,10 @@
         {% endwith %}
     </div>
     {% elif remote_realm.plan_type != SPONSORED_PLAN_TYPE %}
-    <div class="remote-support-sponsorship-container">
+    <div class="support-sponsorship-container">
         {% with %}
             {% set sponsorship_data = support_data[remote_realm.id].sponsorship_data %}
+            {% set PLAN_TYPES = REMOTE_PLAN_TIERS %}
             {% set remote_id = remote_realm.id %}
             {% set remote_type = "remote_realm_id" %}
             {% set has_fixed_price = support_data[remote_realm.id].plan_data.has_fixed_price %}

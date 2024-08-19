@@ -464,29 +464,28 @@ tr.admin td:first-child {
 }
 
 .push-notification-status,
-.realm-form-container,
+.realm-management-actions,
 .next-plan-container,
 .current-plan-container,
-.remote-support-sponsorship-container {
+.support-sponsorship-container {
     border-radius: 4px;
     padding: 10px;
     margin: 10px 0;
 }
 
-.push-notification-status {
+.push-notification-status,
+.realm-management-actions {
     border: 2px solid hsl(186deg 76% 36%);
     background-color: hsl(188deg 35% 87%);
 }
 
-.realm-form-container,
 .next-plan-container,
 .current-plan-container,
-.remote-support-sponsorship-container {
+.support-sponsorship-container {
     border: 2px solid hsl(33deg 99% 60%);
 }
 
-.realm-form-container,
-.remote-support-sponsorship-container {
+.support-sponsorship-container {
     background-color: hsl(30deg 100% 96%);
 }
 
