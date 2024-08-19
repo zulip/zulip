@@ -1,4 +1,4 @@
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     <b>Required plan tier for discounts and fixed prices</b>:<br />
     <i>Updates will not change any pre-existing plans or scheduled upgrades.</i><br />
     {{ csrf_input }}
@@ -15,7 +15,7 @@
     <button type="submit" class="support-submit-button">Update</button>
 </form>
 
-<form method="POST" class="remote-form discounted-price-form">
+<form method="POST" class="discounted-price-form support-form">
     <b>Discounted price <i class="fa fa-question-circle-o" data-tippy-content="
         Needs required plan tier to be set.<br />
         Default price for tier will be used if discounted price for the schedule is not specified or is 0.<br />
@@ -51,7 +51,7 @@
 </form>
 
 {% if not has_fixed_price and (sponsorship_data.monthly_discounted_price or sponsorship_data.annual_discounted_price or sponsorship_data.minimum_licenses) %}
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     <b>Minimum licenses</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />

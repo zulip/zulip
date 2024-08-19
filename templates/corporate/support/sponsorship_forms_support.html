@@ -1,4 +1,4 @@
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     <b>Sponsorship pending</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
@@ -10,7 +10,7 @@
 </form>
 
 {% if sponsorship_data.sponsorship_pending %}
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
     <input type="hidden" name="approve_sponsorship" value="true" />
