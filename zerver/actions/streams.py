@@ -69,7 +69,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def send_user_remove_events_on_stream_deactivation(
@@ -1592,25 +1592,24 @@ def send_change_stream_message_retention_days_notification(
         )
 
 
+@transaction.atomic(durable=True)
 def do_change_stream_message_retention_days(
     stream: Stream, acting_user: UserProfile, message_retention_days: int | None = None
 ) -> None:
     old_message_retention_days_value = stream.message_retention_days
-
-    with transaction.atomic():
-        stream.message_retention_days = message_retention_days
-        stream.save(update_fields=["message_retention_days"])
-        RealmAuditLog.objects.create(
-            realm=stream.realm,
-            acting_user=acting_user,
-            modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED,
-            event_time=timezone_now(),
-            extra_data={
-                RealmAuditLog.OLD_VALUE: old_message_retention_days_value,
-                RealmAuditLog.NEW_VALUE: message_retention_days,
-            },
-        )
+    stream.message_retention_days = message_retention_days
+    stream.save(update_fields=["message_retention_days"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_message_retention_days_value,
+            RealmAuditLog.NEW_VALUE: message_retention_days,
+        },
+    )
 
     event = dict(
         op="update",
@@ -1620,7 +1619,7 @@ def do_change_stream_message_retention_days(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
     send_change_stream_message_retention_days_notification(
         user_profile=acting_user,
         stream=stream,
