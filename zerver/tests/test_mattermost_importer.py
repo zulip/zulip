@@ -357,15 +357,16 @@ class MatterMostImporter(ZulipTestCase):
             team_name=team_name,
         )
 
-        zerver_huddle = convert_direct_message_group_data(
-            direct_message_group_data=mattermost_data["direct_channel"],
-            user_data_map=username_to_user,
-            subscriber_handler=subscriber_handler,
-            direct_message_group_id_mapper=direct_message_group_id_mapper,
-            user_id_mapper=user_id_mapper,
-            realm_id=3,
-            team_name=team_name,
-        )
+        with self.assertLogs(level="INFO") as mock_log:
+            zerver_huddle = convert_direct_message_group_data(
+                direct_message_group_data=mattermost_data["direct_channel"],
+                user_data_map=username_to_user,
+                subscriber_handler=subscriber_handler,
+                direct_message_group_id_mapper=direct_message_group_id_mapper,
+                user_id_mapper=user_id_mapper,
+                realm_id=3,
+                team_name=team_name,
+            )
 
         self.assert_length(zerver_huddle, 1)
         direct_message_group_members = frozenset(mattermost_data["direct_channel"][1]["members"])
@@ -378,6 +379,10 @@ class MatterMostImporter(ZulipTestCase):
                 )
             ),
             {1, 2, 3},
+        )
+        self.assertEqual(
+            mock_log.output,
+            ["INFO:root:Duplicate direct message group found in the export data. Skipping."],
         )
 
     def test_write_emoticon_data(self) -> None:
