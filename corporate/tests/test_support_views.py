@@ -221,7 +221,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     "<b>UUID</b>:",
                     "<b>Zulip version</b>:",
                     "📶 Push notification status:",
-                    "💸 Discount and sponsorship information:",
+                    "💸 Discounts and sponsorship information:",
                 ],
                 result,
             )

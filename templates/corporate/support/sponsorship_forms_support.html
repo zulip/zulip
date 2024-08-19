@@ -1,3 +1,4 @@
+<p class="support-section-header">💸 Discounts and sponsorship:</p>
 <form method="POST" class="support-form">
     <b>Sponsorship pending</b>:<br />
     {{ csrf_input }}
@@ -21,7 +22,7 @@
 {% endif %}
 
 {% with %}
-    {% set PLAN_TYPES = REMOTE_PLAN_TIERS %}
+    {% set PLAN_TYPES = PLAN_TYPES %}
     {% include 'corporate/support/sponsorship_discount_forms.html' %}
 {% endwith %}
 

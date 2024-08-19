@@ -37,8 +37,9 @@
     <b>First human user</b>:
     {% endif %}
 </div>
-<div class="realm-support-forms">
-    <div class="realm-form-container">
+<div>
+    <div class="realm-management-actions">
+        <p class="support-section-header">🛠️ Realm management:</p>
         <form method="POST" class="support-form">
             <b>Status</b>:<br />
             {{ csrf_input }}
@@ -86,44 +87,18 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="support-form">
-            <b>Sponsorship pending</b>:<br />
-            {{ csrf_input }}
-            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            <select name="sponsorship_pending">
-                <option value="true" {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>Yes</option>
-                <option value="false" {% if not realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>No</option>
-            </select>
-            <button type="submit" class="support-submit-button">Update</button>
-        </form>
-
-        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
-        <form method="POST" class="support-form">
-            {{ csrf_input }}
-            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            <input type="hidden" name="approve_sponsorship" value="true" />
-            <button class="approve-sponsorship-button">
-                Approve full sponsorship
-            </button>
-            (will email organization owners)
-        </form>
-        {% endif %}
-
+    </div>
+    {% if realm.plan_type != SPONSORED_PLAN_TYPE %}
+    <div class="support-sponsorship-container">
         {% with %}
             {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
             {% set PLAN_TYPES = REALM_PLAN_TYPES_FOR_DISCOUNT %}
             {% set remote_id = realm.id %}
             {% set remote_type = "realm_id" %}
-            {% include 'corporate/support/sponsorship_discount_forms.html' %}
+            {% include 'corporate/support/sponsorship_forms_support.html' %}
         {% endwith %}
-
-        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
-            {% with %}
-                {% set latest_sponsorship_request = realm_support_data[realm.id].sponsorship_data.latest_sponsorship_request %}
-                {% include 'corporate/support/sponsorship_request_details.html' %}
-            {% endwith %}
-        {% endif %}
     </div>
+    {% endif %}
     {% if realm_support_data[realm.id].plan_data.current_plan %}
     <div class="current-plan-container">
         {% with %}
