@@ -39,7 +39,7 @@
 </div>
 <div class="realm-support-forms">
     <div class="realm-form-container">
-        <form method="POST" class="support-realm-status-form support-form">
+        <form method="POST" class="support-form">
             <b>Status</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -49,14 +49,14 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="realm-subdomain-form support-form">
+        <form method="POST" class="support-form">
             <b>New subdomain</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <input type="text" name="new_subdomain" required />
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="realm-organization-type-form support-form">
+        <form method="POST" class="support-form">
             <b>Org type</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -71,7 +71,7 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="support-plan-type-form support-form">
+        <form method="POST" class="support-form">
             <b>Plan type</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -86,7 +86,7 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="sponsorship-pending-form support-form">
+        <form method="POST" class="support-form">
             <b>Sponsorship pending</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -98,7 +98,7 @@
         </form>
 
         {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
-        <form method="POST" class="approve-sponsorship-form support-form">
+        <form method="POST" class="support-form">
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <input type="hidden" name="approve_sponsorship" value="true" />
@@ -132,7 +132,7 @@
             {% include 'corporate/support/current_plan_details.html' %}
         {% endwith %}
 
-        <form method="POST" class="billing-modality-form support-form">
+        <form method="POST" class="support-form">
             <b>Billing collection method</b><br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -143,7 +143,7 @@
             <button type="submit" class="support-submit-button">Update</button>
         </form>
 
-        <form method="POST" class="downgrade-plan-form support-form">
+        <form method="POST" class="support-form">
             <b>Modify plan</b><br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
