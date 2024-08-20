@@ -632,18 +632,12 @@ li,
 }
 
 .copy_message {
-    float: right;
-    position: relative;
-    cursor: pointer;
-    top: 30px;
-    /* To make sure the svg doesn't occupy any vertical space. */
-    margin-top: -30px;
-    right: 2px;
-    padding-top: 2px;
-
-    #clipboard_image {
-        margin: 0;
-    }
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    height: 1em;
+    backdrop-filter: blur(20px);
+    outline: 1px solid var(--color-copy-btn-square-bg-active);
 }
 
 #copy_generated_link_container {
