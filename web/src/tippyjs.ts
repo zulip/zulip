@@ -14,6 +14,7 @@ import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
@@ -353,7 +354,7 @@ export function initialize(): void {
                 const second_line = $t({defaultMessage: "File name: {filename}"}, {filename});
                 $markup.append($("<br>"), $("<span>").text(second_line));
             }
-            instance.setContent($markup[0]!);
+            instance.setContent(util.the($markup));
             return undefined;
         },
         onHidden(instance) {

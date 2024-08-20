@@ -8,6 +8,7 @@ import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import {realm} from "./state_data";
 import * as ui_report from "./ui_report";
+import * as util from "./util";
 
 type RealmDomain = {
     domain: string;
@@ -112,9 +113,9 @@ export function setup_realm_domains_modal_handlers(): void {
         const $realm_domains_info = $(".realm_domains_info");
         const $widget = $("#add-realm-domain-widget");
         const domain = $widget.find(".new-realm-domain").val();
-        const allow_subdomains = $widget.find<HTMLInputElement>(
-            "input.new-realm-domain-allow-subdomains",
-        )[0]!.checked;
+        const allow_subdomains = util.the(
+            $widget.find<HTMLInputElement>("input.new-realm-domain-allow-subdomains"),
+        ).checked;
         const data = {
             domain,
             allow_subdomains: JSON.stringify(allow_subdomains),

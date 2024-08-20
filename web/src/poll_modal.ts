@@ -3,6 +3,8 @@ import SortableJS from "sortablejs";
 
 import render_poll_modal_option from "../templates/poll_modal_option.hbs";
 
+import * as util from "./util";
+
 function create_option_row($last_option_row_input: JQuery): void {
     const row_html = render_poll_modal_option();
     const $row_container = $last_option_row_input.closest(".simplebar-content");
@@ -46,7 +48,7 @@ export function poll_options_setup(): void {
 
     // setTimeout is needed to here to give time for simplebar to initialise
     setTimeout(() => {
-        SortableJS.create($("#add-poll-form .poll-options-list .simplebar-content")[0]!, {
+        SortableJS.create(util.the($("#add-poll-form .poll-options-list .simplebar-content")), {
             onUpdate() {
                 // Do nothing on drag; the order is only processed on submission.
             },

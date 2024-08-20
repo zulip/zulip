@@ -1438,7 +1438,7 @@ function move_focus_to_visible_area(): void {
     }
 
     const INBOX_ROW_HEIGHT = 30;
-    const position = $("#inbox-filters")[0]!.getBoundingClientRect();
+    const position = util.the($("#inbox-filters")).getBoundingClientRect();
     const inbox_center_x = (position.left + position.right) / 2;
     // We are aiming to get the first row if it is completely visible or the second row.
     const inbox_row_below_filters = position.bottom + INBOX_ROW_HEIGHT;

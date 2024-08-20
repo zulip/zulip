@@ -118,12 +118,12 @@ export class PanZoomControl {
         // See https://github.com/anvaka/panzoom/issues/112 for upstream discussion.
 
         const {scale, x, y} = e.getTransform();
-        const image_width = $(".zoom-element > img")[0]!.clientWidth * scale;
-        const image_height = $(".zoom-element > img")[0]!.clientHeight * scale;
-        const zoom_element_width = $(".zoom-element")[0]!.clientWidth * scale;
-        const zoom_element_height = $(".zoom-element")[0]!.clientHeight * scale;
-        const max_translate_x = $(".image-preview")[0]!.clientWidth;
-        const max_translate_y = $(".image-preview")[0]!.clientHeight;
+        const image_width = util.the($(".zoom-element > img")).clientWidth * scale;
+        const image_height = util.the($(".zoom-element > img")).clientHeight * scale;
+        const zoom_element_width = util.the($(".zoom-element")).clientWidth * scale;
+        const zoom_element_height = util.the($(".zoom-element")).clientHeight * scale;
+        const max_translate_x = util.the($(".image-preview")).clientWidth;
+        const max_translate_y = util.the($(".image-preview")).clientHeight;
 
         // When the image is dragged out of the image-preview container
         // (max_translate) it will be "snapped" back so that the number
@@ -394,7 +394,7 @@ export function build_open_media_function(
     return function ($media: JQuery<HTMLMediaElement | HTMLImageElement>): void {
         // This is used both for clicking on media in the messagelist, as well as clicking on images
         // in the media list under the lightbox when it is open.
-        const payload = parse_media_data($media[0]!);
+        const payload = parse_media_data(util.the($media));
 
         assert(payload !== undefined);
         if (payload.type.match("-video")) {
@@ -597,7 +597,7 @@ export function initialize(): void {
 
     // Bind the pan/zoom control the newly created element.
     const pan_zoom_control = new PanZoomControl(
-        $("#lightbox_overlay .image-preview > .zoom-element")[0]!,
+        util.the($("#lightbox_overlay .image-preview > .zoom-element")),
     );
 
     const reset_lightbox_state = function (): void {

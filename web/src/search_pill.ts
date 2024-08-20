@@ -12,6 +12,7 @@ import type {User} from "./people";
 import type {NarrowTerm} from "./state_data";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
+import * as util from "./util";
 
 export type SearchUserPill = {
     type: "search_user";
@@ -40,9 +41,7 @@ type SearchPill =
 export type SearchPillWidget = InputPillContainer<SearchPill>;
 
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
-    const search_terms = Filter.parse(search_string);
-    assert(search_terms.length === 1);
-    const search_term = search_terms[0]!;
+    const search_term = util.the(Filter.parse(search_string));
     if (!Filter.is_valid_search_term(search_term)) {
         // This will cause pill validation to fail and trigger a shake animation.
         return undefined;
@@ -73,7 +72,7 @@ function on_pill_exit(
     if (!$user_pill_container.length) {
         // This is just a regular search pill, so we don't need to do fancy logic.
         const $clicked_pill = $(clicked_element).closest(".pill");
-        remove_pill($clicked_pill[0]!);
+        remove_pill(util.the($clicked_pill));
         return;
     }
     // The user-pill-container container class is used exclusively for
@@ -92,8 +91,8 @@ function on_pill_exit(
 
     // If there's only one user in this pill, delete the whole pill.
     if (user_container_pill.users.length === 1) {
-        assert(user_container_pill.users[0]!.user_id === user_id);
-        remove_pill($user_pill_container[0]!);
+        assert(util.the(user_container_pill.users).user_id === user_id);
+        remove_pill(util.the($user_pill_container));
         return;
     }
 

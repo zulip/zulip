@@ -363,11 +363,13 @@ export function restore_message(draft: LocalStorageDraft): ComposeArguments {
 
 function draft_notify(): void {
     // Display a tooltip to notify the user about the saved draft.
-    const instance = tippy.default(".top_left_drafts .unread_count", {
-        content: $t({defaultMessage: "Saved as draft"}),
-        arrow: true,
-        placement: "right",
-    })[0]!;
+    const instance = util.the(
+        tippy.default(".top_left_drafts .unread_count", {
+            content: $t({defaultMessage: "Saved as draft"}),
+            arrow: true,
+            placement: "right",
+        }),
+    );
     instance.show();
     function remove_instance(): void {
         instance.destroy();

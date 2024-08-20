@@ -745,9 +745,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             formData.append("config_data", JSON.stringify(config_data));
         }
 
-        const files = $("#bot-edit-form").find<HTMLInputElement>(
-            "input.edit_bot_avatar_file_input",
-        )[0]!.files;
+        const files = util.the(
+            $("#bot-edit-form").find<HTMLInputElement>("input.edit_bot_avatar_file_input"),
+        ).files;
         assert(files !== null);
         for (const [i, file] of [...files].entries()) {
             formData.append("file-" + i, file);

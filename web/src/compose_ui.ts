@@ -123,9 +123,9 @@ export function insert_and_scroll_into_view(
         // to support `undo`, we can use a faster method.
         $textarea.val(content);
     } else if (replace_all) {
-        setFieldText($textarea[0]!, content);
+        setFieldText(util.the($textarea), content);
     } else {
-        insertTextIntoField($textarea[0]!, content);
+        insertTextIntoField(util.the($textarea), content);
     }
     // Blurring and refocusing ensures the cursor / selection is in view
     // in chromium browsers.
@@ -300,7 +300,7 @@ export function replace_syntax(
     // for details.
 
     const old_text = $textarea.val();
-    replaceFieldText($textarea[0]!, old_syntax, () => new_syntax, "after-replacement");
+    replaceFieldText(util.the($textarea), old_syntax, () => new_syntax, "after-replacement");
     const new_text = $textarea.val();
 
     // When replacing content in a textarea, we need to move the cursor

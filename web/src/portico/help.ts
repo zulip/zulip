@@ -5,6 +5,7 @@ import * as tippy from "tippy.js";
 
 import copy_to_clipboard_svg from "../../templates/copy_to_clipboard_svg.hbs";
 import * as common from "../common";
+import * as util from "../util";
 
 import {activate_correct_tab} from "./tabbed-instructions";
 
@@ -37,7 +38,7 @@ function add_copy_to_clipboard_element($codehilite: JQuery): void {
 
     $($codehilite).append($copy_button);
 
-    const clipboard = new ClipboardJS($copy_button[0]!, {
+    const clipboard = new ClipboardJS(util.the($copy_button), {
         text(copy_element) {
             // trim to remove trailing whitespace introduced
             // by additional elements inside <pre>
@@ -46,14 +47,14 @@ function add_copy_to_clipboard_element($codehilite: JQuery): void {
     });
 
     // Show a tippy tooltip when the button is hovered
-    const tooltip_copy = tippy.default($copy_button[0]!, {
+    const tooltip_copy = tippy.default(util.the($copy_button), {
         content: "Copy code",
         trigger: "mouseenter",
         placement: "top",
     });
 
     // Show a tippy tooltip when the code is copied
-    const tooltip_copied = tippy.default($copy_button[0]!, {
+    const tooltip_copied = tippy.default(util.the($copy_button), {
         content: "Copied!",
         trigger: "manual",
         placement: "top",
@@ -89,7 +90,7 @@ function render_tabbed_sections(): void {
     });
 }
 
-new SimpleBar($(".sidebar")[0]!, {tabIndex: -1});
+new SimpleBar(util.the($(".sidebar")), {tabIndex: -1});
 
 // Scroll to anchor link when clicked. Note that landing-page.js has a
 // similar function; this file and landing-page.js are never included

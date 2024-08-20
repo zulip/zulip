@@ -47,6 +47,7 @@ function make_textbox(s) {
     const $widget = {};
 
     $widget.s = s;
+    $widget.length = 1;
     $widget[0] = "textarea";
     $widget.focused = false;
 

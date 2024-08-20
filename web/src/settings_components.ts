@@ -390,7 +390,7 @@ function read_select_field_data_from_form(
         }
     }
     $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
-        const text = $(this).find("input")[0]!.value;
+        const text = util.the($(this).find("input")).value;
         if (text) {
             let value = old_option_value_map.get(text);
             if (value !== undefined) {
@@ -729,7 +729,7 @@ export function get_auth_method_list_data(): Record<string, boolean> {
     for (const method_row of $auth_method_rows) {
         const method = $(method_row).attr("data-method");
         assert(method !== undefined);
-        new_auth_methods[method] = $(method_row).find<HTMLInputElement>("input")[0]!.checked;
+        new_auth_methods[method] = util.the($(method_row).find<HTMLInputElement>("input")).checked;
     }
 
     return new_auth_methods;
@@ -1305,7 +1305,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
             ".subsection-changes-save",
         );
-        const tippy_instance = $button_wrapper[0]!._tippy;
+        const tippy_instance = util.the($button_wrapper)._tippy;
         if (disable_save_btn) {
             // avoid duplication of tippy
             if (!tippy_instance) {
@@ -1343,5 +1343,5 @@ export function initialize_disable_btn_hint_popover(
     if (hint_text !== undefined) {
         tippy_opts.content = hint_text;
     }
-    tippy.default($btn_wrapper[0]!, tippy_opts);
+    tippy.default(util.the($btn_wrapper), tippy_opts);
 }

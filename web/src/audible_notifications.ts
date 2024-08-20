@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 export function initialize(): void {
     update_notification_sound_source($("audio#user-notification-sound-audio"), user_settings);
@@ -22,6 +23,6 @@ export function update_notification_sound_source(
     if (notification_sound !== "none") {
         // Load it so that it is ready to be played; without this the old sound
         // is played.
-        $container_elem[0]!.load();
+        util.the($container_elem).load();
     }
 }

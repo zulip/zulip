@@ -78,7 +78,7 @@ export function message_viewport_info(): MessageViewportInfo {
 export function at_rendered_bottom(): boolean {
     const bottom = scrollTop() + height();
     // This also includes bottom whitespace.
-    const full_height = $scroll_container[0]!.scrollHeight;
+    const full_height = util.the($scroll_container).scrollHeight;
 
     // We only know within a pixel or two if we're
     // exactly at the bottom, due to browser quirkiness,
@@ -94,7 +94,7 @@ export function bottom_rendered_message_visible(): boolean {
     const $last_row = rows.last_visible();
     if ($last_row[0] !== undefined) {
         const message_bottom = $last_row[0].getBoundingClientRect().bottom;
-        const bottom_of_feed = $("#compose")[0]!.getBoundingClientRect().top;
+        const bottom_of_feed = util.the($("#compose")).getBoundingClientRect().top;
         return bottom_of_feed > message_bottom;
     }
     return false;
@@ -214,7 +214,7 @@ const top_of_feed = new util.CachedValue({
 
 const bottom_of_feed = new util.CachedValue({
     compute_value() {
-        return $("#compose")[0]!.getBoundingClientRect().top;
+        return util.the($("#compose")).getBoundingClientRect().top;
     },
 });
 

@@ -7,6 +7,7 @@ import render_input_pill from "../templates/input_pill.hbs";
 
 import * as keydown_util from "./keydown_util";
 import * as ui_util from "./ui_util";
+import * as util from "./util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
@@ -194,9 +195,9 @@ export function create<ItemType extends {type: string}>(
 
             if (idx !== -1) {
                 store.pills[idx]!.$element.remove();
-                const pill = store.pills.splice(idx, 1);
+                const pill = util.the(store.pills.splice(idx, 1));
                 if (store.onPillRemove !== undefined) {
-                    store.onPillRemove(pill[0]!, trigger);
+                    store.onPillRemove(pill, trigger);
                 }
 
                 // This is needed to run the "change" event handler registered in
@@ -231,8 +232,7 @@ export function create<ItemType extends {type: string}>(
             while (store.pills.length > 0) {
                 this.removeLastPill(trigger, quiet);
             }
-
-            this.clear(store.$input[0]!);
+            this.clear(util.the(store.$input));
         },
 
         insertManyPills(pills: string | string[]) {
@@ -253,7 +253,7 @@ export function create<ItemType extends {type: string}>(
             // when using the `text` insertion feature with jQuery the caret is
             // placed at the beginning of the input field, so this moves it to
             // the end.
-            ui_util.place_caret_at_end(store.$input[0]!);
+            ui_util.place_caret_at_end(util.the(store.$input));
 
             // this sends a flag if the operation wasn't completely successful,
             // which in this case is defined as some of the pills not autofilling
@@ -341,7 +341,7 @@ export function create<ItemType extends {type: string}>(
                 // if the pill is successful, it will create the pill and clear
                 // the input.
                 if (funcs.appendPill(store.$input.text().trim())) {
-                    funcs.clear(store.$input[0]!);
+                    funcs.clear(util.the(store.$input));
                 }
                 e.preventDefault();
 
@@ -370,7 +370,7 @@ export function create<ItemType extends {type: string}>(
                     break;
                 case "Backspace": {
                     const $next = $pill.next();
-                    funcs.removePill($pill[0]!, "backspace");
+                    funcs.removePill(util.the($pill), "backspace");
                     $next.trigger("focus");
                     // the "Backspace" key in Firefox will go back a page if you do
                     // not prevent it.
@@ -416,8 +416,8 @@ export function create<ItemType extends {type: string}>(
                 store.$input.trigger("change");
             } else {
                 e.stopPropagation();
-                const $pill = $(this).closest(".pill");
-                funcs.removePill($pill[0]!, "close");
+                const pill = util.the($(this).closest(".pill"));
+                funcs.removePill(pill, "close");
             }
             // Since removing a pill moves the $input, typeahead needs to refresh
             // to appear at the correct position.

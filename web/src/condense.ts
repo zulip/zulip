@@ -6,6 +6,7 @@ import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as rows from "./rows";
+import * as util from "./util";
 
 /*
 This library implements two related, similar concepts:
@@ -151,7 +152,7 @@ function get_message_height(elem: HTMLElement): number {
     // This needs to be very fast. This function runs hundreds of times
     // when displaying a message feed view that has hundreds of message
     // history, which ideally should render in <100ms.
-    return $(elem).find(".message_content")[0]!.scrollHeight;
+    return util.the($(elem).find(".message_content")).scrollHeight;
 }
 
 export function hide_message_expander($row: JQuery): void {

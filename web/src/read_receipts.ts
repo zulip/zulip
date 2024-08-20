@@ -13,6 +13,7 @@ import * as message_store from "./message_store";
 import * as modals from "./modals";
 import * as people from "./people";
 import * as ui_report from "./ui_report";
+import * as util from "./util";
 
 const read_receipts_api_response_schema = z.object({
     user_ids: z.array(z.number()),
@@ -89,7 +90,7 @@ export function show_user_list(message_id: number): void {
                             $("#read_receipts_modal .read_receipts_list").html(
                                 render_read_receipts(context),
                             );
-                            new SimpleBar($("#read_receipts_modal .modal__content")[0]!, {
+                            new SimpleBar(util.the($("#read_receipts_modal .modal__content")), {
                                 tabIndex: -1,
                             });
                         }

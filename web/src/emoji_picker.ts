@@ -592,7 +592,7 @@ function process_keypress(e: JQuery.KeyPressEvent | JQuery.KeyDownEvent): void {
 
 export function emoji_select_tab($elt: JQuery): void {
     const scrolltop = $elt.scrollTop()!;
-    const scrollheight = $elt[0]!.scrollHeight;
+    const scrollheight = util.the($elt).scrollHeight;
     const elt_height = $elt.height()!;
     let currently_selected = "";
     for (const o of section_head_offsets) {

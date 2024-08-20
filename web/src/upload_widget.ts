@@ -1,4 +1,5 @@
 import {$t} from "./i18n";
+import * as util from "./util";
 
 export type UploadWidget = {
     clear: () => void;
@@ -83,7 +84,7 @@ export function build_widget(
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
-        get_file_input()[0]!.files = files;
+        util.the(get_file_input()).files = files;
         e.preventDefault();
         return false;
     });
@@ -171,7 +172,7 @@ export function build_direct_upload_widget(
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
-        get_file_input()[0]!.files = files;
+        util.the(get_file_input()).files = files;
         e.preventDefault();
         return false;
     });

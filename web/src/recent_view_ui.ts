@@ -44,6 +44,7 @@ import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
+import * as util from "./util";
 import * as views_util from "./views_util";
 
 type Row = {
@@ -327,7 +328,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     $current_focus_elem = "table";
 
     if (using_keyboard) {
-        const scroll_element = $("html")[0]!;
+        const scroll_element = util.the($("html"));
         const half_height_of_visible_area = scroll_element.offsetHeight / 2;
         const topic_offset = topic_offset_to_visible_area($topic_row);
 
@@ -1148,10 +1149,10 @@ function topic_offset_to_visible_area($topic_row: JQuery): string | undefined {
     }
 
     // Rows are only visible below thead bottom and above compose top.
-    const thead_bottom = $("#recent-view-table-headers")[0]!.getBoundingClientRect().bottom;
+    const thead_bottom = util.the($("#recent-view-table-headers")).getBoundingClientRect().bottom;
     const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
 
-    const topic_props = $topic_row[0]!.getBoundingClientRect();
+    const topic_props = util.the($topic_row).getBoundingClientRect();
 
     // Topic is above the visible scroll region.
     if (topic_props.top < thead_bottom) {
@@ -1185,7 +1186,7 @@ function recenter_focus_if_off_screen(): void {
 
     if (topic_offset !== "visible") {
         // Get the element at the center of the table.
-        const thead_props = $("#recent-view-table-headers")[0]!.getBoundingClientRect();
+        const thead_props = util.the($("#recent-view-table-headers")).getBoundingClientRect();
         const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
         const topic_center_x = (thead_props.left + thead_props.right) / 2;
         const topic_center_y = (thead_props.bottom + compose_top) / 2;
@@ -1477,7 +1478,7 @@ function down_arrow_navigation(): void {
 }
 
 function get_page_up_down_delta(): number {
-    const thead_bottom = $("#recent-view-table-headers")[0]!.getBoundingClientRect().bottom;
+    const thead_bottom = util.the($("#recent-view-table-headers")).getBoundingClientRect().bottom;
     const compose_box_top = window.innerHeight - $("#compose").outerHeight(true)!;
     // One usually wants PageDown to move what had been the bottom row
     // to now be at the top, so one can be confident one will see

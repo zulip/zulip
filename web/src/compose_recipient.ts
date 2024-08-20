@@ -281,7 +281,7 @@ function on_hidden_callback(): void {
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
         // after updating the stream.
-        ui_util.place_caret_at_end($("input#stream_message_recipient_topic")[0]!);
+        ui_util.place_caret_at_end(util.the($("input#stream_message_recipient_topic")));
     } else {
         if (compose_state.private_message_recipient().length === 0) {
             $("#private_message_recipient").trigger("focus").trigger("select");

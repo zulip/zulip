@@ -233,7 +233,7 @@ export class MessageListData {
                 return true;
             }
 
-            const recipient_id = Number.parseInt(recipients[0]!, 10);
+            const recipient_id = Number.parseInt(util.the(recipients), 10);
             return (
                 !muted_users.is_user_muted(recipient_id) &&
                 !muted_users.is_user_muted(message.sender_id)
