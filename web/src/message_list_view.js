@@ -1318,7 +1318,7 @@ export class MessageListView {
             this.clear_rendering_state(true);
             this.update_render_window(this.list.selected_idx(), false);
         }
-        return this.rerender_with_target_scrolltop(old_offset);
+        this.rerender_with_target_scrolltop(old_offset);
     }
 
     set_message_offset(offset) {
