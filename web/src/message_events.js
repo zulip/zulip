@@ -11,6 +11,7 @@ import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import * as direct_message_group_data from "./direct_message_group_data";
 import * as drafts from "./drafts";
+import * as echo from "./echo";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_events_util from "./message_events_util";
@@ -237,6 +238,13 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
 
     if (any_untracked_unread_messages) {
         unread_ui.update_unread_counts();
+    }
+
+    // Messages being locally echoed need must be inserted into this
+    // tracking before we update the stream sidebar, to take advantage
+    // of how stream_topic_history uses the echo data structures.
+    if (deliver_locally) {
+        messages.map((message) => echo.track_local_message(message));
     }
 
     unread_ops.process_visible();

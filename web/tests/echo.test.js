@@ -372,7 +372,10 @@ run_test("test reify_message_id", ({override}) => {
         sender_id: 123,
         draft_id: 100,
     };
-    echo.insert_local_message(message_request, local_id_float, (messages) => messages);
+    echo.insert_local_message(message_request, local_id_float, (messages) => {
+        messages.map((message) => echo.track_local_message(message));
+        return messages;
+    });
 
     let message_store_reify_called = false;
     let notifications_reify_called = false;
