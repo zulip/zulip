@@ -112,6 +112,7 @@
 <template id="all-message-tooltip-template">
     <div class="views-tooltip-container" data-view-code="all_messages">
         <div>{{t 'Combined feed' }}</div>
+        <div class="tootlip-inner-content views-message-count italic hidden-for-spectators"></div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "A"}}
@@ -119,13 +120,15 @@
 <template id="recent-conversations-tooltip-template">
     <div class="views-tooltip-container" data-view-code="recent_topics">
         <div>{{t 'Recent conversations' }}</div>
-        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+        <div class="tootlip-inner-content views-message-count italic hidden-for-spectators"></div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide hidden-for-spectators">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "T"}}
 </template>
 <template id="starred-message-tooltip-template">
     <div class="views-tooltip-container" data-view-code="starred_message">
         <div>{{t 'Starred messages' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
     </div>
     {{tooltip_hotkey_hints "*"}}
 </template>
@@ -137,6 +140,7 @@
 <template id="inbox-tooltip-template">
     <div class="views-tooltip-container" data-view-code="inbox">
         <div>{{t 'Inbox' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "Shift" "I"}}
@@ -144,8 +148,15 @@
 <template id="drafts-tooltip-template">
     <div class="views-tooltip-container" data-view-code="drafts">
         <div>{{t 'Drafts' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
     </div>
     {{tooltip_hotkey_hints "D"}}
+</template>
+<template id="scheduled-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="scheduled_message">
+        <div>{{t 'Scheduled messages'}}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
 </template>
 <template id="show-all-direct-messages-template">
     {{t 'Direct message feed' }}
@@ -154,6 +165,7 @@
 <template id="mentions-tooltip-template">
     <div class="views-tooltip-container" data-view-code="mentions">
         <div>{{t 'Mentions' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
     </div>
 </template>
 <template id="filter-streams-tooltip-template">
