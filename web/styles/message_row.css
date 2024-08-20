@@ -656,6 +656,7 @@
 }
 
 .edit-content-container {
+    position: relative;
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
     transition: border 0.2s ease;
