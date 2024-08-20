@@ -8,7 +8,7 @@ from django.core import mail
 from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
-from zerver.actions.bots import do_change_bot_owner
+from zerver.actions.bots import do_change_bot_owner, do_change_default_sending_stream
 from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
@@ -17,11 +17,12 @@ from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
 from zerver.models.bots import get_bot_services
 from zerver.models.realms import BotCreationPolicyEnum, get_realm
 from zerver.models.streams import get_stream
-from zerver.models.users import get_user, is_cross_realm_bot_email
+from zerver.models.users import bot_owner_user_ids, get_user, is_cross_realm_bot_email
 
 
 # A test validator
@@ -589,6 +590,32 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_delete(f"/json/bots/{invalid_bot_id}")
         self.assert_json_error(result, "No such bot")
         self.assert_num_bots_equal(1)
+
+    def test_deactivate_bot_with_no_owners(self) -> None:
+        iago = self.example_user("iago")
+        self.login("iago")
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        # Set up the bot to be a private bot, as otherwise realm admins
+        # are used as default owners in the absence of .bot_owner_id.
+        stream = get_stream("Denmark", get_realm("zulip"))
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=iago,
+        )
+
+        new_bot = assert_is_not_none(UserProfile.objects.last())
+        do_change_default_sending_stream(new_bot, stream, acting_user=iago)
+        new_bot.bot_owner_id = None
+        new_bot.save()
+
+        result = self.client_delete(f"/json/bots/{new_bot.id}")
+        self.assert_json_success(result)
+        self.assert_num_bots_equal(0)
 
     def test_deactivate_bot_with_owner_deactivation(self) -> None:
         user = self.example_user("hamlet")
@@ -1832,6 +1859,26 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.settings(CROSS_REALM_BOT_EMAILS={"random-bot@zulip.com"}):
             self.assertTrue(is_cross_realm_bot_email("random-bot@zulip.com"))
             self.assertFalse(is_cross_realm_bot_email("notification-bot@zulip.com"))
+
+    def test_private_bot_empty_bot_owner_user_ids(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        self.create_bot()
+        stream = get_stream("Denmark", get_realm("zulip"))
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=hamlet,
+        )
+
+        new_bot = assert_is_not_none(UserProfile.objects.last())
+        do_change_default_sending_stream(new_bot, stream, acting_user=hamlet)
+        new_bot.bot_owner_id = None
+        new_bot.save()
+
+        self.assertEqual(bot_owner_user_ids(new_bot), set())
 
     @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:
