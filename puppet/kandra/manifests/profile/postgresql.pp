@@ -36,7 +36,8 @@ class kandra::profile::postgresql inherits kandra::profile::base {
 
   # This is the second stage, after secrets are configured
   $replication_primary = zulipconf('postgresql', 'replication_primary', undef)
-  if $replication_primary != undef {
+  $replication_user = zulipconf('postgresql', 'replication_user', undef)
+  if $replication_primary != undef and $replication_user != undef {
     file { '/root/setup_data.sh':
       ensure => file,
       owner  => 'root',
