@@ -188,6 +188,25 @@ export function initialize(): void {
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onShow(instance) {
+            const $container = $(instance.popper).find(".views-tooltip-container");
+            if ($container.attr("data-view-code") === user_settings.web_home_view) {
+                $container.find(".views-tooltip-home-view-note").removeClass("hide");
+            }
+
+            // Since the tooltip is attached to the anchor tag which doesn't
+            // include width of the ellipsis icon, we need to offset the
+            // tooltip so that the tooltip is displayed to right of the
+            // ellipsis icon.
+            if (instance.reference.classList.contains("left-sidebar-navigation-label-container")) {
+                instance.setProps({
+                    offset: [0, 40],
+                });
+            }
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
         popperOptions: {
             modifiers: [
                 {
@@ -209,44 +228,6 @@ export function initialize(): void {
         placement: "right",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
-        popperOptions: {
-            modifiers: [
-                {
-                    name: "flip",
-                    options: {
-                        fallbackPlacements: "bottom",
-                    },
-                },
-            ],
-        },
-    });
-
-    // Variant of .tippy-left-sidebar-tooltip configuration. Here
-    // we need to dynamically check which view is the home view.
-    tippy.delegate("body", {
-        target: ".tippy-views-tooltip",
-        placement: "right",
-        delay: EXTRA_LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-        onShow(instance) {
-            const $container = $(instance.popper).find(".views-tooltip-container");
-            if ($container.attr("data-view-code") === user_settings.web_home_view) {
-                $container.find(".views-tooltip-home-view-note").removeClass("hide");
-            }
-
-            // Since the tooltip is attached the anchor tag which doesn't
-            // include with of the ellipsis icon, we need to offset the
-            // tooltip so that the tooltip is displayed to right of the
-            // ellipsis icon.
-            if (instance.reference.classList.contains("left-sidebar-navigation-label-container")) {
-                instance.setProps({
-                    offset: [0, 40],
-                });
-            }
-        },
-        onHidden(instance) {
-            instance.destroy();
-        },
         popperOptions: {
             modifiers: [
                 {

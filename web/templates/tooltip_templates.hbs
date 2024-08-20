@@ -124,7 +124,7 @@
     {{tooltip_hotkey_hints "T"}}
 </template>
 <template id="starred-message-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="starred_message">
         <div>{{t 'Starred messages' }}</div>
     </div>
     {{tooltip_hotkey_hints "*"}}
@@ -142,7 +142,9 @@
     {{tooltip_hotkey_hints "Shift" "I"}}
 </template>
 <template id="drafts-tooltip-template">
-    {{t 'Drafts' }}
+    <div class="views-tooltip-container" data-view-code="drafts">
+        <div>{{t 'Drafts' }}</div>
+    </div>
     {{tooltip_hotkey_hints "D"}}
 </template>
 <template id="show-all-direct-messages-template">
@@ -150,10 +152,9 @@
     {{tooltip_hotkey_hints "Shift" "P"}}
 </template>
 <template id="mentions-tooltip-template">
-    {{t 'Mentions' }}
-</template>
-<template id="starred-tooltip-template">
-    {{t 'Starred messages' }}
+    <div class="views-tooltip-container" data-view-code="mentions">
+        <div>{{t 'Mentions' }}</div>
+    </div>
 </template>
 <template id="filter-streams-tooltip-template">
     {{t 'Filter channels' }}
