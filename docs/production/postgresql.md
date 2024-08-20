@@ -1,7 +1,6 @@
 # PostgreSQL database details
 
-Starting with Zulip 3.0, Zulip supports a range of PostgreSQL
-versions:
+Zulip supports a range of PostgreSQL versions:
 
 ```{include} postgresql-support-table.md
 

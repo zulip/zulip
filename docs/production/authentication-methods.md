@@ -616,10 +616,10 @@ other IdPs (identity providers). You can configure it as follows:
 The above configuration is sufficient for Service Provider initialized
 SSO, i.e. you can visit the Zulip web app and click "Sign in with
 {IdP}" and it'll correctly start the authentication flow. If you are
-not hosting multiple organizations, with Zulip 3.0+, the above
-configuration is also sufficient for Identity Provider initiated SSO,
-i.e. clicking a "Sign in to Zulip" button on the IdP's website can
-correctly authenticate the user to Zulip.
+not hosting multiple organizations, the above configuration is also
+sufficient for Identity Provider initiated SSO, i.e. clicking a "Sign
+in to Zulip" button on the IdP's website can correctly authenticate
+the user to Zulip.
 
 If you're hosting multiple organizations and thus using the
 `SOCIAL_AUTH_SUBDOMAIN` setting, you'll need to configure a custom
@@ -1040,9 +1040,9 @@ self-hosted servers. To do so, you'll need to do the following:
 
 ## OpenID Connect
 
-Starting with Zulip 5.0, Zulip can be integrated with any OpenID
-Connect (OIDC) authentication provider. You can configure it by
-enabling `zproject.backends.GenericOpenIdConnectBackend` in
+Zulip can be integrated with any OpenID Connect (OIDC) authentication
+provider. You can configure it by enabling
+`zproject.backends.GenericOpenIdConnectBackend` in
 `AUTHENTICATION_BACKENDS` and following the steps outlined in the
 comment documentation in `/etc/zulip/settings.py`.
 
