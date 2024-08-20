@@ -50,6 +50,7 @@ class kandra::profile::postgresql inherits kandra::profile::base {
       require => [File['/usr/local/bin/env-wal-g'], Exec['setup_disks']],
       unless  => "test -d /srv/data/postgresql/${zulip::postgresql_common::version}/main",
       timeout => 0,
+      before  => File["${zulip::postgresql_base::postgresql_datadir}/standby.signal"],
       notify  => Exec[$zulip::postgresql_base::postgresql_restart],
     }
   }
