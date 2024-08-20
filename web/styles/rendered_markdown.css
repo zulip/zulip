@@ -169,7 +169,15 @@
         padding: 0 3px;
         border-radius: 3px;
         white-space: nowrap;
-        display: inline-block;
+        /* Reduce the font-size to reduce the
+           footprint of the background highlight. */
+        font-size: 0.95em;
+    }
+
+    .mention-content-wrapper {
+        /* Restore the font-size to match the rest
+           of the message area. */
+        font-size: 1.0526em;
     }
 
     .user-mention {

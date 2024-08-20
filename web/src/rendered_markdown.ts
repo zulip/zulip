@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 
 import code_buttons_container from "../templates/code_buttons_container.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
+import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
 
 import * as blueslip from "./blueslip";
 import {show_copied_confirmation} from "./copied_tooltip";
@@ -77,6 +78,16 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
     return message_store.get(message_id);
 }
 
+// Function to safely wrap mentioned names in a DOM element.
+// This enables mentions to display inline, while adjusting
+// the outer element's font-size for better appearance on
+// lines of message text.
+function wrap_mention_content_in_dom_element(element: HTMLElement): HTMLElement {
+    const mention_text = $(element).text();
+    $(element).html(render_mention_content_wrapper({mention_text}));
+    return element;
+}
+
 // Helper function to update a mentioned user's name.
 export function set_name_in_mention_element(
     element: HTMLElement,
@@ -91,6 +102,7 @@ export function set_name_in_mention_element(
             display_text = $t({defaultMessage: "{name} (guest)"}, {name});
         }
         $(element).text(display_text);
+        wrap_mention_content_in_dom_element(element);
         return;
     }
 
@@ -99,6 +111,8 @@ export function set_name_in_mention_element(
     } else {
         $(element).text("@" + name);
     }
+
+    wrap_mention_content_in_dom_element(element);
 }
 
 export const update_elements = ($content: JQuery): void => {
@@ -153,11 +167,14 @@ export const update_elements = ($content: JQuery): void => {
                 if (person === undefined) {
                     people.add_inaccessible_user(user_id);
                 }
+                wrap_mention_content_in_dom_element(this);
                 return;
             }
 
             set_name_in_mention_element(this, person.full_name, user_id);
         }
+
+        wrap_mention_content_in_dom_element(this);
     });
 
     $content.find(".topic-mention").each(function (): void {
@@ -166,6 +183,8 @@ export const update_elements = ($content: JQuery): void => {
         if (message && message.topic_wildcard_mentioned) {
             $(this).addClass("user-mention-me");
         }
+
+        wrap_mention_content_in_dom_element(this);
     });
 
     $content.find(".user-group-mention").each(function (): void {
