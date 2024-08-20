@@ -1,6 +1,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_bookend from "../templates/bookend.hbs";
@@ -13,6 +14,7 @@ import render_single_message from "../templates/single_message.hbs";
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
 import * as compose_fade from "./compose_fade";
+import type {MessageContainer, MessageGroup} from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as hash_util from "./hash_util";
@@ -20,8 +22,11 @@ import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
+import type {MessageList} from "./message_lists";
 import * as message_store from "./message_store";
+import type {Message} from "./message_store";
 import * as message_viewport from "./message_viewport";
+import type {MessageViewportInfo} from "./message_viewport";
 import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -40,7 +45,14 @@ import * as timerender from "./timerender";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
-function same_day(earlier_msg, later_msg) {
+type RenderingPlan = {
+    append_groups: MessageGroup[];
+    prepend_groups: MessageGroup[];
+    rerender_groups: MessageGroup[];
+    append_messages: MessageContainer[];
+};
+
+function same_day(earlier_msg: Message | undefined, later_msg: Message | undefined): boolean {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
@@ -51,21 +63,28 @@ function same_day(earlier_msg, later_msg) {
     );
 }
 
-function same_sender(a, b) {
+function same_sender(a: MessageContainer | undefined, b: MessageContainer | undefined): boolean {
     if (a === undefined || b === undefined) {
         return false;
     }
     return a.msg.sender_id === b.msg.sender_id;
 }
 
-function same_recipient(a, b) {
+function same_recipient(a: MessageContainer | undefined, b: MessageContainer | undefined): boolean {
     if (a === undefined || b === undefined) {
         return false;
     }
     return util.same_recipient(a.msg, b.msg);
 }
 
-function analyze_edit_history(message, last_edit_timestr) {
+function analyze_edit_history(
+    message: Message,
+    last_edit_timestr: string | undefined,
+): {
+    edited: boolean;
+    moved: boolean;
+    resolve_toggled: boolean;
+} {
     // Returns a dict of booleans that describe the message's history:
     //   * edited: if the message has had its content edited
     //   * moved: if the message has had its stream/topic edited
@@ -85,6 +104,7 @@ function analyze_edit_history(message, last_edit_timestr) {
             }
 
             if (edit_history_event.prev_topic) {
+                assert(edit_history_event.topic !== undefined);
                 // We know it has a topic edit. Now we need to determine if
                 // it was a true move or a resolve/unresolve.
                 if (
@@ -117,31 +137,34 @@ function analyze_edit_history(message, last_edit_timestr) {
     return {edited, moved, resolve_toggled};
 }
 
-function get_group_display_date(message) {
+function get_group_display_date(message: Message): string {
     const time = new Date(message.timestamp * 1000);
     const date_element = timerender.render_date(time);
 
     return date_element.outerHTML;
 }
 
-function update_group_date(group, message, prev) {
+function update_group_date(group: MessageGroup, message: Message, prev: Message | undefined): void {
     // Mark whether we should display a date marker because this
     // message has a different date than the previous one.
     group.date_unchanged = same_day(message, prev);
 }
 
-function clear_group_date(group) {
+function clear_group_date(group: MessageGroup): void {
     group.date_unchanged = false;
 }
 
-function clear_message_date_divider(message_container) {
+function clear_message_date_divider(message_container: MessageContainer): void {
     // see update_message_date_divider for how
     // these get set
     message_container.want_date_divider = false;
     message_container.date_divider_html = undefined;
 }
 
-function update_message_date_divider(opts) {
+function update_message_date_divider(opts: {
+    prev_msg_container: MessageContainer | undefined;
+    curr_msg_container: MessageContainer;
+}): void {
     Object.assign(
         opts.curr_msg_container,
         get_message_date_divider_data({
@@ -151,7 +174,13 @@ function update_message_date_divider(opts) {
     );
 }
 
-function get_message_date_divider_data(opts) {
+function get_message_date_divider_data(opts: {
+    prev_message: Message | undefined;
+    curr_message: Message;
+}): {
+    want_date_divider: boolean;
+    date_divider_html: string | undefined;
+} {
     const prev_message = opts.prev_message;
     const curr_message = opts.curr_message;
 
@@ -169,12 +198,17 @@ function get_message_date_divider_data(opts) {
     };
 }
 
-function get_timestr(message) {
+function get_timestr(message: Message): string {
     const time = new Date(message.timestamp * 1000);
     return timerender.stringify_time(time);
 }
 
-function get_topic_edit_properties(message) {
+function get_topic_edit_properties(message: Message): {
+    always_visible_topic_edit: boolean;
+    on_hover_topic_edit: boolean;
+    is_topic_editable: boolean;
+    user_can_resolve_topic: boolean;
+} {
     let always_visible_topic_edit = false;
     let on_hover_topic_edit = false;
 
@@ -186,7 +220,10 @@ function get_topic_edit_properties(message) {
     if (is_topic_editable) {
         // Messages with no topics should always have an edit icon visible
         // to encourage updating them. Admins can also edit any topic.
-        if (message.topic === compose_state.empty_topic_placeholder()) {
+        if (
+            message.type === "stream" &&
+            message.topic === compose_state.empty_topic_placeholder()
+        ) {
             always_visible_topic_edit = true;
         } else {
             on_hover_topic_edit = true;
@@ -201,8 +238,13 @@ function get_topic_edit_properties(message) {
     };
 }
 
-function get_users_for_recipient_row(message) {
+export type RecipientRowUser = {
+    full_name: string;
+    should_add_guest_user_indicator: boolean;
+};
+function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
     const user_ids = people.pm_with_user_ids(message);
+    assert(user_ids !== undefined);
     const users = user_ids.map((user_id) => {
         let full_name;
         if (muted_users.is_user_muted(user_id)) {
@@ -216,20 +258,24 @@ function get_users_for_recipient_row(message) {
         };
     });
 
-    function compare_by_name(a, b) {
+    function compare_by_name(a: RecipientRowUser, b: RecipientRowUser): number {
         return util.strcmp(a.full_name, b.full_name);
     }
 
     return users.sort(compare_by_name);
 }
 
-let message_id_to_focus_after_processing_message_events = {
+let message_id_to_focus_after_processing_message_events: {
+    id: number | undefined;
+    selectionStart: number | undefined;
+    selectionEnd: number | undefined;
+} = {
     id: undefined,
     selectionStart: undefined,
     selectionEnd: undefined,
 };
 
-function reset_restore_message_edit_focus_state() {
+function reset_restore_message_edit_focus_state(): void {
     message_id_to_focus_after_processing_message_events = {
         id: undefined,
         selectionStart: undefined,
@@ -237,8 +283,9 @@ function reset_restore_message_edit_focus_state() {
     };
 }
 
-function capture_user_message_editing_state() {
+function capture_user_message_editing_state(): void {
     if (document.activeElement?.classList.contains("message_edit_content")) {
+        assert(document.activeElement instanceof HTMLTextAreaElement);
         message_id_to_focus_after_processing_message_events = {
             id: rows.get_message_id(document.activeElement),
             selectionStart: document.activeElement.selectionStart,
@@ -249,7 +296,7 @@ function capture_user_message_editing_state() {
     }
 }
 
-function maybe_restore_focus_to_message_edit_form() {
+function maybe_restore_focus_to_message_edit_form(): void {
     if (
         // It is possible that selected message might not be the one
         // user was editing but is less likely the case. It makes
@@ -270,21 +317,31 @@ function maybe_restore_focus_to_message_edit_form() {
     setTimeout(() => {
         const $message_edit_content = message_lists.current
             ?.selected_row()
-            .find(".message_edit_content");
+            .find<HTMLTextAreaElement>(".message_edit_content");
         if (!$message_edit_content || $message_edit_content.length === 0) {
             return;
         }
 
         $message_edit_content.trigger("focus");
         util.the($message_edit_content).setSelectionRange(
-            message_id_to_focus_after_processing_message_events.selectionStart,
-            message_id_to_focus_after_processing_message_events.selectionEnd,
+            message_id_to_focus_after_processing_message_events.selectionStart!,
+            message_id_to_focus_after_processing_message_events.selectionEnd!,
         );
         reset_restore_message_edit_focus_state();
     }, 0);
 }
 
-function populate_group_from_message(message, date_unchanged, subscription_markers) {
+type SubscriptionMarkers = {
+    bookend_top: boolean;
+    stream_name: string;
+    subscribed?: boolean;
+    just_unsubscribed?: boolean;
+};
+function populate_group_from_message(
+    message: Message,
+    date_unchanged: boolean,
+    subscription_markers: SubscriptionMarkers | undefined,
+): MessageGroup {
     const is_stream = message.is_stream;
     const is_private = message.is_private;
     const display_recipient = message.display_recipient;
@@ -292,6 +349,9 @@ function populate_group_from_message(message, date_unchanged, subscription_marke
     const date = get_group_display_date(message);
 
     if (is_stream) {
+        assert(message.type === "stream");
+        // stream messages have string display_recipient
+        assert(typeof display_recipient === "string");
         const color = stream_data.get_color(message.stream_id);
         const recipient_bar_color = stream_color.get_recipient_bar_color(color);
         const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
@@ -349,7 +409,10 @@ function populate_group_from_message(message, date_unchanged, subscription_marke
         };
     }
     // Private message group
+    assert(is_private);
+    assert(typeof display_recipient !== "string");
     const user_ids = people.pm_with_user_ids(message);
+    assert(user_ids !== undefined);
     return {
         message_group_id,
         message_containers: [],
@@ -372,11 +435,11 @@ function populate_group_from_message(message, date_unchanged, subscription_marke
 // the DOM, and generally
 export class MessageListView {
     // The MessageList that this MessageListView is responsible for rendering.
-    list;
+    list: MessageList;
     // The jQuery element for the rendered list element.
-    $list;
+    $list: JQuery;
     // TODO: Access this via .list.data.
-    collapse_messages;
+    collapse_messages: boolean;
 
     // These three data structures keep track of groups of messages in the DOM.
     //
@@ -392,9 +455,9 @@ export class MessageListView {
     //
     // TODO: Consider renaming _message_groups to something like _recipient_groups.
     // TODO: Consider renaming _rows to something like $rows.
-    _rows;
-    message_containers;
-    _message_groups;
+    _rows: Map<number, JQuery>;
+    message_containers: Map<number, MessageContainer>;
+    _message_groups: MessageGroup[];
 
     // For performance reasons, this module renders at most
     // _RENDER_WINDOW_SIZE messages into the DOM at a time, and
@@ -404,11 +467,11 @@ export class MessageListView {
     //
     // These two values are a half-open interval keeping track of
     // what range of messages is currently rendered in the dOM.
-    _render_win_start;
-    _render_win_end;
+    _render_win_start: number;
+    _render_win_end: number;
 
     // ID of message under the sticky recipient bar if there is one.
-    sticky_recipient_message_id;
+    sticky_recipient_message_id: number | undefined;
 
     // Number of messages to render at a time
     _RENDER_WINDOW_SIZE = 250;
@@ -416,7 +479,7 @@ export class MessageListView {
     // trigger a re-render
     _RENDER_THRESHOLD = 50;
 
-    constructor(list, collapse_messages, is_node_test = false) {
+    constructor(list: MessageList, collapse_messages: boolean, is_node_test = false) {
         this.list = list;
         this._add_message_list_to_DOM();
         this.$list = $(`.message-list[data-message-list-id="${this.list.id}"]`);
@@ -433,13 +496,13 @@ export class MessageListView {
         this.sticky_recipient_message_id = undefined;
     }
 
-    _add_message_list_to_DOM() {
+    _add_message_list_to_DOM(): void {
         $("#message-lists-container").append(
             $(render_message_list({message_list_id: this.list.id})),
         );
     }
 
-    _get_msg_timestring(message) {
+    _get_msg_timestring(message: Message): string | undefined {
         let last_edit_timestamp;
         if (message.local_edit_timestamp !== undefined) {
             last_edit_timestamp = message.local_edit_timestamp;
@@ -466,7 +529,14 @@ export class MessageListView {
         return undefined;
     }
 
-    _get_message_edited_vars(message) {
+    _get_message_edited_vars(message: Message): {
+        last_edit_timestr: string | undefined;
+        edited_in_left_col?: boolean;
+        edited_alongside_sender?: boolean;
+        edited_status_msg?: boolean;
+        moved?: boolean;
+        modified?: boolean;
+    } {
         // This function computes data on whether the message was edited
         // and in what ways, as well as where the "EDITED" or "MOVED"
         // label should be located, and adds it to the message_container
@@ -504,15 +574,32 @@ export class MessageListView {
         };
     }
 
-    is_current_message_list() {
+    is_current_message_list(): boolean {
         return this.list === message_lists.current;
     }
 
     get_calculated_message_container_variables(
-        message,
-        existing_include_sender,
+        message: Message,
+        existing_include_sender: boolean,
         is_revealed = false,
-    ) {
+    ): {
+        timestr: string;
+        background_color?: string;
+        small_avatar_url: string;
+        sender_is_bot: boolean;
+        sender_is_guest: boolean;
+        should_add_guest_indicator_for_sender: boolean;
+        is_hidden: boolean;
+        mention_classname?: string | null;
+        include_sender: boolean;
+        status_message: string | false;
+        last_edit_timestr: string | undefined;
+        edited_in_left_col?: boolean;
+        edited_alongside_sender?: boolean;
+        edited_status_msg?: boolean;
+        moved?: boolean;
+        modified?: boolean;
+    } {
         /*
             If the message needs to be hidden because the sender was muted, we do
             a few things:
@@ -603,14 +690,21 @@ export class MessageListView {
         };
     }
 
-    maybe_add_subscription_marker_to_group(group, last_message, first_message) {
+    maybe_add_subscription_marker_to_group(
+        group: MessageGroup,
+        last_message: Message | undefined,
+        first_message: Message,
+    ): void {
         const markers = this.get_possible_group_subscription_markers(last_message, first_message);
         if (markers) {
             Object.assign(group, markers);
         }
     }
 
-    get_possible_group_subscription_markers(last_message, first_message) {
+    get_possible_group_subscription_markers(
+        last_message: Message | undefined,
+        first_message: Message,
+    ): SubscriptionMarkers | undefined {
         // The `historical` flag is present on messages which were
         // sent a time when the current user was not subscribed to the
         // stream receiving the message.
@@ -628,6 +722,7 @@ export class MessageListView {
 
         const last_subscribed = !last_message.historical;
         const first_subscribed = !first_message.historical;
+        assert(first_message.type === "stream");
         const stream_id = first_message.stream_id;
         const stream_name = stream_data.get_stream_name_from_id(stream_id);
 
@@ -650,19 +745,22 @@ export class MessageListView {
         return undefined;
     }
 
-    build_message_groups(messages) {
-        const new_message_groups = [];
+    build_message_groups(messages: Message[]): MessageGroup[] {
+        const new_message_groups: MessageGroup[] = [];
 
-        let current_group;
-        let current_group_message_containers = [];
+        let current_group: MessageGroup;
+        let current_group_message_containers: MessageContainer[] = [];
 
-        let prev_message_container;
+        let prev_message_container: MessageContainer | undefined;
 
-        const add_message_container_to_group = (message_container) => {
+        const add_message_container_to_group = (message_container: MessageContainer): void => {
             current_group_message_containers.push(message_container);
         };
 
-        const start_group = (prev_message, message_for_next_group) => {
+        const start_group = (
+            prev_message: Message | undefined,
+            message_for_next_group: Message,
+        ): void => {
             current_group = populate_group_from_message(
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
@@ -670,7 +768,7 @@ export class MessageListView {
             );
         };
 
-        const finish_group = () => {
+        const finish_group = (): void => {
             if (current_group_message_containers.length > 0) {
                 current_group.message_containers = current_group_message_containers;
                 new_message_groups.push(current_group);
@@ -765,7 +863,10 @@ export class MessageListView {
         return new_message_groups;
     }
 
-    join_message_groups(first_group, second_group) {
+    join_message_groups(
+        first_group: MessageGroup | undefined,
+        second_group: MessageGroup | undefined,
+    ): boolean {
         // join_message_groups will combine groups if they have the
         // same_recipient and the view supports collapsing, otherwise
         // it may add a subscription_marker if required.  It returns
@@ -776,17 +877,18 @@ export class MessageListView {
         }
         const last_msg_container = first_group.message_containers.at(-1);
         const first_msg_container = second_group.message_containers[0];
+        assert(first_msg_container !== undefined);
 
         // Join two groups into one.
         if (
             this.collapse_messages &&
             same_recipient(last_msg_container, first_msg_container) &&
-            last_msg_container.msg.historical === first_msg_container.msg.historical
+            last_msg_container!.msg.historical === first_msg_container.msg.historical
         ) {
             if (
-                !last_msg_container.status_message &&
+                !last_msg_container!.status_message &&
                 !first_msg_container.msg.is_me_message &&
-                same_day(last_msg_container?.msg, first_msg_container?.msg) &&
+                same_day(last_msg_container?.msg, first_msg_container.msg) &&
                 same_sender(last_msg_container, first_msg_container)
             ) {
                 first_msg_container.include_sender = false;
@@ -808,7 +910,7 @@ export class MessageListView {
         return false;
     }
 
-    merge_message_groups(new_message_groups, where) {
+    merge_message_groups(new_message_groups: MessageGroup[], where: string): RenderingPlan {
         // merge_message_groups takes a list of new messages groups to add to
         // this._message_groups and a location where to merge them currently
         // top or bottom. It returns an object of changes which needed to be
@@ -820,7 +922,7 @@ export class MessageListView {
         // rerender_groups are group that should be updated in place in the DOM
         // append_messages are messages which should be added to the last group in the DOM
 
-        const message_actions = {
+        const message_actions: RenderingPlan = {
             append_groups: [],
             prepend_groups: [],
             rerender_groups: [],
@@ -828,8 +930,6 @@ export class MessageListView {
         };
         let first_group;
         let second_group;
-        let curr_msg_container;
-        let prev_msg_container;
 
         if (where === "top") {
             first_group = new_message_groups.at(-1);
@@ -839,13 +939,14 @@ export class MessageListView {
             second_group = new_message_groups[0];
         }
 
+        let prev_msg_container;
         if (first_group) {
             prev_msg_container = first_group.message_containers.at(-1);
         }
 
-        if (second_group) {
-            curr_msg_container = second_group.message_containers[0];
-        }
+        assert(second_group !== undefined);
+        const curr_msg_container = second_group.message_containers[0];
+        assert(curr_msg_container !== undefined);
 
         const was_joined = this.join_message_groups(first_group, second_group);
         if (was_joined) {
@@ -858,6 +959,7 @@ export class MessageListView {
         }
 
         if (where === "top") {
+            assert(first_group !== undefined);
             if (was_joined) {
                 // join_message_groups moved the old message to the end of the
                 // new group. We need to replace the old rendered message
@@ -887,10 +989,11 @@ export class MessageListView {
         } else {
             if (was_joined) {
                 // rerender the last message
-                message_actions.append_messages = new_message_groups[0].message_containers;
+                assert(new_message_groups.length > 0);
+                message_actions.append_messages = new_message_groups[0]!.message_containers;
                 new_message_groups = new_message_groups.slice(1);
             } else if (first_group !== undefined && second_group !== undefined) {
-                if (same_day(prev_msg_container?.msg, curr_msg_container?.msg)) {
+                if (same_day(prev_msg_container?.msg, curr_msg_container.msg)) {
                     clear_group_date(second_group);
                 } else {
                     // If we just sent the first message on a new day
@@ -909,14 +1012,14 @@ export class MessageListView {
         return message_actions;
     }
 
-    _put_row($row) {
+    _put_row($row: JQuery): void {
         // $row is a jQuery object wrapping one message row
         if ($row.hasClass("message_row")) {
             this._rows.set(rows.id($row), $row);
         }
     }
 
-    _post_process($message_rows) {
+    _post_process($message_rows: JQuery): void {
         // $message_rows wraps one or more message rows
 
         if (!($message_rows instanceof $)) {
@@ -941,7 +1044,7 @@ export class MessageListView {
         }
     }
 
-    _post_process_single_row($row) {
+    _post_process_single_row($row: JQuery): void {
         // For message formatting that requires some post-processing
         // (and is not possible to handle solely via CSS), this is
         // where we modify the content.  It is a goal to minimize how
@@ -966,7 +1069,7 @@ export class MessageListView {
         });
     }
 
-    _get_message_template(message_container) {
+    _get_message_template(message_container: MessageContainer): string {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
         const msg_to_render = {
@@ -976,7 +1079,7 @@ export class MessageListView {
         return render_single_message(msg_to_render);
     }
 
-    _render_group(opts) {
+    _render_group(opts: {message_groups: MessageGroup[]; use_match_properties: boolean}): JQuery {
         const message_groups = opts.message_groups;
         const use_match_properties = opts.use_match_properties;
 
@@ -989,7 +1092,7 @@ export class MessageListView {
         );
     }
 
-    set_edited_notice_locations(message_container) {
+    set_edited_notice_locations(message_container: MessageContainer): void {
         // Based on the variables that define the overall message's HTML layout, set
         // variables defining where the message-edited notices should be placed.
         const include_sender = message_container.include_sender;
@@ -1001,7 +1104,15 @@ export class MessageListView {
         );
     }
 
-    get_edited_notice_locations(include_sender, is_hidden, status_message) {
+    get_edited_notice_locations(
+        include_sender: boolean,
+        is_hidden: boolean,
+        status_message: boolean,
+    ): {
+        message_edit_notices_in_left_col: boolean;
+        message_edit_notices_alongside_sender: boolean;
+        message_edit_notices_for_status_message: boolean;
+    } {
         // Based on the variables that define the overall message's HTML layout, set
         // variables defining where the message-edited notices should be placed.
         return {
@@ -1011,7 +1122,11 @@ export class MessageListView {
         };
     }
 
-    render(messages, where, messages_are_new) {
+    render(
+        messages: Message[],
+        where: string,
+        messages_are_new = false,
+    ): {need_user_to_scroll: boolean} | undefined {
         // This function processes messages into chunks with separators between them,
         // and templates them to be inserted as table rows into the DOM.
 
@@ -1022,7 +1137,7 @@ export class MessageListView {
         capture_user_message_editing_state();
 
         const list = this.list; // for convenience
-        let orig_scrolltop_offset;
+        let orig_scrolltop_offset: number | undefined;
 
         // If we start with the message feed scrolled up (i.e.
         // the bottom message is not visible), then we will respect
@@ -1034,13 +1149,13 @@ export class MessageListView {
             message.url = hash_util.by_conversation_and_time_url(message);
         }
 
-        const save_scroll_position = () => {
+        const save_scroll_position = (): void => {
             if (orig_scrolltop_offset === undefined && this.selected_row().length > 0) {
                 orig_scrolltop_offset = this.selected_row().get_offset_to_window().top;
             }
         };
 
-        const restore_scroll_position = () => {
+        const restore_scroll_position = (): void => {
             if (
                 narrow_state.is_message_feed_visible() &&
                 list === message_lists.current &&
@@ -1168,7 +1283,7 @@ export class MessageListView {
         const last_message_group = this._message_groups.at(-1);
         if (last_message_group !== undefined) {
             list.last_message_historical =
-                last_message_group.message_containers.at(-1).msg.historical;
+                last_message_group.message_containers.at(-1)!.msg.historical;
         }
 
         list.update_trailing_bookend();
@@ -1176,12 +1291,12 @@ export class MessageListView {
         if (list === message_lists.current) {
             // Update the fade.
 
-            const get_element = (message_group) => {
+            const get_element = (message_group: MessageGroup): JQuery => {
                 // We don't have a MessageGroup class, but we can at least hide the messy details
                 // of rows.ts from compose_fade.  We provide a callback function to be lazy--
                 // compose_fade may not actually need the elements depending on its internal
                 // state.
-                const $message_row = this.get_row(message_group.message_containers[0].msg.id);
+                const $message_row = this.get_row(message_group.message_containers[0]!.msg.id);
                 return rows.get_message_recipient_row($message_row);
             };
 
@@ -1211,21 +1326,21 @@ export class MessageListView {
         return undefined;
     }
 
-    _new_messages_height(rendered_elems) {
+    _new_messages_height(rendered_elems: JQuery[]): number {
         let new_messages_height = 0;
 
         for (const $elem of rendered_elems.reverse()) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
             if ($elem.is("div")) {
-                new_messages_height += $elem.height();
+                new_messages_height += $elem.height()!;
             }
         }
 
         return new_messages_height;
     }
 
-    _scroll_limit($selected_row, viewport_info) {
+    _scroll_limit($selected_row: JQuery, viewport_info: MessageViewportInfo): number {
         // This scroll limit is driven by the TOP of the feed, and
         // it's the max amount that we can scroll down (or "skooch
         // up" the messages) before knocking the selected message
@@ -1243,7 +1358,7 @@ export class MessageListView {
         return scroll_limit;
     }
 
-    _maybe_autoscroll(new_messages_height, sent_by_me) {
+    _maybe_autoscroll(new_messages_height: number, sent_by_me: boolean): boolean {
         // If we are near the bottom of our feed (the bottom is visible) and can
         // scroll up without moving the pointer out of the viewport, do so, by
         // up to the amount taken up by the new message. For messages sent by
@@ -1330,7 +1445,7 @@ export class MessageListView {
             // the current compose is bigger than the empty, open
             // compose box.
             const compose_textarea_default_height = 42;
-            const compose_textarea_current_height = $("textarea#compose-textarea").height();
+            const compose_textarea_current_height = $("textarea#compose-textarea").height()!;
             const expected_change =
                 compose_textarea_current_height - compose_textarea_default_height;
             const expected_offset = offset - expected_change;
@@ -1345,7 +1460,7 @@ export class MessageListView {
         return need_user_to_scroll;
     }
 
-    clear_rendering_state(clear_table) {
+    clear_rendering_state(clear_table: boolean): void {
         if (clear_table) {
             this.clear_table();
         }
@@ -1355,7 +1470,7 @@ export class MessageListView {
         this._render_win_end = 0;
     }
 
-    update_render_window(selected_idx, check_for_changed) {
+    update_render_window(selected_idx: number, check_for_changed: boolean): boolean {
         const new_start = Math.max(selected_idx - Math.floor(this._RENDER_WINDOW_SIZE / 2), 0);
         if (check_for_changed && new_start === this._render_win_start) {
             return false;
@@ -1369,7 +1484,7 @@ export class MessageListView {
         return true;
     }
 
-    should_fetch_older_messages() {
+    should_fetch_older_messages(): boolean {
         const selected_idx = this.list.selected_idx();
         // We fetch older messages when the user is near the top of the
         // rendered message feed and there are older messages to fetch.
@@ -1381,7 +1496,7 @@ export class MessageListView {
         );
     }
 
-    should_fetch_newer_messages() {
+    should_fetch_newer_messages(): boolean {
         const selected_idx = this.list.selected_idx();
         // We fetch new messages when the user is near the bottom of the
         // rendered message feed and there are newer messages to fetch.
@@ -1393,7 +1508,7 @@ export class MessageListView {
         );
     }
 
-    maybe_rerender() {
+    maybe_rerender(): boolean {
         const selected_idx = this.list.selected_idx();
 
         // We rerender under the following conditions:
@@ -1424,7 +1539,7 @@ export class MessageListView {
         return true;
     }
 
-    rerender_preserving_scrolltop(discard_rendering_state) {
+    rerender_preserving_scrolltop(discard_rendering_state = false): void {
         // old_offset is the number of pixels between the top of the
         // viewable window and the selected message
         let old_offset;
@@ -1443,12 +1558,13 @@ export class MessageListView {
         this.rerender_with_target_scrolltop(old_offset);
     }
 
-    set_message_offset(offset) {
+    set_message_offset(offset: number): void {
         const $msg = this.selected_row();
-        message_viewport.scrollTop($msg.offset().top - offset);
+        assert($msg !== undefined);
+        message_viewport.scrollTop($msg.offset()!.top - offset);
     }
 
-    rerender_with_target_scrolltop(target_offset) {
+    rerender_with_target_scrolltop(target_offset: number | undefined): void {
         // target_offset is the target number of pixels between the top of the
         // viewable window and the selected message
         this.clear_table();
@@ -1470,7 +1586,7 @@ export class MessageListView {
         }
     }
 
-    _find_message_group(message_group_id) {
+    _find_message_group(message_group_id: string): MessageGroup | undefined {
         // Finds the message group with a given message group ID.
         //
         // This function does a linear search, so be careful to avoid
@@ -1484,7 +1600,7 @@ export class MessageListView {
         );
     }
 
-    _rerender_header(message_containers) {
+    _rerender_header(message_containers: MessageContainer[]): void {
         // Given a list of messages that are in the **same** message group,
         // rerender the header / recipient bar of the messages. This method
         // should only be called with rerender_messages as the rerendered
@@ -1493,7 +1609,7 @@ export class MessageListView {
             return;
         }
 
-        const $first_row = this.get_row(message_containers[0].msg.id);
+        const $first_row = this.get_row(message_containers[0]!.msg.id);
 
         // We may not have the row if the stream or topic was muted
         if ($first_row.length === 0) {
@@ -1502,7 +1618,7 @@ export class MessageListView {
 
         const $recipient_row = rows.get_message_recipient_row($first_row);
         const $header = $recipient_row.find(".message_header");
-        const message_group_id = $recipient_row.attr("id");
+        const message_group_id = $recipient_row.attr("id")!;
 
         // Since there might be multiple dates within the message
         // group, it's important to look up the original/full message
@@ -1522,7 +1638,7 @@ export class MessageListView {
         Object.assign(
             group,
             populate_group_from_message(
-                group.message_containers[0].msg,
+                group.message_containers[0]!.msg,
                 group.date_unchanged,
                 undefined,
             ),
@@ -1533,7 +1649,11 @@ export class MessageListView {
         $header.replaceWith($rendered_recipient_row);
     }
 
-    _rerender_message(message_container, {message_content_edited, is_revealed}) {
+    _rerender_message(
+        message_container: MessageContainer,
+        opts: {message_content_edited: boolean; is_revealed: boolean},
+    ): void {
+        const {message_content_edited, is_revealed} = opts;
         const $row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
 
@@ -1559,23 +1679,25 @@ export class MessageListView {
         }
     }
 
-    reveal_hidden_message(message_id) {
+    reveal_hidden_message(message_id: number): void {
         const message_container = this.message_containers.get(message_id);
+        assert(message_container !== undefined);
         this._rerender_message(message_container, {
             message_content_edited: false,
             is_revealed: true,
         });
     }
 
-    hide_revealed_message(message_id) {
+    hide_revealed_message(message_id: number): void {
         const message_container = this.message_containers.get(message_id);
+        assert(message_container !== undefined);
         this._rerender_message(message_container, {
             message_content_edited: false,
             is_revealed: false,
         });
     }
 
-    rerender_messages(messages, message_content_edited) {
+    rerender_messages(messages: Message[], message_content_edited = false): void {
         // this.render is never called in this code path, we use
         // `_rerender_message` instead which is optimized for this use
         // case.
@@ -1585,11 +1707,14 @@ export class MessageListView {
         // prevent the appearance of tooltips whose reference has been removed.
         message_list_tooltips.destroy_all_message_list_tooltips();
         // Convert messages to list messages
-        let message_containers = messages.map((message) => this.message_containers.get(message.id));
-        // We may not have the message_container if the stream or topic was muted
-        message_containers = message_containers.filter(
-            (message_container) => message_container !== undefined,
-        );
+        const message_containers = [];
+        for (const message of messages) {
+            const message_container = this.message_containers.get(message.id);
+            // We may not have the message_container if the stream or topic was muted
+            if (message_container !== undefined) {
+                message_containers.push(message_container);
+            }
+        }
 
         const message_groups = [];
         let current_group = [];
@@ -1621,7 +1746,10 @@ export class MessageListView {
         }
     }
 
-    append(messages, messages_are_new) {
+    append(
+        messages: Message[],
+        messages_are_new: boolean,
+    ): {need_user_to_scroll: boolean} | undefined {
         const cur_window_size = this._render_win_end - this._render_win_start;
         let render_info;
 
@@ -1645,7 +1773,7 @@ export class MessageListView {
         return render_info;
     }
 
-    prepend(messages) {
+    prepend(messages: Message[]): void {
         if (this._render_win_end - this._render_win_start === 0) {
             // If the message list previously contained no visible
             // messages, appending and prepending are equivalent, but
@@ -1676,7 +1804,7 @@ export class MessageListView {
         this.maybe_rerender();
     }
 
-    clear_table() {
+    clear_table(): void {
         capture_user_message_editing_state();
         // We do not want to call .empty() because that also clears
         // jQuery data.  This does mean, however, that we need to be
@@ -1687,15 +1815,15 @@ export class MessageListView {
         this.message_containers.clear();
     }
 
-    last_rendered_message() {
+    last_rendered_message(): Message | undefined {
         return this.list.data._items[this._render_win_end - 1];
     }
 
-    is_fetched_end_rendered() {
+    is_fetched_end_rendered(): boolean {
         return this._render_win_end === this.list.num_items();
     }
 
-    is_end_rendered() {
+    is_end_rendered(): boolean {
         // Used as a helper in checks for whether a given scroll
         // position is actually the very end of this view. It could
         // fail to be for two reasons: Either some newer messages are
@@ -1704,15 +1832,15 @@ export class MessageListView {
         return this.is_fetched_end_rendered() && this.list.data.fetch_status.has_found_newest();
     }
 
-    first_rendered_message() {
+    first_rendered_message(): Message | undefined {
         return this.list.data._items[this._render_win_start];
     }
 
-    is_fetched_start_rendered() {
+    is_fetched_start_rendered(): boolean {
         return this._render_win_start === 0;
     }
 
-    is_start_rendered() {
+    is_start_rendered(): boolean {
         // Used as a helper in checks for whether a given scroll
         // position is actually the very start of this view. It could
         // fail to be for two reasons: Either some older messages are
@@ -1721,7 +1849,7 @@ export class MessageListView {
         return this.is_fetched_start_rendered() && this.list.data.fetch_status.has_found_oldest();
     }
 
-    get_row(id) {
+    get_row(id: number): JQuery {
         const $row = this._rows.get(id);
 
         if ($row === undefined) {
@@ -1733,21 +1861,21 @@ export class MessageListView {
         return $row;
     }
 
-    clear_trailing_bookend() {
+    clear_trailing_bookend(): void {
         const $trailing_bookend = this.$list.find(".trailing_bookend");
         $trailing_bookend.remove();
     }
 
     render_trailing_bookend(
-        stream_name,
-        subscribed,
-        deactivated,
-        just_unsubscribed,
-        can_toggle_subscription,
-        is_spectator,
-        invite_only,
-        is_web_public,
-    ) {
+        stream_name: string,
+        subscribed: boolean,
+        deactivated: boolean,
+        just_unsubscribed: boolean,
+        can_toggle_subscription: boolean,
+        is_spectator: boolean,
+        invite_only: boolean | undefined,
+        is_web_public: boolean | undefined,
+    ): void {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
         const $rendered_trailing_bookend = $(
@@ -1766,17 +1894,18 @@ export class MessageListView {
         this.$list.append($rendered_trailing_bookend);
     }
 
-    selected_row() {
+    selected_row(): JQuery {
         return this.get_row(this.list.selected_id());
     }
 
-    get_message(id) {
+    get_message(id: number): Message | undefined {
         return this.list.get(id);
     }
 
-    change_message_id(old_id, new_id) {
+    change_message_id(old_id: number, new_id: number): void {
         if (this._rows.has(old_id)) {
             const $row = this._rows.get(old_id);
+            assert($row !== undefined);
             this._rows.delete(old_id);
 
             $row.attr("data-message-id", new_id);
@@ -1787,12 +1916,19 @@ export class MessageListView {
 
         if (this.message_containers.has(old_id)) {
             const message_container = this.message_containers.get(old_id);
+            assert(message_container !== undefined);
             this.message_containers.delete(old_id);
             this.message_containers.set(new_id, message_container);
         }
     }
 
-    _maybe_get_me_message(is_hidden, message) {
+    _maybe_get_me_message(
+        is_hidden: boolean,
+        message: Message,
+    ): {
+        status_message: string | false;
+        include_sender?: boolean;
+    } {
         // If the message is to be hidden anyway, no need to render
         // it differently.
         if (!is_hidden && message.is_me_message) {
@@ -1817,14 +1953,27 @@ export class MessageListView {
         * To track the current `sticky_header` which have some different properties
           like date being always displayed.
         * Set date on message header corresponding to the message next to the header. */
-    update_sticky_recipient_headers() {
+    update_sticky_recipient_headers(): void {
         const rows_length = this._rows.size;
         if (!rows_length) {
             /* No headers are present */
             return;
         }
 
-        const dom_updates = {
+        const dom_updates: {
+            add_classes: {
+                $element: JQuery;
+                class: string;
+            }[];
+            remove_classes: {
+                $element: JQuery;
+                class: string;
+            }[];
+            html_updates: {
+                $element: JQuery;
+                rendered_date: string | HTMLElement;
+            }[];
+        } = {
             add_classes: [],
             remove_classes: [],
             html_updates: [],
@@ -1835,7 +1984,7 @@ export class MessageListView {
             // Reset the date on the header in case we changed it.
             const message_group_id = rows
                 .get_message_recipient_row($current_sticky_header)
-                .attr("id");
+                .attr("id")!;
             const group = this._find_message_group(message_group_id);
             if (group !== undefined) {
                 const rendered_date = group.date;
@@ -1850,12 +1999,12 @@ export class MessageListView {
             });
         }
 
-        const navbar_bottom = $("#navbar-fixed-container").outerHeight();
+        const navbar_bottom = $("#navbar-fixed-container").outerHeight()!;
         /* We need date to be properly visible on the header, so partially visible headers
            who are about to be scrolled out of view are not acceptable. */
         const partially_hidden_header_position = navbar_bottom - 1;
 
-        function is_sticky(header) {
+        function is_sticky(header: Element): number {
             // header has a box-shadow of `1px` at top but since it doesn't impact
             // `y` position of the header, we don't take it into account during calculations.
             const header_props = header.getBoundingClientRect();
@@ -1885,7 +2034,7 @@ export class MessageListView {
         /* Binary search to reach the sticky header */
         while (start <= end) {
             const mid = Math.floor((start + end) / 2);
-            const header = iterable_headers[mid];
+            const header = iterable_headers[mid]!;
             const diff = is_sticky(header);
             if (diff === 0) {
                 $sticky_header = $(header);
@@ -1917,15 +2066,15 @@ export class MessageListView {
                 sticky_header_props.left,
                 possible_new_date_separator_start,
             );
-            $message_row = $(
-                elements_below_sticky_header.filter((element) =>
-                    element.classList.contains("message_row"),
-                ),
-            ).first();
-            if (!$message_row.length) {
+            const message_rows = elements_below_sticky_header
+                .filter((element) => element instanceof HTMLElement)
+                .filter((element) => element.classList.contains("message_row"));
+            if (!message_rows.length) {
                 /* If there is no message row under the header, it means it is not sticky yet,
                    so we just get the message next to the header. */
                 $message_row = $sticky_header.nextAll(".message_row").first();
+            } else {
+                $message_row = $(message_rows[0]!);
             }
         }
         // We expect message information to be available for the message row even for failed or
@@ -1994,7 +2143,7 @@ export class MessageListView {
         }
     }
 
-    update_recipient_bar_background_color() {
+    update_recipient_bar_background_color(): void {
         const $stream_headers = this.$list.find(".message_header_stream");
         for (const stream_header of $stream_headers) {
             const $stream_header = $(stream_header);
@@ -2002,7 +2151,7 @@ export class MessageListView {
         }
     }
 
-    show_message_as_read(message, options) {
+    show_message_as_read(message: Message, options: {from?: "pointer" | "server"}): void {
         const $row = this.get_row(message.id);
         if (options.from === "pointer" || options.from === "server") {
             $row.find(".unread_marker").addClass("fast_fade");
@@ -2012,10 +2161,10 @@ export class MessageListView {
         $row.removeClass("unread");
     }
 
-    show_messages_as_unread(message_ids) {
+    show_messages_as_unread(message_ids: number[]): void {
         const $rows_to_show_as_unread = this.$list.find(".message_row").filter((_index, $row) => {
             // eslint-disable-next-line unicorn/prefer-dom-node-dataset
-            const message_id = Number.parseFloat($row.getAttribute("data-message-id"));
+            const message_id = Number.parseFloat($row.getAttribute("data-message-id")!);
             return message_ids.includes(message_id);
         });
         $rows_to_show_as_unread.addClass("unread");

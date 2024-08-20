@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as compose_fade_helper from "./compose_fade_helper";
 import * as compose_state from "./compose_state";
+import type {RecipientRowUser} from "./message_list_view";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
 import * as message_viewport from "./message_viewport";
@@ -15,24 +16,30 @@ import * as util from "./util";
 
 // TODO/TypeScript: Move this to message_list_view.js when it's migrated to TypeScript.
 export type MessageContainer = {
-    background_color: string;
-    date_divider_html?: string;
-    edited_alongside_sender: boolean;
-    edited_in_left_col: boolean;
-    edited_status_msg: boolean;
+    background_color?: string;
+    date_divider_html: string | undefined;
+    edited_alongside_sender?: boolean;
+    edited_in_left_col?: boolean;
+    edited_status_msg?: boolean;
     include_recipient: boolean;
     include_sender: boolean;
     is_hidden: boolean;
+    last_edit_timestr: string | undefined;
     mention_classname: string | null;
     message_edit_notices_in_left_col: boolean;
+    message_edit_notices_alongside_sender: boolean;
+    message_edit_notices_for_status_message: boolean;
+    modified?: boolean;
+    moved?: boolean;
     msg: Message;
     sender_is_bot: boolean;
     sender_is_guest: boolean;
     should_add_guest_indicator_for_sender: boolean;
     small_avatar_url: string;
-    status_message: boolean;
+    status_message: string | false;
     stream_url?: string;
     subscribed?: boolean;
+    pm_with_url?: string;
     timestr: string;
     topic_url?: string;
     unsubscribed?: boolean;
@@ -40,32 +47,47 @@ export type MessageContainer = {
 };
 
 // TODO/TypeScript: Move this to message_list_view.js when it's migrated to TypeScript.
-type MessageGroup = {
-    all_visibility_policies: AllVisibilityPolicies;
-    always_visible_topic_edit: boolean;
+export type MessageGroup = {
+    bookend_top?: boolean;
     date: string;
     date_unchanged: boolean;
-    display_recipient: string;
-    invite_only: boolean;
-    is_private?: boolean;
-    is_stream: boolean;
-    is_subscribed: boolean;
-    is_web_public: boolean;
-    match_topic?: string;
     message_containers: MessageContainer[];
     message_group_id: string;
-    on_hover_topic_edit: boolean;
-    recipient_bar_color: string;
-    stream_id: number;
-    stream_privacy_icon_color: string;
-    stream_url: string;
-    topic: string;
-    topic_is_resolved: boolean;
-    topic_links: TopicLink[];
-    topic_url: string;
-    user_can_resolve_topic: boolean;
-    visibility_policy: number;
-};
+} & (
+    | {
+          is_stream: true;
+          all_visibility_policies: AllVisibilityPolicies;
+          always_visible_topic_edit: boolean;
+          display_recipient: string;
+          invite_only: boolean;
+          is_subscribed: boolean;
+          is_topic_editable: boolean;
+          is_web_public: boolean;
+          just_unsubscribed?: boolean;
+          match_topic: string | undefined;
+          on_hover_topic_edit: boolean;
+          recipient_bar_color: string;
+          stream_id: number;
+          stream_name?: string;
+          stream_privacy_icon_color: string;
+          stream_url: string;
+          subscribed?: boolean;
+          topic: string;
+          topic_is_resolved: boolean;
+          topic_links: TopicLink[] | undefined;
+          topic_url: string | undefined;
+          user_can_resolve_topic: boolean;
+          visibility_policy: number | false;
+      }
+    | {
+          is_stream: false;
+          display_recipient: {email: string; full_name: string; id: number}[];
+          display_reply_to_for_tooltip: string;
+          is_private: true;
+          pm_with_url: string;
+          recipient_users: RecipientRowUser[];
+      }
+);
 
 let normal_display = false;
 

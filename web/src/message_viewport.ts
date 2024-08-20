@@ -8,7 +8,7 @@ import type {Message} from "./message_store";
 import * as rows from "./rows";
 import * as util from "./util";
 
-type MessageViewportInfo = {
+export type MessageViewportInfo = {
     visible_top: number;
     visible_bottom: number;
     visible_height: number;
