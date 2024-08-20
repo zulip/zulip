@@ -198,9 +198,9 @@ aren't receiving emails from Zulip:
   you can inspect the emails that reached the service, whether an
   email was flagged as spam, etc.
 
-- Starting with Zulip 1.7, Zulip logs an entry in
-  `/var/log/zulip/send_email.log` whenever it attempts to send an
-  email. The log entry includes whether the request succeeded or failed.
+- Zulip logs an entry in `/var/log/zulip/send_email.log` whenever it
+  attempts to send an email. The log entry includes whether the
+  request succeeded or failed.
 
 - If attempting to send an email throws an exception, a traceback
   should be in `/var/log/zulip/errors.log`, along with any other
