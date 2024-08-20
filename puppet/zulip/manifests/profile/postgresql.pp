@@ -59,6 +59,7 @@ class zulip::profile::postgresql {
     file { "${zulip::postgresql_base::postgresql_datadir}/standby.signal":
       ensure  => file,
       require => Package[$zulip::postgresql_base::postgresql],
+      before  => Exec[$zulip::postgresql_base::postgresql_restart],
       owner   => 'postgres',
       group   => 'postgres',
       mode    => '0644',
