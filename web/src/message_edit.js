@@ -799,7 +799,7 @@ export function end_message_row_edit($row) {
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         currently_editing_messages.delete(message.id);
         message_lists.current.hide_edit_message($row);
-        compose_call.abort_video_callbacks(message.id);
+        compose_call.abort_video_callbacks(message.id.toString());
     }
     if ($row.find(".condensed").length !== 0) {
         condense.show_message_expander($row);
