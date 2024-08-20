@@ -429,6 +429,7 @@ export class DropdownWidget {
                     $(this.widget_selector).trigger("focus");
                 }
                 this.on_hidden_callback(instance);
+                instance.destroy();
             },
             ...this.tippy_props,
         });
