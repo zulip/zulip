@@ -7,12 +7,16 @@ import render_change_visibility_policy_button_tooltip from "../templates/change_
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
+import * as drafts from "./drafts";
 import {$t} from "./i18n";
 import * as people from "./people";
 import * as popovers from "./popovers";
+import * as scheduled_messages from "./scheduled_messages";
 import * as settings_config from "./settings_config";
+import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
+import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -191,8 +195,71 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             const $container = $(instance.popper).find(".views-tooltip-container");
-            if ($container.data("view-code") === user_settings.web_home_view) {
-                $container.find(".views-tooltip-home-view-note").removeClass("hide");
+            let display_count = 0;
+            const sidebar_option = $container.attr("data-view-code");
+
+            switch (sidebar_option) {
+                case user_settings.web_home_view:
+                    $container.find(".views-tooltip-home-view-note").removeClass("hide");
+                    display_count = unread.get_unread_message_count();
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no unread messages.} one {# unread message.} other {# unread messages.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "mentions":
+                    display_count = unread.unread_mentions_counter.size;
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no unread mentions.} one {# unread mention.} other {# unread mentions.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "starred_message":
+                    display_count = starred_messages.get_count();
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no starred messages.} one {# starred message.} other {# starred messages.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "drafts":
+                    display_count = drafts.draft_model.getDraftCount();
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no drafts.} one {# draft.} other {# drafts.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "scheduled_message":
+                    display_count = scheduled_messages.get_count();
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no scheduled messages.} one {# scheduled message.} other {# scheduled messages.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
             }
 
             // Since the tooltip is attached to the anchor tag which doesn't
