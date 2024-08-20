@@ -1101,7 +1101,7 @@
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
-    --color-border-rendered-markdown-table: hsl(0deg 0% 100% / 20%);
+    --color-border-rendered-markdown-table: hsl(0deg 0% 33%);
 
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 0% / 20%);
