@@ -1,30 +1,11 @@
 import $ from "jquery";
 
-import type {MessageContainer} from "./compose_fade";
 import * as inbox_util from "./inbox_util";
 import type {MessageListData} from "./message_list_data";
 import * as message_list_data_cache from "./message_list_data_cache";
+import type {MessageListView} from "./message_list_view";
 import type {Message} from "./message_store";
 import * as ui_util from "./ui_util";
-
-// TODO(typescript): Move this to message_list_view when it's
-// converted to typescript.
-type MessageListView = {
-    update_recipient_bar_background_color: () => void;
-    rerender_messages: (messages: Message[], message_content_edited?: boolean) => void;
-    is_fetched_end_rendered: () => boolean;
-    is_fetched_start_rendered: () => boolean;
-    first_rendered_message: () => Message | undefined;
-    last_rendered_message: () => Message | undefined;
-    show_message_as_read: (message: Message, options: {from?: "pointer" | "server"}) => void;
-    show_messages_as_unread: (message_ids: number[]) => void;
-    change_message_id: (old_id: number, new_id: number) => void;
-    message_containers: Map<number, MessageContainer>;
-    _render_win_start: number;
-    _render_win_end: number;
-    sticky_recipient_message_id: number | undefined;
-    $list: JQuery;
-};
 
 export type RenderInfo = {need_user_to_scroll: boolean};
 
@@ -77,6 +58,11 @@ export type MessageList = {
     hide_edit_topic_on_recipient_row: ($recipient_row: JQuery) => void;
     hide_edit_message: ($row: JQuery) => void;
     get_last_message_sent_by_me: () => Message | undefined;
+    num_items: () => number;
+    last_message_historical: boolean;
+    reselect_selected_id: () => void;
+    is_keyword_search: () => boolean;
+    update_trailing_bookend: (force_render?: boolean) => void;
 };
 
 export let current: MessageList | undefined;

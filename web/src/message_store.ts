@@ -159,7 +159,7 @@ export type Message = (
     sent_by_me: boolean;
     reply_to: string;
 
-    // These properties are set and used in `message_list_view.js`.
+    // These properties are set and used in `message_list_view.ts`.
     // TODO: It would be nice if we could not store these on the message
     // object and only reference them within `message_list_view`.
     message_reactions?: MessageCleanReaction[];
