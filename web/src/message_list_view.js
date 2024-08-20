@@ -1476,7 +1476,7 @@ export class MessageListView {
         }
 
         for (const messages_in_group of message_groups) {
-            this._rerender_header(messages_in_group, message_content_edited);
+            this._rerender_header(messages_in_group);
         }
 
         if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
