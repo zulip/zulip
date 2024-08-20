@@ -6,7 +6,7 @@
             <h4 class="left-sidebar-title"><span class="views-tooltip-target">{{t 'VIEWS' }}</span></h4>
             <ul id="left-sidebar-navigation-list-condensed" class="filters">
                 <li class="top_left_inbox left-sidebar-navigation-condensed-item {{#if is_inbox_home_view}}selected-home-view{{/if}}">
-                    <a href="#inbox" class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="inbox-tooltip-template">
+                    <a href="#inbox" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="inbox-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>
                         </span>
@@ -14,7 +14,7 @@
                     </a>
                 </li>
                 <li class="top_left_recent_view left-sidebar-navigation-condensed-item {{#if is_recent_view_home_view}}selected-home-view{{/if}}">
-                    <a href="#recent" class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="recent-conversations-tooltip-template">
+                    <a href="#recent" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="recent-conversations-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-recent" aria-hidden="true"></i>
                         </span>
@@ -22,7 +22,7 @@
                     </a>
                 </li>
                 <li class="top_left_all_messages left-sidebar-navigation-condensed-item {{#if is_all_messages_home_view}}selected-home-view{{/if}}">
-                    <a href="#feed" class="home-link tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="all-message-tooltip-template">
+                    <a href="#feed" class="home-link tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="all-message-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-all-messages" aria-hidden="true"></i>
                         </span>
@@ -38,7 +38,7 @@
                     </a>
                 </li>
                 <li class="top_left_starred_messages left-sidebar-navigation-condensed-item">
-                    <a href="#narrow/is/starred" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="starred-tooltip-template">
+                    <a href="#narrow/is/starred" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="starred-message-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>
                         </span>
@@ -52,7 +52,7 @@
         </div>
         <ul id="left-sidebar-navigation-list" class="left-sidebar-navigation-list filters">
             <li class="top_left_inbox top_left_row hidden-for-spectators {{#if is_inbox_home_view}}selected-home-view{{/if}}">
-                <a href="#inbox" class="left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="inbox-tooltip-template">
+                <a href="#inbox" class="left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" data-tooltip-template-id="inbox-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>
                     </span>
@@ -63,7 +63,7 @@
                 <span class="arrow sidebar-menu-icon inbox-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_recent_view top_left_row {{#if is_recent_view_home_view}}selected-home-view{{/if}}">
-                <a href="#recent" class="left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="recent-conversations-tooltip-template">
+                <a href="#recent" class="left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" data-tooltip-template-id="recent-conversations-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-recent" aria-hidden="true"></i>
                     </span>
@@ -76,7 +76,7 @@
                 </span>
             </li>
             <li class="top_left_all_messages top_left_row {{#if is_all_messages_home_view}}selected-home-view{{/if}}">
-                <a href="#feed" class="home-link left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="all-message-tooltip-template">
+                <a href="#feed" class="home-link left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" data-tooltip-template-id="all-message-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-all-messages" aria-hidden="true"></i>
                     </span>
@@ -99,7 +99,7 @@
                 </a>
             </li>
             <li class="top_left_my_reactions top_left_row hidden-for-spectators">
-                <a class="left-sidebar-navigation-label-container tippy-views-tooltip" href="#narrow/has/reaction/sender/me" data-tooltip-template-id="my-reactions-tooltip-template">
+                <a class="left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" href="#narrow/has/reaction/sender/me" data-tooltip-template-id="my-reactions-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-smile" aria-hidden="true"></i>
                     </span>
@@ -109,7 +109,7 @@
                 </a>
             </li>
             <li class="top_left_starred_messages top_left_row hidden-for-spectators">
-                <a class="left-sidebar-navigation-label-container tippy-views-tooltip" href="#narrow/is/starred" data-tooltip-template-id="starred-message-tooltip-template">
+                <a class="left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" href="#narrow/is/starred" data-tooltip-template-id="starred-message-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>
                     </span>
@@ -123,7 +123,7 @@
                 <span class="arrow sidebar-menu-icon starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_drafts top_left_row hidden-for-spectators">
-                <a href="#drafts" class="left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="drafts-tooltip-template">
+                <a href="#drafts" class="left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" data-tooltip-template-id="drafts-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-drafts" aria-hidden="true"></i>
                     </span>
