@@ -12,7 +12,7 @@ from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.users import active_user_ids
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_realm_custom_profile_fields(realm: Realm) -> None:
@@ -159,7 +159,7 @@ def notify_user_update_custom_profile_data(
         data["rendered_value"] = field["rendered_value"]
     payload = dict(user_id=user_profile.id, custom_profile_field=data)
     event = dict(type="realm_user", op="update", person=payload)
-    send_event(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
 
 def do_update_user_custom_profile_data_if_changed(
@@ -205,6 +205,7 @@ def do_update_user_custom_profile_data_if_changed(
             )
 
 
+@transaction.atomic(durable=True)
 def check_remove_custom_profile_field_value(user_profile: UserProfile, field_id: int) -> None:
     try:
         custom_profile_field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
