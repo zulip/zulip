@@ -23,7 +23,7 @@ These are the least complex. We use our markdown processors to
 detect if a message is a `/me` message, plumb the flag through
 the message object (as `is_me_message`) and have the clients
 format it correctly. Related code (for the web app) lies in
-`message_list_view.js` in `_maybe_format_me_message`.
+`message_list_view.js` in `_maybe_get_me_message`.
 
 ## Polls, todo lists, and games
 
