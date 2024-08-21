@@ -1072,6 +1072,7 @@ div.settings-radio-input-parent {
 .group-permissions .dropdown_widget_with_label_wrapper {
     display: inline-block;
     height: 30px;
+    margin-bottom: 10px;
 }
 
 #stream-advanced-configurations {
