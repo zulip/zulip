@@ -117,16 +117,21 @@ function update_general_settings_elements(group) {
 
     if (settings_data.can_edit_user_group(group.id)) {
         $permission_dropdown_elements.prop("disabled", false);
-        $permission_dropdown_elements
-            .closest(".dropdown_widget_with_label_wrapper")
-            ._tippy?.destroy();
+
+        $permission_dropdown_elements.each(function () {
+            const $dropdown_wrapper = $(this).closest(".dropdown_widget_with_label_wrapper");
+            $dropdown_wrapper[0]._tippy?.destroy();
+        });
     } else {
         $permission_dropdown_elements.prop("disabled", true);
 
-        settings_components.initialize_disable_btn_hint_popover(
-            $permission_dropdown_elements.closest(".dropdown_widget_with_label_wrapper"),
-            $t({defaultMessage: "You do not have permission to edit this setting."}),
-        );
+        $permission_dropdown_elements.each(function () {
+            const $dropdown_wrapper = $(this).closest(".dropdown_widget_with_label_wrapper");
+            settings_components.initialize_disable_btn_hint_popover(
+                $dropdown_wrapper,
+                $t({defaultMessage: "You do not have permission to edit this setting."}),
+            );
+        });
     }
 }
 
