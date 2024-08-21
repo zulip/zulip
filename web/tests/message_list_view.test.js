@@ -168,7 +168,10 @@ test("msg_moved_var", () => {
         const list = build_list([message_group]);
 
         for (const message_container of messages) {
-            list._maybe_format_me_message(message_container);
+            Object.assign(
+                message_container,
+                list._maybe_get_me_message(message_container.is_hidden, message_container.msg),
+            );
             list._add_msg_edited_vars(message_container);
         }
 
@@ -277,7 +280,10 @@ test("msg_edited_vars", () => {
         const list = build_list([message_group]);
 
         for (const message_container of messages) {
-            list._maybe_format_me_message(message_container);
+            Object.assign(
+                message_container,
+                list._maybe_get_me_message(message_container.is_hidden, message_container.msg),
+            );
             list._add_msg_edited_vars(message_container);
         }
 

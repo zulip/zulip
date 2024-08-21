@@ -527,7 +527,10 @@ export class MessageListView {
             );
         }
 
-        this._maybe_format_me_message(message_container);
+        Object.assign(
+            message_container,
+            this._maybe_get_me_message(message_container.is_hidden, message_container.msg),
+        );
         // Once all other variables are updated
         this._add_msg_edited_vars(message_container);
     }
@@ -1656,22 +1659,25 @@ export class MessageListView {
         }
     }
 
-    _maybe_format_me_message(message_container) {
+    _maybe_get_me_message(is_hidden, message) {
         // If the message is to be hidden anyway, no need to render
         // it differently.
-        if (!message_container.is_hidden && message_container.msg.is_me_message) {
+        if (!is_hidden && message.is_me_message) {
             // Slice the '<p>/me ' off the front, and '</p>' off the first line
             // 'p' tag is sliced off to get sender in the same line as the
             // first line of the message
-            const msg_content = message_container.msg.content;
+            const msg_content = message.content;
             const p_index = msg_content.indexOf("</p>");
-            message_container.status_message =
-                msg_content.slice("<p>/me ".length, p_index) +
-                msg_content.slice(p_index + "</p>".length);
-            message_container.include_sender = true;
-        } else {
-            message_container.status_message = false;
+            return {
+                status_message:
+                    msg_content.slice("<p>/me ".length, p_index) +
+                    msg_content.slice(p_index + "</p>".length),
+                include_sender: true,
+            };
         }
+        return {
+            status_message: false,
+        };
     }
 
     /* This function exist for two purposes:
