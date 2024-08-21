@@ -217,6 +217,9 @@ def do_change_full_name(
     user_profile: UserProfile, full_name: str, acting_user: UserProfile | None
 ) -> None:
     old_name = user_profile.full_name
+    if old_name == full_name:
+        return
+
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
     event_time = timezone_now()
