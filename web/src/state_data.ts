@@ -302,7 +302,7 @@ const realm_schema = z.object({
     realm_emails_restricted_to_domains: z.boolean(),
     realm_embedded_bots: NOT_TYPED_YET,
     realm_enable_guest_user_indicator: z.boolean(),
-    realm_enable_read_receipts: NOT_TYPED_YET,
+    realm_enable_read_receipts: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
     realm_giphy_rating: z.number(),
     realm_icon_source: z.string(),
