@@ -1300,6 +1300,10 @@ $option_title_width: 180px;
             flex-direction: column;
         }
 
+        .user-name.with-avatar {
+            margin-top: -14px;
+        }
+
         .status-text {
             opacity: 0.75;
             font-size: 90%;
@@ -1307,6 +1311,18 @@ $option_title_width: 180px;
             &:not(:empty) {
                 margin-top: -3px;
             }
+        }
+
+        .status-text.with-avatar {
+            padding-left: 29px;
+            margin-top: -16px;
+        }
+
+        .my-small-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            margin: 2px 4px 2px 0;
         }
     }
 }
