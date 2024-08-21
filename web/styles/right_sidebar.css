@@ -269,6 +269,22 @@ $user_status_emoji_width: 24px;
         display: flex;
     }
 
+    .user-name-and-status-emoji.with-avatar {
+        display: flex;
+        height: 39px;
+        /* without this width, emojis can be partially cut off */
+        /* this is the maximum width that prevents this */
+        width: 168px;
+    }
+
+    .user-name.without-status.with-avatar {
+        align-self: center;
+    }
+
+    .user-name.with-status.with-avatar {
+        align-self: top;
+    }
+
     .status-text {
         display: block;
         white-space: nowrap;
@@ -278,7 +294,12 @@ $user_status_emoji_width: 24px;
         font-size: 90%;
     }
 
-    & span.status-text:not(:empty) {
+    .status-text.with-avatar:not(:empty) {
+        padding-left: 36px;
+        margin-top: -22px;
+    }
+
+    & span.status-text:not(:empty, .status-text.with-avatar) {
         /* Cinch up the status text by one quarter of the
            sidebar row's line-height. */
         margin-top: calc((var(--line-height-sidebar-row) / 4) * -1);
@@ -300,6 +321,42 @@ $user_status_emoji_width: 24px;
                count has been removed from the DOM. */
             display: none;
         }
+    }
+
+    .avatar-container {
+        position: relative;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        flex-shrink: 0;
+        margin: 2px 4px;
+    }
+
+    .small-avatar {
+        margin-top: 4px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        border-radius: 4px;
+    }
+
+    .user_circle.with-avatar {
+        position: absolute;
+        width: var(--length-user-status-circle);
+        height: var(--length-user-status-circle);
+        right: -1px;
+        bottom: -4px;
+    }
+
+    .user_circle-background {
+        position: absolute;
+        width: var(--length-user-status-circle);
+        height: var(--length-user-status-circle);
+        right: -1px;
+        bottom: -4px;
+        background: hsl(0deg 0% 50%);
+        border-radius: 100%;
+        border: 1px solid hsl(0deg 0% 50%);
     }
 }
 

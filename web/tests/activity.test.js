@@ -523,6 +523,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
                 WITH_AVATAR: false,
             },
             should_add_guest_user_indicator: false,
+            small_avatar_url: "/avatar/1",
         });
         assert.ok(html.startsWith("<li data-user-id="));
         return html;

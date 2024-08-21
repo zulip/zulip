@@ -1650,6 +1650,11 @@ export function my_full_name(): string {
     return person.full_name;
 }
 
+export function my_small_avatar_url(): string {
+    const person = get_by_user_id(my_user_id);
+    return small_avatar_url_for_person(person);
+}
+
 export function my_current_email(): string {
     const person = get_by_user_id(my_user_id);
     return person.email;

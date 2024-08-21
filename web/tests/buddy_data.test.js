@@ -474,6 +474,7 @@ test("get_items_for_users", () => {
             user_id: 1001,
             user_list_style,
             should_add_guest_user_indicator: false,
+            small_avatar_url: "/avatar/1001",
         },
         {
             href: "#narrow/dm/1002-Alice-Smith",
@@ -486,6 +487,7 @@ test("get_items_for_users", () => {
             user_id: 1002,
             user_list_style,
             should_add_guest_user_indicator: false,
+            small_avatar_url: "/avatar/1002",
         },
         {
             href: "#narrow/dm/1003-Fred-Flintstone",
@@ -498,6 +500,7 @@ test("get_items_for_users", () => {
             user_id: 1003,
             user_list_style,
             should_add_guest_user_indicator: false,
+            small_avatar_url: "/avatar/1003",
         },
     ]);
 });

@@ -169,6 +169,7 @@ export type BuddyUserInfo = {
     };
     should_add_guest_user_indicator: boolean;
     faded?: boolean;
+    small_avatar_url: string;
 };
 
 export function info_for(user_id: number): BuddyUserInfo {
@@ -195,6 +196,7 @@ export function info_for(user_id: number): BuddyUserInfo {
         status_text,
         user_list_style,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
+        small_avatar_url: people.small_avatar_url_for_person(person),
     };
 }
 

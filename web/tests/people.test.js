@@ -1486,3 +1486,8 @@ test_people("user_can_initiate_direct_message_thread", () => {
 run_test("reset MockDate", () => {
     MockDate.reset();
 });
+
+test_people("my_small_avatar_url", () => {
+    const my_small_avatar_url = people.my_small_avatar_url();
+    assert.equal(my_small_avatar_url, "/avatar/30");
+});
