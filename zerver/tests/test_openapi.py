@@ -1,8 +1,7 @@
 import inspect
 import os
-import types
-from collections.abc import Callable, Mapping, Sequence
-from typing import Any, Union, get_args, get_origin
+from collections.abc import Callable, Mapping
+from typing import Any, get_origin
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -308,21 +307,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
                 msg += f"\n + {undocumented_path}"
             raise AssertionError(msg)
 
-    def get_type_by_priority(
-        self, types: Sequence[type | tuple[type, object]]
-    ) -> type | tuple[type, object]:
-        priority = {list: 1, dict: 2, str: 3, int: 4, bool: 5}
-        tyiroirp = {1: list, 2: dict, 3: str, 4: int, 5: bool}
-        val = 6
-        for t in types:
-            if isinstance(t, tuple):
-                # e.g. (list, dict) or (list, str)
-                return t  # nocoverage
-            v = priority.get(t, 6)
-            if v < val:
-                val = v
-        return tyiroirp.get(val, types[0])
-
     def get_standardized_argument_type(self, t: Any) -> type | tuple[type, object]:
         """Given a type from the typing module such as List[str] or Union[str, int],
         convert it into a corresponding Python type. Unions are mapped to a canonical
@@ -336,9 +320,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
             # Then it's most likely one of the fundamental data types
             # I.E. Not one of the data types from the "typing" module.
             return t
-        elif origin in (Union, types.UnionType):
-            subtypes = [self.get_standardized_argument_type(st) for st in get_args(t)]
-            return self.get_type_by_priority(subtypes)
         raise AssertionError(f"Unknown origin {origin}")
 
     def render_openapi_type_exception(
@@ -488,19 +469,8 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         json_params: dict[str, type | tuple[type, object]] = {}
         for openapi_parameter in openapi_parameters:
             name = openapi_parameter.name
-            if openapi_parameter.json_encoded:
-                # If content_type is application/json, then the
-                # parameter needs to be handled specially, as REQ can
-                # either return the application/json as a string or it
-                # can either decode it and return the required
-                # elements. For example `to` array in /messages: POST
-                # is processed by REQ as a string and then its type is
-                # checked in the view code.
-                #
-                # Meanwhile `profile_data` in /users/{user_id}: GET is
-                # taken as array of objects. So treat them separately.
-                json_params[name] = schema_type(openapi_parameter.value_schema)
-                continue
+            # This no longer happens in remaining has_request_variables endpoint.
+            assert not openapi_parameter.json_encoded
             openapi_params.add((name, schema_type(openapi_parameter.value_schema)))
 
         function_params: set[tuple[str, type | tuple[type, object]]] = set()
@@ -518,24 +488,8 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 vtype = self.get_standardized_argument_type(function.__annotations__[pname])
                 vname = defval.post_var_name
                 assert vname is not None
-                if vname in json_params:
-                    # Here we have two cases.  If the REQ type is
-                    # string then there is no point in comparing as
-                    # JSON can always be returned as string.  Ideally,
-                    # we wouldn't use REQ for a JSON object without a
-                    # validator in these cases, but it does happen.
-                    #
-                    # If the REQ type is not string then, insert the
-                    # REQ and OpenAPI data types of the variable in
-                    # the respective sets so that they can be dealt
-                    # with later.  In either case remove the variable
-                    # from `json_params`.
-                    if vtype is str:
-                        json_params.pop(vname, None)
-                        continue
-                    else:
-                        openapi_params.add((vname, json_params[vname]))
-                        json_params.pop(vname, None)
+                # This no longer happens following typed_endpoint migrations.
+                assert vname not in json_params
                 function_params.add((vname, vtype))
 
         # After the above operations `json_params` should be empty.
