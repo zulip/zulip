@@ -49,6 +49,7 @@ const home_params_schema = default_params_schema
         // processor time to compute.
         realm_rendered_description: z.optional(z.string()),
         show_billing: z.boolean(),
+        show_remote_billing: z.boolean(),
         show_plans: z.boolean(),
         show_webathena: z.boolean(),
         sponsorship_pending: z.boolean(),
