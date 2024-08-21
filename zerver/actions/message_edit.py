@@ -1263,9 +1263,9 @@ def check_update_message(
         validate_user_can_edit_message(user_profile, message, edit_limit_buffer)
 
     # The zerver/views/message_edit.py call point already strips this
-    # via REQ_topic; so we can delete this line if we arrange a
+    # via OptionalTopic; so we can delete this line if we arrange a
     # contract where future callers in the embedded bots system strip
-    # use REQ_topic as well (or otherwise are guaranteed to strip input).
+    # use OptionalTopic as well (or otherwise are guaranteed to strip input).
     if topic_name is not None:
         topic_name = topic_name.strip()
         if topic_name == message.topic_name():
