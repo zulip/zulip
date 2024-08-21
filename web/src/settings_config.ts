@@ -129,6 +129,14 @@ export const web_home_view_values = {
     },
 };
 
+type ColorScheme = "automatic" | "dark" | "light";
+export type ColorSchemeDetails = {
+    [key in ColorScheme]: {
+        code: number;
+        description: string;
+    };
+};
+
 export const color_scheme_values = {
     automatic: {
         code: 1,
