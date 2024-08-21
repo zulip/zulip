@@ -18,6 +18,13 @@ import {get_time_from_date_muted} from "./util";
 
 export type ServerUserTopic = z.infer<typeof user_topic_schema>;
 
+export type AllVisibilityPolicies = {
+    INHERIT: 0;
+    MUTED: 1;
+    UNMUTED: 2;
+    FOLLOWED: 3;
+};
+
 export type UserTopic = {
     stream_id: number;
     stream: string;
@@ -41,7 +48,7 @@ export const all_visibility_policies = {
     MUTED: 1,
     UNMUTED: 2,
     FOLLOWED: 3,
-};
+} as const;
 
 export function update_user_topics(
     stream_id: number,
