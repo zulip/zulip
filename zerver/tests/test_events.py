@@ -2079,9 +2079,32 @@ class NormalActionsTest(BaseAction):
             )
 
     def test_change_full_name(self) -> None:
+        now = timezone_now()
         with self.verify_action() as events:
             do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile)
         check_realm_user_update("events[0]", events[0], "full_name")
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=self.user_profile.realm,
+                event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+            ).count(),
+            1,
+        )
+
+        # Verify no operation if the value isn't changing.
+        with self.verify_action(num_events=0, state_change_expected=False):
+            do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=self.user_profile.realm,
+                event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+            ).count(),
+            1,
+        )
 
         self.set_up_db_for_testing_user_access()
         cordelia = self.example_user("cordelia")
