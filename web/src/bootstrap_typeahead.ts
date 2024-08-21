@@ -322,7 +322,8 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     select(e?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): this {
-        const val = this.values.get(the(this.$menu.find(".active")));
+        const active_option = this.$menu.find(".active")[0];
+        const val = active_option ? this.values.get(active_option) : undefined;
         // It's possible that we got here from pressing enter with nothing highlighted.
         if (!this.requireHighlight && val === undefined) {
             return this.hide();
