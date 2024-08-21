@@ -30,8 +30,6 @@ type MessageContainer = {
     include_sender: boolean;
     is_hidden: boolean;
     mention_classname: string | null;
-    message_edited_notices_alongside_sender: boolean;
-    message_edited_notices_for_status_message: boolean;
     message_edit_notices_in_left_col: boolean;
     msg: Message;
     sender_is_bot: boolean;
