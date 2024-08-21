@@ -119,7 +119,7 @@ function analyze_edit_history(message, last_edit_timestr) {
 
 function render_group_display_date(group, message_container) {
     const time = new Date(message_container.msg.timestamp * 1000);
-    const date_element = timerender.render_date(time)[0];
+    const date_element = util.the(timerender.render_date(time));
 
     group.date = date_element.outerHTML;
 }
@@ -153,7 +153,7 @@ function update_message_date_divider(opts) {
     const curr_time = new Date(curr_msg_container.msg.timestamp * 1000);
 
     curr_msg_container.want_date_divider = true;
-    curr_msg_container.date_divider_html = timerender.render_date(curr_time)[0].outerHTML;
+    curr_msg_container.date_divider_html = util.the(timerender.render_date(curr_time)).outerHTML;
 }
 
 function set_timestr(message_container) {
@@ -258,7 +258,7 @@ function maybe_restore_focus_to_message_edit_form() {
         }
 
         $message_edit_content.trigger("focus");
-        $message_edit_content[0].setSelectionRange(
+        util.the($message_edit_content).setSelectionRange(
             message_id_to_focus_after_processing_message_events.selectionStart,
             message_id_to_focus_after_processing_message_events.selectionEnd,
         );
@@ -391,7 +391,7 @@ export class MessageListView {
         }
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
-            let date = timerender.render_date(last_edit_time)[0].textContent;
+            let date = util.the(timerender.render_date(last_edit_time)).textContent;
             // If the date is today or yesterday, we don't want to show the date as capitalized.
             // Thus, we need to check if the date string contains a digit or not using regex,
             // since any other date except today/yesterday will contain a digit.
@@ -1768,7 +1768,7 @@ export class MessageListView {
             $message_row = $sticky_header.nextAll(".message_row").first();
         } else {
             dom_updates.add_classes.push({$element: $sticky_header, class: "sticky_header"});
-            const sticky_header_props = $sticky_header[0].getBoundingClientRect();
+            const sticky_header_props = util.the($sticky_header).getBoundingClientRect();
             /* date separator starts to be hidden at this height difference. */
             const date_separator_padding = 7;
             const sticky_header_bottom = sticky_header_props.top + sticky_header_props.height;
