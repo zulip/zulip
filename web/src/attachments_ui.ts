@@ -1,10 +1,11 @@
 import $ from "jquery";
-import {z} from "zod";
+import type {z} from "zod";
 
 import render_confirm_delete_attachment from "../templates/confirm_dialog/confirm_delete_attachment.hbs";
 import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.hbs";
 import render_uploaded_files_list from "../templates/settings/uploaded_files_list.hbs";
 
+import {attachment_api_response_schema} from "./attachments";
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
@@ -33,25 +34,6 @@ type AttachmentEvent =
           attachment: {id: number};
           upload_space_used: number;
       };
-
-const attachment_api_response_schema = z.object({
-    attachments: z.array(
-        z.object({
-            id: z.number(),
-            name: z.string(),
-            path_id: z.string(),
-            size: z.number(),
-            create_time: z.number(),
-            messages: z.array(
-                z.object({
-                    id: z.number(),
-                    date_sent: z.number(),
-                }),
-            ),
-        }),
-    ),
-    upload_space_used: z.number(),
-});
 
 let attachments: Attachment[];
 let upload_space_used: z.infer<typeof attachment_api_response_schema>["upload_space_used"];
