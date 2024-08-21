@@ -6,6 +6,14 @@ import type {Message} from "./message_store";
 import * as ui_util from "./ui_util";
 
 // TODO(typescript): Move this to message_list_view when it's
+// converted to TypeScript.
+export type MessageContainer = {
+    msg: Message;
+    is_hidden: boolean;
+    url: string;
+};
+
+// TODO(typescript): Move this to message_list_view when it's
 // converted to typescript.
 type MessageListView = {
     update_recipient_bar_background_color: () => void;
@@ -17,6 +25,7 @@ type MessageListView = {
     show_message_as_read: (message: Message, options: {from?: "pointer" | "server"}) => void;
     show_messages_as_unread: (message_ids: number[]) => void;
     change_message_id: (old_id: number, new_id: number) => void;
+    message_containers: Map<number, MessageContainer>;
     _render_win_start: number;
     _render_win_end: number;
     sticky_recipient_message_id: number | undefined;
