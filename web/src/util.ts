@@ -94,7 +94,10 @@ export const same_recipient = function util_same_recipient(a?: Recipient, b?: Re
     return false;
 };
 
-export const same_sender = function util_same_sender(a: RawMessage, b: RawMessage): boolean {
+export const same_sender = function util_same_sender(
+    a: RawMessage | undefined,
+    b: RawMessage | undefined,
+): boolean {
     return (
         a !== undefined &&
         b !== undefined &&
