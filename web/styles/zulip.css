@@ -443,33 +443,6 @@ body.has-overlay-scrollbar {
             }
         }
 
-        & .signup_button {
-            color: var(
-                --color-navbar-spectator-low-attention-brand-button-text
-            );
-            background-color: var(
-                --color-navbar-spectator-low-attention-brand-button-background
-            );
-
-            &:hover {
-                color: var(
-                    --color-navbar-spectator-low-attention-brand-button-text
-                );
-                background-color: var(
-                    --color-navbar-spectator-low-attention-brand-button-background-hover
-                );
-            }
-
-            &:active {
-                color: var(
-                    --color-navbar-spectator-low-attention-brand-button-text
-                );
-                background-color: var(
-                    --color-navbar-spectator-low-attention-brand-button-background-active
-                );
-            }
-        }
-
         & .login_button {
             color: var(
                 --color-navbar-spectator-medium-attention-brand-button-text
