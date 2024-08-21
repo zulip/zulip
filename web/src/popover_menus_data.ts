@@ -15,6 +15,7 @@ import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import type {ColorSchemeDetails} from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import {current_user, realm} from "./state_data";
@@ -23,12 +24,112 @@ import * as sub_store from "./sub_store";
 import {num_unread_for_topic} from "./unread";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
+import type {UserStatusEmojiInfo} from "./user_status";
 import * as user_topics from "./user_topics";
+import type {AllVisibilityPolicies} from "./user_topics";
 
-export function get_actions_popover_content_context(message_id) {
+type ActionPopoverContext = {
+    message_id: number;
+    stream_id: number | undefined;
+    editability_menu_item: string | undefined;
+    move_message_menu_item: string | undefined;
+    view_source_menu_item: string | undefined;
+    should_display_hide_option: boolean;
+    should_display_mark_as_unread: boolean;
+    should_display_collapse: boolean;
+    should_display_uncollapse: boolean;
+    should_display_quote_and_reply: boolean;
+    conversation_time_url: string;
+    should_display_delete_option: boolean;
+    should_display_read_receipts_option: boolean;
+    should_display_add_reaction_option: boolean;
+};
+
+type TopicPopoverContext = {
+    stream_name: string;
+    stream_id: number;
+    stream_muted: boolean;
+    topic_name: string;
+    topic_unmuted: boolean;
+    is_spectator: boolean;
+    can_move_topic: boolean;
+    can_rename_topic: boolean;
+    is_realm_admin: boolean;
+    topic_is_resolved: boolean;
+    has_starred_messages: boolean;
+    has_unread_messages: boolean;
+    url: string;
+    visibility_policy: number | false;
+    all_visibility_policies: AllVisibilityPolicies;
+};
+
+type VisibilityChangePopoverContext = {
+    stream_id: number;
+    topic_name: string;
+    visibility_policy: number | false;
+    stream_muted: boolean;
+    topic_unmuted: boolean;
+    all_visibility_policies: AllVisibilityPolicies;
+};
+
+type PersonalMenuContext = {
+    user_id: number;
+    invisible_mode: boolean;
+    user_is_guest: boolean;
+    spectator_view: boolean;
+    user_avatar?: string | undefined | null;
+    is_active: boolean;
+    user_circle_class: string;
+    user_last_seen_time_status: string;
+    user_full_name: string;
+    user_type: string | undefined;
+    status_content_available: boolean;
+    show_placeholder_for_status_text: boolean;
+    status_text: string | undefined;
+    status_emoji_info: UserStatusEmojiInfo | undefined;
+    user_color_scheme: number;
+    color_scheme_values: ColorSchemeDetails;
+};
+
+type GearMenuContext = {
+    realm_name: string;
+    realm_url: string;
+    is_owner: boolean;
+    is_admin: boolean;
+    is_spectator: boolean;
+    is_self_hosted: boolean;
+    is_development_environment: boolean;
+    is_plan_limited: boolean;
+    is_plan_standard: boolean;
+    is_plan_standard_sponsored_for_free: boolean;
+    is_plan_plus: boolean;
+    is_org_on_paid_plan: boolean;
+    is_business_org: boolean;
+    is_education_org: boolean;
+    standard_plan_name: string;
+    server_needs_upgrade: boolean;
+    version_display_string: string;
+    apps_page_url: string;
+    can_create_multiuse_invite: boolean;
+    can_invite_users_by_email: boolean;
+    is_guest: boolean;
+    login_link: string;
+    promote_sponsoring_zulip: boolean;
+    show_billing: boolean;
+    show_remote_billing: boolean;
+    show_plans: boolean;
+    show_webathena: boolean;
+    sponsorship_pending: boolean;
+    user_has_billing_access: boolean;
+    user_color_scheme: number;
+    color_scheme_values: ColorSchemeDetails;
+};
+
+export function get_actions_popover_content_context(message_id: number): ActionPopoverContext {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(message_id);
-    const message_container = message_lists.current.view.message_containers.get(message.id);
+    assert(message !== undefined);
+    const message_container = message_lists.current.view.message_containers.get(message.id)!;
     const not_spectator = !page_params.is_spectator;
     const should_display_hide_option =
         muted_users.is_user_muted(message.sender_id) &&
@@ -75,6 +176,11 @@ export function get_actions_popover_content_context(message_id) {
     const should_display_mark_as_unread =
         !message.unread && not_spectator && (not_stream_message || subscribed_to_stream);
 
+    let stream_id;
+    if (!not_stream_message) {
+        stream_id = message.stream_id;
+    }
+
     // Disabling this for /me messages is a temporary workaround
     // for the fact that we don't have a styling for how that
     // should look.  See also condense.js.
@@ -90,7 +196,8 @@ export function get_actions_popover_content_context(message_id) {
     const should_display_delete_option = message_edit.get_deletability(message) && not_spectator;
     const should_display_read_receipts_option = realm.realm_enable_read_receipts && not_spectator;
 
-    function is_add_reaction_icon_visible() {
+    function is_add_reaction_icon_visible(): boolean {
+        assert(message_lists.current !== undefined);
         const $message_row = message_lists.current.get_row(message_id);
         return $message_row.find(".message_controls .reaction_button").is(":visible");
     }
@@ -103,7 +210,7 @@ export function get_actions_popover_content_context(message_id) {
 
     return {
         message_id: message.id,
-        stream_id: message.stream_id,
+        stream_id,
         editability_menu_item,
         move_message_menu_item,
         should_display_mark_as_unread,
@@ -119,8 +226,17 @@ export function get_actions_popover_content_context(message_id) {
     };
 }
 
-export function get_topic_popover_content_context({stream_id, topic_name, url}) {
+export function get_topic_popover_content_context({
+    stream_id,
+    topic_name,
+    url,
+}: {
+    stream_id: number;
+    topic_name: string;
+    url: string;
+}): TopicPopoverContext {
     const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
@@ -148,9 +264,13 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
     };
 }
 
-export function get_change_visibility_policy_popover_content_context(stream_id, topic_name) {
+export function get_change_visibility_policy_popover_content_context(
+    stream_id: number,
+    topic_name: string,
+): VisibilityChangePopoverContext {
     const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic_name);
     const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const topic_unmuted = visibility_policy === all_visibility_policies.UNMUTED;
     return {
@@ -163,7 +283,7 @@ export function get_change_visibility_policy_popover_content_context(stream_id, 
     };
 }
 
-export function get_personal_menu_content_context() {
+export function get_personal_menu_content_context(): PersonalMenuContext {
     const my_user_id = current_user.user_id;
     const invisible_mode = !user_settings.presence_enabled;
     const status_text = user_status.get_status_text(my_user_id);
@@ -183,8 +303,8 @@ export function get_personal_menu_content_context() {
         user_type: people.get_user_type(my_user_id),
 
         // user status
-        status_content_available: Boolean(status_text || status_emoji_info),
-        show_placeholder_for_status_text: !status_text && status_emoji_info,
+        status_content_available: Boolean(status_text ?? status_emoji_info),
+        show_placeholder_for_status_text: !status_text && status_emoji_info !== undefined,
         status_text,
         status_emoji_info,
 
@@ -194,7 +314,7 @@ export function get_personal_menu_content_context() {
     };
 }
 
-export function get_gear_menu_content_context() {
+export function get_gear_menu_content_context(): GearMenuContext {
     const user_has_billing_access = current_user.is_billing_admin || current_user.is_owner;
     const is_plan_standard = realm.realm_plan_type === 3;
     const is_plan_plus = realm.realm_plan_type === 10;
