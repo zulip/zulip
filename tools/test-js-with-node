@@ -177,7 +177,7 @@ EXEMPT_FILES = make_set(
         "web/src/poll_modal.ts",
         "web/src/poll_widget.ts",
         "web/src/popover_menus.ts",
-        "web/src/popover_menus_data.js",
+        "web/src/popover_menus_data.ts",
         "web/src/popovers.ts",
         "web/src/popperjs.d.ts",
         "web/src/read_receipts.ts",
