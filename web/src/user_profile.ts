@@ -1271,4 +1271,16 @@ export function initialize(): void {
         assert(e.trigger instanceof HTMLElement);
         show_copied_confirmation(e.trigger);
     });
+
+    new ClipboardJS(".copy-custom-field-url", {
+        text(trigger) {
+            const $custom_link = $(trigger).parent().find(".custom-profile-fields-link");
+            return $custom_link.attr("href") ?? "";
+        },
+    }).on("success", (e) => {
+        assert(e.trigger instanceof HTMLElement);
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
+    });
 }
