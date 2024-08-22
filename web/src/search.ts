@@ -222,10 +222,9 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         sorter(items: string[]): string[] {
             return items;
         },
-        // Turns off `stopPropagation` in the typeahead code for
-        // backspace, arrow left, arrow right, and enter so that
+        // Turns off `stopPropagation` in the typeahead code so that
         // we can manage those events for search pills.
-        advanceKeyCodes: [8, 13, 37, 39],
+        advanceKeys: ["Backspace", "Enter", "ArrowLeft", "ArrowRight"],
 
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.

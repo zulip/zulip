@@ -173,15 +173,15 @@ import * as tippy from "tippy.js";
 import * as scroll_util from "./scroll_util";
 import {get_string_diff, the} from "./util";
 
-function get_pseudo_keycode(
+function get_pseudo_key(
     event: JQuery.KeyDownEvent | JQuery.KeyUpEvent | JQuery.KeyPressEvent,
-): number {
+): string {
     const isComposing = event.originalEvent?.isComposing ?? false;
-    /* We treat IME compose enter keypresses as a separate -13 key. */
-    if (event.keyCode === 13 && isComposing) {
-        return -13;
+    /* Ignore IME compose enter keypresses. (See 7 above) */
+    if (event.code === "Enter" && isComposing) {
+        return "IgnoreEnter";
     }
-    return event.keyCode;
+    return event.key;
 }
 
 export function defaultSorter(items: string[], query: string): string[] {
@@ -262,7 +262,7 @@ export class Typeahead<ItemType extends string | object> {
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
     stopAdvance: boolean;
-    advanceKeyCodes: number[];
+    advanceKeys: string[];
     non_tippy_parent_element: string | undefined;
     values: WeakMap<HTMLElement, ItemType>;
     instance: tippy.Instance | undefined;
@@ -305,7 +305,7 @@ export class Typeahead<ItemType extends string | object> {
         // return a string to show in typeahead items or false.
         this.option_label = options.option_label ?? (() => false);
         this.stopAdvance = options.stopAdvance ?? false;
-        this.advanceKeyCodes = options.advanceKeyCodes ?? [];
+        this.advanceKeys = options.advanceKeys ?? [];
         this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
@@ -650,10 +650,10 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     maybeStopAdvance(e: JQuery.KeyPressEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): void {
-        const pseudo_keycode = get_pseudo_keycode(e);
+        const pseudo_key = get_pseudo_key(e);
         if (
-            (this.stopAdvance || (pseudo_keycode !== 9 && pseudo_keycode !== 13)) &&
-            !this.advanceKeyCodes.includes(e.keyCode)
+            (this.stopAdvance || (pseudo_key !== "Tab" && pseudo_key !== "Enter")) &&
+            !this.advanceKeys.includes(e.key)
         ) {
             e.stopPropagation();
         }
@@ -663,27 +663,27 @@ export class Typeahead<ItemType extends string | object> {
         if (!this.shown) {
             return;
         }
-        const pseudo_keycode = get_pseudo_keycode(e);
+        const pseudo_key = get_pseudo_key(e);
 
-        switch (pseudo_keycode) {
-            case 9: // tab
+        switch (pseudo_key) {
+            case "Tab":
                 if (!this.tabIsEnter) {
                     return;
                 }
                 e.preventDefault();
                 break;
 
-            case 13: // enter
-            case 27: // escape
+            case "Enter":
+            case "Escape":
                 e.preventDefault();
                 break;
 
-            case 38: // up arrow
+            case "ArrowUp":
                 e.preventDefault();
                 this.prev();
                 break;
 
-            case 40: // down arrow
+            case "ArrowDown":
                 e.preventDefault();
                 this.next();
                 break;
@@ -702,7 +702,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keydown(e: JQuery.KeyDownEvent): void {
-        const pseudo_keycode = get_pseudo_keycode(e);
+        const pseudo_key = get_pseudo_key(e);
         if (this.trigger_selection(e)) {
             if (!this.shown) {
                 return;
@@ -710,7 +710,9 @@ export class Typeahead<ItemType extends string | object> {
             e.preventDefault();
             this.select(e);
         }
-        this.suppressKeyPressRepeat = ![40, 38, 9, 13, 27].includes(pseudo_keycode);
+        this.suppressKeyPressRepeat = !["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(
+            pseudo_key,
+        );
         this.move(e);
     }
 
@@ -729,14 +731,14 @@ export class Typeahead<ItemType extends string | object> {
         // it did modify the query. For example, `Command + delete` on Mac
         // doesn't trigger a keyup event but when `Command` is released, it
         // triggers a keyup event which correctly updates the list.
-        const pseudo_keycode = get_pseudo_keycode(e);
+        const pseudo_key = get_pseudo_key(e);
 
-        switch (pseudo_keycode) {
-            case 40: // down arrow
-            case 38: // up arrow
+        switch (pseudo_key) {
+            case "ArrowDown":
+            case "ArrowUp":
                 break;
 
-            case 9: // tab
+            case "Tab":
                 // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
                 if (!this.tabIsEnter || !this.shown) {
                     return;
@@ -754,14 +756,14 @@ export class Typeahead<ItemType extends string | object> {
 
                 break;
 
-            case 13: // enter
+            case "Enter":
                 if (!this.shown) {
                     return;
                 }
                 this.select(e);
                 break;
 
-            case 27: // escape
+            case "Escape":
                 if (!this.shown) {
                     return;
                 }
@@ -773,9 +775,9 @@ export class Typeahead<ItemType extends string | object> {
 
             default:
                 // to stop typeahead from showing up momentarily
-                // when shift (keycode 16) + tabbing to the topic field
+                // when shift + tabbing to the topic field
                 if (
-                    pseudo_keycode === 16 &&
+                    pseudo_key === "Shift" &&
                     the(this.input_element.$element).id === "stream_message_recipient_topic"
                 ) {
                     return;
@@ -787,7 +789,7 @@ export class Typeahead<ItemType extends string | object> {
                     // the search bar).
                     this.openInputFieldOnKeyUp();
                 }
-                if (pseudo_keycode === 8) {
+                if (pseudo_key === "Backspace") {
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
                 }
@@ -878,7 +880,7 @@ type TypeaheadOptions<ItemType> = {
     items?: number;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     // optional options
-    advanceKeyCodes?: number[];
+    advanceKeys?: string[];
     automated?: () => boolean;
     closeInputFieldOnHide?: () => void;
     dropup?: boolean;
