@@ -1,0 +1,13 @@
+<div class="subscriber_list_container" data-simplebar data-simplebar-tab-index="-1">
+    <div class="subscriber_list_loading_indicator"></div>
+    <table id="stream_members_list" class="subscriber-list table table-striped">
+        <thead class="table-sticky-headers">
+            <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
+            <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
+            {{#if can_remove_subscribers}}
+            <th>{{t "Actions" }}</th>
+            {{/if}}
+        </thead>
+        <tbody class="subscriber_table" data-empty="{{t 'This channel has no subscribers.' }}" data-search-results-empty="{{t 'No channel subscribers match your current filter.'}}"></tbody>
+    </table>
+</div>
