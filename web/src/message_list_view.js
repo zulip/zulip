@@ -156,9 +156,9 @@ function update_message_date_divider(opts) {
     curr_msg_container.date_divider_html = util.the(timerender.render_date(curr_time)).outerHTML;
 }
 
-function set_timestr(message_container) {
-    const time = new Date(message_container.msg.timestamp * 1000);
-    message_container.timestr = timerender.stringify_time(time);
+function get_timestr(message) {
+    const time = new Date(message.timestamp * 1000);
+    return timerender.stringify_time(time);
 }
 
 function set_topic_edit_properties(group, message) {
@@ -449,7 +449,7 @@ export class MessageListView {
     }
 
     set_calculated_message_container_variables(message_container, is_revealed) {
-        set_timestr(message_container);
+        message_container.timestr = get_timestr(message_container.msg);
 
         /*
             If the message needs to be hidden because the sender was muted, we do
