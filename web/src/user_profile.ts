@@ -209,6 +209,7 @@ function render_user_profile_subscribe_widget(): void {
         get_options: get_user_unsub_streams,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
     };
     user_profile_subscribe_widget =
         user_profile_subscribe_widget ?? new dropdown_widget.DropdownWidget(opts);
@@ -255,7 +256,7 @@ function reset_subscribe_widget(): void {
 
 export function get_user_unsub_streams(): {
     name: string;
-    unique_id: string;
+    unique_id: number;
     stream: StreamSubscription;
 }[] {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
@@ -263,7 +264,7 @@ export function get_user_unsub_streams(): {
         .get_streams_for_user(target_user_id)
         .can_subscribe.map((stream) => ({
             name: stream.name,
-            unique_id: stream.stream_id.toString(),
+            unique_id: stream.stream_id,
             stream,
         }))
         .sort((a, b) => {
