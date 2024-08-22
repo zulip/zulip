@@ -912,11 +912,11 @@ export function set_event_handlers({
         assert(scroll_position !== undefined);
         assert(pm_list_height !== undefined);
         if (scroll_position > pm_list_height) {
-            $("#toggle-direct-messages-section-icon").addClass("fa-caret-right");
-            $("#toggle-direct-messages-section-icon").removeClass("fa-caret-down");
+            $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
+            $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
         } else {
-            $("#toggle-direct-messages-section-icon").addClass("fa-caret-down");
-            $("#toggle-direct-messages-section-icon").removeClass("fa-caret-right");
+            $("#toggle-direct-messages-section-icon").addClass("rotate-icon-down");
+            $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-right");
         }
     }
 
