@@ -403,7 +403,7 @@ def do_set_realm_stream(
     else:
         raise AssertionError("Invalid realm stream field.")
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm.save(update_fields=[field])
 
         event_time = timezone_now()
@@ -419,13 +419,13 @@ def do_set_realm_stream(
             },
         )
 
-    event = dict(
-        type="realm",
-        op="update",
-        property=property,
-        value=stream_id,
-    )
-    send_event(realm, event, active_user_ids(realm.id))
+        event = dict(
+            type="realm",
+            op="update",
+            property=property,
+            value=stream_id,
+        )
+        send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def do_set_realm_new_stream_announcements_stream(
