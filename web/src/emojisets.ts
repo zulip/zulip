@@ -1,8 +1,7 @@
-import google_sheet from "emoji-datasource-google/img/google/sheets-256/64.png";
-import google_blob_sheet from "emoji-datasource-google-blob/img/google/sheets-256/64.png";
-import twitter_sheet from "emoji-datasource-twitter/img/twitter/sheets-256/64.png";
-
 import octopus_url from "../../static/generated/emoji/images-google-64/1f419.png";
+import google_blob_sheet from "../generated/emoji/google-blob.webp";
+import google_sheet from "../generated/emoji/google.webp";
+import twitter_sheet from "../generated/emoji/twitter.webp";
 
 import * as blueslip from "./blueslip";
 import {user_settings} from "./user_settings";
