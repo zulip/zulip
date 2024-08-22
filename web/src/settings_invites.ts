@@ -111,7 +111,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
         },
         filter: {
             $element: $invites_table
-                .closest(".settings-section")
+                .closest(".user-settings-section")
                 .find<HTMLInputElement>("input.search"),
             predicate(item, value) {
                 const referrer = people.get_by_user_id(item.invited_by_user_id);
