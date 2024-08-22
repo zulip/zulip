@@ -117,11 +117,11 @@ function analyze_edit_history(message, last_edit_timestr) {
     return {edited, moved, resolve_toggled};
 }
 
-function render_group_display_date(group, message_container) {
-    const time = new Date(message_container.msg.timestamp * 1000);
+function get_group_display_date(message) {
+    const time = new Date(message.timestamp * 1000);
     const date_element = util.the(timerender.render_date(time));
 
-    group.date = date_element.outerHTML;
+    return date_element.outerHTML;
 }
 
 function update_group_date(group, message_container, prev) {
@@ -313,7 +313,7 @@ function populate_group_from_message_container(group, message_container) {
     group.topic_links = message_container.msg.topic_links;
 
     set_topic_edit_properties(group, message_container.msg);
-    render_group_display_date(group, message_container);
+    group.date = get_group_display_date(message_container.msg);
 }
 
 export class MessageListView {
