@@ -152,23 +152,24 @@ function role_selected_handler(event, dropdown, widget) {
 
 function get_roles() {
     return [
-        {unique_id: "0", name: $t({defaultMessage: "All roles"})},
+        {unique_id: 0, name: $t({defaultMessage: "All roles"})},
         ...Object.values(settings_config.user_role_values)
             .map((user_role_value) => ({
-                unique_id: user_role_value.code.toString(),
+                unique_id: user_role_value.code,
                 name: user_role_value.description,
             }))
             .reverse(),
     ];
 }
 
-function create_role_filter_dropdown($events_container, widget_name) {
+function create_role_filter_dropdown($events_container, section) {
     new dropdown_widget.DropdownWidget({
-        widget_name,
+        widget_name: section.dropdown_widget_name,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
         get_options: get_roles,
         $events_container,
         item_click_callback: role_selected_handler,
-        default_id: "0",
+        default_id: section.filters.role_code,
         tippy_props: {
             offset: [0, 0],
         },
@@ -185,11 +186,8 @@ function populate_users() {
 
     section.active.create_table(active_user_ids);
     section.deactivated.create_table(deactivated_user_ids);
-    create_role_filter_dropdown($("#admin-user-list"), section.active.dropdown_widget_name);
-    create_role_filter_dropdown(
-        $("#admin-deactivated-users-list"),
-        section.deactivated.dropdown_widget_name,
-    );
+    create_role_filter_dropdown($("#admin-user-list"), section.active);
+    create_role_filter_dropdown($("#admin-deactivated-users-list"), section.deactivated);
 }
 
 function reset_scrollbar($sel) {
