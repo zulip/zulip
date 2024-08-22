@@ -45,8 +45,8 @@ function same_day(earlier_msg, later_msg) {
         return false;
     }
     return is_same_day(
-        earlier_msg.msg.timestamp * 1000,
-        later_msg.msg.timestamp * 1000,
+        earlier_msg.timestamp * 1000,
+        later_msg.timestamp * 1000,
         timerender.display_time_zone,
     );
 }
@@ -127,7 +127,7 @@ function render_group_display_date(group, message_container) {
 function update_group_date(group, message_container, prev) {
     // Mark whether we should display a date marker because this
     // message has a different date than the previous one.
-    group.date_unchanged = same_day(message_container, prev);
+    group.date_unchanged = same_day(message_container?.msg, prev?.msg);
 }
 
 function clear_group_date(group) {
@@ -145,7 +145,7 @@ function update_message_date_divider(opts) {
     const prev_msg_container = opts.prev_msg_container;
     const curr_msg_container = opts.curr_msg_container;
 
-    if (!prev_msg_container || same_day(curr_msg_container, prev_msg_container)) {
+    if (!prev_msg_container || same_day(curr_msg_container?.msg, prev_msg_container?.msg)) {
         clear_message_date_divider(curr_msg_container);
         return;
     }
@@ -641,7 +641,7 @@ export class MessageListView {
             if (
                 !message_container.include_recipient &&
                 !prev.status_message &&
-                same_day(prev, message_container) &&
+                same_day(prev?.msg, message_container?.msg) &&
                 same_sender(prev, message_container)
             ) {
                 message_container.include_sender = false;
@@ -678,7 +678,7 @@ export class MessageListView {
             if (
                 !last_msg_container.status_message &&
                 !first_msg_container.msg.is_me_message &&
-                same_day(last_msg_container, first_msg_container) &&
+                same_day(last_msg_container?.msg, first_msg_container?.msg) &&
                 same_sender(last_msg_container, first_msg_container)
             ) {
                 first_msg_container.include_sender = false;
@@ -761,7 +761,10 @@ export class MessageListView {
 
                 new_message_groups = new_message_groups.slice(0, -1);
             } else if (
-                !same_day(second_group.message_containers[0], first_group.message_containers[0])
+                !same_day(
+                    second_group.message_containers[0]?.msg,
+                    first_group.message_containers[0]?.msg,
+                )
             ) {
                 // The groups did not merge, so we need up update the date row for the old group
                 update_group_date(second_group, curr_msg_container, prev_msg_container);
@@ -776,7 +779,7 @@ export class MessageListView {
                 message_actions.append_messages = new_message_groups[0].message_containers;
                 new_message_groups = new_message_groups.slice(1);
             } else if (first_group !== undefined && second_group !== undefined) {
-                if (same_day(prev_msg_container, curr_msg_container)) {
+                if (same_day(prev_msg_container?.msg, curr_msg_container?.msg)) {
                     clear_group_date(second_group);
                 } else {
                     // If we just sent the first message on a new day
