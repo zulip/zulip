@@ -18,7 +18,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.create_user import get_display_email_address
 from zerver.lib.i18n import get_language_name
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import delete_avatar_image
@@ -42,7 +42,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.users import bot_owner_user_ids, get_user_profile_by_id
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def send_user_email_update_event(user_profile: UserProfile) -> None:
@@ -295,6 +295,7 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) ->
     )
 
 
+@transaction.atomic(durable=True)
 def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -> str:
     old_api_key = user_profile.api_key
     new_api_key = generate_api_key()
@@ -316,7 +317,7 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
     )
 
     if user_profile.is_bot:
-        send_event(
+        send_event_on_commit(
             user_profile.realm,
             dict(
                 type="realm_bot",
@@ -330,7 +331,7 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
         )
 
     event = {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id}
-    queue_json_publish("deferred_work", event)
+    queue_event_on_commit("deferred_work", event)
 
     return new_api_key
 
