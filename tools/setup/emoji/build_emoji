@@ -4,6 +4,7 @@
 # works.
 import os
 import shutil
+import subprocess
 import sys
 from collections.abc import Iterator, Sequence
 from typing import Any
@@ -49,7 +50,7 @@ div.emoji,
 span.emoji
 {{
     display: inline-block;
-    background-image: url(~emoji-datasource-{emojiset}/img/{alt_name}/sheets-256/64.png);
+    background-image: url(../emoji/{emojiset}.webp);
     background-size: {background_size};
     background-repeat: no-repeat;
 
@@ -116,15 +117,16 @@ def main() -> None:
 
     # /srv/zulip-emoji-cache/*/web gets copied to ZULIP_PATH/web/generated
     # These must not be symlinked so webpack can resolve module references.
-    TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, "web", "generated", "emoji-styles")
-    os.makedirs(TARGET_EMOJI_STYLES, exist_ok=True)
-    to_remove = set(os.listdir(TARGET_EMOJI_STYLES))
-    source_emoji_dump = os.path.join(emoji_cache_path, "web", "emoji-styles")
-    for filename in os.listdir(source_emoji_dump):
-        shutil.copy2(os.path.join(source_emoji_dump, filename), TARGET_EMOJI_STYLES)
-        to_remove.discard(filename)
-    for filename in to_remove:
-        os.remove(os.path.join(TARGET_EMOJI_STYLES, filename))
+    for subdir in ("emoji", "emoji-styles"):
+        target_dir = os.path.join(ZULIP_PATH, "web", "generated", subdir)
+        os.makedirs(target_dir, exist_ok=True)
+        to_remove = set(os.listdir(target_dir))
+        source_emoji_dump = os.path.join(emoji_cache_path, "web", subdir)
+        for filename in os.listdir(source_emoji_dump):
+            shutil.copy2(os.path.join(source_emoji_dump, filename), target_dir)
+            to_remove.discard(filename)
+        for filename in to_remove:
+            os.remove(os.path.join(target_dir, filename))
 
 
 def percent(f: float) -> str:
@@ -333,6 +335,26 @@ def setup_emoji_farms(cache_path: str, emoji_data: list[dict[str, Any]]) -> None
         shutil.copyfile(input_img_file, output_img_file)
 
         generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name, fallback_emoji_data)
+
+        print(f"Converting {emojiset} sheet to webp...")
+        TARGET_EMOJI_SHEETS = os.path.join(cache_path, "web", "emoji")
+        os.makedirs(TARGET_EMOJI_SHEETS, exist_ok=True)
+
+        sheet_src = os.path.join(
+            NODE_MODULES_PATH,
+            f"emoji-datasource-{emojiset}",
+            "img",
+            alt_name,
+            "sheets-256",
+            "64.png",
+        )
+        sheet_dst = os.path.join(TARGET_EMOJI_SHEETS, f"{emojiset}.webp")
+        # From libwebp: [Q is] between 0 and 100. For lossy, 0 gives
+        #   the smallest size and 100 the largest. For lossless, this
+        #   parameter is the amount of effort put into the
+        #   compression: 0 is the fastest but gives larger files
+        #   compared to the slowest, but best, 100.
+        subprocess.check_call(["vips", "copy", sheet_src, f"{sheet_dst}[lossless=true,Q=100]"])
 
     # Set up standard emoji sets.
     for emojiset in ["google", "twitter"]:

@@ -192,7 +192,7 @@ const config = (
                 },
                 // load fonts and files
                 {
-                    test: /\.(eot|jpg|svg|ttf|otf|png|woff2?)$/,
+                    test: /\.(eot|jpg|svg|ttf|otf|png|webp|woff2?)$/,
                     type: "asset/resource",
                 },
             ],

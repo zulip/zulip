@@ -28,6 +28,7 @@ VENV_DEPENDENCIES = [
     "jq",  # No longer used in production (clean me up later)
     "libsasl2-dev",  # For building python-ldap from source
     "libvips",  # For thumbnailing
+    "libvips-tools",
 ]
 
 COMMON_YUM_VENV_DEPENDENCIES = [
@@ -46,6 +47,7 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "openssl-devel",
     "jq",
     "vips",  # For thumbnailing
+    "vips-tools",
 ]
 
 REDHAT_VENV_DEPENDENCIES = [
