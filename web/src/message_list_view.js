@@ -382,12 +382,12 @@ export class MessageListView {
         );
     }
 
-    _get_msg_timestring(message_container) {
+    _get_msg_timestring(message) {
         let last_edit_timestamp;
-        if (message_container.msg.local_edit_timestamp !== undefined) {
-            last_edit_timestamp = message_container.msg.local_edit_timestamp;
+        if (message.local_edit_timestamp !== undefined) {
+            last_edit_timestamp = message.local_edit_timestamp;
         } else {
-            last_edit_timestamp = message_container.msg.last_edit_timestamp;
+            last_edit_timestamp = message.last_edit_timestamp;
         }
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
@@ -420,7 +420,7 @@ export class MessageListView {
         //   * `edited_in_left_col`      -- when label appears in left column.
         //   * `edited_alongside_sender` -- when label appears alongside sender info.
         //   * `edited_status_msg`       -- when label appears for a "/me" message.
-        const last_edit_timestr = this._get_msg_timestring(message_container);
+        const last_edit_timestr = this._get_msg_timestring(message_container.msg);
         const edit_history_details = analyze_edit_history(message_container.msg, last_edit_timestr);
 
         if (
