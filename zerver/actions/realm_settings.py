@@ -334,31 +334,31 @@ def validate_plan_for_authentication_methods(
             )
 
 
+@transaction.atomic(savepoint=False)
 def do_set_realm_authentication_methods(
     realm: Realm, authentication_methods: dict[str, bool], *, acting_user: UserProfile | None
 ) -> None:
     old_value = realm.authentication_methods_dict()
-    with transaction.atomic():
-        for key, value in authentication_methods.items():
-            # This does queries in a loop, but this isn't a performance sensitive
-            # path and is only run rarely.
-            if value:
-                RealmAuthenticationMethod.objects.get_or_create(realm=realm, name=key)
-            else:
-                RealmAuthenticationMethod.objects.filter(realm=realm, name=key).delete()
+    for key, value in authentication_methods.items():
+        # This does queries in a loop, but this isn't a performance sensitive
+        # path and is only run rarely.
+        if value:
+            RealmAuthenticationMethod.objects.get_or_create(realm=realm, name=key)
+        else:
+            RealmAuthenticationMethod.objects.filter(realm=realm, name=key).delete()
 
-        updated_value = realm.authentication_methods_dict()
-        RealmAuditLog.objects.create(
-            realm=realm,
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-            event_time=timezone_now(),
-            acting_user=acting_user,
-            extra_data={
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: updated_value,
-                "property": "authentication_methods",
-            },
-        )
+    updated_value = realm.authentication_methods_dict()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: updated_value,
+            "property": "authentication_methods",
+        },
+    )
 
     event_data = dict(
         authentication_methods=get_realm_authentication_methods_for_page_params_api(
@@ -371,7 +371,7 @@ def do_set_realm_authentication_methods(
         property="default",
         data=event_data,
     )
-    send_event(realm, event, active_user_ids(realm.id))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def do_set_realm_stream(
