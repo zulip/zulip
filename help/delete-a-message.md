@@ -5,9 +5,9 @@ if these actions are allowed in your organization. Only server administrators
 can restore deleted messages.
 
 Organization administrators can
-[configure](/help/restrict-message-editing-and-deletion) who can edit
-and delete their who messages, set a time limits for such deletions,
-and configure who can delete any message.
+[configure](/help/restrict-message-editing-and-deletion) who can edit and delete
+their own messages, and who can delete any message. They can also set time
+limits on message editing and deletion.
 
 ## Delete message content
 
