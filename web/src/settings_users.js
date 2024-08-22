@@ -290,6 +290,10 @@ function human_info(person) {
     return info;
 }
 
+function set_text_search_value($table, value) {
+    $table.closest(".user-settings-section").find(".search").val(value);
+}
+
 let bot_list_widget;
 
 section.bots.create_table = () => {
@@ -361,6 +365,7 @@ section.active.create_table = (active_users) => {
         $simplebar_container: $("#admin-active-users-list .progressive-table-wrapper"),
     });
 
+    set_text_search_value($users_table, section.active.filters.text_search);
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
     $("#admin_users_table").show();
 };
@@ -399,6 +404,7 @@ section.deactivated.create_table = (deactivated_users) => {
         },
     );
 
+    set_text_search_value($deactivated_users_table, section.deactivated.filters.text_search);
     loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
     $("#admin_deactivated_users_table").show();
 };
@@ -577,7 +583,7 @@ function handle_filter_change($tbody, section) {
     // can't use that, because we're also filtering on Role with our
     // custom predicate.
     $tbody
-        .closest(".settings-section")
+        .closest(".user-settings-section")
         .find(".search")
         .on("input.list_widget_filter", function () {
             add_value_to_filters(section, "text_search", this.value.toLocaleLowerCase());
