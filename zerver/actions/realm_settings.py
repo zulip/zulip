@@ -48,7 +48,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.users import active_user_ids
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import RealmBillingSession
@@ -113,6 +113,7 @@ def do_set_realm_property(
         update_users_in_full_members_system_group(realm, acting_user=acting_user)
 
 
+@transaction.atomic(durable=True)
 def do_set_push_notifications_enabled_end_timestamp(
     realm: Realm, value: int | None, *, acting_user: UserProfile | None
 ) -> None:
@@ -128,25 +129,24 @@ def do_set_push_notifications_enabled_end_timestamp(
     if old_timestamp == value:
         return
 
-    with transaction.atomic():
-        new_datetime = None
-        if value is not None:
-            new_datetime = timestamp_to_datetime(value)
-        setattr(realm, name, new_datetime)
-        realm.save(update_fields=[name])
+    new_datetime = None
+    if value is not None:
+        new_datetime = timestamp_to_datetime(value)
+    setattr(realm, name, new_datetime)
+    realm.save(update_fields=[name])
 
-        event_time = timezone_now()
-        RealmAuditLog.objects.create(
-            realm=realm,
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-            event_time=event_time,
-            acting_user=acting_user,
-            extra_data={
-                RealmAuditLog.OLD_VALUE: old_timestamp,
-                RealmAuditLog.NEW_VALUE: value,
-                "property": name,
-            },
-        )
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_time=event_time,
+        acting_user=acting_user,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_timestamp,
+            RealmAuditLog.NEW_VALUE: value,
+            "property": name,
+        },
+    )
 
     event = dict(
         type="realm",
@@ -154,7 +154,7 @@ def do_set_push_notifications_enabled_end_timestamp(
         property=name,
         value=value,
     )
-    send_event(realm, event, active_user_ids(realm.id))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 @transaction.atomic(savepoint=False)
