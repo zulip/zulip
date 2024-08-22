@@ -129,22 +129,33 @@
         </p>
         <ul>
             <li>
-                <code>./tools/build-help-center</code> will convert the existing help center MD files to MDX.
-                It will also create a production build for the converted MDX files. You can run
-                <code>./tools/convert-help-center-docs-to-mdx</code> to convert the files separately.
-                You can run <code>pnpm build</code> within the <code>help-beta</code> directory
-                to run the build step separately.
+                <code>./tools/build-help-center</code> will convert the existing help center MD files to MDX,
+                and create a production build for the converted MDX files.
+                <ul>
+                    <li>
+                        You can run <code>./tools/convert-help-center-docs-to-mdx</code> to convert the help
+                        center MD files without the build step; see running a dev server that supports hot
+                        reload below.
+                    </li>
+                    <li>
+                        You can run <code>pnpm build</code> within the <code>help-beta</code> directory to run
+                        the build step separately.
+                    </li>
+                </ul>
             </li>
             <li>
                 <code>./tools/run-dev --help-center</code> will host the generated build on
-                <code>/help-beta</code> url. You will need to have run the build steps before this step.
-                The docs search will work with this flag.
+                <code>/help-beta</code>. Note that search will work in the beta help center docs with
+                this flag. For testing changes related to the migration of the help center docs, using the tool
+                to build the beta help center docs and running the dev server with this flag should be fine.
             </li>
             <li>
                 <code>./tools/run-dev --help-center-dev-server</code> will run a dev server at
-                <code>/help-beta</code> that supports hot reload. But, with this flag, the search will not work.
-                 This mode is ideal when you&#39;re editing a document and want to visualize the changes quickly.
-                You will need the converted MDX files to be already generated before you run this step.
+                <code>/help-beta</code> that supports hot reload. Note that, with this flag, search will not work
+                in the beta help center docs. This mode is useful when you are editing a help center file, and
+                want to visualize the changes quickly in the beta help center documentation. You will need the
+                converted MDX files to be already generated through
+                <code>./tools/convert-help-center-docs-to-mdx</code> before you run the dev server with this flag.
             </li>
         </ul>
     </div>
