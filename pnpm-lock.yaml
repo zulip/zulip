@@ -480,8 +480,8 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0(prettier@3.3.3)(typescript@5.5.2)
       '@astrojs/starlight':
-        specifier: ^0.25.4
-        version: 0.25.4(astro@4.11.3(@types/node@20.14.11)(terser@5.31.3)(typescript@5.5.2))
+        specifier: ^0.26.1
+        version: 0.26.1(astro@4.11.3(@types/node@20.14.11)(terser@5.31.3)(typescript@5.5.2))
       astro:
         specifier: ^4.10.2
         version: 4.11.3(@types/node@20.14.11)(terser@5.31.3)(typescript@5.5.2)
@@ -559,8 +559,8 @@ packages:
   '@astrojs/sitemap@3.1.6':
     resolution: {integrity: sha512-1Qp2NvAzVImqA6y+LubKi1DVhve/hXXgFvB0szxiipzh7BvtuKe4oJJ9dXSqaubaTkt4nMa6dv6RCCAYeB6xaQ==}
 
-  '@astrojs/starlight@0.25.4':
-    resolution: {integrity: sha512-TRPgRsd5opi2tCXvh8rWizpLsJsRRXbYecULG5b/1x4BFyp40ZJVB77cLMjTj3lHwqWs0Sybtq5OBpOy6fuIEQ==}
+  '@astrojs/starlight@0.26.1':
+    resolution: {integrity: sha512-0qNYWZJ+ZOdSfM7du6fGuwUhyTHtAeRIl0zYe+dF0TxDvcakplO1SYLbGGX6lEVYE3PdBne7dcJww85bXZJIIQ==}
     peerDependencies:
       astro: ^4.8.6
 
@@ -9287,7 +9287,7 @@ snapshots:
       stream-replace-string: 2.0.0
       zod: 3.23.8
 
-  '@astrojs/starlight@0.25.4(astro@4.11.3(@types/node@20.14.11)(terser@5.31.3)(typescript@5.5.2))':
+  '@astrojs/starlight@0.26.1(astro@4.11.3(@types/node@20.14.11)(terser@5.31.3)(typescript@5.5.2))':
     dependencies:
       '@astrojs/mdx': 3.1.3(astro@4.11.3(@types/node@20.14.11)(terser@5.31.3)(typescript@5.5.2))
       '@astrojs/sitemap': 3.1.6
