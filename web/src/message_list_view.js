@@ -134,11 +134,11 @@ function clear_group_date(group) {
     group.date_unchanged = false;
 }
 
-function clear_message_date_divider(msg) {
+function clear_message_date_divider(message_container) {
     // see update_message_date_divider for how
     // these get set
-    msg.want_date_divider = false;
-    msg.date_divider_html = undefined;
+    message_container.want_date_divider = false;
+    message_container.date_divider_html = undefined;
 }
 
 function update_message_date_divider(opts) {
