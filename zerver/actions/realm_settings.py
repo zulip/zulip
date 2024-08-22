@@ -697,6 +697,40 @@ def do_change_realm_org_type(
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
+@transaction.atomic(durable=True)
+def do_change_realm_max_invites(realm: Realm, max_invites: int, acting_user: UserProfile) -> None:
+    old_value = realm.max_invites
+    new_max = max_invites
+
+    # Reset to default maximum for plan type
+    if new_max == 0:
+        if realm.plan_type == Realm.PLAN_TYPE_PLUS:
+            new_max = Realm.INVITES_STANDARD_REALM_DAILY_MAX
+        elif realm.plan_type == Realm.PLAN_TYPE_STANDARD:
+            new_max = Realm.INVITES_STANDARD_REALM_DAILY_MAX
+        elif realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
+            new_max = None  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
+        elif realm.plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
+            new_max = Realm.INVITES_STANDARD_REALM_DAILY_MAX
+        elif realm.plan_type == Realm.PLAN_TYPE_LIMITED:
+            new_max = settings.INVITES_DEFAULT_REALM_DAILY_MAX
+
+    realm.max_invites = new_max
+    realm.save(update_fields=["_max_invites"])
+
+    RealmAuditLog.objects.create(
+        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        realm=realm,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={
+            "old_value": old_value,
+            "new_value": new_max,
+            "property": "max_invites",
+        },
+    )
+
+
 @transaction.atomic(savepoint=False)
 def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: UserProfile | None

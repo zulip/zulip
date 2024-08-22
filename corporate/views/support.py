@@ -46,6 +46,7 @@ from corporate.lib.support import (
 from corporate.models import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
+    do_change_realm_max_invites,
     do_change_realm_org_type,
     do_change_realm_plan_type,
     do_deactivate_realm,
@@ -312,6 +313,22 @@ def get_realm_plan_type_options_for_discount() -> list[SupportSelectOption]:
     return plan_types
 
 
+def get_default_max_invites_for_plan_type(realm: Realm) -> int:
+    if realm.plan_type in [
+        Realm.PLAN_TYPE_PLUS,
+        Realm.PLAN_TYPE_STANDARD,
+        Realm.PLAN_TYPE_STANDARD_FREE,
+    ]:
+        return Realm.INVITES_STANDARD_REALM_DAILY_MAX
+    return settings.INVITES_DEFAULT_REALM_DAILY_MAX
+
+
+def check_update_max_invites(realm: Realm, new_max: int, default_max: int) -> bool:
+    if new_max in [0, default_max]:
+        return realm.max_invites != default_max
+    return new_max > default_max
+
+
 VALID_MODIFY_PLAN_METHODS = Literal[
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
@@ -348,6 +365,7 @@ def support(
     delete_user_by_id: Json[NonNegativeInt] | None = None,
     query: Annotated[str | None, ApiParamConfig("q")] = None,
     org_type: Json[NonNegativeInt] | None = None,
+    max_invites: Json[NonNegativeInt] | None = None,
 ) -> HttpResponse:
     context: dict[str, Any] = {}
 
@@ -419,6 +437,22 @@ def support(
             do_change_realm_org_type(realm, org_type, acting_user=acting_user)
             msg = f"Organization type of {realm.string_id} changed from {get_org_type_display_name(current_realm_type)} to {get_org_type_display_name(org_type)} "
             context["success_message"] = msg
+        elif max_invites is not None:
+            default_max = get_default_max_invites_for_plan_type(realm)
+            if check_update_max_invites(realm, max_invites, default_max):
+                do_change_realm_max_invites(realm, max_invites, acting_user=acting_user)
+                update_text = str(max_invites)
+                if max_invites == 0:
+                    update_text = "the default for the current plan type"
+                msg = f"Maximum number of daily invitations for {realm.string_id} updated to {update_text}."
+                context["success_message"] = msg
+            else:
+                update_text = f"{max_invites} is less than the default for the current plan type"
+                if max_invites in [0, default_max]:
+                    update_text = "the default for the current plan type is already set"
+                context["error_message"] = (
+                    f"Cannot update maximum number of daily invitations for {realm.string_id}, because {update_text}."
+                )
         elif new_subdomain is not None:
             old_subdomain = realm.string_id
             try:

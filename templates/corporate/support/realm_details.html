@@ -73,7 +73,9 @@
             <button type="submit" class="support-submit-button">Update</button>
         </form>
         <form method="POST" class="support-form">
-            <b>Plan type</b>:<br />
+            <b>Plan type</b>: <i class="fa fa-question-circle-o" data-tippy-content="
+            Will also update maximum daily invitations to be the default value for the new plan type.
+            " data-tippy-maxWidth="auto"></i><br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="plan_type">
@@ -85,6 +87,15 @@
                     {% endif %}
                 {% endfor %}
             </select>
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        <form method="POST" class="support-form">
+            <b>Maximum daily invitations</b>: <i class="fa fa-question-circle-o" data-tippy-content="
+            Setting to zero will attempt to reset this to the default maximum for the current plan type.
+            " data-tippy-maxWidth="auto"></i><br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="number" name="max_invites" value="{{ realm.max_invites }}" min="0" required />
             <button type="submit" class="support-submit-button">Update</button>
         </form>
     </div>
