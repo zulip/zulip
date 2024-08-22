@@ -146,15 +146,15 @@ function toggle_condensed_navigation_area(): void {
         // Toggle into the condensed state
         $views_label_container.addClass("showing-condensed-navigation");
         $views_label_container.removeClass("showing-expanded-navigation");
-        $views_label_icon.addClass("fa-caret-right");
-        $views_label_icon.removeClass("fa-caret-down");
+        $views_label_icon.addClass("rotate-icon-right");
+        $views_label_icon.removeClass("rotate-icon-down");
         save_state(STATES.CONDENSED);
     } else {
         // Toggle into the expanded state
         $views_label_container.addClass("showing-expanded-navigation");
         $views_label_container.removeClass("showing-condensed-navigation");
-        $views_label_icon.addClass("fa-caret-down");
-        $views_label_icon.removeClass("fa-caret-right");
+        $views_label_icon.addClass("rotate-icon-down");
+        $views_label_icon.removeClass("rotate-icon-right");
         save_state(STATES.EXPANDED);
     }
     resize.resize_stream_filters_container();

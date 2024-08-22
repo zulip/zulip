@@ -256,15 +256,24 @@
     }
 }
 
+.zulip-icon-heading-triangle-right {
+    transition:
+        opacity 140ms linear,
+        rotate 140ms linear;
+}
+
+.zulip-icon-heading-triangle-right.rotate-icon-down {
+    rotate: 90deg;
+}
+
+.zulip-icon-heading-triangle-right.rotate-icon-right {
+    rotate: 0deg;
+}
+
 #toggle-direct-messages-section-icon,
 #toggle-top-left-navigation-area-icon {
     color: var(--color-text-sidebar-heading);
     opacity: var(--opacity-sidebar-heading);
-
-    &.fa-caret-right {
-        position: relative;
-        left: 3px;
-    }
 
     &:hover {
         opacity: 1;

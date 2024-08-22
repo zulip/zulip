@@ -534,7 +534,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".views-tooltip-target",
         onShow(instance) {
-            if ($("#toggle-top-left-navigation-area-icon").hasClass("fa-caret-down")) {
+            if ($("#toggle-top-left-navigation-area-icon").hasClass("rotate-icon-down")) {
                 instance.setContent(
                     $t({
                         defaultMessage: "Collapse views",
@@ -555,7 +555,7 @@ export function initialize(): void {
                 return false;
             }
 
-            if ($("#toggle-direct-messages-section-icon").hasClass("fa-caret-down")) {
+            if ($("#toggle-direct-messages-section-icon").hasClass("rotate-icon-down")) {
                 instance.setContent(
                     $t({
                         defaultMessage: "Collapse direct messages",

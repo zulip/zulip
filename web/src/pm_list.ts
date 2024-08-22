@@ -36,8 +36,8 @@ export function set_count(count: number): void {
 
 export function close(): void {
     private_messages_collapsed = true;
-    $("#toggle-direct-messages-section-icon").removeClass("fa-caret-down");
-    $("#toggle-direct-messages-section-icon").addClass("fa-caret-right");
+    $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
+    $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
 
     update_private_messages();
 }
@@ -109,8 +109,8 @@ export function update_private_messages(): void {
 export function expand(): void {
     private_messages_collapsed = false;
 
-    $("#toggle-direct-messages-section-icon").addClass("fa-caret-down");
-    $("#toggle-direct-messages-section-icon").removeClass("fa-caret-right");
+    $("#toggle-direct-messages-section-icon").addClass("rotate-icon-down");
+    $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-right");
     update_private_messages();
 }
 
