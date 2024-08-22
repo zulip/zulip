@@ -452,6 +452,7 @@ def do_set_realm_zulip_update_announcements_stream(
     )
 
 
+@transaction.atomic(durable=True)
 def do_set_realm_user_default_setting(
     realm_user_default: RealmUserDefault,
     name: str,
@@ -463,21 +464,20 @@ def do_set_realm_user_default_setting(
     realm = realm_user_default.realm
     event_time = timezone_now()
 
-    with transaction.atomic(savepoint=False):
-        setattr(realm_user_default, name, value)
-        realm_user_default.save(update_fields=[name])
+    setattr(realm_user_default, name, value)
+    realm_user_default.save(update_fields=[name])
 
-        RealmAuditLog.objects.create(
-            realm=realm,
-            event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
-            event_time=event_time,
-            acting_user=acting_user,
-            extra_data={
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-                "property": name,
-            },
-        )
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
+        event_time=event_time,
+        acting_user=acting_user,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            "property": name,
+        },
+    )
 
     event = dict(
         type="realm_user_settings_defaults",
@@ -485,7 +485,7 @@ def do_set_realm_user_default_setting(
         property=name,
         value=value,
     )
-    send_event(realm, event, active_user_ids(realm.id))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 RealmDeactivationReasonType = Literal[
