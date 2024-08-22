@@ -5,7 +5,7 @@ import {z} from "zod";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
-import render_stream_members from "../templates/stream_settings/stream_members.hbs";
+import render_stream_members_table from "../templates/stream_settings/stream_members_table.hbs";
 import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
@@ -440,11 +440,9 @@ export function rerender_subscribers_list(sub: sub_store.StreamSubscription): vo
         .get_edit_container(sub)
         .find(".edit_subscribers_for_stream");
 
-    $parent_container.html(
-        render_stream_members({
-            can_access_subscribers: true,
+    $parent_container.find(".subscriber-list-box").html(
+        render_stream_members_table({
             can_remove_subscribers: user_can_remove_subscribers,
-            render_subscribers: sub.render_subscribers,
         }),
     );
     subscribers_list_widget = make_list_widget({
