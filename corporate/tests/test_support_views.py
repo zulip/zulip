@@ -4,6 +4,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -1157,6 +1158,55 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(
                 ["Organization type of zulip changed from Business to Government"], result
             )
+
+    def test_change_max_invites(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "max_invites": "1"}
+        )
+        self.assert_in_success_response(
+            [
+                "Cannot update maximum number of daily invitations for zulip, because 1 is less than the default for the current plan type."
+            ],
+            result,
+        )
+        realm.refresh_from_db()
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "max_invites": "700"}
+        )
+        self.assert_in_success_response(
+            ["Maximum number of daily invitations for zulip updated to 700."], result
+        )
+        realm.refresh_from_db()
+        self.assertEqual(realm.max_invites, 700)
+
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "max_invites": "0"}
+        )
+        self.assert_in_success_response(
+            [
+                "Maximum number of daily invitations for zulip updated to the default for the current plan type."
+            ],
+            result,
+        )
+        realm.refresh_from_db()
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "max_invites": "0"}
+        )
+        self.assert_in_success_response(
+            [
+                "Cannot update maximum number of daily invitations for zulip, because the default for the current plan type is already set."
+            ],
+            result,
+        )
 
     def test_attach_discount(self) -> None:
         lear_realm = get_realm("lear")
