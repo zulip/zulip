@@ -213,6 +213,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
     )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_full_name(
     user_profile: UserProfile, full_name: str, acting_user: UserProfile | None
 ) -> None:
@@ -232,13 +233,13 @@ def do_change_full_name(
         extra_data={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: full_name},
     )
     payload = dict(user_id=user_profile.id, full_name=user_profile.full_name)
-    send_event(
+    send_event_on_commit(
         user_profile.realm,
         dict(type="realm_user", op="update", person=payload),
         get_user_ids_who_can_access_user(user_profile),
     )
     if user_profile.is_bot:
-        send_event(
+        send_event_on_commit(
             user_profile.realm,
             dict(type="realm_bot", op="update", bot=payload),
             bot_owner_user_ids(user_profile),
