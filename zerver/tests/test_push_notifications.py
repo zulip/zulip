@@ -1347,7 +1347,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             ),
             mock.patch("zerver.worker.deferred_work.retry_event") as mock_retry,
         ):
-            do_regenerate_api_key(user, user)
+            with self.captureOnCommitCallbacks(execute=True):
+                do_regenerate_api_key(user, user)
             mock_retry.assert_called()
 
             # We didn't manage to communicate with the bouncer, to the tokens are still there:
@@ -1356,7 +1357,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         # Now we successfully remove them:
         time_sent += timedelta(minutes=1)
-        with time_machine.travel(time_sent, tick=False):
+        with (
+            time_machine.travel(time_sent, tick=False),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
             do_regenerate_api_key(user, user)
         tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
         self.assert_length(tokens, 0)
