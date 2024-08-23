@@ -46,8 +46,8 @@ Steps and best practices for starting a conversation:
    - [#production
      help](https://chat.zulip.org/#narrow/channel/31-production-help) for suggestions
      related to self-hosting Zulip.
-3. **[Start a new topic](https://zulip.com/help/starting-a-new-topic)** for
-   discussing your suggestions, using a brief summary of your idea as the
+3. **[Start a new topic](https://zulip.com/help/introduction-to-topics#how-to-start-a-new-topic)**
+   for discussing your suggestions, using a brief summary of your idea as the
    name of the topic.
 
 If you aren't sure where to post or how to name your topic, don't worry!

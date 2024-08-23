@@ -118,7 +118,7 @@ strength allowed is controlled by two settings in
     figure out whether a channel with that name exists, but cannot see any
     other details about the channel.
 
-  - See [Channel permissions](https://zulip.com/help/stream-permissions) for more details.
+  - See [Channel permissions](https://zulip.com/help/channel-permissions) for more details.
 
 - Zulip supports editing the content and topics of messages that have
   already been sent. As a general philosophy, our policies provide

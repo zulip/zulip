@@ -685,7 +685,7 @@ _Released 2023-11-16_
   Zulip does not yet support PostgreSQL 16.
 - Renamed the `reactivate_stream` management command to `unarchive_stream`, to
   match terminology in the app, and [documented
-  it](https://zulip.com/help/archive-a-stream#unarchiving-archived-streams).
+  it](https://zulip.com/help/archive-a-channel#unarchiving-archived-channels).
 - Fixed a regression, introduced in 6.0, where users created via the API or LDAP
   would have English set as their language, ignoring the configured realm
   default.
@@ -736,7 +736,7 @@ _Released 2023-08-25_
   [resolving](https://zulip.com/help/resolve-a-topic) or
   [moving](https://zulip.com/help/move-content-to-another-topic) long topics.
 - Fixed bad rendering of stream links in
-  [stream descriptions](https://zulip.com/help/change-the-stream-description).
+  [stream descriptions](https://zulip.com/help/change-the-channel-description).
 - Fixed broken and misaligned images in Zulip welcome emails.
 - Fixed YouTube video previews to be ordered in the order they are linked, not
   reverse order.
@@ -1019,13 +1019,13 @@ _Released 2023-05-19_
   control that was not in the organization's LDAP directory.
 - CVE-2023-32677: Fixed a vulnerability which allowed users to invite new users
   to streams when inviting them to the server, even if they did not have
-  [permission to invite existing users to streams](https://zulip.com/help/configure-who-can-invite-to-streams).
+  [permission to invite existing users to streams](https://zulip.com/help/configure-who-can-invite-to-channels).
   This did not allow users to invite others to streams that they themselves were
   not a member of, and only affected deployments with the rare configuration of
   a permissive
   [realm invitation policy](https://zulip.com/help/restrict-account-creation#change-who-can-send-invitations)
   and a strict
-  [stream invitation policy](https://zulip.com/help/configure-who-can-invite-to-streams).
+  [stream invitation policy](https://zulip.com/help/configure-who-can-invite-to-channels).
 - Fixed a bug that could cause duplicate push notifications when using the
   mobile push notifications service.
 - Fixed several bugs in the Zulip server and PostgreSQL version upgrade
@@ -1082,7 +1082,7 @@ _Released 2023-01-23_
   “[delay before sending message notification emails](https://zulip.com/help/email-notifications#delay-before-sending-emails)”
   setting.
 - Fixed an error which prevented users from changing
-  [stream-specific notification settings](https://zulip.com/help/stream-notifications#configure-notifications-for-a-single-stream).
+  [stream-specific notification settings](https://zulip.com/help/channel-notifications#configure-notifications-for-a-single-channel).
 - Fixed the redirect from `/apps` to https://zulip.com/apps/.
 - Started preserving timezone information in
   [Rocket.Chat imports](https://zulip.com/help/import-from-rocketchat).
@@ -1395,7 +1395,7 @@ _Released 2022-06-21_
 - CVE-2022-31017: Fixed message edit event exposure in
   protected-history streams.
   Zulip allows a stream to be configured as [private with protected
-  history](https://zulip.com/help/stream-permissions#stream-privacy-settings),
+  history](https://zulip.com/help/channel-permissions#channel-privacy-settings),
   which means that new subscribers should only see messages sent after
   they join. However, due to a logic bug in Zulip Server 2.1.0 through
   5.2, when a message was edited, the server would incorrectly send an
@@ -3098,7 +3098,7 @@ _Released 2018-11-07_
 - Users can now configure email and mobile push notifications for
   all messages in a stream (useful for low-traffic
   streams/organizations), not just for messages mentioning them.
-- New [stream settings](https://zulip.com/help/stream-permissions)
+- New [stream settings](https://zulip.com/help/channel-permissions)
   control whether private stream subscribers can access history
   from before they joined, and allow configuring streams to only
   allow administrators to post.
