@@ -26,10 +26,6 @@ $user_status_emoji_width: 24px;
     overflow: auto;
 }
 
-.buddy-list-section-toggle {
-    width: 7px;
-}
-
 .buddy-list-section-container {
     margin-bottom: 10px;
 
@@ -174,22 +170,71 @@ $user_status_emoji_width: 24px;
 }
 
 .buddy-list-subsection-header {
-    display: flex;
-    align-items: center;
     cursor: pointer;
     background-color: var(--color-background);
-    line-height: 1;
     position: sticky;
     top: 0;
     z-index: 1;
-    color: var(--color-text-default);
 }
 
-.buddy-list-heading {
-    user-select: none;
-    font-weight: 600;
-    margin: 0;
-    padding: 5px 5px 5px 0;
+.buddy-list-subheader-name {
+    /* 14px at 16px/1em */
+    font-size: 0.875em;
+    font-weight: normal;
+    /* 16px line-height at 0.8em (11.2px at 14px legacy em) */
+    line-height: 1.4286em;
+    letter-spacing: 0.04em;
+    color: var(--color-text-sidebar-heading);
+    opacity: var(--opacity-right-sidebar-subheading);
+}
+
+.buddy-list-subheader-wrapper {
+    display: flex;
+    place-items: center center;
+    margin-right: var(--width-simplebar-scroll-hover);
+
+    &::before,
+    &::after {
+        content: " ";
+        flex: 1 1;
+        vertical-align: middle;
+        margin: auto;
+        border-top: 1px solid var(--color-border-sidebar-subheader);
+    }
+
+    &::after {
+        margin-left: 0.5ch;
+    }
+}
+
+.buddy-list-subheader:hover {
+    .buddy-list-subheader-name,
+    .buddy-list-subheader-icon {
+        opacity: var(--opacity-right-sidebar-subheading-hover);
+    }
+
+    .buddy-list-subheader-wrapper {
+        &::before,
+        &::after {
+            /* We match the border colors to the text in
+               the hover state. */
+            border-color: var(--color-text-sidebar-heading);
+        }
+    }
+}
+
+.buddy-list-subheader-icon {
+    transition: rotate 140ms linear;
+    color: var(--color-text-sidebar-heading);
+    opacity: var(--opacity-right-sidebar-subheading);
+}
+
+.buddy-list-subheader-icon.rotate-icon-down {
+    rotate: 90deg;
+}
+
+.buddy-list-subheader-icon.rotate-icon-right {
+    rotate: 0deg;
 }
 
 .buddy-list-subsection-header.no-display {

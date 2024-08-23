@@ -1002,6 +1002,9 @@
        the unread marker to the left. */
     --unread-marker-left: 0;
 
+    /* Shared sidebar typography and effects values. */
+    --opacity-right-sidebar-subheading-hover: 1;
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 100% / 75%);
     --color-background-private-message-header: hsl(46deg 15% 20%);
