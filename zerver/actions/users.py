@@ -536,6 +536,7 @@ def do_change_can_create_users(user_profile: UserProfile, value: bool) -> None:
     user_profile.save(update_fields=["can_create_users"])
 
 
+@transaction.atomic(durable=True)
 def do_update_outgoing_webhook_service(
     bot_profile: UserProfile, service_interface: int, service_payload_url: str
 ) -> None:
@@ -545,7 +546,7 @@ def do_update_outgoing_webhook_service(
     service.base_url = service_payload_url
     service.interface = service_interface
     service.save()
-    send_event(
+    send_event_on_commit(
         bot_profile.realm,
         dict(
             type="realm_bot",
