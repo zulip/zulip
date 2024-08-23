@@ -108,6 +108,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to combined feed**: <kbd>A</kbd> — Shows all unmuted messages.
 
+* **Go to starred messages**: <kbd>*</kbd>
+
 * **Go to the conversation you are composing to**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
 
 ## Composing messages

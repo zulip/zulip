@@ -150,7 +150,7 @@ const keydown_either_mappings = {
 };
 
 const keypress_mappings = {
-    42: {name: "star_deprecated", message_view_only: true}, // '*'
+    42: {name: "open_starred_message_view", message_view_only: true}, // '*'
     43: {name: "thumbs_up_emoji", message_view_only: true}, // '+'
     61: {name: "upvote_first_emoji", message_view_only: true}, // '='
     45: {name: "toggle_message_collapse", message_view_only: true}, // '-'
@@ -996,6 +996,9 @@ export function process_hotkey(e, hotkey) {
         case "open_inbox":
             browser_history.go_to_location("#inbox");
             return true;
+        case "open_starred_message_view":
+            browser_history.go_to_location("#narrow/is/starred");
+            return true;
         case "open_combined_feed":
             browser_history.go_to_location("#feed");
             return true;
@@ -1043,9 +1046,6 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "C_deprecated":
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + C");
-            return true;
-        case "star_deprecated":
-            deprecated_feature_notice.maybe_show_deprecation_notice("*");
             return true;
     }
 
