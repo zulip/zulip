@@ -75,12 +75,6 @@
  *   If typeahead would go off the top of the screen, we set its top to 0 instead.
  *   This patch should be replaced with something more flexible.
  *
- * 7. Ignore IME Enter events:
- *
- *   See #22062 for details. Enter keypress that are part of IME composing are
- *   treated as a separate/invalid -13 key, to prevent them from being incorrectly
- *   processed as a bonus Enter press.
- *
  * 8. Make the typeahead completions undo friendly:
  *
  *   We now use the undo supporting `insert` function from the
@@ -172,17 +166,6 @@ import * as tippy from "tippy.js";
 
 import * as scroll_util from "./scroll_util";
 import {get_string_diff, the} from "./util";
-
-function get_pseudo_key(
-    event: JQuery.KeyDownEvent | JQuery.KeyUpEvent | JQuery.KeyPressEvent,
-): string {
-    const isComposing = event.originalEvent?.isComposing ?? false;
-    /* Ignore IME compose enter keypresses. (See 7 above) */
-    if (event.code === "Enter" && isComposing) {
-        return "IgnoreEnter";
-    }
-    return event.key;
-}
 
 export function defaultSorter(items: string[], query: string): string[] {
     const beginswith = [];
@@ -650,9 +633,8 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     maybeStopAdvance(e: JQuery.KeyPressEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): void {
-        const pseudo_key = get_pseudo_key(e);
         if (
-            (this.stopAdvance || (pseudo_key !== "Tab" && pseudo_key !== "Enter")) &&
+            (this.stopAdvance || (e.key !== "Tab" && e.key !== "Enter")) &&
             !this.advanceKeys.includes(e.key)
         ) {
             e.stopPropagation();
@@ -663,9 +645,8 @@ export class Typeahead<ItemType extends string | object> {
         if (!this.shown) {
             return;
         }
-        const pseudo_key = get_pseudo_key(e);
 
-        switch (pseudo_key) {
+        switch (e.key) {
             case "Tab":
                 if (!this.tabIsEnter) {
                     return;
@@ -702,7 +683,6 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keydown(e: JQuery.KeyDownEvent): void {
-        const pseudo_key = get_pseudo_key(e);
         if (this.trigger_selection(e)) {
             if (!this.shown) {
                 return;
@@ -711,7 +691,7 @@ export class Typeahead<ItemType extends string | object> {
             this.select(e);
         }
         this.suppressKeyPressRepeat = !["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(
-            pseudo_key,
+            e.key,
         );
         this.move(e);
     }
@@ -731,9 +711,7 @@ export class Typeahead<ItemType extends string | object> {
         // it did modify the query. For example, `Command + delete` on Mac
         // doesn't trigger a keyup event but when `Command` is released, it
         // triggers a keyup event which correctly updates the list.
-        const pseudo_key = get_pseudo_key(e);
-
-        switch (pseudo_key) {
+        switch (e.key) {
             case "ArrowDown":
             case "ArrowUp":
                 break;
@@ -777,7 +755,7 @@ export class Typeahead<ItemType extends string | object> {
                 // to stop typeahead from showing up momentarily
                 // when shift + tabbing to the topic field
                 if (
-                    pseudo_key === "Shift" &&
+                    e.key === "Shift" &&
                     the(this.input_element.$element).id === "stream_message_recipient_topic"
                 ) {
                     return;
@@ -789,7 +767,7 @@ export class Typeahead<ItemType extends string | object> {
                     // the search bar).
                     this.openInputFieldOnKeyUp();
                 }
-                if (pseudo_key === "Backspace") {
+                if (e.key === "Backspace") {
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
                 }
