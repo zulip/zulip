@@ -11,6 +11,11 @@
     You can also [search your starred messages](/help/search-for-messages)
     using the `is:starred` filter.
 
+!!! keyboard_tip ""
+
+    Use <kbd>*</kbd> to view your starred messages.
+
+
 {tab|mobile}
 
 1. Tap the **Starred messages**

@@ -1,7 +1,6 @@
 import {z} from "zod";
 
 import * as blueslip from "./blueslip";
-import * as common from "./common";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import {localstorage} from "./localstorage";
@@ -23,13 +22,9 @@ let shown_deprecation_notices: string[] = [];
 
 export function maybe_show_deprecation_notice(key: string): void {
     let message;
-    const isCmdOrCtrl = common.has_mac_keyboard() ? "Cmd" : "Ctrl";
     switch (key) {
         case "Shift + C":
             message = get_hotkey_deprecation_notice("Shift + C", "X");
-            break;
-        case "*":
-            message = get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + S");
             break;
         case "Shift + S":
             message = get_hotkey_deprecation_notice("Shift + S", "S");
