@@ -611,6 +611,8 @@
     --color-background-alert-word: hsl(18deg 100% 84%);
     --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
     --color-border-sidebar: hsl(0deg 0% 87%);
+    --color-text-sidebar-base: hsl(0deg 0% 0%);
+    --color-border-sidebar-subheader: hsl(0deg 0% 0% / 15%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 87%);
@@ -1067,6 +1069,8 @@
     --color-background-alert-word: hsl(22deg 70% 35%);
     --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
+    --color-text-sidebar-base: hsl(0deg 0% 100%);
+    --color-border-sidebar-subheader: hsl(0deg 0% 100% / 15%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 0% / 20%);

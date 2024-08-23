@@ -831,15 +831,6 @@
         background-color: hsl(51deg 100% 23%);
     }
 
-    .streams_subheader {
-        color: hsl(240deg 11% 85%);
-
-        & .streams_subheader_name::before,
-        .streams_subheader_name::after {
-            border-color: hsl(240deg 11% 85%);
-        }
-    }
-
     .sub-unsub-message span::before,
     .sub-unsub-message span::after,
     .date_row span::before,
