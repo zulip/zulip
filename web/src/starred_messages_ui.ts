@@ -57,16 +57,17 @@ export function update_starred_flag(message_id: number, updated_starred_flag: bo
 }
 
 export function rerender_ui(): void {
-    let count = starred_messages.get_count();
+    const count = starred_messages.get_count();
+    let hidden = false;
 
     if (!user_settings.starred_message_counts) {
         // This essentially hides the count
-        count = 0;
+        hidden = true;
     }
 
     popover_menus.get_topic_menu_popover()?.hide();
     popover_menus.get_starred_messages_popover()?.hide();
-    left_sidebar_navigation_area.update_starred_count(count);
+    left_sidebar_navigation_area.update_starred_count(count, hidden);
 }
 
 export function confirm_unstar_all_messages(): void {

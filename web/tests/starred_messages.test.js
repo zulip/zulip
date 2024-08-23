@@ -102,8 +102,9 @@ run_test("rerender_ui", () => {
         override(left_sidebar_navigation_area, "update_starred_count", stub.f);
         starred_messages_ui.rerender_ui();
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("count");
+        const args = stub.get_args("count", "hidden");
         assert.equal(args.count, 3);
+        assert.equal(args.hidden, false);
     });
 
     user_settings.starred_message_counts = false;
@@ -112,7 +113,8 @@ run_test("rerender_ui", () => {
         override(left_sidebar_navigation_area, "update_starred_count", stub.f);
         starred_messages_ui.rerender_ui();
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("count");
-        assert.equal(args.count, 0);
+        const args = stub.get_args("count", "hidden");
+        assert.equal(args.count, 3);
+        assert.equal(args.hidden, true);
     });
 });
