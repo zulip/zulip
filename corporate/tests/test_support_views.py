@@ -170,6 +170,13 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             remote_server=remote_realm.server, email="server-admin@example.com"
         )
 
+    def test_remote_support_view_queries(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        with self.assert_database_query_count(28):
+            result = self.client_get("/activity/remote/support", {"q": "zulip-3.example.com"})
+            self.assertEqual(result.status_code, 200)
+
     def test_search(self) -> None:
         def assert_server_details_in_response(
             html_response: "TestHttpResponse", hostname: str
@@ -736,6 +743,13 @@ class TestSupportEndpoint(ZulipTestCase):
             plan=plan,
         )
         return customer
+
+    def test_realm_support_view_queries(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        with self.assert_database_query_count(16):
+            result = self.client_get("/activity/support", {"q": "zulip"}, subdomain="zulip")
+            self.assertEqual(result.status_code, 200)
 
     def test_search(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
