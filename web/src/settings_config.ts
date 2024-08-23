@@ -157,7 +157,7 @@ export const twenty_four_hour_time_values = {
 
 export type DisplaySettings = {
     settings: {
-        user_display_settings: string[];
+        user_preferences: string[];
     };
     render_group?: boolean;
 };
@@ -165,7 +165,7 @@ export type DisplaySettings = {
 /* istanbul ignore next */
 export const information_section_checkbox_group: DisplaySettings = {
     settings: {
-        user_display_settings: [
+        user_preferences: [
             "starred_message_counts",
             "receives_typing_notifications",
             "fluid_layout_width",
@@ -177,7 +177,7 @@ export const information_section_checkbox_group: DisplaySettings = {
 export const get_information_density_preferences = (): DisplaySettings => ({
     render_group: page_params.development_environment,
     settings: {
-        user_display_settings: ["web_font_size_px", "web_line_height_percent"],
+        user_preferences: ["web_font_size_px", "web_line_height_percent"],
     },
 });
 

@@ -36,7 +36,7 @@
 
     <div class="information-density-settings">
         <div class="title">{{t "Information density settings"}}</div>
-        {{#each information_density_settings.settings.user_display_settings}}
+        {{#each information_density_settings.settings.user_preferences}}
             {{> settings_numeric_input
               setting_name=this
               setting_value=(lookup ../settings_object this)
