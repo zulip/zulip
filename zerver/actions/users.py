@@ -563,11 +563,12 @@ def do_update_outgoing_webhook_service(
     )
 
 
+@transaction.atomic(durable=True)
 def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
     updated_config_data = get_bot_config(bot_profile)
-    send_event(
+    send_event_on_commit(
         bot_profile.realm,
         dict(
             type="realm_bot",
