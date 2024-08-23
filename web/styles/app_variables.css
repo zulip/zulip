@@ -374,6 +374,7 @@
     it doesn't leak through message header.
     */
     --unread-marker-left: -1px;
+    --masked-unread-count-margin-right: 3px;
 
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
