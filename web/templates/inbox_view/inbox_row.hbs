@@ -19,6 +19,9 @@
                                 <span class="recipients_name">{{{rendered_dm_with}}}</span>
                             </span>
                         </a>
+                        <span class="unread_mention_info tippy-zulip-tooltip
+                          {{#unless has_unread_mention}}hidden{{/unless}}"
+                          data-tippy-content="{{t 'You have unread mentions' }}">@</span>
                         <div class="unread-count-focus-outline" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}">
                             <span class="unread_count tippy-zulip-tooltip on_hover_dm_read"
                               data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}"
