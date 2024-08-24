@@ -1024,6 +1024,7 @@ li.top_left_scheduled_messages {
     background-color: var(--color-background);
 }
 
+.dm-markers-and-controls,
 .stream-markers-and-controls,
 .topic-markers-and-controls {
     grid-area: markers-and-controls;
