@@ -185,6 +185,12 @@ mock_esm("../src/unread", {
         return 0;
     },
     topic_has_any_unread_mentions: () => false,
+    num_unread_mentions_for_user_ids_strings(user_ids_string) {
+        if (user_ids_string === "2,3") {
+            return false;
+        }
+        return true;
+    },
 });
 mock_esm("../src/resize", {
     update_recent_view: noop,
