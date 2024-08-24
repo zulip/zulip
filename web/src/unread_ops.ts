@@ -62,6 +62,29 @@ export function confirm_mark_all_as_read(): void {
     });
 }
 
+export function mark_selected_options_as_read(): void {
+    const muted_topics = Boolean($("#muted_topics").prop("checked"));
+    const topics_not_followed = Boolean($("#topics_not_followed").prop("checked"));
+    const all_messages = Boolean($("#all_messages").prop("checked"));
+
+    if (all_messages) {
+        mark_all_as_read();
+        return;
+    }
+
+    const narrow_options = [{ operator: "is", operand: "unread", negated: false }];
+
+    if (muted_topics) {
+        narrow_options.push({ operator: "topic", operand: "muted", negated: false });
+    }
+
+    if (topics_not_followed) {
+        narrow_options.push({ operator: "topic", operand: "followed", negated: true });
+    }
+
+
+}
+
 const update_flags_for_narrow_response_schema = z.object({
     processed_count: z.number(),
     updated_count: z.number(),
