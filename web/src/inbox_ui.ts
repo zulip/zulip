@@ -51,6 +51,7 @@ type DirectMessageContext = {
     is_collapsed: boolean;
     latest_msg_id: number;
     column_indexes: typeof COLUMNS;
+    has_unread_mention: boolean;
 };
 
 const direct_message_context_properties: (keyof DirectMessageContext)[] = [
@@ -300,6 +301,7 @@ function format_dm(
         is_bot = people.get_by_user_id(recipient_ids[0]).is_bot;
         user_circle_class = is_bot ? false : buddy_data.get_user_circle_class(recipient_ids[0]);
     }
+    const has_unread_mention = unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
 
     const context = {
         conversation_key: user_ids_string,
@@ -315,6 +317,7 @@ function format_dm(
         is_collapsed: collapsed_containers.has("inbox-dm-header"),
         latest_msg_id,
         column_indexes: COLUMNS,
+        has_unread_mention,
     };
 
     return context;
@@ -588,6 +591,7 @@ function reset_data(): {
     is_dms_collapsed: boolean;
     has_dms_post_filter: boolean;
     has_visible_unreads: boolean;
+    has_unread_mention: boolean;
 } {
     dms_dict = new Map();
     topics_dict = new Map();
@@ -596,6 +600,7 @@ function reset_data(): {
     const unread_dms = unread.get_unread_pm();
     const unread_dms_count = unread_dms.total_count;
     const unread_dms_dict = unread_dms.pm_dict;
+    const has_unread_mention = unread.num_unread_mentions_in_dms() > 0;
 
     const unread_stream_message = unread.get_unread_topics();
     const unread_stream_msg_count = unread_stream_message.stream_unread_messages;
@@ -637,6 +642,7 @@ function reset_data(): {
     const is_dms_collapsed = collapsed_containers.has("inbox-dm-header");
 
     return {
+        has_unread_mention,
         unread_dms_count,
         is_dms_collapsed,
         has_dms_post_filter,
@@ -1236,6 +1242,7 @@ export function update(): void {
     const unread_dms = unread.get_unread_pm();
     const unread_dms_count = unread_dms.total_count;
     const unread_dms_dict = unread_dms.pm_dict;
+    const has_unread_mention = unread.num_unread_mentions_in_dms() > 0;
 
     const unread_stream_message = unread.get_unread_topics();
     const unread_streams_dict = unread_stream_message.topic_counts;
@@ -1269,6 +1276,7 @@ export function update(): void {
     } else {
         $inbox_dm_header.removeClass("hidden_by_filters");
         $inbox_dm_header.find(".unread_count").text(unread_dms_count);
+        $inbox_dm_header.find(".unread_mention_info").toggleClass("hidden", !has_unread_mention);
     }
 
     let has_topics_post_filter = false;
