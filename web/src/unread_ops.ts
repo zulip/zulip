@@ -72,17 +72,15 @@ export function mark_selected_options_as_read(): void {
         return;
     }
 
-    const narrow_options = [{ operator: "is", operand: "unread", negated: false }];
+    const narrow_options = [{operator: "is", operand: "unread", negated: false}];
 
     if (muted_topics) {
-        narrow_options.push({ operator: "topic", operand: "muted", negated: false });
+        narrow_options.push({operator: "topic", operand: "muted", negated: false});
     }
 
     if (topics_not_followed) {
-        narrow_options.push({ operator: "topic", operand: "followed", negated: true });
+        narrow_options.push({operator: "topic", operand: "followed", negated: true});
     }
-
-
 }
 
 const update_flags_for_narrow_response_schema = z.object({
