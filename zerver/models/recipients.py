@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING
 
 from django.db import models, transaction
-from django_stubs_ext import ValuesQuerySet
+from django.db.models import QuerySet
 from typing_extensions import override
 
 from zerver.lib.display_recipient import get_display_recipient
@@ -79,7 +79,7 @@ class Recipient(models.Model):
         return self._type_names[self.type]
 
 
-def get_direct_message_group_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", int]:
+def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
     from zerver.models import Subscription
 
     assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP

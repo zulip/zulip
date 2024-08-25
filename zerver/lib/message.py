@@ -9,7 +9,6 @@ from django.db import connection
 from django.db.models import Exists, Max, OuterRef, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
@@ -491,7 +490,7 @@ def bulk_access_stream_messages_query(
 
 def get_messages_with_usermessage_rows_for_user(
     user_profile_id: int, message_ids: Sequence[int]
-) -> ValuesQuerySet[UserMessage, int]:
+) -> QuerySet[UserMessage, int]:
     """
     Returns a subset of `message_ids` containing only messages the
     user has a UserMessage for.  Makes O(1) database queries.

@@ -7,7 +7,6 @@ from operator import itemgetter
 from typing import Any
 
 from django.db.models import Q, QuerySet
-from django_stubs_ext import ValuesQuerySet
 
 from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile, UserTopic
 
@@ -53,7 +52,7 @@ def get_active_subscriptions_for_stream_ids(stream_ids: set[int]) -> QuerySet[Su
 
 def get_subscribed_stream_ids_for_user(
     user_profile: UserProfile,
-) -> ValuesQuerySet[Subscription, int]:
+) -> QuerySet[Subscription, int]:
     return Subscription.objects.filter(
         user_profile_id=user_profile,
         recipient__type=Recipient.STREAM,
@@ -63,7 +62,7 @@ def get_subscribed_stream_ids_for_user(
 
 def get_subscribed_stream_recipient_ids_for_user(
     user_profile: UserProfile,
-) -> ValuesQuerySet[Subscription, int]:
+) -> QuerySet[Subscription, int]:
     return Subscription.objects.filter(
         user_profile_id=user_profile,
         recipient__type=Recipient.STREAM,

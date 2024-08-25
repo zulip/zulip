@@ -1,17 +1,17 @@
 from typing import TypeVar
 
 from django.db import models
-from django_stubs_ext import ValuesQuerySet
+from django.db.models import QuerySet
 
 ModelT = TypeVar("ModelT", bound=models.Model)
 RowT = TypeVar("RowT")
 
 
 def query_for_ids(
-    query: ValuesQuerySet[ModelT, RowT],
+    query: QuerySet[ModelT, RowT],
     user_ids: list[int],
     field: str,
-) -> ValuesQuerySet[ModelT, RowT]:
+) -> QuerySet[ModelT, RowT]:
     """
     This function optimizes searches of the form
     `user_profile_id in (1, 2, 3, 4)` by quickly

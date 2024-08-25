@@ -9,7 +9,6 @@ from django.contrib.sessions.models import Session
 from django.db import connection
 from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
-from django_stubs_ext import ValuesQuerySet
 
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zerver.models or we'd have an import
@@ -58,7 +57,7 @@ def session_cache_items(
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
 
-def get_active_realm_ids() -> ValuesQuerySet[RealmCount, int]:
+def get_active_realm_ids() -> QuerySet[RealmCount, int]:
     """For installations like Zulip Cloud hosting a lot of realms, it only makes
     sense to do cache-filling work for realms that have any currently
     active users/clients.  Otherwise, we end up with every single-user
