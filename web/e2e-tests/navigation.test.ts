@@ -71,6 +71,8 @@ async function test_reload_hash(page: Page): Promise<void> {
     const initial_hash = await page.evaluate(() => window.location.hash);
 
     await page.evaluate(() => {
+        // We haven't converted reload.js to TypeScript yet.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         zulip_test.initiate_reload({immediate: true});
     });
     await page.waitForNavigation();
