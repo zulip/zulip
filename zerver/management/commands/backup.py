@@ -133,7 +133,7 @@ class Command(ZulipBaseCommand):
                     [
                         "tar",
                         f"--directory={tmp}",
-                        "-cPzf",
+                        "-cPhzf",
                         tarball_path,
                         *transform_args,
                         "--",
