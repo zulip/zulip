@@ -955,7 +955,7 @@ def internal_api_view(
     return _wrapped_view_func
 
 
-def to_utc_datetime(var_name: str, timestamp: str) -> datetime:
+def to_utc_datetime(timestamp: str) -> datetime:
     return timestamp_to_datetime(float(timestamp))
 
 
