@@ -10,7 +10,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.events import ClientCapabilities, do_events_register
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import set_topic_visibility_policy, topic_has_visibility_policy
-from zerver.models import Message, UserMessage, UserTopic
+from zerver.models import Message, Stream, UserMessage, UserTopic
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -26,15 +26,14 @@ class TopicHistoryTest(ZulipTestCase):
         stream_name = "Verona"
 
         stream = get_stream(stream_name, user_profile.realm)
-        recipient = stream.recipient
 
-        def create_test_message(topic_name: str) -> int:
+        def create_test_message(topic_name: str, stream: Stream) -> int:
             # TODO: Clean this up to send messages the normal way.
 
             hamlet = self.example_user("hamlet")
             message = Message(
                 sender=hamlet,
-                recipient=recipient,
+                recipient=stream.recipient,
                 realm=stream.realm,
                 content="whatever",
                 date_sent=timezone_now(),
@@ -54,19 +53,17 @@ class TopicHistoryTest(ZulipTestCase):
         # our most recent topics are topic0, topic1, topic2
 
         # Create old messages with strange spellings.
-        create_test_message("topic2")
-        create_test_message("toPIc1")
-        create_test_message("toPIc0")
-        create_test_message("topic2")
-        create_test_message("topic2")
-        create_test_message("Topic2")
+        create_test_message("topic2", stream)
+        create_test_message("toPIc1", stream)
+        create_test_message("toPIc0", stream)
+        create_test_message("topic2", stream)
+        create_test_message("topic2", stream)
+        create_test_message("Topic2", stream)
 
         # Create new messages
-        topic2_msg_id = create_test_message("topic2")
-        create_test_message("topic1")
-        create_test_message("topic1")
-        topic1_msg_id = create_test_message("topic1")
-        topic0_msg_id = create_test_message("topic0")
+        topic2_msg_id = create_test_message("topic2", stream)
+        topic1_msg_id = create_test_message("topic1", stream)
+        topic0_msg_id = create_test_message("topic0", stream)
 
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint, {})
