@@ -567,7 +567,7 @@ export function paste_handler_converter(paste_html: string): string {
             const className = codeElement.getAttribute("class") ?? "";
             const language = node.parentElement?.classList.contains("zulip-code-block")
                 ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
-                : (className.match(/language-(\S+)/) ?? [null, ""])[1];
+                : (/language-(\S+)/.exec(className) ?? [null, ""])[1];
 
             assert(options.fence !== undefined);
             const fenceChar = options.fence.charAt(0);

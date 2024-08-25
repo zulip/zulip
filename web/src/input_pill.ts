@@ -170,7 +170,7 @@ export function create<ItemType extends {type: string}>(
             if (value.length === 0) {
                 return true;
             }
-            if (store.split_text_on_comma && value.match(",")) {
+            if (store.split_text_on_comma && value.includes(",")) {
                 funcs.insertManyPills(value);
                 return false;
             }
