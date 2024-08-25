@@ -89,6 +89,9 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
                         (m) => {
                             if (m instanceof NormalModule) {
                                 const id = compilation.chunkGraph.getModuleId(m);
+                                if (id === null) {
+                                    return false;
+                                }
                                 if (m.resource === debugRequirePath) {
                                     hasDebugRequire = true;
                                 }
