@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Optional, TypedDict
 
-from django_stubs_ext import ValuesQuerySet
+from django.db.models import QuerySet
 
 from zerver.lib.cache import (
     bulk_cached_fetch,
@@ -102,7 +102,7 @@ def bulk_fetch_stream_names(
 
     def get_tiny_stream_rows(
         recipient_ids: list[int],
-    ) -> ValuesQuerySet[Stream, TinyStreamResult]:
+    ) -> QuerySet[Stream, TinyStreamResult]:
         stream_ids = [recipient_id_to_stream_id[recipient_id] for recipient_id in recipient_ids]
         return Stream.objects.filter(id__in=stream_ids).values("recipient_id", "name")
 

@@ -9,7 +9,6 @@ from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.default_streams import (
     do_remove_default_stream,
@@ -393,7 +392,7 @@ def merge_streams(
 
 def get_subscriber_ids(
     stream: Stream, requesting_user: UserProfile | None = None
-) -> ValuesQuerySet[Subscription, int]:
+) -> QuerySet[Subscription, int]:
     subscriptions_query = get_subscribers_query(stream, requesting_user)
     return subscriptions_query.values_list("user_profile_id", flat=True)
 

@@ -10,7 +10,6 @@ from django.db.models import F, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import With
-from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL, Literal
 
 from zerver.lib.exceptions import (
@@ -441,7 +440,7 @@ def get_direct_user_groups(user_profile: UserProfile) -> list[UserGroup]:
 
 def get_user_group_direct_member_ids(
     user_group: UserGroup,
-) -> ValuesQuerySet[UserGroupMembership, int]:
+) -> QuerySet[UserGroupMembership, int]:
     return UserGroupMembership.objects.filter(user_group=user_group).values_list(
         "user_profile_id", flat=True
     )

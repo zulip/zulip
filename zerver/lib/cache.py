@@ -14,8 +14,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
-from django.db.models import Q
-from django_stubs_ext import QuerySetAny
+from django.db.models import Q, QuerySet
 from typing_extensions import ParamSpec
 
 if TYPE_CHECKING:
@@ -140,7 +139,7 @@ def cache_with_key(
                 return val[0]
 
             val = func(*args, **kwargs)
-            if isinstance(val, QuerySetAny):
+            if isinstance(val, QuerySet):
                 logging.error(
                     "cache_with_key attempted to store a full QuerySet object -- declining to cache",
                     stack_info=True,
