@@ -236,7 +236,6 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
             data=request.content.iter_any() if request.body_exists else None,
             allow_redirects=False,
             auto_decompress=False,
-            compress=False,
             skip_auto_headers=SKIP_AUTO_HEADERS,
         )
     except aiohttp.ClientError as error:
