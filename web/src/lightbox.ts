@@ -397,7 +397,7 @@ export function build_open_media_function(
         const payload = parse_media_data(util.the($media));
 
         assert(payload !== undefined);
-        if (payload.type.match("-video")) {
+        if (payload.type.includes("-video")) {
             display_video(payload);
         } else if (payload.type === "image") {
             display_image(payload);
@@ -509,7 +509,7 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Pa
     let original_width_px;
     let original_height_px;
     if (original_dimensions) {
-        const found = original_dimensions.match(/^(\d+)x(\d+)$/);
+        const found = /^(\d+)x(\d+)$/.exec(original_dimensions);
         if (found) {
             original_width_px = Number(found[1]);
             original_height_px = Number(found[2]);
