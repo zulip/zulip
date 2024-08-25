@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 283  # Last bumped for can_manage_group
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (290, 2)  # bumped 2024-08-22 to upgrade @astro/starlight.
+PROVISION_VERSION = (291, 0)  # bumped 2024-08-24 to upgrade python requirements
