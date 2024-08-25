@@ -142,18 +142,31 @@ function clear_message_date_divider(message_container) {
 }
 
 function update_message_date_divider(opts) {
-    const prev_msg_container = opts.prev_msg_container;
-    const curr_msg_container = opts.curr_msg_container;
+    Object.assign(
+        opts.curr_msg_container,
+        get_message_date_divider_data({
+            prev_message: opts.prev_msg_container?.msg,
+            curr_message: opts.curr_msg_container.msg,
+        }),
+    );
+}
 
-    if (!prev_msg_container || same_day(curr_msg_container?.msg, prev_msg_container?.msg)) {
-        clear_message_date_divider(curr_msg_container);
-        return;
+function get_message_date_divider_data(opts) {
+    const prev_message = opts.prev_message;
+    const curr_message = opts.curr_message;
+
+    if (!prev_message || same_day(curr_message, prev_message)) {
+        return {
+            want_date_divider: false,
+            date_divider_html: undefined,
+        };
     }
+    const curr_time = new Date(curr_message.timestamp * 1000);
 
-    const curr_time = new Date(curr_msg_container.msg.timestamp * 1000);
-
-    curr_msg_container.want_date_divider = true;
-    curr_msg_container.date_divider_html = util.the(timerender.render_date(curr_time)).outerHTML;
+    return {
+        want_date_divider: true,
+        date_divider_html: util.the(timerender.render_date(curr_time)).outerHTML,
+    };
 }
 
 function get_timestr(message) {
@@ -606,17 +619,20 @@ export class MessageListView {
                 prev.msg.historical === message_container.msg.historical
             ) {
                 add_message_container_to_group(message_container);
-                update_message_date_divider({
-                    prev_msg_container: prev,
-                    curr_msg_container: message_container,
+                const date_divider_data = get_message_date_divider_data({
+                    prev_message: prev.msg,
+                    curr_message: message_container.msg,
                 });
+                message_container.want_date_divider = date_divider_data.want_date_divider;
+                message_container.date_divider_html = date_divider_data.date_divider_html;
             } else {
                 finish_group();
                 current_group = start_group();
                 add_message_container_to_group(message_container);
 
                 update_group_date(current_group, message_container, prev);
-                clear_message_date_divider(message_container);
+                message_container.want_date_divider = false;
+                message_container.date_divider_html = undefined;
 
                 message_container.include_recipient = true;
                 message_container.subscribed = false;
