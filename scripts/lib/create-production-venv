@@ -20,7 +20,7 @@ vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)
 if "debian" in os_families():
-    run(["apt-get", "-y", "install", *VENV_DEPENDENCIES])
+    run(["apt-get", "-y", "install", "--no-install-recommends", *VENV_DEPENDENCIES])
 elif "fedora" in os_families():
     run(["yum", "-y", "install", *VENV_DEPENDENCIES])
 else:
