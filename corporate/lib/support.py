@@ -15,6 +15,8 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     get_configured_fixed_price_plan_offer,
+    get_guest_user_count,
+    get_non_guest_user_count,
     get_price_per_license,
     get_push_status_for_remote_request,
     start_of_next_billing_cycle,
@@ -111,9 +113,16 @@ class RemoteSupportData:
 
 
 @dataclass
+class UserData:
+    guest_user_count: int
+    non_guest_user_count: int
+
+
+@dataclass
 class CloudSupportData:
     plan_data: PlanData
     sponsorship_data: SponsorshipData
+    user_data: UserData
 
 
 def get_stripe_customer_url(stripe_id: str) -> str:
@@ -127,6 +136,15 @@ def get_realm_support_url(realm: Realm) -> str:
         urlunsplit(("", "", reverse("support"), urlencode({"q": realm.string_id}), "")),
     )
     return support_url
+
+
+def get_realm_user_data(realm: Realm) -> UserData:
+    non_guests = get_non_guest_user_count(realm)
+    guests = get_guest_user_count(realm)
+    return UserData(
+        guest_user_count=guests,
+        non_guest_user_count=non_guests,
+    )
 
 
 def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
@@ -421,6 +439,7 @@ def get_data_for_remote_support_view(billing_session: BillingSession) -> RemoteS
 
 def get_data_for_cloud_support_view(billing_session: BillingSession) -> CloudSupportData:
     assert isinstance(billing_session, RealmBillingSession)
+    user_data = get_realm_user_data(billing_session.realm)
     plan_data = get_plan_data_for_support_view(billing_session)
     if plan_data.customer is not None:
         sponsorship_data = get_customer_sponsorship_data(plan_data.customer)
@@ -430,4 +449,5 @@ def get_data_for_cloud_support_view(billing_session: BillingSession) -> CloudSup
     return CloudSupportData(
         plan_data=plan_data,
         sponsorship_data=sponsorship_data,
+        user_data=user_data,
     )

@@ -154,22 +154,26 @@ def get_cached_seat_count(realm: Realm) -> int:
     return get_latest_seat_count(realm)
 
 
-def get_seat_count(
-    realm: Realm, extra_non_guests_count: int = 0, extra_guests_count: int = 0
-) -> int:
-    non_guests = (
+def get_non_guest_user_count(realm: Realm) -> int:
+    return (
         UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
         .exclude(role=UserProfile.ROLE_GUEST)
         .count()
-    ) + extra_non_guests_count
-
-    # This guest count calculation should match the similar query in render_stats().
-    guests = (
-        UserProfile.objects.filter(
-            realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
-        ).count()
-        + extra_guests_count
     )
+
+
+def get_guest_user_count(realm: Realm) -> int:
+    # Same query to get guest user count as in render_stats in analytics/views/stats.py.
+    return UserProfile.objects.filter(
+        realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
+    ).count()
+
+
+def get_seat_count(
+    realm: Realm, extra_non_guests_count: int = 0, extra_guests_count: int = 0
+) -> int:
+    non_guests = get_non_guest_user_count(realm) + extra_non_guests_count
+    guests = get_guest_user_count(realm) + extra_guests_count
 
     # This formula achieves the pricing of the first 5*N guests
     # being free of charge (where N is the number of non-guests in the organization)

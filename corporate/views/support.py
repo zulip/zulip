@@ -344,6 +344,12 @@ VALID_BILLING_MODALITY_VALUES = Literal[
     "charge_automatically",
 ]
 
+SHARED_SUPPORT_CONTEXT = {
+    "get_org_type_display_name": get_org_type_display_name,
+    "get_plan_type_name": get_plan_type_string,
+    "dollar_amount": cents_to_dollar_string,
+}
+
 
 @require_server_admin
 @typed_endpoint
@@ -368,7 +374,7 @@ def support(
     org_type: Json[NonNegativeInt] | None = None,
     max_invites: Json[NonNegativeInt] | None = None,
 ) -> HttpResponse:
-    context: dict[str, Any] = {}
+    context: dict[str, Any] = {**SHARED_SUPPORT_CONTEXT}
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
@@ -602,7 +608,6 @@ def support(
 
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
-    context["dollar_amount"] = cents_to_dollar_string
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
     context["REALM_PLAN_TYPES"] = get_realm_plan_type_options()
@@ -691,7 +696,7 @@ def remote_servers_support(
     ]
     | None = None,
 ) -> HttpResponse:
-    context: dict[str, Any] = {}
+    context: dict[str, Any] = {**SHARED_SUPPORT_CONTEXT}
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
@@ -876,10 +881,7 @@ def remote_servers_support(
     context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
     context["remote_realms"] = remote_realms
     context["remote_realms_support_data"] = realm_support_data
-    context["get_plan_type_name"] = get_plan_type_string
-    context["get_org_type_display_name"] = get_org_type_display_name
     context["format_optional_datetime"] = format_optional_datetime
-    context["dollar_amount"] = cents_to_dollar_string
     context["server_analytics_link"] = remote_installation_stats_link
     context["REMOTE_PLAN_TIERS"] = get_remote_plan_tier_options()
     context["get_remote_server_billing_user_emails"] = (
