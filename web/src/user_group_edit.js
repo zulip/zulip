@@ -117,20 +117,37 @@ function update_group_permission_settings_elements(group) {
     const $permission_dropdown_elements =
         $group_permission_settings.find(".dropdown-widget-button");
 
+    const $permission_pill_container_elements = $group_permission_settings.find(".pill-container");
+
     if (settings_data.can_edit_user_group(group.id)) {
         $permission_dropdown_elements.prop("disabled", false);
+        $permission_pill_container_elements.find(".input").prop("contenteditable", true);
+        $permission_pill_container_elements.removeClass("group_setting_disabled");
 
         $permission_dropdown_elements.each(function () {
             const $dropdown_wrapper = $(this).closest(".dropdown_widget_with_label_wrapper");
             $dropdown_wrapper[0]._tippy?.destroy();
         });
+
+        $permission_pill_container_elements.each(function () {
+            $(this)[0]._tippy?.destroy();
+        });
     } else {
         $permission_dropdown_elements.prop("disabled", true);
+        $permission_pill_container_elements.find(".input").prop("contenteditable", false);
+        $permission_pill_container_elements.addClass("group_setting_disabled");
 
         $permission_dropdown_elements.each(function () {
             const $dropdown_wrapper = $(this).closest(".dropdown_widget_with_label_wrapper");
             settings_components.initialize_disable_btn_hint_popover(
                 $dropdown_wrapper,
+                $t({defaultMessage: "You do not have permission to edit this setting."}),
+            );
+        });
+
+        $permission_pill_container_elements.each(function () {
+            settings_components.initialize_disable_btn_hint_popover(
+                $(this),
                 $t({defaultMessage: "You do not have permission to edit this setting."}),
             );
         });
@@ -150,12 +167,18 @@ function show_membership_settings(group) {
 }
 
 function show_general_settings(group) {
-    user_group_components.setup_permissions_dropdown("can_manage_group", group, false);
     user_group_components.setup_permissions_dropdown("can_mention_group", group, false);
+    const $edit_container = get_edit_container(group);
+    const $pill_container = $edit_container.find(".can-manage-group-container .pill-container");
+    settings_components.create_group_setting_widget({
+        $pill_container,
+        setting_name: "can_manage_group",
+        group,
+    });
     update_general_panel_ui(group);
 
     if (!page_params.development_environment) {
-        $("#can_manage_group_widget_container").hide();
+        $(".can-manage-group-container").hide();
     }
 }
 
