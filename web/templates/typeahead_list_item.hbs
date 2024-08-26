@@ -26,7 +26,7 @@
         {{~/if~}}
     </strong>
     {{~#if has_pronouns}}
-        <span class="pronouns">({{pronouns}})</span>
+        <span class="pronouns">{{pronouns}}{{#if (or has_secondary_html has_secondary)}},{{/if}}</span>
     {{~/if}}
     {{~#if should_add_guest_user_indicator}}
         <i>({{t 'guest'}})</i>
