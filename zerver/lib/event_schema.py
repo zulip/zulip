@@ -1674,7 +1674,6 @@ update_message_content_fields: list[tuple[str, object]] = [
     ("is_me_message", bool),
     ("orig_content", str),
     ("orig_rendered_content", str),
-    ("prev_rendered_content_version", int),
 ]
 
 update_message_content_or_embedded_data_fields: list[tuple[str, object]] = [

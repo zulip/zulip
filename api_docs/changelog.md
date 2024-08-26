@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 284**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message),
+  [`POST /zulip-outgoing-webhook`](/api/zulip-outgoing-webhooks): Removed
+  the `prev_rendered_content_version` field from the `edit_history` object
+  within message objects and the `update_message` event type as it is an
+  internal server implementation detail not used by any client.
+
 **Feature level 283**
 
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),

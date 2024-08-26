@@ -35,7 +35,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
 
-API_FEATURE_LEVEL = 283  # Last bumped for can_manage_group
+API_FEATURE_LEVEL = 284  # Last bumped for removing 'prev_rendered_content_version'
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
