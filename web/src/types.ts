@@ -40,7 +40,6 @@ export type UpdateMessageEvent = {
     topic_links?: TopicLink[];
     orig_content?: string;
     orig_rendered_content?: string;
-    prev_rendered_content_version?: number;
     content?: string;
     rendered_content?: string;
     is_me_message?: boolean;

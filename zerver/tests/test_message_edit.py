@@ -67,9 +67,14 @@ class EditMessageTest(ZulipTestCase):
         )
 
         if msg.edit_history:
+            message_edit_history = orjson.loads(msg.edit_history)
+            for item in message_edit_history:
+                if "prev_rendered_content_version" in item:
+                    del item["prev_rendered_content_version"]
+
             self.assertEqual(
                 fetch_message_dict["edit_history"],
-                orjson.loads(msg.edit_history),
+                message_edit_history,
             )
 
     def test_edit_message_no_changes(self) -> None:
