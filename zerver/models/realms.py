@@ -555,7 +555,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     PLAN_TYPE_STANDARD_FREE = 4
     PLAN_TYPE_PLUS = 10
 
-    # Used for creating realms with different plan types.
+    # Used to check valid plan_type values and when populating test billing realms.
     ALL_PLAN_TYPES = {
         PLAN_TYPE_SELF_HOSTED: "self-hosted-plan",
         PLAN_TYPE_LIMITED: "limited-plan",
@@ -1208,6 +1208,19 @@ def get_corresponding_policy_value_for_group_setting(
 
     assert valid_policy_enums == Realm.COMMON_POLICY_TYPES
     return Realm.POLICY_MEMBERS_ONLY
+
+
+def get_default_max_invites_for_realm_plan_type(plan_type: int) -> int | None:
+    assert plan_type in Realm.ALL_PLAN_TYPES
+    if plan_type in [
+        Realm.PLAN_TYPE_PLUS,
+        Realm.PLAN_TYPE_STANDARD,
+        Realm.PLAN_TYPE_STANDARD_FREE,
+    ]:
+        return Realm.INVITES_STANDARD_REALM_DAILY_MAX
+    if plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
+        return None
+    return settings.INVITES_DEFAULT_REALM_DAILY_MAX
 
 
 class RealmDomain(models.Model):
