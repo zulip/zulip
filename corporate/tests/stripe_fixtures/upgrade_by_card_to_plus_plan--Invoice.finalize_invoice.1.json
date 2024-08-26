@@ -16,6 +16,7 @@
     "liability": null,
     "status": null
   },
+  "automatically_finalizes_at": null,
   "billing_reason": "manual",
   "charge": null,
   "collection_method": "charge_automatically",
@@ -41,9 +42,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QeDV4ZzlZR2I5dXhCa3dweGhJYkMxbk5wcUxBUm16LDEwNDA1MjEyNQ02004QD3cwbG?s=ap",
-  "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QeDV4ZzlZR2I5dXhCa3dweGhJYkMxbk5wcUxBUm16LDEwNDA1MjEyNQ02004QD3cwbG/pdf?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED-1?s=ap",
+  "id": "NORMALIZED-10",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED-1/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -59,8 +60,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000001",
-        "invoice": "in_NORMALIZED00000000000001",
+        "id": "NORMALIZED-11",
+        "invoice": "NORMALIZED-10",
         "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},
@@ -76,7 +77,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000001",
+          "id": "NORMALIZED-12",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
@@ -106,11 +107,12 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
+    "url": "/v1/invoices/NORMALIZED-10/lines"
   },
   "livemode": false,
   "metadata": {
     "billing_schedule": "1",
+    "current_plan_id": "None",
     "license_management": "automatic",
     "licenses": "6",
     "on_free_trial": "False",

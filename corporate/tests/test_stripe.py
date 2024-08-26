@@ -244,6 +244,7 @@ def normalize_fixture_data(
         r'"client_secret": "([\w]+)"': "NORMALIZED-%d",
         r'"url": "https://billing.stripe.com/p/session/test_([\w]+)"': "NORMALIZED-%d",
         r'"url": "https://checkout.stripe.com/c/pay/cs_test_([\w#%]+)"': "NORMALIZED-%d",
+        r'"receipt_url": "https://pay.stripe.com/receipts/invoices/([\w-]+)\?s=[\w]+"': "NORMALIZED-%d",
         r'"hosted_invoice_url": "https://invoice.stripe.com/i/acct_[\w]+/test_[\w,]+\?s=[\w]+"': '"hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED-%d?s=ap"',
         r'"invoice_pdf": "https://pay.stripe.com/invoice/acct_[\w]+/test_[\w,]+/pdf\?s=[\w]+"': '"invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED-%d/pdf?s=ap"',
         r'"id": "([\w]+)"': "NORMALIZED-%d",
