@@ -27,9 +27,7 @@ from tools.setup.emoji.emoji_setup_utils import (
     get_emoji_code,
 )
 
-TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
-TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, "web", "generated", "emoji-styles")
-EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
+EMOJI_CACHE_BASE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, "tools", "setup", "emoji")
 NODE_MODULES_PATH = os.path.join(ZULIP_PATH, "node_modules")
 
@@ -90,36 +88,41 @@ os.chdir(EMOJI_SCRIPT_DIR_PATH)
 
 
 def main() -> None:
-    if not os.access(EMOJI_CACHE_PATH, os.W_OK):
+    if not os.access(EMOJI_CACHE_BASE_PATH, os.W_OK):
         # Note: In production, this block will fail, since we don't
         # assume sudo access; but it should never run in production
-        # anyway, because EMOJI_CACHE_PATH is created by Puppet before
+        # anyway, because EMOJI_CACHE_BASE_PATH is created by Puppet before
         # build_emoji would be run.
-        run_as_root(["mkdir", "-p", EMOJI_CACHE_PATH])
-        run_as_root(["chown", f"{os.getuid()}:{os.getgid()}", EMOJI_CACHE_PATH])
+        run_as_root(["mkdir", "-p", EMOJI_CACHE_BASE_PATH])
+        run_as_root(["chown", f"{os.getuid()}:{os.getgid()}", EMOJI_CACHE_BASE_PATH])
 
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
-    source_emoji_dump = os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, "emoji")
-    success_stamp = os.path.join(source_emoji_dump, ".success-stamp")
+    emoji_cache_path = os.path.join(EMOJI_CACHE_BASE_PATH, sha1_hexdigest)
+    success_stamp = os.path.join(emoji_cache_path, ".success-stamp")
 
     if not os.path.exists(success_stamp):
         print("Dumping emojis ...")
-        dump_emojis(source_emoji_dump)
+        dump_emojis(emoji_cache_path)
         with open(success_stamp, "w") as f:
             f.close()
 
-    print(f"build_emoji: Using cached emojis from {source_emoji_dump}")
-    if os.path.lexists(TARGET_EMOJI_DUMP):
-        os.remove(TARGET_EMOJI_DUMP)
-    os.symlink(source_emoji_dump, TARGET_EMOJI_DUMP)
+    print(f"build_emoji: Using cached emojis from {emoji_cache_path}")
 
+    # /srv/zulip-emoji-cache/*/static gets symlinked to ZULIP_PATH/static/generated/emoji
+    TARGET_STATIC_EMOJI = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
+    if os.path.lexists(TARGET_STATIC_EMOJI):
+        os.remove(TARGET_STATIC_EMOJI)
+    os.symlink(os.path.join(emoji_cache_path, "static"), TARGET_STATIC_EMOJI)
+
+    # /srv/zulip-emoji-cache/*/web gets copied to ZULIP_PATH/web/generated
     # These must not be symlinked so webpack can resolve module references.
+    TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, "web", "generated", "emoji-styles")
     os.makedirs(TARGET_EMOJI_STYLES, exist_ok=True)
     to_remove = set(os.listdir(TARGET_EMOJI_STYLES))
+    source_emoji_dump = os.path.join(emoji_cache_path, "web", "emoji-styles")
     for filename in os.listdir(source_emoji_dump):
-        if filename.endswith(".css"):
-            shutil.copy2(os.path.join(source_emoji_dump, filename), TARGET_EMOJI_STYLES)
-            to_remove.discard(filename)
+        shutil.copy2(os.path.join(source_emoji_dump, filename), TARGET_EMOJI_STYLES)
+        to_remove.discard(filename)
     for filename in to_remove:
         os.remove(os.path.join(TARGET_EMOJI_STYLES, filename))
 
@@ -224,7 +227,9 @@ def generate_sprite_css_files(
                 pos_y=percent(emoji["sheet_y"] / (n - 1)),
             )
 
-    SPRITE_CSS_PATH = os.path.join(cache_path, f"{emojiset}-sprite.css")
+    SPRITE_STYLES_DIRECTORY = os.path.join(cache_path, "web", "emoji-styles")
+    os.makedirs(SPRITE_STYLES_DIRECTORY, exist_ok=True)
+    SPRITE_CSS_PATH = os.path.join(SPRITE_STYLES_DIRECTORY, f"{emojiset}-sprite.css")
     with open(SPRITE_CSS_PATH, "w") as f:
         f.write(
             SPRITE_CSS_FILE_TEMPLATE.format(
@@ -305,9 +310,9 @@ def setup_emoji_farms(cache_path: str, emoji_data: list[dict[str, Any]]) -> None
         src_emoji_farm = os.path.join(
             NODE_MODULES_PATH, "emoji-datasource-" + emojiset, "img", alt_name, "64"
         )
-        target_emoji_farm = os.path.join(cache_path, "images-" + emojiset + "-64")
+        target_emoji_farm = os.path.join(cache_path, "static", "images-" + emojiset + "-64")
         os.makedirs(target_emoji_farm, exist_ok=True)
-        print("Copying individual image files...")
+        print(f"Copying individual {emojiset} image files...")
         for emoji_dict in emoji_data:
             if emoji_dict["has_img_" + alt_name]:
                 ensure_emoji_image(emoji_dict, src_emoji_farm, target_emoji_farm)
@@ -324,7 +329,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: list[dict[str, Any]]) -> None
         # We hardcode octopus emoji image to Google emoji set's old
         # "cute octopus" image. Copy it to the emoji farms.
         input_img_file = os.path.join(EMOJI_SCRIPT_DIR_PATH, "1f419.png")
-        output_img_file = os.path.join(cache_path, "images-" + emojiset + "-64", "1f419.png")
+        output_img_file = os.path.join(target_emoji_farm, "1f419.png")
         shutil.copyfile(input_img_file, output_img_file)
 
         generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name, fallback_emoji_data)
@@ -346,10 +351,9 @@ def setup_old_emoji_farm(
     cache_path: str, emoji_map: dict[str, str], emoji_data: list[dict[str, Any]]
 ) -> None:
     # Code for setting up old emoji farm.
-    os.chdir(cache_path)
-    emoji_cache_path = os.path.join(cache_path, "images", "emoji")
-    unicode_emoji_cache_path = os.path.join(cache_path, "images", "emoji", "unicode")
-    google_emoji_cache_path = os.path.join(cache_path, "images-google-64")
+    emoji_cache_path = os.path.join(cache_path, "static", "images", "emoji")
+    unicode_emoji_cache_path = os.path.join(cache_path, "static", "images", "emoji", "unicode")
+    google_emoji_cache_path = os.path.join(cache_path, "static", "images-google-64")
     os.makedirs(emoji_cache_path, exist_ok=True)
     os.makedirs(unicode_emoji_cache_path, exist_ok=True)
 
@@ -382,7 +386,7 @@ def generate_map_files(cache_path: str, emoji_catalog: dict[str, list[str]]) -> 
     codepoint_to_name = generate_codepoint_to_name_map(EMOJI_NAME_MAPS)
     name_to_codepoint = generate_name_to_codepoint_map(EMOJI_NAME_MAPS)
 
-    EMOJI_CODES_FILE_PATH = os.path.join(cache_path, "emoji_codes.json")
+    EMOJI_CODES_FILE_PATH = os.path.join(cache_path, "static", "emoji_codes.json")
     with open(EMOJI_CODES_FILE_PATH, "wb") as emoji_codes_file:
         emoji_codes_file.write(
             orjson.dumps(
@@ -404,7 +408,7 @@ def generate_map_files(cache_path: str, emoji_catalog: dict[str, list[str]]) -> 
     # we'll probably instead do #18121 which will make this file obsolete.
     # So this is a temporary solution. CZO discussion:
     # https://chat.zulip.org/#narrow/channel/378-api-design/topic/currently.20supported.20emoji/near/1394598
-    EMOJI_API_FILE_PATH = os.path.join(cache_path, "emoji_api.json")
+    EMOJI_API_FILE_PATH = os.path.join(cache_path, "static", "emoji_api.json")
     with open(EMOJI_API_FILE_PATH, "wb") as emoji_api_file:
         emoji_api_file.write(
             orjson.dumps(
@@ -445,7 +449,8 @@ def dump_emojis(cache_path: str) -> None:
 
     # This file is needed to translate emoji when importing data from Slack.
     shutil.copyfile(
-        EMOJI_DATA_FILE_PATH, os.path.join(cache_path, "emoji-datasource-google-emoji.json")
+        EMOJI_DATA_FILE_PATH,
+        os.path.join(cache_path, "static", "emoji-datasource-google-emoji.json"),
     )
 
     # Generate various map files.
