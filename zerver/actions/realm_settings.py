@@ -46,7 +46,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import get_default_max_invites_for_realm_plan_type, get_realm
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -700,22 +700,12 @@ def do_change_realm_org_type(
 @transaction.atomic(durable=True)
 def do_change_realm_max_invites(realm: Realm, max_invites: int, acting_user: UserProfile) -> None:
     old_value = realm.max_invites
-    new_max = max_invites
-
-    # Reset to default maximum for plan type
-    if new_max == 0:
-        if realm.plan_type == Realm.PLAN_TYPE_PLUS:
-            new_max = Realm.INVITES_STANDARD_REALM_DAILY_MAX
-        elif realm.plan_type == Realm.PLAN_TYPE_STANDARD:
-            new_max = Realm.INVITES_STANDARD_REALM_DAILY_MAX
-        elif realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
-            new_max = None  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
-        elif realm.plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
-            new_max = Realm.INVITES_STANDARD_REALM_DAILY_MAX
-        elif realm.plan_type == Realm.PLAN_TYPE_LIMITED:
-            new_max = settings.INVITES_DEFAULT_REALM_DAILY_MAX
-
-    realm.max_invites = new_max
+    if max_invites == 0:
+        # Reset to default maximum for plan type
+        new_max = get_default_max_invites_for_realm_plan_type(realm.plan_type)
+    else:
+        new_max = max_invites
+    realm.max_invites = new_max  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
     realm.save(update_fields=["_max_invites"])
 
     RealmAuditLog.objects.create(
@@ -738,6 +728,8 @@ def do_change_realm_plan_type(
     from zproject.backends import AUTH_BACKEND_NAME_MAP
 
     old_value = realm.plan_type
+    if plan_type not in Realm.ALL_PLAN_TYPES:
+        raise AssertionError("Invalid plan type")
 
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         # We do not allow public access on limited plans.
@@ -781,23 +773,11 @@ def do_change_realm_plan_type(
         extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
-    if plan_type == Realm.PLAN_TYPE_PLUS:
-        realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
-        realm.message_visibility_limit = None
-    elif plan_type == Realm.PLAN_TYPE_STANDARD:
-        realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
-        realm.message_visibility_limit = None
-    elif plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
-        realm.max_invites = None  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
-        realm.message_visibility_limit = None
-    elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
-        realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
-        realm.message_visibility_limit = None
-    elif plan_type == Realm.PLAN_TYPE_LIMITED:
-        realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
+    realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
+    if plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
     else:
-        raise AssertionError("Invalid plan type")
+        realm.message_visibility_limit = None
 
     update_first_visible_message_id(realm)
 

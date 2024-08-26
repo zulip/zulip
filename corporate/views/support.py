@@ -75,7 +75,11 @@ from zerver.models import (
     RealmReactivationStatus,
     UserProfile,
 )
-from zerver.models.realms import get_org_type_display_name, get_realm
+from zerver.models.realms import (
+    get_default_max_invites_for_realm_plan_type,
+    get_org_type_display_name,
+    get_realm,
+)
 from zerver.models.users import get_user_profile_by_id
 from zerver.views.invite import get_invitee_emails_set
 from zilencer.lib.remote_counts import MissingDataError, compute_max_monthly_messages
@@ -314,13 +318,10 @@ def get_realm_plan_type_options_for_discount() -> list[SupportSelectOption]:
 
 
 def get_default_max_invites_for_plan_type(realm: Realm) -> int:
-    if realm.plan_type in [
-        Realm.PLAN_TYPE_PLUS,
-        Realm.PLAN_TYPE_STANDARD,
-        Realm.PLAN_TYPE_STANDARD_FREE,
-    ]:
-        return Realm.INVITES_STANDARD_REALM_DAILY_MAX
-    return settings.INVITES_DEFAULT_REALM_DAILY_MAX
+    default_max = get_default_max_invites_for_realm_plan_type(realm.plan_type)
+    if default_max is None:
+        return settings.INVITES_DEFAULT_REALM_DAILY_MAX
+    return default_max
 
 
 def check_update_max_invites(realm: Realm, new_max: int, default_max: int) -> bool:
