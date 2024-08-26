@@ -84,17 +84,22 @@
         }
     }
 
+    .pronouns,
     .autocomplete_secondary {
         align-self: end;
         opacity: 0.8;
         font-size: 85%;
-        flex: 1 1 0;
         overflow: hidden;
         text-overflow: ellipsis;
         position: relative;
         top: -1px;
     }
 
+    .autocomplete_secondary {
+        flex: 1 1 0;
+    }
+
+    .active .pronouns,
     .active .autocomplete_secondary {
         opacity: 1;
     }
