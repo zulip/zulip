@@ -45,7 +45,7 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "postgresql-libs",  # libpq-dev on apt
     "openssl-devel",
     "jq",
-    "libvips",  # For thumbnailing
+    "vips",  # For thumbnailing
 ]
 
 REDHAT_VENV_DEPENDENCIES = [
