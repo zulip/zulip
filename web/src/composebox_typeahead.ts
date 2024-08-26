@@ -68,6 +68,7 @@ import * as util from "./util";
 type SlashCommand = {
     text: string;
     name: string;
+    info: string;
     aliases: NamedCurve;
     placeholder?: string;
 };
@@ -527,35 +528,40 @@ function should_show_custom_query(query: string, items: string[]): boolean {
 
 export const dev_only_slash_commands = [
     {
-        text: $t({defaultMessage: "/dark (Switch to the dark theme)"}),
+        text: $t({defaultMessage: "/dark"}),
         name: "dark",
         aliases: "night",
+        info: $t({defaultMessage: "Switch to the dark theme"}),
     },
     {
-        text: $t({defaultMessage: "/light (Switch to light theme)"}),
+        text: $t({defaultMessage: "/light"}),
         name: "light",
         aliases: "day",
+        info: $t({defaultMessage: "Switch to light theme"}),
     },
 ];
 
 export const slash_commands = [
     {
-        text: $t({defaultMessage: "/me (Action message)"}),
+        text: $t({defaultMessage: "/me"}),
         name: "me",
         aliases: "",
         placeholder: $t({defaultMessage: "is …"}),
+        info: $t({defaultMessage: "Action message"}),
     },
     {
-        text: $t({defaultMessage: "/poll (Create a poll)"}),
+        text: $t({defaultMessage: "/poll"}),
         name: "poll",
         aliases: "",
         placeholder: $t({defaultMessage: "Question"}),
+        info: $t({defaultMessage: "Create a poll"}),
     },
     {
-        text: $t({defaultMessage: "/todo (Create a collaborative to-do list)"}),
+        text: $t({defaultMessage: "/todo"}),
         name: "todo",
         aliases: "",
         placeholder: $t({defaultMessage: "Task list"}),
+        info: $t({defaultMessage: "Create a collaborative to-do list"}),
     },
 ];
 
@@ -974,6 +980,7 @@ export function content_highlighter_html(item: TypeaheadSuggestion): string | un
         case "slash":
             return typeahead_helper.render_typeahead_item({
                 primary: item.text,
+                secondary: item.info,
             });
         case "stream":
             return typeahead_helper.render_stream(item);

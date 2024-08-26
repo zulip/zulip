@@ -225,8 +225,9 @@ const emojis_by_name = new Map(
 const me_command = {
     name: "me",
     aliases: "",
-    text: "translated: /me (Action message)",
+    text: "translated: /me",
     placeholder: "translated: is …",
+    info: "translated: Action message",
 };
 const me_command_item = slash_item(me_command);
 
@@ -239,14 +240,16 @@ const my_command_item = slash_item({
 const dark_command = {
     name: "dark",
     aliases: "night",
-    text: "translated: /dark (Switch to the dark theme)",
+    text: "translated: /dark",
+    info: "translated: Switch to the dark theme",
 };
 const dark_command_item = slash_item(dark_command);
 
 const light_command = {
     name: "light",
     aliases: "day",
-    text: "translated: /light (Switch to light theme)",
+    text: "translated: /light",
+    info: "translated: Switch to light theme",
 };
 const light_command_item = slash_item(light_command);
 
@@ -1710,15 +1713,17 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test no#o", []);
 
     const poll_command = {
-        text: "translated: /poll (Create a poll)",
+        text: "translated: /poll",
         name: "poll",
+        info: "translated: Create a poll",
         aliases: "",
         placeholder: "translated: Question",
         type: "slash",
     };
     const todo_command = {
-        text: "translated: /todo (Create a collaborative to-do list)",
+        text: "translated: /todo",
         name: "todo",
+        info: "translated: Create a collaborative to-do list",
         aliases: "",
         placeholder: "translated: Task list",
         type: "slash",
@@ -1905,12 +1910,14 @@ test("content_highlighter_html", ({override_rewire}) => {
     ct.get_or_set_completing_for_tests("slash");
     let th_render_slash_command_called = false;
     const me_slash = {
-        text: "/me (Action message)",
+        text: "/me",
         type: "slash",
+        info: "translated: Action message",
     };
     override_rewire(typeahead_helper, "render_typeahead_item", (item) => {
         assert.deepEqual(item, {
-            primary: "/me (Action message)",
+            primary: "/me",
+            secondary: "translated: Action message",
         });
         th_render_slash_command_called = true;
     });
