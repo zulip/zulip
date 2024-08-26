@@ -375,7 +375,7 @@ if [ "$package_system" = apt ]; then
     # Note that any additions to these lists must also be added to
     # `zulip::profile::base` such that the new dependency is seen by
     # upgrades, as well as new installs.
-    if ! apt-get install -y \
+    if ! apt-get install -y --no-install-recommends \
         python3 python3-yaml puppet git curl jq crudini \
         "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
