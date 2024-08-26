@@ -37,7 +37,6 @@ const message_edit_history_entry_schema = z.object({
     timestamp: z.number(),
     prev_content: z.optional(z.string()),
     prev_rendered_content: z.optional(z.string()),
-    prev_rendered_content_version: z.optional(z.number()),
     prev_stream: z.optional(z.number()),
     prev_topic: z.optional(z.string()),
     stream: z.optional(z.number()),

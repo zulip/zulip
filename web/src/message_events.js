@@ -155,7 +155,6 @@ export function update_messages(events) {
                         user_id: event.user_id,
                         prev_content: event.orig_content,
                         prev_rendered_content: event.orig_rendered_content,
-                        prev_rendered_content_version: event.prev_rendered_content_version,
                         timestamp: event.edit_timestamp,
                     };
                     // Add message's edit_history in message dict

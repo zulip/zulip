@@ -508,7 +508,6 @@ def do_update_message(
         target_message.rendered_content_version = markdown_version
         event["content"] = content
         event["rendered_content"] = rendering_result.rendered_content
-        event["prev_rendered_content_version"] = target_message.rendered_content_version
         event["is_me_message"] = Message.is_status_message(
             content, rendering_result.rendered_content
         )

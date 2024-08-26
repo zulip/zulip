@@ -2369,6 +2369,10 @@ paths:
                                 message.
 
                                 [inline-url-previews]: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#inline-url-previews
+
+                                **Changes**: In Zulip 10.0 (feature level 284), removed the
+                                `prev_rendered_content_version` field as it is an internal
+                                server implementation detail not used by any client.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2589,14 +2593,6 @@ paths:
 
                                     The original content of the message with ID `message_id`
                                     immediately prior to this edit, rendered as HTML.
-                                prev_rendered_content_version:
-                                  type: integer
-                                  description: |
-                                    Only present if this event changed the message content.
-
-                                    The Markdown processor version number for the pre-edit message.
-
-                                    Clients should ignore this field.
                                 content:
                                   type: string
                                   description: |
@@ -2644,7 +2640,6 @@ paths:
                                   "orig_rendered_content": "<p>hello</p>",
                                   "content": "new content",
                                   "rendered_content": "<p>new content</p>",
-                                  "prev_rendered_content_version": 1,
                                   "is_me_message": false,
                                   "propagate_mode": "change_all",
                                   "stream_id": 5,
@@ -21825,13 +21820,6 @@ components:
                   Only present if message's content was edited.
 
                   The rendered HTML representation of `prev_content`.
-              prev_rendered_content_version:
-                type: integer
-                description: |
-                  Only present if message's content was edited.
-
-                  The Markdown processor version number for the message
-                  immediately prior to this edit event.
               prev_stream:
                 type: integer
                 description: |
@@ -21908,6 +21896,10 @@ components:
             will be present in addition to `user_id` and `timestamp`.
 
             [disable-edit-history]: /help/disable-message-edit-history
+
+            **Changes**: In Zulip 10.0 (feature level 284), removed the
+            `prev_rendered_content_version` field as it is an internal
+            server implementation detail not used by any client.
         id:
           type: integer
           description: |
