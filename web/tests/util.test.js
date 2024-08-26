@@ -388,4 +388,16 @@ run_test("get_remaining_time", () => {
 run_test("the", () => {
     const list_with_one_item = ["foo"];
     assert.equal(util.the(list_with_one_item), "foo");
+
+    blueslip.expect("error", "the: expected only 1 item, got more");
+    const list_with_more_items = ["foo", "bar"];
+    // Error is thrown, but we still return the first item to avoid
+    // unnecessarily breaking the app.
+    assert.equal(util.the(list_with_more_items), "foo");
+
+    blueslip.expect("error", "the: expected only 1 item, got none");
+    // Error is thrown, but we still return the "first" item to avoid
+    // unnecessarily breaking the app for places we refactored this that
+    // were previously typed wrong but not breaking the app.
+    assert.equal(util.the([]), undefined);
 });
