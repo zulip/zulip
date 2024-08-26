@@ -33,6 +33,7 @@ export type SenderInfo = User & {
 export type PseudoMentionUser = {
     special_item_text: string;
     email: string;
+    secondary_text: string;
     pm_recipient_count: number;
     full_name: string;
     idx: number;

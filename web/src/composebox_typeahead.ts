@@ -485,7 +485,8 @@ export function broadcast_mentions(): PseudoMentionUser[] {
     }
 
     return wildcard_mention_array.map((mention, idx) => ({
-        special_item_text: `${mention} (${get_wildcard_string(mention)})`,
+        special_item_text: mention,
+        secondary_text: get_wildcard_string(mention),
         email: mention,
 
         // Always sort above, under the assumption that names will

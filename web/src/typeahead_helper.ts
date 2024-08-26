@@ -125,6 +125,7 @@ export function render_person(person: UserPillData | UserOrMentionPillData): str
     if (person.type === "broadcast") {
         return render_typeahead_item({
             primary: person.user.special_item_text,
+            secondary: person.user.secondary_text,
             is_person: true,
         });
     }

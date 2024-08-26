@@ -114,11 +114,16 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
     assert.equal(mention_topic.email, "topic");
     assert.equal(mention_topic.full_name, "topic");
 
-    assert.equal(mention_all.special_item_text, "all (translated: Notify channel)");
-    assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify channel)");
-    assert.equal(mention_stream.special_item_text, "stream (translated: Notify channel)");
-    assert.equal(mention_channel.special_item_text, "channel (translated: Notify channel)");
-    assert.equal(mention_topic.special_item_text, "topic (translated: Notify topic)");
+    assert.equal(mention_all.special_item_text, "all");
+    assert.equal(mention_all.secondary_text, "translated: Notify channel");
+    assert.equal(mention_everyone.special_item_text, "everyone");
+    assert.equal(mention_everyone.secondary_text, "translated: Notify channel");
+    assert.equal(mention_stream.special_item_text, "stream");
+    assert.equal(mention_stream.secondary_text, "translated: Notify channel");
+    assert.equal(mention_channel.special_item_text, "channel");
+    assert.equal(mention_channel.secondary_text, "translated: Notify channel");
+    assert.equal(mention_topic.special_item_text, "topic");
+    assert.equal(mention_topic.secondary_text, "translated: Notify topic");
 
     compose_validate.stream_wildcard_mention_allowed = () => false;
     compose_validate.topic_wildcard_mention_allowed = () => true;
@@ -142,8 +147,10 @@ run_test("verify wildcard mentions typeahead for direct message", () => {
     assert.equal(mention_everyone.email, "everyone");
     assert.equal(mention_everyone.full_name, "everyone");
 
-    assert.equal(mention_all.special_item_text, "all (translated: Notify recipients)");
-    assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify recipients)");
+    assert.equal(mention_all.special_item_text, "all");
+    assert.equal(mention_all.secondary_text, "translated: Notify recipients");
+    assert.equal(mention_everyone.special_item_text, "everyone");
+    assert.equal(mention_all.secondary_text, "translated: Notify recipients");
 });
 
 const emoji_stadium = {
