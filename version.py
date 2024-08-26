@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 283  # Last bumped for can_manage_group
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (292, 1)  # bumped 2024-08-25 to upgrade Node.js
+PROVISION_VERSION = (292, 2)  # bumped 2024-08-25 to upgrade shfmt
