@@ -10,7 +10,7 @@ import type {UserGroup} from "./user_groups";
 
 export let active_group_id: number | undefined;
 
-type group_setting = "can_manage_group" | "can_mention_group";
+type group_setting = "can_mention_group";
 export function setup_permissions_dropdown(
     setting_name: group_setting,
     group: UserGroup | undefined,
@@ -58,11 +58,7 @@ export function setup_permissions_dropdown(
         },
     });
     if (for_group_creation) {
-        if (setting_name === "can_mention_group") {
-            settings_components.set_new_group_can_mention_group_widget(group_setting_widget);
-        } else {
-            settings_components.set_new_group_can_manage_group_widget(group_setting_widget);
-        }
+        settings_components.set_new_group_can_mention_group_widget(group_setting_widget);
     } else {
         settings_components.set_dropdown_setting_widget(setting_name, group_setting_widget);
     }

@@ -150,13 +150,9 @@ function create_user_group(): void {
     }
     const user_ids = user_group_create_members.get_principals();
 
-    assert(settings_components.new_group_can_manage_group_widget !== null);
-    const can_manage_group_value = settings_components.new_group_can_manage_group_widget.value();
-    assert(can_manage_group_value !== undefined);
-    const can_manage_group =
-        typeof can_manage_group_value === "number"
-            ? can_manage_group_value
-            : Number.parseInt(can_manage_group_value, 10);
+    const can_manage_group = settings_components.get_group_setting_widget_value(
+        $("#id_new_group_can_manage_group"),
+    );
 
     assert(settings_components.new_group_can_mention_group_widget !== null);
     const can_mention_group_value = settings_components.new_group_can_mention_group_widget.value();
@@ -170,8 +166,8 @@ function create_user_group(): void {
         name: group_name,
         description,
         members: JSON.stringify(user_ids),
-        can_manage_group,
         can_mention_group,
+        can_manage_group: JSON.stringify(can_manage_group),
     };
     loading.make_indicator($("#user_group_creating_indicator"), {
         text: $t({defaultMessage: "Creating group..."}),
@@ -243,6 +239,11 @@ export function set_up_handlers(): void {
         }
     });
 
-    user_group_components.setup_permissions_dropdown("can_manage_group", undefined, true);
+    const $pill_container = $container.find(".can-manage-group-container .pill-container");
+    settings_components.create_group_setting_widget({
+        $pill_container,
+        setting_name: "can_manage_group",
+    });
+
     user_group_components.setup_permissions_dropdown("can_mention_group", undefined, true);
 }

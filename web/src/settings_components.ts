@@ -8,6 +8,8 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
 import type {DropdownWidget} from "./dropdown_widget";
+import * as group_permission_settings from "./group_permission_settings";
+import * as group_setting_pill from "./group_setting_pill";
 import {$t} from "./i18n";
 import {
     LEGACY_FONT_SIZE_PX,
@@ -15,16 +17,21 @@ import {
     NON_COMPACT_MODE_FONT_SIZE_PX,
     NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
 } from "./information_density";
+import * as people from "./people";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import type {CustomProfileField} from "./state_data";
+import type {CustomProfileField, group_setting_type_schema} from "./state_data";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
+import type {GroupSettingPillContainer} from "./typeahead_helper";
 import type {HTMLSelectOneElement} from "./types";
+import * as user_group_pill from "./user_group_pill";
+import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
+import * as user_pill from "./user_pill";
 import * as util from "./util";
 
 const MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE = 2147483647;
@@ -465,7 +472,6 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
     return JSON.stringify(proposed_value);
 }
 
-export let new_group_can_manage_group_widget: DropdownWidget | null = null;
 export let new_group_can_mention_group_widget: DropdownWidget | null = null;
 
 const dropdown_widget_map = new Map<string, DropdownWidget | null>([
@@ -476,7 +482,6 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_create_multiuse_invite_group", null],
     ["can_remove_subscribers_group", null],
     ["realm_can_access_all_users_group", null],
-    ["can_manage_group", null],
     ["can_mention_group", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
@@ -511,10 +516,6 @@ export function set_dropdown_setting_widget(property_name: string, widget: Dropd
 
 export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
     new_group_can_mention_group_widget = widget;
-}
-
-export function set_new_group_can_manage_group_widget(widget: DropdownWidget): void {
-    new_group_can_manage_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(
@@ -648,7 +649,7 @@ function get_input_type($input_elem: JQuery, input_type?: string): string {
 export function get_input_element_value(
     input_elem: HTMLElement,
     input_type?: string,
-): boolean | number | string | null | undefined {
+): boolean | number | string | null | undefined | GroupSettingType {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
     let input_value;
@@ -696,6 +697,8 @@ export function get_input_element_value(
             return $input_elem.find(".language_selection_button span").attr("data-language-code");
         case "auth-methods":
             return JSON.stringify(get_auth_method_list_data());
+        case "group-setting-type":
+            return get_group_setting_widget_value($input_elem);
         default:
             return undefined;
     }
@@ -869,6 +872,39 @@ export function check_stream_settings_property_changed(
     return current_val !== proposed_val;
 }
 
+export function get_group_setting_widget_value($input_elem: JQuery): GroupSettingType {
+    const setting_name = extract_property_name($input_elem);
+    const pill_widget = get_group_setting_widget(setting_name);
+    assert(pill_widget !== null);
+
+    const setting_pills = pill_widget.items();
+    const direct_subgroups: number[] = [];
+    const direct_members: number[] = [];
+    for (const pill of setting_pills) {
+        if (pill.type === "user_group") {
+            direct_subgroups.push(pill.group_id);
+        } else {
+            assert(pill.user_id !== undefined);
+            direct_members.push(pill.user_id);
+        }
+    }
+
+    if (direct_members.length === 0 && direct_subgroups.length === 0) {
+        const nobody_group = user_groups.get_user_group_from_name("role:nobody")!;
+        return nobody_group.id;
+    }
+
+    if (direct_members.length === 0 && direct_subgroups.length === 1) {
+        assert(direct_subgroups[0] !== undefined);
+        return direct_subgroups[0];
+    }
+
+    return {
+        direct_subgroups,
+        direct_members,
+    };
+}
+
 export function check_group_property_changed(elem: HTMLElement, group: UserGroup): boolean {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -877,6 +913,8 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
     let proposed_val;
     switch (property_name) {
         case "can_manage_group":
+            proposed_val = get_group_setting_widget_value($elem);
+            break;
         case "can_mention_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
@@ -1019,6 +1057,7 @@ export function populate_data_for_realm_settings_request(
                     continue;
                 }
 
+                assert(typeof input_value !== "object");
                 data[property_name] = input_value;
             }
         }
@@ -1046,6 +1085,8 @@ export function populate_data_for_stream_settings_request(
                     };
                     continue;
                 }
+
+                assert(typeof input_value !== "object");
                 data[property_name] = input_value;
             }
         }
@@ -1089,6 +1130,7 @@ export function populate_data_for_custom_profile_field_request(
             const input_value = get_input_element_value(input_elem);
             if (input_value !== undefined && input_value !== null) {
                 const property_name = extract_property_name($input_elem);
+                assert(typeof input_value !== "object");
                 data[property_name] = input_value;
             }
         }
@@ -1107,6 +1149,7 @@ export function populate_data_for_default_realm_settings_request(
             const input_value = get_input_element_value(input_elem);
             if (input_value !== undefined && input_value !== null) {
                 const property_name: string = extract_property_name($input_elem, true);
+                assert(typeof input_value !== "object");
                 data[property_name] = input_value;
 
                 if (property_name === "dense_mode") {
@@ -1347,4 +1390,94 @@ export function initialize_disable_btn_hint_popover(
         tippy_opts.content = hint_text;
     }
     tippy.default(util.the($btn_wrapper), tippy_opts);
+}
+
+const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
+    ["can_manage_group", null],
+    ["new_group_can_manage_group", null],
+]);
+
+export function get_group_setting_widget(setting_name: string): GroupSettingPillContainer | null {
+    const pill_widget = group_setting_widget_map.get(setting_name);
+
+    if (pill_widget === undefined) {
+        blueslip.error("No dropdown list widget for property", {setting_name});
+        return null;
+    }
+
+    return pill_widget;
+}
+
+export function set_group_setting_widget_value(
+    property_name: string,
+    property_value: GroupSettingType,
+): void {
+    const pill_widget = get_group_setting_widget(property_name);
+    assert(pill_widget !== null);
+    pill_widget.clear();
+
+    if (typeof property_value === "number") {
+        const user_group = user_groups.get_user_group_from_id(property_value);
+        if (user_group.name === "role:nobody") {
+            return;
+        }
+        user_group_pill.append_user_group(user_group, pill_widget);
+    } else {
+        for (const setting_sub_group_id of property_value.direct_subgroups) {
+            const user_group = user_groups.get_user_group_from_id(setting_sub_group_id);
+            if (user_group.name === "role:nobody") {
+                continue;
+            }
+            user_group_pill.append_user_group(user_group, pill_widget);
+        }
+        for (const setting_user_id of property_value.direct_members) {
+            const user = people.get_user_by_id_assert_valid(setting_user_id);
+            user_pill.append_user(user, pill_widget);
+        }
+    }
+}
+
+export type GroupSettingType = z.output<typeof group_setting_type_schema>;
+
+type group_setting_name = "can_manage_group";
+
+export function create_group_setting_widget({
+    $pill_container,
+    setting_name,
+    group,
+}: {
+    $pill_container: JQuery;
+    setting_name: group_setting_name;
+    group?: UserGroup;
+}): void {
+    const pill_widget = group_setting_pill.create_pills($pill_container, setting_name);
+    const opts = {
+        setting_name,
+        group,
+    };
+    group_setting_pill.set_up_pill_typeahead({pill_widget, $pill_container, opts});
+
+    if (group === undefined) {
+        group_setting_widget_map.set("new_group_" + setting_name, pill_widget);
+    } else {
+        group_setting_widget_map.set(setting_name, pill_widget);
+    }
+
+    if (group !== undefined) {
+        set_group_setting_widget_value(setting_name, group[setting_name]);
+
+        pill_widget.onPillCreate(() => {
+            save_discard_group_widget_status_handler($("#group_permission_settings"), group);
+        });
+        pill_widget.onPillRemove(() => {
+            save_discard_group_widget_status_handler($("#group_permission_settings"), group);
+        });
+    } else {
+        const default_group_name = group_permission_settings.get_group_permission_setting_config(
+            setting_name,
+            "group",
+        )!.default_group_name;
+        const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
+        set_group_setting_widget_value("new_group_" + setting_name, default_group_id);
+    }
 }

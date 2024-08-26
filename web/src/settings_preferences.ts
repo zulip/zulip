@@ -256,6 +256,7 @@ export function set_up(settings_panel: SettingsPanel): void {
             assert(setting !== undefined);
             const data: Record<string, string | boolean | number> = {};
             const setting_value = settings_components.get_input_element_value(this)!;
+            assert(typeof setting_value !== "object");
             data[setting] = setting_value;
 
             if (setting === "dense_mode") {
