@@ -1,5 +1,4 @@
 import _ from "lodash";
-import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import type {MatchedMessage, Message, RawMessage} from "./message_store";
@@ -458,6 +457,12 @@ export function get_remaining_time(start_time: number, duration: number): number
 // Helper for shorthand for Typescript to get an item from a list with
 // exactly one item.
 export function the<T>(items: T[] | JQuery<T>): T {
-    assert.equal(items.length, 1, "the: expected exactly one item");
+    if (items.length === 0) {
+        blueslip.error("the: expected only 1 item, got none");
+    } else if (items.length > 1) {
+        blueslip.error("the: expected only 1 item, got more", {
+            num_items: items.length,
+        });
+    }
     return items[0]!;
 }
