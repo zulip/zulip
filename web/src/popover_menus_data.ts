@@ -15,7 +15,7 @@ import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
-import type {ColorSchemeDetails} from "./settings_config";
+import type {ColorSchemeValues} from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import {current_user, realm} from "./state_data";
@@ -88,7 +88,7 @@ type PersonalMenuContext = {
     status_text: string | undefined;
     status_emoji_info: UserStatusEmojiInfo | undefined;
     user_color_scheme: number;
-    color_scheme_values: ColorSchemeDetails;
+    color_scheme_values: ColorSchemeValues;
 };
 
 type GearMenuContext = {
@@ -122,7 +122,7 @@ type GearMenuContext = {
     sponsorship_pending: boolean;
     user_has_billing_access: boolean;
     user_color_scheme: number;
-    color_scheme_values: ColorSchemeDetails;
+    color_scheme_values: ColorSchemeValues;
 };
 
 export function get_actions_popover_content_context(message_id: number): ActionPopoverContext {
