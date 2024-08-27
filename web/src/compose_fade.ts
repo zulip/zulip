@@ -10,14 +10,8 @@ import * as message_viewport from "./message_viewport";
 import * as people from "./people";
 import * as rows from "./rows";
 import type {TopicLink} from "./types";
+import type {AllVisibilityPolicies} from "./user_topics";
 import * as util from "./util";
-
-type AllVisibilityPolicies = {
-    INHERIT: 0;
-    MUTED: 1;
-    UNMUTED: 2;
-    FOLLOWED: 3;
-};
 
 // TODO/TypeScript: Move this to message_list_view.js when it's migrated to TypeScript.
 type MessageContainer = {
