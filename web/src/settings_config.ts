@@ -130,7 +130,7 @@ export const web_home_view_values = {
 };
 
 type ColorScheme = "automatic" | "dark" | "light";
-export type ColorSchemeDetails = {
+export type ColorSchemeValues = {
     [key in ColorScheme]: {
         code: number;
         description: string;
