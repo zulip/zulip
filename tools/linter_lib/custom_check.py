@@ -246,6 +246,7 @@ python_rules = RuleList(
             "exclude": FILES_WITH_LEGACY_SUBJECT,
             "exclude_line": {
                 ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+                ("zerver/views/streams.py", "message__subject__iexact=topic_name,"),
             },
             "include_only": {
                 "zerver/data_import/",
