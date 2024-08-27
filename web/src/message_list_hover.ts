@@ -9,8 +9,8 @@ import * as rows from "./rows";
 import * as thumbnail from "./thumbnail";
 import {user_settings} from "./user_settings";
 
-let $current_message_hover;
-export function message_unhover() {
+let $current_message_hover: JQuery | undefined;
+export function message_unhover(): void {
     if ($current_message_hover === undefined) {
         return;
     }
@@ -18,10 +18,11 @@ export function message_unhover() {
     $current_message_hover = undefined;
 }
 
-export function message_hover($message_row) {
+export function message_hover($message_row: JQuery): void {
     const id = rows.id($message_row);
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(id);
+    assert(message !== undefined);
 
     if ($current_message_hover && rows.id($current_message_hover) === id) {
         return;
@@ -54,8 +55,8 @@ export function message_hover($message_row) {
     }
 }
 
-export function initialize() {
-    $("#main_div").on("mouseover", ".message-list .message_row", function () {
+export function initialize(): void {
+    $("#main_div").on("mouseover", ".message-list .message_row", function (this: HTMLElement) {
         const $row = $(this).closest(".message_row");
         message_hover($row);
     });
@@ -64,12 +65,12 @@ export function initialize() {
         message_unhover();
     });
 
-    $("#main_div").on("mouseover", ".sender_info_hover", function () {
+    $("#main_div").on("mouseover", ".sender_info_hover", function (this: HTMLElement) {
         const $row = $(this).closest(".message_row");
         $row.addClass("sender_info_hovered");
     });
 
-    $("#main_div").on("mouseout", ".sender_info_hover", function () {
+    $("#main_div").on("mouseout", ".sender_info_hover", function (this: HTMLElement) {
         const $row = $(this).closest(".message_row");
         $row.removeClass("sender_info_hovered");
     });
@@ -77,7 +78,7 @@ export function initialize() {
     $("#main_div").on(
         "mouseover",
         '.message-list div.message_inline_image img[data-animated="true"]',
-        function () {
+        function (this: HTMLElement) {
             if (user_settings.web_animate_image_previews !== "on_hover") {
                 return;
             }
@@ -87,7 +88,7 @@ export function initialize() {
             );
             $img.attr(
                 "src",
-                $img.attr("src").replace(/\/[^/]+$/, "/" + thumbnail.animated_format.name),
+                $img.attr("src")!.replace(/\/[^/]+$/, "/" + thumbnail.animated_format.name),
             );
         },
     );
@@ -95,7 +96,7 @@ export function initialize() {
     $("#main_div").on(
         "mouseout",
         '.message-list div.message_inline_image img[data-animated="true"]',
-        function () {
+        function (this: HTMLElement) {
             if (user_settings.web_animate_image_previews !== "on_hover") {
                 return;
             }
@@ -103,17 +104,17 @@ export function initialize() {
             $img.closest(".message_inline_image").addClass("message_inline_animated_image_still");
             $img.attr(
                 "src",
-                $img.attr("src").replace(/\/[^/]+$/, "/" + thumbnail.preferred_format.name),
+                $img.attr("src")!.replace(/\/[^/]+$/, "/" + thumbnail.preferred_format.name),
             );
         },
     );
 
-    function handle_video_preview_mouseenter($elem) {
+    function handle_video_preview_mouseenter($elem: JQuery): void {
         // Set image height and css vars for play button position, if not done already
         const setPosition = !$elem.data("entered-before");
         if (setPosition) {
-            const imgW = $elem.find("img")[0].width;
-            const imgH = $elem.find("img")[0].height;
+            const imgW = $elem.find("img")[0]!.width;
+            const imgH = $elem.find("img")[0]!.height;
             // Ensure height doesn't change on mouse enter
             $elem.css("height", `${imgH}px`);
             // variables to set play button position
@@ -125,7 +126,7 @@ export function initialize() {
         $elem.addClass("fa fa-play");
     }
 
-    $("#main_div").on("mouseenter", ".youtube-video a", function () {
+    $("#main_div").on("mouseenter", ".youtube-video a", function (this: HTMLElement) {
         handle_video_preview_mouseenter($(this));
     });
 
@@ -133,7 +134,7 @@ export function initialize() {
         $(this).removeClass("fa fa-play");
     });
 
-    $("#main_div").on("mouseenter", ".embed-video a", function () {
+    $("#main_div").on("mouseenter", ".embed-video a", function (this: HTMLElement) {
         handle_video_preview_mouseenter($(this));
     });
 
