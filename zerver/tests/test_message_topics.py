@@ -4,7 +4,8 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.streams import do_change_stream_permission
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, UserMessage
+from zerver.lib.user_topics import set_topic_visibility_policy, topic_has_visibility_policy
+from zerver.models import Message, UserMessage, UserTopic
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -249,11 +250,19 @@ class TopicDeleteTest(ZulipTestCase):
             acting_user=user_profile,
         )
 
-        # ADMIN USER subscribed now
+        # NON-ADMIN USER follows the topic
+        set_topic_visibility_policy(
+            user_profile, [[stream_name, topic_name]], UserTopic.VisibilityPolicy.FOLLOWED
+        )
+
+        # ADMIN USER subscribed now and follows the topic
         user_profile = self.example_user("iago")
         self.subscribe(user_profile, stream_name)
         self.login_user(user_profile)
         new_last_msg_id = self.send_stream_message(user_profile, stream_name, topic_name=topic_name)
+        set_topic_visibility_policy(
+            user_profile, [[stream_name, topic_name]], UserTopic.VisibilityPolicy.FOLLOWED
+        )
 
         # Now admin deletes all messages in topic -- which should only
         # delete new_last_msg_id, i.e. the one sent since they joined.
@@ -267,6 +276,26 @@ class TopicDeleteTest(ZulipTestCase):
         result_dict = self.assert_json_success(result)
         self.assertTrue(result_dict["complete"])
         self.assertTrue(Message.objects.filter(id=last_msg_id).exists())
+
+        # Verify that we delete the UserTopic row only for 'iago' (ADMIN USER) as they can't
+        # access any messages in the topic. 'hamlet' (NON ADMIN USER) can still access the
+        # protected messages hence the UserTopic row for him is not deleted.
+        self.assertTrue(
+            topic_has_visibility_policy(
+                self.example_user("hamlet"),
+                stream.id,
+                topic_name,
+                UserTopic.VisibilityPolicy.FOLLOWED,
+            )
+        )
+        self.assertFalse(
+            topic_has_visibility_policy(
+                self.example_user("iago"),
+                stream.id,
+                topic_name,
+                UserTopic.VisibilityPolicy.FOLLOWED,
+            )
+        )
 
         # Try to delete all messages in the topic again. There are no messages accessible
         # to the administrator, so this should do nothing.

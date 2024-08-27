@@ -40,6 +40,7 @@ from zerver.actions.streams import (
     do_rename_stream,
     get_subscriber_ids,
 )
+from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import (
     check_if_user_can_manage_default_streams,
@@ -92,9 +93,10 @@ from zerver.lib.user_groups import (
     parse_group_setting_value,
     validate_group_setting_value_change,
 )
+from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Realm, Stream, UserProfile
+from zerver.models import Realm, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.users import get_system_bot
 
 
@@ -988,6 +990,38 @@ def delete_in_topic(
             if not messages_to_delete:
                 break
             do_delete_messages(user_profile.realm, messages_to_delete, acting_user=user_profile)
+
+    # Since the topic no longer exists, remove the user topic rows.
+    users_with_stale_user_topic_rows = [
+        user_topic.user_profile
+        for user_topic in get_users_with_user_topic_visibility_policy(stream.id, topic_name)
+    ]
+
+    if not stream.is_history_public_to_subscribers():
+        # In a private channel with protected history, delete the UserTopic
+        # records for exactly the users for whom after the topic deletion
+        # action, they no longer have access to any messages in the topic.
+        user_ids_with_access_to_protected_messages = set(
+            UserMessage.objects.filter(
+                user_profile__in=users_with_stale_user_topic_rows,
+                message__recipient_id=assert_is_not_none(stream.recipient_id),
+                message__subject__iexact=topic_name,
+            ).values_list("user_profile", flat=True)
+        )
+        users_with_stale_user_topic_rows = list(
+            filter(
+                lambda user_profile: user_profile.id
+                not in user_ids_with_access_to_protected_messages,
+                users_with_stale_user_topic_rows,
+            )
+        )
+
+    bulk_do_set_user_topic_visibility_policy(
+        users_with_stale_user_topic_rows,
+        stream,
+        topic_name,
+        visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+    )
 
     return json_success(request, data={"complete": True})
 
