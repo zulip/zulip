@@ -307,6 +307,25 @@ run_test("is_user_in_group", () => {
     assert.equal(user_groups.is_user_in_group(foo.id, 6), true);
     assert.equal(user_groups.is_user_in_group(foo.id, 3), false);
 
+    assert.equal(user_groups.is_user_in_setting_group(test.id, 4), true);
+    assert.equal(user_groups.is_user_in_setting_group(test.id, 1), true);
+    assert.equal(user_groups.is_user_in_setting_group(test.id, 6), true);
+    assert.equal(user_groups.is_user_in_setting_group(test.id, 3), false);
+
+    const anonymous_setting_group = {
+        direct_members: [8, 9],
+        direct_subgroups: [admins.id, test.id],
+    };
+    assert.equal(user_groups.is_user_in_setting_group(anonymous_setting_group, 8), true);
+    assert.equal(user_groups.is_user_in_setting_group(anonymous_setting_group, 9), true);
+    assert.equal(user_groups.is_user_in_setting_group(anonymous_setting_group, 10), false);
+
+    assert.equal(user_groups.is_user_in_setting_group(anonymous_setting_group, 1), true);
+    assert.equal(user_groups.is_user_in_setting_group(anonymous_setting_group, 4), true);
+    assert.equal(user_groups.is_user_in_setting_group(anonymous_setting_group, 6), true);
+    assert.equal(user_groups.is_user_in_setting_group(anonymous_setting_group, 2), false);
+    assert.equal(user_groups.is_user_in_setting_group(anonymous_setting_group, 3), false);
+
     blueslip.expect("error", "Could not find user group");
     assert.equal(user_groups.is_user_in_group(1111, 3), false);
 

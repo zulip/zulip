@@ -7,7 +7,7 @@ import * as group_permission_settings from "./group_permission_settings";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
-import type {StateData, user_group_schema} from "./state_data";
+import type {GroupSettingType, StateData, user_group_schema} from "./state_data";
 import {current_user} from "./state_data";
 import type {UserOrMention} from "./typeahead_helper";
 import type {UserGroupUpdateEvent} from "./types";
@@ -280,6 +280,28 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
 
     for (const group_id of subgroup_ids) {
         if (is_direct_member_of(user_id, group_id)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function is_user_in_setting_group(
+    setting_group: GroupSettingType,
+    user_id: number,
+): boolean {
+    if (typeof setting_group === "number") {
+        return is_user_in_group(setting_group, user_id);
+    }
+
+    const direct_members = setting_group.direct_members;
+    if (direct_members.includes(user_id)) {
+        return true;
+    }
+
+    const direct_subgroups = setting_group.direct_subgroups;
+    for (const direct_subgroup_id of direct_subgroups) {
+        if (is_user_in_group(direct_subgroup_id, user_id)) {
             return true;
         }
     }
