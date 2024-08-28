@@ -191,8 +191,9 @@ Override the default uwsgi backlog of 128 connections.
 
 #### `uwsgi_processes`
 
-Override the default `uwsgi` (Django) process count of 6 on hosts with
-more than 3.5GiB of RAM, 4 on hosts with less.
+Override the default `uwsgi` (Django) process count. It defaults to a sliding
+scale between 3 workers for hosts with under 3GB RAM, up to 16 workers for hosts
+with more than 24GB of RAM.
 
 #### `access_log_retention_days`
 
