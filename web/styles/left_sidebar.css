@@ -37,13 +37,6 @@
     margin-right: var(--left-sidebar-right-margin);
 }
 
-li.show-more-topics {
-    & a {
-        /* 12px at 14px/1em */
-        font-size: 0.8571em;
-    }
-}
-
 #streams_inline_icon,
 .streams_filter_icon {
     opacity: 0.5;
@@ -243,16 +236,16 @@ li.show-more-topics {
         }
 
         & li#show-more-direct-messages {
+            font-size: var(--font-size-sidebar-action-heading);
+            font-weight: var(--font-weight-sidebar-action-heading);
+            letter-spacing: var(--letter-spacing-sidebar-action-heading);
+            font-variant: var(--font-variant-sidebar-action-heading);
+            text-transform: var(--text-transform-sidebar-action-heading);
             cursor: pointer;
             /* The 'more conversations' line has no icons,
                so vertically align the text with the unread
                count, when one appears there. */
             align-items: baseline;
-
-            & a {
-                /* 12px at 14px/1em */
-                font-size: 0.8571em;
-            }
 
             .unread_count {
                 margin-top: 2px;
@@ -996,6 +989,14 @@ li.top_left_scheduled_messages {
     }
 }
 
+.sidebar-topic-action-heading {
+    font-size: var(--font-size-sidebar-action-heading);
+    font-weight: var(--font-weight-sidebar-action-heading);
+    font-variant: var(--font-variant-sidebar-action-heading);
+    font-feature-settings: var(--font-feature-settings-sidebar-action-heading);
+    text-transform: var(--text-transform-sidebar-action-heading);
+}
+
 .topic-list-filter {
     grid-area: row-content;
 }
@@ -1209,14 +1210,15 @@ li.topic-list-item {
 
 .dm-box {
     grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) var(
+        var(--left-sidebar-toggle-width-offset) [action-heading-start] var(
             --left-sidebar-icon-column-width
         )
-        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) minmax(
+        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) [action-heading-end] minmax(
             0,
             max-content
         )
         30px 0;
+    grid-template-rows: [action-heading-start] auto [action-heading-end];
 
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
@@ -1224,7 +1226,7 @@ li.topic-list-item {
     }
 
     .dm-name {
-        grid-area: row-content;
+        grid-area: action-heading;
     }
 
     .user_circle {
@@ -1294,9 +1296,12 @@ li.topic-list-item {
 
     .show-all-streams {
         grid-area: row-content;
+        font-size: var(--font-size-sidebar-action-heading);
+        font-weight: var(--font-weight-sidebar-action-heading);
+        font-variant: var(--font-variant-sidebar-action-heading);
+        text-transform: var(--text-transform-sidebar-action-heading);
         color: inherit;
         text-decoration: none;
-        text-transform: uppercase;
     }
 
     .unread_count {
@@ -1550,10 +1555,12 @@ li.topic-list-item {
         line-height: var(--line-height-sidebar-row);
         text-decoration: none;
         color: inherit;
-        /* 12px at 14px/1em */
 
         .hide-more-direct-messages-text {
-            font-size: 0.8571em;
+            font-size: var(--font-size-sidebar-action-heading);
+            font-weight: var(--font-weight-sidebar-action-heading);
+            font-variant: var(--font-variant-sidebar-action-heading);
+            text-transform: var(--text-transform-sidebar-action-heading);
             grid-area: row-content;
         }
 

@@ -48,11 +48,11 @@ information you need in the moment.
 1. If the **DIRECT MESSAGES** section in the left sidebar is collapsed, click the triangle to the
    left of **DIRECT MESSAGES** to expand it.
 
-1. Click **more conversations** at the bottom of the list of recent DM conversations.
+1. Click **MORE CONVERSATIONS** at the bottom of the list of recent DM conversations.
 
 !!! tip ""
 
-    To return to the channel list in the left sidebar, click **back to channels**.
+    To return to the channel list in the left sidebar, click **BACK TO CHANNELS**.
 
 {end_tabs}
 
@@ -63,7 +63,7 @@ information you need in the moment.
 
 1. Click on a channel in the left sidebar.
 
-1. Click **show all topics** at the bottom of the list of recent topics in the
+1. Click **SHOW ALL TOPICS** at the bottom of the list of recent topics in the
    selected channel.
 
 !!! tip ""
