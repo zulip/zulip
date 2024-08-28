@@ -13,6 +13,7 @@ from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
+from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.models import ArchivedAttachment, Attachment, Message, UserProfile
 from zerver.models.clients import get_client
 
@@ -401,24 +402,31 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
     def test_delete_batch_size(self) -> None:
-        attachments = [self.make_attachment("text.txt") for _ in range(10)]
+        # 3 attachments, each of which has 2 files because of the thumbnail
+        thumbnail_format = ThumbnailFormat("webp", 100, 75, animated=False)
+        with self.thumbnail_formats(thumbnail_format), self.captureOnCommitCallbacks(execute=True):
+            attachments = [self.make_attachment("img.png") for _ in range(3)]
 
         with (
-            patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 6),
+            patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 5),
             patch("zerver.actions.uploads.delete_message_attachments") as delete_mock,
         ):
             do_delete_old_unclaimed_attachments(1)
 
-        # We expect all of the 10 attachments to be deleted,
-        # across two different calls of 6- and 4-element lists
+        # We expect all of the 5 attachments to be deleted, across two
+        # different calls of 5- and 1-element lists.  Since each image
+        # attachment is two files, this means that the thumbnail and
+        # its original is split across batches.
         self.assertEqual(delete_mock.call_count, 2)
-        self.assert_length(delete_mock.call_args_list[0][0][0], 6)
-        self.assert_length(delete_mock.call_args_list[1][0][0], 4)
+        self.assert_length(delete_mock.call_args_list[0][0][0], 5)
+        self.assert_length(delete_mock.call_args_list[1][0][0], 1)
 
-        self.assertEqual(
-            set(delete_mock.call_args_list[0][0][0] + delete_mock.call_args_list[1][0][0]),
-            {attachment.path_id for attachment in attachments},
-        )
+        deleted = set(delete_mock.call_args_list[0][0][0] + delete_mock.call_args_list[1][0][0])
+        existing = set()
+        for attachment in attachments:
+            existing.add(attachment.path_id)
+            existing.add(f"thumbnail/{attachment.path_id}/{thumbnail_format!s}")
+        self.assertEqual(deleted, existing)
 
     def test_delete_batch_size_archived(self) -> None:
         hamlet = self.example_user("hamlet")
