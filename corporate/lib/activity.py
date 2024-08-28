@@ -42,11 +42,18 @@ class RemoteActivityPlanData:
     rate: str
 
 
+@dataclass
+class ActivityHeaderEntry:
+    name: str
+    value: str | Markup
+
+
 def make_table(
     title: str,
     cols: Sequence[str],
     rows: Sequence[Any],
     *,
+    header: list[ActivityHeaderEntry] | None = None,
     totals: Any | None = None,
     stats_link: Markup | None = None,
     has_row_class: bool = False,
@@ -58,7 +65,9 @@ def make_table(
 
         rows = list(map(fix_row, rows))
 
-    data = dict(title=title, cols=cols, rows=rows, totals=totals, stats_link=stats_link)
+    data = dict(
+        title=title, cols=cols, rows=rows, header=header, totals=totals, stats_link=stats_link
+    )
 
     content = loader.render_to_string(
         "corporate/activity/activity_table.html",

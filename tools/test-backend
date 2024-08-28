@@ -54,6 +54,7 @@ not_yet_fully_covered = [
     # TODO: This is a work in progress and therefore without
     # tests yet.
     "corporate/views/installation_activity.py",
+    "corporate/views/plan_activity.py",
     "corporate/views/realm_activity.py",
     "corporate/views/remote_billing_page.py",
     "corporate/views/support.py",

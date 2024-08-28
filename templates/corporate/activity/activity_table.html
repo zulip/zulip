@@ -4,6 +4,14 @@
 {% include "corporate/activity/remote_activity_key.html" %}
 {% endif %}
 
+{% if data.header %}
+<div class="activity-header-information">
+    {% for entry in data.header %}
+    <p class="activity-header-entry"><b>{{ entry.name }}</b>: {{ entry.value }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
 {{ data.rows|length}} rows
 <table class="table sortable table-striped table-bordered analytics-table">
 
