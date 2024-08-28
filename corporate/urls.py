@@ -25,6 +25,7 @@ from corporate.views.installation_activity import (
     get_installation_activity,
     get_integrations_activity,
 )
+from corporate.views.plan_activity import get_plan_ledger
 from corporate.views.portico import (
     app_download_link_redirect,
     apps_view,
@@ -105,6 +106,7 @@ i18n_urlpatterns: Any = [
     path("user_activity/<user_profile_id>/", get_user_activity),
     path("activity/remote", get_remote_server_activity),
     path("activity/remote/support", remote_servers_support, name="remote_servers_support"),
+    path("activity/plan_ledger/<plan_id>/", get_plan_ledger),
 ]
 
 v1_api_and_json_patterns = [
