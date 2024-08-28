@@ -330,7 +330,16 @@
 
     /* Shared sidebar typography and effects values. */
     --font-weight-sidebar-heading: 600;
+    --font-weight-sidebar-action-heading: 370;
+    --font-variant-sidebar-action-heading: all-small-caps;
+    --font-feature-settings-sidebar-action-heading: "c2sc", "smcp";
+    /* 17px at 16px/1em = 1.0625em */
+    --font-size-sidebar-action-heading: 1.0625em;
+    --text-transform-sidebar-action-heading: uppercase;
     --letter-spacing-sidebar-heading: 0.0469em;
+    --opacity-sidebar-heading: 0.7;
+    --opacity-right-sidebar-subheading: 0.65;
+    --opacity-right-sidebar-subheading-hover: 0.9;
 
     /*
     Message box elements and values.
