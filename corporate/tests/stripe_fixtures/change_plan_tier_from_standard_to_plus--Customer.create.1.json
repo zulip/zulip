@@ -9,8 +9,8 @@
   "description": "lear (Lear & Co.)",
   "discount": null,
   "email": "king@lear.org",
-  "id": "cus_NORMALIZED0001",
-  "invoice_prefix": "NORMA01",
+  "id": "change_plan_tier_from_standard_to_plus--Customer.create.1.json",
+  "invoice_prefix": "NORMALIZED",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": null,
