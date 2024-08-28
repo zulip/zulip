@@ -1038,7 +1038,9 @@ class NormalActionsTest(BaseAction):
             "img.png", "image/png", read_test_image_file("img.png"), self.example_user("iago")
         )
         path_id = url[len("/user_upload/") + 1 :]
-        self.send_stream_message(iago, "Verona", f"[img.png]({url})")
+        self.send_stream_message(
+            iago, "Verona", f"[img.png]({url})", skip_capture_on_commit_callbacks=True
+        )
 
         # Generating a thumbnail for an image sends a message update event
         with self.verify_action(state_change_expected=False) as events:
