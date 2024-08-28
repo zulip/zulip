@@ -237,27 +237,27 @@ def normalize_fixture_data(
 
     # We'll replace "invoice_prefix": "A35BC4Q" with something like "invoice_prefix": "NORMA01"
     pattern_translations = {
-        r'"invoice_prefix": "([A-Za-z0-9]{7,8})"': "NORMA%02d",
-        r'"fingerprint": "([A-Za-z0-9]{16})"': "NORMALIZED%06d",
-        r'"number": "([A-Za-z0-9]{7,8}-[A-Za-z0-9]{4})"': "NORMALI-%04d",
-        r'"address": "([A-Za-z0-9]{9}-test_[A-Za-z0-9]{12})"': "000000000-test_NORMALIZED%02d",
-        r'"client_secret": "([\w]+)"': "NORMALIZED-%d",
-        r'"url": "https://billing.stripe.com/p/session/test_([\w]+)"': "NORMALIZED-%d",
-        r'"url": "https://checkout.stripe.com/c/pay/cs_test_([\w#%]+)"': "NORMALIZED-%d",
-        r'"receipt_url": "https://pay.stripe.com/receipts/invoices/([\w-]+)\?s=[\w]+"': "NORMALIZED-%d",
-        r'"hosted_invoice_url": "https://invoice.stripe.com/i/acct_[\w]+/test_[\w,]+\?s=[\w]+"': '"hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED-%d?s=ap"',
-        r'"invoice_pdf": "https://pay.stripe.com/invoice/acct_[\w]+/test_[\w,]+/pdf\?s=[\w]+"': '"invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED-%d/pdf?s=ap"',
-        r'"id": "([\w]+)"': "NORMALIZED-%d",
+        r'"invoice_prefix": "([A-Za-z0-9]{7,8})"': "NORMALIZED",
+        r'"fingerprint": "([A-Za-z0-9]{16})"': "NORMALIZED",
+        r'"number": "([A-Za-z0-9]{7,8}-[A-Za-z0-9]{4})"': "NORMALIZED",
+        r'"address": "([A-Za-z0-9]{9}-test_[A-Za-z0-9]{12})"': "000000000-test_NORMALIZED",
+        r'"client_secret": "([\w]+)"': "NORMALIZED",
+        r'"url": "https://billing.stripe.com/p/session/test_([\w]+)"': "NORMALIZED",
+        r'"url": "https://checkout.stripe.com/c/pay/cs_test_([\w#%]+)"': "NORMALIZED",
+        r'"receipt_url": "https://pay.stripe.com/receipts/invoices/([\w-]+)\?s=[\w]+"': "NORMALIZED",
+        r'"hosted_invoice_url": "https://invoice.stripe.com/i/acct_[\w]+/test_[\w,]+\?s=[\w]+"': '"hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap"',
+        r'"invoice_pdf": "https://pay.stripe.com/invoice/acct_[\w]+/test_[\w,]+/pdf\?s=[\w]+"': '"invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap"',
+        r'"id": "([\w]+)"': "FILE_NAME",  # Replace with file name later.
         # Don't use (..) notation, since the matched strings may be small integers that will also match
         # elsewhere in the file
-        r'"realm_id": "[0-9]+"': '"realm_id": "%d"',
-        r'"account_name": "[\w\s]+"': '"account_name": "NORMALIZED-%d"',
+        r'"realm_id": "[0-9]+"': '"realm_id": "1"',
+        r'"account_name": "[\w\s]+"': '"account_name": "NORMALIZED"',
     }
 
     # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
     pattern_translations.update(
         {
-            rf"{prefix}_[A-Za-z0-9]{{{length}}}": f"{prefix}_NORMALIZED%0{length - 10}d"
+            rf"{prefix}_[A-Za-z0-9]{{{length}}}": f"{prefix}_NORMALIZED"
             for prefix, length in id_lengths
         }
     )
@@ -266,7 +266,7 @@ def normalize_fixture_data(
     for i, timestamp_field in enumerate(tested_timestamp_fields):
         # Don't use (..) notation, since the matched timestamp can easily appear in other fields
         pattern_translations[rf'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'] = (
-            f'"{timestamp_field}": 1{i + 1:02}%07d'
+            f'"{timestamp_field}": {1000000000 + i}'
         )
 
     normalized_values: dict[str, dict[str, str]] = {pattern: {} for pattern in pattern_translations}
@@ -276,9 +276,11 @@ def normalize_fixture_data(
         for pattern, translation in pattern_translations.items():
             for match in re.findall(pattern, file_content):
                 if match not in normalized_values[pattern]:
-                    normalized_values[pattern][match] = translation % (
-                        len(normalized_values[pattern]) + 1,
-                    )
+                    if pattern.startswith('"id": "'):
+                        # Set file name as ID.
+                        normalized_values[pattern][match] = fixture_file.split("/")[-1]
+                    else:
+                        normalized_values[pattern][match] = translation
                 file_content = file_content.replace(match, normalized_values[pattern][match])
         file_content = re.sub(r'(?<="risk_score": )(\d+)', "0", file_content)
         file_content = re.sub(r'(?<="times_redeemed": )(\d+)', "0", file_content)

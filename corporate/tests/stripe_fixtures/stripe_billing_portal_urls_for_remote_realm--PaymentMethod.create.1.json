@@ -1,4 +1,5 @@
 {
+  "allow_redisplay": "unspecified",
   "billing_details": {
     "address": {
       "city": "San Francisco",
@@ -15,15 +16,15 @@
   "card": {
     "brand": "visa",
     "checks": {
-      "address_line1_check": null,
-      "address_postal_code_check": null,
+      "address_line1_check": "unchecked",
+      "address_postal_code_check": "unchecked",
       "cvc_check": "unchecked"
     },
     "country": "US",
     "display_brand": "visa",
-    "exp_month": 4,
+    "exp_month": 8,
     "exp_year": 2025,
-    "fingerprint": "NORMALIZED000001",
+    "fingerprint": "NORMALIZED",
     "funding": "credit",
     "generated_from": null,
     "last4": "4242",
@@ -40,7 +41,7 @@
   },
   "created": 1000000000,
   "customer": null,
-  "id": "pm_1P41lIDEQaroqDjswjP2kgpc",
+  "id": "stripe_billing_portal_urls_for_remote_realm--Customer.retrieve.1.json",
   "livemode": false,
   "metadata": {},
   "object": "payment_method",

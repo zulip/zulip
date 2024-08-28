@@ -5,49 +5,53 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "application": null,
-          "automatic_payment_methods": null,
-          "cancellation_reason": null,
-          "client_secret": "seti_1P41jKDEQaroqDjsqfjwkNjP_secret_PtpO8JOJ5TJpzrwV2yPh2Kf3HJ3BoFN",
+          "address": null,
+          "balance": 0,
           "created": 1000000000,
-          "customer": "cus_NORMALIZED0002",
-          "description": null,
-          "flow_directions": null,
-          "id": "seti_1P41jKDEQaroqDjsqfjwkNjP",
-          "last_setup_error": null,
-          "latest_attempt": "setatt_1P41jKDEQaroqDjsurLWU7GZ",
-          "livemode": false,
-          "mandate": null,
-          "metadata": {},
-          "next_action": null,
-          "object": "setup_intent",
-          "on_behalf_of": null,
-          "payment_method": "pm_1P41jJDEQaroqDjsLs6fHQWg",
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            }
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip.testserver f6d476f5-b66",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "invoice_initial_remote_realm_upgrade--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_NORMALIZED",
+            "footer": null,
+            "rendering_options": null
           },
-          "payment_method_types": [
-            "card"
-          ],
-          "single_use_mandate": null,
-          "status": "succeeded",
-          "usage": "off_session"
+          "livemode": false,
+          "metadata": {
+            "remote_realm_host": "zulip.testserver",
+            "remote_realm_uuid": "f6d476f5-b66f-45ce-8623-a273ff4d7787"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "invoice_settings": {
+            "default_payment_method": null
+          }
         }
       },
-      "id": "evt_1P41jLDEQaroqDjse5OEauw2",
+      "id": "invoice_initial_remote_realm_upgrade--Event.list.1.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0001",
-        "idempotency_key": "b32b25ab-4cf5-41fd-85a2-30b26c009ba9"
+        "id": "invoice_initial_remote_realm_upgrade--Event.list.1.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "setup_intent.succeeded"
+      "type": "customer.updated"
     }
   ],
   "has_more": true,

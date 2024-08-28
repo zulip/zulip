@@ -29,7 +29,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "NORMALIZED-1",
+          "customer": "stripe_billing_portal_urls--Customer.create.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -48,9 +48,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED-1?s=ap",
-          "id": "NORMALIZED-6",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED-1/pdf?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
+          "id": "stripe_billing_portal_urls--Event.list.2.json",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -66,9 +66,9 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "NORMALIZED-7",
-                "invoice": "NORMALIZED-6",
-                "invoice_item": "NORMALIZED-19",
+                "id": "stripe_billing_portal_urls--Event.list.2.json",
+                "invoice": "stripe_billing_portal_urls--Event.list.2.json",
+                "invoice_item": "stripe_billing_portal_urls--Event.list.2.json",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
@@ -83,13 +83,13 @@
                   "created": 1000000000,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "NORMALIZED-8",
+                  "id": "stripe_billing_portal_urls--Event.list.2.json",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0001",
+                  "product": "prod_NORMALIZED",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -113,7 +113,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/NORMALIZED-6/lines"
+            "url": "/v1/invoices/stripe_billing_portal_urls--Event.list.2.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -126,7 +126,7 @@
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALI-0001",
+          "number": "NORMALIZED-0001",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": true,
@@ -180,19 +180,19 @@
           "auto_advance": true,
           "paid": false,
           "paid_out_of_band": false,
-          "payment_intent": "NORMALIZED-11",
+          "payment_intent": "stripe_billing_portal_urls--Event.list.2.json",
           "status": "open",
           "status_transitions": {
             "paid_at": null
           }
         }
       },
-      "id": "NORMALIZED-9",
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
-        "id": "NORMALIZED-10",
+        "id": "stripe_billing_portal_urls--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.updated"
@@ -219,16 +219,16 @@
             "has_more": false,
             "object": "list",
             "total_count": 0,
-            "url": "/v1/charges?payment_intent=NORMALIZED-11"
+            "url": "/v1/charges?payment_intent=stripe_billing_portal_urls--Event.list.2.json"
           },
-          "client_secret": "NORMALIZED-1",
+          "client_secret": "NORMALIZED",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
-          "customer": "NORMALIZED-1",
+          "customer": "stripe_billing_portal_urls--Customer.create.1.json",
           "description": "Payment for Invoice",
-          "id": "NORMALIZED-11",
-          "invoice": "NORMALIZED-6",
+          "id": "stripe_billing_portal_urls--Event.list.2.json",
+          "invoice": "stripe_billing_portal_urls--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": null,
           "livemode": false,
@@ -236,7 +236,7 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_NORMALIZED00000000000001",
+          "payment_method": "pm_NORMALIZED",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
@@ -270,15 +270,125 @@
           "transfer_group": null
         }
       },
-      "id": "NORMALIZED-12",
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "NORMALIZED-10",
+        "id": "stripe_billing_portal_urls--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "payment_intent.canceled"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "ach_credit_transfer": {
+            "account_number": "test_NORMALIZED",
+            "bank_name": "TEST BANK",
+            "fingerprint": "NORMALIZED",
+            "refund_account_holder_name": null,
+            "refund_account_holder_type": null,
+            "refund_routing_number": null,
+            "routing_number": "110000000",
+            "swift_code": "TSTEZ122"
+          },
+          "amount": null,
+          "client_secret": "NORMALIZED",
+          "created": 1000000000,
+          "currency": "usd",
+          "customer": "stripe_billing_portal_urls--Customer.create.1.json",
+          "flow": "receiver",
+          "id": "stripe_billing_portal_urls--Event.list.2.json",
+          "livemode": false,
+          "metadata": {},
+          "object": "source",
+          "owner": {
+            "address": null,
+            "email": "amount_0@stripe.com",
+            "name": null,
+            "phone": null,
+            "verified_address": null,
+            "verified_email": null,
+            "verified_name": null,
+            "verified_phone": null
+          },
+          "receiver": {
+            "address": "000000000-test_NORMALIZED",
+            "amount_charged": 0,
+            "amount_received": 0,
+            "amount_returned": 0,
+            "refund_attributes_method": "email",
+            "refund_attributes_status": "missing"
+          },
+          "statement_descriptor": null,
+          "status": "pending",
+          "type": "ach_credit_transfer",
+          "usage": "reusable"
+        }
+      },
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "customer.source.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": 0,
+          "created": 1000000000,
+          "currency": "usd",
+          "default_currency": "usd",
+          "default_source": "stripe_billing_portal_urls--Event.list.2.json",
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "stripe_billing_portal_urls--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_NORMALIZED",
+            "footer": null,
+            "rendering_options": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 2,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "default_source": null
+        }
+      },
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "customer.updated"
     },
     {
       "api_version": "2020-08-27",
@@ -309,7 +419,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "NORMALIZED-1",
+          "customer": "stripe_billing_portal_urls--Customer.create.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -328,9 +438,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED-2?s=ap",
-          "id": "NORMALIZED-6",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED-2/pdf?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
+          "id": "stripe_billing_portal_urls--Event.list.2.json",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -346,9 +456,9 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "NORMALIZED-7",
-                "invoice": "NORMALIZED-6",
-                "invoice_item": "NORMALIZED-19",
+                "id": "stripe_billing_portal_urls--Event.list.2.json",
+                "invoice": "stripe_billing_portal_urls--Event.list.2.json",
+                "invoice_item": "stripe_billing_portal_urls--Event.list.2.json",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
@@ -363,13 +473,13 @@
                   "created": 1000000000,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "NORMALIZED-8",
+                  "id": "stripe_billing_portal_urls--Event.list.2.json",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0001",
+                  "product": "prod_NORMALIZED",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -393,7 +503,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/NORMALIZED-6/lines"
+            "url": "/v1/invoices/stripe_billing_portal_urls--Event.list.2.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -406,12 +516,12 @@
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALI-0001",
+          "number": "NORMALIZED-0001",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": false,
           "paid_out_of_band": false,
-          "payment_intent": "NORMALIZED-11",
+          "payment_intent": "stripe_billing_portal_urls--Event.list.2.json",
           "payment_settings": {
             "default_mandate": null,
             "payment_method_options": null,
@@ -454,15 +564,15 @@
           "total_excluding_tax": 984000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
-      "id": "NORMALIZED-13",
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "NORMALIZED-14",
+        "id": "stripe_billing_portal_urls--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.finalized"
@@ -496,7 +606,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "NORMALIZED-1",
+          "customer": "stripe_billing_portal_urls--Customer.create.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -515,9 +625,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED-2?s=ap",
-          "id": "NORMALIZED-6",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED-2/pdf?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
+          "id": "stripe_billing_portal_urls--Event.list.2.json",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -533,9 +643,9 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "NORMALIZED-7",
-                "invoice": "NORMALIZED-6",
-                "invoice_item": "NORMALIZED-19",
+                "id": "stripe_billing_portal_urls--Event.list.2.json",
+                "invoice": "stripe_billing_portal_urls--Event.list.2.json",
+                "invoice_item": "stripe_billing_portal_urls--Event.list.2.json",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
@@ -550,13 +660,13 @@
                   "created": 1000000000,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "NORMALIZED-8",
+                  "id": "stripe_billing_portal_urls--Event.list.2.json",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0001",
+                  "product": "prod_NORMALIZED",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -580,7 +690,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/NORMALIZED-6/lines"
+            "url": "/v1/invoices/stripe_billing_portal_urls--Event.list.2.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -593,12 +703,12 @@
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALI-0001",
+          "number": "NORMALIZED-0001",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": false,
           "paid_out_of_band": false,
-          "payment_intent": "NORMALIZED-11",
+          "payment_intent": "stripe_billing_portal_urls--Event.list.2.json",
           "payment_settings": {
             "default_mandate": null,
             "payment_method_options": null,
@@ -641,7 +751,7 @@
           "total_excluding_tax": 984000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "automatically_finalizes_at": 1000000000,
@@ -662,12 +772,12 @@
           }
         }
       },
-      "id": "NORMALIZED-15",
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "NORMALIZED-14",
+        "id": "stripe_billing_portal_urls--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.updated"
@@ -694,16 +804,16 @@
             "has_more": false,
             "object": "list",
             "total_count": 0,
-            "url": "/v1/charges?payment_intent=NORMALIZED-11"
+            "url": "/v1/charges?payment_intent=stripe_billing_portal_urls--Event.list.2.json"
           },
-          "client_secret": "NORMALIZED-1",
+          "client_secret": "NORMALIZED",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
-          "customer": "NORMALIZED-1",
+          "customer": "stripe_billing_portal_urls--Customer.create.1.json",
           "description": "Payment for Invoice",
-          "id": "NORMALIZED-11",
-          "invoice": "NORMALIZED-6",
+          "id": "stripe_billing_portal_urls--Event.list.2.json",
+          "invoice": "stripe_billing_portal_urls--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": null,
           "livemode": false,
@@ -745,12 +855,12 @@
           "transfer_group": null
         }
       },
-      "id": "NORMALIZED-16",
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "NORMALIZED-14",
+        "id": "stripe_billing_portal_urls--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "payment_intent.created"
@@ -784,7 +894,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "NORMALIZED-1",
+          "customer": "stripe_billing_portal_urls--Customer.create.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -804,7 +914,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": null,
-          "id": "NORMALIZED-6",
+          "id": "stripe_billing_portal_urls--Event.list.2.json",
           "invoice_pdf": null,
           "issuer": {
             "type": "self"
@@ -821,9 +931,9 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "NORMALIZED-7",
-                "invoice": "NORMALIZED-6",
-                "invoice_item": "NORMALIZED-19",
+                "id": "stripe_billing_portal_urls--Event.list.2.json",
+                "invoice": "stripe_billing_portal_urls--Event.list.2.json",
+                "invoice_item": "stripe_billing_portal_urls--Event.list.2.json",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
@@ -838,13 +948,13 @@
                   "created": 1000000000,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "NORMALIZED-8",
+                  "id": "stripe_billing_portal_urls--Event.list.2.json",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0001",
+                  "product": "prod_NORMALIZED",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -868,7 +978,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/NORMALIZED-6/lines"
+            "url": "/v1/invoices/stripe_billing_portal_urls--Event.list.2.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -929,15 +1039,15 @@
           "total_excluding_tax": 984000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
-      "id": "NORMALIZED-17",
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "NORMALIZED-18",
+        "id": "stripe_billing_portal_urls--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.created"
@@ -949,12 +1059,12 @@
         "object": {
           "amount": 984000,
           "currency": "usd",
-          "customer": "NORMALIZED-1",
+          "customer": "stripe_billing_portal_urls--Customer.create.1.json",
           "date": 1000000000,
           "description": "Zulip Cloud Standard",
           "discountable": false,
           "discounts": [],
-          "id": "NORMALIZED-19",
+          "id": "stripe_billing_portal_urls--Event.list.2.json",
           "invoice": null,
           "livemode": false,
           "metadata": {},
@@ -970,13 +1080,13 @@
             "created": 1000000000,
             "currency": "usd",
             "custom_unit_amount": null,
-            "id": "NORMALIZED-8",
+            "id": "stripe_billing_portal_urls--Event.list.2.json",
             "livemode": false,
             "lookup_key": null,
             "metadata": {},
             "nickname": null,
             "object": "price",
-            "product": "prod_NORMALIZED0001",
+            "product": "prod_NORMALIZED",
             "recurring": null,
             "tax_behavior": "unspecified",
             "tiers_mode": null,
@@ -994,12 +1104,12 @@
           "unit_amount_decimal": "8000"
         }
       },
-      "id": "NORMALIZED-20",
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "NORMALIZED-21",
+        "id": "stripe_billing_portal_urls--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoiceitem.created"
@@ -1019,11 +1129,11 @@
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "NORMALIZED-1",
-          "invoice_prefix": "NORMA01",
+          "id": "stripe_billing_portal_urls--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_NORMALIZED00000000000001",
+            "default_payment_method": "pm_NORMALIZED",
             "footer": null,
             "rendering_options": null
           },
@@ -1046,12 +1156,12 @@
           "default_currency": null
         }
       },
-      "id": "NORMALIZED-22",
+      "id": "stripe_billing_portal_urls--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "NORMALIZED-21",
+        "id": "stripe_billing_portal_urls--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "customer.updated"
