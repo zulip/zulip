@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import contextlib
 import logging
 import os
 import pwd
@@ -201,10 +202,19 @@ if has_application_server():
         )
         if uwsgi_status.returncode == 0:
             logging.info("Starting rolling restart of django server")
+            with contextlib.suppress(FileNotFoundError):
+                os.unlink("/var/lib/zulip/django-workers.ready")
             with open("/home/zulip/deployments/uwsgi-control", "w") as control_socket:
                 # "c" is chain-reloading:
                 # https://uwsgi-docs.readthedocs.io/en/latest/MasterFIFO.html#available-commands
                 control_socket.write("c")
+            n = 0
+            while not os.path.exists("/var/lib/zulip/django-workers.ready"):
+                time.sleep(1)
+                n += 1
+                if n % 5 == 0:
+                    logging.info("...")
+            logging.info("Chain reloading complete")
         else:
             logging.info("Starting django server")
             subprocess.check_call(["supervisorctl", "start", "zulip-django"])
