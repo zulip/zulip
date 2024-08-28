@@ -880,6 +880,7 @@ def do_send_messages(
                     send_request.message.realm_id,
                     send_request.message.content,
                     lock=True,
+                    enqueue=False,
                     path_ids=list(send_request.rendering_result.thumbnail_spinners),
                 )
                 new_rendered_content = rewrite_thumbnailed_images(

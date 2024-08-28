@@ -336,6 +336,7 @@ def get_user_upload_previews(
     realm_id: int,
     content: str,
     lock: bool = False,
+    enqueue: bool = True,
     path_ids: list[str] | None = None,
 ) -> dict[str, MarkdownImageMetadata | None]:
     if path_ids is None:
@@ -354,6 +355,15 @@ def get_user_upload_previews(
             # but has not been thumbnailed yet; we will render a
             # spinner.
             upload_preview_data[image_attachment.path_id] = None
+
+            # We re-queue the row for thumbnailing to make sure that
+            # we do eventually thumbnail it (e.g. if this is a
+            # historical upload from before this system, which we
+            # backfilled ImageAttachment rows for); this is a no-op in
+            # the worker if all of the currently-configured thumbnail
+            # formats have already been generated.
+            if enqueue:
+                queue_event_on_commit("thumbnail", {"id": image_attachment.id})
         else:
             url, is_animated = get_default_thumbnail_url(image_attachment)
             upload_preview_data[image_attachment.path_id] = MarkdownImageMetadata(
