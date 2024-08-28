@@ -146,7 +146,7 @@ def realm_user_summary_table(
         return row["cells"][4]
 
     rows = sorted(rows, key=by_last_heard_from, reverse=True)
-    content = make_table(title, cols, rows, stats_link=stats_link, has_row_class=True)
+    content = make_table(title, cols, rows, title_link=stats_link, has_row_class=True)
     return content
 
 

@@ -55,7 +55,7 @@ def make_table(
     *,
     header: list[ActivityHeaderEntry] | None = None,
     totals: Any | None = None,
-    stats_link: Markup | None = None,
+    title_link: Markup | None = None,
     has_row_class: bool = False,
 ) -> str:
     if not has_row_class:
@@ -66,7 +66,7 @@ def make_table(
         rows = list(map(fix_row, rows))
 
     data = dict(
-        title=title, cols=cols, rows=rows, header=header, totals=totals, stats_link=stats_link
+        title=title, cols=cols, rows=rows, header=header, totals=totals, title_link=title_link
     )
 
     content = loader.render_to_string(
@@ -140,6 +140,13 @@ def realm_stats_link(realm_str: str) -> Markup:
 
     url = reverse(stats_for_realm, kwargs=dict(realm_str=realm_str))
     return Markup('<a href="{url}"><i class="fa fa-pie-chart"></i></a>').format(url=url)
+
+
+def user_support_link(email: str) -> Markup:
+    support_url = reverse("support")
+    query = urlencode({"q": email})
+    url = append_url_query_string(support_url, query)
+    return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
 def realm_support_link(realm_str: str) -> Markup:
