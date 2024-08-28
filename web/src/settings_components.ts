@@ -990,9 +990,10 @@ export function populate_data_for_realm_settings_request(
                 }
 
                 if (property_name === "org_join_restrictions") {
+                    assert(typeof input_value === "string");
                     data = {
                         ...data,
-                        ...get_request_data_for_org_join_restrictions(input_value.toString()),
+                        ...get_request_data_for_org_join_restrictions(input_value),
                     };
                     continue;
                 }
@@ -1038,11 +1039,10 @@ export function populate_data_for_stream_settings_request(
             if (input_value !== undefined && input_value !== null) {
                 const property_name = extract_property_name($input_elem);
                 if (property_name === "stream_privacy") {
+                    assert(typeof input_value === "string");
                     data = {
                         ...data,
-                        ...settings_data.get_request_data_for_stream_privacy(
-                            input_value.toString(),
-                        ),
+                        ...settings_data.get_request_data_for_stream_privacy(input_value),
                     };
                     continue;
                 }
