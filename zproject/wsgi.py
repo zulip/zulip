@@ -25,9 +25,11 @@ setup_path()
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
 
+import contextlib
 from collections.abc import Callable
 from typing import Any
 
+import orjson
 from django.core.wsgi import get_wsgi_application
 
 try:
@@ -67,6 +69,27 @@ try:
         },
         ignored_start_response,
     )
+
+    with contextlib.suppress(ModuleNotFoundError):
+        # The uwsgi module is only importable when running under
+        # uwsgi; development uses this file as well, but inside a
+        # pure-Python server.  The surrounding contextmanager ensures
+        # that we don't bother with these steps if we're in
+        # development.
+        import uwsgi
+
+        if uwsgi.worker_id() == uwsgi.numproc:
+            # This is the last worker to load in the chain reload
+            with open("/var/lib/zulip/django-workers.ready", "wb") as f:
+                # The contents of this file are not read by restart-server
+                # in any way, but leave some useful information about the
+                # state of uwsgi.
+                f.write(
+                    orjson.dumps(
+                        uwsgi.workers(), option=orjson.OPT_INDENT_2, default=lambda e: e.decode()
+                    ),
+                )
+
 except Exception:
     # If /etc/zulip/settings.py contains invalid syntax, Django
     # initialization will fail in django.setup().  In this case, our
