@@ -463,6 +463,7 @@ tr.admin td:first-child {
     padding-bottom: 25px;
 }
 
+.activity-header-information,
 .push-notification-status,
 .realm-management-actions,
 .next-plan-container,
@@ -471,6 +472,17 @@ tr.admin td:first-child {
     border-radius: 4px;
     padding: 10px;
     margin: 10px 0;
+}
+
+.activity-header-information {
+    border: 2px solid hsl(330deg 3% 40%);
+    background-color: hsl(60deg 12% 90%);
+    width: fit-content;
+}
+
+.activity-header-entry {
+    margin: 0;
+    padding: 2px 0;
 }
 
 .push-notification-status,
