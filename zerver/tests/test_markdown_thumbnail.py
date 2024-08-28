@@ -300,6 +300,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
             from_user=sender_user_profile,
             to_user=self.example_user("hamlet"),
             content=f"This [image](/user_uploads/{path_id}) is private",
+            skip_capture_on_commit_callbacks=True,
         )
         placeholder = (
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
@@ -382,3 +383,32 @@ class MarkdownThumbnailTest(ZulipTestCase):
         self.assert_message_content_is(
             message_id, f'<p><a href="/user_uploads/{path_id}">image</a></p>\n{rendered_thumb}'
         )
+
+    def test_thumbnail_historical_image(self) -> None:
+        # Note that this is outside the captureOnCommitCallbacks, so
+        # we don't actually run thumbnailing for it.  This results in
+        # a ImageAttachment row but no thumbnails, which matches the
+        # state of backfilled previously-uploaded images.
+        path_id = self.upload_image("img.png")
+
+        with self.captureOnCommitCallbacks(execute=True):
+            message_id = self.send_message_content(f"An [image](/user_uploads/{path_id})")
+
+            content = f"[image](/user_uploads/{path_id})"
+            expected = (
+                f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+                f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+            )
+
+            message_id = self.send_message_content(content)
+            self.assert_message_content_is(message_id, expected)
+
+        # Exiting the block should have run the thumbnailing that was
+        # enqueued when rendering the message.
+        expected = (
+            f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+        )
+        self.assert_message_content_is(message_id, expected)
