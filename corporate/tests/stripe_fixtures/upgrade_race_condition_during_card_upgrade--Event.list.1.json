@@ -15,11 +15,11 @@
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0001",
-          "invoice_prefix": "NORMA01",
+          "id": "upgrade_race_condition_during_card_upgrade--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1P41p7DEQaroqDjsm67M8ozP",
+            "default_payment_method": "pm_NORMALIZED",
             "footer": null,
             "rendering_options": null
           },
@@ -43,13 +43,13 @@
           }
         }
       },
-      "id": "evt_1P41p9DEQaroqDjspgaTvT0h",
+      "id": "upgrade_race_condition_during_card_upgrade--Event.list.1.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0001",
-        "idempotency_key": "2306b06b-87d4-482a-a9f1-f4d46f9b7ac0"
+        "id": "upgrade_race_condition_during_card_upgrade--Event.list.1.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "customer.updated"
     }

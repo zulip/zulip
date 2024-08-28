@@ -46,7 +46,7 @@
       "proration_behavior": "none"
     }
   },
-  "id": "bpc_1P41lUDEQaroqDjs8LdmQ76S",
+  "id": "stripe_billing_portal_urls_for_remote_realm--billing_portal.Configuration.create.2.json",
   "is_default": false,
   "livemode": false,
   "login_page": {

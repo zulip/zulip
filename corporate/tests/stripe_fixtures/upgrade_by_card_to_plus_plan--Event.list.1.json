@@ -15,11 +15,11 @@
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "NORMALIZED-2",
-          "invoice_prefix": "NORMA01",
+          "id": "upgrade_by_card_to_plus_plan--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_NORMALIZED00000000000001",
+            "default_payment_method": "pm_NORMALIZED",
             "footer": null,
             "rendering_options": null
           },
@@ -43,12 +43,12 @@
           }
         }
       },
-      "id": "NORMALIZED-4",
+      "id": "upgrade_by_card_to_plus_plan--Event.list.1.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "NORMALIZED-5",
+        "id": "upgrade_by_card_to_plus_plan--Event.list.1.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "customer.updated"

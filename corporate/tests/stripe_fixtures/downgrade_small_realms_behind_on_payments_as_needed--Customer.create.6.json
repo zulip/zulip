@@ -9,8 +9,8 @@
   "description": "test-realm-7 (test-realm-7)",
   "discount": null,
   "email": "user-0-test-realm-7@zulip.com",
-  "id": "cus_NORMALIZED0006",
-  "invoice_prefix": "NORMA06",
+  "id": "downgrade_small_realms_behind_on_payments_as_needed--Customer.create.6.json",
+  "invoice_prefix": "NORMALIZED",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": null,
@@ -19,7 +19,7 @@
   },
   "livemode": false,
   "metadata": {
-    "realm_id": "6",
+    "realm_id": "1",
     "realm_str": "test-realm-7"
   },
   "name": null,
