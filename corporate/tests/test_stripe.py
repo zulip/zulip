@@ -31,9 +31,9 @@ from corporate.lib.stripe import (
     MAX_INVOICED_LICENSES,
     MIN_INVOICED_LICENSES,
     STRIPE_API_VERSION,
-    AuditLogEventType,
     BillingError,
     BillingSessionAuditLogEventError,
+    BillingSessionEventType,
     InitialUpgradeRequest,
     InvalidBillingScheduleError,
     InvalidTierError,
@@ -6007,7 +6007,7 @@ class TestRealmBillingSession(StripeTestCase):
     def test_get_audit_log_error(self) -> None:
         user = self.example_user("hamlet")
         billing_session = RealmBillingSession(user)
-        fake_audit_log = typing.cast(AuditLogEventType, 0)
+        fake_audit_log = typing.cast(BillingSessionEventType, 0)
         with self.assertRaisesRegex(
             BillingSessionAuditLogEventError, "Unknown audit log event type: 0"
         ):
@@ -6107,7 +6107,7 @@ class TestRemoteServerBillingSession(StripeTestCase):
             contact_email="email@example.com",
         )
         billing_session = RemoteServerBillingSession(remote_server)
-        fake_audit_log = typing.cast(AuditLogEventType, 0)
+        fake_audit_log = typing.cast(BillingSessionEventType, 0)
         with self.assertRaisesRegex(
             BillingSessionAuditLogEventError, "Unknown audit log event type: 0"
         ):
@@ -6626,7 +6626,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
                 # This "ordinary billing" event type value gets translated by write_to_audit_log
                 # into a RemoteRealmBillingSession.CUSTOMER_PLAN_CREATED or
                 # RemoteServerBillingSession.CUSTOMER_PLAN_CREATED value.
-                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
                 event_time=event_time,
             )
             audit_log = audit_log_model.objects.latest("id")
@@ -6636,7 +6636,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
 
             session = session_class(remote_object, remote_billing_user=remote_user)
             session.write_to_audit_log(
-                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
                 event_time=event_time,
             )
             audit_log = audit_log_model.objects.latest("id")
@@ -6648,7 +6648,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
                 remote_object, remote_billing_user=None, support_staff=support_admin
             )
             session.write_to_audit_log(
-                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
                 event_time=event_time,
             )
             audit_log = audit_log_model.objects.latest("id")
