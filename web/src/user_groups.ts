@@ -317,10 +317,10 @@ function get_display_name_for_system_group_option(setting_name: string, name: st
     return name;
 }
 
-export function get_realm_user_groups_for_dropdown_list_widget(
+export function get_realm_user_groups_for_setting(
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
-): UserGroupForDropdownListWidget[] {
+): UserGroup[] {
     const group_setting_config = group_permission_settings.get_group_permission_setting_config(
         setting_name,
         setting_type,
@@ -368,10 +368,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             if (!user_group) {
                 throw new Error(`Unknown group name: ${group.name}`);
             }
-            return {
-                name: get_display_name_for_system_group_option(setting_name, group.display_name),
-                unique_id: user_group.id,
-            };
+            return user_group;
         });
 
     if (
@@ -381,12 +378,34 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         return system_user_groups;
     }
 
-    const user_groups_excluding_system_groups = get_realm_user_groups().map((group) => ({
-        name: group.name,
-        unique_id: group.id,
-    }));
+    const user_groups_excluding_system_groups = get_realm_user_groups();
 
     return [...system_user_groups, ...user_groups_excluding_system_groups];
+}
+
+export function get_realm_user_groups_for_dropdown_list_widget(
+    setting_name: string,
+    setting_type: "realm" | "stream" | "group",
+): UserGroupForDropdownListWidget[] {
+    const allowed_setting_groups = get_realm_user_groups_for_setting(setting_name, setting_type);
+
+    return allowed_setting_groups.map((group) => {
+        if (!group.is_system_group) {
+            return {
+                name: group.name,
+                unique_id: group.id,
+            };
+        }
+
+        const display_name = settings_config.system_user_groups_list.find(
+            (system_group) => system_group.name === group.name,
+        )!.display_name;
+
+        return {
+            name: get_display_name_for_system_group_option(setting_name, display_name),
+            unique_id: group.id,
+        };
+    });
 }
 
 // Group name for user-facing display. For settings, we already use
