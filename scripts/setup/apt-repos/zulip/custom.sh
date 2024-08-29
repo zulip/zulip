@@ -27,10 +27,6 @@ if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
             read -r release
         } <<<"$os_info"
 
-        if [ "$distribution" = ubuntu ] && [ "$release" = noble ]; then
-            # PGroonga binaries are not yet provided for Ubuntu 24.04.
-            exit
-        fi
         groonga_apt_source_deb="groonga-apt-source-latest-$release.deb"
         groonga_apt_source_deb_sign="$groonga_apt_source_deb.asc.$pgroonga_apt_sign_key_fingerprint"
         curl -fLO --retry 3 "https://packages.groonga.org/$distribution/$groonga_apt_source_deb"
