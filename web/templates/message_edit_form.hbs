@@ -1,40 +1,43 @@
 {{! Client-side Handlebars template for rendering the message edit form. }}
-
-<form id="edit_form_{{message_id}}" class="new-style">
-    <div class="edit_form_banners"></div>
-    <div class="edit-controls edit-content-container {{#if is_editable}}surround-formatting-buttons-row{{/if}}">
-        {{> copy_message_button message_id=this.message_id}}
-        <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
-        <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
-            <div class="markdown_preview_spinner"></div>
-            <div class="preview_content rendered_markdown"></div>
-        </div>
-    </div>
-    <div class="action-buttons">
-        <div class="controls edit-controls">
-            {{#if is_editable}}
-            <div class="message-edit-feature-group">
-                {{> compose_control_buttons }}
+<div class="message_edit">
+    <div class="message_edit_form">
+        <form id="edit_form_{{message_id}}" class="new-style">
+            <div class="edit_form_banners"></div>
+            <div class="edit-controls edit-content-container {{#if is_editable}}surround-formatting-buttons-row{{/if}}">
+                {{> copy_message_button message_id=this.message_id}}
+                <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
+                <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
+                    <div class="markdown_preview_spinner"></div>
+                    <div class="preview_content rendered_markdown"></div>
+                </div>
             </div>
-            {{/if}}
-            <div class="message-edit-buttons-and-timer">
-                {{#if is_editable}}
-                    <div class="message_edit_save_container"
-                      data-tippy-content="{{t 'You can no longer save changes to this message.' }}">
-                        <button type="button" class="message-actions-button message_edit_save">
-                            <img class="loader" alt="" src="" />
-                            <span>{{t "Save" }}</span>
-                        </button>
+            <div class="action-buttons">
+                <div class="controls edit-controls">
+                    {{#if is_editable}}
+                    <div class="message-edit-feature-group">
+                        {{> compose_control_buttons }}
                     </div>
-                    <button type="button" class="message-actions-button message_edit_cancel"><span>{{t "Cancel" }}</span></button>
-                    <div class="message-edit-timer">
-                        <span class="message_edit_countdown_timer
-                          tippy-zulip-tooltip" data-tippy-content="{{t 'This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.' }}"></span>
+                    {{/if}}
+                    <div class="message-edit-buttons-and-timer">
+                        {{#if is_editable}}
+                            <div class="message_edit_save_container"
+                              data-tippy-content="{{t 'You can no longer save changes to this message.' }}">
+                                <button type="button" class="message-actions-button message_edit_save">
+                                    <img class="loader" alt="" src="" />
+                                    <span>{{t "Save" }}</span>
+                                </button>
+                            </div>
+                            <button type="button" class="message-actions-button message_edit_cancel"><span>{{t "Cancel" }}</span></button>
+                            <div class="message-edit-timer">
+                                <span class="message_edit_countdown_timer
+                                  tippy-zulip-tooltip" data-tippy-content="{{t 'This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.' }}"></span>
+                            </div>
+                        {{else}}
+                            <button type="button" class="message-actions-button message_edit_close"><span>{{t "Close" }}</span></button>
+                        {{/if}}
                     </div>
-                {{else}}
-                    <button type="button" class="message-actions-button message_edit_close"><span>{{t "Close" }}</span></button>
-                {{/if}}
+                </div>
             </div>
-        </div>
+        </form>
     </div>
-</form>
+</div>

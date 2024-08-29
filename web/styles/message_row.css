@@ -763,10 +763,6 @@ of the base style defined for a read-only textarea in dark mode. */
     }
 }
 
-.message_edit {
-    display: none;
-}
-
 /* Reduce some of the heavy padding from Bootstrap. */
 .message_edit_form {
     margin-bottom: 10px;
