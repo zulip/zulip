@@ -71,6 +71,8 @@ class EditMessageTest(ZulipTestCase):
             for item in message_edit_history:
                 if "prev_rendered_content_version" in item:
                     del item["prev_rendered_content_version"]
+                if "prev_rendered_content" in item:
+                    del item["prev_rendered_content"]
 
             self.assertEqual(
                 fetch_message_dict["edit_history"],

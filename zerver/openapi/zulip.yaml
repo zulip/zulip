@@ -21910,12 +21910,10 @@ components:
 
                   The content of the message immediately prior to this
                   edit event.
-              prev_rendered_content:
-                type: string
-                description: |
-                  Only present if message's content was edited.
 
-                  The rendered HTML representation of `prev_content`.
+                  **Changes**: After Zulip 10.0 (feature level 290),
+                  the content will be in `text/html` or `text/x-markdown`
+                  format, depending on whether `apply_markdown` was set.
               prev_stream:
                 type: integer
                 description: |
@@ -21993,7 +21991,12 @@ components:
 
             [disable-edit-history]: /help/disable-message-edit-history
 
-            **Changes**: In Zulip 10.0 (feature level 284), removed the
+            **Changes**: In Zulip 10.0 (feature level 290), removed the
+            `prev_rendered_content` field which was the rendered HTML
+            representation of `prev_content`. Now, clients can access the
+            same HTML representation via `prev_content` with `apply_markdown` set.
+
+            In Zulip 10.0 (feature level 284), removed the
             `prev_rendered_content_version` field as it is an internal
             server implementation detail not used by any client.
         id:
