@@ -75,7 +75,11 @@ export function postprocess_content(html: string): string {
                 // not display the URL like it does in the web app.
                 title = legacy_title = $t(
                     {defaultMessage: "Download {filename}"},
-                    {filename: url.pathname.slice(url.pathname.lastIndexOf("/") + 1)},
+                    {
+                        filename: decodeURIComponent(
+                            url.pathname.slice(url.pathname.lastIndexOf("/") + 1),
+                        ),
+                    },
                 );
             } else {
                 title = url.toString();
