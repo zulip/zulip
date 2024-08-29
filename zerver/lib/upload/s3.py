@@ -60,7 +60,7 @@ def get_bucket(bucket_name: str, authed: bool = True) -> Bucket:
     ).Bucket(bucket_name)
 
 
-def upload_image_to_s3(
+def upload_content_to_s3(
     bucket: Bucket,
     file_name: str,
     content_type: str | None,
@@ -215,7 +215,7 @@ class S3UploadBackend(ZulipUploadBackend):
         file_data: bytes,
         user_profile: UserProfile | None,
     ) -> None:
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.uploads_bucket,
             path_id,
             content_type,
@@ -279,7 +279,7 @@ class S3UploadBackend(ZulipUploadBackend):
         future: bool = True,
     ) -> None:
         extra_metadata = {"avatar_version": str(user_profile.avatar_version + (1 if future else 0))}
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             file_path,
             content_type,
@@ -307,7 +307,7 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), "icon")
 
         image_data = icon_file.read()
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             s3_file_name + ".original",
             content_type,
@@ -316,7 +316,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
         resized_data = resize_avatar(image_data)
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             s3_file_name + ".png",
             "image/png",
@@ -346,7 +346,7 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), basename)
 
         image_data = logo_file.read()
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             s3_file_name + ".original",
             content_type,
@@ -355,7 +355,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
         resized_data = resize_logo(image_data)
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             s3_file_name + ".png",
             "image/png",
@@ -383,7 +383,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_single_emoji_image(
         self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             path,
             content_type,
