@@ -13,7 +13,7 @@ import type {
     StateData,
     user_group_schema,
 } from "./state_data";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import type {UserOrMention} from "./typeahead_helper";
 import type {UserGroupUpdateEvent} from "./types";
 
@@ -342,6 +342,7 @@ function get_display_name_for_system_group_option(setting_name: string, name: st
 export function check_system_user_group_allowed_for_setting(
     group_name: string,
     group_setting_config: GroupPermissionSetting,
+    for_new_settings_ui = false,
 ): boolean {
     const {
         allow_internet_group,
@@ -359,7 +360,7 @@ export function check_system_user_group_allowed_for_setting(
         return false;
     }
 
-    if (!allow_nobody_group && group_name === "role:nobody") {
+    if ((!allow_nobody_group || for_new_settings_ui) && group_name === "role:nobody") {
         return false;
     }
 
@@ -368,6 +369,18 @@ export function check_system_user_group_allowed_for_setting(
     }
 
     if (allowed_system_groups.length && !allowed_system_groups.includes(group_name)) {
+        return false;
+    }
+
+    if (
+        group_name === "role:fullmembers" &&
+        for_new_settings_ui &&
+        realm.realm_waiting_period_threshold === 0
+    ) {
+        // We hide the full members group in the typeahead when
+        // there is no separation between member and full member
+        // users due to organization not having set a waiting
+        // period for member users to become full members.
         return false;
     }
 

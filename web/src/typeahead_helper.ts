@@ -37,6 +37,9 @@ export type UserOrMentionPillData = UserOrMention & {
 export type CombinedPill = StreamPill | UserGroupPill | UserPill;
 export type CombinedPillContainer = InputPillContainer<CombinedPill>;
 
+export type GroupSettingPill = UserGroupPill | UserPill;
+export type GroupSettingPillContainer = InputPillContainer<GroupSettingPill>;
+
 export function build_highlight_regex(query: string): RegExp {
     const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
     return regex;
