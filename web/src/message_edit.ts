@@ -469,8 +469,7 @@ function edit_message($row: JQuery, raw_content: string): void {
     const message = message_lists.current.get(rows.id($row));
     assert(message !== undefined);
     $row.find(".message_reactions").hide();
-    condense.hide_message_expander($row);
-    condense.hide_message_condenser($row);
+    condense.hide_message_length_toggle($row);
 
     // We potentially got to this function by clicking a button that implied the
     // user would be able to edit their message.  Give a little bit of buffer in
@@ -854,10 +853,12 @@ export function end_message_row_edit($row: JQuery): void {
         message_lists.current.hide_edit_message($row);
         compose_call.abort_video_callbacks(message.id.toString());
     }
-    if ($row.find(".condensed").length !== 0) {
-        condense.show_message_expander($row);
-    } else {
-        condense.show_message_condenser($row);
+    if ($row.find(".could-be-condensed").length !== 0) {
+        if ($row.find(".condensed").length !== 0) {
+            condense.show_message_expander($row);
+        } else {
+            condense.show_message_condenser($row);
+        }
     }
     $row.find(".message_reactions").show();
 
