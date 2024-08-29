@@ -538,6 +538,12 @@ class LicenseLedger(models.Model):
     # equal to the number of activated users in the organization.
     licenses_at_next_renewal = models.IntegerField(null=True)
 
+    @override
+    def __str__(self) -> str:
+        ledger_type = "renewal" if self.is_renewal else "update"
+        ledger_time = self.event_time.strftime("%Y-%m-%d %H:%M")
+        return f"License {ledger_type}, {self.licenses} purchased, {self.licenses_at_next_renewal} next cycle, {ledger_time} (id={self.id})"
+
 
 class SponsoredPlanTypes(Enum):
     # unspecified used for cloud sponsorship requests
