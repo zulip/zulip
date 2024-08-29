@@ -122,6 +122,10 @@ def sanitize_name(value: str) -> str:
     value = unicodedata.normalize("NFKC", value)
     value = re.sub(r"[^\w\s.-]", "", value).strip()
     value = re.sub(r"[-\s]+", "-", value)
+
+    # Django's MultiPartParser never returns files named this, but we
+    # could get them after removing spaces; change the name to a safer
+    # value.
     if value in {"", ".", ".."}:
         return "uploaded-file"
     return value
@@ -139,9 +143,11 @@ def upload_message_attachment(
     path_id = upload_backend.generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
+
     with transaction.atomic():
         upload_backend.upload_message_attachment(
             path_id,
+            uploaded_file_name,
             content_type,
             file_data,
             user_profile,

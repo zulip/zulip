@@ -89,6 +89,7 @@ class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_attachment(
         self,
         path_id: str,
+        filename: str,
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile | None,
