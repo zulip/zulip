@@ -100,6 +100,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
             logger.info("Uploading %d bytes to %s", len(thumbnailed_bytes), thumbnail_path)
             upload_backend.upload_message_attachment(
                 thumbnail_path,
+                str(thumbnail_format),
                 content_type,
                 thumbnailed_bytes,
                 None,

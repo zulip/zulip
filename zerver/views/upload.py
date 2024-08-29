@@ -45,12 +45,11 @@ from zerver.lib.upload import (
 from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import assert_is_local_storage_path
 from zerver.lib.upload.s3 import get_signed_upload_url
-from zerver.models import ImageAttachment, UserProfile
+from zerver.models import Attachment, ImageAttachment, UserProfile
 from zerver.worker.thumbnail import ensure_thumbnails
 
 
-def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bool) -> None:
-    filename = os.path.basename(urlsplit(url).path)
+def patch_disposition_header(response: HttpResponse, filename: str, is_attachment: bool) -> None:
     content_disposition = content_disposition_header(is_attachment, filename)
 
     if content_disposition is not None:
@@ -112,7 +111,10 @@ def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -
 
 
 def serve_local(
-    request: HttpRequest, path_id: str, force_download: bool = False
+    request: HttpRequest,
+    path_id: str,
+    filename: str,
+    force_download: bool = False,
 ) -> HttpResponseBase:
     assert settings.LOCAL_FILES_DIR is not None
     local_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
@@ -120,7 +122,7 @@ def serve_local(
     if not os.path.isfile(local_path):
         return HttpResponseNotFound("<p>File not found</p>")
 
-    mimetype, encoding = guess_type(path_id)
+    mimetype, encoding = guess_type(filename)
     download = force_download or mimetype not in INLINE_MIME_TYPES
 
     if settings.DEVELOPMENT:
@@ -130,6 +132,7 @@ def serve_local(
         response: HttpResponseBase = FileResponse(
             open(local_path, "rb"),  # noqa: SIM115
             as_attachment=download,
+            filename=filename,
         )
         patch_cache_control(response, private=True, immutable=True)
         return response
@@ -143,7 +146,7 @@ def serve_local(
     response = internal_nginx_redirect(
         quote(f"/internal/local/uploads/{path_id}"), content_type=mimetype
     )
-    patch_disposition_header(response, local_path, download)
+    patch_disposition_header(response, filename, download)
     patch_cache_control(response, private=True, immutable=True)
     return response
 
@@ -335,9 +338,14 @@ def serve_file(
 
         # Update the path that we are fetching to be the thumbnail
         path_id = get_image_thumbnail_path(image_attachment, requested_format)
+        served_filename = str(requested_format)
+    else:
+        served_filename = attachment.file_name
 
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id, force_download=force_download)
+        return serve_local(
+            request, path_id, filename=served_filename, force_download=force_download
+        )
     else:
         return serve_s3(request, path_id, force_download=force_download)
 
@@ -374,9 +382,13 @@ def serve_file_unauthed_from_token(
         raise JsonableError(_("Invalid token"))
     if path_id.split("/")[-1] != filename:
         raise JsonableError(_("Invalid filename"))
+    try:
+        attachment = Attachment.objects.get(path_id=path_id)
+    except Attachment.DoesNotExist:
+        raise JsonableError(_("Invalid token"))
 
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id)
+        return serve_local(request, path_id, filename=attachment.file_name)
     else:
         return serve_s3(request, path_id)
 

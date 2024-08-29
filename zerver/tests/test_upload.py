@@ -1,6 +1,6 @@
 import os
 import re
-import time
+from datetime import timedelta
 from io import StringIO
 from unittest import mock
 from unittest.mock import patch
@@ -8,6 +8,7 @@ from urllib.parse import quote
 
 import orjson
 import pyvips
+import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from pyvips import at_least_libvips
@@ -304,21 +305,43 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login("hamlet")
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client_post("/json/user_uploads", {"file": fp})
-        response_dict = self.assert_json_success(result)
-        url = "/json" + response_dict["url"]
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.client_post("/json/user_uploads", {"file": fp})
+            response_dict = self.assert_json_success(result)
+            url = "/json" + response_dict["url"]
 
-        start_time = time.time()
-        with mock.patch("django.core.signing.time.time", return_value=start_time):
+            result = self.client_get(url)
+            data = self.assert_json_success(result)
+            url_only_url = data["url"]
+            self.logout()
+            self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
+
+        with time_machine.travel(now + timedelta(seconds=30), tick=False):
+            self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
+
+        # After over 60 seconds, the token should become invalid:
+        with time_machine.travel(now + timedelta(seconds=61), tick=False):
+            result = self.client_get(url_only_url)
+            self.assert_json_error(result, "Invalid token")
+
+    def test_serve_local_file_unauthed_token_deleted(self) -> None:
+        self.login("hamlet")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.client_post("/json/user_uploads", {"file": fp})
+            response_dict = self.assert_json_success(result)
+            url = "/json" + response_dict["url"]
+
             result = self.client_get(url)
             data = self.assert_json_success(result)
             url_only_url = data["url"]
 
-            self.logout()
-            self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
+            path_id = response_dict["url"].removeprefix("/user_uploads/")
+            Attachment.objects.get(path_id=path_id).delete()
 
-        # After over 60 seconds, the token should become invalid:
-        with mock.patch("django.core.signing.time.time", return_value=start_time + 61):
             result = self.client_get(url_only_url)
             self.assert_json_error(result, "Invalid token")
 
@@ -909,6 +932,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             name_str_for_test: str,
             content_disposition: str = "",
             download: bool = False,
+            returned_attachment: bool = False,
         ) -> None:
             self.login("hamlet")
             fp = StringIO("zulip!")
@@ -927,27 +951,74 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 response["X-Accel-Redirect"],
                 "/internal/local/uploads/" + fp_path + "/" + name_str_for_test,
             )
-            if content_disposition != "":
+            if returned_attachment:
                 self.assertIn("attachment;", response["Content-disposition"])
-                self.assertIn(content_disposition, response["Content-disposition"])
             else:
                 self.assertIn("inline;", response["Content-disposition"])
+            if content_disposition != "":
+                self.assertIn(content_disposition, response["Content-disposition"])
             self.assertEqual(set(response["Cache-Control"].split(", ")), {"private", "immutable"})
 
-        check_xsend_links("zulip.txt", "zulip.txt", 'filename="zulip.txt"')
+        check_xsend_links(
+            "zulip.txt", "zulip.txt", 'filename="zulip.txt"', returned_attachment=True
+        )
         check_xsend_links(
             "áéБД.txt",
             "%C3%A1%C3%A9%D0%91%D0%94.txt",
             "filename*=utf-8''%C3%A1%C3%A9%D0%91%D0%94.txt",
+            returned_attachment=True,
         )
-        check_xsend_links("zulip.html", "zulip.html", 'filename="zulip.html"')
-        check_xsend_links("zulip.sh", "zulip.sh", 'filename="zulip.sh"')
-        check_xsend_links("zulip.jpeg", "zulip.jpeg")
         check_xsend_links(
-            "zulip.jpeg", "zulip.jpeg", download=True, content_disposition='filename="zulip.jpeg"'
+            "zulip.html",
+            "zulip.html",
+            'filename="zulip.html"',
+            returned_attachment=True,
         )
-        check_xsend_links("áéБД.pdf", "%C3%A1%C3%A9%D0%91%D0%94.pdf")
-        check_xsend_links("zulip", "zulip", 'filename="zulip"')
+        check_xsend_links(
+            "zulip.sh",
+            "zulip.sh",
+            'filename="zulip.sh"',
+            returned_attachment=True,
+        )
+        check_xsend_links(
+            "zulip.jpeg",
+            "zulip.jpeg",
+            'filename="zulip.jpeg"',
+            returned_attachment=False,
+        )
+        check_xsend_links(
+            "zulip.jpeg",
+            "zulip.jpeg",
+            download=True,
+            content_disposition='filename="zulip.jpeg"',
+            returned_attachment=True,
+        )
+        check_xsend_links(
+            "áéБД.pdf",
+            "%C3%A1%C3%A9%D0%91%D0%94.pdf",
+            "filename*=utf-8''%C3%A1%C3%A9%D0%91%D0%94.pdf",
+            returned_attachment=False,
+        )
+        check_xsend_links(
+            "some file (with spaces).png",
+            "some-file-with-spaces.png",
+            'filename="some file (with spaces).png"',
+            returned_attachment=False,
+        )
+        check_xsend_links(
+            "some file (with spaces).png",
+            "some-file-with-spaces.png",
+            'filename="some file (with spaces).png"',
+            download=True,
+            returned_attachment=True,
+        )
+        check_xsend_links(
+            ".().",
+            "uploaded-file",
+            'filename=".()."',
+            returned_attachment=True,
+        )
+        check_xsend_links("zulip", "zulip", 'filename="zulip"', returned_attachment=True)
 
 
 class AvatarTest(UploadSerializeMixin, ZulipTestCase):
