@@ -1,2 +1,5 @@
 deb http://apt.postgresql.org/pub/repos/apt/ noble-pgdg main
 deb-src http://apt.postgresql.org/pub/repos/apt/ noble-pgdg main
+
+deb http://ppa.launchpad.net/groonga/ppa/ubuntu noble main
+deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu noble main
