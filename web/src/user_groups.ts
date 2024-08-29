@@ -133,6 +133,14 @@ export function get_realm_user_groups(include_deactivated = false): UserGroup[] 
     });
 }
 
+// This is only used for testing currently, but would be used in
+// future when we use system groups more and probably show them
+// in the UI as well.
+export function get_all_realm_user_groups(): UserGroup[] {
+    const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
+    return user_groups;
+}
+
 export function get_user_groups_allowed_to_mention(): UserGroup[] {
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
@@ -342,7 +350,7 @@ function get_display_name_for_system_group_option(setting_name: string, name: st
 export function check_system_user_group_allowed_for_setting(
     group_name: string,
     group_setting_config: GroupPermissionSetting,
-    for_new_settings_ui = false,
+    for_new_settings_ui: boolean,
 ): boolean {
     const {
         allow_internet_group,
@@ -390,6 +398,7 @@ export function check_system_user_group_allowed_for_setting(
 export function get_realm_user_groups_for_setting(
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
+    for_new_settings_ui = false,
 ): UserGroup[] {
     const group_setting_config = group_permission_settings.get_group_permission_setting_config(
         setting_name,
@@ -402,7 +411,11 @@ export function get_realm_user_groups_for_setting(
 
     const system_user_groups = settings_config.system_user_groups_list
         .filter((group) =>
-            check_system_user_group_allowed_for_setting(group.name, group_setting_config),
+            check_system_user_group_allowed_for_setting(
+                group.name,
+                group_setting_config,
+                for_new_settings_ui,
+            ),
         )
         .map((group) => {
             const user_group = get_user_group_from_name(group.name);

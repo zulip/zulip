@@ -22,6 +22,7 @@ const pygments_data = zrequire("pygments_data");
 const util = zrequire("util");
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
+const user_groups = zrequire("user_groups");
 
 let next_id = 0;
 
@@ -38,6 +39,10 @@ function user_item(user) {
 
 function broadcast_item(user) {
     return {type: "broadcast", user};
+}
+
+function user_group_item(user_group) {
+    return {type: "user_group", ...user_group};
 }
 
 const a_bot = {
@@ -123,6 +128,45 @@ const linux_sub = {
 stream_data.create_streams([dev_sub, linux_sub]);
 stream_data.add_sub(dev_sub);
 stream_data.add_sub(linux_sub);
+
+const bob_system_group = {
+    id: 1,
+    name: "Bob system group",
+    description: "",
+    members: new Set([]),
+    is_system_group: true,
+};
+const bob_system_group_item = user_group_item(bob_system_group);
+
+const bob_group = {
+    id: 2,
+    name: "Bob group",
+    description: "",
+    members: new Set([]),
+    is_system_group: false,
+};
+const bob_group_item = user_group_item(bob_group);
+
+const second_bob_group = {
+    id: 3,
+    name: "bob 2 group",
+    description: "",
+    members: new Set([b_user_2.user_id]),
+    is_system_group: false,
+};
+
+const admins_group = {
+    id: 4,
+    name: "Admins of zulip",
+    description: "",
+    members: new Set([]),
+    is_system_group: false,
+};
+const admins_group_item = user_group_item(admins_group);
+
+user_groups.initialize({
+    realm_user_groups: [bob_system_group, bob_group, second_bob_group, admins_group],
+});
 
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -941,4 +985,101 @@ test("compare_language", () => {
 // should be filled out more. This case was added for codecov.
 test("compare_by_pms", () => {
     assert.equal(th.compare_by_pms(a_user, a_user), 0);
+});
+
+test("sort_group_setting_options", ({override_rewire}) => {
+    function get_group_setting_typeahead_result(query, target_group) {
+        const users = people.get_realm_active_human_users().map((user) => ({type: "user", user}));
+        const groups = user_groups.get_all_realm_user_groups().map((group) => ({
+            type: "user_group",
+            ...group,
+        }));
+        const result = th.sort_group_setting_options({
+            users,
+            query,
+            groups,
+            target_group,
+        });
+        return result.map((item) => {
+            if (item.type === "user") {
+                return item.user.full_name;
+            }
+
+            return item.name;
+        });
+    }
+
+    assert.deepEqual(get_group_setting_typeahead_result("Bo", second_bob_group), [
+        bob_system_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+        admins_group.name,
+        a_user.full_name,
+        zman.full_name,
+    ]);
+
+    assert.deepEqual(get_group_setting_typeahead_result("bo", second_bob_group), [
+        bob_system_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+        admins_group.name,
+        a_user.full_name,
+        zman.full_name,
+    ]);
+
+    assert.deepEqual(get_group_setting_typeahead_result("Z", second_bob_group), [
+        zman.full_name,
+        admins_group.name,
+        a_user.full_name,
+        bob_system_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+    ]);
+
+    override_rewire(th, "MAX_ITEMS", 6);
+    assert.deepEqual(get_group_setting_typeahead_result("Bo", second_bob_group), [
+        bob_system_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+    ]);
+});
+
+test("compare_setting_options", () => {
+    // User group has higher priority than user.
+    assert.equal(th.compare_setting_options(a_user_item, bob_group_item, bob_group), 1);
+    assert.equal(th.compare_setting_options(bob_group_item, a_user_item, bob_group), -1);
+
+    // System user group has higher priority than other user groups.
+    assert.equal(th.compare_setting_options(bob_group_item, bob_system_group_item, bob_group), 1);
+    assert.equal(th.compare_setting_options(bob_system_group_item, bob_group_item, bob_group), -1);
+    assert.equal(
+        th.compare_setting_options(admins_group_item, bob_system_group_item, bob_group),
+        1,
+    );
+
+    // In case both groups are not system groups, alphabetical order is used to decide priority.
+    assert.equal(th.compare_setting_options(bob_group_item, admins_group_item, bob_group), 1);
+    assert.equal(th.compare_setting_options(admins_group_item, bob_group_item, bob_group), -1);
+
+    // A user who is a member of the group being changed has higher priority.
+    // If both the users are not members of the group being changed, alphabetical order
+    // is used to decide priority.
+    assert.equal(th.compare_setting_options(b_user_1_item, b_user_2_item, bob_group), -1);
+    assert.equal(th.compare_setting_options(b_user_1_item, b_user_2_item, second_bob_group), 1);
+
+    // Get coverage for case where two users have same names. Original order is preserved
+    // in such cases.
+    assert.equal(th.compare_setting_options(b_user_1_item, b_user_1_item, bob_group), 0);
 });
