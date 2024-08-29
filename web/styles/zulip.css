@@ -987,7 +987,6 @@ div.focused-message-list {
 
 .message_length_controller {
     .message_length_toggle {
-        display: none;
         width: 100%;
         height: 24px;
         margin-bottom: var(--message-box-markdown-aligned-vertical-space);
