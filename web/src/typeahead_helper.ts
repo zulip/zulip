@@ -23,6 +23,7 @@ import type {StreamPill, StreamPillData} from "./stream_pill";
 import type {StreamSubscription} from "./sub_store";
 import type {UserGroupPill, UserGroupPillData} from "./user_group_pill";
 import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 import type {UserPill, UserPillData} from "./user_pill";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
@@ -553,6 +554,153 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     // FirstName, which we don't want to artificially prioritize over the
     // the lone active user whose name is FirstName LastName.
     return recipients.slice(0, max_num_items);
+}
+
+export function compare_setting_options(
+    option_a: UserPillData | UserGroupPillData,
+    option_b: UserPillData | UserGroupPillData,
+    target_group: UserGroup | undefined,
+): number {
+    if (option_a.type === "user_group" && option_b.type === "user") {
+        return -1;
+    }
+
+    if (option_b.type === "user_group" && option_a.type === "user") {
+        return 1;
+    }
+
+    if (option_a.type === "user_group" && option_b.type === "user_group") {
+        const user_group_a = user_groups.get_user_group_from_id(option_a.id);
+        const user_group_b = user_groups.get_user_group_from_id(option_b.id);
+
+        if (user_group_a.is_system_group && !user_group_b.is_system_group) {
+            return -1;
+        }
+
+        if (user_group_b.is_system_group && !user_group_a.is_system_group) {
+            return 1;
+        }
+
+        if (user_group_a.name < user_group_b.name) {
+            return -1;
+        }
+
+        return 1;
+    }
+
+    assert(option_a.type === "user");
+    assert(option_b.type === "user");
+
+    if (target_group !== undefined) {
+        if (
+            !target_group.members.has(option_a.user.user_id) &&
+            target_group.members.has(option_b.user.user_id)
+        ) {
+            return 1;
+        }
+
+        if (
+            target_group.members.has(option_a.user.user_id) &&
+            !target_group.members.has(option_b.user.user_id)
+        ) {
+            return -1;
+        }
+    }
+
+    if (option_a.user.full_name < option_b.user.full_name) {
+        return -1;
+    } else if (option_a.user.full_name === option_b.user.full_name) {
+        return 0;
+    }
+
+    return 1;
+}
+
+export function sort_group_setting_options({
+    users,
+    query,
+    groups,
+    target_group,
+}: {
+    users: UserPillData[];
+    query: string;
+    groups: UserGroupPillData[];
+    target_group: UserGroup | undefined;
+}): (UserPillData | UserGroupPillData)[] {
+    function sort_group_setting_items(
+        objs: (UserPillData | UserGroupPillData)[],
+    ): (UserPillData | UserGroupPillData)[] {
+        objs.sort((option_a, option_b) =>
+            compare_setting_options(option_a, option_b, target_group),
+        );
+        return objs;
+    }
+
+    const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
+    const email_results = typeahead.triage_raw(
+        query,
+        users_name_results.no_matches,
+        (p) => p.user.email,
+    );
+    const groups_results = typeahead.triage_raw(query, groups, (g) =>
+        user_groups.get_display_group_name(g.name),
+    );
+
+    const exact_matches = sort_group_setting_items([
+        ...groups_results.exact_matches,
+        ...users_name_results.exact_matches,
+        ...email_results.exact_matches,
+    ]);
+
+    const prefix_matches = sort_group_setting_items([
+        ...groups_results.begins_with_case_sensitive_matches,
+        ...groups_results.begins_with_case_insensitive_matches,
+        ...users_name_results.begins_with_case_sensitive_matches,
+        ...users_name_results.begins_with_case_insensitive_matches,
+        ...email_results.begins_with_case_sensitive_matches,
+        ...email_results.begins_with_case_insensitive_matches,
+    ]);
+
+    const word_boundary_matches = sort_group_setting_items([
+        ...groups_results.word_boundary_matches,
+        ...users_name_results.word_boundary_matches,
+        ...email_results.word_boundary_matches,
+    ]);
+
+    const no_matches = sort_group_setting_items([
+        ...groups_results.no_matches,
+        ...email_results.no_matches,
+    ]);
+
+    const getters: {
+        getter: (UserPillData | UserGroupPillData)[];
+    }[] = [
+        {
+            getter: exact_matches,
+        },
+        {
+            getter: prefix_matches,
+        },
+        {
+            getter: word_boundary_matches,
+        },
+        {
+            getter: no_matches,
+        },
+    ];
+
+    const setting_options: (UserPillData | UserGroupPillData)[] = [];
+
+    for (const getter of getters) {
+        if (setting_options.length >= MAX_ITEMS) {
+            break;
+        }
+        for (const item of getter.getter) {
+            setting_options.push(item);
+        }
+    }
+
+    return setting_options.slice(0, MAX_ITEMS);
 }
 
 type SlashCommand = {

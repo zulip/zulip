@@ -7,7 +7,11 @@ import * as input_pill from "./input_pill";
 import type {User} from "./people";
 import * as people from "./people";
 import {realm} from "./state_data";
-import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
+import type {
+    CombinedPill,
+    CombinedPillContainer,
+    GroupSettingPillContainer,
+} from "./typeahead_helper";
 import * as user_status from "./user_status";
 
 // This will be used for pills for things like composing
@@ -98,7 +102,7 @@ export function get_email_from_item(item: UserPill): string {
 
 export function append_person(opts: {
     person: User;
-    pill_widget: UserPillWidget | CombinedPillContainer;
+    pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer;
 }): void {
     const person = opts.person;
     const pill_widget = opts.pill_widget;
@@ -119,7 +123,9 @@ export function append_person(opts: {
     pill_widget.clear_text();
 }
 
-export function get_user_ids(pill_widget: UserPillWidget | CombinedPillContainer): number[] {
+export function get_user_ids(
+    pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
+): number[] {
     const items = pill_widget.items();
     return items.flatMap((item) => (item.type === "user" ? (item.user_id ?? []) : [])); // be defensive about undefined users
 }
@@ -138,7 +144,7 @@ export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
 }
 
 export function typeahead_source(
-    pill_widget: UserPillWidget | CombinedPillContainer,
+    pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
     exclude_bots?: boolean,
 ): UserPillData[] {
     const users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
@@ -147,14 +153,17 @@ export function typeahead_source(
 
 export function filter_taken_users(
     items: User[],
-    pill_widget: UserPillWidget | CombinedPillContainer,
+    pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
 ): User[] {
     const taken_user_ids = get_user_ids(pill_widget);
     items = items.filter((item) => !taken_user_ids.includes(item.user_id));
     return items;
 }
 
-export function append_user(user: User, pills: UserPillWidget | CombinedPillContainer): void {
+export function append_user(
+    user: User,
+    pills: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
+): void {
     if (user) {
         append_person({
             pill_widget: pills,

@@ -6,10 +6,12 @@ const {zrequire, mock_esm} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
+const {page_params, realm} = require("./lib/zpage_params");
 
 const noop = function () {};
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
+const group_permission_setting = mock_esm("../src/group_permission_settings");
 
 const input_pill = zrequire("input_pill");
 const pill_typeahead = zrequire("pill_typeahead");
@@ -22,6 +24,7 @@ const typeahead_helper = zrequire("typeahead_helper");
 // set global test variables.
 let sort_recipients_called = false;
 let sort_streams_called = false;
+let sort_group_setting_options_called = false;
 const $fake_rendered_person = $.create("fake-rendered-person");
 const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
@@ -542,4 +545,171 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     blueslip.expect("error", "Unspecified possible item types");
     pill_typeahead.set_up_combined($fake_input, $pill_widget, {});
     assert.ok(!input_pill_typeahead_called);
+});
+
+run_test("set_up_group_setting_typeahead", ({mock_template, override, override_rewire}) => {
+    override_rewire(typeahead_helper, "render_person", () => $fake_rendered_person);
+    override_rewire(typeahead_helper, "render_user_group", () => $fake_rendered_group);
+    override_rewire(typeahead_helper, "sort_group_setting_options", () => {
+        sort_group_setting_options_called = true;
+    });
+    mock_template("input_pill.hbs", true, (_data, html) => html);
+
+    let input_pill_typeahead_called = false;
+    const $fake_input = $.create(".input");
+    $fake_input.before = noop;
+
+    const $container = $.create(".pill-container");
+    $container.find = () => $fake_input;
+
+    const $pill_widget = input_pill.create({
+        $container,
+        create_item_from_text: noop,
+        get_text_from_item: noop,
+        get_display_value_from_item: noop,
+    });
+
+    group_permission_setting.get_group_permission_setting_config = (setting_name, setting_type) => {
+        assert.equal(setting_name, "can_manage_group");
+        assert.equal(setting_type, "group");
+        // This is not same as the original config for can_manage_group
+        // setting, but is set in such a way that we need to create minimum
+        // system groups.
+        return {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_owners_group: false,
+            allow_nobody_group: true,
+            allow_everyone_group: false,
+            allowed_system_groups: ["role:moderators", "role:nobody", "role:fullmembers"],
+        };
+    };
+
+    const moderators_system_group = {
+        name: "role:moderators",
+        id: 3,
+        description: "Moderators",
+        members: [],
+        is_system_group: true,
+    };
+    const nobody_system_group = {
+        name: "role:nobody",
+        id: 4,
+        description: "Nobody",
+        members: [],
+        is_system_group: true,
+    };
+    const full_members_system_group = {
+        name: "role:fullmembers",
+        id: 5,
+        description: "Full members",
+        members: [],
+        is_system_group: true,
+    };
+    user_groups.add(moderators_system_group);
+    user_groups.add(nobody_system_group);
+    user_groups.add(full_members_system_group);
+
+    const moderators_item = user_group_item(moderators_system_group);
+    const system_group_items = [moderators_item];
+
+    page_params.development_environment = true;
+    realm.realm_waiting_period_threshold = 0;
+
+    override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
+        assert.equal(input_element.$element, $fake_input);
+        assert.ok(config.dropup);
+        assert.ok(config.stopAdvance);
+
+        assert.equal(typeof config.source, "function");
+        assert.equal(typeof config.highlighter_html, "function");
+        assert.equal(typeof config.matcher, "function");
+        assert.equal(typeof config.sorter, "function");
+        assert.equal(typeof config.updater, "function");
+
+        // test queries
+        const person_query = "me";
+        const group_query = "test";
+
+        (function test_highlighter() {
+            // If user is also allowed along with user_group
+            // then we should check that each of them rendered correctly.
+            assert.equal(config.highlighter_html(testers_item, group_query), $fake_rendered_group);
+            assert.equal(config.highlighter_html(me_item, person_query), $fake_rendered_person);
+        })();
+
+        (function test_matcher() {
+            let result;
+            // group query, with correct item.
+            result = config.matcher(testers_item, group_query);
+            assert.ok(result);
+            // group query, with wrong item.
+            result = config.matcher(admins_item, group_query);
+            assert.ok(!result);
+            // person query with correct item.
+            result = config.matcher(me_item, person_query);
+            assert.ok(result);
+            // person query with wrong item.
+            result = config.matcher(jill_item, person_query);
+            assert.ok(!result);
+        })();
+
+        (function test_sorter() {
+            sort_group_setting_options_called = false;
+            config.sorter([testers_item], group_query);
+            assert.ok(sort_group_setting_options_called);
+            sort_group_setting_options_called = false;
+            config.sorter([me_item], person_query);
+            assert.ok(sort_group_setting_options_called);
+        })();
+
+        (function test_source() {
+            let expected_result = [];
+            let actual_result = [];
+            function is_group(item) {
+                return item.members;
+            }
+            const result = config.source(person_query);
+            actual_result = result
+                .map((item) => {
+                    if (is_group(item)) {
+                        return item.id;
+                    }
+                    return item.user_id;
+                })
+                .filter(Boolean);
+            expected_result = [...expected_result, ...system_group_items, ...group_items];
+            expected_result = [...expected_result, ...person_items];
+            expected_result = expected_result
+                .map((item) => {
+                    if (is_group(item)) {
+                        return item.id;
+                    }
+                    return item.user_id;
+                })
+                .filter(Boolean);
+            assert.deepEqual(actual_result, expected_result);
+        })();
+
+        (function test_updater() {
+            function number_of_pills() {
+                const pills = $pill_widget.items();
+                return pills.length;
+            }
+            assert.equal(number_of_pills(), 0);
+            config.updater(me_item, person_query);
+            assert.equal(number_of_pills(), 1);
+            config.updater(testers_item, group_query);
+            assert.equal(number_of_pills(), 2);
+        })();
+
+        input_pill_typeahead_called = true;
+    });
+
+    const opts = {
+        setting_name: "can_manage_group",
+        group: testers,
+    };
+    pill_typeahead.set_up_group_setting_typeahead($fake_input, $pill_widget, opts);
+    assert.ok(input_pill_typeahead_called);
 });

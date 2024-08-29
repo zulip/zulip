@@ -1,7 +1,11 @@
 import {$t_html} from "./i18n";
 import type {InputPillContainer} from "./input_pill";
 import * as people from "./people";
-import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
+import type {
+    CombinedPill,
+    CombinedPillContainer,
+    GroupSettingPillContainer,
+} from "./typeahead_helper";
 import type {UserGroup} from "./user_groups";
 import * as user_groups from "./user_groups";
 
@@ -75,7 +79,10 @@ function get_group_members(user_group: UserGroup): number[] {
     return user_ids.filter((user_id) => people.is_person_active(user_id));
 }
 
-export function append_user_group(group: UserGroup, pill_widget: CombinedPillContainer): void {
+export function append_user_group(
+    group: UserGroup,
+    pill_widget: CombinedPillContainer | GroupSettingPillContainer,
+): void {
     pill_widget.appendValidatedData({
         type: "user_group",
         group_id: group.id,
@@ -84,22 +91,32 @@ export function append_user_group(group: UserGroup, pill_widget: CombinedPillCon
     pill_widget.clear_text();
 }
 
-export function get_group_ids(pill_widget: CombinedPillContainer): number[] {
+export function get_group_ids(
+    pill_widget: CombinedPillContainer | GroupSettingPillContainer,
+): number[] {
     const items = pill_widget.items();
     return items.flatMap((item) => (item.type === "user_group" ? item.group_id : []));
 }
 
 export function filter_taken_groups(
     items: UserGroup[],
-    pill_widget: CombinedPillContainer,
+    pill_widget: CombinedPillContainer | GroupSettingPillContainer,
 ): UserGroup[] {
     const taken_group_ids = get_group_ids(pill_widget);
     items = items.filter((item) => !taken_group_ids.includes(item.id));
     return items;
 }
 
-export function typeahead_source(pill_widget: CombinedPillContainer): UserGroupPillData[] {
-    const groups = user_groups.get_realm_user_groups();
+export function typeahead_source(
+    pill_widget: CombinedPillContainer | GroupSettingPillContainer,
+    setting_name?: string,
+): UserGroupPillData[] {
+    let groups;
+    if (setting_name !== undefined) {
+        groups = user_groups.get_realm_user_groups_for_setting(setting_name, "group", true);
+    } else {
+        groups = user_groups.get_realm_user_groups();
+    }
     return filter_taken_groups(groups, pill_widget).map((user_group) => ({
         ...user_group,
         type: "user_group",

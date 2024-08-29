@@ -5,10 +5,12 @@ import render_input_pill from "../templates/input_pill.hbs";
 import * as group_permission_settings from "./group_permission_settings";
 import * as input_pill from "./input_pill";
 import type {InputPillConfig} from "./input_pill";
+import * as pill_typeahead from "./pill_typeahead";
 import type {GroupSettingPill, GroupSettingPillContainer} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import type {UserGroupPill} from "./user_group_pill";
 import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 import * as user_pill from "./user_pill";
 
 function check_group_allowed_for_setting(group_item: UserGroupPill, setting_name: string): boolean {
@@ -101,4 +103,23 @@ export function create_pills(
         },
     });
     return pill_widget;
+}
+
+export function set_up_pill_typeahead({
+    pill_widget,
+    $pill_container,
+    opts,
+}: {
+    pill_widget: GroupSettingPillContainer;
+    $pill_container: JQuery;
+    opts: {
+        setting_name: string;
+        group: UserGroup | undefined;
+    };
+}): void {
+    pill_typeahead.set_up_group_setting_typeahead(
+        $pill_container.find(".input"),
+        pill_widget,
+        opts,
+    );
 }
