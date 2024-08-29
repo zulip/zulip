@@ -43,6 +43,7 @@ const home_params_schema = default_params_schema
         narrow: z.optional(z.array(narrow_term_schema)),
         narrow_stream: z.optional(z.string()),
         narrow_topic: z.optional(z.string()),
+        presence_history_limit_days_for_web_app: z.number(),
         promote_sponsoring_zulip: z.boolean(),
         // `realm_rendered_description` is only sent for spectators, because
         // it isn't displayed for logged-in users and requires markdown

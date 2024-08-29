@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, realm, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -160,6 +160,7 @@ test("user_circle, level", () => {
 });
 
 test("title_data", () => {
+    page_params.presence_history_limit_days_for_web_app = 365;
     add_canned_users();
 
     // Groups
@@ -210,7 +211,7 @@ test("title_data", () => {
 
     expected_data = {
         first_line: "Old User",
-        second_line: "translated: Active more than 2 weeks ago",
+        second_line: "translated: Not active in the last year",
         third_line: "",
         show_you: false,
     };
@@ -398,6 +399,7 @@ test("compare_function", () => {
 });
 
 test("user_last_seen_time_status", ({override}) => {
+    page_params.presence_history_limit_days_for_web_app = 365;
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -411,7 +413,7 @@ test("user_last_seen_time_status", ({override}) => {
     realm.realm_is_zephyr_mirror_realm = false;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: Active more than 2 weeks ago",
+        "translated: Not active in the last year",
     );
 
     presence.presence_info.set(old_user.user_id, {last_active: 1526137743});

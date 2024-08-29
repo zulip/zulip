@@ -154,6 +154,7 @@ def update_active_status_backend(
     new_user_input: Json[bool] = False,
     slim_presence: Json[bool] = False,
     last_update_id: Json[int] | None = None,
+    history_limit_days: Json[int] | None = None,
 ) -> HttpResponse:
     if last_update_id is not None:
         # This param being submitted by the client, means they want to use
@@ -172,7 +173,10 @@ def update_active_status_backend(
         ret: dict[str, Any] = {}
     else:
         ret = get_presence_response(
-            user_profile, slim_presence, last_update_id_fetched_by_client=last_update_id
+            user_profile,
+            slim_presence,
+            last_update_id_fetched_by_client=last_update_id,
+            history_limit_days=history_limit_days,
         )
 
     if user_profile.realm.is_zephyr_mirror_realm:

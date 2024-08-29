@@ -9190,6 +9190,21 @@ paths:
                     server sent user presence data for all users who had been active in the
                     last two weeks unconditionally.
                   example: 5
+                history_limit_days:
+                  type: integer
+                  description: |
+                    Limits how far back in time to fetch user presence data. If not specified,
+                    defaults to 14 days. A value of N means that the oldest presence data
+                    fetched will be from at most N days ago.
+
+                    Note that this is only useful during the initial user presence data fetch,
+                    as subsequent fetches should use the `last_update_id` parameter, which
+                    will act as the limit on how much presence data is returned. `history_limit_days`
+                    is ignored if `last_update_id` is passed with a value greater than `0`,
+                    indicating that the client already has some presence data.
+
+                    **Changes**: New in Zulip 10.0 (feature level 288).
+                  example: 365
                 new_user_input:
                   type: boolean
                   description: |
@@ -13350,6 +13365,15 @@ paths:
                   type: boolean
                   default: false
                   example: true
+                presence_history_limit_days:
+                  description: |
+                    Limits how far back in time to fetch user presence data. If not specified,
+                    defaults to 14 days. A value of N means that the oldest presence data
+                    fetched will be from at most N days ago.
+
+                    **Changes**: New in Zulip 10.0 (feature level 288).
+                  type: integer
+                  example: 365
                 event_types:
                   $ref: "#/components/schemas/Event_types"
                 all_public_streams:

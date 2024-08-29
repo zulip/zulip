@@ -574,6 +574,11 @@ PRESENCE_UPDATE_MIN_FREQ_SECONDS = 55
 # we will specify ACTIVE status  as long as the timedelta is within this limit and IDLE otherwise.
 PRESENCE_LEGACY_EVENT_OFFSET_FOR_ACTIVITY_SECONDS = 70
 
+# The web app doesn't pass params to / when initially loading, so it can't directly
+# pick its history_limit_days value. Instead, the server chooses the value and
+# passes it to the web app in page_params.
+PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP = 365
+
 # How many days deleted messages data should be kept before being
 # permanently deleted.
 ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 30

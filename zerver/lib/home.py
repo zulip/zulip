@@ -168,6 +168,7 @@ def build_page_params_for_home_page_load(
             client_gravatar=True,
             slim_presence=True,
             presence_last_update_id_fetched_by_client=-1,
+            presence_history_limit_days=settings.PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP,
             client_capabilities=client_capabilities,
             narrow=narrow,
             include_streams=False,
@@ -224,6 +225,7 @@ def build_page_params_for_home_page_load(
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
         is_spectator=user_profile is None,
+        presence_history_limit_days_for_web_app=settings.PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP,
         # There is no event queue for spectators since
         # events support for spectators is not implemented yet.
         no_event_queue=user_profile is None,

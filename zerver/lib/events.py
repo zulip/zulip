@@ -135,6 +135,7 @@ def fetch_initial_state_data(
     user_settings_object: bool = False,
     slim_presence: bool = False,
     presence_last_update_id_fetched_by_client: int | None = None,
+    presence_history_limit_days: int | None = None,
     include_subscribers: bool = True,
     include_streams: bool = True,
     spectator_requested_language: str | None = None,
@@ -247,6 +248,7 @@ def fetch_initial_state_data(
                 realm,
                 slim_presence,
                 last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
+                history_limit_days=presence_history_limit_days,
                 requesting_user_profile=user_profile,
             )
             state["presences"] = presences
@@ -1676,6 +1678,7 @@ def do_events_register(
     client_gravatar: bool = False,
     slim_presence: bool = False,
     presence_last_update_id_fetched_by_client: int | None = None,
+    presence_history_limit_days: int | None = None,
     event_types: Sequence[str] | None = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
@@ -1736,6 +1739,7 @@ def do_events_register(
             # These presence params are a noop, because presence is not included.
             slim_presence=True,
             presence_last_update_id_fetched_by_client=None,
+            presence_history_limit_days=None,
             # Force include_subscribers=False for security reasons.
             include_subscribers=include_subscribers,
             # Force include_streams=False for security reasons.
@@ -1784,6 +1788,7 @@ def do_events_register(
         user_settings_object=user_settings_object,
         slim_presence=slim_presence,
         presence_last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
+        presence_history_limit_days=presence_history_limit_days,
         include_subscribers=include_subscribers,
         include_streams=include_streams,
         pronouns_field_type_supported=pronouns_field_type_supported,

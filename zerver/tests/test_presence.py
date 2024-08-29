@@ -248,6 +248,53 @@ class UserPresenceTests(ZulipTestCase):
         result = self.client_post("/json/users/me/presence", {"status": "foo"})
         self.assert_json_error(result, "Invalid status: foo")
 
+    def test_history_limit_days_api(self) -> None:
+        UserPresence.objects.all().delete()
+
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+
+        self.login_user(hamlet)
+
+        params = dict(status="idle", last_update_id=-1)
+        result = self.client_post("/json/users/me/presence", params)
+        self.assert_json_success(result)
+
+        self.login_user(othello)
+        params = dict(status="idle", last_update_id=-1)
+        result = self.client_post("/json/users/me/presence", params)
+        self.assert_json_success(result)
+
+        othello_presence = UserPresence.objects.get(user_profile=othello)
+        assert othello_presence.last_connected_time is not None
+        othello_presence.last_connected_time = othello_presence.last_connected_time - timedelta(
+            days=100
+        )
+        othello_presence.save()
+
+        # The initial presence state has been set up for the test. Now we can proceed with verifying
+        # the behavior of the history_limit_days parameter.
+        self.login_user(iago)
+        params = dict(status="idle", last_update_id=-1, history_limit_days=50)
+        result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+        presences = json["presences"]
+        self.assertEqual(set(presences.keys()), {str(hamlet.id), str(iago.id)})
+
+        params = dict(status="idle", last_update_id=-1, history_limit_days=101)
+        result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+        presences = json["presences"]
+        self.assertEqual(set(presences.keys()), {str(hamlet.id), str(iago.id), str(othello.id)})
+
+        # history_limit_days=0 means the client doesn't want any presence data.
+        params = dict(status="idle", last_update_id=-1, history_limit_days=0)
+        result = self.client_post("/json/users/me/presence", params)
+        json = self.assert_json_success(result)
+        presences = json["presences"]
+        self.assertEqual(set(presences.keys()), set())
+
     def test_last_update_id_api(self) -> None:
         UserPresence.objects.all().delete()
 
