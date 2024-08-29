@@ -149,7 +149,7 @@ COMMON_YUM_DEPENDENCIES = [
 
 BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if (vendor == "debian" and os_version in []) or (vendor == "ubuntu" and os_version in ["24.04"]):
+if (vendor == "debian" and os_version in []) or (vendor == "ubuntu" and os_version in []):
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
