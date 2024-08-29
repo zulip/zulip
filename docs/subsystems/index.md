@@ -38,4 +38,5 @@ unread_messages
 billing
 widgets
 slash-commands
+thumbnailing
 ```
