@@ -6,7 +6,7 @@
             <div id="stream_creating_indicator"></div>
             <div class="stream-creation-body">
                 <div class="configure_channel_settings stream_creation_container">
-                    <section id="create_stream_title_container" class="block">
+                    <section id="create_stream_title_container">
                         <label for="create_stream_name">
                             {{t "Channel name" }}
                         </label>
@@ -14,7 +14,7 @@
                           placeholder="{{t 'Channel name' }}" value="" autocomplete="off" maxlength="{{ max_stream_name_length }}" />
                         <div id="stream_name_error" class="stream_creation_error"></div>
                     </section>
-                    <section id="create_stream_description_container" class="block">
+                    <section id="create_stream_description_container">
                         <label for="create_stream_description" class="settings-field-label">
                             {{t "Channel description" }}
                             {{> ../help_link_widget link="/help/change-the-channel-description" }}
@@ -22,7 +22,7 @@
                         <input type="text" name="stream_description" id="create_stream_description" class="settings_text_input"
                           placeholder="{{t 'Channel description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />
                     </section>
-                    <section class="block" id="make-invite-only">
+                    <section id="make-invite-only">
                         <div class="stream-types">
                             {{> stream_types
                               stream_post_policy=stream_post_policy_values.everyone.code
@@ -32,7 +32,7 @@
                     </section>
                 </div>
                 <div class="subscribers_container stream_creation_container">
-                    <section class="block stream_create_add_subscriber_container">
+                    <section class="stream_create_add_subscriber_container">
                         <label class="choose-subscribers-label" for="people_to_add">
                             <h4 class="stream_setting_subsection_title">{{t "Choose subscribers" }}</h4>
                         </label>
