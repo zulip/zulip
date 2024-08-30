@@ -58,6 +58,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -539,7 +540,7 @@ def do_create_user(
             realm=user_profile.realm,
             acting_user=acting_user,
             modified_user=user_profile,
-            event_type=RealmAuditLog.USER_CREATED,
+            event_type=AuditLogEventType.USER_CREATED,
             event_time=event_time,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
@@ -655,7 +656,7 @@ def do_activate_mirror_dummy_user(
             realm=user_profile.realm,
             modified_user=user_profile,
             acting_user=acting_user,
-            event_type=RealmAuditLog.USER_ACTIVATED,
+            event_type=AuditLogEventType.USER_ACTIVATED,
             event_time=event_time,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
@@ -683,7 +684,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         realm=user_profile.realm,
         modified_user=user_profile,
         acting_user=acting_user,
-        event_type=RealmAuditLog.USER_REACTIVATED,
+        event_type=AuditLogEventType.USER_REACTIVATED,
         event_time=event_time,
         extra_data={
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),

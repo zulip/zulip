@@ -92,6 +92,7 @@ from zerver.models import (
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.streams import get_active_streams, get_stream
@@ -834,12 +835,12 @@ class RealmImportExportTest(ExportFile):
         # by the export, so we'll test that it is handled by getting set to None.
         self.assertTrue(
             RealmAuditLog.objects.filter(
-                modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+                modified_user=hamlet, event_type=AuditLogEventType.USER_CREATED
             ).count(),
             1,
         )
         RealmAuditLog.objects.filter(
-            modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+            modified_user=hamlet, event_type=AuditLogEventType.USER_CREATED
         ).update(acting_user_id=cross_realm_bot.id)
 
         # data to test import of direct message groups
@@ -1142,7 +1143,7 @@ class RealmImportExportTest(ExportFile):
 
         imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
         realmauditlog = RealmAuditLog.objects.get(
-            modified_user=imported_hamlet, event_type=RealmAuditLog.USER_CREATED
+            modified_user=imported_hamlet, event_type=AuditLogEventType.USER_CREATED
         )
         self.assertEqual(realmauditlog.realm, imported_realm)
         # As explained above when setting up the RealmAuditLog row, the .acting_user should have been

@@ -103,6 +103,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.clients import get_client
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
@@ -877,7 +878,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         }
         RemoteRealmAuditLog.objects.create(
             server=remote_server,
-            event_type=RealmAuditLog.USER_CREATED,
+            event_type=AuditLogEventType.USER_CREATED,
             event_time=current_time - timedelta(minutes=10),
             extra_data={RealmAuditLog.ROLE_COUNT: {RealmAuditLog.ROLE_COUNT_HUMANS: human_counts}},
         )
@@ -939,7 +940,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         RemoteRealmAuditLog.objects.create(
             server=remote_server,
-            event_type=RealmAuditLog.USER_DEACTIVATED,
+            event_type=AuditLogEventType.USER_DEACTIVATED,
             event_time=current_time - timedelta(minutes=8),
             extra_data={RealmAuditLog.ROLE_COUNT: {RealmAuditLog.ROLE_COUNT_HUMANS: human_counts}},
         )
@@ -1604,7 +1605,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
-            event_type=RealmAuditLog.USER_CREATED,
+            event_type=AuditLogEventType.USER_CREATED,
             event_time=end_time,
             extra_data=orjson.dumps(
                 {
@@ -1835,7 +1836,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
-            event_type=RealmAuditLog.USER_REACTIVATED,
+            event_type=AuditLogEventType.USER_REACTIVATED,
             event_time=end_time,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
@@ -1964,7 +1965,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         realm_audit_log = RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
-            event_type=RealmAuditLog.USER_CREATED,
+            event_type=AuditLogEventType.USER_CREATED,
             event_time=end_time,
             extra_data=orjson.dumps(
                 {
@@ -2067,7 +2068,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
-            event_type=RealmAuditLog.USER_CREATED,
+            event_type=AuditLogEventType.USER_CREATED,
             event_time=end_time,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
@@ -2183,7 +2184,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
-            event_type=RealmAuditLog.USER_REACTIVATED,
+            event_type=AuditLogEventType.USER_REACTIVATED,
             event_time=self.TIME_ZERO,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
@@ -2208,7 +2209,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 first_call = False
             else:
                 # Test that we're respecting SYNCED_BILLING_EVENTS
-                self.assertIn(f'"event_type":{RealmAuditLog.USER_REACTIVATED}', str(args))
+                self.assertIn(f'"event_type":{AuditLogEventType.USER_REACTIVATED}', str(args))
                 self.assertNotIn(f'"event_type":{RealmAuditLog.REALM_LOGO_CHANGED}', str(args))
                 # Test that we're respecting REALMAUDITLOG_PUSHED_FIELDS
                 self.assertIn("backfilled", str(args))
@@ -2230,7 +2231,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realm=user.realm,
             modified_user=user,
             backfilled=True,
-            event_type=RealmAuditLog.USER_REACTIVATED,
+            event_type=AuditLogEventType.USER_REACTIVATED,
             event_time=self.TIME_ZERO,
             extra_data=orjson.dumps({RealmAuditLog.ROLE_COUNT: user_count}).decode(),
         )
@@ -2243,7 +2244,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(remote_log_entry.backfilled, True)
         assert remote_log_entry.extra_data is not None
         self.assertEqual(remote_log_entry.extra_data, {RealmAuditLog.ROLE_COUNT: user_count})
-        self.assertEqual(remote_log_entry.event_type, RealmAuditLog.USER_REACTIVATED)
+        self.assertEqual(remote_log_entry.event_type, AuditLogEventType.USER_REACTIVATED)
 
     # This verifies that the bouncer is backwards-compatible with remote servers using
     # TextField to store extra_data.
@@ -2262,7 +2263,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             log_entry = RealmAuditLog.objects.create(
                 realm=user.realm,
                 modified_user=user,
-                event_type=RealmAuditLog.USER_REACTIVATED,
+                event_type=AuditLogEventType.USER_REACTIVATED,
                 event_time=self.TIME_ZERO,
                 extra_data=orjson.dumps(
                     {

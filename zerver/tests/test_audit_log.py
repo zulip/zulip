@@ -85,6 +85,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import EditTopicPolicyEnum, RealmDomainDict, get_realm, get_realm_domains
@@ -128,13 +129,13 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             event_types,
             [
-                RealmAuditLog.USER_CREATED,
+                AuditLogEventType.USER_CREATED,
                 RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
                 RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
-                RealmAuditLog.USER_DEACTIVATED,
-                RealmAuditLog.USER_ACTIVATED,
-                RealmAuditLog.USER_DEACTIVATED,
-                RealmAuditLog.USER_REACTIVATED,
+                AuditLogEventType.USER_DEACTIVATED,
+                AuditLogEventType.USER_ACTIVATED,
+                AuditLogEventType.USER_DEACTIVATED,
+                AuditLogEventType.USER_REACTIVATED,
             ],
         )
         modified_user_group_names = []
@@ -180,7 +181,7 @@ class TestRealmAuditLog(ZulipTestCase):
         old_values_seen = set()
         new_values_seen = set()
         for event in RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.USER_ROLE_CHANGED,
+            event_type=AuditLogEventType.USER_ROLE_CHANGED,
             realm=realm,
             modified_user=user_profile,
             acting_user=acting_user,

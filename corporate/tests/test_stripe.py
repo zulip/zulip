@@ -93,6 +93,7 @@ from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
 from zilencer.lib.remote_counts import MissingDataError
@@ -6058,7 +6059,7 @@ class TestRemoteRealmBillingSession(StripeTestCase):
             {
                 "server": remote_server,
                 "remote_realm": remote_realm,
-                "event_type": RemoteRealmAuditLog.USER_CREATED,
+                "event_type": AuditLogEventType.USER_CREATED,
                 "event_time": event_time,
                 "extra_data": {
                     RemoteRealmAuditLog.ROLE_COUNT: {
@@ -6075,7 +6076,7 @@ class TestRemoteRealmBillingSession(StripeTestCase):
             {
                 "server": remote_server,
                 "remote_realm": remote_realm,
-                "event_type": RemoteRealmAuditLog.USER_ROLE_CHANGED,
+                "event_type": AuditLogEventType.USER_ROLE_CHANGED,
                 "event_time": event_time,
                 "extra_data": {
                     RemoteRealmAuditLog.ROLE_COUNT: {
