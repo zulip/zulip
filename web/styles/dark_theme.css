@@ -697,8 +697,8 @@
     .member-list-box,
     .member-list-box .member_list_container .member-list td,
     #subscription_overlay .settings-radio-input-parent,
-    #settings_page .sidebar-wrapper,
-    #settings_page .sidebar-wrapper *,
+    #settings_page .sidebar,
+    #settings_page .sidebar .sidebar-item,
     #recent_view_table table td {
         border-color: hsl(0deg 0% 0% / 20%);
     }
