@@ -106,6 +106,7 @@ from zerver.lib.types import (
 )
 from zerver.models import (
     Attachment,
+    BotConfigData,
     DefaultStream,
     DefaultStreamGroup,
     Message,
@@ -2804,6 +2805,9 @@ class StreamAdminTest(ZulipTestCase):
     def test_bot_owner_can_remove_bot_from_stream(self) -> None:
         user_profile = self.example_user("hamlet")
         webhook_bot = self.example_user("webhook_bot")
+        BotConfigData.objects.create(
+            bot_profile=webhook_bot, key="integration_name", value="helloworld"
+        )
         do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
         result = self.attempt_unsubscribe_of_principal(
             query_count=14,
@@ -2818,6 +2822,9 @@ class StreamAdminTest(ZulipTestCase):
     def test_non_bot_owner_cannot_remove_bot_from_stream(self) -> None:
         other_user = self.example_user("cordelia")
         webhook_bot = self.example_user("webhook_bot")
+        BotConfigData.objects.create(
+            bot_profile=webhook_bot, key="integration_name", value="helloworld"
+        )
         do_change_bot_owner(webhook_bot, bot_owner=other_user, acting_user=other_user)
         result = self.attempt_unsubscribe_of_principal(
             query_count=8,

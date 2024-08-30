@@ -75,6 +75,7 @@ from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
 from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
+    BotConfigData,
     Message,
     NamedUserGroup,
     RealmAuditLog,
@@ -341,6 +342,7 @@ class TestRealmAuditLog(ZulipTestCase):
         admin = self.example_user("iago")
         bot = self.notification_bot(admin.realm)
         bot_owner = self.example_user("hamlet")
+        BotConfigData.objects.create(bot_profile=bot, key="integration_name", value="helloworld")
         do_change_bot_owner(bot, bot_owner, admin)
         self.assertEqual(
             RealmAuditLog.objects.filter(

@@ -582,6 +582,11 @@ bot_services_embedded_type = DictType(
     ]
 )
 
+bot_services_incoming_type = DictType(
+    required_keys=[
+        ("integration_name", str),
+    ]
+)
 # Note that regular bots just get an empty list of services,
 # so the sub_validator for ListType won't matter for them.
 bot_services_type = ListType(
@@ -589,6 +594,7 @@ bot_services_type = ListType(
         [
             bot_services_outgoing_type,
             bot_services_embedded_type,
+            bot_services_incoming_type,
         ]
     ),
 )
@@ -638,6 +644,8 @@ def check_realm_bot_add(
         check_data(ListType(bot_services_outgoing_type, length=1), services_field, services)
     elif bot_type == UserProfile.EMBEDDED_BOT:
         check_data(ListType(bot_services_embedded_type, length=1), services_field, services)
+    elif bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+        check_data(ListType(bot_services_incoming_type, length=1), services_field, services)
     else:
         raise AssertionError(f"Unknown bot_type: {bot_type}")
 

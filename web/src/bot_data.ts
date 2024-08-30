@@ -1,6 +1,7 @@
 import type {z} from "zod";
 
 import {server_add_bot_schema, server_update_bot_schema, services_schema} from "./bot_types";
+import type {incoming_service_schema, service_schema} from "./bot_types";
 import * as people from "./people";
 import type {StateData} from "./state_data";
 
@@ -9,7 +10,8 @@ export type ServerAddBotData = z.infer<typeof server_add_bot_schema>;
 export type Bot = Omit<ServerAddBotData, "services">;
 
 export type Services = z.infer<typeof services_schema>;
-
+export type incoming_service_schema = z.infer<typeof incoming_service_schema>;
+export type service_schema = z.infer<typeof service_schema>;
 const bots = new Map<number, Bot>();
 const services = new Map<number, Services>();
 

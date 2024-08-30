@@ -703,6 +703,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
               base_url: string;
               interface: number;
               token: string;
+          }
+        | {
+              integration_name: string;
           };
     if (services?.[0] !== undefined) {
         service = services[0];
@@ -905,7 +908,11 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             assert(bot !== undefined);
             const current_bot_data = bot_data.get(bot.user_id);
             assert(current_bot_data !== undefined);
-            integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
+            const bot_id = Number($("#bot-edit-form").attr("data-user-id"));
+            integration_url_modal.show_generate_integration_url_modal(
+                current_bot_data.api_key,
+                bot_id,
+            );
         });
     }
 }

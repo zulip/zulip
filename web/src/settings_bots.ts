@@ -234,7 +234,6 @@ export function add_a_new_bot(): void {
         bot_types: page_params.bot_types,
         realm_embedded_bots: realm.realm_embedded_bots,
         realm_bot_domain: realm.realm_bot_domain,
-        // TODO: get_options_for_integration_input_dropdown_widget will be covered in next commit.
         integration_name: integration_url_modal.get_options_for_integration_input_dropdown_widget(
             default_integration_option,
         ),
