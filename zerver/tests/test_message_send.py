@@ -1280,6 +1280,7 @@ class MessagePOSTTest(ZulipTestCase):
         bot_info = {
             "full_name": "IRC bot",
             "short_name": "irc",
+            "integration_name": "helloworld",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
