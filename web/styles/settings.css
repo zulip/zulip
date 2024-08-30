@@ -1425,7 +1425,7 @@ $option_title_width: 180px;
             padding: 0;
         }
 
-        & li {
+        .sidebar-item {
             display: grid;
             /* 3.5714em is 50px at 14px/1em -- the legacy height of these rows. */
             grid-template:
