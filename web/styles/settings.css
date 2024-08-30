@@ -55,10 +55,6 @@ h3,
 }
 
 .new-style {
-    .block {
-        display: block;
-    }
-
     .center-block {
         margin: 0 auto;
     }
