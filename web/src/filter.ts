@@ -15,7 +15,7 @@ import {page_params} from "./page_params";
 import type {User} from "./people";
 import * as people from "./people";
 import type {UserPillItem} from "./search_suggestion";
-import {realm} from "./state_data";
+import {current_user, realm} from "./state_data";
 import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
@@ -831,7 +831,19 @@ export class Filter {
             });
 
             assert(typeof message.display_recipient !== "string");
-            const dm_participants = message.display_recipient.map((user) => user.email);
+
+            // We should make sure the current user is not included for
+            // the `dm` operand for the narrow.
+            const dm_participants = message.display_recipient
+                .map((user) => user.email)
+                .filter((user_email) => user_email !== current_user.email);
+
+            // However, if the current user is the only recipient of the
+            // message, we should include the user in the operand.
+            if (dm_participants.length === 0) {
+                dm_participants.push(current_user.email);
+            }
+
             const dm_operand = dm_participants.join(",");
 
             const dm_conversation_terms = [{operator: "dm", operand: dm_operand, negated: false}];
