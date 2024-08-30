@@ -1160,7 +1160,7 @@ ul.topic-list {
     font-weight: normal;
 }
 
-ul.topic-list::before {
+ul.topic-list.topic-list-has-topics::before {
     content: " ";
     display: block;
     position: absolute;
@@ -1175,7 +1175,7 @@ ul.topic-list::before {
     pointer-events: none;
 }
 
-ul.topic-list::after {
+ul.topic-list.topic-list-has-topics::after {
     content: " ";
     display: block;
     position: absolute;
