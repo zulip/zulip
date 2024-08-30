@@ -67,10 +67,6 @@ h3,
         text-align: center;
     }
 
-    .w-200 {
-        width: 200px;
-    }
-
     .button {
         & ul {
             text-align: left;
