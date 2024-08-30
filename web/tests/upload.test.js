@@ -501,6 +501,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     let response = {
         body: {
             url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
+            filename: "copenhagen.png",
         },
     };
 
