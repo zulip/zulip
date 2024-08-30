@@ -54,14 +54,6 @@ h3,
     }
 }
 
-.new-style {
-    .button {
-        & ul {
-            text-align: left;
-        }
-    }
-}
-
 .profile-settings-form {
     display: flex;
     justify-content: space-between;
