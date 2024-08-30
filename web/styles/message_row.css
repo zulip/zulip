@@ -779,7 +779,8 @@ of the base style defined for a read-only textarea in dark mode. */
 }
 
 .message_edit_notice {
-    font-size: 10px;
+    /* 10px at 14px/1em */
+    font-size: 0.7143em;
     opacity: 0.5;
     user-select: none;
     white-space: nowrap;
