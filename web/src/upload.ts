@@ -372,10 +372,13 @@ export function setup_upload(config: Config): Uppy {
 
     uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
-        const {url} = z.object({url: z.string()}).parse(response.body);
-        const split_url = url.split("/");
-        const filename = split_url.at(-1);
-        const syntax_to_insert = "[" + filename + "](" + url + ")";
+        const {url, filename} = z
+            .object({url: z.string(), filename: z.string()})
+            .parse(response.body);
+        // Our markdown does not have escape characters, so we cannot link any text with brackets;
+        // strip them out, if present.
+        const filtered_filename = filename.replaceAll("[", "").replaceAll("]", "");
+        const syntax_to_insert = "[" + filtered_filename + "](" + url + ")";
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
             get_translated_status(file),
