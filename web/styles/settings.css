@@ -1419,12 +1419,6 @@ $option_title_width: 180px;
             border-bottom: 1px solid hsl(0deg 0% 87%);
         }
 
-        & ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
         .sidebar-item {
             display: grid;
             /* 3.5714em is 50px at 14px/1em -- the legacy height of these rows. */
@@ -1484,6 +1478,9 @@ $option_title_width: 180px;
         .normal-settings-list,
         .org-settings-list {
             position: relative;
+            list-style: none;
+            margin: 0;
+            padding: 0;
         }
     }
 
