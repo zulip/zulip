@@ -8,7 +8,7 @@ const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, realm} = require("./lib/zpage_params");
+const {current_user, page_params, realm} = require("./lib/zpage_params");
 
 const message_store = mock_esm("../src/message_store");
 const user_topics = mock_esm("../src/user_topics");
@@ -2431,6 +2431,7 @@ run_test("equals", () => {
 });
 
 run_test("adjusted_terms_if_moved", () => {
+    current_user.email = me.email;
     // should return null for non-stream messages containing no
     // `with` operator
     let raw_terms = [{operator: "channel", operand: "Foo"}];
@@ -2440,7 +2441,14 @@ run_test("adjusted_terms_if_moved", () => {
 
     // should adjust terms to contain `dm` for non-stream messages
     // if it contains `with` operator
-    message = {type: "private", id: 2, display_recipient: [{id: 3, email: "user3@zulip.com"}]};
+    message = {
+        type: "private",
+        id: 2,
+        display_recipient: [
+            {id: 3, email: "user3@zulip.com"},
+            {id: me.user_id, email: me.email},
+        ],
+    };
     raw_terms = [
         {operator: "channel", operand: "Foo"},
         {operator: "with", operand: `${message.id}`},
@@ -2448,6 +2456,21 @@ run_test("adjusted_terms_if_moved", () => {
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.deepEqual(result, [
         {operator: "dm", operand: "user3@zulip.com", negated: false},
+        {operator: "with", operand: "2"},
+    ]);
+
+    message = {
+        type: "private",
+        id: 2,
+        display_recipient: [{id: me.user_id, email: me.email}],
+    };
+    raw_terms = [
+        {operator: "channel", operand: "Foo"},
+        {operator: "with", operand: `${message.id}`},
+    ];
+    result = Filter.adjusted_terms_if_moved(raw_terms, message);
+    assert.deepEqual(result, [
+        {operator: "dm", operand: me.email, negated: false},
         {operator: "with", operand: "2"},
     ]);
 
