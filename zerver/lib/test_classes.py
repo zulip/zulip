@@ -2034,7 +2034,7 @@ Output:
             attach_file.write(b"Hello, World!")
             attach_file.flush()
             with open(attach_file.name, "rb") as fp:
-                file_path = upload_message_attachment_from_request(UploadedFile(fp), user)
+                file_path = upload_message_attachment_from_request(UploadedFile(fp), user)[0]
                 return file_path
 
 

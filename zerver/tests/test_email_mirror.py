@@ -597,7 +597,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
         with mock.patch(
             "zerver.lib.email_mirror.upload_message_attachment",
-            return_value="https://test_url",
+            return_value=("https://test_url", "image.png"),
         ) as upload_message_attachment:
             process_message(incoming_valid_message)
             upload_message_attachment.assert_called_with(
@@ -723,7 +723,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
         with mock.patch(
             "zerver.lib.email_mirror.upload_message_attachment",
-            return_value="https://test_url",
+            return_value=("https://test_url", utf8_filename),
         ) as upload_message_attachment:
             process_message(incoming_valid_message)
             upload_message_attachment.assert_called_with(
@@ -769,7 +769,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
         with mock.patch(
             "zerver.lib.email_mirror.upload_message_attachment",
-            return_value="https://test_url",
+            return_value=("https://test_url", "image.png"),
         ) as upload_message_attachment:
             process_message(incoming_valid_message)
             upload_message_attachment.assert_called_with(

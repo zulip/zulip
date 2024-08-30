@@ -8250,6 +8250,12 @@ paths:
 
                           **Changes**: New in Zulip 9.0 (feature level 272). Previously,
                           this property was only available under the legacy `uri` name.
+                      filename:
+                        type: string
+                        description: |
+                          The filename that Zulip stored the upload as.
+
+                          **Changes**: New in Zulip 10.0 (feature level 285).
                     example:
                       {
                         "msg": "",

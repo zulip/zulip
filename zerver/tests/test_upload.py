@@ -613,14 +613,15 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_sanitize_file_name(self) -> None:
         self.login("hamlet")
-        for uploaded_filename, expected in [
-            ("../foo", "foo"),
-            (".. ", "uploaded-file"),
-            ("/", "f1"),
-            ("./", "f1"),
-            ("././", "f1"),
-            (".!", "uploaded-file"),
-            ("**", "uploaded-file"),
+        for uploaded_filename, expected_url, expected_filename in [
+            ("../foo", "foo", "foo"),
+            (".. ", "uploaded-file", ".. "),
+            ("/", "f1", "f1"),
+            ("./", "f1", "f1"),
+            ("././", "f1", "f1"),
+            (".!", "uploaded-file", ".!"),
+            ("**", "uploaded-file", "**"),
+            ("foo bar--baz", "foo-bar-baz", "foo bar--baz"),
         ]:
             fp = StringIO("bah!")
             fp.name = quote(uploaded_filename)
@@ -628,9 +629,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/user_uploads", {"f1": fp})
             response_dict = self.assert_json_success(result)
             self.assertNotIn(response_dict["uri"], uploaded_filename)
-            self.assertTrue(response_dict["uri"].endswith("/" + expected))
+            self.assertTrue(response_dict["uri"].endswith("/" + expected_url))
             self.assertNotIn(response_dict["url"], uploaded_filename)
-            self.assertTrue(response_dict["url"].endswith("/" + expected))
+            self.assertTrue(response_dict["url"].endswith("/" + expected_url))
+            self.assertEqual(response_dict["filename"], expected_filename)
 
     def test_realm_quota(self) -> None:
         """

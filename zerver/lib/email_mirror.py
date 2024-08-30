@@ -331,13 +331,17 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, bytes):
-                upload_url = upload_message_attachment(
+                upload_url, filename = upload_message_attachment(
                     filename,
                     content_type,
                     attachment,
                     sender,
                     target_realm=realm,
                 )
+                # Our markdown has no escaping, so we cannot link any
+                # text containing brackets; strip them from the
+                # filename we're linking.
+                filename = re.sub(r"\[|\]", "", filename)
                 formatted_link = f"[{filename}]({upload_url})"
                 attachment_links.append(formatted_link)
             else:
