@@ -71,21 +71,6 @@ h3,
         width: 200px;
     }
 
-    .grid {
-        & label {
-            min-width: 200px;
-        }
-    }
-
-    #account-settings,
-    #profile-field-settings {
-        .grid {
-            & label {
-                min-width: 120px;
-            }
-        }
-    }
-
     .button {
         & ul {
             text-align: left;
