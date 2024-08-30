@@ -1,3 +1,5 @@
+from enum import IntEnum, unique
+
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import CASCADE, Q
@@ -7,6 +9,17 @@ from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import Realm
 from zerver.models.streams import Stream
 from zerver.models.users import UserProfile
+
+
+@unique
+class AuditLogEventType(IntEnum):
+    USER_CREATED = 101
+    USER_ACTIVATED = 102
+    USER_DEACTIVATED = 103
+    USER_REACTIVATED = 104
+    USER_ROLE_CHANGED = 105
+    USER_DELETED = 106
+    USER_DELETED_PRESERVING_MESSAGES = 107
 
 
 class AbstractRealmAuditLog(models.Model):
@@ -28,14 +41,6 @@ class AbstractRealmAuditLog(models.Model):
     extra_data = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
     # Event types
-    USER_CREATED = 101
-    USER_ACTIVATED = 102
-    USER_DEACTIVATED = 103
-    USER_REACTIVATED = 104
-    USER_ROLE_CHANGED = 105
-    USER_DELETED = 106
-    USER_DELETED_PRESERVING_MESSAGES = 107
-
     USER_SOFT_ACTIVATED = 120
     USER_SOFT_DEACTIVATED = 121
     USER_PASSWORD_CHANGED = 122
@@ -149,11 +154,11 @@ class AbstractRealmAuditLog(models.Model):
     # billing for mobile push notifications is enabled.  Every billing
     # event_type should have ROLE_COUNT populated in extra_data.
     SYNCED_BILLING_EVENTS = [
-        USER_CREATED,
-        USER_ACTIVATED,
-        USER_DEACTIVATED,
-        USER_REACTIVATED,
-        USER_ROLE_CHANGED,
+        AuditLogEventType.USER_CREATED,
+        AuditLogEventType.USER_ACTIVATED,
+        AuditLogEventType.USER_DEACTIVATED,
+        AuditLogEventType.USER_REACTIVATED,
+        AuditLogEventType.USER_ROLE_CHANGED,
         REALM_DEACTIVATED,
         REALM_REACTIVATED,
         REALM_IMPORTED,
@@ -246,10 +251,10 @@ class RealmAuditLog(AbstractRealmAuditLog):
                 fields=["modified_user", "event_time"],
                 condition=Q(
                     event_type__in=[
-                        AbstractRealmAuditLog.USER_CREATED,
-                        AbstractRealmAuditLog.USER_ACTIVATED,
-                        AbstractRealmAuditLog.USER_DEACTIVATED,
-                        AbstractRealmAuditLog.USER_REACTIVATED,
+                        AuditLogEventType.USER_CREATED,
+                        AuditLogEventType.USER_ACTIVATED,
+                        AuditLogEventType.USER_DEACTIVATED,
+                        AuditLogEventType.USER_REACTIVATED,
                     ]
                 ),
             ),

@@ -20,7 +20,8 @@ from analytics.models import (
     installation_epoch,
 )
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour, verify_UTC
-from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
+from zerver.models import Message, Realm, Stream, UserActivityInterval, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import (
@@ -679,7 +680,7 @@ def count_message_by_stream_query(realm: Realm | None) -> QueryFn:
 
 # Hardcodes the query needed for active_users_audit:is_bot:day.
 # Assumes that a user cannot have two RealmAuditLog entries with the
-# same event_time and event_type in [RealmAuditLog.USER_CREATED,
+# same event_time and event_type in [AuditLogEventType.USER_CREATED,
 # USER_DEACTIVATED, etc].  In particular, it's important to ensure
 # that migrations don't cause that to happen.
 def check_realmauditlog_by_user_query(realm: Realm | None) -> QueryFn:
@@ -713,10 +714,10 @@ def check_realmauditlog_by_user_query(realm: Realm | None) -> QueryFn:
     """
     ).format(
         **kwargs,
-        user_created=Literal(RealmAuditLog.USER_CREATED),
-        user_activated=Literal(RealmAuditLog.USER_ACTIVATED),
-        user_deactivated=Literal(RealmAuditLog.USER_DEACTIVATED),
-        user_reactivated=Literal(RealmAuditLog.USER_REACTIVATED),
+        user_created=Literal(AuditLogEventType.USER_CREATED),
+        user_activated=Literal(AuditLogEventType.USER_ACTIVATED),
+        user_deactivated=Literal(AuditLogEventType.USER_DEACTIVATED),
+        user_reactivated=Literal(AuditLogEventType.USER_REACTIVATED),
         realm_clause=realm_clause,
     )
 
@@ -789,10 +790,10 @@ def count_realm_active_humans_query(realm: Realm | None) -> QueryFn:
 """
     ).format(
         **kwargs,
-        user_created=Literal(RealmAuditLog.USER_CREATED),
-        user_activated=Literal(RealmAuditLog.USER_ACTIVATED),
-        user_deactivated=Literal(RealmAuditLog.USER_DEACTIVATED),
-        user_reactivated=Literal(RealmAuditLog.USER_REACTIVATED),
+        user_created=Literal(AuditLogEventType.USER_CREATED),
+        user_activated=Literal(AuditLogEventType.USER_ACTIVATED),
+        user_deactivated=Literal(AuditLogEventType.USER_DEACTIVATED),
+        user_reactivated=Literal(AuditLogEventType.USER_REACTIVATED),
         realm_clause=realm_clause,
     )
 

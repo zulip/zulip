@@ -42,6 +42,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.bots import get_bot_services
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_fake_email_domain
 from zerver.models.users import (
     active_non_guest_user_ids,
@@ -105,7 +106,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
             realm=replacement_user.realm,
             modified_user=replacement_user,
             acting_user=acting_user,
-            event_type=RealmAuditLog.USER_DELETED,
+            event_type=AuditLogEventType.USER_DELETED,
             event_time=timezone_now(),
         )
 
@@ -236,7 +237,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
             realm=replacement_user.realm,
             modified_user=replacement_user,
             acting_user=None,
-            event_type=RealmAuditLog.USER_DELETED_PRESERVING_MESSAGES,
+            event_type=AuditLogEventType.USER_DELETED_PRESERVING_MESSAGES,
             event_time=timezone_now(),
         )
 
@@ -352,7 +353,7 @@ def do_deactivate_user(
             realm=user_profile.realm,
             modified_user=user_profile,
             acting_user=acting_user,
-            event_type=RealmAuditLog.USER_DEACTIVATED,
+            event_type=AuditLogEventType.USER_DEACTIVATED,
             event_time=event_time,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
@@ -463,7 +464,7 @@ def do_change_user_role(
         realm=user_profile.realm,
         modified_user=user_profile,
         acting_user=acting_user,
-        event_type=RealmAuditLog.USER_ROLE_CHANGED,
+        event_type=AuditLogEventType.USER_ROLE_CHANGED,
         event_time=timezone_now(),
         extra_data={
             RealmAuditLog.OLD_VALUE: old_value,
