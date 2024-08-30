@@ -69,7 +69,7 @@ class zulip::profile::app_frontend {
   zulip::cron { 'restart-zulip':
     hour    => '6',
     minute  => '0',
-    dow     => '7',
+    dow     => '0',
     command => '/home/zulip/deployments/current/scripts/restart-server --fill-cache',
   }
 }
