@@ -1,14 +1,15 @@
 {start_tabs}
 {tab|require-invitations}
 
-1. Configure [allowed authentication
-   methods](/help/configure-authentication-methods). By default, Zulip allows
-   logging in via email/password as well as various social authentication
-   providers like Google, GitHub, GitLab, and Apple. Users can [log in with any
-   allowed authentication method][logging-in], regardless of how they signed up.
+1. [Configure allowed authentication
+   methods](/help/configure-authentication-methods). Zulip offers a variety of
+   authentication methods, including email/password, Google, GitHub, GitLab,
+   Apple, LDAP and [SAML](/help/saml-authentication). Users can [log
+   in][logging-in] with any allowed authentication method, regardless of how
+   they signed up.
 
 1. Invite users by [sending email invitations][email-invitations] or
-   sharing a [reusable invite link][invitation-links].
+   sharing a [reusable invitation link][invitation-links].
 
 {tab|allow-anyone-to-join}
 
@@ -19,6 +20,31 @@
 
 1. Share a link to your registration page, which is
    https://your-domain.zulipchat.com for Zulip Cloud organizations.
+
+{tab|imported-organizations}
+
+1. [Configure allowed authentication
+   methods](/help/configure-authentication-methods). Zulip offers a variety of
+   authentication methods, including email/password, Google, GitHub, GitLab,
+   Apple, LDAP and [SAML](/help/saml-authentication). Users can immediately [log
+   in][logging-in] with any allowed authentication method that does not require
+   a password.
+
+1. Share a link to your Zulip organization, which is
+   https://your-domain.zulipchat.com on Zulip Cloud.
+
+1. *(optional)* To log in with an email/password, users will need to set their
+   initial password. You can:
+
+    - Automatically send password reset emails to all users in your
+     organization. If you imported your organization into Zulip Cloud, simply
+     email [support@zulip.com](mailto:support@zulip.com) to request this. Server
+     administrators for self-hosted organizations should follow [these
+     instructions](/help/import-from-slack#send-password-reset-emails-to-all-users).
+
+    - Let users know that they can [request a password
+     reset](/help/change-your-password#if-youve-forgotten-or-never-had-a-password)
+     on your organization's login page.
 
 {end_tabs}
 
