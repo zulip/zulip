@@ -2468,7 +2468,7 @@ class ScrubRealmTest(ZulipTestCase):
         path_ids = []
         for n in range(1, 4):
             content = f"content{n}".encode()
-            url = upload_message_attachment(f"dummy{n}.txt", "text/plain", content, hamlet)
+            url = upload_message_attachment(f"dummy{n}.txt", "text/plain", content, hamlet)[0]
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
             path_id = re.sub(r"/user_uploads/", "", url)
@@ -2543,7 +2543,7 @@ class ScrubRealmTest(ZulipTestCase):
         file_paths = []
         for n, owner in enumerate([iago, othello, hamlet, cordelia, king]):
             content = f"content{n}".encode()
-            url = upload_message_attachment(f"dummy{n}.txt", "text/plain", content, owner)
+            url = upload_message_attachment(f"dummy{n}.txt", "text/plain", content, owner)[0]
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
             file_path = os.path.join(settings.LOCAL_FILES_DIR, re.sub(r"/user_uploads/", "", url))

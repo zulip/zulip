@@ -137,7 +137,7 @@ def upload_message_attachment(
     file_data: bytes,
     user_profile: UserProfile,
     target_realm: Realm | None = None,
-) -> str:
+) -> tuple[str, str]:
     if target_realm is None:
         target_realm = user_profile.realm
     path_id = upload_backend.generate_message_upload_path(
@@ -160,7 +160,7 @@ def upload_message_attachment(
             user_profile,
             target_realm,
         )
-    return f"/user_uploads/{path_id}"
+    return f"/user_uploads/{path_id}", uploaded_file_name
 
 
 def claim_attachment(
@@ -187,7 +187,7 @@ def claim_attachment(
 
 def upload_message_attachment_from_request(
     user_file: UploadedFile, user_profile: UserProfile
-) -> str:
+) -> tuple[str, str]:
     uploaded_file_name, content_type = get_file_info(user_file)
     return upload_message_attachment(
         uploaded_file_name, content_type, user_file.read(), user_profile

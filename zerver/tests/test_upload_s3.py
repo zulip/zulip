@@ -49,7 +49,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
@@ -68,7 +68,7 @@ class S3Test(ZulipTestCase):
     def test_save_attachment_contents(self) -> None:
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
         path_id = re.sub(r"/user_uploads/", "", url)
         output = BytesIO()
@@ -90,7 +90,7 @@ class S3Test(ZulipTestCase):
 
         url = upload_message_attachment(
             "dummy.txt", "text/plain", b"zulip!", user_profile, zulip_realm
-        )
+        )[0]
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
 
@@ -99,7 +99,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
         path_id = re.sub(r"/user_uploads/", "", url)
         self.assertIsNotNone(bucket.Object(path_id).get())
@@ -114,7 +114,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 5):
-            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
             path_id = re.sub(r"/user_uploads/", "", url)
             self.assertIsNotNone(bucket.Object(path_id).get())
             path_ids.append(path_id)
@@ -147,14 +147,14 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 5):
-            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
             path_ids.append(re.sub(r"/user_uploads/", "", url))
 
         # Put an image in, which gets thumbnailed
         with self.captureOnCommitCallbacks(execute=True):
             url = upload_message_attachment(
                 "img.png", "image/png", read_test_image_file("img.png"), user_profile
-            )
+            )[0]
             image_path_id = re.sub(r"/user_uploads/", "", url)
             path_ids.append(image_path_id)
 

@@ -1037,7 +1037,7 @@ class NormalActionsTest(BaseAction):
         iago = self.example_user("iago")
         url = upload_message_attachment(
             "img.png", "image/png", read_test_image_file("img.png"), self.example_user("iago")
-        )
+        )[0]
         path_id = url[len("/user_upload/") + 1 :]
         self.send_stream_message(
             iago, "Verona", f"[img.png]({url})", skip_capture_on_commit_callbacks=True

@@ -30,7 +30,7 @@ from zerver.models.users import get_system_bot
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
     def test_upload_message_attachment(self) -> None:
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
@@ -45,7 +45,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_save_attachment_contents(self) -> None:
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
         path_id = re.sub(r"/user_uploads/", "", url)
         output = BytesIO()
@@ -65,7 +65,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         url = upload_message_attachment(
             "dummy.txt", "text/plain", b"zulip!", user_profile, zulip_realm
-        )
+        )[0]
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
 
@@ -93,7 +93,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 1005):
-            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
             path_id = re.sub(r"/user_uploads/", "", url)

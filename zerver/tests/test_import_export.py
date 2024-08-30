@@ -168,7 +168,7 @@ class ExportFile(ZulipTestCase):
         self, user_profile: UserProfile, *, emoji_name: str = "whatever"
     ) -> None:
         message = most_recent_message(user_profile)
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
         attachment_path_id = url.replace("/user_uploads/", "")
         claim_attachment(
             path_id=attachment_path_id,
@@ -402,7 +402,7 @@ class RealmImportExportTest(ExportFile):
         # We create an attachment tied to a personal message. That means it shouldn't be
         # included in a public export, as it's private data.
         personal_message_id = self.send_personal_message(user_profile, self.example_user("othello"))
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
         attachment_path_id = url.replace("/user_uploads/", "")
         attachment = claim_attachment(
             path_id=attachment_path_id,

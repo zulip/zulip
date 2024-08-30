@@ -352,7 +352,7 @@ def deactivate_own_user() -> dict[str, object]:
 @openapi_param_value_generator(["/attachments/{attachment_id}:delete"])
 def remove_attachment() -> dict[str, object]:
     user_profile = helpers.example_user("iago")
-    url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+    url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
     attachment_id = url.replace("/user_uploads/", "").split("/")[0]
 
     return {"attachment_id": attachment_id}
