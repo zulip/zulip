@@ -398,7 +398,7 @@ export class DropdownWidget {
                 });
 
                 // Click on item.
-                $popper.one("click", ".list-item", (event) => {
+                $popper.on("click", ".list-item", (event) => {
                     const selected_unique_id = $(event.currentTarget).attr("data-unique-id");
                     assert(selected_unique_id !== undefined);
                     this.current_value = selected_unique_id;
