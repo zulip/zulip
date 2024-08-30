@@ -55,14 +55,6 @@ h3,
 }
 
 .new-style {
-    .center-block {
-        margin: 0 auto;
-    }
-
-    .center {
-        text-align: center;
-    }
-
     .button {
         & ul {
             text-align: left;
