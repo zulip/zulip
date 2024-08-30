@@ -519,7 +519,7 @@ h4.user_group_setting_subsection_title {
 
 .user-group-creation-body,
 .stream-creation-body {
-    & section.block {
+    & section {
         margin-bottom: 20px;
     }
 
