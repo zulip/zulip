@@ -847,6 +847,11 @@ export function end_message_row_edit($row: JQuery): void {
     // Clean up the upload handler
     upload.deactivate_upload(upload.edit_config(row_id));
 
+    // Check if the row is in preview mode, and clear the preview area if it is.
+    if ($row.hasClass("preview_mode")) {
+        clear_preview_area($row);
+    }
+
     const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         currently_editing_messages.delete(message.id);
