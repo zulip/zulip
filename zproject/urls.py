@@ -93,6 +93,7 @@ from zerver.views.presence import (
     update_active_status_backend,
     update_user_status_backend,
 )
+from zerver.views.previewable import get_previewable_data
 from zerver.views.push_notifications import (
     add_android_reg_id,
     add_apns_device_token,
@@ -502,6 +503,7 @@ v1_api_and_json_patterns = [
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
+    rest_path("previewable", POST=get_previewable_data),
 ]
 
 integrations_view = IntegrationView.as_view()

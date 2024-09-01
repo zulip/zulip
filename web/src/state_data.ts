@@ -126,6 +126,26 @@ export const server_emoji_schema = z.object({
 
 export const realm_emoji_map_schema = z.record(server_emoji_schema);
 
+export const previewable_url_response_schema = z.object({
+    platform: z.string(),
+    data: z.any()
+});
+
+export const github_previewable_url_response_schema = z.object(
+    {
+        type: z.string(),
+        owner: z.string(),
+        repo: z.string(),
+        issue_number: z.string(),
+        title: z.string(),
+        author: z.string(),
+        state: z.string(),
+        state_reason: z.string().optional().nullable(),
+        draft: z.boolean().optional().nullable(),
+        merged_at: z.string().optional().nullable(),
+    }
+)
+
 export const user_group_schema = z.object({
     description: z.string(),
     id: z.number(),
