@@ -5909,6 +5909,44 @@ class InvoiceTest(StripeTestCase):
         )
 
     @mock_stripe()
+    def test_validate_licenses_for_manual_plan_management(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        # Upgrade with one extra license
+        with (
+            time_machine.travel(self.now, tick=False),
+            patch("corporate.lib.stripe.MIN_INVOICED_LICENSES", 3),
+        ):
+            self.upgrade(invoice=True, licenses=self.seat_count + 1)
+
+        # Set renewal licenses to current seat count
+        with (
+            time_machine.travel(self.now, tick=False),
+            patch("corporate.lib.stripe.MIN_INVOICED_LICENSES", 3),
+        ):
+            result = self.client_billing_patch(
+                "/billing/plan",
+                {"licenses_at_next_renewal": self.seat_count},
+            )
+            self.assert_json_success(result)
+
+        # Add an extra user
+        do_create_user(
+            "email-exra-user",
+            "password-extra-user",
+            get_realm("zulip"),
+            "name-extra-user",
+            acting_user=None,
+        )
+        with self.assertRaises(BillingError) as context:
+            invoice_plans_as_needed(self.next_year)
+        self.assertRegex(
+            context.exception.error_description,
+            "Customer has not manually updated plan for current license count:",
+        )
+
+    @mock_stripe()
     def test_invoice_plan(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
