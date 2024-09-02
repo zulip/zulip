@@ -639,7 +639,7 @@ export function initialize() {
         server_events.restart_get_events({dont_block: true});
     });
 
-    $("#settings_page").on("click", ".collapse-settings-btn", () => {
+    $("#settings_page").on("click", ".collapse-settings-button", () => {
         settings_toggle.toggle_org_setting_collapse();
     });
 
