@@ -217,3 +217,7 @@ ALLOW_GROUP_VALUED_SETTINGS = True
 # This value needs to be lower in development than usual to allow
 # for quicker testing of the feature.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 5
+
+# In a dev environment, 'zulipdev.com:9991' is used to access the landing page.
+# See: https://zulip.readthedocs.io/en/latest/subsystems/realms.html#working-with-subdomains-in-development-environment
+ROOT_DOMAIN_LANDING_PAGE = True
