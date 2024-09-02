@@ -1406,6 +1406,16 @@ $option_title_width: 180px;
             }
         }
 
+        .collapse-settings-button,
+        .collapse-settings-button > #toggle_collapse_chevron {
+            color: var(--color-text-url);
+
+            &:hover {
+                cursor: pointer;
+                color: var(--color-text-url-hover);
+            }
+        }
+
         .org-settings-list {
             display: none;
         }
@@ -1695,21 +1705,6 @@ $option_title_width: 180px;
 #attachment-stats-holder {
     position: relative;
     margin-top: 13px;
-    display: inline-block;
-}
-
-.collapse-settings-btn {
-    margin: 10px 0 0 10px;
-    color: hsl(200deg 100% 40%);
-
-    &:hover {
-        cursor: pointer;
-        color: hsl(208deg 56% 38%);
-    }
-}
-
-#toggle_collapse {
-    margin-left: 2px;
     display: inline-block;
 }
 
