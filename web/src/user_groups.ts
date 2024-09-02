@@ -440,7 +440,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 
         const display_name = settings_config.system_user_groups_list.find(
             (system_group) => system_group.name === group.name,
-        )!.display_name;
+        )!.dropdown_option_name;
 
         return {
             name: get_display_name_for_system_group_option(setting_name, display_name),
@@ -449,14 +449,14 @@ export function get_realm_user_groups_for_dropdown_list_widget(
     });
 }
 
-// Group name for user-facing display. For settings, we already use
-// description strings for system groups. But those description strings
-// might not be suitable for every case, e.g. we want the name for
-// `role:everyone` to be `Everyone` instead of
-// `Admins, moderators, members and guests` from `settings_config`.
-// Right now, we only change the name for `role:everyone`, that's why
-// we don't store the values in a structured way like
-// `settings_config` yet.
-export function get_display_group_name(user_group: UserGroup): string {
-    return user_group.name === "role:everyone" ? $t({defaultMessage: "Everyone"}) : user_group.name;
+export function get_display_group_name(group_name: string): string {
+    const group = settings_config.system_user_groups_list.find(
+        (system_group) => system_group.name === group_name,
+    );
+
+    if (group === undefined) {
+        return group_name;
+    }
+
+    return group.display_name;
 }

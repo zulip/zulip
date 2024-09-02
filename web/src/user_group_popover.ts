@@ -93,7 +93,7 @@ export function toggle_user_group_info_popover(
                 }
                 user_group_popover_instance = instance;
                 const args = {
-                    group_name: user_groups.get_display_group_name(group),
+                    group_name: user_groups.get_display_group_name(group.name),
                     group_description: group.description,
                     members: sort_group_members(
                         fetch_group_members([...user_groups.get_recursive_group_members(group)]),

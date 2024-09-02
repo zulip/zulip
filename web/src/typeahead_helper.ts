@@ -22,6 +22,7 @@ import * as stream_list_sort from "./stream_list_sort";
 import type {StreamPill, StreamPillData} from "./stream_pill";
 import type {StreamSubscription} from "./sub_store";
 import type {UserGroupPill, UserGroupPillData} from "./user_group_pill";
+import * as user_groups from "./user_groups";
 import type {UserPill, UserPillData} from "./user_pill";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
@@ -155,7 +156,7 @@ export function render_person(person: UserPillData | UserOrMentionPillData): str
 
 export function render_user_group(user_group: {name: string; description: string}): string {
     return render_typeahead_item({
-        primary: user_group.name,
+        primary: user_groups.get_display_group_name(user_group.name),
         secondary: user_group.description,
         is_user_group: true,
     });
@@ -669,4 +670,12 @@ export function query_matches_name(
     user_group_or_stream: UserGroupPillData | StreamPillData,
 ): boolean {
     return typeahead.query_matches_string_in_order(query, user_group_or_stream.name, " ");
+}
+
+export function query_matches_group_name(query: string, user_group: UserGroupPillData): boolean {
+    return typeahead.query_matches_string_in_order(
+        query,
+        user_groups.get_display_group_name(user_group.name),
+        "",
+    );
 }

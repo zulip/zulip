@@ -921,34 +921,42 @@ export const desktop_icon_count_display_values = {
 export const system_user_groups_list = [
     {
         name: "role:internet",
+        dropdown_option_name: $t({defaultMessage: "Everyone on the internet"}),
         display_name: $t({defaultMessage: "Everyone on the internet"}),
     },
     {
         name: "role:everyone",
-        display_name: $t({defaultMessage: "Admins, moderators, members and guests"}),
+        dropdown_option_name: $t({defaultMessage: "Admins, moderators, members and guests"}),
+        display_name: $t({defaultMessage: "Everyone"}),
     },
     {
         name: "role:members",
-        display_name: $t({defaultMessage: "Admins, moderators and members"}),
+        dropdown_option_name: $t({defaultMessage: "Admins, moderators and members"}),
+        display_name: $t({defaultMessage: "Members"}),
     },
     {
         name: "role:fullmembers",
-        display_name: $t({defaultMessage: "Admins, moderators and full members"}),
+        dropdown_option_name: $t({defaultMessage: "Admins, moderators and full members"}),
+        display_name: $t({defaultMessage: "Full members"}),
     },
     {
         name: "role:moderators",
-        display_name: $t({defaultMessage: "Admins and moderators"}),
+        dropdown_option_name: $t({defaultMessage: "Admins and moderators"}),
+        display_name: $t({defaultMessage: "Moderators"}),
     },
     {
         name: "role:administrators",
-        display_name: $t({defaultMessage: "Admins"}),
+        dropdown_option_name: $t({defaultMessage: "Admins"}),
+        display_name: $t({defaultMessage: "Administrators"}),
     },
     {
         name: "role:owners",
+        dropdown_option_name: $t({defaultMessage: "Owners"}),
         display_name: $t({defaultMessage: "Owners"}),
     },
     {
         name: "role:nobody",
+        dropdown_option_name: $t({defaultMessage: "Nobody"}),
         display_name: $t({defaultMessage: "Nobody"}),
     },
 ];

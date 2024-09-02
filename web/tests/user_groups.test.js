@@ -528,7 +528,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
 
 run_test("get_display_group_name", () => {
     const admins = {
-        name: "Admins",
+        name: "role:administrators",
         description: "foo",
         id: 1,
         members: new Set([1]),
@@ -542,7 +542,19 @@ run_test("get_display_group_name", () => {
         is_system_group: false,
         direct_subgroup_ids: new Set([1]),
     };
+    const students = {
+        name: "Students",
+        id: 3,
+        members: new Set([1, 3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
 
-    assert.equal(user_groups.get_display_group_name(admins), "Admins");
-    assert.equal(user_groups.get_display_group_name(all), "translated: Everyone");
+    user_groups.initialize({
+        realm_user_groups: [admins, all, students],
+    });
+
+    assert.equal(user_groups.get_display_group_name(admins.name), "translated: Administrators");
+    assert.equal(user_groups.get_display_group_name(all.name), "translated: Everyone");
+    assert.equal(user_groups.get_display_group_name(students.name), "Students");
 });
