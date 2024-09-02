@@ -343,7 +343,7 @@ li.show-more-topics {
     margin: 5px auto var(--left-sidebar-bottom-scrolling-buffer)
         var(--left-sidebar-toggle-width-offset);
 
-    & i {
+    .subscribe-more-icon {
         min-width: 19px;
         text-align: center;
 
