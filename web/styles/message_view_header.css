@@ -49,7 +49,7 @@
             padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
 
-        & i {
+        .navbar-icon {
             margin: 0 6px 0 5px;
             /* Align all icons to center. */
             align-self: center;
