@@ -134,8 +134,10 @@ h3,
 .setting_notification_sound,
 .play_notification_sound {
     margin-right: 4px;
+}
 
-    & i {
+.play_notification_sound {
+    .notification-sound-icon {
         font-size: 22px;
         /* Visually center with chevron in select */
         line-height: 26px;
