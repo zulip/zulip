@@ -22,7 +22,7 @@ function person_matcher(query: string, item: UserPillData): boolean {
 }
 
 function group_matcher(query: string, item: UserGroupPillData): boolean {
-    return typeahead_helper.query_matches_name(query, item);
+    return typeahead_helper.query_matches_group_name(query, item);
 }
 
 type TypeaheadItem = UserGroupPillData | StreamPillData | UserPillData;
