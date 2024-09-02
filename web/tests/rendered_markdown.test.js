@@ -513,6 +513,7 @@ run_test("spoiler-header", () => {
     const toggle_button_html =
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html(label);
+    $header.set_find_results("p", $.create("p"));
     rm.update_elements($content);
     assert.equal(label, $header.html());
     assert.equal($appended.selector, toggle_button_html);
@@ -532,6 +533,7 @@ run_test("spoiler-header-empty-fill", () => {
     const toggle_button_html =
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.empty();
+    $header.set_find_results("p", $.create("p"));
     rm.update_elements($content);
     assert.equal($appended[0].selector, "<p>");
     assert.equal($appended[0].text(), $t({defaultMessage: "Spoiler"}));

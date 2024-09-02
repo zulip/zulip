@@ -286,6 +286,8 @@ export const update_elements = ($content: JQuery): void => {
             $(this).append($("<p>").text($t({defaultMessage: "Spoiler"})));
         }
 
+        $(this).find("p").addClass("spoiler-header-text");
+
         // Add the expand/collapse button to spoiler blocks
         const toggle_button_html =
             '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
