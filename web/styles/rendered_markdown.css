@@ -293,7 +293,7 @@
             padding: 8px 5px;
             font-weight: bold;
 
-            > :not(.spoiler-button) {
+            .spoiler-header-text {
                 /* Disallow margin from ordinary rendered-markdown
                    elements. The header's vertical space is handled
                    independently by padding on .spoiler-header. */
