@@ -20,7 +20,7 @@
             {{else if is_direct_message}}
                 <i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> {{name}}
             {{else if is_setting_disabled}}
-                <span class="setting-disabled-option"><i class="fa fa-ban" aria-hidden="true"></i>{{t "Disable" }}</span>
+                <span class="setting-disabled-option"><i class="setting-disabled-option-icon fa fa-ban" aria-hidden="true"></i>{{t "Disable" }}</span>
             {{else}}
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-bold-selected">{{name}}</span>

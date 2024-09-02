@@ -1161,7 +1161,7 @@ div.overlay {
 .setting-disabled-option {
     color: hsl(38deg 46% 54%);
 
-    & i {
+    .setting-disabled-option-icon {
         /* Values set to match text alignment in stream dropdown. */
         padding: 0 5px 0 1px;
     }
