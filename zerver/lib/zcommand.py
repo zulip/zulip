@@ -22,7 +22,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> dict[str, Any]
 
     if not content.startswith("/"):
         raise JsonableError(_("There should be a leading slash in the zcommand."))
-    command = content[1:]
+    command = content.removeprefix("/")
 
     if command == "ping":
         return {}

@@ -54,7 +54,7 @@ def write_updated_configs() -> None:
         ).strip()
         for key, shards in config_file["tornado_sharding"].items():
             if key.endswith("_regex"):
-                ports = [int(port) for port in key[: -len("_regex")].split("_")]
+                ports = [int(port) for port in key.removesuffix("_regex").split("_")]
                 shard_regexes.append((shards, ports[0] if len(ports) == 1 else ports))
                 nginx_sharding_conf_f.write(
                     f"    {nginx_quote('~*' + shards)} http://tornado{'_'.join(map(str, ports))};\n"

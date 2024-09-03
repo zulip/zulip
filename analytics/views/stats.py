@@ -530,7 +530,7 @@ def client_label_map(name: str) -> str:
     if name in ["ZulipPython", "API: Python"]:
         return "Python API"
     if name.startswith("Zulip") and name.endswith("Webhook"):
-        return name[len("Zulip") : -len("Webhook")] + " webhook"
+        return name.removeprefix("Zulip").removesuffix("Webhook") + " webhook"
     return name
 
 

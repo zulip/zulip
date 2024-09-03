@@ -439,9 +439,9 @@ def validate_test_response(request: Request, response: Response) -> bool:
     """
 
     if request.path.startswith("/json/"):
-        path = request.path[len("/json") :]
+        path = request.path.removeprefix("/json")
     elif request.path.startswith("/api/v1/"):
-        path = request.path[len("/api/v1") :]
+        path = request.path.removeprefix("/api/v1")
     else:
         return False
     assert request.method is not None
@@ -567,14 +567,14 @@ def validate_test_request(
     assert request.method is not None
     method = request.method.lower()
     if request.path.startswith("/json/"):
-        url = request.path[len("/json") :]
+        url = request.path.removeprefix("/json")
         # Some JSON endpoints have different parameters compared to
         # their `/api/v1` counterparts.
         if (url, method) in SKIP_JSON:
             return
     else:
         assert request.path.startswith("/api/v1/")
-        url = request.path[len("/api/v1") :]
+        url = request.path.removeprefix("/api/v1")
 
     # TODO: Add support for file upload endpoints that lack the /json/
     # or /api/v1/ prefix.

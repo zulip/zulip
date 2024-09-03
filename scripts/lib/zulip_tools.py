@@ -639,7 +639,7 @@ def get_tornado_ports(config_file: configparser.RawConfigParser) -> list[int]:
             {
                 int(port)
                 for key in config_file.options("tornado_sharding")
-                for port in (key[: -len("_regex")] if key.endswith("_regex") else key).split("_")
+                for port in key.removesuffix("_regex").split("_")
             }
         )
     if not ports:

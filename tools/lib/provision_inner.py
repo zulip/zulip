@@ -37,7 +37,7 @@ UUID_VAR_PATH = get_dev_uuid_var_path()
 with get_tzdata_zi() as f:
     line = f.readline()
     assert line.startswith("# version ")
-    timezones_version = line[len("# version ") :]
+    timezones_version = line.removeprefix("# version ")
 
 
 def create_var_directories() -> None:

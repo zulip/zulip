@@ -183,7 +183,7 @@ class S3UploadBackend(ZulipUploadBackend):
         assert split_url.path.endswith(f"/{DUMMY_KEY}")
 
         return urlunsplit(
-            (split_url.scheme, split_url.netloc, split_url.path[: -len(DUMMY_KEY)], "", "")
+            (split_url.scheme, split_url.netloc, split_url.path.removesuffix(DUMMY_KEY), "", "")
         )
 
     @override
@@ -395,7 +395,7 @@ class S3UploadBackend(ZulipUploadBackend):
     @override
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         # export_path has a leading /
-        return self.get_public_upload_url(export_path[1:])
+        return self.get_public_upload_url(export_path.removeprefix("/"))
 
     @override
     def upload_export_tarball(
@@ -420,7 +420,7 @@ class S3UploadBackend(ZulipUploadBackend):
     @override
     def delete_export_tarball(self, export_path: str) -> str | None:
         assert export_path.startswith("/")
-        path_id = export_path[1:]
+        path_id = export_path.removeprefix("/")
         if self.delete_file_from_s3(path_id, self.avatar_bucket):
             return export_path
         return None

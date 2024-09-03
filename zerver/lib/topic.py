@@ -306,7 +306,7 @@ def get_topic_resolution_and_bare_name(stored_name: str) -> tuple[bool, str]:
     - The topic name with the resolution prefix, if present in stored_name, removed
     """
     if stored_name.startswith(RESOLVED_TOPIC_PREFIX):
-        return (True, stored_name[len(RESOLVED_TOPIC_PREFIX) :])
+        return (True, stored_name.removeprefix(RESOLVED_TOPIC_PREFIX))
 
     return (False, stored_name)
 

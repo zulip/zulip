@@ -32,7 +32,7 @@ def remove_invalid_characters_from_user_group_name(
                 continue
 
             old_group_name = group.name
-            group.name = old_group_name[1:]
+            group.name = old_group_name.removeprefix("@")
             groups_to_update.append(group)
 
         # Fix the name of non-system groups as well.
@@ -53,7 +53,7 @@ def remove_invalid_characters_from_user_group_name(
                     )
                     if len(matching_invalid_prefix) == 0:
                         break
-                    group_name = group_name[len(matching_invalid_prefix) :]
+                    group_name = group_name.removeprefix(matching_invalid_prefix)
 
                 if len(group_name) > 0 and group_name not in existing_group_names_set:
                     group.name = group_name

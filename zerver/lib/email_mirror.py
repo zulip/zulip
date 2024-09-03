@@ -44,7 +44,7 @@ def redact_email_address(error_message: str) -> str:
         domain = Address(addr_spec=settings.EMAIL_GATEWAY_PATTERN).domain
     else:
         # EMAIL_GATEWAY_EXTRA_PATTERN_HACK is of the form '@example.com'
-        domain = settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK[1:]
+        domain = settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK.removeprefix("@")
 
     def redact(address_match: Match[str]) -> str:
         email_address = address_match[0]

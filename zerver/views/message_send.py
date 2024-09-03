@@ -100,8 +100,7 @@ def same_realm_irc_user(user_profile: UserProfile, email: str) -> bool:
         return False
 
     domain = Address(addr_spec=email).domain.lower()
-    if domain.startswith("irc."):
-        domain = domain[len("irc.") :]
+    domain = domain.removeprefix("irc.")
 
     # Assumes allow_subdomains=False for all RealmDomain's corresponding to
     # these realms.

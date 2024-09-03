@@ -269,7 +269,7 @@ def rewrite_local_links_to_relative(db_data: DbData | None, link: str) -> str:
     if db_data:
         realm_url_prefix = db_data.realm_url + "/"
         if link.startswith((realm_url_prefix + "#", realm_url_prefix + "user_uploads/")):
-            return link[len(realm_url_prefix) :]
+            return link.removeprefix(realm_url_prefix)
 
     return link
 
@@ -622,7 +622,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             a.set("data-id", data_id)
         img = SubElement(a, "img")
         if image_url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
-            path_id = image_url[len("/user_uploads/") :]
+            path_id = image_url.removeprefix("/user_uploads/")
 
             # We should have pulled the preview data for this image
             # (even if that's "no preview yet") from the database
@@ -742,7 +742,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # a row for the ImageAttachment, then its header didn't parse
         # as a valid image type which libvips handles.
         if url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
-            path_id = url[len("/user_uploads/") :]
+            path_id = url.removeprefix("/user_uploads/")
             return path_id in self.zmd.zulip_db_data.user_upload_previews
 
         return any(parsed_url.path.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
@@ -830,7 +830,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 elif split_url.path.startswith(("/embed/", "/shorts/", "/v/")):
                     id = split_url.path.split("/", 3)[2]
             elif split_url.hostname == "youtu.be" and split_url.path.startswith("/"):
-                id = split_url.path[len("/") :]
+                id = split_url.path.removeprefix("/")
 
         if id is not None and re.fullmatch(r"[0-9A-Za-z_-]+", id):
             return id
@@ -1279,7 +1279,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if not parsed_url.path.startswith("/user_uploads/"):
                     continue
 
-                path_id = parsed_url.path[len("/user_uploads/") :]
+                path_id = parsed_url.path.removeprefix("/user_uploads/")
                 self.zmd.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
 
         if len(found_urls) == 0:
