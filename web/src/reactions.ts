@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_message_reaction from "../templates/message_reaction.hbs";
+import render_message_reactions from "../templates/message_reactions.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -369,11 +370,23 @@ export function insert_new_reaction(
         class: reaction_class,
     };
 
-    const $new_reaction = $(render_message_reaction(context));
-
-    // Now insert it before the add button.
     const $reaction_button_element = get_add_reaction_button(message.id);
-    $new_reaction.insertBefore($reaction_button_element);
+    if ($reaction_button_element.length === 0) {
+        // create a new reactions section and append the new reaction
+        const $reactions = $(
+            render_message_reactions({
+                msg: {
+                    message_reactions: [context],
+                },
+            }),
+        );
+        const $reactions_section = get_reaction_sections(message.id);
+        $reactions_section.append($reactions);
+    } else {
+        // insert the new reaction before it
+        const $new_reaction = $(render_message_reaction(context));
+        $new_reaction.insertBefore($reaction_button_element);
+    }
 
     update_vote_text_on_message(message);
 }

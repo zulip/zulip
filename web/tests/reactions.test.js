@@ -964,6 +964,68 @@ test("insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
     assert.ok(insert_called);
 });
 
+test("insert_new_reaction (first reaction)", ({mock_template}) => {
+    const clean_reaction_object = {
+        class: "message_reaction",
+        count: 1,
+        emoji_alt_code: false,
+        emoji_code: "1f642",
+        emoji_name: "smile",
+        is_realm_emoji: false,
+        label: "translated: You (click to remove) reacted with :smile:",
+        local_id: "unicode_emoji,1f642",
+        reaction_type: "unicode_emoji",
+        user_ids: [alice.user_id],
+    };
+    const message_id = 502;
+
+    const $message_reactions = stub_reactions(message_id);
+    $message_reactions.find = (selector) => {
+        assert.equal(selector, ".reaction_button");
+        return {length: 0}; // Simulating the absence of a reaction button
+    };
+
+    // Mock the render_message_reactions template
+    mock_template("message_reactions.hbs", false, (data) => {
+        assert.deepEqual(data, {
+            msg: {
+                message_reactions: [
+                    {
+                        message_id: 502,
+                        count: 1,
+                        emoji_alt_code: false,
+                        emoji_name: "smile",
+                        emoji_code: "1f642",
+                        local_id: "unicode_emoji,1f642",
+                        class: "message_reaction reacted",
+                        label: "translated: You (click to remove) reacted with :smile:",
+                        reaction_type: "unicode_emoji",
+                        is_realm_emoji: false,
+                        vote_text: "",
+                    },
+                ],
+            },
+        });
+        return "<new-reactions-stub>";
+    });
+
+    // Mock the append method
+    let append_called = false;
+    $message_reactions.append = (element) => {
+        assert.equal(element.html(), "<new-reactions-stub>", "Correct content should be appended");
+        append_called = true;
+    };
+
+    const message = {
+        id: message_id,
+        reactions: [],
+    };
+    convert_reactions_to_clean_reactions(message);
+
+    reactions.insert_new_reaction(clean_reaction_object, message, alice.user_id);
+    assert.ok(append_called);
+});
+
 test("update_existing_reaction (me)", () => {
     const clean_reaction_object = {
         class: "message_reaction",
