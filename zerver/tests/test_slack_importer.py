@@ -1355,7 +1355,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(
             realmauditlog_event_type,
             {
-                RealmAuditLog.SUBSCRIPTION_CREATED,
+                AuditLogEventType.SUBSCRIPTION_CREATED,
                 AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
                 AuditLogEventType.REALM_PROPERTY_CHANGED,
                 AuditLogEventType.REALM_CREATED,

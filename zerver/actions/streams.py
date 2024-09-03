@@ -67,6 +67,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -500,8 +501,8 @@ def bulk_add_subs_to_db_with_logging(
             event_time=event_time,
         )
         for event_type, subs in [
-            (RealmAuditLog.SUBSCRIPTION_CREATED, subs_to_add),
-            (RealmAuditLog.SUBSCRIPTION_ACTIVATED, subs_to_activate),
+            (AuditLogEventType.SUBSCRIPTION_CREATED, subs_to_add),
+            (AuditLogEventType.SUBSCRIPTION_ACTIVATED, subs_to_activate),
         ]
         for sub_info in subs
     ]
@@ -1066,7 +1067,7 @@ def bulk_remove_subscriptions(
                 modified_user=sub_info.user,
                 modified_stream=sub_info.stream,
                 event_last_message_id=event_last_message_id,
-                event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+                event_type=AuditLogEventType.SUBSCRIPTION_DEACTIVATED,
                 event_time=event_time,
             )
             for sub_info in subs_to_deactivate
@@ -1124,7 +1125,7 @@ def do_change_subscription_property(
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
-        event_type=RealmAuditLog.SUBSCRIPTION_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.SUBSCRIPTION_PROPERTY_CHANGED,
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,

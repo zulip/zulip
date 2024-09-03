@@ -393,7 +393,7 @@ class TestRealmAuditLog(ZulipTestCase):
         acting_user = self.example_user("iago")
         bulk_add_subscriptions(user.realm, [stream], [user], acting_user=acting_user)
         subscription_creation_logs = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+            event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
             event_time__gte=now,
             acting_user=acting_user,
             modified_user=user,
@@ -407,7 +407,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         bulk_remove_subscriptions(realm, [user], [stream], acting_user=acting_user)
         subscription_deactivation_logs = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+            event_type=AuditLogEventType.SUBSCRIPTION_DEACTIVATED,
             event_time__gte=now,
             acting_user=acting_user,
             modified_user=user,
@@ -687,7 +687,7 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=user.realm,
-                    event_type=RealmAuditLog.SUBSCRIPTION_PROPERTY_CHANGED,
+                    event_type=AuditLogEventType.SUBSCRIPTION_PROPERTY_CHANGED,
                     event_time__gte=now,
                     acting_user=user,
                     modified_user=user,

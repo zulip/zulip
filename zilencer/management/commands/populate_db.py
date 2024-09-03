@@ -71,6 +71,7 @@ from zerver.models import (
 from zerver.models.alert_words import flush_alert_word
 from zerver.models.clients import get_client
 from zerver.models.onboarding_steps import OnboardingStep
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
@@ -171,7 +172,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 modified_user=profile,
                 modified_stream=stream,
                 event_last_message_id=0,
-                event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
                 event_time=event_time,
             )
             all_subscription_logs.append(log)
@@ -751,7 +752,7 @@ class Command(ZulipBaseCommand):
                     modified_user=profile,
                     modified_stream_id=recipient.type_id,
                     event_last_message_id=0,
-                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                    event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
                     event_time=event_time,
                 )
                 all_subscription_logs.append(log)

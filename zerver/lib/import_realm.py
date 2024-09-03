@@ -267,7 +267,7 @@ def create_subscription_events(data: TableData, realm_id: int) -> None:
                 modified_stream_id=stream_id,
                 event_last_message_id=event_last_message_id,
                 event_time=event_time,
-                event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
             )
         )
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
