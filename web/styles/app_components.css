@@ -238,16 +238,6 @@ input::placeholder {
         }
     }
 
-    &.btn-link {
-        color: hsl(208deg 56% 53%);
-        text-decoration: none;
-
-        &:hover,
-        &:focus {
-            color: hsl(208deg 56% 38%);
-        }
-    }
-
     &:disabled {
         cursor: not-allowed;
         filter: saturate(0);

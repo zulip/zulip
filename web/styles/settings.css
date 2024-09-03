@@ -270,7 +270,6 @@ h3,
 
     /* Messy implementation of buttons with text and a pencil icon in them
        having spacing before the pencil icon. */
-    & button.btn-link i.fa-pencil,
     button[data-dismiss="modal"] i.fa-pencil {
         margin-left: 3px;
     }
