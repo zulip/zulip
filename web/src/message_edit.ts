@@ -853,11 +853,11 @@ export function end_message_row_edit($row: JQuery): void {
         message_lists.current.hide_edit_message($row);
         compose_call.abort_video_callbacks(message.id.toString());
     }
-    if ($row.find(".could-be-condensed").length !== 0) {
+    if ($row.find(".could-be-condensed").length !== 0 && message) {
         if ($row.find(".condensed").length !== 0) {
-            condense.show_message_expander($row);
+            condense.show_message_expander($row, message);
         } else {
-            condense.show_message_condenser($row);
+            condense.show_message_condenser($row, message);
         }
     }
     $row.find(".message_reactions").show();

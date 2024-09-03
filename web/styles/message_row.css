@@ -237,7 +237,13 @@
            in the baseline group. */
         align-self: start;
 
-        .message_length_toggle {
+        .message_length_sender_include {
+            /* Ensure that a messgage in which sender is included
+            will collapse from bottom only */
+            margin: 0 0 4px;
+        }
+
+        .message_length_sender_exclude {
             /* Ensure that a collapsed message maintains the
                same space around the toggle button as any other
                message-row content. */
