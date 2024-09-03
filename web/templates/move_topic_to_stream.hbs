@@ -13,7 +13,7 @@
         <i class="fa fa-angle-right" aria-hidden="true"></i>
         {{/unless}}
         <input name="new_topic_name" type="text" class="move_messages_edit_topic modal_text_input" autocomplete="off" value="{{topic_name}}" {{#if disable_topic_input}}disabled{{/if}} />
-        <input name="old_topic_name" type="hidden" class="move_messages_edit_topic" value="{{topic_name}}" />
+        <input name="old_topic_name" type="hidden" value="{{topic_name}}" />
         <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
         {{#if from_message_actions_popover}}
         <select class="message_edit_topic_propagate modal_select bootstrap-focus-style">
