@@ -87,7 +87,7 @@ function make_zjquery() {
         // they want to be wrapped by jQuery (so they can
         // in turn return stubs).  The convention is that
         // they provide a to_$ attribute.
-        if (arg.to_$) {
+        if (typeof arg === "object" && "to_$" in arg) {
             assert.equal(typeof arg.to_$, "function");
             return arg.to_$();
         }

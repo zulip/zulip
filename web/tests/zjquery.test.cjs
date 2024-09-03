@@ -48,15 +48,15 @@ run_test("basics", () => {
     const $widget = $("#my-widget");
 
     $widget.attr("data-employee-id", 42);
-    assert.equal($widget.attr("data-employee-id"), 42);
+    assert.equal($widget.attr("data-employee-id"), "42");
     assert.equal($widget.data("employee-id"), 42);
 
     $widget.data("department-id", 77);
-    assert.equal($widget.attr("data-department-id"), 77);
+    assert.equal($widget.attr("data-department-id"), undefined);
     assert.equal($widget.data("department-id"), 77);
 
     $widget.data("department-name", "hr");
-    assert.equal($widget.attr("data-department-name"), "hr");
+    assert.equal($widget.attr("data-department-name"), undefined);
     assert.equal($widget.data("department-name"), "hr");
 
     $widget.html("<b>hello</b>"); // eslint-disable-line no-jquery/no-parse-html-literal
