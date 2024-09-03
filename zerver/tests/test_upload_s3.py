@@ -192,7 +192,7 @@ class S3Test(ZulipTestCase):
         redirect_url = response["Location"]
         path = urlsplit(redirect_url).path
         assert path.startswith("/")
-        key = path[len("/") :]
+        key = path.removeprefix("/")
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         prefix = f"/internal/s3/{settings.S3_AUTH_UPLOADS_BUCKET}.s3.amazonaws.com/"
@@ -201,7 +201,7 @@ class S3Test(ZulipTestCase):
         redirect_url = response["X-Accel-Redirect"]
         path = urlsplit(redirect_url).path
         assert path.startswith(prefix)
-        key = path[len(prefix) :]
+        key = path.removeprefix(prefix)
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # Check the download endpoint
@@ -211,7 +211,7 @@ class S3Test(ZulipTestCase):
         redirect_url = response["X-Accel-Redirect"]
         path = urlsplit(redirect_url).path
         assert path.startswith(prefix)
-        key = path[len(prefix) :]
+        key = path.removeprefix(prefix)
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # Now try the endpoint that's supposed to return a temporary URL for access
@@ -231,7 +231,7 @@ class S3Test(ZulipTestCase):
         redirect_url = response["X-Accel-Redirect"]
         path = urlsplit(redirect_url).path
         assert path.startswith(prefix)
-        key = path[len(prefix) :]
+        key = path.removeprefix(prefix)
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # The original url shouldn't work when logged out:
@@ -278,7 +278,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(base, url[: len(base)])
 
         # Try hitting the equivalent `/user_avatars` endpoint
-        wrong_url = "/user_avatars/" + url[len(base) :]
+        wrong_url = "/user_avatars/" + url.removeprefix(base)
         result = self.client_get(wrong_url)
         self.assertEqual(result.status_code, 301)
         self.assertEqual(result["Location"], url)

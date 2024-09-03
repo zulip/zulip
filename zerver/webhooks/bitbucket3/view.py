@@ -92,9 +92,9 @@ def repo_comment_handler(
     repo_name = payload["repository"]["name"].tame(check_string)
     topic_name = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     sha = payload["commit"].tame(check_string)
-    commit_url = payload["repository"]["links"]["self"][0]["href"].tame(check_string)[
-        : -len("browse")
-    ]
+    commit_url = (
+        payload["repository"]["links"]["self"][0]["href"].tame(check_string).removesuffix("browse")
+    )
     commit_url += f"commits/{sha}"
     message = payload["comment"]["text"].tame(check_string)
     if action == "deleted their comment":

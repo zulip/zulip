@@ -451,7 +451,7 @@ def rewrite_thumbnailed_images(
             # second image, the first image will have no placeholder.
             continue
 
-        path_id = image_link["href"][len("/user_uploads/") :]
+        path_id = image_link["href"].removeprefix("/user_uploads/")
         if to_delete and path_id in to_delete:
             # This was not a valid thumbnail target, for some reason.
             # Trim out the whole "message_inline_image" element, since

@@ -122,7 +122,7 @@ try:
         keep_refs = set()
         for worktree_line in worktree_data:
             if worktree_line.startswith("branch "):
-                keep_refs.add(worktree_line[len("branch ") :])
+                keep_refs.add(worktree_line.removeprefix("branch "))
 
         delete_input = "".join(
             f"delete {refname}\n" for refname in matching_refs if refname not in keep_refs

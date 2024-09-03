@@ -26,7 +26,7 @@ def dict_list_to_string(some_list: WildValue) -> str:
         elif item_type and item_url:
             internal_template += f"[{item_type}]({item_url}), "
 
-    internal_template = internal_template[:-2]
+    internal_template = internal_template.removesuffix(", ")
     return internal_template
 
 

@@ -382,7 +382,8 @@ def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) ->
     context["integration_display_name"] = integration.display_name
     context["recommended_channel_name"] = integration.stream_name
     if isinstance(integration, WebhookIntegration):
-        context["integration_url"] = integration.url[3:]
+        assert integration.url.startswith("api/")
+        context["integration_url"] = integration.url.removeprefix("api")
         all_event_types = get_all_event_types_for_integration(integration)
         if all_event_types is not None:
             context["all_event_types"] = all_event_types

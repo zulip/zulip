@@ -120,15 +120,16 @@ def stripe_fixture_path(
 ) -> str:
     # Make the eventual filename a bit shorter, and also we conventionally
     # use test_* for the python test files
-    if decorated_function_name[:5] == "test_":
-        decorated_function_name = decorated_function_name[5:]
-    return f"{STRIPE_FIXTURES_DIR}/{decorated_function_name}--{mocked_function_name[7:]}.{call_count}.json"
+    decorated_function_name = decorated_function_name.removeprefix("test_")
+    mocked_function_name = mocked_function_name.removeprefix("stripe.")
+    return (
+        f"{STRIPE_FIXTURES_DIR}/{decorated_function_name}--{mocked_function_name}.{call_count}.json"
+    )
 
 
 def fixture_files_for_function(decorated_function: CallableT) -> list[str]:  # nocoverage
     decorated_function_name = decorated_function.__name__
-    if decorated_function_name[:5] == "test_":
-        decorated_function_name = decorated_function_name[5:]
+    decorated_function_name = decorated_function_name.removeprefix("test_")
     return sorted(
         f"{STRIPE_FIXTURES_DIR}/{f}"
         for f in os.listdir(STRIPE_FIXTURES_DIR)

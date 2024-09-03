@@ -50,12 +50,12 @@ class ThumbnailRedirectEndpointTest(ZulipTestCase):
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
 
-        result = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
+        result = self.client_get("/thumbnail", {"url": url.removeprefix("/"), "size": "full"})
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.getvalue(), b"zulip!")
 
         self.login("iago")
-        result = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
+        result = self.client_get("/thumbnail", {"url": url.removeprefix("/"), "size": "full"})
         self.assertEqual(result.status_code, 403, result)
         self.assert_in_response("You are not authorized to view this file.", result)
 
@@ -92,7 +92,7 @@ class ThumbnailRedirectEndpointTest(ZulipTestCase):
             self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
             self.logout()
-            response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
+            response = self.client_get("/thumbnail", {"url": url.removeprefix("/"), "size": "full"})
             self.assertEqual(response.status_code, 302)
             self.assertTrue(response["Location"].startswith("/accounts/login/?next="))
 
@@ -104,12 +104,12 @@ class ThumbnailRedirectEndpointTest(ZulipTestCase):
             self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
 
             self.logout()
-            response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
+            response = self.client_get("/thumbnail", {"url": url.removeprefix("/"), "size": "full"})
             self.assertEqual(response.status_code, 200)
 
         # Deny file access since rate limited
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
-            response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
+            response = self.client_get("/thumbnail", {"url": url.removeprefix("/"), "size": "full"})
             self.assertEqual(response.status_code, 302)
             self.assertTrue(response["Location"].startswith("/accounts/login/?next="))
 

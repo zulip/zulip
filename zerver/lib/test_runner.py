@@ -346,7 +346,7 @@ class Runner(DiscoverRunner):
         prefix = "unittest.loader._FailedTest."
         for test_name in get_test_names(suite):
             if test_name.startswith(prefix):
-                test_name = test_name[len(prefix) :]
+                test_name = test_name.removeprefix(prefix)
                 for label in test_labels:
                     # This code block is for when a test label is
                     # directly provided, for example:

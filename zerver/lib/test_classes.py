@@ -1648,7 +1648,7 @@ Output:
             # as the actual value of the attribute in LDAP.
             for attr, value in attrs.items():
                 if isinstance(value, str) and value.startswith("file:"):
-                    with open(value[5:], "rb") as f:
+                    with open(value.removeprefix("file:"), "rb") as f:
                         attrs[attr] = [f.read()]
 
         ldap_patcher = mock.patch("django_auth_ldap.config.ldap.initialize")
