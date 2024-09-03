@@ -538,6 +538,7 @@
     --color-message-header-icon-interactive: hsl(0deg 0% 0%);
     --color-background: hsl(0deg 0% 94%);
     --color-background-widget-input: hsl(0deg 0% 100%);
+    --color-background-widget-button: hsl(0deg 0% 100%);
     --color-background-navbar: hsl(0deg 0% 97%);
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
@@ -920,6 +921,14 @@
        since the modal is also used on billing pages and
        this file is not imported on billing pages. */
 
+    /* Zulip-style button colors. */
+    --color-background-zulip-button: hsl(0deg 0% 100%);
+    --color-background-zulip-button-hover: var(--color-background-zulip-button);
+    --color-background-zulip-button-active: hsl(0deg 0% 95%);
+    --color-background-zulip-button-disabled: hsl(0deg 0% 93%);
+    --color-border-zulip-button: hsl(0deg 0% 80%);
+    --color-border-zulip-button-interactive: hsl(0deg 0% 60%);
+
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 93%);
     --color-background-emoji-picker-popover-tab-item-active: hsl(
@@ -962,6 +971,7 @@
     --color-message-list-border: hsl(0deg 0% 0% / 40%);
     --color-background: hsl(0deg 0% 11%);
     --color-background-widget-input: hsl(225deg 6% 10%);
+    --color-background-widget-button: hsl(0deg 0% 0% / 20%);
     --color-background-navbar: hsl(0deg 0% 13%);
     --color-background-active-narrow-filter: hsl(200deg 17% 18%);
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
@@ -1331,6 +1341,18 @@
     --color-exit-button-text: hsl(0deg 0% 100%);
     --color-exit-button-background: hsl(226deg 1% 30% / 50%);
     --color-exit-button-background-interactive: hsl(226deg 1% 30% / 65%);
+
+    /* Zulip-style button colors. */
+    --color-background-zulip-button: hsl(0deg 0% 0% / 20%);
+    --color-background-zulip-button-hover: hsl(0deg 0% 0% / 15%);
+    --color-background-zulip-button-active: var(
+        --color-background-zulip-button-hover
+    );
+    --color-background-zulip-button-disabled: var(
+        --color-background-zulip-button
+    );
+    --color-border-zulip-button: hsl(0deg 0% 0% / 60%);
+    --color-border-zulip-button-interactive: var(--color-border-zulip-button);
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 0% / 20%);

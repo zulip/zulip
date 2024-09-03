@@ -163,7 +163,7 @@
         min-width: 25px;
         height: 25px;
         font-size: 13px;
-        background-color: hsl(0deg 0% 100%);
+        background-color: var(--color-background-widget-button);
 
         &:hover {
             border-color: hsl(156deg 30% 50%);
@@ -205,7 +205,7 @@ button {
         width: max-content;
         flex: 0 0 auto;
         border-radius: 3px;
-        background-color: hsl(0deg 0% 100%);
+        background-color: var(--color-background-widget-button);
         padding: 4px;
         padding-left: 14px;
         padding-right: 14px;

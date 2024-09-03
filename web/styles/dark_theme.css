@@ -362,29 +362,6 @@
         opacity: 0.5;
     }
 
-    .rendered_markdown button,
-    .new-style .button {
-        background-color: hsl(0deg 0% 0% / 20%);
-
-        &:not(
-                .sea-green,
-                .btn-danger,
-                .btn-warning,
-                .poll-vote,
-                button.poll-option,
-                button.add-task
-            ) {
-            border-color: hsl(0deg 0% 0% / 60%);
-            color: inherit;
-        }
-
-        &:hover,
-        &:focus,
-        &:active {
-            background-color: hsl(0deg 0% 0% / 15%);
-        }
-    }
-
     .rendered_markdown .message_inline_image {
         background: hsl(0deg 0% 100% / 3%);
 
@@ -455,10 +432,6 @@
             .search_icon {
             opacity: 0.75;
         }
-    }
-
-    .new-style .button.no-style {
-        background-color: transparent;
     }
 
     .create_user_group_plus_button,
