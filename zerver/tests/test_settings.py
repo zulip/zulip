@@ -125,6 +125,14 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_illegal_characters_in_name_changes(self) -> None:
         self.login("hamlet")
 
+        # Make sure unicode works
+        json_result = self.client_patch("/json/settings", dict(full_name="BLÅHAJ"))
+        self.assert_json_success(json_result)
+
+        # Make sure zero-width-joiners work
+        json_result = self.client_patch("/json/settings", dict(full_name="BLÅHAJ 🏳️‍⚧️"))
+        self.assert_json_success(json_result)
+
         # Now try a name with invalid characters
         json_result = self.client_patch("/json/settings", dict(full_name="Opheli*"))
         self.assert_json_error(json_result, "Invalid characters in name!")

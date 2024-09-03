@@ -23,6 +23,7 @@ from zerver.lib.exceptions import (
     OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
 )
+from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, RawUserDict
@@ -59,9 +60,10 @@ def check_full_name(
         raise JsonableError(_("Name too long!"))
     if len(full_name) < UserProfile.MIN_NAME_LENGTH:
         raise JsonableError(_("Name too short!"))
-    for character in full_name:
-        if unicodedata.category(character)[0] == "C" or character in UserProfile.NAME_INVALID_CHARS:
-            raise JsonableError(_("Invalid characters in name!"))
+    if check_string_is_printable(full_name) is not None or any(
+        character in full_name for character in UserProfile.NAME_INVALID_CHARS
+    ):
+        raise JsonableError(_("Invalid characters in name!"))
     # Names ending with e.g. `|15` could be ambiguous for
     # sloppily-written parsers of our Markdown syntax for mentioning
     # users with ambiguous names, and likely have no real use, so we
