@@ -61,6 +61,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import (
     CommonMessagePolicyEnum,
     CommonPolicyEnum,
@@ -354,7 +355,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.url)
 
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED, acting_user=iago
+            event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED, acting_user=iago
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {"old_subdomain": "zulip", "new_subdomain": "newzulip"}
@@ -437,7 +438,7 @@ class RealmTest(ZulipTestCase):
         assert log_entry is not None
 
         self.assertEqual(log_entry.realm, realm)
-        self.assertEqual(log_entry.event_type, RealmAuditLog.REALM_REACTIVATED)
+        self.assertEqual(log_entry.event_type, AuditLogEventType.REALM_REACTIVATED)
         log_entry_id = log_entry.id
 
         with self.assertLogs(level="WARNING") as m:
@@ -575,7 +576,7 @@ class RealmTest(ZulipTestCase):
         self.assertFalse(realm.deactivated)
         self.assertEqual(
             RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.REALM_REACTIVATION_EMAIL_SENT, acting_user=iago
+                event_type=AuditLogEventType.REALM_REACTIVATION_EMAIL_SENT, acting_user=iago
             ).count(),
             1,
         )
@@ -1025,7 +1026,7 @@ class RealmTest(ZulipTestCase):
         do_change_realm_max_invites(realm, 1, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
@@ -1041,7 +1042,7 @@ class RealmTest(ZulipTestCase):
         do_change_realm_max_invites(realm, 0, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {"old_value": 1, "new_value": None, "property": "max_invites"}
@@ -1056,7 +1057,7 @@ class RealmTest(ZulipTestCase):
         do_change_realm_max_invites(realm, 0, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
@@ -1075,7 +1076,7 @@ class RealmTest(ZulipTestCase):
         do_change_realm_max_invites(realm, 0, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
@@ -1094,7 +1095,7 @@ class RealmTest(ZulipTestCase):
         do_change_realm_max_invites(realm, 0, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
@@ -1113,7 +1114,7 @@ class RealmTest(ZulipTestCase):
         do_change_realm_max_invites(realm, 50000, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
@@ -1129,7 +1130,7 @@ class RealmTest(ZulipTestCase):
         do_change_realm_max_invites(realm, 0, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
@@ -1173,7 +1174,7 @@ class RealmTest(ZulipTestCase):
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+            event_type=AuditLogEventType.REALM_PLAN_TYPE_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {

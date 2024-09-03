@@ -3,6 +3,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Realm, RealmAuditLog, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -18,7 +19,7 @@ def do_change_icon_source(
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm,
-        event_type=RealmAuditLog.REALM_ICON_SOURCE_CHANGED,
+        event_type=AuditLogEventType.REALM_ICON_SOURCE_CHANGED,
         extra_data={"icon_source": icon_source, "icon_version": realm.icon_version},
         event_time=event_time,
         acting_user=acting_user,

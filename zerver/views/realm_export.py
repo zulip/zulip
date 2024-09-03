@@ -14,13 +14,14 @@ from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_success
 from zerver.models import RealmAuditLog, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 @transaction.atomic(durable=True)
 @require_realm_admin
 def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     # Currently only supports public-data-only exports.
-    event_type = RealmAuditLog.REALM_EXPORTED
+    event_type = AuditLogEventType.REALM_EXPORTED
     event_time = timezone_now()
     realm = user.realm
     EXPORT_LIMIT = 5
@@ -97,7 +98,7 @@ def get_realm_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
 def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int) -> HttpResponse:
     try:
         audit_log_entry = RealmAuditLog.objects.get(
-            id=export_id, realm=user.realm, event_type=RealmAuditLog.REALM_EXPORTED
+            id=export_id, realm=user.realm, event_type=AuditLogEventType.REALM_EXPORTED
         )
     except RealmAuditLog.DoesNotExist:
         raise JsonableError(_("Invalid data export ID"))

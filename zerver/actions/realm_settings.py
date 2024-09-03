@@ -46,6 +46,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_default_max_invites_for_realm_plan_type, get_realm
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
@@ -99,7 +100,7 @@ def do_set_realm_property(
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm,
-        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
         extra_data={
@@ -138,7 +139,7 @@ def do_set_push_notifications_enabled_end_timestamp(
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm,
-        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
         extra_data={
@@ -203,7 +204,7 @@ def do_change_realm_permission_group_setting(
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm,
-        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
         extra_data={
@@ -350,7 +351,7 @@ def do_set_realm_authentication_methods(
     updated_value = realm.authentication_methods_dict()
     RealmAuditLog.objects.create(
         realm=realm,
-        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
         event_time=timezone_now(),
         acting_user=acting_user,
         extra_data={
@@ -409,7 +410,7 @@ def do_set_realm_stream(
         event_time = timezone_now()
         RealmAuditLog.objects.create(
             realm=realm,
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
             event_time=event_time,
             acting_user=acting_user,
             extra_data={
@@ -526,7 +527,7 @@ def do_deactivate_realm(
         event_time = timezone_now()
         RealmAuditLog.objects.create(
             realm=realm,
-            event_type=RealmAuditLog.REALM_DEACTIVATED,
+            event_type=AuditLogEventType.REALM_DEACTIVATED,
             event_time=event_time,
             acting_user=acting_user,
             extra_data={
@@ -584,7 +585,7 @@ def do_reactivate_realm(realm: Realm) -> None:
             # know which user initiated the change.
             acting_user=None,
             realm=realm,
-            event_type=RealmAuditLog.REALM_REACTIVATED,
+            event_type=AuditLogEventType.REALM_REACTIVATED,
             event_time=event_time,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
@@ -671,7 +672,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_SCRUBBED,
+        event_type=AuditLogEventType.REALM_SCRUBBED,
     )
 
 
@@ -709,7 +710,7 @@ def do_change_realm_max_invites(realm: Realm, max_invites: int, acting_user: Use
     realm.save(update_fields=["_max_invites"])
 
     RealmAuditLog.objects.create(
-        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
@@ -766,7 +767,7 @@ def do_change_realm_plan_type(
     realm.plan_type = plan_type
     realm.save(update_fields=["plan_type"])
     RealmAuditLog.objects.create(
-        event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+        event_type=AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
@@ -806,7 +807,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: UserProfile |
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_REACTIVATION_EMAIL_SENT,
+        event_type=AuditLogEventType.REALM_REACTIVATION_EMAIL_SENT,
         event_time=timezone_now(),
     )
     context = {

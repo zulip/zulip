@@ -73,6 +73,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.presence import PresenceSequence
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -2489,7 +2490,7 @@ def get_realm_exports_serialized(user: UserProfile) -> list[dict[str, Any]]:
     # appropriate way to express for who issued them; this requires an
     # API change.
     all_exports = RealmAuditLog.objects.filter(
-        realm=user.realm, event_type=RealmAuditLog.REALM_EXPORTED
+        realm=user.realm, event_type=AuditLogEventType.REALM_EXPORTED
     ).exclude(acting_user=None)
     exports_dict = {}
     for export in all_exports:

@@ -371,7 +371,9 @@ class RealmImportExportTest(ExportFile):
         public_only: bool = False,
     ) -> None:
         RealmAuditLog.objects.create(
-            realm=original_realm, event_type=RealmAuditLog.REALM_EXPORTED, event_time=timezone_now()
+            realm=original_realm,
+            event_type=AuditLogEventType.REALM_EXPORTED,
+            event_time=timezone_now(),
         )
         self.export_realm(original_realm, exportable_user_ids, consent_message_id, public_only)
 
@@ -995,7 +997,9 @@ class RealmImportExportTest(ExportFile):
         new_realm_emoji.save()
 
         RealmAuditLog.objects.create(
-            realm=original_realm, event_type=RealmAuditLog.REALM_EXPORTED, event_time=timezone_now()
+            realm=original_realm,
+            event_type=AuditLogEventType.REALM_EXPORTED,
+            event_time=timezone_now(),
         )
 
         getters = self.get_realm_getters()
@@ -1319,7 +1323,7 @@ class RealmImportExportTest(ExportFile):
         def get_realm_audit_log_event_type(r: Realm) -> set[int]:
             realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
                 event_type__in=[
-                    RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                    AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
                     RealmAuditLog.STREAM_CREATED,
                     RealmAuditLog.REALM_IMPORTED,
                 ]
@@ -1871,7 +1875,7 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(imported_realm.message_visibility_limit, 10000)
             self.assertTrue(
                 RealmAuditLog.objects.filter(
-                    realm=imported_realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                    realm=imported_realm, event_type=AuditLogEventType.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
 
@@ -1888,7 +1892,7 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(imported_realm.message_visibility_limit, None)
             self.assertTrue(
                 RealmAuditLog.objects.filter(
-                    realm=imported_realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                    realm=imported_realm, event_type=AuditLogEventType.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
 

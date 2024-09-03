@@ -17,6 +17,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.models import Realm, RealmAuditLog
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.views.realm_export import export_realm
 
 
@@ -63,7 +64,7 @@ class RealmExportTest(ZulipTestCase):
 
         # Get the entry and test that iago initiated it.
         audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_EXPORTED
+            event_type=AuditLogEventType.REALM_EXPORTED
         ).first()
         assert audit_log_entry is not None
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
@@ -88,7 +89,7 @@ class RealmExportTest(ZulipTestCase):
         self.assert_length(
             export_dict,
             RealmAuditLog.objects.filter(
-                realm=admin.realm, event_type=RealmAuditLog.REALM_EXPORTED
+                realm=admin.realm, event_type=AuditLogEventType.REALM_EXPORTED
             ).count(),
         )
 
@@ -163,7 +164,7 @@ class RealmExportTest(ZulipTestCase):
 
         # Get the entry and test that iago initiated it.
         audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_EXPORTED
+            event_type=AuditLogEventType.REALM_EXPORTED
         ).first()
         assert audit_log_entry is not None
         self.assertEqual(audit_log_entry.id, data["id"])
@@ -186,7 +187,7 @@ class RealmExportTest(ZulipTestCase):
         self.assert_length(
             export_dict,
             RealmAuditLog.objects.filter(
-                realm=admin.realm, event_type=RealmAuditLog.REALM_EXPORTED
+                realm=admin.realm, event_type=AuditLogEventType.REALM_EXPORTED
             ).count(),
         )
 
@@ -275,13 +276,13 @@ class RealmExportTest(ZulipTestCase):
         admin = self.example_user("iago")
         self.login_user(admin)
 
-        current_log = RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_EXPORTED)
+        current_log = RealmAuditLog.objects.filter(event_type=AuditLogEventType.REALM_EXPORTED)
         self.assert_length(current_log, 0)
 
         exports = [
             RealmAuditLog(
                 realm=admin.realm,
-                event_type=RealmAuditLog.REALM_EXPORTED,
+                event_type=AuditLogEventType.REALM_EXPORTED,
                 event_time=timezone_now(),
             )
             for i in range(5)

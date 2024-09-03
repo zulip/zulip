@@ -54,6 +54,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmAuditLog, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_org_type_display_name, get_realm
 from zerver.models.users import get_system_bot
 from zilencer.lib.remote_counts import MissingDataError
@@ -3833,15 +3834,15 @@ class RealmBillingSession(BillingSession):
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_CREATED:
             return RealmAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is BillingSessionEventType.DISCOUNT_CHANGED:
-            return RealmAuditLog.REALM_DISCOUNT_CHANGED
+            return AuditLogEventType.REALM_DISCOUNT_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PROPERTY_CHANGED:
             return RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
         elif event_type is BillingSessionEventType.SPONSORSHIP_APPROVED:
-            return RealmAuditLog.REALM_SPONSORSHIP_APPROVED
+            return AuditLogEventType.REALM_SPONSORSHIP_APPROVED
         elif event_type is BillingSessionEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
-            return RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
+            return AuditLogEventType.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is BillingSessionEventType.BILLING_MODALITY_CHANGED:
-            return RealmAuditLog.REALM_BILLING_MODALITY_CHANGED
+            return AuditLogEventType.REALM_BILLING_MODALITY_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
             return RealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
