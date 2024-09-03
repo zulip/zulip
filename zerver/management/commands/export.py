@@ -12,6 +12,7 @@ from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, Reaction, RealmAuditLog, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 class Command(ZulipBaseCommand):
@@ -215,7 +216,7 @@ class Command(ZulipBaseCommand):
         RealmAuditLog.objects.create(
             acting_user=None,
             realm=realm,
-            event_type=RealmAuditLog.REALM_EXPORTED,
+            event_type=AuditLogEventType.REALM_EXPORTED,
             event_time=timezone_now(),
         )
 

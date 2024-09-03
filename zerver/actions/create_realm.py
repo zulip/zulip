@@ -37,6 +37,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import (
     CommonPolicyEnum,
     InviteToRealmPolicyEnum,
@@ -76,7 +77,7 @@ def do_change_realm_subdomain(
         realm.save(update_fields=["string_id", "demo_organization_scheduled_deletion_date"])
         RealmAuditLog.objects.create(
             realm=realm,
-            event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
+            event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
             extra_data={"old_subdomain": old_subdomain, "new_subdomain": new_subdomain},

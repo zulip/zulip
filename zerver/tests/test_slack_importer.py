@@ -50,6 +50,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 
 
@@ -1355,8 +1356,8 @@ class SlackImporter(ZulipTestCase):
             realmauditlog_event_type,
             {
                 RealmAuditLog.SUBSCRIPTION_CREATED,
-                RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
-                RealmAuditLog.REALM_PROPERTY_CHANGED,
+                AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                AuditLogEventType.REALM_PROPERTY_CHANGED,
                 RealmAuditLog.REALM_CREATED,
                 RealmAuditLog.REALM_IMPORTED,
                 RealmAuditLog.USER_GROUP_CREATED,

@@ -426,7 +426,7 @@ class TestRealmAuditLog(ZulipTestCase):
             realm, acting_user=user, deactivation_reason="owner_request", email_owners=False
         )
         log_entry = RealmAuditLog.objects.get(
-            realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, acting_user=user
+            realm=realm, event_type=AuditLogEventType.REALM_DEACTIVATED, acting_user=user
         )
         extra_data = log_entry.extra_data
 
@@ -437,7 +437,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         do_reactivate_realm(realm)
         log_entry = RealmAuditLog.objects.get(
-            realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED
+            realm=realm, event_type=AuditLogEventType.REALM_REACTIVATED
         )
         extra_data = log_entry.extra_data
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
@@ -502,7 +502,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_set_realm_authentication_methods(realm, auth_method_dict, acting_user=user)
         realm_audit_logs = RealmAuditLog.objects.filter(
             realm=realm,
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
             event_time__gte=now,
             acting_user=user,
         )
@@ -537,7 +537,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=value_expected,
@@ -557,7 +557,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=value_expected,
@@ -577,7 +577,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data={
@@ -601,7 +601,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data={
@@ -625,7 +625,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data={
@@ -645,7 +645,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_change_icon_source(realm, icon_source, acting_user=user)
         audit_entries = RealmAuditLog.objects.filter(
             realm=realm,
-            event_type=RealmAuditLog.REALM_ICON_SOURCE_CHANGED,
+            event_type=AuditLogEventType.REALM_ICON_SOURCE_CHANGED,
             acting_user=user,
             event_time__gte=test_start,
         )

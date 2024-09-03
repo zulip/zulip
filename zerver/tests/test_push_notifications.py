@@ -1617,7 +1617,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
-            event_type=RealmAuditLog.REALM_LOGO_CHANGED,
+            event_type=AuditLogEventType.REALM_LOGO_CHANGED,
             event_time=end_time,
             extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
@@ -1826,7 +1826,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
-            event_type=RealmAuditLog.REALM_LOGO_CHANGED,
+            event_type=AuditLogEventType.REALM_LOGO_CHANGED,
             event_time=end_time,
             extra_data={"data": "foo"},
         )
@@ -2194,7 +2194,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
-            event_type=RealmAuditLog.REALM_LOGO_CHANGED,
+            event_type=AuditLogEventType.REALM_LOGO_CHANGED,
             event_time=self.TIME_ZERO,
             extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
@@ -2210,7 +2210,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             else:
                 # Test that we're respecting SYNCED_BILLING_EVENTS
                 self.assertIn(f'"event_type":{AuditLogEventType.USER_REACTIVATED}', str(args))
-                self.assertNotIn(f'"event_type":{RealmAuditLog.REALM_LOGO_CHANGED}', str(args))
+                self.assertNotIn(f'"event_type":{AuditLogEventType.REALM_LOGO_CHANGED}', str(args))
                 # Test that we're respecting REALMAUDITLOG_PUSHED_FIELDS
                 self.assertIn("backfilled", str(args))
                 self.assertNotIn("modified_user", str(args))

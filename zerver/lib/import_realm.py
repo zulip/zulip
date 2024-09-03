@@ -85,6 +85,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.users import get_system_bot, get_user_profile_by_id
@@ -1684,7 +1685,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # 'zulip_update_announcements_level' is set to None by default.
     # Set it to the latest level to avoid receiving older update messages.
     is_realm_imported_from_other_zulip_server = RealmAuditLog.objects.filter(
-        realm=realm, event_type=RealmAuditLog.REALM_EXPORTED, acting_user=None
+        realm=realm, event_type=AuditLogEventType.REALM_EXPORTED, acting_user=None
     ).exists()
     if not is_realm_imported_from_other_zulip_server:
         send_zulip_update_announcements_to_realm(

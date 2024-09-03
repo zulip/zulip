@@ -3368,7 +3368,7 @@ class NormalActionsTest(BaseAction):
 
         # Now we check the deletion of the export.
         audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_EXPORTED
+            event_type=AuditLogEventType.REALM_EXPORTED
         ).first()
         assert audit_log_entry is not None
         audit_log_entry_id = audit_log_entry.id
@@ -3514,7 +3514,7 @@ class RealmPropertyActionTest(BaseAction):
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
-                    event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                    event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                     event_time__gte=now,
                     acting_user=self.user_profile,
                 ).count(),
@@ -3539,7 +3539,7 @@ class RealmPropertyActionTest(BaseAction):
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
-                    event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                    event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                     event_time__gte=now,
                     acting_user=self.user_profile,
                     extra_data={
@@ -3584,7 +3584,7 @@ class RealmPropertyActionTest(BaseAction):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=self.user_profile.realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=self.user_profile,
             ).count(),
@@ -3636,7 +3636,7 @@ class RealmPropertyActionTest(BaseAction):
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
-                    event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                    event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                     event_time__gte=now,
                     acting_user=self.user_profile,
                     extra_data={
@@ -3676,7 +3676,7 @@ class RealmPropertyActionTest(BaseAction):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=self.user_profile,
             ).count(),
@@ -3700,7 +3700,7 @@ class RealmPropertyActionTest(BaseAction):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=self.user_profile,
                 extra_data={
@@ -3743,7 +3743,7 @@ class RealmPropertyActionTest(BaseAction):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=self.user_profile,
                 extra_data={
@@ -3779,7 +3779,7 @@ class RealmPropertyActionTest(BaseAction):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=self.user_profile,
                 extra_data={
@@ -3931,7 +3931,7 @@ class RealmPropertyActionTest(BaseAction):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
                 acting_user=None,
                 extra_data={
                     RealmAuditLog.OLD_VALUE: old_timestamp,

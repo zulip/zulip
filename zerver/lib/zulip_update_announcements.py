@@ -15,7 +15,7 @@ from zerver.actions.message_send import (
 )
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.lib.topic import messages_for_topic
-from zerver.models.realm_audit_logs import RealmAuditLog
+from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import Realm
 from zerver.models.users import UserProfile, get_system_bot
 
@@ -250,7 +250,7 @@ configuration change), or [turn this feature off]({organization_settings_url}) a
 def get_level_none_to_initial_auditlog(realm: Realm) -> RealmAuditLog | None:
     return RealmAuditLog.objects.filter(
         realm=realm,
-        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
         extra_data__contains={
             # Note: We're looking for the transition away from None,
             # which usually will be to level 0, but can be to a higher
@@ -304,7 +304,7 @@ def send_messages_and_update_level(
 
     RealmAuditLog.objects.create(
         realm=realm,
-        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
         event_time=timezone_now(),
         extra_data={
             RealmAuditLog.OLD_VALUE: realm.zulip_update_announcements_level,
