@@ -41,6 +41,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.clients import get_client
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import bot_owner_user_ids, get_user_profile_by_id
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -141,7 +142,7 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
         realm=user_profile.realm,
         acting_user=user_profile,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_EMAIL_CHANGED,
+        event_type=AuditLogEventType.USER_EMAIL_CHANGED,
         event_time=event_time,
     )
 
@@ -208,7 +209,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
         realm=user_profile.realm,
         acting_user=user_profile,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_PASSWORD_CHANGED,
+        event_type=AuditLogEventType.USER_PASSWORD_CHANGED,
         event_time=event_time,
     )
 
@@ -228,7 +229,7 @@ def do_change_full_name(
         realm=user_profile.realm,
         acting_user=acting_user,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
+        event_type=AuditLogEventType.USER_FULL_NAME_CHANGED,
         event_time=event_time,
         extra_data={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: full_name},
     )
@@ -290,7 +291,7 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) ->
         realm=user_profile.realm,
         acting_user=user_profile,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
+        event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
         event_time=event_time,
     )
 
@@ -312,7 +313,7 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
         realm=user_profile.realm,
         acting_user=acting_user,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_API_KEY_CHANGED,
+        event_type=AuditLogEventType.USER_API_KEY_CHANGED,
         event_time=event_time,
     )
 
@@ -391,7 +392,7 @@ def do_change_avatar_fields(
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
+        event_type=AuditLogEventType.USER_AVATAR_SOURCE_CHANGED,
         extra_data={"avatar_source": avatar_source},
         event_time=event_time,
         acting_user=acting_user,
@@ -447,7 +448,7 @@ def do_change_user_setting(
 
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
-        event_type=RealmAuditLog.USER_SETTING_CHANGED,
+        event_type=AuditLogEventType.USER_SETTING_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
         modified_user=user_profile,

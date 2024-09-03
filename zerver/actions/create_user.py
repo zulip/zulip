@@ -706,7 +706,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
             realm=user_profile.realm,
             acting_user=acting_user,
             modified_user=user_profile,
-            event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
+            event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED,
             event_time=event_time,
         )
         bot_owner_changed = True

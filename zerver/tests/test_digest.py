@@ -26,6 +26,7 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -266,7 +267,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         for digest_user in digest_users:
             log_rows = RealmAuditLog.objects.filter(
                 modified_user_id=digest_user.id,
-                event_type=RealmAuditLog.USER_DIGEST_EMAIL_CREATED,
+                event_type=AuditLogEventType.USER_DIGEST_EMAIL_CREATED,
             )
             (log,) = log_rows
             self.assertEqual(log.event_last_message_id, last_message_id)

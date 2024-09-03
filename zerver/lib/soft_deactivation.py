@@ -25,6 +25,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.scheduled_jobs import NotificationTriggers
 
 logger = logging.getLogger("zulip.soft_deactivation")
@@ -284,7 +285,7 @@ def do_soft_deactivate_users(
                 log = RealmAuditLog(
                     realm=user.realm,
                     modified_user=user,
-                    event_type=RealmAuditLog.USER_SOFT_DEACTIVATED,
+                    event_type=AuditLogEventType.USER_SOFT_DEACTIVATED,
                     event_time=event_time,
                 )
                 realm_logs.append(log)
@@ -324,7 +325,7 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> UserProfil
         RealmAuditLog.objects.create(
             realm=user_profile.realm,
             modified_user=user_profile,
-            event_type=RealmAuditLog.USER_SOFT_ACTIVATED,
+            event_type=AuditLogEventType.USER_SOFT_ACTIVATED,
             event_time=timezone_now(),
         )
         logger.info("Soft reactivated user %s", user_profile.id)
