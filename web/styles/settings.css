@@ -501,12 +501,7 @@ input[type="checkbox"] {
 
 .language_selection_widget .language_selection_button {
     text-decoration: none;
-    color: hsl(0deg 0% 20%);
     min-width: 0;
-
-    .fa.fa-pencil {
-        margin-left: 5px;
-    }
 }
 
 #user_enter_sends_label kbd,

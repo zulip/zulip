@@ -120,10 +120,10 @@ input::placeholder {
     line-height: normal;
     text-align: center;
 
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-zulip-button);
     color: inherit;
     outline: none;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: 1px solid var(--color-border-zulip-button);
     border-radius: 2px;
 
     box-shadow: none;
@@ -171,14 +171,18 @@ input::placeholder {
     }
 
     &:hover,
-    &:focus {
-        border-color: hsl(0deg 0% 60%);
+    &:focus,
+    &:active {
+        border-color: var(--color-border-zulip-button-interactive);
+    }
+
+    &:hover {
+        background-color: var(--color-background-zulip-button-hover);
     }
 
     &:active {
-        border-color: hsl(0deg 0% 60%);
         color: inherit;
-        background-color: hsl(0deg 0% 95%);
+        background-color: var(--color-background-zulip-button-active);
     }
 
     &.add-subscription-button {
@@ -241,11 +245,11 @@ input::placeholder {
     &:disabled {
         cursor: not-allowed;
         filter: saturate(0);
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-zulip-button-disabled);
         color: hsl(0deg 3% 52%);
 
         &:hover {
-            background-color: hsl(0deg 0% 93%);
+            background-color: var(--color-background-zulip-button-disabled);
             color: hsl(156deg 39% 54%);
             border-color: hsl(156deg 39% 77%);
         }
