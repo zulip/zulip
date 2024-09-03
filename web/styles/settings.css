@@ -1384,7 +1384,7 @@ $option_title_width: 180px;
                 border-bottom: 1px solid transparent;
             }
 
-            .icon {
+            .sidebar-item-icon {
                 font-size: 1.4em;
                 text-align: center;
                 color: hsl(0deg 0% 53%);
