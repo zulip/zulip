@@ -93,7 +93,7 @@ def do_schedule_messages(
 
         scheduled_messages.append((scheduled_message, send_request))
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         ScheduledMessage.objects.bulk_create(
             [scheduled_message for scheduled_message, ignored in scheduled_messages]
         )
