@@ -169,9 +169,10 @@ const get_content_element = () => {
             use trusted values.
         `);
     }
-    $content.html = security_violation;
-    $content.prepend = security_violation;
-    $content.append = security_violation;
+    Object.defineProperty($content[0], "innerHTML", {
+        get: security_violation,
+        set: security_violation,
+    });
     return $content;
 };
 

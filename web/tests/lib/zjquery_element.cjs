@@ -64,11 +64,11 @@ class FakeClassList extends RejectMissing {
 class FakeElement extends RejectMissing {
     _tippy = undefined;
     classList = new FakeClassList();
+    innerHTML = "never-been-set";
 }
 
 // TODO: convert this to a true class
 exports.FakeJQuery = function (selector, opts) {
-    let html = "never-been-set";
     let text = "never-been-set";
     let value;
     let shown = false;
@@ -91,7 +91,7 @@ exports.FakeJQuery = function (selector, opts) {
             return this;
         },
         append(arg) {
-            html = html + arg;
+            assert.notEqual(typeof arg, "string");
             return this;
         },
         attr(name, val) {
@@ -114,10 +114,10 @@ exports.FakeJQuery = function (selector, opts) {
             }
             return this;
         },
-        empty(arg) {
-            if (arg === undefined) {
-                find_results.clear();
-                html = "";
+        empty() {
+            find_results.clear();
+            for (const element of this) {
+                element.innerHTML = "";
             }
             return this;
         },
@@ -170,12 +170,17 @@ exports.FakeJQuery = function (selector, opts) {
             shown = false;
             return this;
         },
-        html(arg) {
-            if (arg !== undefined) {
-                html = arg;
-                return this;
+        html(...args) {
+            if (args.length === 0) {
+                return this[0]?.innerHTML;
             }
-            return html;
+
+            const [arg] = args;
+            assert.equal(typeof arg, "string");
+            for (const element of this) {
+                element.innerHTML = arg;
+            }
+            return this;
         },
         is(arg) {
             switch (arg) {
@@ -218,8 +223,8 @@ exports.FakeJQuery = function (selector, opts) {
             return $result;
         },
         prepend(arg) {
-            html = arg + html;
-            return $self;
+            assert.notEqual(typeof arg, "string");
+            return this;
         },
         prop(name, val) {
             if (val === undefined) {
