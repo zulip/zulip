@@ -5,6 +5,7 @@ from zerver.actions.create_user import created_bot_event
 from zerver.actions.streams import bulk_remove_subscriptions
 from zerver.lib.streams import get_subscribed_private_streams_for_user
 from zerver.models import RealmAuditLog, Stream, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids, bot_owner_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -110,7 +111,7 @@ def do_change_bot_owner(
         realm=user_profile.realm,
         acting_user=acting_user,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
+        event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED,
         event_time=event_time,
     )
 
@@ -130,7 +131,7 @@ def do_change_default_sending_stream(
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
-        event_type=RealmAuditLog.USER_DEFAULT_SENDING_STREAM_CHANGED,
+        event_type=AuditLogEventType.USER_DEFAULT_SENDING_STREAM_CHANGED,
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
@@ -171,7 +172,7 @@ def do_change_default_events_register_stream(
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
-        event_type=RealmAuditLog.USER_DEFAULT_REGISTER_STREAM_CHANGED,
+        event_type=AuditLogEventType.USER_DEFAULT_REGISTER_STREAM_CHANGED,
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
@@ -213,7 +214,7 @@ def do_change_default_all_public_streams(
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
-        event_type=RealmAuditLog.USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED,
+        event_type=AuditLogEventType.USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED,
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,

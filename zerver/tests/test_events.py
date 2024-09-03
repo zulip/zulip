@@ -248,6 +248,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema
@@ -2088,7 +2089,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=self.user_profile.realm,
-                event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
+                event_type=AuditLogEventType.USER_FULL_NAME_CHANGED,
                 event_time__gte=now,
                 acting_user=self.user_profile,
             ).count(),
@@ -2101,7 +2102,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=self.user_profile.realm,
-                event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
+                event_type=AuditLogEventType.USER_FULL_NAME_CHANGED,
                 event_time__gte=now,
                 acting_user=self.user_profile,
             ).count(),

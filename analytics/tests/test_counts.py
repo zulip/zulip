@@ -1938,7 +1938,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     # doesn't go through do_create_user. Mainly just want to make sure that
     # that situation doesn't throw an error.
     def test_empty_realm_or_user_with_no_relevant_activity(self) -> None:
-        self.add_event(RealmAuditLog.USER_SOFT_ACTIVATED, 1)
+        self.add_event(AuditLogEventType.USER_SOFT_ACTIVATED, 1)
         self.create_user(skip_auditlog=True)  # also test a user with no RealmAuditLog entries
         do_create_realm(string_id="moo", name="moo")
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
@@ -1946,14 +1946,14 @@ class TestActiveUsersAudit(AnalyticsTestCase):
 
     def test_max_audit_entry_is_unrelated(self) -> None:
         self.add_event(AuditLogEventType.USER_CREATED, 1)
-        self.add_event(RealmAuditLog.USER_SOFT_ACTIVATED, 0.5)
+        self.add_event(AuditLogEventType.USER_SOFT_ACTIVATED, 0.5)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(RealmCount, ["subgroup"], [["false"]])
 
     # Simultaneous related audit entries should not be allowed, and so not testing for that.
     def test_simultaneous_unrelated_audit_entry(self) -> None:
         self.add_event(AuditLogEventType.USER_CREATED, 1)
-        self.add_event(RealmAuditLog.USER_SOFT_ACTIVATED, 1)
+        self.add_event(AuditLogEventType.USER_SOFT_ACTIVATED, 1)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(RealmCount, ["subgroup"], [["false"]])
 
