@@ -179,24 +179,6 @@ rules:
     severity: ERROR
     message: "Prefer {named} fields over positional {} in translated strings"
 
-  - id: mutable-default-type
-    languages: [python]
-    pattern-either:
-      - pattern: |
-          def $F(..., $A: typing.List[...] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.List[...]] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Dict[...] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.Dict[...]] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
-              ...
-    severity: ERROR
-    message: "Guard mutable default with read-only type (Sequence, Mapping, AbstractSet)"
-
   - id: percent-formatting
     languages: [python]
     pattern-either:

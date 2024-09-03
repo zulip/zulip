@@ -355,10 +355,6 @@ python_rules = RuleList(
             "description": "Argument to JsonableError should be a literal string enclosed by _()",
         },
         {
-            "pattern": r"""([a-zA-Z0-9_]+)=REQ\(['"]\1['"]""",
-            "description": "REQ's first argument already defaults to parameter name",
-        },
-        {
             "pattern": r"self\.client\.(get|post|patch|put|delete)",
             "description": """Do not call self.client directly for put/patch/post/get.
     See WRAPPER_COMMENT in test_helpers.py for details.

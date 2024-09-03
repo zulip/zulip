@@ -1,4 +1,0 @@
-# One of the ways user-controlled data enters the application is through the
-# request variables framework. This model teaches Pysa that every instance of
-# 'REQ()' in a view function is a source of UserControlled taint.
-class zerver.lib.request._REQ(TaintSource[UserControlled]): ...
