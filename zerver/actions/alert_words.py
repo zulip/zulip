@@ -12,13 +12,13 @@ def notify_alert_words(user_profile: UserProfile, words: Sequence[str]) -> None:
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
-@transaction.atomic(savepoint=False)
+@transaction.atomic(durable=True)
 def do_add_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> None:
     words = add_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, words)
 
 
-@transaction.atomic(savepoint=False)
+@transaction.atomic(durable=True)
 def do_remove_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> None:
     words = remove_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, words)
