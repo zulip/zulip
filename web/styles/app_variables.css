@@ -692,6 +692,14 @@
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
 
+    /* Tab-switcher colors */
+    --color-background-tab-switcher-ind-tab: hsl(0deg 0% 100%);
+    --color-background-tab-switcher-ind-tab-selected: hsl(0deg 0% 53%);
+    --color-border-tab-switcher-ind-tab: hsl(0deg 0% 80%);
+    --color-border-tab-switcher-ind-tab-selected: hsl(0deg 0% 47%);
+    --color-text-tab-switcher-ind-tab-disabled: hsl(0deg 0% 80%);
+    --color-border-tab-switcher-ind-tab-disabled: hsl(0deg 0% 87%);
+
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 87%);
     --color-border-table-bordered: hsl(0deg 0% 87%);
@@ -1120,6 +1128,18 @@
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 33%);
+
+    /* Tab-switcher colors */
+    /* The non-selected colors here are shared with numerous other
+       inputs and buttons in dark theme. A refactor here would make
+       more generic names for those colors, and help to clean out
+       the huge stack of selectors in the dark theme CSS file. */
+    --color-background-tab-switcher-ind-tab: hsl(0deg 0% 0% / 20%);
+    --color-background-tab-switcher-ind-tab-selected: hsl(0deg 0% 0% / 50%);
+    --color-border-tab-switcher-ind-tab: hsl(0deg 0% 0% / 60%);
+    --color-border-tab-switcher-ind-tab-selected: hsl(0deg 0% 0% / 90%);
+    --color-text-tab-switcher-ind-tab-disabled: hsl(0deg 0% 42% / 90%);
+    --color-border-tab-switcher-ind-tab-disabled: hsl(0deg 0% 0% / 60%);
 
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 0% / 20%);

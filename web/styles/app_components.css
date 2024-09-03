@@ -261,84 +261,86 @@ input::placeholder {
             }
         }
     }
+}
 
-    /* -- tab switcher -- */
+/* -- tab switcher -- */
 
-    .tab-switcher {
-        font-weight: initial;
-        margin: 2px 4px;
+.tab-switcher {
+    font-weight: initial;
+    margin: 2px 4px;
+    display: inline-block;
+
+    .ind-tab {
         display: inline-block;
+        width: 90px;
+        margin: 0 -0.5px;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
+        padding: 3px 10px;
+        background-color: var(--color-background-tab-switcher-ind-tab);
+        cursor: pointer;
+        justify-content: center;
+        align-items: center;
+
+        &:focus {
+            outline: none;
+        }
+
+        &:not(.selected) {
+            border: 1px solid var(--color-border-tab-switcher-ind-tab);
+        }
+
+        &.first {
+            border-radius: 5px 0 0 5px;
+            border-right: 1px solid transparent;
+        }
+
+        &.middle {
+            border-right: 1px solid transparent;
+        }
+
+        &.last {
+            border-radius: 0 5px 5px 0;
+        }
+
+        &.selected {
+            position: relative;
+            background-color: var(
+                --color-background-tab-switcher-ind-tab-selected
+            );
+            color: hsl(0deg 0% 100%);
+            border: 1px solid var(--color-border-tab-switcher-ind-tab-selected);
+            z-index: 2;
+        }
+
+        &.disabled {
+            cursor: default;
+            color: var(--color-text-tab-switcher-ind-tab-disabled);
+            border-color: var(--color-border-tab-switcher-ind-tab-disabled);
+        }
+    }
+
+    &.large .ind-tab {
+        width: 100%;
+    }
+
+    &.allow-overflow {
+        display: flex;
 
         .ind-tab {
-            display: inline-block;
-            width: 90px;
-            margin: 0 -0.5px;
-            text-align: center;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
-            vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
-            padding: 3px 10px;
-            background-color: hsl(0deg 0% 100%);
-            cursor: pointer;
-            justify-content: center;
-            align-items: center;
-
-            &:focus {
-                outline: none;
-            }
-
-            &:not(.selected) {
-                border: 1px solid hsl(0deg 0% 80%);
-            }
-
-            &.first {
-                border-radius: 5px 0 0 5px;
-                border-right: 1px solid transparent;
-            }
-
-            &.middle {
-                border-right: 1px solid transparent;
-            }
-
-            &.last {
-                border-radius: 0 5px 5px 0;
-            }
-
-            &.selected {
-                position: relative;
-                background-color: hsl(0deg 0% 53%);
-                color: hsl(0deg 0% 100%);
-                border: 1px solid hsl(0deg 0% 47%);
-                z-index: 2;
-            }
-
-            &.disabled {
-                cursor: default;
-                color: hsl(0deg 0% 80%);
-                border-color: hsl(0deg 0% 87%);
-            }
-        }
-
-        &.large .ind-tab {
-            width: 100%;
-        }
-
-        &.allow-overflow {
             display: flex;
-
-            .ind-tab {
-                display: flex;
-                text-overflow: initial;
-                white-space: initial;
-                vertical-align: middle;
-            }
+            text-overflow: initial;
+            white-space: initial;
+            vertical-align: middle;
         }
     }
+}
 
-    .stream_sorter_toggle {
-        margin-left: auto;
-    }
+.stream_sorter_toggle {
+    margin-left: auto;
 }
 
 /* -- unified overlay design component -- */
