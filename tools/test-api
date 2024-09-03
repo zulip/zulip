@@ -33,11 +33,11 @@ with test_server_running(
     # by the test_server_running decorator.
     from zerver.actions.create_user import do_create_user, do_reactivate_user
     from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
-    from zerver.actions.users import change_user_is_active
+    from zerver.actions.users import change_user_is_active, do_change_user_role
     from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
     from zerver.lib.users import get_api_key
     from zerver.models.realms import get_realm
-    from zerver.models.users import get_user
+    from zerver.models.users import UserProfile, get_user
     from zerver.openapi.javascript_examples import test_js_bindings
     from zerver.openapi.python_examples import (
         test_invalid_api_key,
@@ -55,9 +55,11 @@ with test_server_running(
     email = "iago@zulip.com"  # Iago is an admin
     realm = get_realm("zulip")
     user = get_user(email, realm)
-    # Required to test can_create_users endpoints.
+    # Required to test can_create_users  and can_change_user_emails endpoints.
+    do_change_user_role(user, UserProfile.ROLE_REALM_OWNER, acting_user=None)
     user.can_create_users = True
-    user.save(update_fields=["can_create_users"])
+    user.can_change_user_emails = True
+    user.save(update_fields=["can_create_users", "can_change_user_emails"])
 
     api_key = get_api_key(user)
     site = "http://zulip.zulipdev.com:9981"
