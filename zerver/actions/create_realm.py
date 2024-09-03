@@ -270,7 +270,7 @@ def do_create_realm(
             # do_create_user(..., realm_creation=True).
             acting_user=None,
             realm=realm,
-            event_type=RealmAuditLog.REALM_CREATED,
+            event_type=AuditLogEventType.REALM_CREATED,
             event_time=realm.date_created,
             extra_data={
                 "how_realm_creator_found_zulip": how_realm_creator_found_zulip,

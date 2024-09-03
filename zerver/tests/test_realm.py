@@ -1006,7 +1006,7 @@ class RealmTest(ZulipTestCase):
         do_change_realm_org_type(realm, Realm.ORG_TYPES["government"]["id"], acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_ORG_TYPE_CHANGED
+            event_type=AuditLogEventType.REALM_ORG_TYPE_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
@@ -1375,7 +1375,9 @@ class RealmTest(ZulipTestCase):
 
         self.assertTrue(
             RealmAuditLog.objects.filter(
-                realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
+                realm=realm,
+                event_type=AuditLogEventType.REALM_CREATED,
+                event_time=realm.date_created,
             ).exists()
         )
 
@@ -1421,7 +1423,9 @@ class RealmTest(ZulipTestCase):
 
         self.assertTrue(
             RealmAuditLog.objects.filter(
-                realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
+                realm=realm,
+                event_type=AuditLogEventType.REALM_CREATED,
+                event_time=realm.date_created,
             ).exists()
         )
 

@@ -12,6 +12,7 @@ from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.upload import upload_emoji_image
 from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import Realm, RealmAuditLog, RealmEmoji, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
@@ -54,7 +55,7 @@ def check_add_realm_emoji(
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=author,
-        event_type=RealmAuditLog.REALM_EMOJI_ADDED,
+        event_type=AuditLogEventType.REALM_EMOJI_ADDED,
         event_time=timezone_now(),
         extra_data={
             "realm_emoji": dict(sorted(realm_emoji_dict.items())),
@@ -75,7 +76,7 @@ def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: UserProfile |
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_EMOJI_REMOVED,
+        event_type=AuditLogEventType.REALM_EMOJI_REMOVED,
         event_time=timezone_now(),
         extra_data={
             "realm_emoji": dict(sorted(realm_emoji_dict.items())),

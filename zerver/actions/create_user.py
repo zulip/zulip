@@ -552,7 +552,9 @@ def do_create_user(
             # If this user just created a realm, make sure they are
             # properly tagged as the creator of the realm.
             realm_creation_audit_log = (
-                RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_CREATED, realm=realm)
+                RealmAuditLog.objects.filter(
+                    event_type=AuditLogEventType.REALM_CREATED, realm=realm
+                )
                 .order_by("id")
                 .last()
             )
