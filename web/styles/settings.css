@@ -776,37 +776,19 @@ input[type="checkbox"] {
 
 .admin_profile_fields_table,
 .edit_profile_field_choices_container,
-.profile_field_choices_table {
-    .movable-row {
-        cursor: move;
-
-        .fa-ellipsis-v {
-            color: hsl(0deg 0% 75%);
-            position: relative;
-            top: 1px;
-
-            + i {
-                margin-right: 5px;
-            }
-        }
-    }
-}
-
+.profile_field_choices_table,
 .admin_linkifiers_table {
     .movable-row {
         .move-handle {
             cursor: move;
             user-select: none;
+            margin-right: 5px;
         }
 
         .fa-ellipsis-v {
             color: hsl(0deg 0% 75%);
             position: relative;
             top: 1px;
-
-            + i {
-                margin-right: 5px;
-            }
         }
     }
 }

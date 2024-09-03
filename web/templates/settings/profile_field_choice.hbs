@@ -1,6 +1,8 @@
 <div class='choice-row movable-row' data-value="{{value}}">
-    <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
-    <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+    <span class="move-handle">
+        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+    </span>
     <input type='text' class="modal_text_input" placeholder='{{t "New option" }}' value="{{ text }}" />
 
     <button type='button' class="button rounded small delete-choice tippy-zulip-tooltip {{#if new_empty_choice_row}} hide {{/if}}" data-tippy-content="{{t 'Delete' }}">
