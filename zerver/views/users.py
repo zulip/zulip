@@ -4,6 +4,8 @@ from typing import Annotated, Any, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.core import validators
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -26,6 +28,7 @@ from zerver.actions.user_settings import (
     check_change_bot_full_name,
     check_change_full_name,
     do_change_avatar_fields,
+    do_change_user_delivery_email,
     do_regenerate_api_key,
 )
 from zerver.actions.users import (
@@ -39,7 +42,7 @@ from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
-from zerver.lib.email_validation import email_allowed_for_realm
+from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
     JsonableError,
@@ -207,10 +210,16 @@ def update_user_backend(
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
     profile_data: Json[list[ProfileDataElement]] | None = None,
+    new_email: str | None = None,
 ) -> HttpResponse:
     target = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
     )
+
+    if new_email is not None and (
+        not user_profile.can_change_user_emails or not user_profile.is_realm_admin
+    ):
+        raise JsonableError(_("User not authorized to change user emails"))
 
     if role is not None and target.role != role:
         # Require that the current user has permissions to
@@ -260,6 +269,23 @@ def update_user_backend(
             target.realm.id, clean_profile_data, acting_user=user_profile
         )
         do_update_user_custom_profile_data_if_changed(target, clean_profile_data)
+
+    if new_email is not None and target.delivery_email != new_email:
+        assert user_profile.can_change_user_emails and user_profile.is_realm_admin
+        try:
+            validators.validate_email(new_email)
+        except ValidationError:
+            raise JsonableError(_("Invalid new email address."))
+        try:
+            validate_email_not_already_in_realm(
+                user_profile.realm,
+                new_email,
+                verbose=False,
+            )
+        except ValidationError as e:
+            raise JsonableError(_("New email value error: {message}").format(message=e.message))
+
+        do_change_user_delivery_email(target, new_email, acting_user=user_profile)
 
     return json_success(request)
 

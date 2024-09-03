@@ -749,6 +749,28 @@ def do_change_can_create_users(user_profile: UserProfile, value: bool) -> None:
     )
 
 
+@transaction.atomic(savepoint=False)
+def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> None:
+    event_time = timezone_now()
+    old_value = user_profile.can_change_user_emails
+
+    user_profile.can_change_user_emails = value
+    user_profile.save(update_fields=["can_change_user_emails"])
+
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        event_type=AuditLogEventType.USER_SPECIAL_PERMISSION_CHANGED,
+        event_time=event_time,
+        acting_user=None,
+        modified_user=user_profile,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            "property": "can_change_user_emails",
+        },
+    )
+
+
 @transaction.atomic(durable=True)
 def do_update_outgoing_webhook_service(
     bot_profile: UserProfile, service_interface: int, service_payload_url: str
