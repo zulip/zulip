@@ -370,18 +370,12 @@
                 .sea-green,
                 .btn-danger,
                 .btn-warning,
-                .btn-link,
                 .poll-vote,
                 button.poll-option,
                 button.add-task
             ) {
             border-color: hsl(0deg 0% 0% / 60%);
             color: inherit;
-        }
-
-        &.btn-link {
-            border-color: hsl(0deg 0% 0% / 60%);
-            color: hsl(200deg 79% 66%);
         }
 
         &:hover,
