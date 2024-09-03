@@ -137,7 +137,7 @@ p.n-margin {
     padding-left: 26px;
     text-indent: -10px;
 
-    & i {
+    .all-messages-search-caution-icon {
         margin: 0 3px 0 1px;
     }
 
