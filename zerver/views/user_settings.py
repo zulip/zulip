@@ -168,7 +168,7 @@ def check_settings_values(
     email_notifications_batching_period_seconds: int | None,
     default_language: str | None = None,
 ) -> None:
-    # We can't use REQ for this widget because
+    # We can't use typed_endpoint for this widget because
     # get_available_language_codes requires provisioning to be
     # complete.
     if default_language is not None and default_language not in get_available_language_codes():

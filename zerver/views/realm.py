@@ -338,7 +338,7 @@ def update_realm(
     #
     # TODO: It should be possible to deduplicate this function up
     # further by some more advanced usage of the
-    # `REQ/has_request_variables` extraction.
+    # `typed_endpoint` extraction.
     req_vars = {}
     req_group_setting_vars = {}
 

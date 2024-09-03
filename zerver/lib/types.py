@@ -79,7 +79,7 @@ class UnspecifiedValue:
     We use this type as an explicit sentinel value for such endpoints.
 
     TODO: Can this be merged with the _NotSpecified class, which is
-    currently an internal implementation detail of the REQ class?
+    currently an internal implementation detail of the typed_endpoint?
     """
 
 
