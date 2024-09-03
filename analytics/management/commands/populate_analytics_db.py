@@ -36,6 +36,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 class Command(ZulipBaseCommand):
@@ -139,7 +140,7 @@ class Command(ZulipBaseCommand):
             modified_user=shylock,
             modified_stream=stream,
             event_last_message_id=0,
-            event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+            event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
             event_time=installation_time,
         )
 

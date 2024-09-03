@@ -66,6 +66,11 @@ class AuditLogEventType(IntEnum):
     REALM_LINKIFIERS_REORDERED = 228
     REALM_IMPORTED = 229
 
+    SUBSCRIPTION_CREATED = 301
+    SUBSCRIPTION_ACTIVATED = 302
+    SUBSCRIPTION_DEACTIVATED = 303
+    SUBSCRIPTION_PROPERTY_CHANGED = 304
+
 
 class AbstractRealmAuditLog(models.Model):
     """Defines fields common to RealmAuditLog and RemoteRealmAuditLog."""
@@ -86,11 +91,6 @@ class AbstractRealmAuditLog(models.Model):
     extra_data = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
     # Event types
-    SUBSCRIPTION_CREATED = 301
-    SUBSCRIPTION_ACTIVATED = 302
-    SUBSCRIPTION_DEACTIVATED = 303
-    SUBSCRIPTION_PROPERTY_CHANGED = 304
-
     USER_MUTED = 350
     USER_UNMUTED = 351
 
@@ -239,9 +239,9 @@ class RealmAuditLog(AbstractRealmAuditLog):
                 fields=["modified_user", "modified_stream"],
                 condition=Q(
                     event_type__in=[
-                        AbstractRealmAuditLog.SUBSCRIPTION_CREATED,
-                        AbstractRealmAuditLog.SUBSCRIPTION_ACTIVATED,
-                        AbstractRealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+                        AuditLogEventType.SUBSCRIPTION_CREATED,
+                        AuditLogEventType.SUBSCRIPTION_ACTIVATED,
+                        AuditLogEventType.SUBSCRIPTION_DEACTIVATED,
                     ]
                 ),
             ),

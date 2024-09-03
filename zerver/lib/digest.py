@@ -286,9 +286,9 @@ def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int,
     bugs for any of those classes of users.
     """
     events = [
-        RealmAuditLog.SUBSCRIPTION_CREATED,
-        RealmAuditLog.SUBSCRIPTION_ACTIVATED,
-        RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+        AuditLogEventType.SUBSCRIPTION_CREATED,
+        AuditLogEventType.SUBSCRIPTION_ACTIVATED,
+        AuditLogEventType.SUBSCRIPTION_DEACTIVATED,
     ]
     # This uses the zerver_realmauditlog_user_subscriptions_idx
     # partial index on RealmAuditLog which is specifically for those
