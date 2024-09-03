@@ -16,16 +16,6 @@
         </span>
     </div>
     <div class="member-list-box">
-        <div class="member_list_container" data-simplebar data-simplebar-tab-index="-1">
-            <div class="member_list_loading_indicator"></div>
-            <table class="member-list table table-striped">
-                <thead class="table-sticky-headers">
-                    <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
-                    <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
-                    <th class="user-remove-actions" {{#unless can_edit}}style="display:none"{{/unless}}>{{t "Actions" }}</th>
-                </thead>
-                <tbody class="member_table" data-empty="{{t 'This group has no members.' }}" data-search-results-empty="{{t 'No group members match your current filter.'}}"></tbody>
-            </table>
-        </div>
+        {{> user_group_members_table}}
     </div>
 </div>

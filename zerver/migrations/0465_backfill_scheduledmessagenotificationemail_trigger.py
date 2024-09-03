@@ -20,5 +20,6 @@ class Migration(migrations.Migration):
             SET trigger = 'private_message'
             WHERE trigger = 'direct_message';
             """,
+            elidable=True,
         ),
     ]

@@ -5,15 +5,12 @@ import * as channel from "./channel";
 import type {MessageList} from "./message_lists";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
+import type {PollWidgetOutboundData} from "./poll_widget";
+import {todo_widget_extra_data_schema} from "./todo_widget";
+import type {TodoWidgetOutboundData} from "./todo_widget";
 import * as widgetize from "./widgetize";
 
-export type Submessage = {
-    id: number;
-    sender_id: number;
-    message_id: number;
-    content: string;
-    msg_type: string;
-};
+export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
 export const zform_widget_extra_data_schema = z
     .object({
@@ -34,13 +31,6 @@ const poll_widget_extra_data_schema = z
     .object({
         question: z.string().optional(),
         options: z.array(z.string()).optional(),
-    })
-    .nullable();
-
-export const todo_widget_extra_data_schema = z
-    .object({
-        task_list_title: z.string().optional(),
-        tasks: z.array(z.object({task: z.string(), desc: z.string()})).optional(),
     })
     .nullable();
 
@@ -221,8 +211,14 @@ export function handle_event(submsg: Submessage): void {
 
 export function make_server_callback(
     message_id: number,
-): (opts: {msg_type: string; data: string}) => void {
-    return function (opts: {msg_type: string; data: string}) {
+): (opts: {
+    msg_type: string;
+    data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+}) => void {
+    return function (opts: {
+        msg_type: string;
+        data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+    }) {
         const url = "/json/submessage";
 
         void channel.post({

@@ -9,8 +9,8 @@
   "description": "zulip (Zulip Dev)",
   "discount": null,
   "email": "iago@zulip.com",
-  "id": "cus_NORMALIZED0001",
-  "invoice_prefix": "NORMA01",
+  "id": "customer_has_credit_card_as_default_payment_method--Customer.create.1.json",
+  "invoice_prefix": "NORMALIZED",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": null,

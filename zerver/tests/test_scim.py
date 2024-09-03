@@ -9,7 +9,6 @@ from django.conf import settings
 from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_full_name
-from zerver.lib.scim import ZulipSCIMUser
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile
@@ -39,7 +38,7 @@ class SCIMTestCase(ZulipTestCase):
             "userName": user_profile.delivery_email,
             "name": {"formatted": user_profile.full_name},
             "displayName": user_profile.full_name,
-            "role": ZulipSCIMUser.ROLE_TYPE_TO_NAME[user_profile.role],
+            "role": UserProfile.ROLE_ID_TO_API_NAME[user_profile.role],
             "active": True,
             "meta": {
                 "resourceType": "User",

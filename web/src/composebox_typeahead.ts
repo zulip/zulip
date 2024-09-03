@@ -41,6 +41,7 @@ import type {UserGroup} from "./user_groups";
 import * as user_pill from "./user_pill";
 import type {UserPillData} from "./user_pill";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 // **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
@@ -250,7 +251,7 @@ function handle_bulleting_or_numbering(
         if (bulleted_numbered_list_util.strip_bullet(previous_line) === "") {
             // below we select and replace the last 2 characters in the textarea before
             // the cursor - the bullet syntax - with an empty string
-            $textarea[0]!.setSelectionRange($textarea.caret() - 2, $textarea.caret());
+            util.the($textarea).setSelectionRange($textarea.caret() - 2, $textarea.caret());
             compose_ui.insert_and_scroll_into_view("", $textarea);
             e.preventDefault();
             return;
@@ -264,7 +265,7 @@ function handle_bulleting_or_numbering(
         if (bulleted_numbered_list_util.strip_numbering(previous_line) === "") {
             // below we select then replaces the last few characters in the textarea before
             // the cursor - the numbering syntax - with an empty string
-            $textarea[0]!.setSelectionRange(
+            util.the($textarea).setSelectionRange(
                 $textarea.caret() - previous_number_string.length - 2,
                 $textarea.caret(),
             );
@@ -297,7 +298,7 @@ export function handle_enter($textarea: JQuery<HTMLTextAreaElement>, e: JQuery.K
 
     // If the selectionStart and selectionEnd are not the same, that
     // means that some text was selected.
-    if ($textarea[0]!.selectionStart !== $textarea[0]!.selectionEnd) {
+    if (util.the($textarea).selectionStart !== util.the($textarea).selectionEnd) {
         // Replace it with the newline, remembering to resize the
         // textarea if needed.
         compose_ui.insert_and_scroll_into_view("\n", $textarea);
@@ -1175,7 +1176,11 @@ export function content_typeahead_selected(
                 $textbox.caret(beginning.length);
                 compose_ui.autosize_textarea($textbox);
             };
-            flatpickr.show_flatpickr(input_element.$element[0]!, on_timestamp_selection, timestamp);
+            flatpickr.show_flatpickr(
+                util.the(input_element.$element),
+                on_timestamp_selection,
+                timestamp,
+            );
             return beginning + rest;
         }
     }

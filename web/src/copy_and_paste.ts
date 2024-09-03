@@ -10,6 +10,7 @@ import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import * as rows from "./rows";
 import * as topic_link_util from "./topic_link_util";
+import * as util from "./util";
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -135,7 +136,7 @@ function select_div($div: JQuery, selection: Selection): void {
         background: "#FFF",
     }).attr("id", "copytempdiv");
     $("body").append($div);
-    selection.selectAllChildren($div[0]!);
+    selection.selectAllChildren(util.the($div));
 }
 
 function remove_div(_div: JQuery, ranges: Range[]): void {
@@ -566,7 +567,7 @@ export function paste_handler_converter(paste_html: string): string {
             const className = codeElement.getAttribute("class") ?? "";
             const language = node.parentElement?.classList.contains("zulip-code-block")
                 ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
-                : (className.match(/language-(\S+)/) ?? [null, ""])[1];
+                : (/language-(\S+)/.exec(className) ?? [null, ""])[1];
 
             assert(options.fence !== undefined);
             const fenceChar = options.fence.charAt(0);
@@ -629,7 +630,9 @@ function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boole
 
 export function cursor_at_markdown_link_marker($textarea: JQuery<HTMLTextAreaElement>): boolean {
     const range = $textarea.range();
-    const possible_markdown_link_markers = $textarea[0]!.value.slice(range.start - 2, range.start);
+    const possible_markdown_link_markers = util
+        .the($textarea)
+        .value.slice(range.start - 2, range.start);
     return possible_markdown_link_markers === "](";
 }
 

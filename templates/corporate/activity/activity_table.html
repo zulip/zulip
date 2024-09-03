@@ -1,7 +1,15 @@
-<h3>{{ data.title }} {% if data.stats_link %}{{ data.stats_link }}{% endif %}</h3>
+<h3>{{ data.title }} {% if data.title_link %}{{ data.title_link }}{% endif %}</h3>
 
 {% if data.title == "Remote servers" %}
 {% include "corporate/activity/remote_activity_key.html" %}
+{% endif %}
+
+{% if data.header %}
+<div class="activity-header-information">
+    {% for entry in data.header %}
+    <p class="activity-header-entry"><b>{{ entry.name }}</b>: {{ entry.value }}</p>
+    {% endfor %}
+</div>
 {% endif %}
 
 {{ data.rows|length}} rows

@@ -96,7 +96,7 @@ on hardware requirements for larger organizations.
   that Zulip can properly manage image and website previews and mobile
   push notifications. Outgoing Internet access is not required if you
   [disable those
-  features](https://zulip.com/help/allow-image-link-previews).
+  features](https://zulip.com/help/image-video-and-website-previews).
 - Outgoing SMTP access (usually port 587) to your [SMTP
   server](email.md) so that Zulip can send emails.
 - A domain name (e.g., `zulip.example.com`) that your users will use to
@@ -156,7 +156,11 @@ Zulip in production](install.md).
 
 This section details some basic guidelines for running a Zulip server
 for larger organizations (especially >1000 users or 500+ daily active
-users). Zulip's resource needs depend mainly on 3 parameters:
+users). These guidelines are conservative, since they are intended to
+be sufficient for a wide range of possible usage patterns that may not
+be applicable to your installation.
+
+Zulip's resource needs depend mainly on 3 parameters:
 
 - daily active users (e.g., number of employees if everyone's an
   employee)
@@ -177,7 +181,7 @@ installing Zulip with a dedicated database server.
   active users, we recommend using a [remote PostgreSQL
   database](postgresql.md), but it's not required.
 
-- **RAM:** We recommended more RAM for larger installations:
+- **RAM:** We recommend more RAM for larger installations:
 
   - With 25+ daily active users, 4 GB of RAM.
   - With 100+ daily active users, 8 GB of RAM.
@@ -225,23 +229,18 @@ installing Zulip with a dedicated database server.
   backend][s3-uploads].
 
 - **Sharding:** For servers with several thousand daily active users,
-  it is necessary to shard Zulip's Tornado service. Care must be taken
-  when dividing traffic for a single Zulip realm between multiple
-  Zulip application servers, which is why we recommend a hot spare
-  over load-balancing for most installations desiring extra
-  redundancy.
+  Zulip supports sharding its real-time-push Tornado service, both by
+  realm/organization (for hosting many organizations) and by user ID
+  (for hosting single very large organizations)
 
-  - Zulip 2.0 and later supports running multiple Tornado servers
-    sharded by realm/organization, which is how we scale Zulip Cloud.
-  - Zulip 6.0 and later supports running multiple Tornado servers
-    sharded by user ID, which is necessary for individual realms with
-    many thousands of daily active users.
+  Care must be taken when dividing traffic for a single Zulip realm
+  between multiple Zulip application servers, which is why we
+  recommend a hot spare over load-balancing for most installations
+  desiring extra redundancy.
 
-  [Contact us][contact-support] for help implementing the sharding policy.
-
-Scalability is an area of active development, so if you're unsure
-whether Zulip is a fit for your organization or need further advice
-[contact Zulip support][contact-support].
+If you have scalability questions or are unsure whether Zulip is a fit
+for your use case, contact [Zulip sales or support][contact-support]
+for assistance.
 
 For readers interested in technical details around what features
 impact Zulip's scalability, this [performance and scalability design

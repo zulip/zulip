@@ -169,7 +169,15 @@
         padding: 0 3px;
         border-radius: 3px;
         white-space: nowrap;
-        display: inline-block;
+        /* Reduce the font-size to reduce the
+           footprint of the background highlight. */
+        font-size: 0.95em;
+    }
+
+    .mention-content-wrapper {
+        /* Restore the font-size to match the rest
+           of the message area. */
+        font-size: 1.0526em;
     }
 
     .user-mention {
@@ -228,15 +236,25 @@
 
     /* Timestamps */
     & time {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 3px;
         background: hsl(0deg 0% 93%);
         border-radius: 3px;
-        padding: 0 0.2em;
         box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
         white-space: nowrap;
-        margin: 0 2px 1px;
+        margin: 0 2px;
+        /* Reduce the font-size to reduce the
+           footprint of the timestamp block. */
+        font-size: 0.95em;
+
+        .timestamp-content-wrapper {
+            /* Restore the font-size to match the rest
+               of the message area, and apply the layout
+               for the icon. */
+            font-size: 1.0526em;
+            padding: 0 0.2em;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 3px;
+        }
 
         .markdown-timestamp-icon {
             align-self: center;

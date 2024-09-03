@@ -443,7 +443,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
         ## List of additional attributes to fetch from the SAMLResponse.
         ## These attributes will be available for synchronizing custom profile fields.
         ## in SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.
-        # "extra_attrs": ["title", "mobilePhone"],
+        # "extra_attrs": ["title", "mobilePhone", "zulip_role"],
         ##
         ## The "x509cert" attribute is automatically read from
         ## /etc/zulip/saml/idps/{idp_name}.crt; don't specify it here.
@@ -508,14 +508,19 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "emailAddress": ZULIP_ADMINISTRATOR,
 }
 
-# SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT = {
-#    "example_org": {
-#        "saml": {
-#            # Format: "<custom profile field name>": "<attribute name from extra_attrs above>"
-#            "title": "title",
-#            "phone_number": "mobilePhone",
-#        }
-#    }
+## Note: Any additional SAML attributes that'll be used here must be
+## listed in the "extra_attrs" field in the SOCIAL_AUTH_SAML_ENABLED_IDPS
+## configuration for your IdP.
+# SOCIAL_AUTH_SYNC_ATTRS_DICT = {
+#     "example_org": {
+#         "saml": {
+#             # role is currently the only supported major attribute.
+#             "role": "zulip_role",
+#             # Specify custom profile fields with a custom__ prefix for the
+#             # Zulip field name.
+#             "custom__title": "title",
+#         }
+#     }
 # }
 
 ########

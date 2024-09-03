@@ -33,13 +33,22 @@
     <a title="Copy emails" class="copy-button" data-clipboard-text="{{ first_human_user.delivery_email }}">
         <i class="fa fa-copy"></i>
     </a>
+    <br />
     {% else %}
     <b>First human user</b>:
+    <br />
     {% endif %}
+    <br />
+    {% with %}
+        {% set realm = realm %}
+        {% set user_data = realm_support_data[realm.id].user_data %}
+        {% include 'corporate/support/basic_realm_data.html' %}
+    {% endwith %}
 </div>
-<div class="realm-support-forms">
-    <div class="realm-form-container">
-        <form method="POST" class="support-realm-status-form support-form">
+<div>
+    <div class="realm-management-actions">
+        <p class="support-section-header">🛠️ Realm management:</p>
+        <form method="POST" class="support-form">
             <b>Status</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -49,15 +58,15 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="realm-subdomain-form support-form">
+        <form method="POST" class="support-form">
             <b>New subdomain</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <input type="text" name="new_subdomain" required />
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="realm-organization-type-form support-form">
-            <b>Org type</b>:<br />
+        <form method="POST" class="support-form">
+            <b>Organization type</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="org_type" id="org_type">
@@ -71,8 +80,10 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="support-plan-type-form support-form">
-            <b>Plan type</b>:<br />
+        <form method="POST" class="support-form">
+            <b>Plan type</b>: <i class="fa fa-question-circle-o" data-tippy-content="
+            Will also update maximum daily invitations to be the default value for the new plan type.
+            " data-tippy-maxWidth="auto"></i><br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="plan_type">
@@ -86,44 +97,27 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="sponsorship-pending-form support-form">
-            <b>Sponsorship pending</b>:<br />
+        <form method="POST" class="support-form">
+            <b>Maximum daily invitations</b>: <i class="fa fa-question-circle-o" data-tippy-content="
+            Setting to zero will attempt to reset this to the default maximum for the current plan type.
+            " data-tippy-maxWidth="auto"></i><br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            <select name="sponsorship_pending">
-                <option value="true" {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>Yes</option>
-                <option value="false" {% if not realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>No</option>
-            </select>
+            <input type="number" name="max_invites" value="{{ realm.max_invites }}" min="0" required />
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-
-        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
-        <form method="POST" class="approve-sponsorship-form support-form">
-            {{ csrf_input }}
-            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            <input type="hidden" name="approve_sponsorship" value="true" />
-            <button class="approve-sponsorship-button">
-                Approve full sponsorship
-            </button>
-            (will email organization owners)
-        </form>
-        {% endif %}
-
+    </div>
+    {% if realm.plan_type != SPONSORED_PLAN_TYPE %}
+    <div class="support-sponsorship-container">
         {% with %}
             {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
             {% set PLAN_TYPES = REALM_PLAN_TYPES_FOR_DISCOUNT %}
             {% set remote_id = realm.id %}
             {% set remote_type = "realm_id" %}
-            {% include 'corporate/support/sponsorship_discount_forms.html' %}
+            {% include 'corporate/support/sponsorship_forms_support.html' %}
         {% endwith %}
-
-        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
-            {% with %}
-                {% set latest_sponsorship_request = realm_support_data[realm.id].sponsorship_data.latest_sponsorship_request %}
-                {% include 'corporate/support/sponsorship_request_details.html' %}
-            {% endwith %}
-        {% endif %}
     </div>
+    {% endif %}
     {% if realm_support_data[realm.id].plan_data.current_plan %}
     <div class="current-plan-container">
         {% with %}
@@ -132,7 +126,7 @@
             {% include 'corporate/support/current_plan_details.html' %}
         {% endwith %}
 
-        <form method="POST" class="billing-modality-form support-form">
+        <form method="POST" class="support-form">
             <b>Billing collection method</b><br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -143,7 +137,7 @@
             <button type="submit" class="support-submit-button">Update</button>
         </form>
 
-        <form method="POST" class="downgrade-plan-form support-form">
+        <form method="POST" class="support-form">
             <b>Modify plan</b><br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />

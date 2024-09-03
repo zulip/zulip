@@ -46,6 +46,7 @@ from corporate.lib.support import (
 from corporate.models import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
+    do_change_realm_max_invites,
     do_change_realm_org_type,
     do_change_realm_plan_type,
     do_deactivate_realm,
@@ -74,7 +75,11 @@ from zerver.models import (
     RealmReactivationStatus,
     UserProfile,
 )
-from zerver.models.realms import get_org_type_display_name, get_realm
+from zerver.models.realms import (
+    get_default_max_invites_for_realm_plan_type,
+    get_org_type_display_name,
+    get_realm,
+)
 from zerver.models.users import get_user_profile_by_id
 from zerver.views.invite import get_invitee_emails_set
 from zilencer.lib.remote_counts import MissingDataError, compute_max_monthly_messages
@@ -312,6 +317,19 @@ def get_realm_plan_type_options_for_discount() -> list[SupportSelectOption]:
     return plan_types
 
 
+def get_default_max_invites_for_plan_type(realm: Realm) -> int:
+    default_max = get_default_max_invites_for_realm_plan_type(realm.plan_type)
+    if default_max is None:
+        return settings.INVITES_DEFAULT_REALM_DAILY_MAX
+    return default_max
+
+
+def check_update_max_invites(realm: Realm, new_max: int, default_max: int) -> bool:
+    if new_max in [0, default_max]:
+        return realm.max_invites != default_max
+    return new_max > default_max
+
+
 VALID_MODIFY_PLAN_METHODS = Literal[
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
@@ -325,6 +343,12 @@ VALID_BILLING_MODALITY_VALUES = Literal[
     "send_invoice",
     "charge_automatically",
 ]
+
+SHARED_SUPPORT_CONTEXT = {
+    "get_org_type_display_name": get_org_type_display_name,
+    "get_plan_type_name": get_plan_type_string,
+    "dollar_amount": cents_to_dollar_string,
+}
 
 
 @require_server_admin
@@ -348,8 +372,9 @@ def support(
     delete_user_by_id: Json[NonNegativeInt] | None = None,
     query: Annotated[str | None, ApiParamConfig("q")] = None,
     org_type: Json[NonNegativeInt] | None = None,
+    max_invites: Json[NonNegativeInt] | None = None,
 ) -> HttpResponse:
-    context: dict[str, Any] = {}
+    context: dict[str, Any] = {**SHARED_SUPPORT_CONTEXT}
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
@@ -417,8 +442,24 @@ def support(
         elif org_type is not None:
             current_realm_type = realm.org_type
             do_change_realm_org_type(realm, org_type, acting_user=acting_user)
-            msg = f"Org type of {realm.string_id} changed from {get_org_type_display_name(current_realm_type)} to {get_org_type_display_name(org_type)} "
+            msg = f"Organization type of {realm.string_id} changed from {get_org_type_display_name(current_realm_type)} to {get_org_type_display_name(org_type)} "
             context["success_message"] = msg
+        elif max_invites is not None:
+            default_max = get_default_max_invites_for_plan_type(realm)
+            if check_update_max_invites(realm, max_invites, default_max):
+                do_change_realm_max_invites(realm, max_invites, acting_user=acting_user)
+                update_text = str(max_invites)
+                if max_invites == 0:
+                    update_text = "the default for the current plan type"
+                msg = f"Maximum number of daily invitations for {realm.string_id} updated to {update_text}."
+                context["success_message"] = msg
+            else:
+                update_text = f"{max_invites} is less than the default for the current plan type"
+                if max_invites in [0, default_max]:
+                    update_text = "the default for the current plan type is already set"
+                context["error_message"] = (
+                    f"Cannot update maximum number of daily invitations for {realm.string_id}, because {update_text}."
+                )
         elif new_subdomain is not None:
             old_subdomain = realm.string_id
             try:
@@ -567,7 +608,6 @@ def support(
 
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
-    context["dollar_amount"] = cents_to_dollar_string
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
     context["REALM_PLAN_TYPES"] = get_realm_plan_type_options()
@@ -656,7 +696,7 @@ def remote_servers_support(
     ]
     | None = None,
 ) -> HttpResponse:
-    context: dict[str, Any] = {}
+    context: dict[str, Any] = {**SHARED_SUPPORT_CONTEXT}
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
@@ -841,10 +881,7 @@ def remote_servers_support(
     context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
     context["remote_realms"] = remote_realms
     context["remote_realms_support_data"] = realm_support_data
-    context["get_plan_type_name"] = get_plan_type_string
-    context["get_org_type_display_name"] = get_org_type_display_name
     context["format_optional_datetime"] = format_optional_datetime
-    context["dollar_amount"] = cents_to_dollar_string
     context["server_analytics_link"] = remote_installation_stats_link
     context["REMOTE_PLAN_TIERS"] = get_remote_plan_tier_options()
     context["get_remote_server_billing_user_emails"] = (

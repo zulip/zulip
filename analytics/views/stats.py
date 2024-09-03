@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional, TypeAlias, TypeVar, cast
+from typing import Annotated, Any, Optional, TypeAlias, TypeVar, cast
 
 from django.conf import settings
 from django.db.models import QuerySet
@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.utils import translation
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic import BeforeValidator, Json, NonNegativeInt
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
@@ -30,11 +31,10 @@ from zerver.decorator import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.i18n import get_and_set_request_language, get_language_translation_data
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import convert_to_UTC
-from zerver.lib.validator import to_non_negative_int
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import Client, Realm, Stream, UserProfile
 from zerver.models.realms import get_realm
 
@@ -111,8 +111,8 @@ def stats(request: HttpRequest) -> HttpResponse:
 
 
 @require_server_admin
-@has_request_variables
-def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
+@typed_endpoint
+def stats_for_realm(request: HttpRequest, *, realm_str: PathOnly[str]) -> HttpResponse:
     try:
         realm = get_realm(realm_str)
     except Realm.DoesNotExist:
@@ -127,9 +127,9 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
 
 
 @require_server_admin
-@has_request_variables
+@typed_endpoint
 def stats_for_remote_realm(
-    request: HttpRequest, remote_server_id: int, remote_realm_id: int
+    request: HttpRequest, *, remote_server_id: PathOnly[int], remote_realm_id: PathOnly[int]
 ) -> HttpResponse:
     assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
@@ -142,22 +142,45 @@ def stats_for_remote_realm(
 
 
 @require_server_admin_api
-@has_request_variables
+@typed_endpoint
 def get_chart_data_for_realm(
-    request: HttpRequest, /, user_profile: UserProfile, realm_str: str, **kwargs: Any
+    request: HttpRequest,
+    user_profile: UserProfile,
+    /,
+    *,
+    realm_str: PathOnly[str],
+    chart_name: str,
+    min_length: Json[NonNegativeInt] | None = None,
+    start: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
+    end: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
 ) -> HttpResponse:
     try:
         realm = get_realm(realm_str)
     except Realm.DoesNotExist:
         raise JsonableError(_("Invalid organization"))
 
-    return get_chart_data(request, user_profile, realm=realm, **kwargs)
+    return do_get_chart_data(
+        request,
+        user_profile,
+        realm=realm,
+        chart_name=chart_name,
+        min_length=min_length,
+        start=start,
+        end=end,
+    )
 
 
 @require_non_guest_user
-@has_request_variables
+@typed_endpoint
 def get_chart_data_for_stream(
-    request: HttpRequest, /, user_profile: UserProfile, stream_id: int
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    stream_id: PathOnly[int],
+    chart_name: str,
+    min_length: Json[NonNegativeInt] | None = None,
+    start: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
+    end: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
 ) -> HttpResponse:
     stream, ignored_sub = access_stream_by_id(
         user_profile,
@@ -166,28 +189,43 @@ def get_chart_data_for_stream(
         allow_realm_admin=True,
     )
 
-    return get_chart_data(request, user_profile, stream=stream)
+    return do_get_chart_data(
+        request,
+        user_profile,
+        stream=stream,
+        chart_name=chart_name,
+        min_length=min_length,
+        start=start,
+        end=end,
+    )
 
 
 @require_server_admin_api
-@has_request_variables
+@typed_endpoint
 def get_chart_data_for_remote_realm(
     request: HttpRequest,
-    /,
     user_profile: UserProfile,
-    remote_server_id: int,
-    remote_realm_id: int,
-    **kwargs: Any,
+    /,
+    *,
+    remote_server_id: PathOnly[int],
+    remote_realm_id: PathOnly[int],
+    chart_name: str,
+    min_length: Json[NonNegativeInt] | None = None,
+    start: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
+    end: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
 ) -> HttpResponse:
     assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
-    return get_chart_data(
+    return do_get_chart_data(
         request,
         user_profile,
         server=server,
         remote=True,
-        remote_realm_id=int(remote_realm_id),
-        **kwargs,
+        remote_realm_id=remote_realm_id,
+        chart_name=chart_name,
+        min_length=min_length,
+        start=start,
+        end=end,
     )
 
 
@@ -210,47 +248,89 @@ def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -
 
 
 @require_server_admin_api
-@has_request_variables
+@typed_endpoint
 def get_chart_data_for_installation(
-    request: HttpRequest, /, user_profile: UserProfile, chart_name: str = REQ(), **kwargs: Any
+    request: HttpRequest,
+    user_profile: UserProfile,
+    /,
+    *,
+    chart_name: str,
+    min_length: Json[NonNegativeInt] | None = None,
+    start: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
+    end: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
 ) -> HttpResponse:
-    return get_chart_data(request, user_profile, for_installation=True, **kwargs)
+    return do_get_chart_data(
+        request,
+        user_profile,
+        for_installation=True,
+        chart_name=chart_name,
+        min_length=min_length,
+        start=start,
+        end=end,
+    )
 
 
 @require_server_admin_api
-@has_request_variables
+@typed_endpoint
 def get_chart_data_for_remote_installation(
     request: HttpRequest,
-    /,
     user_profile: UserProfile,
-    remote_server_id: int,
-    chart_name: str = REQ(),
-    **kwargs: Any,
+    /,
+    *,
+    remote_server_id: PathOnly[int],
+    chart_name: str,
+    min_length: Json[NonNegativeInt] | None = None,
+    start: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
+    end: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
 ) -> HttpResponse:
     assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
-    return get_chart_data(
+    return do_get_chart_data(
         request,
         user_profile,
         for_installation=True,
         remote=True,
         server=server,
-        **kwargs,
+        chart_name=chart_name,
+        min_length=min_length,
+        start=start,
+        end=end,
     )
 
 
 @require_non_guest_user
-@has_request_variables
+@typed_endpoint
 def get_chart_data(
     request: HttpRequest,
     user_profile: UserProfile,
-    chart_name: str = REQ(),
-    min_length: int | None = REQ(converter=to_non_negative_int, default=None),
-    start: datetime | None = REQ(converter=to_utc_datetime, default=None),
-    end: datetime | None = REQ(converter=to_utc_datetime, default=None),
-    # These last several parameters are only used by functions
-    # wrapping get_chart_data; the callers are responsible for
-    # parsing/validation/authorization for them.
+    *,
+    chart_name: str,
+    min_length: Json[NonNegativeInt] | None = None,
+    start: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
+    end: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
+) -> HttpResponse:
+    return do_get_chart_data(
+        request,
+        user_profile,
+        chart_name=chart_name,
+        min_length=min_length,
+        start=start,
+        end=end,
+    )
+
+
+@require_non_guest_user
+def do_get_chart_data(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    # Common parameters supported by all stats endpoints.
+    chart_name: str,
+    min_length: NonNegativeInt | None = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
+    # The following parameters are only used by wrapping functions for
+    # various contexts; the callers are responsible for validating them.
     realm: Realm | None = None,
     for_installation: bool = False,
     remote: bool = False,

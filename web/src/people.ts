@@ -179,6 +179,24 @@ export function update_email(user_id: number, new_email: string): void {
     // still work correctly.
 }
 
+// A function that sorts Email according to the user's full name
+export function sort_emails_by_username(emails: string[]): (string | undefined)[] {
+    const user_ids = emails.map((email) => get_user_id(email));
+    const name_email_dict = user_ids.map((user_id, index) => ({
+        name:
+            user_id !== undefined && people_by_user_id_dict.has(user_id)
+                ? people_by_user_id_dict.get(user_id)?.full_name
+                : "?",
+        email: emails[index],
+    }));
+
+    const sorted_emails = name_email_dict
+        .sort((a, b) => util.strcmp(a.name!, b.name!))
+        .map(({email}) => email);
+
+    return sorted_emails;
+}
+
 export function get_visible_email(user: User): string {
     if (user.delivery_email) {
         return user.delivery_email;
@@ -268,9 +286,7 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
 
     emails = emails.map((email) => email.toLowerCase());
 
-    emails.sort();
-
-    return emails.join(",");
+    return sort_emails_by_username(emails).join(",");
 }
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
@@ -324,16 +340,17 @@ export function reply_to_to_user_ids_string(emails_string: string): string | und
 }
 
 export function emails_to_full_names_string(emails: string[]): string {
-    return emails
-        .map((email) => {
-            email = email.trim();
-            const person = get_by_email(email);
-            if (person !== undefined) {
-                return person.full_name;
-            }
-            return INACCESSIBLE_USER_NAME;
-        })
-        .join(", ");
+    const names = emails.map((email) => {
+        email = email.trim();
+        const person = get_by_email(email);
+        if (person !== undefined) {
+            return person.full_name;
+        }
+        return INACCESSIBLE_USER_NAME;
+    });
+
+    const sorted_names = names.sort(util.make_strcmp());
+    return sorted_names.join(", ");
 }
 
 export function get_user_time(user_id: number): string | undefined {
@@ -432,8 +449,10 @@ export function get_recipients(user_ids_string: string): string {
         return my_full_name();
     }
 
-    const names = get_display_full_names(other_ids).sort();
-    return names.join(", ");
+    const names = get_display_full_names(other_ids);
+    const sorted_names = names.sort(util.make_strcmp());
+
+    return sorted_names.join(", ");
 }
 
 export function pm_reply_user_string(message: Message | MessageWithBooleans): string | undefined {
@@ -462,9 +481,7 @@ export function pm_reply_to(message: Message): string | undefined {
         return person.email;
     });
 
-    emails.sort();
-
-    const reply_to = emails.join(",");
+    const reply_to = sort_emails_by_username(emails).join(",");
 
     return reply_to;
 }
@@ -1015,6 +1032,16 @@ export function get_non_active_human_ids(): number[] {
     }
 
     return human_ids;
+}
+
+export function get_non_active_user_ids_count(user_ids: number[]): number {
+    let count = 0;
+    for (const user_id of user_ids) {
+        if (non_active_user_dict.has(user_id)) {
+            count += 1;
+        }
+    }
+    return count;
 }
 
 export function get_bot_ids(): number[] {

@@ -324,7 +324,7 @@ def has_request_variables(
 ) -> Callable[Concatenate[HttpRequest, ParamT], ReturnT]:
     num_params = req_func.__code__.co_argcount
     default_param_values = cast(FunctionType, req_func).__defaults__
-    if default_param_values is None:
+    if default_param_values is None:  # nocoverage # No users of this path.
         default_param_values = ()
     num_default_params = len(default_param_values)
     default_param_names = req_func.__code__.co_varnames[num_params - num_default_params :]
@@ -363,9 +363,12 @@ def has_request_variables(
                 #
                 # TODO: Either run validators for path_only parameters
                 # or don't declare them using REQ.
-                assert func_var_name in kwargs
+
+                # no coverage because has_request_variables will be removed once
+                # all the endpoints have been migrated to use typed_endpoint.
+                assert func_var_name in kwargs  # nocoverage
             if func_var_name in kwargs:
-                continue
+                continue  # nocoverage
             assert func_var_name is not None
 
             post_var_name: str | None
@@ -389,7 +392,7 @@ def has_request_variables(
                     if req_var in request.POST:
                         val = request.POST[req_var]
                         request_notes.processed_parameters.add(req_var)
-                    elif req_var in request.GET:
+                    elif req_var in request.GET:  # nocoverage # No users of this path
                         val = request.GET[req_var]
                         request_notes.processed_parameters.add(req_var)
                     else:

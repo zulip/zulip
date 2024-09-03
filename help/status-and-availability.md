@@ -155,6 +155,12 @@ Zulip.
 With this setting, your "Last active" time displayed to other users in
 the UI will be frozen as the approximate time you enabled this setting.
 
+!!! tip ""
+
+    Consider also [not
+    allowing](/help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages)
+    other users to see when you have read messages.
+
 ### Toggle invisible mode
 
 {start_tabs}

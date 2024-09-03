@@ -49,7 +49,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(clear_duplicate_counts, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            clear_duplicate_counts, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
         migrations.AddConstraint(
             model_name="remoteinstallationcount",
             constraint=models.UniqueConstraint(

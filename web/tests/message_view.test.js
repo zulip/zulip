@@ -418,6 +418,17 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
+    // sending direct messages to deactivated user
+    realm.realm_direct_message_permission_group = everyone.id;
+    people.deactivate(alice);
+    set_filter([["dm", alice.email]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You have no direct messages with Alice Smith."),
+    );
+    people.add_active_user(alice);
+
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
     set_filter([["dm", me.email]]);
@@ -439,6 +450,16 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
+
+    // group dm with a deactivated user
+    people.deactivate(alice);
+    set_filter([["dm", ray.email + "," + alice.email]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You have no direct messages with these users."),
+    );
+    people.add_active_user(alice);
 
     // organization has disabled sending direct messages
     realm.realm_direct_message_permission_group = nobody.id;

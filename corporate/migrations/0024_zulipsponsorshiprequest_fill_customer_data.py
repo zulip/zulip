@@ -13,6 +13,7 @@ class Migration(migrations.Migration):
             SET customer_id = (
                 SELECT id FROM corporate_customer WHERE corporate_customer.realm_id = corporate_zulipsponsorshiprequest.realm_id
             )
-        """
+        """,
+            elidable=True,
         ),
     ]

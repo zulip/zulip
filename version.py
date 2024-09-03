@@ -34,8 +34,8 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 282  # Last bumped for removing "POST users/me/tutorial_status"
 
+API_FEATURE_LEVEL = 284  # Last bumped for removing 'prev_rendered_content_version'
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 282  # Last bumped for removing "POST users/me/tutorial_stat
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (290, 1)  # bumped 2024-08-12 to add zopfli compression
+PROVISION_VERSION = (292, 3)  # bumped 2024-08-25 to upgrade Transifex CLI

@@ -50,7 +50,7 @@ from zerver.models.users import (
     get_bot_dicts_in_realm,
     get_user_profile_by_id,
 )
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import RealmBillingSession
@@ -517,13 +517,14 @@ def do_change_user_role(
     send_stream_events_for_role_update(user_profile, previously_accessible_streams)
 
 
+@transaction.atomic(savepoint=False)
 def do_change_is_billing_admin(user_profile: UserProfile, value: bool) -> None:
     user_profile.is_billing_admin = value
     user_profile.save(update_fields=["is_billing_admin"])
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_billing_admin=value)
     )
-    send_event(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
 
 def do_change_can_forge_sender(user_profile: UserProfile, value: bool) -> None:
@@ -536,6 +537,7 @@ def do_change_can_create_users(user_profile: UserProfile, value: bool) -> None:
     user_profile.save(update_fields=["can_create_users"])
 
 
+@transaction.atomic(durable=True)
 def do_update_outgoing_webhook_service(
     bot_profile: UserProfile, service_interface: int, service_payload_url: str
 ) -> None:
@@ -545,7 +547,7 @@ def do_update_outgoing_webhook_service(
     service.base_url = service_payload_url
     service.interface = service_interface
     service.save()
-    send_event(
+    send_event_on_commit(
         bot_profile.realm,
         dict(
             type="realm_bot",
@@ -563,11 +565,12 @@ def do_update_outgoing_webhook_service(
     )
 
 
+@transaction.atomic(durable=True)
 def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
     updated_config_data = get_bot_config(bot_profile)
-    send_event(
+    send_event_on_commit(
         bot_profile.realm,
         dict(
             type="realm_bot",

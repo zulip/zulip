@@ -1,11 +1,12 @@
 from collections.abc import Iterable, Sequence
 from email.headerregistry import Address
-from typing import cast
+from typing import Annotated, Literal, cast
 
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.actions.message_send import (
     check_send_message,
@@ -17,10 +18,14 @@ from zerver.actions.message_send import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.topic import REQ_topic
-from zerver.lib.validator import check_bool, check_string_in, to_float
+from zerver.lib.typed_endpoint import (
+    DOCUMENTATION_PENDING,
+    ApiParamConfig,
+    OptionalTopic,
+    typed_endpoint,
+)
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Client, Message, RealmDomain, UserProfile
@@ -123,21 +128,30 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 
-@has_request_variables
+@typed_endpoint
 def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    req_type: str = REQ("type", str_validator=check_string_in(Message.API_RECIPIENT_TYPES)),
-    req_to: str | None = REQ("to", default=None),
-    req_sender: str | None = REQ("sender", default=None, documentation_pending=True),
-    forged_str: str | None = REQ("forged", default=None, documentation_pending=True),
-    topic_name: str | None = REQ_topic(),
-    message_content: str = REQ("content"),
-    widget_content: str | None = REQ(default=None, documentation_pending=True),
-    local_id: str | None = REQ(default=None),
-    queue_id: str | None = REQ(default=None),
-    time: float | None = REQ(default=None, converter=to_float, documentation_pending=True),
-    read_by_sender: bool | None = REQ(json_validator=check_bool, default=None),
+    *,
+    req_type: Annotated[Literal["direct", "private", "stream", "channel"], ApiParamConfig("type")],
+    req_to: Annotated[str | None, ApiParamConfig("to")] = None,
+    req_sender: Annotated[
+        str | None, ApiParamConfig("sender", documentation_status=DOCUMENTATION_PENDING)
+    ] = None,
+    forged_str: Annotated[
+        str | None, ApiParamConfig("forged", documentation_status=DOCUMENTATION_PENDING)
+    ] = None,
+    topic_name: OptionalTopic = None,
+    message_content: Annotated[str, ApiParamConfig("content")],
+    widget_content: Annotated[
+        str | None, ApiParamConfig("widget_content", documentation_status=DOCUMENTATION_PENDING)
+    ] = None,
+    local_id: str | None = None,
+    queue_id: str | None = None,
+    time: Annotated[
+        Json[float] | None, ApiParamConfig("time", documentation_status=DOCUMENTATION_PENDING)
+    ] = None,
+    read_by_sender: Json[bool] | None = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
@@ -151,7 +165,7 @@ def send_message_backend(
         # message (created, schdeduled, drafts) objects/dicts.
         recipient_type_name = "stream"
 
-    # If req_to is None, then we default to an
+    # If to is None, then we default to an
     # empty list of recipients.
     message_to: Sequence[int] | Sequence[str] = []
 
@@ -258,16 +272,19 @@ def send_message_backend(
     return json_success(request, data=data)
 
 
-@has_request_variables
+@typed_endpoint
 def zcommand_backend(
-    request: HttpRequest, user_profile: UserProfile, command: str = REQ("command")
+    request: HttpRequest, user_profile: UserProfile, *, command: str
 ) -> HttpResponse:
     return json_success(request, data=process_zcommands(command, user_profile))
 
 
-@has_request_variables
+@typed_endpoint
 def render_message_backend(
-    request: HttpRequest, user_profile: UserProfile, content: str = REQ()
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    content: str,
 ) -> HttpResponse:
     message = Message()
     message.sender = user_profile

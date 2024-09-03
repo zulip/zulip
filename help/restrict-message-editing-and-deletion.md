@@ -43,8 +43,8 @@ irretrievably) removes the message from Zulip.
 1. Under **Message deletion**:
     - Configure **Who can delete any message**.
     - Configure **Who can delete their own messages**.
-    - Configure **Time limit for deleting messages**, which restricts
-      your own messages.
+    - Configure **Time limit for deleting messages**. This time limit does not
+      apply to users who can delete any message.
 
 {!save-changes.md!}
 

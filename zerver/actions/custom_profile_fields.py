@@ -12,7 +12,7 @@ from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.users import active_user_ids
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_realm_custom_profile_fields(realm: Realm) -> None:
@@ -159,52 +159,51 @@ def notify_user_update_custom_profile_data(
         data["rendered_value"] = field["rendered_value"]
     payload = dict(user_id=user_profile.id, custom_profile_field=data)
     event = dict(type="realm_user", op="update", person=payload)
-    send_event(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
 
+@transaction.atomic(durable=True)
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
     data: list[ProfileDataElementUpdateDict],
 ) -> None:
-    with transaction.atomic():
-        for custom_profile_field in data:
-            field_value, created = CustomProfileFieldValue.objects.get_or_create(
-                user_profile=user_profile, field_id=custom_profile_field["id"]
+    for custom_profile_field in data:
+        field_value, created = CustomProfileFieldValue.objects.get_or_create(
+            user_profile=user_profile, field_id=custom_profile_field["id"]
+        )
+
+        # field_value.value is a TextField() so we need to have field["value"]
+        # in string form to correctly make comparisons and assignments.
+        if isinstance(custom_profile_field["value"], str):
+            custom_profile_field_value_string = custom_profile_field["value"]
+        else:
+            custom_profile_field_value_string = orjson.dumps(custom_profile_field["value"]).decode()
+
+        if not created and field_value.value == custom_profile_field_value_string:
+            # If the field value isn't actually being changed to a different one,
+            # we have nothing to do here for this field.
+            continue
+
+        field_value.value = custom_profile_field_value_string
+        if field_value.field.is_renderable():
+            field_value.rendered_value = render_stream_description(
+                custom_profile_field_value_string, user_profile.realm
             )
-
-            # field_value.value is a TextField() so we need to have field["value"]
-            # in string form to correctly make comparisons and assignments.
-            if isinstance(custom_profile_field["value"], str):
-                custom_profile_field_value_string = custom_profile_field["value"]
-            else:
-                custom_profile_field_value_string = orjson.dumps(
-                    custom_profile_field["value"]
-                ).decode()
-
-            if not created and field_value.value == custom_profile_field_value_string:
-                # If the field value isn't actually being changed to a different one,
-                # we have nothing to do here for this field.
-                continue
-
-            field_value.value = custom_profile_field_value_string
-            if field_value.field.is_renderable():
-                field_value.rendered_value = render_stream_description(
-                    custom_profile_field_value_string, user_profile.realm
-                )
-                field_value.save(update_fields=["value", "rendered_value"])
-            else:
-                field_value.save(update_fields=["value"])
-            notify_user_update_custom_profile_data(
-                user_profile,
-                {
-                    "id": field_value.field_id,
-                    "value": field_value.value,
-                    "rendered_value": field_value.rendered_value,
-                    "type": field_value.field.field_type,
-                },
-            )
+            field_value.save(update_fields=["value", "rendered_value"])
+        else:
+            field_value.save(update_fields=["value"])
+        notify_user_update_custom_profile_data(
+            user_profile,
+            {
+                "id": field_value.field_id,
+                "value": field_value.value,
+                "rendered_value": field_value.rendered_value,
+                "type": field_value.field.field_type,
+            },
+        )
 
 
+@transaction.atomic(durable=True)
 def check_remove_custom_profile_field_value(user_profile: UserProfile, field_id: int) -> None:
     try:
         custom_profile_field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)

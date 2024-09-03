@@ -201,7 +201,7 @@ export function dispatch_normal_event(event) {
                 allow_edit_history: noop,
                 allow_message_editing: noop,
                 edit_topic_policy: noop,
-                user_group_edit_policy: noop,
+                user_group_edit_policy: user_group_edit.update_group_management_ui,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 can_delete_any_message_group: noop,
@@ -706,7 +706,8 @@ export function dispatch_normal_event(event) {
                 break;
             }
 
-            const user_preference = [
+
+            const user_preferences = [
                 "color_scheme",
                 "web_font_size_px",
                 "web_line_height_percent",
@@ -736,7 +737,8 @@ export function dispatch_normal_event(event) {
             ];
 
             const original_home_view = user_settings.web_home_view;
-            if (user_preference.includes(event.property)) {
+
+            if (user_preferences.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
             if (event.property === "default_language") {
@@ -930,7 +932,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     user_groups.update(event);
-                    user_group_edit.update_group(event.group_id);
+                    user_group_edit.update_group(event);
                     break;
                 default:
                     blueslip.error("Unexpected event type user_group/" + event.op);

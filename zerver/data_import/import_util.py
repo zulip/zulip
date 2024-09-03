@@ -15,8 +15,11 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.mime_types import guess_extension
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
+from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import (
     Attachment,
     DirectMessageGroup,
@@ -472,9 +475,10 @@ def build_stream(
     return stream_dict
 
 
-def build_direct_message_group(direct_message_group_id: int) -> ZerverFieldsT:
+def build_direct_message_group(direct_message_group_id: int, group_size: int) -> ZerverFieldsT:
     direct_message_group = DirectMessageGroup(
         id=direct_message_group_id,
+        group_size=group_size,
     )
     return model_to_dict(direct_message_group)
 
@@ -685,15 +689,15 @@ def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> Zerv
     )
 
 
-def get_emojis(emoji_dir: str, upload: list[str]) -> None:
-    emoji_url = upload[0]
-    emoji_path = upload[1]
+def get_emojis(emoji_dir: str, emoji_url: str, emoji_path: str) -> str | None:
     upload_emoji_path = os.path.join(emoji_dir, emoji_path)
 
     response = requests.get(emoji_url, stream=True)
     os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
     with open(upload_emoji_path, "wb") as emoji_file:
         shutil.copyfileobj(response.raw, emoji_file)
+
+    return response.headers.get("Content-Type")
 
 
 def process_emojis(
@@ -711,7 +715,6 @@ def process_emojis(
     3. emoji_url_map: Maps emoji name to its url
     """
     emoji_records = []
-    upload_emoji_list = []
     logging.info("######### GETTING EMOJIS #########\n")
     logging.info("DOWNLOADING EMOJIS .......\n")
     for emoji in zerver_realmemoji:
@@ -719,8 +722,6 @@ def process_emojis(
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=emoji["realm"], emoji_file_name=emoji["name"]
         )
-
-        upload_emoji_list.append([emoji_url, emoji_path])
 
         emoji_record = dict(emoji)
         emoji_record["path"] = emoji_path
@@ -730,8 +731,33 @@ def process_emojis(
 
         emoji_records.append(emoji_record)
 
-    # Run downloads in parallel
-    run_parallel_wrapper(partial(get_emojis, emoji_dir), upload_emoji_list, threads=threads)
+        # Directly download the emoji and patch the file_name with the correct extension
+        # based on the content-type returned by the server. This is needed because Slack
+        # sometimes returns an emoji url with .png extension despite the file being a gif.
+        content_type = get_emojis(emoji_dir, emoji_url, emoji_path)
+        if content_type is None:
+            logging.warning(
+                "Emoji %s has an unspecified content type. Using the original file extension.",
+                emoji["name"],
+            )
+            continue
+
+        if (
+            content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES
+            or content_type not in INLINE_MIME_TYPES
+        ):
+            raise BadImageError(
+                f"Emoji {emoji['name']} is not an image file. Content type: {content_type}"
+            )
+
+        file_extension = guess_extension(content_type, strict=False)
+        assert file_extension is not None
+
+        old_file_name = emoji_record["file_name"]
+        new_file_name = f"{old_file_name.rsplit('.', 1)[0]}{file_extension}"
+
+        emoji_record["file_name"] = new_file_name
+        emoji["file_name"] = new_file_name
 
     logging.info("######### GETTING EMOJIS FINISHED #########\n")
     return emoji_records

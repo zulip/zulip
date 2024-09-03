@@ -36,12 +36,19 @@ const all_user_topics = new Map<
     }>
 >();
 
+export type AllVisibilityPolicies = {
+    INHERIT: 0;
+    MUTED: 1;
+    UNMUTED: 2;
+    FOLLOWED: 3;
+};
+
 export const all_visibility_policies = {
     INHERIT: 0,
     MUTED: 1,
     UNMUTED: 2,
     FOLLOWED: 3,
-};
+} as const;
 
 export function update_user_topics(
     stream_id: number,

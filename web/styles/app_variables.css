@@ -218,34 +218,31 @@
     Our sidebars (and anything that top-align
     with them) go beneath the header.
     */
-    --left-sidebar-collapse-widget-gutter: 10px;
     /* The width of the empty space in the sidebar to separate
        content from the edge of the window */
-    --left-sidebar-far-left-gutter-size: 10px;
+    --left-sidebar-padding-left: 8px;
+    /* The empty space between left-sidebar row icons and
+       the row content.
+       7px at 16px/1em */
+    --left-sidebar-icon-content-gap: 0.4375em;
+    /* The space allotted in gridded rows for the toggle icon. */
+    --left-sidebar-header-icon-toggle-width: 20px;
+    /* Other rows need an offset to preserve a column the
+       entire height of the left sidebar for where toggles sit. */
+    --left-sidebar-toggle-width-offset: var(
+        --left-sidebar-header-icon-toggle-width
+    );
     /* This represents the space in the sidebar reserved for symbols like
        the #; labels like the stream name go to the right of this. */
-    --left-sidebar-privacy-icon-column-size: 19px;
-    /* 13px at 14px/1em */
-    --left-sidebar-topic-resolve-width: 0.9286em;
-    /* At legacy sizes, the full indentation to the
-       left of the topic name was 25px of gutter,
-       plus 13px for the topic-resolution checkmark.
-       That works out to 38px (25px + 13px), which
-       we here express as pixels, as that is always
-       the amount of space to the left of the topic
-       name. However, CSS subtracts the em-unit width
-       of the topic-resolution checkmark to prevent
-       the the topic name from being shifted to the
-       right. */
-    --left-sidebar-topic-indent: calc(
-        38px - var(--left-sidebar-topic-resolve-width)
-    );
+    --left-sidebar-icon-column-width: 16px;
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
     --left-sidebar-right-margin: 12px;
-    /* 287px at 14px/1em */
-    --left-sidebar-max-width: calc(20.5em - var(--left-sidebar-right-margin));
+    /* 289px at 14px/1em */
+    --left-sidebar-max-width: calc(
+        20.6429em - var(--left-sidebar-right-margin)
+    );
     /* Sidebar width is 1/3 of the screen at smaller
        sizes, but gets held to the left sidebar's max width.
        This is very useful for areas in the CSS codebase
@@ -377,6 +374,7 @@
     it doesn't leak through message header.
     */
     --unread-marker-left: -1px;
+    --masked-unread-count-margin-right: 3px;
 
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
@@ -542,6 +540,14 @@
     --color-background-navbar: hsl(0deg 0% 97%);
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
+    /* We mix an opaque version with the background for
+       replicating the color on .sidebar-topic-check, which
+       will mask a portion of the topic-grouping bracket. */
+    --color-background-opaque-hover-narrow-filter: color-mix(
+        in srgb,
+        hsl(120deg 12.3% 71.4%) 38%,
+        hsl(0deg 0% 94%)
+    );
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 80%);
@@ -549,6 +555,7 @@
     --color-background-modal: hsl(0deg 0% 98%);
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 100%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
+    --color-topic-indent-border: hsl(0deg 0% 0% / 19%);
     --color-outline-focus: hsl(215deg 47% 50%);
     --color-background-search: hsl(0deg 0% 100%);
     --color-background-search-option-hover: hsl(0deg 0% 94%);
@@ -788,6 +795,7 @@
 
     /* Input pills */
     --color-background-input-pill: hsl(237deg 68% 94%);
+    --color-background-input-pill-hover: hsl(240deg 70% 70% / 30%);
     --color-focus-outline-input-pill: hsl(240deg 50% 50%);
     --color-input-pill-close: hsl(240deg 60% 65%);
     --color-background-input-pill-exit-hover: hsla(240deg 70% 70% / 15%);
@@ -948,6 +956,14 @@
     --color-background-navbar: hsl(0deg 0% 13%);
     --color-background-active-narrow-filter: hsl(200deg 17% 18%);
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
+    /* We mix an opaque version with the background for
+       replicating the color on .sidebar-topic-check, which
+       will mask a portion of the topic-grouping bracket. */
+    --color-background-opaque-hover-narrow-filter: color-mix(
+        in srgb,
+        hsl(136deg 25% 73%) 20%,
+        hsl(0deg 0% 11%)
+    );
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
@@ -955,6 +971,7 @@
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 0% / 20%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
+    --color-topic-indent-border: hsl(0deg 0% 100% / 19%);
     --color-background-search: hsl(0deg 0% 20%);
     --color-background-search-option-hover: hsl(0deg 0% 30%);
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
@@ -1101,7 +1118,7 @@
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
-    --color-border-rendered-markdown-table: hsl(0deg 0% 100% / 20%);
+    --color-border-rendered-markdown-table: hsl(0deg 0% 33%);
 
     /* Settings table colors */
     --color-border-table-striped: hsl(0deg 0% 0% / 20%);
@@ -1204,6 +1221,7 @@
 
     /* Input pills */
     --color-background-input-pill: hsl(240deg 65% 60% / 22%);
+    --color-background-input-pill-hover: hsl(240deg 52% 60% / 45%);
     --color-focus-outline-input-pill: hsl(0deg 0% 100% / 60%);
     --color-input-pill-close: hsl(240deg 50% 74%);
     --color-background-input-pill-exit-hover: hsl(0deg 0% 100% / 7%);

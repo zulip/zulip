@@ -4,6 +4,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -169,6 +170,13 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             remote_server=remote_realm.server, email="server-admin@example.com"
         )
 
+    def test_remote_support_view_queries(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        with self.assert_database_query_count(28):
+            result = self.client_get("/activity/remote/support", {"q": "zulip-3.example.com"})
+            self.assertEqual(result.status_code, 200)
+
     def test_search(self) -> None:
         def assert_server_details_in_response(
             html_response: "TestHttpResponse", hostname: str
@@ -199,7 +207,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     f"<h3>{name}</h3>",
                     f"<b>Remote realm host:</b> {host}<br />",
                     "<b>Date created</b>: 01 December 2023",
-                    "<b>Org type</b>: Unspecified<br />",
+                    "<b>Organization type</b>: Unspecified<br />",
                     "<b>Has remote realms</b>: True<br />",
                     "📶 Push notification status:",
                 ],
@@ -221,7 +229,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     "<b>UUID</b>:",
                     "<b>Zulip version</b>:",
                     "📶 Push notification status:",
-                    "💸 Discount and sponsorship information:",
+                    "💸 Discounts and sponsorship information:",
                 ],
                 result,
             )
@@ -736,6 +744,13 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         return customer
 
+    def test_realm_support_view_queries(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        with self.assert_database_query_count(18):
+            result = self.client_get("/activity/support", {"q": "zulip"}, subdomain="zulip")
+            self.assertEqual(result.status_code, 200)
+
     def test_search(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
         lear_user = self.lear_user("king")
@@ -1155,8 +1170,57 @@ class TestSupportEndpoint(ZulipTestCase):
             )
             m.assert_called_once_with(get_realm("zulip"), 70, acting_user=iago)
             self.assert_in_success_response(
-                ["Org type of zulip changed from Business to Government"], result
+                ["Organization type of zulip changed from Business to Government"], result
             )
+
+    def test_change_max_invites(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "max_invites": "1"}
+        )
+        self.assert_in_success_response(
+            [
+                "Cannot update maximum number of daily invitations for zulip, because 1 is less than the default for the current plan type."
+            ],
+            result,
+        )
+        realm.refresh_from_db()
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "max_invites": "700"}
+        )
+        self.assert_in_success_response(
+            ["Maximum number of daily invitations for zulip updated to 700."], result
+        )
+        realm.refresh_from_db()
+        self.assertEqual(realm.max_invites, 700)
+
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "max_invites": "0"}
+        )
+        self.assert_in_success_response(
+            [
+                "Maximum number of daily invitations for zulip updated to the default for the current plan type."
+            ],
+            result,
+        )
+        realm.refresh_from_db()
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "max_invites": "0"}
+        )
+        self.assert_in_success_response(
+            [
+                "Cannot update maximum number of daily invitations for zulip, because the default for the current plan type is already set."
+            ],
+            result,
+        )
 
     def test_attach_discount(self) -> None:
         lear_realm = get_realm("lear")

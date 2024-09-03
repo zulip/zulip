@@ -104,8 +104,9 @@ Steps and best practices for starting a conversation:
      help](https://chat.zulip.org/#narrow/channel/31-production-help) for issues
      related to self-hosting Zulip. See the [troubleshooting
      guide](../production/troubleshooting.md) for additional details.
-3. **[Start a new topic](https://zulip.com/help/starting-a-new-topic)** for
-   discussing your issue, using a brief summary of the issue as the name of the topic.
+3. **[Start a new topic](https://zulip.com/help/introduction-to-topics#how-to-start-a-new-topic)**
+   for discussing your issue, using a brief summary of the issue as the name of
+   the topic.
 
 If you aren't sure where to post or how to name your topic, don't worry!
 Moderators can always rename the topic, or move the thread to another channel.

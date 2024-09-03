@@ -1,8 +1,12 @@
+import {z} from "zod";
+
 // TODO/typescript: Move this to server_events
-export type TopicLink = {
-    text: string;
-    url: string;
-};
+export const topic_link_schema = z.object({
+    text: z.string(),
+    url: z.string(),
+});
+
+export type TopicLink = z.infer<typeof topic_link_schema>;
 
 // TODO/typescript: Move this to server_events_dispatch
 export type UserGroupUpdateEvent = {
@@ -12,6 +16,7 @@ export type UserGroupUpdateEvent = {
     data: {
         name?: string;
         description?: string;
+        can_manage_group?: number;
         can_mention_group?: number;
     };
 };
@@ -35,7 +40,6 @@ export type UpdateMessageEvent = {
     topic_links?: TopicLink[];
     orig_content?: string;
     orig_rendered_content?: string;
-    prev_rendered_content_version?: number;
     content?: string;
     rendered_content?: string;
     is_me_message?: boolean;

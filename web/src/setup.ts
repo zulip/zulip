@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as loading from "./loading";
+import * as util from "./util";
 
 export let page_load_time: number | undefined;
 
@@ -16,7 +17,7 @@ $(() => {
     });
 
     $.fn.get_offset_to_window = function () {
-        return this[0]!.getBoundingClientRect();
+        return util.the(this).getBoundingClientRect();
     };
 
     $.fn.expectOne = function () {

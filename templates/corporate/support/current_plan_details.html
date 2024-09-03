@@ -33,5 +33,6 @@
         <b>Annual recurring revenue</b>: ${{ dollar_amount(plan_data.annual_recurring_revenue) }}<br />
         <b>Start of next billing cycle</b>: {{ plan_data.next_billing_cycle_start.strftime('%d %B %Y') }}<br />
     {% endif %}
+    <a target="_blank" rel="noopener noreferrer" href="/activity/plan_ledger/{{ plan_data.current_plan.id }}/">License ledger entries</a><br />
     {% endif %}
 </div>

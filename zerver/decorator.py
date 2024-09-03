@@ -45,10 +45,11 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import is_local_addr, rate_limit_request_by_ip, rate_limit_user
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_method_not_allowed
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.users import is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
@@ -333,10 +334,10 @@ def webhook_view(
     # Variadic generics are necessary: https://github.com/python/typing/issues/193
     def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
-        @has_request_variables
         @wraps(view_func)
+        @typed_endpoint
         def _wrapped_func_arguments(
-            request: HttpRequest, /, api_key: str = REQ(), *args: object, **kwargs: object
+            request: HttpRequest, /, *args: object, api_key: str, **kwargs: object
         ) -> HttpResponse:
             user_profile = validate_api_key(
                 request,
@@ -658,7 +659,7 @@ def require_member_or_admin(
     return _wrapped_view_func
 
 
-def require_user_group_edit_permission(
+def require_user_group_create_permission(
     view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @require_member_or_admin
@@ -670,7 +671,7 @@ def require_user_group_edit_permission(
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
-        if not user_profile.can_edit_user_groups():
+        if not user_profile.can_create_user_groups():
             raise JsonableError(_("Insufficient permission"))
         return view_func(request, user_profile, *args, **kwargs)
 
@@ -685,10 +686,10 @@ def authenticated_uploads_api_view(
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
-        @has_request_variables
         @wraps(view_func)
+        @typed_endpoint
         def _wrapped_func_arguments(
-            request: HttpRequest, /, api_key: str = REQ(), *args: object, **kwargs: object
+            request: HttpRequest, /, *args: object, api_key: str, **kwargs: object
         ) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, False)
             if not skip_rate_limiting:
@@ -910,8 +911,7 @@ def authenticated_json_view(
 # from command-line tools into Django.  We protect them from the
 # outside world by checking a shared secret, and also the originating
 # IP (for now).
-@has_request_variables
-def authenticate_internal_api(request: HttpRequest, secret: str = REQ("secret")) -> bool:
+def authenticate_internal_api(request: HttpRequest, *, secret: str) -> bool:
     return is_local_addr(request.META["REMOTE_ADDR"]) and constant_time_compare(
         secret, settings.SHARED_SECRET
     )
@@ -929,14 +929,15 @@ def internal_api_view(
 
     def _wrapped_view_func(
         view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
-    ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
+    ) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @require_post
         @wraps(view_func)
+        @typed_endpoint
         def _wrapped_func_arguments(
-            request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+            request: HttpRequest, /, *args: ParamT.args, secret: str, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
-            if not authenticate_internal_api(request):
+            if not authenticate_internal_api(request, secret=secret):
                 raise AccessDeniedError
             request_notes = RequestNotes.get_notes(request)
             is_tornado_request = request_notes.tornado_handler_id is not None
@@ -954,7 +955,7 @@ def internal_api_view(
     return _wrapped_view_func
 
 
-def to_utc_datetime(var_name: str, timestamp: str) -> datetime:
+def to_utc_datetime(timestamp: str) -> datetime:
     return timestamp_to_datetime(float(timestamp))
 
 

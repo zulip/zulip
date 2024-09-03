@@ -34,7 +34,7 @@
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </div>
-            <div id="tab-toggle" class="center"></div>
+            <div id="tab-toggle"></div>
             <main class="modal__body" id="body" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                 <div class="tab-data">
                     <div class="tabcontent active" id="profile-tab">
@@ -57,7 +57,9 @@
                                             {{#if is_system_bot}}
                                             <div class="value">{{t "System bot" }}</div>
                                             {{else}}
-                                            <div class="value">{{t "Bot" }}</div>
+                                            <div class="value">{{t "Bot" }}
+                                                <span class="lowercase">({{user_type}})</span>
+                                            </div>
                                             {{/if}}
                                         {{else}}
                                             <div class="value">{{user_type}}</div>

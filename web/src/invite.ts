@@ -30,6 +30,7 @@ import * as stream_pill from "./stream_pill";
 import * as timerender from "./timerender";
 import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
+import * as util from "./util";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
@@ -208,7 +209,7 @@ function submit_invitation_form(): void {
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
-            $invite_status[0]!.scrollIntoView();
+            util.the($invite_status).scrollIntoView();
         },
     });
 }
@@ -228,7 +229,7 @@ function generate_multiuse_invite(): void {
             clipboard.on("success", () => {
                 const tippy_timeout_in_ms = 800;
                 show_copied_confirmation(
-                    $("#copy_generated_invite_link")[0]!,
+                    util.the($("#copy_generated_invite_link")),
                     () => {
                         // Do nothing on hide
                     },
@@ -243,7 +244,7 @@ function generate_multiuse_invite(): void {
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Create link"}));
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
-            $invite_status[0]!.scrollIntoView();
+            util.the($invite_status).scrollIntoView();
         },
     });
 }
@@ -302,7 +303,7 @@ function set_streams_to_join_list_visibility(): void {
     const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
     const hide_streams_list =
         realm_has_default_streams &&
-        $<HTMLInputElement>("input#invite_select_default_streams")[0]!.checked;
+        util.the($<HTMLInputElement>("input#invite_select_default_streams")).checked;
     if (hide_streams_list) {
         $(".add_streams_container").hide();
     } else {

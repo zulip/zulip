@@ -266,6 +266,7 @@ def get_temp_user_group_id() -> dict[str, object]:
     user_group, _ = NamedUserGroup.objects.get_or_create(
         name="temp",
         realm=get_realm("zulip"),
+        can_manage_group_id=11,
         can_mention_group_id=11,
         realm_for_sharding=get_realm("zulip"),
     )

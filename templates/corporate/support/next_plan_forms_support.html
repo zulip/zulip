@@ -1,5 +1,5 @@
 <p class="support-section-header">⏱️ Schedule plan:</p>
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     <b>Configure fixed price plan:</b><br />
     {% if not plan_data.is_current_plan_billable %}
     <i>Enter Invoice ID only if the customer chose to pay by invoice.</i><br />
@@ -13,7 +13,7 @@
     <button type="submit" class="support-submit-button">Schedule</button>
 </form>
 {% if not plan_data.current_plan %}
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     <b>Configure temporary courtesy plan:</b><br />
     <i>Once created, the end date for the temporary courtesy plan can be extended.</i><br />
     {{ csrf_input }}

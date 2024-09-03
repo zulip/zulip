@@ -498,9 +498,8 @@ the bottom of the problem:
 
 ## SAML
 
-Zulip 2.1 and later supports SAML authentication, used by Okta,
-OneLogin, and many other IdPs (identity providers). You can configure
-it as follows:
+Zulip supports SAML authentication, used by Okta, OneLogin, and many
+other IdPs (identity providers). You can configure it as follows:
 
 1. These instructions assume you have an installed Zulip server; if
    you're using Zulip Cloud, see [this article][saml-help-center],
@@ -599,25 +598,6 @@ it as follows:
 1. Enable the `zproject.backends.SAMLAuthBackend` auth backend, in
    `AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.
 
-1. (Optional) New in Zulip 5.0: Zulip can synchronize [custom profile
-   fields][custom-profile-fields] from the SAML provider. Just
-   configure the `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT`; the
-   [LDAP](#synchronizing-custom-profile-fields) documentation for
-   synchronizing custom profile fields will be helpful. Servers
-   installed before Zulip 5.0 may want to [update inline comment
-   documentation][update-inline-comments] so they can take advantage
-   of the latest inline SAML documentation in
-   `/etc/zulip/settings.py`.
-
-   Note that in contrast with LDAP, Zulip can only query the SAML
-   database for a user's settings when the user authenticates to Zulip
-   using SAML, so custom profile fields are only synchronized when the
-   user logs in.
-
-   Note also that the SAML feature currently only synchronizes custom
-   profile fields during login, not during account creation; we
-   consider this [a bug](https://github.com/zulip/zulip/issues/18746).
-
 1. [Restart the Zulip server](settings.md) to ensure
    your settings changes take effect. The Zulip login page should now
    have a button for SAML authentication that you can use to log in or
@@ -629,16 +609,17 @@ it as follows:
    IdP.
 
 [saml-help-center]: https://zulip.com/help/saml-authentication
+[user-role-help-center]: https://zulip.com/help/roles-and-permissions
 
 ### IdP-initiated SSO
 
 The above configuration is sufficient for Service Provider initialized
 SSO, i.e. you can visit the Zulip web app and click "Sign in with
 {IdP}" and it'll correctly start the authentication flow. If you are
-not hosting multiple organizations, with Zulip 3.0+, the above
-configuration is also sufficient for Identity Provider initiated SSO,
-i.e. clicking a "Sign in to Zulip" button on the IdP's website can
-correctly authenticate the user to Zulip.
+not hosting multiple organizations, the above configuration is also
+sufficient for Identity Provider initiated SSO, i.e. clicking a "Sign
+in to Zulip" button on the IdP's website can correctly authenticate
+the user to Zulip.
 
 If you're hosting multiple organizations and thus using the
 `SOCIAL_AUTH_SUBDOMAIN` setting, you'll need to configure a custom
@@ -674,6 +655,41 @@ to the root and `engineering` subdomains:
   </saml2:AttributeValue>
 </saml2:Attribute>
 ```
+
+### Synchronizing user role or custom profile fields during login
+
+In contrast with SCIM or LDAP, the SAML protocol only allows Zulip to
+access data about a user when that user authenticates to Zulip using
+SAML, so metadata can only be synchronized when the user logs in.
+
+As a result, most installations using SAML will want to use [SCIM
+provisioning](./scim.md) to synchronize metadata continuously. Zulip
+nonetheless includes support for copying certain fields from a SAML
+database, which can be a good option when a SAML provider does not
+offer SCIM or the fields one is interested in syncing change rarely
+enough that asking users to logout and then login again to resync
+their metadata might feel reasonable.
+
+Specifically, Zulip supports synchronizing the [user
+role][user-role-help-center] and [custom profile
+fields][custom-profile-fields] from the SAML provider.
+
+In order to use this functionality, configure
+`SOCIAL_AUTH_SYNC_ATTRS_DICT` in `/etc/zulip/settings.py` according to
+the instructions in the inline documentation in the file. Servers
+installed before Zulip 10.0 may want to [update inline comment
+documentation][update-inline-comments] first in order to access it.
+
+Custom profile fields are only synchronized during login, not during
+account creation; we consider this [a
+bug](https://github.com/zulip/zulip/issues/18746). User role is
+synchronized during both account creation and each consecutive login.
+
+:::{note}
+When user role is provided by the SAML IdP during signup of a
+user who's coming from an invitation link, the IdP-provided role will
+take precedence over the role set in the invitation.
+:::
 
 ### SCIM
 
@@ -1024,9 +1040,9 @@ self-hosted servers. To do so, you'll need to do the following:
 
 ## OpenID Connect
 
-Starting with Zulip 5.0, Zulip can be integrated with any OpenID
-Connect (OIDC) authentication provider. You can configure it by
-enabling `zproject.backends.GenericOpenIdConnectBackend` in
+Zulip can be integrated with any OpenID Connect (OIDC) authentication
+provider. You can configure it by enabling
+`zproject.backends.GenericOpenIdConnectBackend` in
 `AUTHENTICATION_BACKENDS` and following the steps outlined in the
 comment documentation in `/etc/zulip/settings.py`.
 

@@ -49,5 +49,5 @@ class Migration(migrations.Migration):
                 "unique_together": {("realm", "name")},
             },
         ),
-        migrations.RunPython(fill_RealmAuthenticationMethod_data),
+        migrations.RunPython(fill_RealmAuthenticationMethod_data, elidable=True),
     ]

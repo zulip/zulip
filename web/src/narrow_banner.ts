@@ -332,8 +332,9 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                 };
             }
             if (!first_operand.includes(",")) {
+                const recipient_user = people.get_by_user_id(user_ids[0]);
                 // You have no direct messages with this person
-                if (people.is_current_user(first_operand)) {
+                if (people.is_current_user(recipient_user.email)) {
                     return {
                         title: $t({
                             defaultMessage:
@@ -345,12 +346,23 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                         }),
                     };
                 }
+                // If the recipient is deactivated, we cannot start the conversation.
+                if (!people.is_person_active(recipient_user.user_id)) {
+                    return {
+                        title: $t(
+                            {
+                                defaultMessage: "You have no direct messages with {person}.",
+                            },
+                            {person: recipient_user.full_name},
+                        ),
+                    };
+                }
                 return {
                     title: $t(
                         {
                             defaultMessage: "You have no direct messages with {person} yet.",
                         },
-                        {person: people.get_by_user_id(user_ids[0]).full_name},
+                        {person: recipient_user.full_name},
                     ),
                     html: $t_html(
                         {
@@ -363,6 +375,11 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                                 )}</a>`,
                         },
                     ),
+                };
+            }
+            if (people.get_non_active_user_ids_count(user_ids) !== 0) {
+                return {
+                    title: $t({defaultMessage: "You have no direct messages with these users."}),
                 };
             }
             return {

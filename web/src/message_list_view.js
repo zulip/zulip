@@ -45,8 +45,8 @@ function same_day(earlier_msg, later_msg) {
         return false;
     }
     return is_same_day(
-        earlier_msg.msg.timestamp * 1000,
-        later_msg.msg.timestamp * 1000,
+        earlier_msg.timestamp * 1000,
+        later_msg.timestamp * 1000,
         timerender.display_time_zone,
     );
 }
@@ -117,48 +117,61 @@ function analyze_edit_history(message, last_edit_timestr) {
     return {edited, moved, resolve_toggled};
 }
 
-function render_group_display_date(group, message_container) {
-    const time = new Date(message_container.msg.timestamp * 1000);
-    const date_element = timerender.render_date(time)[0];
+function get_group_display_date(message) {
+    const time = new Date(message.timestamp * 1000);
+    const date_element = util.the(timerender.render_date(time));
 
-    group.date = date_element.outerHTML;
+    return date_element.outerHTML;
 }
 
 function update_group_date(group, message_container, prev) {
     // Mark whether we should display a date marker because this
     // message has a different date than the previous one.
-    group.date_unchanged = same_day(message_container, prev);
+    group.date_unchanged = same_day(message_container?.msg, prev?.msg);
 }
 
 function clear_group_date(group) {
     group.date_unchanged = false;
 }
 
-function clear_message_date_divider(msg) {
+function clear_message_date_divider(message_container) {
     // see update_message_date_divider for how
     // these get set
-    msg.want_date_divider = false;
-    msg.date_divider_html = undefined;
+    message_container.want_date_divider = false;
+    message_container.date_divider_html = undefined;
 }
 
 function update_message_date_divider(opts) {
-    const prev_msg_container = opts.prev_msg_container;
-    const curr_msg_container = opts.curr_msg_container;
-
-    if (!prev_msg_container || same_day(curr_msg_container, prev_msg_container)) {
-        clear_message_date_divider(curr_msg_container);
-        return;
-    }
-
-    const curr_time = new Date(curr_msg_container.msg.timestamp * 1000);
-
-    curr_msg_container.want_date_divider = true;
-    curr_msg_container.date_divider_html = timerender.render_date(curr_time)[0].outerHTML;
+    Object.assign(
+        opts.curr_msg_container,
+        get_message_date_divider_data({
+            prev_message: opts.prev_msg_container?.msg,
+            curr_message: opts.curr_msg_container.msg,
+        }),
+    );
 }
 
-function set_timestr(message_container) {
-    const time = new Date(message_container.msg.timestamp * 1000);
-    message_container.timestr = timerender.stringify_time(time);
+function get_message_date_divider_data(opts) {
+    const prev_message = opts.prev_message;
+    const curr_message = opts.curr_message;
+
+    if (!prev_message || same_day(curr_message, prev_message)) {
+        return {
+            want_date_divider: false,
+            date_divider_html: undefined,
+        };
+    }
+    const curr_time = new Date(curr_message.timestamp * 1000);
+
+    return {
+        want_date_divider: true,
+        date_divider_html: util.the(timerender.render_date(curr_time)).outerHTML,
+    };
+}
+
+function get_timestr(message) {
+    const time = new Date(message.timestamp * 1000);
+    return timerender.stringify_time(time);
 }
 
 function set_topic_edit_properties(group, message) {
@@ -199,7 +212,7 @@ function get_users_for_recipient_row(message) {
     });
 
     function compare_by_name(a, b) {
-        return a.full_name < b.full_name ? -1 : a.full_name > b.full_name ? 1 : 0;
+        return util.strcmp(a.full_name, b.full_name);
     }
 
     return users.sort(compare_by_name);
@@ -258,7 +271,7 @@ function maybe_restore_focus_to_message_edit_form() {
         }
 
         $message_edit_content.trigger("focus");
-        $message_edit_content[0].setSelectionRange(
+        util.the($message_edit_content).setSelectionRange(
             message_id_to_focus_after_processing_message_events.selectionStart,
             message_id_to_focus_after_processing_message_events.selectionEnd,
         );
@@ -313,7 +326,7 @@ function populate_group_from_message_container(group, message_container) {
     group.topic_links = message_container.msg.topic_links;
 
     set_topic_edit_properties(group, message_container.msg);
-    render_group_display_date(group, message_container);
+    group.date = get_group_display_date(message_container.msg);
 }
 
 export class MessageListView {
@@ -382,16 +395,16 @@ export class MessageListView {
         );
     }
 
-    _get_msg_timestring(message_container) {
+    _get_msg_timestring(message) {
         let last_edit_timestamp;
-        if (message_container.msg.local_edit_timestamp !== undefined) {
-            last_edit_timestamp = message_container.msg.local_edit_timestamp;
+        if (message.local_edit_timestamp !== undefined) {
+            last_edit_timestamp = message.local_edit_timestamp;
         } else {
-            last_edit_timestamp = message_container.msg.last_edit_timestamp;
+            last_edit_timestamp = message.last_edit_timestamp;
         }
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
-            let date = timerender.render_date(last_edit_time)[0].textContent;
+            let date = util.the(timerender.render_date(last_edit_time)).textContent;
             // If the date is today or yesterday, we don't want to show the date as capitalized.
             // Thus, we need to check if the date string contains a digit or not using regex,
             // since any other date except today/yesterday will contain a digit.
@@ -420,7 +433,7 @@ export class MessageListView {
         //   * `edited_in_left_col`      -- when label appears in left column.
         //   * `edited_alongside_sender` -- when label appears alongside sender info.
         //   * `edited_status_msg`       -- when label appears for a "/me" message.
-        const last_edit_timestr = this._get_msg_timestring(message_container);
+        const last_edit_timestr = this._get_msg_timestring(message_container.msg);
         const edit_history_details = analyze_edit_history(message_container.msg, last_edit_timestr);
 
         if (
@@ -449,7 +462,7 @@ export class MessageListView {
     }
 
     set_calculated_message_container_variables(message_container, is_revealed) {
-        set_timestr(message_container);
+        message_container.timestr = get_timestr(message_container.msg);
 
         /*
             If the message needs to be hidden because the sender was muted, we do
@@ -527,7 +540,10 @@ export class MessageListView {
             );
         }
 
-        this._maybe_format_me_message(message_container);
+        Object.assign(
+            message_container,
+            this._maybe_get_me_message(message_container.is_hidden, message_container.msg),
+        );
         // Once all other variables are updated
         this._add_msg_edited_vars(message_container);
     }
@@ -603,17 +619,20 @@ export class MessageListView {
                 prev.msg.historical === message_container.msg.historical
             ) {
                 add_message_container_to_group(message_container);
-                update_message_date_divider({
-                    prev_msg_container: prev,
-                    curr_msg_container: message_container,
+                const date_divider_data = get_message_date_divider_data({
+                    prev_message: prev.msg,
+                    curr_message: message_container.msg,
                 });
+                message_container.want_date_divider = date_divider_data.want_date_divider;
+                message_container.date_divider_html = date_divider_data.date_divider_html;
             } else {
                 finish_group();
                 current_group = start_group();
                 add_message_container_to_group(message_container);
 
                 update_group_date(current_group, message_container, prev);
-                clear_message_date_divider(message_container);
+                message_container.want_date_divider = false;
+                message_container.date_divider_html = undefined;
 
                 message_container.include_recipient = true;
                 message_container.subscribed = false;
@@ -638,7 +657,7 @@ export class MessageListView {
             if (
                 !message_container.include_recipient &&
                 !prev.status_message &&
-                same_day(prev, message_container) &&
+                same_day(prev?.msg, message_container?.msg) &&
                 same_sender(prev, message_container)
             ) {
                 message_container.include_sender = false;
@@ -675,7 +694,7 @@ export class MessageListView {
             if (
                 !last_msg_container.status_message &&
                 !first_msg_container.msg.is_me_message &&
-                same_day(last_msg_container, first_msg_container) &&
+                same_day(last_msg_container?.msg, first_msg_container?.msg) &&
                 same_sender(last_msg_container, first_msg_container)
             ) {
                 first_msg_container.include_sender = false;
@@ -758,7 +777,10 @@ export class MessageListView {
 
                 new_message_groups = new_message_groups.slice(0, -1);
             } else if (
-                !same_day(second_group.message_containers[0], first_group.message_containers[0])
+                !same_day(
+                    second_group.message_containers[0]?.msg,
+                    first_group.message_containers[0]?.msg,
+                )
             ) {
                 // The groups did not merge, so we need up update the date row for the old group
                 update_group_date(second_group, curr_msg_container, prev_msg_container);
@@ -773,7 +795,7 @@ export class MessageListView {
                 message_actions.append_messages = new_message_groups[0].message_containers;
                 new_message_groups = new_message_groups.slice(1);
             } else if (first_group !== undefined && second_group !== undefined) {
-                if (same_day(prev_msg_container, curr_msg_container)) {
+                if (same_day(prev_msg_container?.msg, curr_msg_container?.msg)) {
                     clear_group_date(second_group);
                 } else {
                     // If we just sent the first message on a new day
@@ -1318,7 +1340,7 @@ export class MessageListView {
             this.clear_rendering_state(true);
             this.update_render_window(this.list.selected_idx(), false);
         }
-        return this.rerender_with_target_scrolltop(old_offset);
+        this.rerender_with_target_scrolltop(old_offset);
     }
 
     set_message_offset(offset) {
@@ -1476,7 +1498,7 @@ export class MessageListView {
         }
 
         for (const messages_in_group of message_groups) {
-            this._rerender_header(messages_in_group, message_content_edited);
+            this._rerender_header(messages_in_group);
         }
 
         if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
@@ -1656,22 +1678,25 @@ export class MessageListView {
         }
     }
 
-    _maybe_format_me_message(message_container) {
+    _maybe_get_me_message(is_hidden, message) {
         // If the message is to be hidden anyway, no need to render
         // it differently.
-        if (!message_container.is_hidden && message_container.msg.is_me_message) {
+        if (!is_hidden && message.is_me_message) {
             // Slice the '<p>/me ' off the front, and '</p>' off the first line
             // 'p' tag is sliced off to get sender in the same line as the
             // first line of the message
-            const msg_content = message_container.msg.content;
+            const msg_content = message.content;
             const p_index = msg_content.indexOf("</p>");
-            message_container.status_message =
-                msg_content.slice("<p>/me ".length, p_index) +
-                msg_content.slice(p_index + "</p>".length);
-            message_container.include_sender = true;
-        } else {
-            message_container.status_message = false;
+            return {
+                status_message:
+                    msg_content.slice("<p>/me ".length, p_index) +
+                    msg_content.slice(p_index + "</p>".length),
+                include_sender: true,
+            };
         }
+        return {
+            status_message: false,
+        };
     }
 
     /* This function exist for two purposes:
@@ -1768,7 +1793,7 @@ export class MessageListView {
             $message_row = $sticky_header.nextAll(".message_row").first();
         } else {
             dom_updates.add_classes.push({$element: $sticky_header, class: "sticky_header"});
-            const sticky_header_props = $sticky_header[0].getBoundingClientRect();
+            const sticky_header_props = util.the($sticky_header).getBoundingClientRect();
             /* date separator starts to be hidden at this height difference. */
             const date_separator_padding = 7;
             const sticky_header_bottom = sticky_header_props.top + sticky_header_props.height;
@@ -1807,7 +1832,7 @@ export class MessageListView {
         }
         this.sticky_recipient_message_id = message.id;
         const time = new Date(message.timestamp * 1000);
-        const rendered_date = timerender.render_date(time);
+        const rendered_date = util.the(timerender.render_date(time));
         dom_updates.html_updates.push({
             $element: $sticky_header.find(".recipient_row_date"),
             rendered_date,

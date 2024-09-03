@@ -366,12 +366,12 @@ export function initialize() {
 
     $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
         e.preventDefault();
-        message_edit.show_preview_area(e.target);
+        message_edit.show_preview_area($(e.target));
     });
 
     $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
         e.preventDefault();
-        message_edit.clear_preview_area(e.target);
+        message_edit.clear_preview_area($(e.target));
     });
 
     // RESOLVED TOPICS

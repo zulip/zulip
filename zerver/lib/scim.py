@@ -32,15 +32,6 @@ class ZulipSCIMUser(SCIMUser):
 
     id_field = "id"
 
-    ROLE_TYPE_TO_NAME = {
-        UserProfile.ROLE_REALM_OWNER: "owner",
-        UserProfile.ROLE_REALM_ADMINISTRATOR: "administrator",
-        UserProfile.ROLE_MODERATOR: "moderator",
-        UserProfile.ROLE_MEMBER: "member",
-        UserProfile.ROLE_GUEST: "guest",
-    }
-    ROLE_NAME_TO_TYPE = {v: k for k, v in ROLE_TYPE_TO_NAME.items()}
-
     def __init__(self, obj: UserProfile, request: HttpRequest | None = None) -> None:
         # We keep the function signature from the superclass, but this actually
         # shouldn't be called with request being None.
@@ -116,7 +107,7 @@ class ZulipSCIMUser(SCIMUser):
             "name": name,
             "displayName": self.display_name,
             "active": self.obj.is_active,
-            "role": self.ROLE_TYPE_TO_NAME[self.obj.role],
+            "role": UserProfile.ROLE_ID_TO_API_NAME[self.obj.role],
             # meta is a property implemented in the superclass
             # TODO: The upstream implementation uses `user_profile.date_joined`
             # as the value of the lastModified meta attribute, which is not
@@ -200,10 +191,10 @@ class ZulipSCIMUser(SCIMUser):
 
     def change_role(self, new_role_name: str) -> None:
         try:
-            role = self.ROLE_NAME_TO_TYPE[new_role_name]
+            role = UserProfile.ROLE_API_NAME_TO_ID[new_role_name]
         except KeyError:
             raise scim_exceptions.BadRequestError(
-                f"Invalid role: {new_role_name}. Valid values are: {list(self.ROLE_NAME_TO_TYPE.keys())}"
+                f"Invalid role: {new_role_name}. Valid values are: {list(UserProfile.ROLE_API_NAME_TO_ID.keys())}"
             )
         if role != self.obj.role:
             self._role_new_value = role

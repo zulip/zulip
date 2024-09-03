@@ -1,8 +1,6 @@
-import inspect
 import os
-import types
-from collections.abc import Callable, Mapping, Sequence
-from typing import Any, Union, get_args, get_origin
+from collections.abc import Callable, Mapping
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -11,7 +9,7 @@ from django.urls import URLPattern
 from django.utils import regex_helper
 from pydantic import TypeAdapter
 
-from zerver.lib.request import _REQ, arguments_map
+from zerver.lib.request import arguments_map
 from zerver.lib.rest import rest_dispatch
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.typed_endpoint import parse_view_func_signature
@@ -44,6 +42,7 @@ VARMAP = {
     "boolean": bool,
     "object": dict,
     "NoneType": type(None),
+    "number": float,
 }
 
 
@@ -307,39 +306,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
                 msg += f"\n + {undocumented_path}"
             raise AssertionError(msg)
 
-    def get_type_by_priority(
-        self, types: Sequence[type | tuple[type, object]]
-    ) -> type | tuple[type, object]:
-        priority = {list: 1, dict: 2, str: 3, int: 4, bool: 5}
-        tyiroirp = {1: list, 2: dict, 3: str, 4: int, 5: bool}
-        val = 6
-        for t in types:
-            if isinstance(t, tuple):
-                # e.g. (list, dict) or (list, str)
-                return t  # nocoverage
-            v = priority.get(t, 6)
-            if v < val:
-                val = v
-        return tyiroirp.get(val, types[0])
-
-    def get_standardized_argument_type(self, t: Any) -> type | tuple[type, object]:
-        """Given a type from the typing module such as List[str] or Union[str, int],
-        convert it into a corresponding Python type. Unions are mapped to a canonical
-        choice among the options.
-        E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
-        needs to be mapped to list."""
-
-        origin = get_origin(t)
-
-        if origin is None:
-            # Then it's most likely one of the fundamental data types
-            # I.E. Not one of the data types from the "typing" module.
-            return t
-        elif origin in (Union, types.UnionType):
-            subtypes = [self.get_standardized_argument_type(st) for st in get_args(t)]
-            return self.get_type_by_priority(subtypes)
-        raise AssertionError(f"Unknown origin {origin}")
-
     def render_openapi_type_exception(
         self,
         function: Callable[..., HttpResponse],
@@ -423,17 +389,25 @@ do not match the types declared in the implementation of {function.__name__}.\n"
             # matching that of our OpenAPI spec. If not so, hint that the
             # Json[T] wrapper might be missing from the type annotation.
             if actual_param.request_var_name in json_request_var_names:
-                self.assertEqual(
-                    actual_param_schema.get("contentMediaType"),
-                    "application/json",
-                    USE_JSON_CONTENT_TYPE_HINT.format(
-                        param_name=actual_param.param_name,
-                        param_type=actual_param.param_type,
-                    ),
-                )
-                # actual_param_schema is a json_schema. Reference:
-                # https://docs.pydantic.dev/latest/api/json_schema/#pydantic.json_schema.GenerateJsonSchema.json_schema
-                actual_param_schema = actual_param_schema["contentSchema"]
+                # skipping this check for send_message_backend 'to' parameter because it is a
+                # special case where the content type of the parameter is application/json but the
+                # parameter may or may not be JSON encoded since previously we also accepted a raw
+                # string and some ad-hoc bot might still depend on sending a raw string.
+                if (
+                    function.__name__ != "send_message_backend"
+                    or actual_param.param_name != "req_to"
+                ):
+                    self.assertEqual(
+                        actual_param_schema.get("contentMediaType"),
+                        "application/json",
+                        USE_JSON_CONTENT_TYPE_HINT.format(
+                            param_name=actual_param.param_name,
+                            param_type=actual_param.param_type,
+                        ),
+                    )
+                    # actual_param_schema is a json_schema. Reference:
+                    # https://docs.pydantic.dev/latest/api/json_schema/#pydantic.json_schema.GenerateJsonSchema.json_schema
+                    actual_param_schema = actual_param_schema["contentSchema"]
             elif "contentMediaType" in actual_param_schema:
                 function_schema_type = schema_type(actual_param_schema, defs_mapping)
                 # We do not specify that the content type of int or bool
@@ -461,8 +435,8 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         OpenAPI data defines a different type than that actually accepted by the function.
         Otherwise, we print out the exact differences for convenient debugging and raise an
         AssertionError."""
-        # Iterate through the decorators to find the original function, wrapped
-        # by has_request_variables/typed_endpoint, so we can parse its
+        # Iterate through the decorators to find the original
+        # function, wrapped by typed_endpoint, so we can parse its
         # arguments.
         use_endpoint_decorator = False
         while (wrapped := getattr(function, "__wrapped__", None)) is not None:
@@ -472,68 +446,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 use_endpoint_decorator = True
             function = wrapped
 
-        if use_endpoint_decorator:
+        if len(openapi_parameters) > 0:
+            assert use_endpoint_decorator
             return self.validate_json_schema(function, openapi_parameters)
-
-        openapi_params: set[tuple[str, type | tuple[type, object]]] = set()
-        json_params: dict[str, type | tuple[type, object]] = {}
-        for openapi_parameter in openapi_parameters:
-            name = openapi_parameter.name
-            if openapi_parameter.json_encoded:
-                # If content_type is application/json, then the
-                # parameter needs to be handled specially, as REQ can
-                # either return the application/json as a string or it
-                # can either decode it and return the required
-                # elements. For example `to` array in /messages: POST
-                # is processed by REQ as a string and then its type is
-                # checked in the view code.
-                #
-                # Meanwhile `profile_data` in /users/{user_id}: GET is
-                # taken as array of objects. So treat them separately.
-                json_params[name] = schema_type(openapi_parameter.value_schema)
-                continue
-            openapi_params.add((name, schema_type(openapi_parameter.value_schema)))
-
-        function_params: set[tuple[str, type | tuple[type, object]]] = set()
-
-        for pname, defval in inspect.signature(function).parameters.items():
-            defval = defval.default
-            if isinstance(defval, _REQ):
-                # TODO: The below inference logic in cases where
-                # there's a converter function declared is incorrect.
-                # Theoretically, we could restructure the converter
-                # function model so that we can check what type it
-                # excepts to be passed to make validation here
-                # possible.
-
-                vtype = self.get_standardized_argument_type(function.__annotations__[pname])
-                vname = defval.post_var_name
-                assert vname is not None
-                if vname in json_params:
-                    # Here we have two cases.  If the REQ type is
-                    # string then there is no point in comparing as
-                    # JSON can always be returned as string.  Ideally,
-                    # we wouldn't use REQ for a JSON object without a
-                    # validator in these cases, but it does happen.
-                    #
-                    # If the REQ type is not string then, insert the
-                    # REQ and OpenAPI data types of the variable in
-                    # the respective sets so that they can be dealt
-                    # with later.  In either case remove the variable
-                    # from `json_params`.
-                    if vtype is str:
-                        json_params.pop(vname, None)
-                        continue
-                    else:
-                        openapi_params.add((vname, json_params[vname]))
-                        json_params.pop(vname, None)
-                function_params.add((vname, vtype))
-
-        # After the above operations `json_params` should be empty.
-        assert len(json_params) == 0
-        diff = openapi_params - function_params
-        if diff:  # nocoverage
-            self.render_openapi_type_exception(function, openapi_params, function_params, diff)
 
     def check_openapi_arguments_for_view(
         self,

@@ -42,6 +42,7 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             populate_read_by_sender,
             reverse_code=migrations.RunPython.noop,
+            elidable=True,
         ),
         migrations.AlterField(
             model_name="scheduledmessage",

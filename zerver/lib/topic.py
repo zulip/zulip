@@ -7,7 +7,6 @@ from django.db import connection
 from django.db.models import F, Func, JSONField, Q, QuerySet, Subquery, TextField, Value
 from django.db.models.functions import Cast
 
-from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
@@ -44,17 +43,6 @@ def get_topic_from_message_info(message_info: dict[str, Any]) -> str:
         return message_info["topic"]
 
     return message_info["subject"]
-
-
-def REQ_topic() -> str | None:
-    # REQ handlers really return a REQ, but we
-    # lie to make the rest of the type matching work.
-    return REQ(
-        whence="topic",
-        aliases=["subject"],
-        converter=lambda var_name, x: x.strip(),
-        default=None,
-    )
 
 
 """

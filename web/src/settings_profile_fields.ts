@@ -23,6 +23,7 @@ import {current_user, realm} from "./state_data";
 import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
 import {place_caret_at_end} from "./ui_util";
+import * as util from "./util";
 
 type FieldChoice = {
     value: string;
@@ -424,7 +425,7 @@ function set_up_select_field_edit_form(
 
     // Add blank choice at last
     create_choice_row($choice_list);
-    SortableJS.create($choice_list[0]!, {
+    SortableJS.create(util.the($choice_list), {
         onUpdate() {
             // Do nothing on drag. We process the order on submission
         },
@@ -577,7 +578,7 @@ function open_edit_form_modal(this: HTMLElement): void {
         post_render: set_initial_values_of_profile_field,
         loading_spinner: true,
         on_shown() {
-            place_caret_at_end($("#id-custom-profile-field-name")[0]!);
+            place_caret_at_end(util.the($("#id-custom-profile-field-name")));
         },
     });
 }
@@ -709,7 +710,7 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
     display_in_profile_summary_fields_limit_reached = display_in_profile_summary_fields_count >= 2;
 
     if (current_user.is_admin) {
-        const field_list = $("#admin_profile_fields_table")[0]!;
+        const field_list = util.the($("#admin_profile_fields_table"));
         SortableJS.create(field_list, {
             onUpdate: update_field_order,
             filter: "input",
@@ -727,7 +728,7 @@ function set_up_select_field(): void {
     create_choice_row($("#profile_field_choices"));
 
     if (current_user.is_admin) {
-        const choice_list = $("#profile_field_choices")[0]!;
+        const choice_list = util.the($("#profile_field_choices"));
         SortableJS.create(choice_list, {
             onUpdate() {
                 // Do nothing on drag. We process the order on submission

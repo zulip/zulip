@@ -4,6 +4,7 @@ import {z} from "zod";
 
 import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
+import render_user_group_members_table from "../templates/user_group_settings/user_group_members_table.hbs";
 import render_user_group_membership_request_result from "../templates/user_group_settings/user_group_membership_request_result.hbs";
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
@@ -130,6 +131,25 @@ export function enable_member_management({
         $parent_container.find(".user_group_subscription_request_result").empty();
     });
 
+    member_list_widget = make_list_widget({
+        $parent_container,
+        name: "user_group_members",
+        users: get_user_group_members(group),
+    });
+}
+
+export function rerender_members_list({
+    group,
+    $parent_container,
+}: {
+    group: UserGroup;
+    $parent_container: JQuery;
+}): void {
+    $parent_container.find(".member-list-box").html(
+        render_user_group_members_table({
+            can_edit: settings_data.can_edit_user_group(group.id),
+        }),
+    );
     member_list_widget = make_list_widget({
         $parent_container,
         name: "user_group_members",

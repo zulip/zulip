@@ -17,7 +17,7 @@ from zerver.actions.user_groups import (
     do_update_user_group_name,
     remove_subgroups_from_user_group,
 )
-from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
+from zerver.decorator import require_member_or_admin, require_user_group_create_permission
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
@@ -46,7 +46,7 @@ from zerver.views.streams import compose_views
 
 
 @transaction.atomic(durable=True)
-@require_user_group_edit_permission
+@require_user_group_create_permission
 @typed_endpoint
 def add_user_group(
     request: HttpRequest,
@@ -55,6 +55,7 @@ def add_user_group(
     name: str,
     members: Json[list[int]],
     description: str,
+    can_manage_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
@@ -97,7 +98,7 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
 
 
 @transaction.atomic(durable=True)
-@require_user_group_edit_permission
+@require_member_or_admin
 @typed_endpoint
 def edit_user_group(
     request: HttpRequest,
@@ -106,9 +107,15 @@ def edit_user_group(
     user_group_id: PathOnly[int],
     name: str | None = None,
     description: str | None = None,
+    can_manage_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
-    if name is None and description is None and can_mention_group is None:
+    if (
+        name is None
+        and description is None
+        and can_manage_group is None
+        and can_mention_group is None
+    ):
         raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
@@ -160,7 +167,7 @@ def edit_user_group(
     return json_success(request)
 
 
-@require_user_group_edit_permission
+@require_member_or_admin
 @typed_endpoint
 def delete_user_group(
     request: HttpRequest,
@@ -176,7 +183,7 @@ def delete_user_group(
     return json_success(request)
 
 
-@require_user_group_edit_permission
+@require_member_or_admin
 @typed_endpoint
 def update_user_group_backend(
     request: HttpRequest,
@@ -382,7 +389,7 @@ def remove_subgroups_from_group_backend(
     return json_success(request)
 
 
-@require_user_group_edit_permission
+@require_member_or_admin
 @typed_endpoint
 def update_subgroups_of_user_group(
     request: HttpRequest,

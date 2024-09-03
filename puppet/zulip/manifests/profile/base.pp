@@ -95,12 +95,12 @@ class zulip::profile::base {
     group   => 'zulip',
   }
 
-  file { '/etc/security/limits.conf':
+  file { '/etc/security/limits.d/zulip.conf':
     ensure => file,
     mode   => '0640',
     owner  => 'root',
     group  => 'root',
-    source => 'puppet:///modules/zulip/security/limits.conf',
+    source => 'puppet:///modules/zulip/limits.d/zulip.conf',
   }
   file { '/etc/systemd/system.conf.d/':
     ensure => directory,

@@ -13,6 +13,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.validators import validate_email
 from django.db import connection, transaction
+from django.db.backends.utils import CursorWrapper
 from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
@@ -28,13 +29,14 @@ from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
 from zerver.lib.mime_types import guess_type
+from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend
+from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
@@ -457,18 +459,12 @@ def current_table_ids(data: TableData, table: TableName) -> list[int]:
     return [item["id"] for item in data[table]]
 
 
-def idseq(model_class: Any) -> str:
-    if model_class == RealmDomain:
-        return "zerver_realmalias_id_seq"
-    elif model_class == BotStorageData:
-        return "zerver_botuserstatedata_id_seq"
-    elif model_class == BotConfigData:
-        return "zerver_botuserconfigdata_id_seq"
-    elif model_class == UserTopic:
-        # The database table for this model was renamed from `mutedtopic` to
-        # `usertopic`, but the name of the sequence object remained the same.
-        return "zerver_mutedtopic_id_seq"
-    return f"{model_class._meta.db_table}_id_seq"
+def idseq(model_class: Any, cursor: CursorWrapper) -> str:
+    sequences = connection.introspection.get_sequences(cursor, model_class._meta.db_table)
+    for sequence in sequences:
+        if sequence["column"] == "id":
+            return sequence["name"]
+    raise Exception(f"No sequence found for 'id' of {model_class}")
 
 
 def allocate_ids(model_class: Any, count: int) -> list[int]:
@@ -477,11 +473,11 @@ def allocate_ids(model_class: Any, count: int) -> list[int]:
     imported into that table. Hence, this gives a reserved range of IDs to import the
     converted Slack objects into the tables.
     """
-    conn = connection.cursor()
-    sequence = idseq(model_class)
-    conn.execute("select nextval(%s) from generate_series(1, %s)", [sequence, count])
-    query = conn.fetchall()  # Each element in the result is a tuple like (5,)
-    conn.close()
+    with connection.cursor() as cursor:
+        sequence = idseq(model_class, cursor)
+        cursor.execute("select nextval(%s) from generate_series(1, %s)", [sequence, count])
+        query = cursor.fetchall()  # Each element in the result is a tuple like (5,)
+
     # convert List[Tuple[int]] to List[int]
     return [item[0] for item in query]
 
@@ -754,6 +750,7 @@ def bulk_import_named_user_groups(data: TableData) -> None:
             group["name"],
             group["description"],
             group["is_system_group"],
+            group["can_manage_group_id"],
             group["can_mention_group_id"],
         )
         for group in data["zerver_namedusergroup"]
@@ -761,7 +758,7 @@ def bulk_import_named_user_groups(data: TableData) -> None:
 
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_mention_group_id)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_manage_group_id, can_mention_group_id)
         VALUES %s
         """
     )
@@ -822,6 +819,59 @@ def process_avatars(record: dict[str, Any]) -> None:
         do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
 
 
+def process_emojis(
+    import_dir: str,
+    default_user_profile_id: int | None,
+    filename_to_has_original: dict[str, bool],
+    record: dict[str, Any],
+) -> None:
+    # 3rd party exports may not provide .original files. In that case we want to just
+    # treat whatever file we have as the original.
+    should_use_as_original = not filename_to_has_original[record["file_name"]]
+    if not (record["s3_path"].endswith(".original") or should_use_as_original):
+        return
+
+    if "author_id" in record and record["author_id"] is not None:
+        user_profile = get_user_profile_by_id(record["author_id"])
+    else:
+        assert default_user_profile_id is not None
+        user_profile = get_user_profile_by_id(default_user_profile_id)
+
+    # file_name has the proper file extension without the
+    # .original suffix.
+    # application/octet-stream will be rejected by upload_emoji_image,
+    # but it's easier to use it here as the sensible default value
+    # and let upload_emoji_image figure out the exact error; or handle
+    # the file somehow anyway if it's ever changed to do that.
+    content_type = guess_type(record["file_name"])[0] or "application/octet-stream"
+    emoji_import_data_file_dath = os.path.join(import_dir, record["path"])
+    with open(emoji_import_data_file_dath, "rb") as f:
+        try:
+            # This will overwrite the files that got copied to the appropriate paths
+            # for emojis (whether in S3 or in the local uploads dir), ensuring to
+            # thumbnail them and generate stills for animated emojis.
+            is_animated = upload_emoji_image(f, record["file_name"], user_profile, content_type)
+        except BadImageError:
+            logging.warning(
+                "Could not thumbnail emoji image %s; ignoring",
+                record["s3_path"],
+            )
+            # TODO:: should we delete the RealmEmoji object, or keep it with the files
+            # that did get copied; even though they do generate this error?
+            return
+
+    if is_animated and not record.get("deactivated", False):
+        # We only update the is_animated field if the emoji is not deactivated.
+        # That's because among deactivated emojis (name, realm_id) may not be
+        # unique, making the implementation here a bit hairier.
+        # Anyway, for Zulip exports, is_animated should be set correctly from the start,
+        # while 3rd party exports don't use the deactivated field, so this shouldn't
+        # particularly matter.
+        RealmEmoji.objects.filter(
+            name=record["name"], realm_id=user_profile.realm_id, deactivated=False
+        ).update(is_animated=True)
+
+
 def import_uploads(
     realm: Realm,
     import_dir: Path,
@@ -854,6 +904,26 @@ def import_uploads(
         re_map_foreign_keys_internal(
             records, "records", "user_profile_id", related_table="user_profile", id_field=True
         )
+    if processing_emojis:
+        # We need to build a mapping telling us which emojis have an .original file.
+        # This will be used when thumbnailing them later, to know whether we have that
+        # file available or whether we should just treat the regular image as the original
+        # for thumbnailing.
+        filename_to_has_original = {record["file_name"]: False for record in records}
+        for record in records:
+            if record["s3_path"].endswith(".original"):
+                filename_to_has_original[record["file_name"]] = True
+
+        if records and "author" in records[0]:
+            # This condition only guarantees author field appears in the generated
+            # records. Potentially the value of it might be None though. In that
+            # case, this will be ignored by the remap below.
+            # Any code further down the codepath that wants to use the author value
+            # needs to be mindful of it potentially being None and use a fallback
+            # value, most likely default_user_profile_id being the right choice.
+            re_map_foreign_keys_internal(
+                records, "records", "author", related_table="user_profile", id_field=False
+            )
 
     s3_uploads = settings.LOCAL_UPLOADS_DIR is None
 
@@ -880,6 +950,8 @@ def import_uploads(
             relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
                 realm_id=record["realm_id"], emoji_file_name=record["file_name"]
             )
+            if record["s3_path"].endswith(".original"):
+                relative_path += ".original"
             record["last_modified"] = timestamp
         elif processing_realm_icons:
             icon_name = os.path.basename(record["path"])
@@ -947,15 +1019,27 @@ def import_uploads(
         if count % 1000 == 0:
             logging.info("Processed %s/%s uploads", count, len(records))
 
-    if processing_avatars:
+    if processing_avatars or processing_emojis:
+        if processing_avatars:
+            process_func = process_avatars
+        else:
+            assert processing_emojis
+
+            process_func = partial(
+                process_emojis,
+                import_dir,
+                default_user_profile_id,
+                filename_to_has_original,
+            )
+
         # Ensure that we have medium-size avatar images for every
-        # avatar.  TODO: This implementation is hacky, both in that it
+        # avatar and properly thumbnailed emojis with stills (for animated emoji).
+        # TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it
         # might be better to require the export to just have these.
-
         if processes == 1:
             for record in records:
-                process_avatars(record)
+                process_func(record)
         else:
             connection.close()
             _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
@@ -963,7 +1047,7 @@ def import_uploads(
             _cache.disconnect_all()
             with ProcessPoolExecutor(max_workers=processes) as executor:
                 for future in as_completed(
-                    executor.submit(process_avatars, record) for record in records
+                    executor.submit(process_func, record) for record in records
                 ):
                     future.result()
 

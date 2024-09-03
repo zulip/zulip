@@ -246,13 +246,16 @@ def convert_direct_message_group_data(
     zerver_direct_message_group: list[ZerverFieldsT] = []
 
     for rc_direct_message_group_id in direct_message_group_id_to_direct_message_group_map:
-        direct_message_group_id = direct_message_group_id_mapper.get(rc_direct_message_group_id)
-        direct_message_group = build_direct_message_group(direct_message_group_id)
-        zerver_direct_message_group.append(direct_message_group)
-
         direct_message_group_dict = direct_message_group_id_to_direct_message_group_map[
             rc_direct_message_group_id
         ]
+
+        direct_message_group_id = direct_message_group_id_mapper.get(rc_direct_message_group_id)
+        direct_message_group = build_direct_message_group(
+            direct_message_group_id, len(direct_message_group_dict["uids"])
+        )
+        zerver_direct_message_group.append(direct_message_group)
+
         direct_message_group_user_ids = {
             user_id_mapper.get(rc_user_id) for rc_user_id in direct_message_group_dict["uids"]
         }

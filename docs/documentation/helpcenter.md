@@ -103,7 +103,7 @@ existing help center articles:
   would be appropriate in the description of the feature. For example,
   your new feature might relate to general Zulip features like
   [keyboard shortcuts](https://zulip.com/help/keyboard-shortcuts)
-  or [channels and topics](https://zulip.com/help/streams-and-topics).
+  or [topics](https://zulip.com/help/introduction-to-topics).
 
 - Make sure there is a **Related articles** section at the end
   of the article that again links to any help center documentation

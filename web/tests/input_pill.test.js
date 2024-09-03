@@ -89,6 +89,7 @@ function set_up() {
     const $pill_input = $.create("pill_input");
 
     $pill_input[0] = {};
+    $pill_input.length = 1;
     $pill_input.before = noop;
 
     const create_item_from_text = (text) => items[text];
@@ -115,6 +116,7 @@ run_test("copy from pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.ok(["BLUE", "RED"].includes(data.display_value));
         $(html)[0] = `<pill-stub ${data.display_value}>`;
+        $(html).length = 1;
         return html;
     });
 
@@ -350,6 +352,7 @@ run_test("insert_remove", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
+        $(html).length = 1;
         $(html)[0] = `<pill-stub ${data.display_value}>`;
         return html;
     });
@@ -437,6 +440,7 @@ run_test("insert_remove", ({mock_template}) => {
     const $focus_pill_stub = {
         next: () => $next_pill_stub,
         [0]: "<pill-stub BLUE>",
+        length: 1,
     };
 
     $container.set_find_results(".pill:focus", $focus_pill_stub);
@@ -456,6 +460,7 @@ run_test("exit button on pill", ({mock_template}) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
         $(html)[0] = `<pill-stub ${data.display_value}>`;
+        $(html).length = 1;
         return html;
     });
     $(".narrow_to_compose_recipients").toggleClass = noop;
@@ -477,6 +482,7 @@ run_test("exit button on pill", ({mock_template}) => {
 
     const $curr_pill_stub = {
         [0]: "<pill-stub BLUE>",
+        length: 1,
     };
 
     const exit_button_stub = {
@@ -559,6 +565,7 @@ run_test("appendValue/clear", ({mock_template}) => {
 
     $pill_input.before = noop;
     $pill_input[0] = {};
+    $pill_input.length = 1;
 
     const widget = input_pill.create(config);
 

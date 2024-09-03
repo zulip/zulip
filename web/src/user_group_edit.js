@@ -17,6 +17,7 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
@@ -101,35 +102,101 @@ function update_add_members_elements(group) {
     }
 }
 
+function update_group_permission_settings_elements(group) {
+    if (!is_editing_group(group.id)) {
+        return;
+    }
+
+    // We are concerend with the General tab for changing group permissions.
+    const $group_permission_settings = $("#group_permission_settings");
+
+    // Otherwise, we adjust whether the widgets are disabled based on
+    // whether this user is authorized to change the group settings.
+    const $permission_dropdown_elements =
+        $group_permission_settings.find(".dropdown-widget-button");
+
+    if (settings_data.can_edit_user_group(group.id)) {
+        $permission_dropdown_elements.prop("disabled", false);
+
+        $permission_dropdown_elements.each(function () {
+            const $dropdown_wrapper = $(this).closest(".dropdown_widget_with_label_wrapper");
+            $dropdown_wrapper[0]._tippy?.destroy();
+        });
+    } else {
+        $permission_dropdown_elements.prop("disabled", true);
+
+        $permission_dropdown_elements.each(function () {
+            const $dropdown_wrapper = $(this).closest(".dropdown_widget_with_label_wrapper");
+            settings_components.initialize_disable_btn_hint_popover(
+                $dropdown_wrapper,
+                $t({defaultMessage: "You do not have permission to edit this setting."}),
+            );
+        });
+    }
+}
+
 function show_membership_settings(group) {
     const $edit_container = get_edit_container(group);
-    update_add_members_elements(group);
 
     const $member_container = $edit_container.find(".edit_members_for_user_group");
     user_group_edit_members.enable_member_management({
         group,
         $parent_container: $member_container,
     });
+
+    update_members_panel_ui(group);
 }
 
-function enable_group_edit_settings(group) {
-    if (!is_editing_group(group.id)) {
-        return;
+function show_general_settings(group) {
+    user_group_components.setup_permissions_dropdown("can_manage_group", group, false);
+    user_group_components.setup_permissions_dropdown("can_mention_group", group, false);
+    update_general_panel_ui(group);
+
+    if (!page_params.development_environment) {
+        $("#can_manage_group_widget_container").hide();
     }
+}
+
+function update_general_panel_ui(group) {
     const $edit_container = get_edit_container(group);
-    $edit_container.find(".group-header .button-group").show();
-    $edit_container.find(".member-list .actions").show();
+
+    if (settings_data.can_edit_user_group(group.id)) {
+        $edit_container.find(".group-header .button-group").show();
+        $(`.group_settings_header[data-group-id='${CSS.escape(group.id)}'] .deactivate`).show();
+    } else {
+        $edit_container.find(".group-header .button-group").hide();
+        $(`.group_settings_header[data-group-id='${CSS.escape(group.id)}'] .deactivate`).hide();
+    }
+    update_group_permission_settings_elements(group);
+    update_group_membership_button(group.id);
+}
+
+function update_members_panel_ui(group) {
+    const $edit_container = get_edit_container(group);
+    const $member_container = $edit_container.find(".edit_members_for_user_group");
+
+    user_group_edit_members.rerender_members_list({
+        group,
+        $parent_container: $member_container,
+    });
     update_add_members_elements(group);
 }
 
-function disable_group_edit_settings(group) {
-    if (!is_editing_group(group.id)) {
+export function update_group_management_ui() {
+    if (!overlays.groups_open()) {
         return;
     }
-    const $edit_container = get_edit_container(group);
-    $edit_container.find(".group-header .button-group").hide();
-    $edit_container.find(".member-list .user-remove-actions").hide();
-    update_add_members_elements(group);
+
+    const active_group_id = get_active_data().id;
+
+    if (active_group_id === undefined) {
+        return;
+    }
+
+    const group = user_groups.get_user_group_from_id(active_group_id);
+
+    update_general_panel_ui(group);
+    update_members_panel_ui(group);
 }
 
 function group_membership_button(group_id) {
@@ -167,6 +234,10 @@ function update_group_membership_button(group_id) {
     if (settings_data.can_edit_user_group(group_id)) {
         $group_settings_button.prop("disabled", false);
         $group_settings_button.css("pointer-events", "");
+        const $group_settings_button_wrapper = $group_settings_button.closest(
+            ".join_leave_button_wrapper",
+        );
+        $group_settings_button_wrapper[0]._tippy?.destroy();
     } else {
         $group_settings_button.prop("disabled", true);
         initialize_tooltip_for_membership_button(group_id);
@@ -181,9 +252,10 @@ export function handle_member_edit_event(group_id, user_ids) {
 
     // update members list if currently rendered.
     if (is_editing_group(group_id)) {
-        user_group_edit_members.update_member_list_widget(group);
         if (user_ids.includes(people.my_current_user_id())) {
-            update_group_membership_button(group_id);
+            update_group_management_ui();
+        } else {
+            user_group_edit_members.update_member_list_widget(group);
         }
     }
 
@@ -236,13 +308,6 @@ export function handle_member_edit_event(group_id, user_ids) {
         const $group_row = row_for_group_id(group.id);
         open_group_edit_panel_for_row($group_row);
     }
-
-    // update_settings buttons.
-    if (settings_data.can_edit_user_group(group_id)) {
-        enable_group_edit_settings(group);
-    } else {
-        disable_group_edit_settings(group);
-    }
 }
 
 export function update_settings_pane(group) {
@@ -268,16 +333,11 @@ function update_toggler_for_group_setting() {
 export function show_settings_for(group) {
     const html = render_user_group_settings({
         group,
-        can_edit: settings_data.can_edit_user_group(group.id),
         is_member: user_groups.is_direct_member_of(people.my_current_user_id(), group.id),
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
     update_toggler_for_group_setting();
-
-    if (!settings_data.can_edit_user_group(group.id)) {
-        initialize_tooltip_for_membership_button(group.id);
-    }
 
     toggler.get().prependTo("#user_group_settings .tab-container");
     const $edit_container = get_edit_container(group);
@@ -285,7 +345,7 @@ export function show_settings_for(group) {
 
     $edit_container.show();
     show_membership_settings(group);
-    user_group_components.setup_permissions_dropdown(group, false);
+    show_general_settings(group);
 }
 
 export function setup_group_settings(group) {
@@ -507,21 +567,34 @@ export function add_group_to_table(group) {
     }
 }
 
-export function update_group(group_id) {
+export function update_group(event) {
     if (!overlays.groups_open()) {
         return;
     }
+
+    const group_id = event.group_id;
     const group = user_groups.get_user_group_from_id(group_id);
-    const $group_row = row_for_group_id(group_id);
+
     // update left side pane
-    $group_row.find(".group-name").text(group.name);
-    $group_row.find(".description").text(group.description);
+    const $group_row = row_for_group_id(group_id);
+    if (event.data.name !== undefined) {
+        $group_row.find(".group-name").text(group.name);
+    }
+
+    if (event.data.description !== undefined) {
+        $group_row.find(".description").text(group.description);
+    }
 
     if (get_active_data().id === group.id) {
         // update right side pane
         update_settings_pane(group);
-        // update settings title
-        $("#groups_overlay .user-group-info-title").text(group.name);
+        if (event.data.name !== undefined) {
+            // update settings title
+            $("#groups_overlay .user-group-info-title").text(group.name);
+        }
+        if (event.data.can_manage_group !== undefined) {
+            update_group_management_ui();
+        }
     }
 }
 
@@ -687,7 +760,7 @@ export function setup_page(callback) {
 
     function populate_and_fill() {
         const template_data = {
-            can_create_or_edit_user_groups: settings_data.user_can_edit_user_groups(),
+            can_create_user_groups: settings_data.user_can_create_user_groups(),
             max_user_group_name_length,
         };
 

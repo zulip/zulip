@@ -1,6 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import * as util from "./util";
+
 export type Context = {
     items_container_selector: string;
     items_list_selector: string;
@@ -73,11 +75,11 @@ export function modals_handle_events(event_key: string, context: Context): void 
 
 export function set_initial_element(element_id: string, context: Context): void {
     if (element_id) {
-        const $current_element = get_element_by_id(element_id, context);
-        const focus_element = $current_element[0]!.children[0];
+        const current_element = util.the(get_element_by_id(element_id, context));
+        const focus_element = current_element.children[0];
         assert(focus_element instanceof HTMLElement);
         activate_element(focus_element, context);
-        $(`.${CSS.escape(context.items_list_selector)}`)[0]!.scrollTop = 0;
+        util.the($(`.${CSS.escape(context.items_list_selector)}`)).scrollTop = 0;
     }
 }
 
@@ -132,7 +134,7 @@ function initialize_focus(event_name: string, context: Context): void {
     }
 
     const $element = get_element_by_id(id, context);
-    const focus_element = $element[0]!.children[0];
+    const focus_element = util.the($element).children[0];
     assert(focus_element instanceof HTMLElement);
     activate_element(focus_element, context);
 }
@@ -152,28 +154,29 @@ function scroll_to_element($element: JQuery, context: Context): void {
     const $box_item = $(`.${CSS.escape(context.box_item_selector)}`);
 
     // If focused element is first, scroll to the top.
-    if ($box_item.first()[0]!.parentElement === $element[0]) {
-        $items_list[0]!.scrollTop = 0;
+    if (util.the($box_item.first()).parentElement === $element[0]) {
+        util.the($items_list).scrollTop = 0;
     }
 
     // If focused element is last, scroll to the bottom.
-    if ($box_item.last()[0]!.parentElement === $element[0]) {
-        $items_list[0]!.scrollTop = $items_list[0]!.scrollHeight - ($items_list.height() ?? 0);
+    if (util.the($box_item.last()).parentElement === $element[0]) {
+        util.the($items_list).scrollTop =
+            util.the($items_list).scrollHeight - ($items_list.height() ?? 0);
     }
 
     // If focused element is cut off from the top, scroll up halfway in modal.
     if ($element.position().top < 55) {
         // 55 is the minimum distance from the top that will require extra scrolling.
-        $items_list[0]!.scrollTop -= $items_list[0]!.clientHeight / 2;
+        util.the($items_list).scrollTop -= util.the($items_list).clientHeight / 2;
     }
 
     // If focused element is cut off from the bottom, scroll down halfway in modal.
     const dist_from_top = $element.position().top;
     const total_dist = dist_from_top + $element[0].clientHeight;
-    const dist_from_bottom = $items_container[0]!.clientHeight - total_dist;
+    const dist_from_bottom = util.the($items_container).clientHeight - total_dist;
     if (dist_from_bottom < -4) {
         // -4 is the min dist from the bottom that will require extra scrolling.
-        $items_list[0]!.scrollTop += $items_list[0]!.clientHeight / 2;
+        util.the($items_list).scrollTop += util.the($items_list).clientHeight / 2;
     }
 }
 

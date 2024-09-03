@@ -9,7 +9,6 @@ from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.default_streams import (
     do_remove_default_stream,
@@ -69,7 +68,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def send_user_remove_events_on_stream_deactivation(
@@ -393,7 +392,7 @@ def merge_streams(
 
 def get_subscriber_ids(
     stream: Stream, requesting_user: UserProfile | None = None
-) -> ValuesQuerySet[Subscription, int]:
+) -> QuerySet[Subscription, int]:
     subscriptions_query = get_subscribers_query(stream, requesting_user)
     return subscriptions_query.values_list("user_profile_id", flat=True)
 
@@ -1099,6 +1098,7 @@ def bulk_remove_subscriptions(
     )
 
 
+@transaction.atomic(durable=True)
 def do_change_subscription_property(
     user_profile: UserProfile,
     sub: Subscription,
@@ -1149,7 +1149,7 @@ def do_change_subscription_property(
             stream_id=stream.id,
         )
 
-        send_event(user_profile.realm, in_home_view_event, [user_profile.id])
+        send_event_on_commit(user_profile.realm, in_home_view_event, [user_profile.id])
 
     event = dict(
         type="subscription",
@@ -1158,7 +1158,7 @@ def do_change_subscription_property(
         value=database_value,
         stream_id=stream.id,
     )
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
 def send_change_stream_permission_notification(
@@ -1364,25 +1364,25 @@ def send_change_stream_post_policy_notification(
         )
 
 
+@transaction.atomic(durable=True)
 def do_change_stream_post_policy(
     stream: Stream, stream_post_policy: int, *, acting_user: UserProfile
 ) -> None:
     old_post_policy = stream.stream_post_policy
-    with transaction.atomic():
-        stream.stream_post_policy = stream_post_policy
-        stream.save(update_fields=["stream_post_policy"])
-        RealmAuditLog.objects.create(
-            realm=stream.realm,
-            acting_user=acting_user,
-            modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-            event_time=timezone_now(),
-            extra_data={
-                RealmAuditLog.OLD_VALUE: old_post_policy,
-                RealmAuditLog.NEW_VALUE: stream_post_policy,
-                "property": "stream_post_policy",
-            },
-        )
+    stream.stream_post_policy = stream_post_policy
+    stream.save(update_fields=["stream_post_policy"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_post_policy,
+            RealmAuditLog.NEW_VALUE: stream_post_policy,
+            "property": "stream_post_policy",
+        },
+    )
 
     event = dict(
         op="update",
@@ -1392,7 +1392,7 @@ def do_change_stream_post_policy(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
 
     # Backwards-compatibility code: We removed the
     # is_announcement_only property in early 2020, but we send a
@@ -1406,7 +1406,7 @@ def do_change_stream_post_policy(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
 
     send_change_stream_post_policy_notification(
         stream,
@@ -1416,6 +1416,7 @@ def do_change_stream_post_policy(
     )
 
 
+@transaction.atomic(durable=True)
 def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -> None:
     old_name = stream.name
     stream.name = new_name
@@ -1458,7 +1459,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         stream_id=stream.id,
         name=old_name,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
         internal_send_stream_message(
@@ -1502,27 +1503,26 @@ def send_change_stream_description_notification(
         )
 
 
+@transaction.atomic(durable=True)
 def do_change_stream_description(
     stream: Stream, new_description: str, *, acting_user: UserProfile
 ) -> None:
     old_description = stream.description
-
-    with transaction.atomic():
-        stream.description = new_description
-        stream.rendered_description = render_stream_description(new_description, stream.realm)
-        stream.save(update_fields=["description", "rendered_description"])
-        RealmAuditLog.objects.create(
-            realm=stream.realm,
-            acting_user=acting_user,
-            modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-            event_time=timezone_now(),
-            extra_data={
-                RealmAuditLog.OLD_VALUE: old_description,
-                RealmAuditLog.NEW_VALUE: new_description,
-                "property": "description",
-            },
-        )
+    stream.description = new_description
+    stream.rendered_description = render_stream_description(new_description, stream.realm)
+    stream.save(update_fields=["description", "rendered_description"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_description,
+            RealmAuditLog.NEW_VALUE: new_description,
+            "property": "description",
+        },
+    )
 
     event = dict(
         type="stream",
@@ -1533,7 +1533,7 @@ def do_change_stream_description(
         value=new_description,
         rendered_description=stream.rendered_description,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
 
     send_change_stream_description_notification(
         stream,
@@ -1591,25 +1591,24 @@ def send_change_stream_message_retention_days_notification(
         )
 
 
+@transaction.atomic(durable=True)
 def do_change_stream_message_retention_days(
     stream: Stream, acting_user: UserProfile, message_retention_days: int | None = None
 ) -> None:
     old_message_retention_days_value = stream.message_retention_days
-
-    with transaction.atomic():
-        stream.message_retention_days = message_retention_days
-        stream.save(update_fields=["message_retention_days"])
-        RealmAuditLog.objects.create(
-            realm=stream.realm,
-            acting_user=acting_user,
-            modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED,
-            event_time=timezone_now(),
-            extra_data={
-                RealmAuditLog.OLD_VALUE: old_message_retention_days_value,
-                RealmAuditLog.NEW_VALUE: message_retention_days,
-            },
-        )
+    stream.message_retention_days = message_retention_days
+    stream.save(update_fields=["message_retention_days"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_message_retention_days_value,
+            RealmAuditLog.NEW_VALUE: message_retention_days,
+        },
+    )
 
     event = dict(
         op="update",
@@ -1619,7 +1618,7 @@ def do_change_stream_message_retention_days(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
     send_change_stream_message_retention_days_notification(
         user_profile=acting_user,
         stream=stream,

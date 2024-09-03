@@ -65,12 +65,14 @@ const markdown_help_rows = [
     },
     {
         markdown: "@**Joe Smith**",
-        output_html: '<p><span class="user-mention">@Joe Smith</span></p>',
+        output_html:
+            '<p><span class="user-mention"><span class="mention-content-wrapper">@Joe Smith</span></span></p>',
         effect_html: "(notifies Joe Smith)",
     },
     {
         markdown: "@_**Joe Smith**",
-        output_html: '<p><span class="user-mention">Joe Smith</span></p>',
+        output_html:
+            '<p><span class="user-mention"><span class="mention-content-wrapper">Joe Smith</span></span></p>',
         effect_html: "(links to profile but doesn't notify Joe Smith)",
     },
     {
@@ -85,7 +87,7 @@ const markdown_help_rows = [
         // code for that case works ... but it might be better to just
         // user your own name/user ID anyway.
         output_html:
-            '<p><span class="user-group-mention" data-user-group-id="0">@support team</span></p>',
+            '<p><span class="user-group-mention" data-user-group-id="0"><span class="mention-content-wrapper">@support team</span></span></p>',
         effect_html: "(notifies <b>support team</b> group)",
     },
     {
@@ -158,7 +160,7 @@ def zulip():
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
         output_html:
-            '<p><time datetime="2023-05-28T08:00:00Z"><i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>Sun, May 28, 2023, 1:30 PM</time></p>',
+            '<p><time datetime="2023-05-28T08:00:00Z"><span class="timestamp-content-wrapper"><i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>Sun, May 28, 2023, 1:30 PM</span></time></p>',
     },
     {
         markdown: `/poll What did you drink this morning?

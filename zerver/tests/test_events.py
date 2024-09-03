@@ -1038,7 +1038,9 @@ class NormalActionsTest(BaseAction):
             "img.png", "image/png", read_test_image_file("img.png"), self.example_user("iago")
         )
         path_id = url[len("/user_upload/") + 1 :]
-        self.send_stream_message(iago, "Verona", f"[img.png]({url})")
+        self.send_stream_message(
+            iago, "Verona", f"[img.png]({url})", skip_capture_on_commit_callbacks=True
+        )
 
         # Generating a thumbnail for an image sends a message update event
         with self.verify_action(state_change_expected=False) as events:
@@ -1809,11 +1811,14 @@ class NormalActionsTest(BaseAction):
                 self.user_profile.realm, "backend", [othello], "Backend team", acting_user=None
             )
         check_user_group_add("events[0]", events[0])
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=self.user_profile.realm, is_system_group=True
+        )
+        self.assertEqual(events[0]["group"]["can_manage_group"], nobody_group.id)
         everyone_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=self.user_profile.realm, is_system_group=True
         )
         self.assertEqual(events[0]["group"]["can_mention_group"], everyone_group.id)
-
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=self.user_profile.realm, is_system_group=True
         )
@@ -1827,10 +1832,16 @@ class NormalActionsTest(BaseAction):
                 "frontend",
                 [othello],
                 "",
-                {"can_mention_group": user_group},
+                {"can_manage_group": user_group, "can_mention_group": user_group},
                 acting_user=None,
             )
         check_user_group_add("events[0]", events[0])
+        self.assertEqual(
+            events[0]["group"]["can_manage_group"],
+            AnonymousSettingGroupDict(
+                direct_members=[othello.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
         self.assertEqual(
             events[0]["group"]["can_mention_group"],
             AnonymousSettingGroupDict(
@@ -2070,9 +2081,32 @@ class NormalActionsTest(BaseAction):
             )
 
     def test_change_full_name(self) -> None:
+        now = timezone_now()
         with self.verify_action() as events:
             do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile)
         check_realm_user_update("events[0]", events[0], "full_name")
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=self.user_profile.realm,
+                event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+            ).count(),
+            1,
+        )
+
+        # Verify no operation if the value isn't changing.
+        with self.verify_action(num_events=0, state_change_expected=False):
+            do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=self.user_profile.realm,
+                event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+            ).count(),
+            1,
+        )
 
         self.set_up_db_for_testing_user_access()
         cordelia = self.example_user("cordelia")

@@ -59,14 +59,7 @@
 {{> edited_notice}}
 {{/if}}
 
-<div class="message_edit">
-    <div class="message_edit_form"></div>
-</div>
-
-<div class="message_length_controller">
-    <button type="button" class="message_expander message_length_toggle tippy-zulip-delayed-tooltip" data-tooltip-template-id="message-expander-tooltip-template">{{t "Show more" }}</button>
-    <button type="button" class="message_condenser message_length_toggle tippy-zulip-delayed-tooltip" data-tooltip-template-id="message-condenser-tooltip-template">{{t "Show less" }}</button>
-</div>
+<div class="message_length_controller"></div>
 
 {{#unless is_hidden}}
 <div class="message_reactions">{{> message_reactions }}</div>

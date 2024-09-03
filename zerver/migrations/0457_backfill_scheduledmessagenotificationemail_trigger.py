@@ -20,6 +20,7 @@ class Migration(migrations.Migration):
             SET trigger = 'wildcard_mentioned'
             WHERE trigger = 'stream_wildcard_mentioned';
             """,
+            elidable=True,
         ),
         migrations.RunSQL(
             """
@@ -32,5 +33,6 @@ class Migration(migrations.Migration):
             SET trigger = 'followed_topic_wildcard_mentioned'
             WHERE trigger = 'stream_wildcard_mentioned_in_followed_topic';
             """,
+            elidable=True,
         ),
     ]

@@ -23,6 +23,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
+from pydantic import Json
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -59,15 +60,16 @@ from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_configured
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key, get_users_for_api, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
-from zerver.lib.validator import check_bool, validate_login_email
+from zerver.lib.validator import validate_login_email
 from zerver.models import (
     MultiuseInvite,
     PreregistrationRealm,
@@ -156,7 +158,9 @@ def create_preregistration_realm(
 def maybe_send_to_registration(
     request: HttpRequest,
     email: str,
+    *,
     full_name: str = "",
+    role: int | None = None,
     mobile_flow_otp: str | None = None,
     desktop_flow_otp: str | None = None,
     is_signup: bool = False,
@@ -170,6 +174,12 @@ def maybe_send_to_registration(
     the registration flow or the "continue to registration" flow,
     depending on is_signup, whether the email address can join the
     organization (checked in HomepageForm), and similar details.
+
+    Important: role, if specified as argument to this function,
+    takes precedence over anything else, as it is an explicit
+    statement of what the user should be created as, and is likely
+    being synced from some user management system tied to the
+    authentication method used.
     """
 
     # In the desktop and mobile registration flows, the sign up
@@ -188,7 +198,10 @@ def maybe_send_to_registration(
     # approach of putting something in PreregistrationUser, because
     # that would apply to future registration attempts on other
     # devices, e.g. just creating an account on the web on their laptop.
+
     assert not (mobile_flow_otp and desktop_flow_otp)
+    assert (role is None) or (role in PreregistrationUser.INVITE_AS.values())
+
     if mobile_flow_otp:
         set_expirable_session_var(
             request.session,
@@ -242,7 +255,7 @@ def maybe_send_to_registration(
         {"email": email},
         realm=realm,
         from_multiuse_invite=from_multiuse_invite,
-        invited_as=invited_as,
+        invited_as=role or invited_as,
     )
     if form.is_valid():
         # If the email address is allowed to sign up for an account in
@@ -293,7 +306,13 @@ def maybe_send_to_registration(
             prereg_user.streams.set(streams_to_subscribe)
         if include_realm_default_subscriptions is not None:
             prereg_user.include_realm_default_subscriptions = include_realm_default_subscriptions
-        prereg_user.invited_as = invited_as
+
+        if role is not None:
+            # As explained at the top of this function, role, if specified as argument,
+            # takes precedence over the role implied by the invitation.
+            prereg_user.invited_as = role
+        else:
+            prereg_user.invited_as = invited_as
         prereg_user.multiuse_invite = multiuse_obj
         prereg_user.save()
 
@@ -332,6 +351,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     kwargs_to_pass = [
         "email",
         "full_name",
+        "role",
         "mobile_flow_otp",
         "desktop_flow_otp",
         "is_signup",
@@ -490,12 +510,13 @@ def create_response_for_otp_flow(
 
 
 @log_view_func
-@has_request_variables
+@typed_endpoint
 def remote_user_sso(
     request: HttpRequest,
-    mobile_flow_otp: str | None = REQ(default=None),
-    desktop_flow_otp: str | None = REQ(default=None),
-    next: str = REQ(default="/"),
+    *,
+    mobile_flow_otp: str | None = None,
+    desktop_flow_otp: str | None = None,
+    next: str = "/",
 ) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
@@ -544,9 +565,8 @@ def remote_user_sso(
     return login_or_register_remote_user(request, result)
 
 
-@has_request_variables
 def get_email_and_realm_from_jwt_authentication_request(
-    request: HttpRequest, json_web_token: str
+    request: HttpRequest, *, json_web_token: str
 ) -> tuple[str, Realm]:
     realm = get_realm_from_request(request)
     if realm is None:
@@ -577,9 +597,11 @@ def get_email_and_realm_from_jwt_authentication_request(
 @csrf_exempt
 @require_post
 @log_view_func
-@has_request_variables
-def remote_user_jwt(request: HttpRequest, token: str = REQ(default="")) -> HttpResponse:
-    email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
+@typed_endpoint
+def remote_user_jwt(request: HttpRequest, *, token: str = "") -> HttpResponse:
+    email, realm = get_email_and_realm_from_jwt_authentication_request(
+        request, json_web_token=token
+    )
 
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
     if user_profile is None:
@@ -593,17 +615,22 @@ def remote_user_jwt(request: HttpRequest, token: str = REQ(default="")) -> HttpR
     return login_or_register_remote_user(request, result)
 
 
-@has_request_variables
+@typed_endpoint
 def oauth_redirect_to_root(
     request: HttpRequest,
     url: str,
     sso_type: str,
-    is_signup: bool = False,
-    extra_url_params: Mapping[str, str] = {},
-    next: str | None = REQ(default=None),
-    multiuse_object_key: str = REQ(default=""),
-    mobile_flow_otp: str | None = REQ(default=None),
-    desktop_flow_otp: str | None = REQ(default=None),
+    is_signup: bool,
+    extra_url_params: Mapping[str, str],
+    # Protect the above parameters from being processed as kwargs
+    # provided by @typed_endpoint by marking them as mandatory
+    # positional parameters.
+    /,
+    *,
+    next: str | None = None,
+    multiuse_object_key: str = "",
+    mobile_flow_otp: str | None = None,
+    desktop_flow_otp: str | None = None,
 ) -> HttpResponse:
     main_site_url = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":
@@ -698,7 +725,13 @@ def start_social_login(
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
             return config_error(request, backend)
 
-    return oauth_redirect_to_root(request, backend_url, "social", extra_url_params=extra_url_params)
+    return oauth_redirect_to_root(
+        request,
+        backend_url,
+        "social",
+        False,
+        extra_url_params,
+    )
 
 
 @handle_desktop_flow
@@ -720,7 +753,11 @@ def start_social_signup(
             return config_error(request, "saml")
         extra_url_params = {"idp": extra_arg}
     return oauth_redirect_to_root(
-        request, backend_url, "social", is_signup=True, extra_url_params=extra_url_params
+        request,
+        backend_url,
+        "social",
+        True,
+        extra_url_params,
     )
 
 
@@ -844,11 +881,12 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
             return super().done(form_list, **kwargs)
 
 
-@has_request_variables
+@typed_endpoint
 def login_page(
     request: HttpRequest,
     /,
-    next: str = REQ(default="/"),
+    *,
+    next: str = "/",
     **kwargs: Any,
 ) -> HttpResponse:
     if get_subdomain(request) == settings.SOCIAL_AUTH_SUBDOMAIN:
@@ -1003,13 +1041,16 @@ def get_api_key_fetch_authenticate_failure(return_data: dict[str, bool]) -> Json
 
 @csrf_exempt
 @require_post
-@has_request_variables
+@typed_endpoint
 def jwt_fetch_api_key(
     request: HttpRequest,
-    include_profile: bool = REQ(default=False, json_validator=check_bool),
-    token: str = REQ(default=""),
+    *,
+    include_profile: Json[bool] = False,
+    token: str = "",
 ) -> HttpResponse:
-    remote_email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
+    remote_email, realm = get_email_and_realm_from_jwt_authentication_request(
+        request, json_web_token=token
+    )
 
     return_data: dict[str, bool] = {}
 
@@ -1044,10 +1085,8 @@ def jwt_fetch_api_key(
 
 @csrf_exempt
 @require_post
-@has_request_variables
-def api_fetch_api_key(
-    request: HttpRequest, username: str = REQ(), password: str = REQ()
-) -> HttpResponse:
+@typed_endpoint
+def api_fetch_api_key(request: HttpRequest, *, username: str, password: str) -> HttpResponse:
     return_data: dict[str, bool] = {}
 
     realm = get_realm_from_request(request)
@@ -1142,9 +1181,9 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     return json_success(request, data=result)
 
 
-@has_request_variables
+@typed_endpoint
 def json_fetch_api_key(
-    request: HttpRequest, user_profile: UserProfile, password: str = REQ(default="")
+    request: HttpRequest, user_profile: UserProfile, *, password: str = ""
 ) -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm is None:

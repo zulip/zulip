@@ -9,6 +9,7 @@ import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
 import type {RealmPlayground} from "./realm_playground";
 import * as ui_util from "./ui_util";
+import * as util from "./util";
 
 type RealmPlaygroundWithURL = RealmPlayground & {playground_url: string};
 
@@ -132,9 +133,9 @@ function register_click_handlers(): void {
                     const playground_url = url_template.expand({code: extracted_code});
                     playground_store.set(playground.id, {...playground, playground_url});
                 }
-                const popover_target = $view_in_playground_button.find(
-                    ".playground-links-popover-container",
-                )[0]!;
+                const popover_target = util.the(
+                    $view_in_playground_button.find(".playground-links-popover-container"),
+                );
                 toggle_playground_links_popover(popover_target, playground_store);
             }
         },

@@ -94,8 +94,8 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
         already_removed.add(attachment.path_id)
         attachment.delete()
         if len(storage_paths) >= DELETE_BATCH_SIZE:
-            delete_message_attachments(storage_paths)
-            storage_paths = []
+            delete_message_attachments(storage_paths[:DELETE_BATCH_SIZE])
+            storage_paths = storage_paths[DELETE_BATCH_SIZE:]
     for archived_attachment in old_unclaimed_archived_attachments:
         if archived_attachment.path_id not in already_removed:
             storage_paths.append(archived_attachment.path_id)
@@ -107,8 +107,9 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
                 image_row.delete()
         archived_attachment.delete()
         if len(storage_paths) >= DELETE_BATCH_SIZE:
-            delete_message_attachments(storage_paths)
-            storage_paths = []
+            delete_message_attachments(storage_paths[:DELETE_BATCH_SIZE])
+            storage_paths = storage_paths[DELETE_BATCH_SIZE:]
+
     if storage_paths:
         delete_message_attachments(storage_paths)
 

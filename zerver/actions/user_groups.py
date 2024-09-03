@@ -179,6 +179,7 @@ def do_send_create_user_group_event(
             id=user_group.id,
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
+            can_manage_group=get_group_setting_value_for_api(user_group.can_manage_group),
             can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
         ),
     )
@@ -440,13 +441,19 @@ def do_change_user_group_permission_setting(
     setting_name: str,
     setting_value_group: UserGroup,
     *,
-    old_setting_api_value: int | AnonymousSettingGroupDict,
+    old_setting_api_value: int | AnonymousSettingGroupDict | None = None,
     acting_user: UserProfile | None,
 ) -> None:
     old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
     user_group.save()
 
+    if old_setting_api_value is None:
+        # Most production callers will have computed this as part of
+        # verifying whether there's an actual change to make, but it
+        # feels quite clumsy to have to pass it from unit tests, so we
+        # compute it here if not provided by the caller.
+        old_setting_api_value = get_group_setting_value_for_api(old_value)
     new_setting_api_value = get_group_setting_value_for_api(setting_value_group)
 
     if not hasattr(old_value, "named_user_group") and hasattr(

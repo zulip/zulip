@@ -8,7 +8,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("confirmation", "0013_alter_realmcreationkey_id"),
         ("contenttypes", "0002_remove_content_type_name"),
-        ("zerver", "0552_remove_realm_private_message_policy"),
     ]
 
     operations = [

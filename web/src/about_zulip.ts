@@ -7,6 +7,7 @@ import * as browser_history from "./browser_history";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as overlays from "./overlays";
 import {realm} from "./state_data";
+import * as util from "./util";
 
 export function launch(): void {
     overlays.open_overlay({
@@ -19,12 +20,12 @@ export function launch(): void {
 
     const zulip_version_clipboard = new ClipboardJS("#about-zulip .fa-copy.zulip-version");
     zulip_version_clipboard.on("success", () => {
-        show_copied_confirmation($("#about-zulip .fa-copy.zulip-version")[0]!);
+        show_copied_confirmation(util.the($("#about-zulip .fa-copy.zulip-version")));
     });
 
     const zulip_merge_base_clipboard = new ClipboardJS("#about-zulip .fa-copy.zulip-merge-base");
     zulip_merge_base_clipboard.on("success", () => {
-        show_copied_confirmation($("#about-zulip .fa-copy.zulip-merge-base")[0]!);
+        show_copied_confirmation(util.the($("#about-zulip .fa-copy.zulip-merge-base")));
     });
 }
 

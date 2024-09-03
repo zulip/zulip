@@ -1305,6 +1305,7 @@ export class Filter {
                 }
                 return person.full_name;
             });
+            names.sort(util.make_strcmp());
             return util.format_array_as_list(names, "long", "conjunction");
         }
         if (term_types.length === 1 && _.isEqual(term_types, ["sender"])) {

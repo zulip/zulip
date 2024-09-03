@@ -179,7 +179,7 @@ class AnalyticsTestCase(ZulipTestCase):
         self, **kwargs: Any
     ) -> tuple[DirectMessageGroup, Recipient]:
         self.name_counter += 1
-        defaults = {"huddle_hash": f"hash{self.name_counter}"}
+        defaults = {"huddle_hash": f"hash{self.name_counter}", "group_size": 4}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         direct_message_group = DirectMessageGroup.objects.create(**kwargs)

@@ -74,7 +74,7 @@ from zerver.actions.user_groups import (
     bulk_remove_members_from_user_groups,
 )
 from zerver.actions.user_settings import do_regenerate_api_key
-from zerver.actions.users import do_deactivate_user
+from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
@@ -1413,6 +1413,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     subdomain: str
     full_name: str
     email: str
+    role: int | None
     is_signup: bool
     is_realm_creation: bool
     redirect_to: str
@@ -1628,6 +1629,90 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
         realm.url + login_url, urlencode({"is_deactivated": email})
     )
     return HttpResponseRedirect(redirect_url)
+
+
+def social_auth_sync_user_attributes(
+    realm: Realm, user_profile: UserProfile | None, extra_attrs: dict[str, Any], backend: Any
+) -> int | None:
+    """
+    Syncs user attributes based on the SOCIAL_AUTH_SYNC_ATTRS_DICT setting.
+    Only supports:
+    1. Syncing the role. This is plumbed through to user creation, so can be
+       used to immediately create new users with their role set based on an attribute
+       provided by the IdP.
+    2. Syncing custom attributes. This isn't supported for user creation,
+       so they'll only be synced during the user's next login, not during
+       signup.
+    """
+    # This is only supported for SAML right now, though the design
+    # is meant to be easy to extend this to other backends if desired.
+    # Unlike LDAP or SCIM, this hook can only do syncing during the authentication
+    # flow, as that's when the data is provided and we don't have a way to query
+    # for it otherwise.
+    assert backend.name == "saml"
+
+    attrs_by_backend = settings.SOCIAL_AUTH_SYNC_ATTRS_DICT.get(realm.subdomain, {})
+    profile_field_name_to_attr_name = attrs_by_backend.get(backend.name, {})
+    if not extra_attrs or not profile_field_name_to_attr_name:
+        return None
+
+    user_id = None
+    if user_profile is not None:
+        user_id = user_profile.id
+
+    custom_profile_field_name_to_value = {}
+    new_role = None
+    for field_name, attr_name in profile_field_name_to_attr_name.items():
+        if field_name == "role":
+            attr_value = extra_attrs.get(attr_name)
+            if not attr_value:
+                continue
+            if attr_value not in UserProfile.ROLE_API_NAME_TO_ID:
+                backend.logger.warning(
+                    "Ignoring unsupported role value %s for user %s in SOCIAL_AUTH_SYNC_ATTRS_DICT",
+                    attr_value,
+                    user_id,
+                )
+                continue
+            new_role = UserProfile.ROLE_API_NAME_TO_ID[attr_value]
+        elif field_name.startswith("custom__"):
+            attr_value = extra_attrs.get(attr_name)
+            if attr_value is None:
+                continue
+            custom_profile_field_name_to_value[field_name.removeprefix("custom__")] = attr_value
+        else:
+            backend.logger.warning(
+                "Ignoring unsupported UserProfile field %s in SOCIAL_AUTH_SYNC_ATTRS_DICT",
+                field_name,
+            )
+
+    if user_profile is None:
+        # We don't support user creation with custom profile fields, so just
+        # return role so that it can be plumbed through to the signup flow.
+        if new_role is not None:
+            backend.logger.info(
+                "Returning role %s for user creation", UserProfile.ROLE_ID_TO_API_NAME[new_role]
+            )
+        return new_role
+
+    # Based on the information collected above, sync what's needed for the user_profile.
+    old_role = user_profile.role
+    if new_role is not None and old_role != new_role:
+        do_change_user_role(user_profile, new_role, acting_user=None)
+        backend.logger.info(
+            "Set role %s for user %s", UserProfile.ROLE_ID_TO_API_NAME[new_role], user_profile.id
+        )
+
+    try:
+        sync_user_profile_custom_fields(user_profile, custom_profile_field_name_to_value)
+    except SyncUserError as e:
+        backend.logger.warning(
+            "Exception while syncing custom profile fields for user %s: %s",
+            user_profile.id,
+            str(e),
+        )
+
+    return None
 
 
 def social_associate_user_helper(
@@ -1886,26 +1971,11 @@ def social_auth_finish(
         is_signup = False
 
     extra_attrs = return_data.get("extra_attrs", {})
-    attrs_by_backend = settings.SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.get(realm.subdomain, {})
-    if user_profile is not None and extra_attrs and attrs_by_backend:
-        # This is only supported for SAML right now, though the design
-        # is meant to be easy to extend this to other backends if desired.
-        # Unlike with LDAP, here we can only do syncing during the authentication
-        # flow, as that's when the data is provided and we don't have a way to query
-        # for it otherwise.
-        assert backend.name == "saml"
-        custom_profile_field_name_to_attr_name = attrs_by_backend.get(backend.name, {})
-        custom_profile_field_name_to_value = {}
-        for field_name, attr_name in custom_profile_field_name_to_attr_name.items():
-            custom_profile_field_name_to_value[field_name] = extra_attrs.get(attr_name)
-        try:
-            sync_user_profile_custom_fields(user_profile, custom_profile_field_name_to_value)
-        except SyncUserError as e:
-            backend.logger.warning(
-                "Exception while syncing custom profile fields for user %s: %s",
-                user_profile.id,
-                str(e),
-            )
+    role_for_new_user = None
+    if extra_attrs:
+        role_for_new_user = social_auth_sync_user_attributes(
+            realm, user_profile, extra_attrs, backend
+        )
 
     if user_profile:
         # This call to authenticate() is just to get to invoke the custom_auth_decorator logic.
@@ -1965,7 +2035,7 @@ def social_auth_finish(
         params_to_store_in_authenticated_session=backend.get_params_to_store_in_authenticated_session(),
     )
     if user_profile is None:
-        data_dict.update(dict(full_name=full_name, email=email_address))
+        data_dict.update(dict(full_name=full_name, email=email_address, role=role_for_new_user))
 
     result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
 
@@ -2159,6 +2229,15 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
 @external_auth_method
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
+    # The upstream implementation uses the outdated /oauth2/authorize
+    # API (instead of the v2.0 API), which doesn't allow us to authenticate
+    # users with just a personal Microsoft account. v2.0 API is required.
+    # This requires us to override the default URLs to use it as well
+    # as adjust the requested scopes, to match this new API.
+    AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
+    ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
+    DEFAULT_SCOPE = ["User.Read profile openid email"]
+
     sort_order = 50
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"

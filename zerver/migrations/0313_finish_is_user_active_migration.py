@@ -41,7 +41,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(backfill_is_user_active, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            backfill_is_user_active, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
         # Make the field non-null now that we backfilled.
         migrations.AlterField(
             model_name="subscription",

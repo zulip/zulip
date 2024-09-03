@@ -99,7 +99,7 @@ run_test("update_count_in_dom", () => {
     make_elem($("#topics_header"), "<topics-count>");
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
-    left_sidebar_navigation_area.update_starred_count(444);
+    left_sidebar_navigation_area.update_starred_count(444, false);
     // Calls left_sidebar_navigation_area.update_scheduled_messages_row
     left_sidebar_navigation_area.initialize();
 
@@ -114,11 +114,11 @@ run_test("update_count_in_dom", () => {
     scheduled_messages.get_count = () => 0;
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
-    left_sidebar_navigation_area.update_starred_count(0);
+    left_sidebar_navigation_area.update_starred_count(444, true);
     left_sidebar_navigation_area.update_scheduled_messages_row();
 
     assert.ok(!$("<mentioned-count>").visible());
     assert.equal($("<mentioned-count>").text(), "");
-    assert.equal($("<starred-count>").text(), "");
+    assert.equal($("<starred-count>").text(), "444");
     assert.ok(!$(".top_left_scheduled_messages").visible());
 });

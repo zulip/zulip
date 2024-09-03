@@ -54,67 +54,6 @@ h3,
     }
 }
 
-.new-style {
-    .block {
-        display: block;
-    }
-
-    .center-block {
-        margin: 0 auto;
-    }
-
-    .center {
-        text-align: center;
-    }
-
-    .w-200 {
-        width: 200px;
-    }
-
-    .grid {
-        & label {
-            min-width: 200px;
-        }
-
-        .warning {
-            display: inline-block;
-            vertical-align: top;
-            width: 150px;
-            padding: 5px 10px;
-            text-align: left;
-        }
-    }
-
-    #account-settings,
-    #profile-field-settings {
-        .grid {
-            & label {
-                min-width: 120px;
-            }
-
-            .warning {
-                display: block;
-                width: calc(100% - 20px - 5px);
-                text-align: right;
-            }
-        }
-    }
-
-    .warning {
-        #pw_strength {
-            width: 140px;
-            height: 8px;
-            margin: 6px 0 0;
-        }
-    }
-
-    .button {
-        & ul {
-            text-align: left;
-        }
-    }
-}
-
 .profile-settings-form {
     display: flex;
     justify-content: space-between;
@@ -1419,13 +1358,7 @@ $option_title_width: 180px;
             border-bottom: 1px solid hsl(0deg 0% 87%);
         }
 
-        & ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        & li {
+        .sidebar-item {
             display: grid;
             /* 3.5714em is 50px at 14px/1em -- the legacy height of these rows. */
             grid-template:
@@ -1484,6 +1417,9 @@ $option_title_width: 180px;
         .normal-settings-list,
         .org-settings-list {
             position: relative;
+            list-style: none;
+            margin: 0;
+            padding: 0;
         }
     }
 
@@ -1821,10 +1757,6 @@ $option_title_width: 180px;
     .user-avatar-section,
     .realm-icon-section {
         display: block;
-    }
-
-    #settings_content .warning {
-        display: none;
     }
 
     .subsection-failed-status p {

@@ -247,7 +247,9 @@ def convert_direct_message_group_data(
             direct_message_group_id = direct_message_group_id_mapper.get(
                 direct_message_group_members
             )
-            direct_message_group_dict = build_direct_message_group(direct_message_group_id)
+            direct_message_group_dict = build_direct_message_group(
+                direct_message_group_id, len(direct_message_group_members)
+            )
             direct_message_group_user_ids = {
                 user_id_mapper.get(username) for username in direct_message_group["members"]
             }

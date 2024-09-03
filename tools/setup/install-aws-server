@@ -112,8 +112,8 @@ DISK_SIZE=$(lookup disk_size)
 # Determine the architecture
 ARCH=$($AWS ec2 describe-instance-types --instance-types "$INSTANCE_TYPE" --query 'InstanceTypes[*].ProcessorInfo.SupportedArchitectures[0]' --output text)
 
-# Lookup the latest 22.04 image
-AMI_ID=$($AWS ec2 describe-images --owners 099720109477 --filters 'Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-*-22.04*' "Name=architecture,Values=$ARCH" --query 'sort_by(Images, &CreationDate)[-1].ImageId' --output text)
+# Lookup the latest 24.04 image
+AMI_ID=$($AWS ec2 describe-images --owners 099720109477 --filters 'Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-*-24.04*' "Name=architecture,Values=$ARCH" --query 'sort_by(Images, &CreationDate)[-1].ImageId' --output text)
 
 # Verify it doesn't exist already
 ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name')
@@ -174,8 +174,8 @@ INSTANCEID=$(echo "$INSTANCE_DATA" | jq -r .Instances[0].InstanceId)
 PUBLIC_DNS_NAME=""
 while [ -z "$PUBLIC_DNS_NAME" ]; do
     sleep 1
-    PUBLIC_DNS_NAME=$($AWS ec2 describe-instances --instance-ids "$INSTANCEID" \
-        | jq -r .Reservations[0].Instances[0].PublicDnsName)
+    INSTANCE_DATA=$($AWS ec2 describe-instances --instance-ids "$INSTANCEID")
+    PUBLIC_DNS_NAME=$(echo "$INSTANCE_DATA" | jq -r .Reservations[0].Instances[0].PublicDnsName)
 done
 
 # Add the hostname to the zone
@@ -199,8 +199,11 @@ EOF
 $AWS route53 change-resource-record-sets --hosted-zone-id "$AWS_ZONE_ID" --change-batch "file://$ROUTE53_CHANGES"
 rm "$ROUTE53_CHANGES"
 
+VOLUME_ID=$(echo "$INSTANCE_DATA" | jq -r .Reservations[0].Instances[0].BlockDeviceMappings[0].Ebs.VolumeId)
+$AWS ec2 create-tags --resources "$VOLUME_ID" --tags "Key=Name,Value=$SERVER root"
+
 set +x
 echo
 echo
 echo ">>> Install started successfully!  Provisioning takes 5-6min."
-echo "    sleep 360 && ssh root@$HOSTNAME"
+echo "    sleep 360 && tsh ssh root@$HOSTNAME"

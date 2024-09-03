@@ -2,7 +2,7 @@
   "data": [
     {
       "api_version": "2020-08-27",
-      "created": 1010000005,
+      "created": 1000000000,
       "data": {
         "object": {
           "amount": 984000,
@@ -22,16 +22,16 @@
             "has_more": false,
             "object": "list",
             "total_count": 0,
-            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
+            "url": "/v1/charges?payment_intent=upgrade_by_invoice--Event.list.2.json"
           },
-          "client_secret": "pi_NORMALIZED00000000000002_secret_N0zekRfGidykgC43uHFZr6ONG",
+          "client_secret": "NORMALIZED",
           "confirmation_method": "automatic",
-          "created": 1010000006,
+          "created": 1000000000,
           "currency": "usd",
-          "customer": "cus_NORMALIZED0001",
+          "customer": "upgrade_by_invoice--Customer.create.1.json",
           "description": "Payment for Invoice",
-          "id": "pi_NORMALIZED00000000000002",
-          "invoice": "in_NORMALIZED00000000000002",
+          "id": "upgrade_by_invoice--Event.list.2.json",
+          "invoice": "upgrade_by_invoice--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": null,
           "livemode": false,
@@ -73,25 +73,25 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3P41ohDEQaroqDjs0vfscOfo",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0002",
-        "idempotency_key": "51d861b5-27c6-4f0c-a777-ac9135a0d6d2"
+        "id": "upgrade_by_invoice--Event.list.2.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "payment_intent.canceled"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000007,
+      "created": 1000000000,
       "data": {
         "object": {
           "ach_credit_transfer": {
-            "account_number": "test_NORMALIZED02",
+            "account_number": "test_NORMALIZED",
             "bank_name": "TEST BANK",
-            "fingerprint": "NORMALIZED000001",
+            "fingerprint": "NORMALIZED",
             "refund_account_holder_name": null,
             "refund_account_holder_type": null,
             "refund_routing_number": null,
@@ -99,12 +99,12 @@
             "swift_code": "TSTEZ122"
           },
           "amount": null,
-          "client_secret": "src_client_secret_NORMALIZED00000000000001",
-          "created": 1010000006,
+          "client_secret": "NORMALIZED",
+          "created": 1000000000,
           "currency": "usd",
-          "customer": "cus_NORMALIZED0001",
+          "customer": "upgrade_by_invoice--Customer.create.1.json",
           "flow": "receiver",
-          "id": "src_NORMALIZED00000000000001",
+          "id": "upgrade_by_invoice--Event.list.2.json",
           "livemode": false,
           "metadata": {},
           "object": "source",
@@ -119,7 +119,7 @@
             "verified_phone": null
           },
           "receiver": {
-            "address": "000000000-test_NORMALIZED01",
+            "address": "000000000-test_NORMALIZED",
             "amount_charged": 0,
             "amount_received": 0,
             "amount_returned": 0,
@@ -132,33 +132,33 @@
           "usage": "reusable"
         }
       },
-      "id": "evt_1P41oiDEQaroqDjs8ttHUkP8",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": null,
-        "idempotency_key": "97839b70-3033-4089-81bc-20a6b303aae1"
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "customer.source.created"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000007,
+      "created": 1000000000,
       "data": {
         "object": {
           "address": null,
           "balance": 0,
-          "created": 1010000001,
+          "created": 1000000000,
           "currency": "usd",
           "default_currency": "usd",
-          "default_source": "src_NORMALIZED00000000000001",
+          "default_source": "upgrade_by_invoice--Event.list.2.json",
           "delinquent": false,
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0001",
-          "invoice_prefix": "NORMA01",
+          "id": "upgrade_by_invoice--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,
             "default_payment_method": null,
@@ -183,19 +183,19 @@
           "default_source": null
         }
       },
-      "id": "evt_1P41oiDEQaroqDjsV6vJkc64",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": null,
-        "idempotency_key": "97839b70-3033-4089-81bc-20a6b303aae1"
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "customer.updated"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000006,
+      "created": 1000000000,
       "data": {
         "object": {
           "account_country": "US",
@@ -215,13 +215,14 @@
             "liability": null,
             "status": null
           },
+          "automatically_finalizes_at": null,
           "billing_reason": "manual",
           "charge": null,
           "collection_method": "send_invoice",
-          "created": 1010000006,
+          "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "cus_NORMALIZED0001",
+          "customer": "upgrade_by_invoice--Customer.create.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -240,9 +241,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUeEE3RWFoM1ppd21nbnYyWEJuTERBTEdOZHlwLDEwMzI5ODg4MA0200sdAfXvTQ?s=ap",
-          "id": "in_NORMALIZED00000000000002",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUeEE3RWFoM1ppd21nbnYyWEJuTERBTEdOZHlwLDEwMzI5ODg4MA0200sdAfXvTQ/pdf?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
+          "id": "upgrade_by_invoice--Event.list.2.json",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -258,9 +259,9 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "il_NORMALIZED00000000000002",
-                "invoice": "in_NORMALIZED00000000000002",
-                "invoice_item": "ii_NORMALIZED00000000000002",
+                "id": "upgrade_by_invoice--Event.list.2.json",
+                "invoice": "upgrade_by_invoice--Event.list.2.json",
+                "invoice_item": "upgrade_by_invoice--Event.list.2.json",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
@@ -272,16 +273,16 @@
                 "price": {
                   "active": false,
                   "billing_scheme": "per_unit",
-                  "created": 1010000008,
+                  "created": 1000000000,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "price_NORMALIZED00000000000002",
+                  "id": "upgrade_by_invoice--Event.list.2.json",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0002",
+                  "product": "prod_NORMALIZED",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -305,11 +306,12 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
+            "url": "/v1/invoices/upgrade_by_invoice--Event.list.2.json/lines"
           },
           "livemode": false,
           "metadata": {
             "billing_schedule": "1",
+            "current_plan_id": "None",
             "license_management": "manual",
             "licenses": "123",
             "on_free_trial": "False",
@@ -317,12 +319,12 @@
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALI-0002",
+          "number": "NORMALIZED-0001",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": false,
           "paid_out_of_band": false,
-          "payment_intent": "pi_NORMALIZED00000000000002",
+          "payment_intent": "upgrade_by_invoice--Event.list.2.json",
           "payment_settings": {
             "default_mandate": null,
             "payment_method_options": null,
@@ -365,22 +367,22 @@
           "total_excluding_tax": 984000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1P41oiDEQaroqDjsWkuCWvPs",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0003",
-        "idempotency_key": "dc4bd6d7-3dba-40d2-ad7c-91beb6ad0c40"
+        "id": "upgrade_by_invoice--Event.list.2.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.finalized"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000006,
+      "created": 1000000000,
       "data": {
         "object": {
           "account_country": "US",
@@ -400,13 +402,14 @@
             "liability": null,
             "status": null
           },
+          "automatically_finalizes_at": null,
           "billing_reason": "manual",
           "charge": null,
           "collection_method": "send_invoice",
-          "created": 1010000006,
+          "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "cus_NORMALIZED0001",
+          "customer": "upgrade_by_invoice--Customer.create.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -425,9 +428,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUeEE3RWFoM1ppd21nbnYyWEJuTERBTEdOZHlwLDEwMzI5ODg4MA0200sdAfXvTQ?s=ap",
-          "id": "in_NORMALIZED00000000000002",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUeEE3RWFoM1ppd21nbnYyWEJuTERBTEdOZHlwLDEwMzI5ODg4MA0200sdAfXvTQ/pdf?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
+          "id": "upgrade_by_invoice--Event.list.2.json",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -443,9 +446,9 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "il_NORMALIZED00000000000002",
-                "invoice": "in_NORMALIZED00000000000002",
-                "invoice_item": "ii_NORMALIZED00000000000002",
+                "id": "upgrade_by_invoice--Event.list.2.json",
+                "invoice": "upgrade_by_invoice--Event.list.2.json",
+                "invoice_item": "upgrade_by_invoice--Event.list.2.json",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
@@ -457,16 +460,16 @@
                 "price": {
                   "active": false,
                   "billing_scheme": "per_unit",
-                  "created": 1010000008,
+                  "created": 1000000000,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "price_NORMALIZED00000000000002",
+                  "id": "upgrade_by_invoice--Event.list.2.json",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0002",
+                  "product": "prod_NORMALIZED",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -490,11 +493,12 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
+            "url": "/v1/invoices/upgrade_by_invoice--Event.list.2.json/lines"
           },
           "livemode": false,
           "metadata": {
             "billing_schedule": "1",
+            "current_plan_id": "None",
             "license_management": "manual",
             "licenses": "123",
             "on_free_trial": "False",
@@ -502,12 +506,12 @@
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALI-0002",
+          "number": "NORMALIZED-0001",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": false,
           "paid_out_of_band": false,
-          "payment_intent": "pi_NORMALIZED00000000000002",
+          "payment_intent": "upgrade_by_invoice--Event.list.2.json",
           "payment_settings": {
             "default_mandate": null,
             "payment_method_options": null,
@@ -550,9 +554,10 @@
           "total_excluding_tax": 984000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         },
         "previous_attributes": {
+          "automatically_finalizes_at": 1000000000,
           "effective_at": null,
           "ending_balance": null,
           "hosted_invoice_url": null,
@@ -570,19 +575,19 @@
           }
         }
       },
-      "id": "evt_1P41oiDEQaroqDjs4nJEFlkN",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0003",
-        "idempotency_key": "dc4bd6d7-3dba-40d2-ad7c-91beb6ad0c40"
+        "id": "upgrade_by_invoice--Event.list.2.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.updated"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000006,
+      "created": 1000000000,
       "data": {
         "object": {
           "amount": 984000,
@@ -602,16 +607,16 @@
             "has_more": false,
             "object": "list",
             "total_count": 0,
-            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
+            "url": "/v1/charges?payment_intent=upgrade_by_invoice--Event.list.2.json"
           },
-          "client_secret": "pi_NORMALIZED00000000000002_secret_N0zekRfGidykgC43uHFZr6ONG",
+          "client_secret": "NORMALIZED",
           "confirmation_method": "automatic",
-          "created": 1010000006,
+          "created": 1000000000,
           "currency": "usd",
-          "customer": "cus_NORMALIZED0001",
+          "customer": "upgrade_by_invoice--Customer.create.1.json",
           "description": "Payment for Invoice",
-          "id": "pi_NORMALIZED00000000000002",
-          "invoice": "in_NORMALIZED00000000000002",
+          "id": "upgrade_by_invoice--Event.list.2.json",
+          "invoice": "upgrade_by_invoice--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": null,
           "livemode": false,
@@ -653,19 +658,19 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3P41ohDEQaroqDjs0foE472e",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0003",
-        "idempotency_key": "dc4bd6d7-3dba-40d2-ad7c-91beb6ad0c40"
+        "id": "upgrade_by_invoice--Event.list.2.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "payment_intent.created"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000006,
+      "created": 1000000000,
       "data": {
         "object": {
           "account_country": "US",
@@ -685,13 +690,14 @@
             "liability": null,
             "status": null
           },
+          "automatically_finalizes_at": 1000000000,
           "billing_reason": "manual",
           "charge": null,
           "collection_method": "send_invoice",
-          "created": 1010000006,
+          "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "cus_NORMALIZED0001",
+          "customer": "upgrade_by_invoice--Customer.create.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -711,7 +717,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": null,
-          "id": "in_NORMALIZED00000000000002",
+          "id": "upgrade_by_invoice--Event.list.2.json",
           "invoice_pdf": null,
           "issuer": {
             "type": "self"
@@ -728,9 +734,9 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "il_NORMALIZED00000000000002",
-                "invoice": "in_NORMALIZED00000000000002",
-                "invoice_item": "ii_NORMALIZED00000000000002",
+                "id": "upgrade_by_invoice--Event.list.2.json",
+                "invoice": "upgrade_by_invoice--Event.list.2.json",
+                "invoice_item": "upgrade_by_invoice--Event.list.2.json",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
@@ -742,16 +748,16 @@
                 "price": {
                   "active": false,
                   "billing_scheme": "per_unit",
-                  "created": 1010000008,
+                  "created": 1000000000,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "price_NORMALIZED00000000000002",
+                  "id": "upgrade_by_invoice--Event.list.2.json",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0002",
+                  "product": "prod_NORMALIZED",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -775,11 +781,12 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
+            "url": "/v1/invoices/upgrade_by_invoice--Event.list.2.json/lines"
           },
           "livemode": false,
           "metadata": {
             "billing_schedule": "1",
+            "current_plan_id": "None",
             "license_management": "manual",
             "licenses": "123",
             "on_free_trial": "False",
@@ -838,29 +845,29 @@
           "webhooks_delivered_at": null
         }
       },
-      "id": "evt_1P41ohDEQaroqDjsiU1rZnZn",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0004",
-        "idempotency_key": "339d9abf-781c-4d50-8f4a-6db21d465346"
+        "id": "upgrade_by_invoice--Event.list.2.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.created"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000009,
+      "created": 1000000000,
       "data": {
         "object": {
           "amount": 984000,
           "currency": "usd",
-          "customer": "cus_NORMALIZED0001",
+          "customer": "upgrade_by_invoice--Customer.create.1.json",
           "date": 1000000000,
           "description": "Zulip Cloud Standard",
           "discountable": false,
           "discounts": [],
-          "id": "ii_NORMALIZED00000000000002",
+          "id": "upgrade_by_invoice--Event.list.2.json",
           "invoice": null,
           "livemode": false,
           "metadata": {},
@@ -873,16 +880,16 @@
           "price": {
             "active": false,
             "billing_scheme": "per_unit",
-            "created": 1010000008,
+            "created": 1000000000,
             "currency": "usd",
             "custom_unit_amount": null,
-            "id": "price_NORMALIZED00000000000002",
+            "id": "upgrade_by_invoice--Event.list.2.json",
             "livemode": false,
             "lookup_key": null,
             "metadata": {},
             "nickname": null,
             "object": "price",
-            "product": "prod_NORMALIZED0002",
+            "product": "prod_NORMALIZED",
             "recurring": null,
             "tax_behavior": "unspecified",
             "tiers_mode": null,
@@ -900,24 +907,24 @@
           "unit_amount_decimal": "8000"
         }
       },
-      "id": "evt_1P41ogDEQaroqDjsqYdo9I24",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0005",
-        "idempotency_key": "840ad162-0f23-4aae-8d84-e6ac6a370a05"
+        "id": "upgrade_by_invoice--Event.list.2.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoiceitem.created"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000009,
+      "created": 1000000000,
       "data": {
         "object": {
           "address": null,
           "balance": 0,
-          "created": 1010000001,
+          "created": 1000000000,
           "currency": "usd",
           "default_currency": "usd",
           "default_source": null,
@@ -925,8 +932,8 @@
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0001",
-          "invoice_prefix": "NORMA01",
+          "id": "upgrade_by_invoice--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,
             "default_payment_method": null,
@@ -952,24 +959,24 @@
           "default_currency": null
         }
       },
-      "id": "evt_1P41ogDEQaroqDjsgQnTEJDq",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0005",
-        "idempotency_key": "840ad162-0f23-4aae-8d84-e6ac6a370a05"
+        "id": "upgrade_by_invoice--Event.list.2.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "customer.updated"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1010000001,
+      "created": 1000000000,
       "data": {
         "object": {
           "address": null,
           "balance": 0,
-          "created": 1010000001,
+          "created": 1000000000,
           "currency": null,
           "default_currency": null,
           "default_source": null,
@@ -977,8 +984,8 @@
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0001",
-          "invoice_prefix": "NORMA01",
+          "id": "upgrade_by_invoice--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,
             "default_payment_method": null,
@@ -1000,13 +1007,13 @@
           "test_clock": null
         }
       },
-      "id": "evt_1P41ogDEQaroqDjsii2F8Dte",
+      "id": "upgrade_by_invoice--Event.list.2.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0006",
-        "idempotency_key": "ba204f31-23ae-4a93-910b-d09f52bd11b8"
+        "id": "upgrade_by_invoice--Event.list.2.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "customer.created"
     }

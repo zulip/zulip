@@ -121,6 +121,8 @@ TAB_SECTION_LABELS = {
     "by-invoice": "Pay by invoice",
     "for-a-bot": "For a bot",
     "for-yourself": "For yourself",
+    "new-organizations": "New organizations",
+    "imported-organizations": "Imported organizations",
 }
 
 

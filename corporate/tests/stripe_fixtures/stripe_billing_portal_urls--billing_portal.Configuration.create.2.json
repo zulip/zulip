@@ -46,7 +46,7 @@
       "proration_behavior": "none"
     }
   },
-  "id": "bpc_1P41mtDEQaroqDjs9PNBHr5y",
+  "id": "stripe_billing_portal_urls--billing_portal.Configuration.create.2.json",
   "is_default": false,
   "livemode": false,
   "login_page": {

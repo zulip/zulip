@@ -122,8 +122,7 @@
     --box-shadow-popover-menu: var(--box-shadow-gear-menu);
 }
 
-.user_full_name,
-.bot_owner {
+.user_full_name {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -131,6 +130,36 @@
 
 .user-card-popover-actions {
     --color-text-item: var(--color-text-user-card-secondary);
+
+    .user-card-popover-bot-owner-field {
+        &.text-item {
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .pill-container {
+            border: none !important;
+        }
+
+        .pill {
+            border: none;
+            text-decoration: none;
+            color: var(--color-text-popover-menu);
+            background-color: var(--color-background-text-direct-mention);
+
+            &:hover {
+                color: var(--color-text-popover-menu);
+                background-color: var(
+                    --color-background-text-hover-direct-mention
+                );
+                text-decoration: none;
+            }
+        }
+    }
+
+    .pill-container {
+        padding: 0;
+    }
 
     .custom-profile-field-value {
         display: flex;

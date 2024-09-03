@@ -11,12 +11,11 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.db.models import F, Q
+from django.db.models import F, Q, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_topics import (
@@ -380,7 +379,7 @@ def get_recipient_info(
     user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
     if user_ids:
-        query: ValuesQuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(
+        query: QuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(
             is_active=True
         ).values(
             "id",
@@ -880,6 +879,7 @@ def do_send_messages(
                     send_request.message.realm_id,
                     send_request.message.content,
                     lock=True,
+                    enqueue=False,
                     path_ids=list(send_request.rendering_result.thumbnail_spinners),
                 )
                 new_rendered_content = rewrite_thumbnailed_images(

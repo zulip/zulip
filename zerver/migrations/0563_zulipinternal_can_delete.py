@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            "UPDATE zerver_realm SET delete_own_message_policy = 1 where string_id = 'zulipinternal'"
+            "UPDATE zerver_realm SET delete_own_message_policy = 1 where string_id = 'zulipinternal'",
+            elidable=True,
         )
     ]

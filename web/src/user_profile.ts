@@ -209,6 +209,7 @@ function render_user_profile_subscribe_widget(): void {
         get_options: get_user_unsub_streams,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
     };
     user_profile_subscribe_widget =
         user_profile_subscribe_widget ?? new dropdown_widget.DropdownWidget(opts);
@@ -255,7 +256,7 @@ function reset_subscribe_widget(): void {
 
 export function get_user_unsub_streams(): {
     name: string;
-    unique_id: string;
+    unique_id: number;
     stream: StreamSubscription;
 }[] {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
@@ -263,7 +264,7 @@ export function get_user_unsub_streams(): {
         .get_streams_for_user(target_user_id)
         .can_subscribe.map((stream) => ({
             name: stream.name,
-            unique_id: stream.stream_id.toString(),
+            unique_id: stream.stream_id,
             stream,
         }))
         .sort((a, b) => {
@@ -511,6 +512,9 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     const profile_data = realm.custom_profile_fields
         .flatMap((f) => get_custom_profile_field_data(user, f, field_types) ?? [])
         .filter((f) => f.name !== undefined);
+    original_values = {
+        user_id: user.user_id.toString(),
+    };
     const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;
     // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
     // or if the user profile belongs to a bot whose owner has opened the user profile. However, we don't
@@ -742,9 +746,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             formData.append("config_data", JSON.stringify(config_data));
         }
 
-        const files = $("#bot-edit-form").find<HTMLInputElement>(
-            "input.edit_bot_avatar_file_input",
-        )[0]!.files;
+        const files = util.the(
+            $("#bot-edit-form").find<HTMLInputElement>("input.edit_bot_avatar_file_input"),
+        ).files;
         assert(files !== null);
         for (const [i, file] of [...files].entries()) {
             formData.append("file-" + i, file);

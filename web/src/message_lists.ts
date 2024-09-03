@@ -6,6 +6,14 @@ import type {Message} from "./message_store";
 import * as ui_util from "./ui_util";
 
 // TODO(typescript): Move this to message_list_view when it's
+// converted to TypeScript.
+export type MessageContainer = {
+    msg: Message;
+    is_hidden: boolean;
+    url: string;
+};
+
+// TODO(typescript): Move this to message_list_view when it's
 // converted to typescript.
 type MessageListView = {
     update_recipient_bar_background_color: () => void;
@@ -17,6 +25,7 @@ type MessageListView = {
     show_message_as_read: (message: Message, options: {from?: "pointer" | "server"}) => void;
     show_messages_as_unread: (message_ids: number[]) => void;
     change_message_id: (old_id: number, new_id: number) => void;
+    message_containers: Map<number, MessageContainer>;
     _render_win_start: number;
     _render_win_end: number;
     sticky_recipient_message_id: number | undefined;
@@ -39,6 +48,7 @@ export type MessageList = {
     id: number;
     preserve_rendered_state: boolean;
     view: MessageListView;
+    is_combined_feed_view: boolean;
     selected_id: () => number;
     selected_row: () => JQuery;
     selected_idx: () => number;
@@ -68,6 +78,11 @@ export type MessageList = {
     visibly_empty: () => boolean;
     selected_message: () => Message;
     should_preserve_current_rendered_state: () => boolean;
+    show_edit_message: ($row: JQuery, $form: JQuery) => void;
+    show_edit_topic_on_recipient_row: ($recipient_row: JQuery, $form: JQuery) => void;
+    hide_edit_topic_on_recipient_row: ($recipient_row: JQuery) => void;
+    hide_edit_message: ($row: JQuery) => void;
+    get_last_message_sent_by_me: () => Message | undefined;
 };
 
 export let current: MessageList | undefined;

@@ -334,14 +334,6 @@ tr.admin td:first-child {
     text-align: center;
 }
 
-.reactivate-remote-server-form,
-.deactivate-remote-server-form,
-.realm-support-information,
-.remote-server-information,
-.remote-realm-information {
-    margin-bottom: 10px;
-}
-
 .support-section-header {
     font-size: 1.2em;
     font-weight: bold;
@@ -356,9 +348,13 @@ tr.admin td:first-child {
     top: -2px;
 }
 
+.reactivate-remote-server-form,
+.deactivate-remote-server-form,
+.realm-support-information,
+.remote-server-information,
+.remote-realm-information,
 .remote-sponsorship-details,
 .support-form,
-.remote-form,
 .next-plan-information,
 .current-plan-information {
     margin-bottom: 10px;
@@ -467,30 +463,41 @@ tr.admin td:first-child {
     padding-bottom: 25px;
 }
 
+.activity-header-information,
 .push-notification-status,
-.realm-form-container,
+.realm-management-actions,
 .next-plan-container,
 .current-plan-container,
-.remote-support-sponsorship-container {
+.support-sponsorship-container {
     border-radius: 4px;
     padding: 10px;
     margin: 10px 0;
 }
 
-.push-notification-status {
+.activity-header-information {
+    border: 2px solid hsl(330deg 3% 40%);
+    background-color: hsl(60deg 12% 90%);
+    width: fit-content;
+}
+
+.activity-header-entry {
+    margin: 0;
+    padding: 2px 0;
+}
+
+.push-notification-status,
+.realm-management-actions {
     border: 2px solid hsl(186deg 76% 36%);
     background-color: hsl(188deg 35% 87%);
 }
 
-.realm-form-container,
 .next-plan-container,
 .current-plan-container,
-.remote-support-sponsorship-container {
+.support-sponsorship-container {
     border: 2px solid hsl(33deg 99% 60%);
 }
 
-.realm-form-container,
-.remote-support-sponsorship-container {
+.support-sponsorship-container {
     background-color: hsl(30deg 100% 96%);
 }
 

@@ -508,7 +508,6 @@ def do_update_message(
         target_message.rendered_content_version = markdown_version
         event["content"] = content
         event["rendered_content"] = rendering_result.rendered_content
-        event["prev_rendered_content_version"] = target_message.rendered_content_version
         event["is_me_message"] = Message.is_status_message(
             content, rendering_result.rendered_content
         )
@@ -1256,16 +1255,16 @@ def check_update_message(
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
     # past the limit, and in case there are network issues, etc. The 15 comes
-    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
-    # you change this value also change those two parameters in message_edit.js.
+    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.ts; if
+    # you change this value also change those two parameters in message_edit.ts.
     edit_limit_buffer = 20
     if content is not None:
         validate_user_can_edit_message(user_profile, message, edit_limit_buffer)
 
     # The zerver/views/message_edit.py call point already strips this
-    # via REQ_topic; so we can delete this line if we arrange a
+    # via OptionalTopic; so we can delete this line if we arrange a
     # contract where future callers in the embedded bots system strip
-    # use REQ_topic as well (or otherwise are guaranteed to strip input).
+    # use OptionalTopic as well (or otherwise are guaranteed to strip input).
     if topic_name is not None:
         topic_name = topic_name.strip()
         if topic_name == message.topic_name():

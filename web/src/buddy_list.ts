@@ -26,6 +26,7 @@ import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import {INTERACTIVE_HOVER_DELAY} from "./tippyjs";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 function get_formatted_sub_count(sub_count: number): string {
     if (sub_count < 1000) {
@@ -172,7 +173,7 @@ export class BuddyList extends BuddyListConf {
                     // This will default to "bottom" placement for this tooltip.
                     placement = "auto";
                 }
-                tippy.default($elem[0]!, {
+                tippy.default(util.the($elem), {
                     // Because the buddy list subheadings are potential click targets
                     // for purposes having nothing to do with the subscriber count
                     // (collapsing/expanding), we delay showing the tooltip until the
@@ -765,9 +766,7 @@ export class BuddyList extends BuddyListConf {
     fill_screen_with_content(): void {
         let height = this.height_to_fill();
 
-        const elem = scroll_util
-            .get_scroll_element($(this.scroll_container_selector))
-            .expectOne()[0]!;
+        const elem = util.the(scroll_util.get_scroll_element($(this.scroll_container_selector)));
 
         // Add a fudge factor.
         height += 10;

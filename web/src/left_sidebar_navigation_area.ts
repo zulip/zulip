@@ -37,9 +37,15 @@ function save_state(state: string): void {
     ls.set(ls_key, state);
 }
 
-export function update_starred_count(count: number): void {
+export function update_starred_count(count: number, hidden: boolean): void {
     const $starred_li = $(".top_left_starred_messages");
     ui_util.update_unread_count_in_dom($starred_li, count);
+
+    if (hidden) {
+        $starred_li.addClass("hide_starred_message_count");
+        return;
+    }
+    $starred_li.removeClass("hide_starred_message_count");
 }
 
 export function update_scheduled_messages_row(): void {

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
-from django.db import connection, transaction
+from django.db import connection
 from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
@@ -200,10 +200,15 @@ class UnreadCountTests(ZulipTestCase):
     def test_update_flags(self) -> None:
         self.login("hamlet")
 
-        result = self.client_post(
-            "/json/messages/flags",
-            {"messages": orjson.dumps(self.unread_msg_ids).decode(), "op": "add", "flag": "read"},
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post(
+                "/json/messages/flags",
+                {
+                    "messages": orjson.dumps(self.unread_msg_ids).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            )
         self.assert_json_success(result)
 
         # Ensure we properly set the flags
@@ -843,13 +848,14 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             [message_id, second_message_id, third_message_id],
         )
 
-        result = self.client_post(
-            "/json/mark_topic_as_read",
-            {
-                "stream_id": str(stream.id),
-                "topic_name": "test_topic",
-            },
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post(
+                "/json/mark_topic_as_read",
+                {
+                    "stream_id": str(stream.id),
+                    "topic_name": "test_topic",
+                },
+            )
 
         self.assert_json_success(result)
         self.assertEqual(
@@ -857,12 +863,13 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             [second_message_id, third_message_id],
         )
 
-        result = self.client_post(
-            "/json/mark_stream_as_read",
-            {
-                "stream_id": str(stream.id),
-            },
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post(
+                "/json/mark_stream_as_read",
+                {
+                    "stream_id": str(stream.id),
+                },
+            )
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [third_message_id])
 
         fourth_message_id = self.send_stream_message(
@@ -873,7 +880,8 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             [third_message_id, fourth_message_id],
         )
 
-        result = self.client_post("/json/mark_all_as_read", {})
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post("/json/mark_all_as_read", {})
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
         mock_push_notifications.assert_called()
 
@@ -1595,8 +1603,7 @@ class MessageAccessTests(ZulipTestCase):
 
         # Starring private stream messages you didn't receive fails.
         self.login("cordelia")
-        with transaction.atomic():
-            result = self.change_star(message_ids)
+        result = self.change_star(message_ids)
         self.assert_json_error(result, "Invalid message(s)")
 
         stream_name = "private_stream_2"
@@ -1611,8 +1618,7 @@ class MessageAccessTests(ZulipTestCase):
         # can't see it if you didn't receive the message and are
         # not subscribed.
         self.login("cordelia")
-        with transaction.atomic():
-            result = self.change_star(message_ids)
+        result = self.change_star(message_ids)
         self.assert_json_error(result, "Invalid message(s)")
 
         # But if you subscribe, then you can star the message
@@ -1653,8 +1659,7 @@ class MessageAccessTests(ZulipTestCase):
 
         guest_user = self.example_user("polonius")
         self.login_user(guest_user)
-        with transaction.atomic():
-            result = self.change_star(message_id)
+        result = self.change_star(message_id)
         self.assert_json_error(result, "Invalid message(s)")
 
         # Subscribed guest users can access public stream messages sent before they join
@@ -1685,15 +1690,13 @@ class MessageAccessTests(ZulipTestCase):
 
         guest_user = self.example_user("polonius")
         self.login_user(guest_user)
-        with transaction.atomic():
-            result = self.change_star(message_id)
+        result = self.change_star(message_id)
         self.assert_json_error(result, "Invalid message(s)")
 
         # Guest user can't access messages of subscribed private streams if
         # history is not public to subscribers
         self.subscribe(guest_user, stream_name)
-        with transaction.atomic():
-            result = self.change_star(message_id)
+        result = self.change_star(message_id)
         self.assert_json_error(result, "Invalid message(s)")
 
         # Guest user can access messages of subscribed private streams if

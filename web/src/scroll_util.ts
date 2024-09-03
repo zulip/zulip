@@ -1,11 +1,13 @@
 import $ from "jquery";
 import SimpleBar from "simplebar";
 
+import * as util from "./util";
+
 // This type is helpful for testing, where we may have a dummy object instead of an actual jquery object.
 type JQueryOrZJQuery = {__zjquery?: true} & JQuery;
 
 export function get_content_element($element: JQuery): JQuery {
-    const element = $element.expectOne()[0]!;
+    const element = util.the($element);
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         return $(sb.getContentElement()!);
@@ -19,7 +21,7 @@ export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
         return $element;
     }
 
-    const element = $element.expectOne()[0]!;
+    const element = util.the($element);
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         return $(sb.getScrollElement()!);
@@ -32,7 +34,7 @@ export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
 }
 
 export function reset_scrollbar($element: JQuery): void {
-    const element = $element.expectOne()[0]!;
+    const element = util.the($element);
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         sb.getScrollElement()!.scrollTop = 0;

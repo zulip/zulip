@@ -2,6 +2,7 @@ import $ from "jquery";
 import * as tippy from "tippy.js";
 
 import {$t} from "./i18n";
+import * as util from "./util";
 
 export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
 
@@ -108,7 +109,7 @@ function set_password_toggle_label(
 ): void {
     $(password_selector).attr("aria-label", label);
     if (tippy_tooltips) {
-        const element: tippy.ReferenceElement = $(password_selector)[0]!;
+        const element: tippy.ReferenceElement = util.the($(password_selector));
         const tippy_instance = element._tippy ?? tippy.default(element);
         tippy_instance.setContent(label);
     } else {

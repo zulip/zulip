@@ -1591,7 +1591,11 @@ def export_uploads_and_avatars(
             valid_hashes=avatar_hash_values,
         )
 
-        emoji_paths = {get_emoji_path(realm_emoji) for realm_emoji in realm_emojis}
+        emoji_paths = set()
+        for realm_emoji in realm_emojis:
+            emoji_path = get_emoji_path(realm_emoji)
+            emoji_paths.add(emoji_path)
+            emoji_paths.add(emoji_path + ".original")
 
         export_files_from_s3(
             realm,
@@ -1632,7 +1636,11 @@ def _get_exported_s3_record(
     record.update(key.metadata)
 
     if processing_emoji:
-        record["file_name"] = os.path.basename(key.key)
+        file_name = os.path.basename(key.key)
+        # Both the main emoji file and the .original version should have the same
+        # file_name value in the record, as they reference the same emoji.
+        file_name = file_name.removesuffix(".original")
+        record["file_name"] = file_name
 
     if "user_profile_id" in record:
         user_profile = get_user_profile_by_id(int(record["user_profile_id"]))
@@ -1879,13 +1887,23 @@ def export_emoji_from_local(
     realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: list[RealmEmoji]
 ) -> None:
     records = []
-    for count, realm_emoji in enumerate(realm_emojis, 1):
-        emoji_path = get_emoji_path(realm_emoji)
+
+    realm_emoji_helper_tuples: list[tuple[RealmEmoji, str]] = []
+    for realm_emoji in realm_emojis:
+        realm_emoji_path = get_emoji_path(realm_emoji)
 
         # Use 'mark_sanitized' to work around false positive caused by Pysa
         # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
         # are user controlled
-        emoji_path = mark_sanitized(emoji_path)
+        realm_emoji_path = mark_sanitized(realm_emoji_path)
+
+        realm_emoji_path_original = realm_emoji_path + ".original"
+
+        realm_emoji_helper_tuples.append((realm_emoji, realm_emoji_path))
+        realm_emoji_helper_tuples.append((realm_emoji, realm_emoji_path_original))
+
+    for count, realm_emoji_helper_tuple in enumerate(realm_emoji_helper_tuples, 1):
+        realm_emoji_object, emoji_path = realm_emoji_helper_tuple
 
         local_path = os.path.join(local_dir, emoji_path)
         output_path = os.path.join(output_dir, emoji_path)
@@ -1893,7 +1911,7 @@ def export_emoji_from_local(
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         shutil.copy2(local_path, output_path)
         # Realm emoji author is optional.
-        author = realm_emoji.author
+        author = realm_emoji_object.author
         author_id = None
         if author:
             author_id = author.id
@@ -1902,9 +1920,9 @@ def export_emoji_from_local(
             author=author_id,
             path=emoji_path,
             s3_path=emoji_path,
-            file_name=realm_emoji.file_name,
-            name=realm_emoji.name,
-            deactivated=realm_emoji.deactivated,
+            file_name=realm_emoji_object.file_name,
+            name=realm_emoji_object.name,
+            deactivated=realm_emoji_object.deactivated,
         )
         records.append(record)
 

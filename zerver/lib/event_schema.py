@@ -1674,7 +1674,6 @@ update_message_content_fields: list[tuple[str, object]] = [
     ("is_me_message", bool),
     ("orig_content", str),
     ("orig_rendered_content", str),
-    ("prev_rendered_content_version", int),
 ]
 
 update_message_content_or_embedded_data_fields: list[tuple[str, object]] = [
@@ -1816,6 +1815,7 @@ group_type = DictType(
         ("direct_subgroup_ids", ListType(int)),
         ("description", str),
         ("is_system_group", bool),
+        ("can_manage_group", group_setting_type),
         ("can_mention_group", group_setting_type),
     ]
 )
@@ -1863,6 +1863,7 @@ user_group_data_type = DictType(
     optional_keys=[
         ("name", str),
         ("description", str),
+        ("can_manage_group", group_setting_type),
         ("can_mention_group", group_setting_type),
     ],
 )

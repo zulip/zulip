@@ -162,7 +162,7 @@ export function user_can_move_messages_between_streams(): boolean {
     return user_has_permission(realm.realm_move_messages_between_streams_policy);
 }
 
-export function user_can_edit_user_groups(): boolean {
+export function user_can_edit_all_user_groups(): boolean {
     return user_has_permission(realm.realm_user_group_edit_policy);
 }
 
@@ -171,18 +171,26 @@ export function can_edit_user_group(group_id: number): boolean {
         return false;
     }
 
-    if (!user_can_edit_user_groups()) {
-        return false;
+    let can_edit_all_user_groups = user_can_edit_all_user_groups();
+
+    if (
+        !current_user.is_admin &&
+        !current_user.is_moderator &&
+        !user_groups.is_direct_member_of(current_user.user_id, group_id)
+    ) {
+        can_edit_all_user_groups = false;
     }
 
-    // Admins and moderators are allowed to edit user groups even if they
-    // are not a member of that user group. Members can edit user groups
-    // only if they belong to that group.
-    if (current_user.is_admin || current_user.is_moderator) {
+    if (can_edit_all_user_groups) {
         return true;
     }
 
-    return user_groups.is_direct_member_of(current_user.user_id, group_id);
+    const group = user_groups.get_user_group_from_id(group_id);
+    return user_groups.is_user_in_group(group.can_manage_group, current_user.user_id);
+}
+
+export function user_can_create_user_groups(): boolean {
+    return user_has_permission(realm.realm_user_group_edit_policy);
 }
 
 export function user_can_add_custom_emoji(): boolean {

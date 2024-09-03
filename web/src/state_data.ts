@@ -133,6 +133,7 @@ export const user_group_schema = z.object({
     members: z.array(z.number()),
     is_system_group: z.boolean(),
     direct_subgroup_ids: z.array(z.number()),
+    can_manage_group: z.number(),
     can_mention_group: z.number(),
 });
 
@@ -261,7 +262,7 @@ const realm_schema = z.object({
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),
-    realm_bot_creation_policy: NOT_TYPED_YET,
+    realm_bot_creation_policy: z.number(),
     realm_bot_domain: z.string(),
     realm_can_access_all_users_group: z.number(),
     realm_can_create_public_channel_group: z.number(),
@@ -301,7 +302,7 @@ const realm_schema = z.object({
     realm_emails_restricted_to_domains: z.boolean(),
     realm_embedded_bots: NOT_TYPED_YET,
     realm_enable_guest_user_indicator: z.boolean(),
-    realm_enable_read_receipts: NOT_TYPED_YET,
+    realm_enable_read_receipts: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
     realm_giphy_rating: z.number(),
     realm_icon_source: z.string(),

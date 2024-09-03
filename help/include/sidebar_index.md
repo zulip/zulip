@@ -1,5 +1,8 @@
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)
+* [Trying out Zulip](/help/trying-out-zulip)
+* [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Moderating open organizations](/help/moderating-open-organizations)
 * [Setting up Zulip for a class](/help/setting-up-zulip-for-a-class)
@@ -19,8 +22,6 @@
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 
 ## Setting up your organization
-* [Trying out Zulip](/help/trying-out-zulip)
-* [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
 * [Create your organization profile](/help/create-your-organization-profile)
 * [Customize organization settings](/help/customize-organization-settings)

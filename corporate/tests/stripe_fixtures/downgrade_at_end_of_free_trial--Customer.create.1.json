@@ -9,8 +9,8 @@
   "description": "zulip (Zulip Dev)",
   "discount": null,
   "email": "hamlet@zulip.com",
-  "id": "cus_NORMALIZED0001",
-  "invoice_prefix": "NORMA01",
+  "id": "downgrade_at_end_of_free_trial--Customer.create.1.json",
+  "invoice_prefix": "NORMALIZED",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": null,

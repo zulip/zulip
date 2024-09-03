@@ -166,7 +166,13 @@ export class TopicListWidget {
             list_info.items.length === num_possible_topics &&
             stream_topic_history.is_complete_for_stream_id(this.my_stream_id);
 
-        const attrs: [string, string][] = [["class", "topic-list"]];
+        const topic_list_classes: [string] = ["topic-list"];
+
+        if (list_info.items.length > 0) {
+            topic_list_classes.push("topic-list-has-topics");
+        }
+
+        const attrs: [string, string][] = [["class", topic_list_classes.join(" ")]];
 
         const nodes = list_info.items.map((conversation) => keyed_topic_li(conversation));
 

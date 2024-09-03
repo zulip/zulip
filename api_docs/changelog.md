@@ -20,6 +20,27 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 284**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message),
+  [`POST /zulip-outgoing-webhook`](/api/zulip-outgoing-webhooks): Removed
+  the `prev_rendered_content_version` field from the `edit_history` object
+  within message objects and the `update_message` event type as it is an
+  internal server implementation detail not used by any client.
+
+**Feature level 283**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_manage_group` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_manage_group`
+  parameter to support setting the user group whose members can manage the user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_manage_group` parameter to support changing the user group whose
+  members can manage the specified user group.
+
 **Feature level 282**
 
 * `POST users/me/tutorial_status`: Removed this undocumented endpoint,

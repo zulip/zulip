@@ -75,12 +75,6 @@
  *   If typeahead would go off the top of the screen, we set its top to 0 instead.
  *   This patch should be replaced with something more flexible.
  *
- * 7. Ignore IME Enter events:
- *
- *   See #22062 for details. Enter keypress that are part of IME composing are
- *   treated as a separate/invalid -13 key, to prevent them from being incorrectly
- *   processed as a bonus Enter press.
- *
  * 8. Make the typeahead completions undo friendly:
  *
  *   We now use the undo supporting `insert` function from the
@@ -171,18 +165,7 @@ import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
 import * as scroll_util from "./scroll_util";
-import {get_string_diff} from "./util";
-
-function get_pseudo_keycode(
-    event: JQuery.KeyDownEvent | JQuery.KeyUpEvent | JQuery.KeyPressEvent,
-): number {
-    const isComposing = event.originalEvent?.isComposing ?? false;
-    /* We treat IME compose enter keypresses as a separate -13 key. */
-    if (event.keyCode === 13 && isComposing) {
-        return -13;
-    }
-    return event.keyCode;
-}
+import {get_string_diff, the} from "./util";
 
 export function defaultSorter(items: string[], query: string): string[] {
     const beginswith = [];
@@ -262,7 +245,7 @@ export class Typeahead<ItemType extends string | object> {
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
     stopAdvance: boolean;
-    advanceKeyCodes: number[];
+    advanceKeys: string[];
     non_tippy_parent_element: string | undefined;
     values: WeakMap<HTMLElement, ItemType>;
     instance: tippy.Instance | undefined;
@@ -305,7 +288,7 @@ export class Typeahead<ItemType extends string | object> {
         // return a string to show in typeahead items or false.
         this.option_label = options.option_label ?? (() => false);
         this.stopAdvance = options.stopAdvance ?? false;
-        this.advanceKeyCodes = options.advanceKeyCodes ?? [];
+        this.advanceKeys = options.advanceKeys ?? [];
         this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
@@ -322,7 +305,8 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     select(e?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): this {
-        const val = this.values.get(this.$menu.find(".active")[0]!);
+        const active_option = this.$menu.find(".active")[0];
+        const val = active_option ? this.values.get(active_option) : undefined;
         // It's possible that we got here from pressing enter with nothing highlighted.
         if (!this.requireHighlight && val === undefined) {
             return this.hide();
@@ -359,7 +343,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     set_value(): void {
-        const val = this.values.get(this.$menu.find(".active")[0]!);
+        const val = this.values.get(the(this.$menu.find(".active")));
         assert(typeof val === "string");
         if (this.input_element.type === "contenteditable") {
             this.input_element.$element.text(val);
@@ -392,7 +376,7 @@ export class Typeahead<ItemType extends string | object> {
 
         const input_element = this.input_element;
         if (!this.non_tippy_parent_element) {
-            this.instance = tippy.default(input_element.$element[0]!, {
+            this.instance = tippy.default(the(input_element.$element), {
                 // Lets typeahead take the width needed to fit the content
                 // and wraps it if it overflows the visible container.
                 maxWidth: "none",
@@ -425,7 +409,7 @@ export class Typeahead<ItemType extends string | object> {
                 interactive: true,
                 appendTo: () => document.body,
                 showOnCreate: true,
-                content: this.$container[0]!,
+                content: the(this.$container),
                 // We expect the typeahead creator to handle when to hide / show the typeahead.
                 trigger: "manual",
                 arrow: false,
@@ -435,8 +419,8 @@ export class Typeahead<ItemType extends string | object> {
 
                     if (input_element.type === "textarea") {
                         const caret = getCaretCoordinates(
-                            input_element.$element[0]!,
-                            input_element.$element[0]!.selectionStart,
+                            the(input_element.$element),
+                            the(input_element.$element).selectionStart,
                         );
                         // Used to consider the scroll height of textbox in the vertical offset.
                         const scrollTop = input_element.$element.scrollTop() ?? 0;
@@ -554,7 +538,7 @@ export class Typeahead<ItemType extends string | object> {
     render(final_items: ItemType[], matching_items: ItemType[]): this {
         const $items: JQuery[] = final_items.map((item) => {
             const $i = $(ITEM_HTML);
-            this.values.set($i[0]!, item);
+            this.values.set(the($i), item);
             const item_html = this.highlighter_html(item, this.query) ?? "";
             const $item_html = $i.find("a").html(item_html);
 
@@ -649,10 +633,9 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     maybeStopAdvance(e: JQuery.KeyPressEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): void {
-        const pseudo_keycode = get_pseudo_keycode(e);
         if (
-            (this.stopAdvance || (pseudo_keycode !== 9 && pseudo_keycode !== 13)) &&
-            !this.advanceKeyCodes.includes(e.keyCode)
+            (this.stopAdvance || (e.key !== "Tab" && e.key !== "Enter")) &&
+            !this.advanceKeys.includes(e.key)
         ) {
             e.stopPropagation();
         }
@@ -662,27 +645,26 @@ export class Typeahead<ItemType extends string | object> {
         if (!this.shown) {
             return;
         }
-        const pseudo_keycode = get_pseudo_keycode(e);
 
-        switch (pseudo_keycode) {
-            case 9: // tab
+        switch (e.key) {
+            case "Tab":
                 if (!this.tabIsEnter) {
                     return;
                 }
                 e.preventDefault();
                 break;
 
-            case 13: // enter
-            case 27: // escape
+            case "Enter":
+            case "Escape":
                 e.preventDefault();
                 break;
 
-            case 38: // up arrow
+            case "ArrowUp":
                 e.preventDefault();
                 this.prev();
                 break;
 
-            case 40: // down arrow
+            case "ArrowDown":
                 e.preventDefault();
                 this.next();
                 break;
@@ -701,7 +683,6 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keydown(e: JQuery.KeyDownEvent): void {
-        const pseudo_keycode = get_pseudo_keycode(e);
         if (this.trigger_selection(e)) {
             if (!this.shown) {
                 return;
@@ -709,7 +690,9 @@ export class Typeahead<ItemType extends string | object> {
             e.preventDefault();
             this.select(e);
         }
-        this.suppressKeyPressRepeat = ![40, 38, 9, 13, 27].includes(pseudo_keycode);
+        this.suppressKeyPressRepeat = !["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(
+            e.key,
+        );
         this.move(e);
     }
 
@@ -728,14 +711,12 @@ export class Typeahead<ItemType extends string | object> {
         // it did modify the query. For example, `Command + delete` on Mac
         // doesn't trigger a keyup event but when `Command` is released, it
         // triggers a keyup event which correctly updates the list.
-        const pseudo_keycode = get_pseudo_keycode(e);
-
-        switch (pseudo_keycode) {
-            case 40: // down arrow
-            case 38: // up arrow
+        switch (e.key) {
+            case "ArrowDown":
+            case "ArrowUp":
                 break;
 
-            case 9: // tab
+            case "Tab":
                 // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
                 if (!this.tabIsEnter || !this.shown) {
                     return;
@@ -743,24 +724,24 @@ export class Typeahead<ItemType extends string | object> {
 
                 this.select(e);
 
-                if (this.input_element.$element[0]!.id === "stream_message_recipient_topic") {
+                if (the(this.input_element.$element).id === "stream_message_recipient_topic") {
                     assert(this.input_element.type === "input");
                     // Move the cursor to the end of the topic
                     const topic_length = this.input_element.$element.val()!.length;
-                    this.input_element.$element[0]!.selectionStart = topic_length;
-                    this.input_element.$element[0]!.selectionEnd = topic_length;
+                    the(this.input_element.$element).selectionStart = topic_length;
+                    the(this.input_element.$element).selectionEnd = topic_length;
                 }
 
                 break;
 
-            case 13: // enter
+            case "Enter":
                 if (!this.shown) {
                     return;
                 }
                 this.select(e);
                 break;
 
-            case 27: // escape
+            case "Escape":
                 if (!this.shown) {
                     return;
                 }
@@ -772,10 +753,10 @@ export class Typeahead<ItemType extends string | object> {
 
             default:
                 // to stop typeahead from showing up momentarily
-                // when shift (keycode 16) + tabbing to the topic field
+                // when shift + tabbing to the topic field
                 if (
-                    pseudo_keycode === 16 &&
-                    this.input_element.$element[0]!.id === "stream_message_recipient_topic"
+                    e.key === "Shift" &&
+                    the(this.input_element.$element).id === "stream_message_recipient_topic"
                 ) {
                     return;
                 }
@@ -786,7 +767,7 @@ export class Typeahead<ItemType extends string | object> {
                     // the search bar).
                     this.openInputFieldOnKeyUp();
                 }
-                if (pseudo_keycode === 8) {
+                if (e.key === "Backspace") {
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
                 }
@@ -877,7 +858,7 @@ type TypeaheadOptions<ItemType> = {
     items?: number;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     // optional options
-    advanceKeyCodes?: number[];
+    advanceKeys?: string[];
     automated?: () => boolean;
     closeInputFieldOnHide?: () => void;
     dropup?: boolean;

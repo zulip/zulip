@@ -335,6 +335,7 @@ test_people("basics", ({override}) => {
     // Now deactivate isaac
     people.deactivate(isaac);
     assert.equal(people.get_non_active_human_ids().length, 1);
+    assert.equal(people.get_non_active_user_ids_count([isaac.user_id]), 1);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), true);
@@ -852,7 +853,7 @@ test_people("emails_to_full_names_string", () => {
             "unknown-email@example.com",
             maria.email,
         ]),
-        `${charles.full_name}, translated: Unknown user, ${maria.full_name}`,
+        `${charles.full_name}, ${maria.full_name}, translated: Unknown user`,
     );
 });
 
@@ -920,7 +921,7 @@ test_people("message_methods", () => {
     };
     assert.equal(people.pm_with_url(message), "#narrow/dm/301,302-group");
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,301,302-group");
-    assert.equal(people.pm_reply_to(message), "Athens@example.com,charles@example.com");
+    assert.equal(people.pm_reply_to(message), "charles@example.com,Athens@example.com");
     assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png");
 
     message = {

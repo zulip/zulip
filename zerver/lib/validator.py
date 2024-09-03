@@ -572,10 +572,6 @@ def to_non_negative_int(var_name: str, s: str, max_int_size: int = 2**32 - 1) ->
     return x
 
 
-def to_float(var_name: str, s: str) -> float:
-    return float(s)
-
-
 def check_string_or_int_list(var_name: str, val: object) -> str | list[int]:
     if isinstance(val, str):
         return val

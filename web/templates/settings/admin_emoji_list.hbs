@@ -12,7 +12,9 @@
     </td>
     <td>
         {{#if author}}
-        <span class="emoji_author">{{author.full_name}}</span>
+        {{#with author}}
+        <span class="emoji_author panel_user_list">{{> ../user_display_only_pill display_value=full_name img_src=avatar_url}}</span>
+        {{/with}}
         {{else}}
         <span class="emoji_author">{{t "Unknown author" }}</span>
         {{/if}}

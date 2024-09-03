@@ -30,7 +30,7 @@ def mark_narrow_to_dm_with_welcome_bot_new_user_as_read(
                 FROM zerver_userprofile
                 WHERE is_bot = False
                 AND is_mirror_dummy = False
-                AND tutorial_status != "W"
+                AND tutorial_status != 'W'
                 AND id > %(lower_id_bound)s AND id <= %(upper_id_bound)s;
                 """)
             cursor.execute(

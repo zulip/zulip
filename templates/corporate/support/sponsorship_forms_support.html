@@ -1,4 +1,5 @@
-<form method="POST" class="remote-form">
+<p class="support-section-header">💸 Discounts and sponsorship:</p>
+<form method="POST" class="support-form">
     <b>Sponsorship pending</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
@@ -10,7 +11,7 @@
 </form>
 
 {% if sponsorship_data.sponsorship_pending %}
-<form method="POST" class="remote-form">
+<form method="POST" class="support-form">
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
     <input type="hidden" name="approve_sponsorship" value="true" />
@@ -21,7 +22,7 @@
 {% endif %}
 
 {% with %}
-    {% set PLAN_TYPES = REMOTE_PLAN_TIERS %}
+    {% set PLAN_TYPES = PLAN_TYPES %}
     {% include 'corporate/support/sponsorship_discount_forms.html' %}
 {% endwith %}
 

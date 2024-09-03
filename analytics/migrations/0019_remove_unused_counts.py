@@ -21,6 +21,7 @@ class Migration(migrations.Migration):
                     "DELETE FROM analytics_installationcount WHERE property IN %s",
                     (REMOVED_COUNTS,),
                 ),
-            ]
+            ],
+            elidable=True,
         )
     ]

@@ -23,6 +23,7 @@ function FakeElement(selector, opts) {
     const event_store = make_event_store(selector);
 
     const $self = {
+        length: 1,
         [0]: {textContent: text},
         *[Symbol.iterator]() {
             // eslint-disable-next-line unicorn/no-for-loop

@@ -2369,6 +2369,10 @@ paths:
                                 message.
 
                                 [inline-url-previews]: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#inline-url-previews
+
+                                **Changes**: In Zulip 10.0 (feature level 284), removed the
+                                `prev_rendered_content_version` field as it is an internal
+                                server implementation detail not used by any client.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2589,14 +2593,6 @@ paths:
 
                                     The original content of the message with ID `message_id`
                                     immediately prior to this edit, rendered as HTML.
-                                prev_rendered_content_version:
-                                  type: integer
-                                  description: |
-                                    Only present if this event changed the message content.
-
-                                    The Markdown processor version number for the pre-edit message.
-
-                                    Clients should ignore this field.
                                 content:
                                   type: string
                                   description: |
@@ -2644,7 +2640,6 @@ paths:
                                   "orig_rendered_content": "<p>hello</p>",
                                   "content": "new content",
                                   "rendered_content": "<p>new content</p>",
-                                  "prev_rendered_content_version": 1,
                                   "is_me_message": false,
                                   "propagate_mode": "change_all",
                                   "stream_id": 5,
@@ -3156,6 +3151,7 @@ paths:
                                       "description": "Backend team",
                                       "id": 2,
                                       "is_system_group": false,
+                                      "can_manage_group": 16,
                                       "can_mention_group": 11,
                                     },
                                   "id": 0,
@@ -3196,6 +3192,20 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
+                                    can_manage_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value][setting-values] defining the set of users who
+                                            have permission to [manage this group][manage-user-groups]. Only present
+                                            if this user group permissiod setting changed.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 283).
+
+                                            Will be one of the following:
+
+                                            [setting-values]: /api/group-setting-values
+                                            [manage-user-groups]: /help/manage-user-groups
                                     can_mention_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -19529,6 +19539,22 @@ paths:
                   items:
                     type: integer
                   example: [1, 2, 3, 4]
+                can_manage_group:
+                  allOf:
+                    - description: |
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to [manage this user group][manage-user-groups].
+
+                        This setting cannot be set to `"role:internet"` and `"role:everyone"`
+                        [system groups][system-groups].
+
+                        **Changes**: New in Zulip 10.0 (feature level 283).
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                        [manage-user-groups]: /help/manage-user-groups
+                    - $ref: "#/components/schemas/GroupSettingValue"
+                  example: 11
                 can_mention_group:
                   allOf:
                     - description: |
@@ -19558,6 +19584,8 @@ paths:
                 - members
             encoding:
               members:
+                contentType: application/json
+              can_manage_group:
                 contentType: application/json
               can_mention_group:
                 contentType: application/json
@@ -19687,6 +19715,41 @@ paths:
                     a required field.
                   type: string
                   example: The marketing team.
+                can_manage_group:
+                  description: |
+                    The set of users who have permission to [manage this user group][manage-user-groups]
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    This setting cannot be set to `"role:internet"` and `"role:everyone"`
+                    [system groups][system-groups].
+
+                    **Changes**: New in Zulip 10.0 (feature level 283).
+
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                    [manage-user-groups]: /help/manage-user-groups
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to manage the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to manage the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 11,
+                    }
                 can_mention_group:
                   description: |
                     The set of users who have permission to [mention this group][mentions],
@@ -19736,6 +19799,8 @@ paths:
                       "old": 11,
                     }
             encoding:
+              can_manage_group:
+                contentType: application/json
               can_mention_group:
                 contentType: application/json
       responses:
@@ -19853,6 +19918,19 @@ paths:
                                 modified by users.
 
                                 **Changes**: New in Zulip 5.0 (feature level 93).
+                            can_manage_group:
+                              allOf:
+                                - $ref: "#/components/schemas/GroupSettingValue"
+                                - description: |
+                                    A [group-setting value][setting-values] defining the set of users who
+                                    have permission to [manage this user group][manage-user-groups].
+
+                                    **Changes**: New in Zulip 10.0 (feature level 283).
+
+                                    Will be one of the following:
+
+                                    [setting-values]: /api/group-setting-values
+                                    [manage-user-groups]: /help/manage-user-groups
                             can_mention_group:
                               allOf:
                                 - $ref: "#/components/schemas/GroupSettingValue"
@@ -19889,6 +19967,7 @@ paths:
                               "members": [1],
                               "direct_subgroup_ids": [],
                               "is_system_group": true,
+                              "can_manage_group": 16,
                               "can_mention_group": 11,
                             },
                             {
@@ -19898,6 +19977,7 @@ paths:
                               "members": [2],
                               "direct_subgroup_ids": [1],
                               "is_system_group": true,
+                              "can_manage_group": 17,
                               "can_mention_group": 12,
                             },
                             {
@@ -19907,6 +19987,7 @@ paths:
                               "members": [3, 4],
                               "direct_subgroup_ids": [],
                               "is_system_group": false,
+                              "can_manage_group": 20,
                               "can_mention_group": 13,
                             },
                           ],
@@ -21057,6 +21138,19 @@ components:
             directly modified by users.
 
             **Changes**: New in Zulip 5.0 (feature level 93).
+        can_manage_group:
+          allOf:
+            - $ref: "#/components/schemas/GroupSettingValue"
+            - description: |
+                A [group-setting value][setting-values] defining the set of users who
+                have permission to [manage this user group][manage-user-groups].
+
+                **Changes**: New in Zulip 10.0 (feature level 283).
+
+                Will be one of the following:
+
+                [setting-values]: /api/group-setting-values
+                [manage-user-groups]: /help/manage-user-groups
         can_mention_group:
           allOf:
             - $ref: "#/components/schemas/GroupSettingValue"
@@ -21726,13 +21820,6 @@ components:
                   Only present if message's content was edited.
 
                   The rendered HTML representation of `prev_content`.
-              prev_rendered_content_version:
-                type: integer
-                description: |
-                  Only present if message's content was edited.
-
-                  The Markdown processor version number for the message
-                  immediately prior to this edit event.
               prev_stream:
                 type: integer
                 description: |
@@ -21809,6 +21896,10 @@ components:
             will be present in addition to `user_id` and `timestamp`.
 
             [disable-edit-history]: /help/disable-message-edit-history
+
+            **Changes**: In Zulip 10.0 (feature level 284), removed the
+            `prev_rendered_content_version` field as it is an internal
+            server implementation detail not used by any client.
         id:
           type: integer
           description: |

@@ -6,6 +6,7 @@ import assert from "minimalistic-assert";
 
 import {$t} from "./i18n";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 export let flatpickr_instance: flatpickr.Instance;
 
@@ -25,7 +26,7 @@ export function show_flatpickr(
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
-    flatpickr_instance = flatpickr($flatpickr_input[0]!, {
+    flatpickr_instance = flatpickr(util.the($flatpickr_input), {
         mode: "single",
         enableTime: true,
         clickOpens: false,

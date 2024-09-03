@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import * as channel from "../channel";
+import * as util from "../util";
 // Main JavaScript file for the integrations development panel at
 // /devtools/integrations.
 
@@ -73,13 +74,13 @@ const clear_handlers: ClearHandlers = {
         $("#fixture_name").empty();
     },
     fixture_body() {
-        $<HTMLTextAreaElement>("textarea#fixture_body")[0]!.value = "";
+        util.the($<HTMLTextAreaElement>("textarea#fixture_body")).value = "";
     },
     custom_http_headers() {
-        $<HTMLTextAreaElement>("textarea#custom_http_headers")[0]!.value = "{}";
+        util.the($<HTMLTextAreaElement>("textarea#custom_http_headers")).value = "{}";
     },
     results() {
-        $<HTMLTextAreaElement>("textarea#idp-results")[0]!.value = "";
+        util.the($<HTMLTextAreaElement>("textarea#idp-results")).value = "";
     },
 };
 
@@ -153,7 +154,7 @@ function set_results(response: ServerResponse): void {
         }
         data += "\nResponse:       " + response.message + "\n\n";
     }
-    $<HTMLTextAreaElement>("textarea#idp-results")[0]!.value = data;
+    util.the($<HTMLTextAreaElement>("textarea#idp-results")).value = data;
 }
 
 function load_fixture_body(fixture_name: string): void {
@@ -173,8 +174,8 @@ function load_fixture_body(fixture_name: string): void {
         fixture_body = JSON.stringify(fixture_body, null, 4);
     }
     assert(typeof fixture_body === "string");
-    $<HTMLTextAreaElement>("textarea#fixture_body")[0]!.value = fixture_body;
-    $<HTMLTextAreaElement>("textarea#custom_http_headers")[0]!.value = JSON.stringify(
+    util.the($<HTMLTextAreaElement>("textarea#fixture_body")).value = fixture_body;
+    util.the($<HTMLTextAreaElement>("textarea#custom_http_headers")).value = JSON.stringify(
         headers,
         null,
         4,
@@ -187,9 +188,9 @@ function load_fixture_options(integration_name: string): void {
     /* Using the integration name and loaded_fixtures object to set
     the fixture options for the fixture_names dropdown and also set
     the fixture body to the first fixture by default. */
-    const fixtures_options_dropdown = $<HTMLSelectOneElement>(
-        "select:not([multiple])#fixture_name",
-    )[0]!;
+    const fixtures_options_dropdown = util.the(
+        $<HTMLSelectOneElement>("select:not([multiple])#fixture_name"),
+    );
     const fixtures = loaded_fixtures.get(integration_name);
     assert(fixtures !== undefined);
     const fixtures_names = Object.keys(fixtures).sort();
@@ -396,10 +397,12 @@ $(() => {
         "results",
     ]);
 
-    $<HTMLInputElement>("input#stream_name")[0]!.value = "Denmark";
-    $<HTMLInputElement>("input#topic_name")[0]!.value = "Integrations testing";
+    util.the($<HTMLInputElement>("input#stream_name")).value = "Denmark";
+    util.the($<HTMLInputElement>("input#topic_name")).value = "Integrations testing";
 
-    const potential_default_bot = $<HTMLSelectOneElement>("select:not([multiple])#bot_name")[0]![1];
+    const potential_default_bot = util.the(
+        $<HTMLSelectOneElement>("select:not([multiple])#bot_name"),
+    )[1];
     assert(potential_default_bot instanceof HTMLOptionElement);
     if (potential_default_bot !== undefined) {
         potential_default_bot.selected = true;

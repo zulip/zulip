@@ -384,3 +384,8 @@ run_test("get_remaining_time", () => {
 
     MockDate.reset();
 });
+
+run_test("the", () => {
+    const list_with_one_item = ["foo"];
+    assert.equal(util.the(list_with_one_item), "foo");
+});

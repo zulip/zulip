@@ -64,6 +64,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            backfill_realm_uuid_and_secret, reverse_code=migrations.RunPython.noop
+            backfill_realm_uuid_and_secret,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True,
         ),
     ]

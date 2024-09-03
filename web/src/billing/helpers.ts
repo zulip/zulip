@@ -2,6 +2,7 @@ import $ from "jquery";
 import {z} from "zod";
 
 import * as loading from "../loading";
+import * as util from "../util";
 
 export type FormDataObject = Record<string, string>;
 
@@ -162,7 +163,7 @@ export function update_discount_details(
 }
 
 export function is_valid_input($elem: JQuery<HTMLFormElement>): boolean {
-    return $elem[0]!.checkValidity();
+    return util.the($elem).checkValidity();
 }
 
 export function redirect_to_billing_with_successful_upgrade(billing_base_url: string): void {

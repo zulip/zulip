@@ -24,6 +24,7 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
+    do_change_realm_max_invites,
     do_change_realm_org_type,
     do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
@@ -1014,6 +1015,132 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["government"]["id"])
+
+    def test_change_realm_max_invites(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+
+        do_change_realm_max_invites(realm, 1, acting_user=iago)
+        realm = get_realm("zulip")
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": settings.INVITES_DEFAULT_REALM_DAILY_MAX,
+            "new_value": 1,
+            "property": "max_invites",
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+        self.assertEqual(realm.max_invites, 1)
+
+        do_change_realm_max_invites(realm, 0, acting_user=iago)
+        realm = get_realm("zulip")
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {"old_value": 1, "new_value": None, "property": "max_invites"}
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+
+        realm.plan_type = Realm.PLAN_TYPE_PLUS
+        realm.save()
+
+        do_change_realm_max_invites(realm, 0, acting_user=iago)
+        realm = get_realm("zulip")
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": settings.INVITES_DEFAULT_REALM_DAILY_MAX,
+            "new_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            "property": "max_invites",
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_PLUS)
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+
+        realm.plan_type = Realm.PLAN_TYPE_LIMITED
+        realm.save()
+
+        do_change_realm_max_invites(realm, 0, acting_user=iago)
+        realm = get_realm("zulip")
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            "new_value": settings.INVITES_DEFAULT_REALM_DAILY_MAX,
+            "property": "max_invites",
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD
+        realm.save()
+
+        do_change_realm_max_invites(realm, 0, acting_user=iago)
+        realm = get_realm("zulip")
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": settings.INVITES_DEFAULT_REALM_DAILY_MAX,
+            "new_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            "property": "max_invites",
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
+        realm.save()
+
+        do_change_realm_max_invites(realm, 50000, acting_user=iago)
+        realm = get_realm("zulip")
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            "new_value": 50000,
+            "property": "max_invites",
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
+        self.assertEqual(realm.max_invites, 50000)
+
+        do_change_realm_max_invites(realm, 0, acting_user=iago)
+        realm = get_realm("zulip")
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": 50000,
+            "new_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            "property": "max_invites",
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_change_realm_plan_type(self) -> None:

@@ -41,6 +41,11 @@
                             <a href="#channels/all">{{t 'View all channels'}}</a>
                         </span>
                     </div>
+                    <div class="no_stream_match_filter_empty_text">
+                        <span class="settings-empty-option-text">
+                            {{t 'No channels match your filter.'}}
+                        </span>
+                    </div>
                     <div class="all_streams_tab_empty_text">
                         <span class="settings-empty-option-text">
                             {{t 'There are no channels you can view in this organization.'}}
@@ -58,13 +63,17 @@
                     <div id="stream_settings_title" class="stream-info-title">{{t 'Channel settings' }}</div>
                 </div>
                 <div class="nothing-selected">
+                    <button type="button" class="create_stream_button animated-purple-button" {{#unless can_create_streams}}disabled{{/unless}}>{{t 'Create channel' }}</button>
                     {{#if can_create_streams}}
-                    <button type="button" class="create_stream_button animated-purple-button">{{t 'Create channel' }}</button>
                     <span class="settings-empty-option-text">
                         {{#tr}}
                             First time? Read our <z-link>guidelines</z-link> for creating and naming channels.
                             {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                         {{/tr}}
+                    </span>
+                    {{else}}
+                    <span class="settings-empty-option-text">
+                        {{t 'You do not have permission to create channels in this organization.' }}
                     </span>
                     {{/if}}
                 </div>
