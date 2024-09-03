@@ -452,7 +452,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         method: str,
         tags: set[str],
     ) -> None:
-        # Our accounting logic in the `has_request_variables()`
+        # Our accounting logic in the `typed_endpoint`
         # code means we have the list of all arguments
         # accepted by every view function in arguments_map.
         accepted_arguments = set(arguments_map[function_name])
@@ -477,7 +477,7 @@ so maybe we shouldn't include it in pending_endpoints.
 
             try:
                 # Don't include OpenAPI parameters that live in
-                # the path; these are not extracted by REQ.
+                # the path; these are not extracted by typed_endpoint.
                 openapi_parameters = get_openapi_parameters(
                     url_pattern, method, include_url_parameters=False
                 )
@@ -493,8 +493,7 @@ so maybe we shouldn't include it in pending_endpoints.
             #   some processing to match with OpenAPI rules
             #
             # * accepted_arguments is the full set of arguments
-            #   this method accepts (from the REQ declarations in
-            #   code).
+            #   this method accepts.
             #
             # * The documented parameters for the endpoint as recorded in our
             #   OpenAPI data in zerver/openapi/zulip.yaml.
@@ -527,12 +526,12 @@ so maybe we shouldn't include it in pending_endpoints.
 
     def test_openapi_arguments(self) -> None:
         """This end-to-end API documentation test compares the arguments
-        defined in the actual code using @has_request_variables and
-        REQ(), with the arguments declared in our API documentation
+        defined in the actual code using @typed_endpoint,
+        with the arguments declared in our API documentation
         for every API endpoint in Zulip.
 
         First, we import the fancy-Django version of zproject/urls.py
-        by doing this, each has_request_variables wrapper around each
+        by doing this, each typed_endpoint wrapper around each
         imported view function gets called to generate the wrapped
         view function and thus filling the global arguments_map variable.
         Basically, we're exploiting code execution during import.
@@ -540,7 +539,7 @@ so maybe we shouldn't include it in pending_endpoints.
             Then we need to import some view modules not already imported in
         urls.py. We use this different syntax because of the linters complaining
         of an unused import (which is correct, but we do this for triggering the
-        has_request_variables decorator).
+        typed_endpoint decorator).
 
             At the end, we perform a reverse mapping test that verifies that
         every URL pattern defined in the OpenAPI documentation actually exists
@@ -575,11 +574,11 @@ so maybe we shouldn't include it in pending_endpoints.
                 if function is get_events:
                     # Work around the fact that the registered
                     # get_events view function isn't where we do
-                    # @has_request_variables.
+                    # @typed_endpoint.
                     #
                     # TODO: Make this configurable via an optional argument
-                    # to has_request_variables, e.g.
-                    # @has_request_variables(view_func_name="zerver.tornado.views.get_events")
+                    # to typed_endpoint, e.g.
+                    # @typed_endpoint(view_func_name="zerver.tornado.views.get_events")
                     function = get_events_backend
 
                 function_name = f"{function.__module__}.{function.__name__}"
