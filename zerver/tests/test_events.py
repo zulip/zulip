@@ -3853,7 +3853,7 @@ class RealmPropertyActionTest(BaseAction):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=self.user_profile.realm,
-                event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
+                event_type=AuditLogEventType.REALM_DEFAULT_USER_SETTINGS_CHANGED,
                 event_time__gte=now,
                 acting_user=self.user_profile,
             ).count(),
@@ -3874,7 +3874,7 @@ class RealmPropertyActionTest(BaseAction):
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
-                    event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
+                    event_type=AuditLogEventType.REALM_DEFAULT_USER_SETTINGS_CHANGED,
                     event_time__gte=now,
                     acting_user=self.user_profile,
                     extra_data={

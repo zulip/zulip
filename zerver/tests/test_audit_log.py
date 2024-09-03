@@ -829,7 +829,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_DOMAIN_ADDED,
+                event_type=AuditLogEventType.REALM_DOMAIN_ADDED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,
@@ -850,7 +850,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_DOMAIN_CHANGED,
+                event_type=AuditLogEventType.REALM_DOMAIN_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,
@@ -871,7 +871,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_DOMAIN_REMOVED,
+                event_type=AuditLogEventType.REALM_DOMAIN_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,
@@ -903,7 +903,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_PLAYGROUND_ADDED,
+                event_type=AuditLogEventType.REALM_PLAYGROUND_ADDED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,
@@ -930,7 +930,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_PLAYGROUND_REMOVED,
+                event_type=AuditLogEventType.REALM_PLAYGROUND_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,
@@ -961,7 +961,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_LINKIFIER_ADDED,
+                event_type=AuditLogEventType.REALM_LINKIFIER_ADDED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,
@@ -989,7 +989,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_LINKIFIER_CHANGED,
+                event_type=AuditLogEventType.REALM_LINKIFIER_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,
@@ -1014,7 +1014,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_LINKIFIER_REMOVED,
+                event_type=AuditLogEventType.REALM_LINKIFIER_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,
@@ -1058,7 +1058,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_EMOJI_ADDED,
+                event_type=AuditLogEventType.REALM_EMOJI_ADDED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,
@@ -1089,7 +1089,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.REALM_EMOJI_REMOVED,
+                event_type=AuditLogEventType.REALM_EMOJI_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=expected_extra_data,

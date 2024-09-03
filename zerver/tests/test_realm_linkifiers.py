@@ -7,6 +7,7 @@ from typing_extensions import override
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmAuditLog, RealmFilter
 from zerver.models.linkifiers import url_template_validator
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 class RealmFilterTest(ZulipTestCase):
@@ -278,7 +279,7 @@ class RealmFilterTest(ZulipTestCase):
             """Check if the audit log created orders the linkifiers correctly"""
             extra_data = (
                 RealmAuditLog.objects.filter(
-                    acting_user=iago, event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED
+                    acting_user=iago, event_type=AuditLogEventType.REALM_LINKIFIERS_REORDERED
                 )
                 .latest("event_time")
                 .extra_data
@@ -307,7 +308,7 @@ class RealmFilterTest(ZulipTestCase):
         reorder_verify_succeed([])
         self.assertEqual(
             RealmAuditLog.objects.filter(
-                realm=iago.realm, event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED
+                realm=iago.realm, event_type=AuditLogEventType.REALM_LINKIFIERS_REORDERED
             ).count(),
             0,
         )

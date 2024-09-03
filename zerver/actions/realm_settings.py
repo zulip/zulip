@@ -470,7 +470,7 @@ def do_set_realm_user_default_setting(
 
     RealmAuditLog.objects.create(
         realm=realm,
-        event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
+        event_type=AuditLogEventType.REALM_DEFAULT_USER_SETTINGS_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
         extra_data={
@@ -687,7 +687,7 @@ def do_change_realm_org_type(
     realm.save(update_fields=["org_type"])
 
     RealmAuditLog.objects.create(
-        event_type=RealmAuditLog.REALM_ORG_TYPE_CHANGED,
+        event_type=AuditLogEventType.REALM_ORG_TYPE_CHANGED,
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,

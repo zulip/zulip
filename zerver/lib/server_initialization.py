@@ -14,6 +14,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.presence import PresenceSequence
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import get_system_bot
 from zproject.backends import all_default_backend_names
 
@@ -37,7 +38,7 @@ def create_internal_realm() -> None:
     realm.save()
 
     RealmAuditLog.objects.create(
-        realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
+        realm=realm, event_type=AuditLogEventType.REALM_CREATED, event_time=realm.date_created
     )
     RealmUserDefault.objects.create(realm=realm)
     create_system_user_groups_for_realm(realm)

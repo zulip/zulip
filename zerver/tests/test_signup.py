@@ -79,6 +79,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
@@ -1448,7 +1449,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual("new organizations", messages[0].topic_name())
 
         realm_creation_audit_log = RealmAuditLog.objects.get(
-            realm=realm, event_type=RealmAuditLog.REALM_CREATED
+            realm=realm, event_type=AuditLogEventType.REALM_CREATED
         )
         self.assertEqual(realm_creation_audit_log.acting_user, user)
         self.assertEqual(realm_creation_audit_log.event_time, realm.date_created)

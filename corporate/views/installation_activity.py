@@ -28,7 +28,7 @@ from corporate.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
 from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
 from zerver.models import Realm
-from zerver.models.realm_audit_logs import RealmAuditLog
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_org_type_display_name
 
 
@@ -187,7 +187,7 @@ def realm_summary_table() -> str:
             "active_users_audit_end_time": COUNT_STATS[
                 "active_users_audit:is_bot:day"
             ].last_successful_fill(),
-            "realm_creation_event_type": RealmAuditLog.REALM_CREATED,
+            "realm_creation_event_type": AuditLogEventType.REALM_CREATED,
         },
     )
     rows = dictfetchall(cursor)

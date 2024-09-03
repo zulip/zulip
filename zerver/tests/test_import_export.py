@@ -1325,7 +1325,7 @@ class RealmImportExportTest(ExportFile):
                 event_type__in=[
                     AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
                     RealmAuditLog.STREAM_CREATED,
-                    RealmAuditLog.REALM_IMPORTED,
+                    AuditLogEventType.REALM_IMPORTED,
                 ]
             )
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
