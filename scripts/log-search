@@ -454,9 +454,9 @@ def print_line(
         ts = match["time"]
 
     if match["duration"].endswith("ms"):
-        duration_ms = int(match["duration"][:-2])
+        duration_ms = int(match["duration"].removesuffix("ms"))
     else:
-        duration_ms = int(float(match["duration"][:-1]) * 1000)
+        duration_ms = int(float(match["duration"].removesuffix("s")) * 1000)
 
     code = int(match["code"])
     indicator = " "

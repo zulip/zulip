@@ -165,8 +165,8 @@ class BaseDocumentationSpider(scrapy.Spider):
             if split_url.hostname == "github.com" and f"{split_url.path}/".startswith(
                 f"{ZULIP_SERVER_GITHUB_FILE_PATH_PREFIX}/"
             ):
-                file_path = (
-                    DEPLOY_ROOT + split_url.path[len(ZULIP_SERVER_GITHUB_FILE_PATH_PREFIX) :]
+                file_path = DEPLOY_ROOT + split_url.path.removeprefix(
+                    ZULIP_SERVER_GITHUB_FILE_PATH_PREFIX
                 )
                 if not os.path.isfile(file_path):
                     self.logger.error(
@@ -176,8 +176,8 @@ class BaseDocumentationSpider(scrapy.Spider):
             elif split_url.hostname == "github.com" and f"{split_url.path}/".startswith(
                 f"{ZULIP_SERVER_GITHUB_DIRECTORY_PATH_PREFIX}/"
             ):
-                dir_path = (
-                    DEPLOY_ROOT + split_url.path[len(ZULIP_SERVER_GITHUB_DIRECTORY_PATH_PREFIX) :]
+                dir_path = DEPLOY_ROOT + split_url.path.removeprefix(
+                    ZULIP_SERVER_GITHUB_DIRECTORY_PATH_PREFIX
                 )
                 if not os.path.isdir(dir_path):
                     self.logger.error(

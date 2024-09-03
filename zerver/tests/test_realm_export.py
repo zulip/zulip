@@ -71,7 +71,7 @@ class RealmExportTest(ZulipTestCase):
         # Test that the file is hosted, and the contents are as expected.
         export_path = audit_log_entry.extra_data["export_path"]
         assert export_path.startswith("/")
-        path_id = export_path[1:]
+        path_id = export_path.removeprefix("/")
         self.assertEqual(bucket.Object(path_id).get()["Body"].read(), b"zulip!")
 
         result = self.client_get("/json/export/realm")

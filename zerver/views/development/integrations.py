@@ -94,9 +94,7 @@ def get_fixtures(request: HttpRequest, *, integration_name: PathOnly[str]) -> Ht
         )
 
         def fix_name(header: str) -> str:  # nocoverage
-            if header.startswith("HTTP_"):  # HTTP_ is a prefix intended for Django.
-                return header[len("HTTP_") :]
-            return header
+            return header.removeprefix("HTTP_")  # HTTP_ is a prefix intended for Django.
 
         headers = {fix_name(k): v for k, v in headers_raw.items()}
         fixtures[fixture] = {"body": body, "headers": headers}

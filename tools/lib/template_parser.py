@@ -186,9 +186,7 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
                 kind = "handlebars_else"
             elif looking_at_handlebars_start():
                 s = get_handlebars_tag(text, state.i)
-                tag = s[3:-2].split()[0].strip("#")
-                if tag.startswith("*"):
-                    tag = tag[1:]
+                tag = s[3:-2].split()[0].strip("#").removeprefix("*")
                 kind = "handlebars_start"
             elif looking_at_handlebars_end():
                 s = get_handlebars_tag(text, state.i)

@@ -12,7 +12,7 @@ def get_widget_data(content: str) -> tuple[str | None, Any]:
 
     # tokens[0] will always exist
     if tokens[0].startswith("/"):
-        widget_type = tokens[0][1:]
+        widget_type = tokens[0].removeprefix("/")
         if widget_type in valid_widget_types:
             remaining_content = content.replace(tokens[0], "", 1)
             extra_data = get_extra_data_from_widget_type(remaining_content, widget_type)

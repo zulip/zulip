@@ -29,7 +29,7 @@ class StaticImageProcessor(markdown.treeprocessors.Treeprocessor):
         for img in root.iter("img"):
             url = img.get("src")
             if url is not None and url.startswith("/static/"):
-                img.set("src", staticfiles_storage.url(url[len("/static/") :]))
+                img.set("src", staticfiles_storage.url(url.removeprefix("/static/")))
 
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownStaticImagesGenerator:

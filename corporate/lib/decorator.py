@@ -135,10 +135,7 @@ def get_next_page_param_from_request_path(request: HttpRequest) -> str | None:
     # Therefore we can use this nice property to figure out easily what
     # kind of page the user is trying to access and find the right value
     # for the `next` query parameter.
-    path = request.path
-    if path.endswith("/"):
-        path = path[:-1]
-
+    path = request.path.removesuffix("/")
     page_type = path.split("/")[-1]
 
     from corporate.views.remote_billing_page import (

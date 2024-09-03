@@ -14,7 +14,7 @@ def compute_mit_user_fullname(email: str) -> str:
             if hesiod_name != "":
                 return hesiod_name
         elif match_user:
-            return match_user.group(1).lower() + "@" + match_user.group(2).upper()[1:]
+            return match_user.group(1).lower() + "@" + match_user.group(2).upper().removeprefix("|")
     except DNS.Base.ServerError:
         pass
     except Exception:

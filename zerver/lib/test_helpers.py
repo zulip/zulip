@@ -489,14 +489,10 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                 find_pattern(pattern, prefixes)
 
         def cleanup_url(url: str) -> str:
-            if url.startswith("/"):
-                url = url[1:]
-            if url.startswith("http://testserver/"):
-                url = url[len("http://testserver/") :]
-            if url.startswith("http://zulip.testserver/"):
-                url = url[len("http://zulip.testserver/") :]
-            if url.startswith("http://testserver:9080/"):
-                url = url[len("http://testserver:9080/") :]
+            url = url.removeprefix("/")
+            url = url.removeprefix("http://testserver/")
+            url = url.removeprefix("http://zulip.testserver/")
+            url = url.removeprefix("http://testserver:9080/")
             return url
 
         def find_pattern(pattern: Any, prefixes: list[str]) -> None:
@@ -516,7 +512,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
                 for prefix in prefixes:
                     if url.startswith(prefix):
-                        match_url = url[len(prefix) :]
+                        match_url = url.removeprefix(prefix)
                         if pattern.resolve(match_url):
                             if call["status_code"] in [200, 204, 301, 302]:
                                 cnt += 1

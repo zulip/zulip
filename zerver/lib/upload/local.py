@@ -239,7 +239,7 @@ class LocalUploadBackend(ZulipUploadBackend):
     def delete_export_tarball(self, export_path: str) -> str | None:
         # Get the last element of a list in the form ['user_avatars', '<file_path>']
         assert export_path.startswith("/")
-        file_path = export_path[1:].split("/", 1)[-1]
+        file_path = export_path.removeprefix("/").split("/", 1)[-1]
         if delete_local_file("avatars", file_path):
             return export_path
         return None
