@@ -24,7 +24,6 @@ from typing_extensions import ParamSpec
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
 from zerver.lib.request import (
-    _REQ,
     RequestConfusingParamsError,
     RequestNotes,
     RequestVariableMissingError,
@@ -461,9 +460,6 @@ def typed_endpoint(
             view_func_name=endpoint_info.view_func_full_name
         )
     for func_param in endpoint_info.parameters:
-        assert not isinstance(
-            func_param.default, _REQ
-        ), f"Unexpected REQ for parameter {func_param.param_name}; REQ is incompatible with typed_endpoint"
         if func_param.path_only:
             assert (
                 func_param.default is NotSpecified
@@ -579,6 +575,4 @@ def typed_endpoint(
 
         return return_value
 
-    # TODO: Remove this once we replace has_request_variables with typed_endpoint.
-    _wrapped_view_func.use_endpoint = True  # type: ignore[attr-defined] # Distinguish functions decorated with @typed_endpoint from those decorated with has_request_variables
     return _wrapped_view_func

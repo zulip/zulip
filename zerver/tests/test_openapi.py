@@ -438,16 +438,10 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         # Iterate through the decorators to find the original
         # function, wrapped by typed_endpoint, so we can parse its
         # arguments.
-        use_endpoint_decorator = False
         while (wrapped := getattr(function, "__wrapped__", None)) is not None:
-            # TODO: Remove this check once we replace has_request_variables with
-            # typed_endpoint.
-            if getattr(function, "use_endpoint", False):
-                use_endpoint_decorator = True
             function = wrapped
 
         if len(openapi_parameters) > 0:
-            assert use_endpoint_decorator
             return self.validate_json_schema(function, openapi_parameters)
 
     def check_openapi_arguments_for_view(
