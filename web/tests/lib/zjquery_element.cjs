@@ -4,8 +4,6 @@ const assert = require("node:assert/strict");
 
 const FakeEvent = require("./zjquery_event.cjs");
 
-const noop = function () {};
-
 function split_words(x) {
     return Array.isArray(x) ? x : x.trim().split(/\s+/);
 }
@@ -62,11 +60,24 @@ class FakeClassList extends RejectMissing {
 }
 
 class FakeElementState {
+    jquery_data = new Map();
     selector = undefined;
     shown = false;
 }
 
 const fake_element_state = new WeakMap();
+
+function decamel(s) {
+    return s.replaceAll(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+}
+
+function normalize_attribute(name) {
+    return String(name).replaceAll(/[A-Z]/g, (c) => c.toLowerCase());
+}
+
+function dataset_key_to_attribute(key) {
+    return `data-${decamel(key)}`;
+}
 
 class FakeElement extends RejectMissing {
     _tippy = undefined;
@@ -75,9 +86,23 @@ class FakeElement extends RejectMissing {
     textContent = "never-been-set";
     value = undefined;
 
+    #attributes = new Map();
+
     constructor() {
         super();
         fake_element_state.set(this, new FakeElementState());
+    }
+    hasAttribute(name) {
+        return this.#attributes.has(normalize_attribute(name));
+    }
+    getAttribute(name) {
+        return this.#attributes.get(normalize_attribute(name)) ?? null;
+    }
+    removeAttribute(name) {
+        this.#attributes.delete(normalize_attribute(name));
+    }
+    setAttribute(name, value) {
+        this.#attributes.set(normalize_attribute(name), String(value));
     }
 }
 
@@ -88,7 +113,6 @@ exports.FakeJQuery = function (selector, opts) {
     const find_results = new Map();
     let $my_parent;
     const parents_result = new Map();
-    const attrs = new Map();
     const event_store = make_event_store(selector);
 
     const $self = {
@@ -110,18 +134,50 @@ exports.FakeJQuery = function (selector, opts) {
             assert.notEqual(typeof arg, "string");
             return this;
         },
-        attr(name, val) {
-            if (val === undefined) {
-                return attrs.get(name);
+        attr(name, ...args) {
+            assert.notEqual(name, undefined);
+            if (args.length === 0) {
+                return 0 in this ? (this[0].getAttribute(name) ?? undefined) : undefined;
             }
-            attrs.set(name, val);
+            const [value] = args;
+            for (const element of this) {
+                element.setAttribute(name, value);
+            }
             return this;
         },
-        data(name, val) {
-            if (val === undefined) {
-                return attrs.get("data-" + name);
+        data(key, ...args) {
+            if (args.length === 0) {
+                if (!(0 in this)) {
+                    return undefined;
+                }
+                const state = fake_element_state.get(this[0]);
+                if (state.jquery_data.has(key)) {
+                    return state.jquery_data.get(key);
+                }
+                let value = this[0].getAttribute(dataset_key_to_attribute(key));
+
+                if (value === null) {
+                    return null;
+                }
+
+                if (/^true$|^false$|^null$|^{.*}$|^\[.*]$/s.test(value)) {
+                    try {
+                        value = JSON.parse(value);
+                    } catch {
+                        // use the unparsed value
+                    }
+                } else if (Number(value).toString() === value) {
+                    value = Number(value);
+                }
+
+                state.jquery_data.set(key, value);
+                return value;
             }
-            attrs.set("data-" + name, val);
+
+            const [value] = args;
+            for (const element of this) {
+                fake_element_state.get(element).jquery_data.set(key, value);
+            }
             return this;
         },
         each(callback) {
@@ -260,7 +316,9 @@ exports.FakeJQuery = function (selector, opts) {
             return this;
         },
         removeAttr(name) {
-            attrs.delete(name);
+            for (const element of this) {
+                element.removeAttribute(name);
+            }
             return this;
         },
         removeClass(class_names) {
@@ -281,7 +339,16 @@ exports.FakeJQuery = function (selector, opts) {
                 for node testing.
             `);
         },
-        removeData: noop,
+        removeData(keys) {
+            keys = split_words(keys);
+            for (const element of this) {
+                const state = fake_element_state.get(element);
+                for (const key of keys) {
+                    state.jquery_data.delete(key);
+                }
+            }
+            return this;
+        },
         set_find_results(find_selector, $jquery_object) {
             assert.notEqual(
                 $jquery_object,
