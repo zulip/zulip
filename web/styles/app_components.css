@@ -109,52 +109,52 @@ input::placeholder {
     @extend .placeholder;
 }
 
-.new-style {
-    /* -- base button styling -- */
-    .button {
-        padding: 7px 14px;
-        margin: 0;
-        min-width: 130px;
+/* -- base button styling -- */
 
-        font-weight: 400;
-        line-height: normal;
-        text-align: center;
+.button {
+    padding: 7px 14px;
+    margin: 0;
+    min-width: 130px;
 
-        background-color: hsl(0deg 0% 100%);
-        color: inherit;
+    font-weight: 400;
+    line-height: normal;
+    text-align: center;
+
+    background-color: hsl(0deg 0% 100%);
+    color: inherit;
+    outline: none;
+    border: 1px solid hsl(0deg 0% 80%);
+    border-radius: 2px;
+
+    box-shadow: none;
+
+    cursor: pointer;
+
+    /* -- button style variations -- */
+    &.no-style {
+        padding: 0;
+        background-color: transparent;
+        border: none;
+        min-width: 0;
+        width: auto;
         outline: none;
-        border: 1px solid hsl(0deg 0% 80%);
-        border-radius: 2px;
+        box-shadow: none !important;
+    }
 
-        box-shadow: none;
+    &.rounded {
+        border-radius: 4px;
+    }
 
-        cursor: pointer;
+    &.green {
+        background-color: hsl(150deg 31% 53%);
+    }
 
-        /* -- button style variations -- */
-        &.no-style {
-            padding: 0;
-            background-color: transparent;
-            border: none;
-            min-width: 0;
-            width: auto;
-            outline: none;
-            box-shadow: none !important;
-        }
+    &.grey {
+        background-color: hsl(0deg 0% 67%);
+    }
 
-        &.rounded {
-            border-radius: 4px;
-        }
-
-        &.green {
-            background-color: hsl(150deg 31% 53%);
-        }
-
-        &.grey {
-            background-color: hsl(0deg 0% 67%);
-        }
-
-        &.small {
-            /* This value was 0.8rem in the past. When using rem,
+    &.small {
+        /* This value was 0.8rem in the past. When using rem,
                the root font size was 16px when the base font-size was
                14px. Now, we have two modes, one with 14px base
                font-size and one with 16px base font-size. We multiply
@@ -165,100 +165,99 @@ input::placeholder {
                TODO: Refactor this part to either use `em` or `rem`
                and not this temporary hack of using calc() and
                variables. */
-            font-size: calc(0.9143 * var(--base-font-size-px));
-            min-width: inherit;
-            padding: 6px 10px;
+        font-size: calc(0.9143 * var(--base-font-size-px));
+        min-width: inherit;
+        padding: 6px 10px;
+    }
+
+    &:hover,
+    &:focus {
+        border-color: hsl(0deg 0% 60%);
+    }
+
+    &:active {
+        border-color: hsl(0deg 0% 60%);
+        color: inherit;
+        background-color: hsl(0deg 0% 95%);
+    }
+
+    &.add-subscription-button {
+        &:focus-visible {
+            border: 1px solid;
+            border-color: var(
+                --color-border-add-subscription-button-focus
+            ) !important;
         }
+    }
+
+    &.sea-green {
+        color: hsl(156deg 41% 40%);
+        border-color: hsl(156deg 28% 70%);
 
         &:hover,
         &:focus {
-            border-color: hsl(0deg 0% 60%);
+            border-color: hsl(156deg 30% 50%);
         }
 
         &:active {
-            border-color: hsl(0deg 0% 60%);
-            color: inherit;
-            background-color: hsl(0deg 0% 95%);
+            border-color: hsl(156deg 30% 40%);
+            color: hsl(156deg 44% 43%);
+            background-color: hsl(154deg 33% 96%);
+        }
+    }
+
+    &.btn-warning {
+        color: hsl(35deg 70% 56%);
+        border-color: hsl(35deg 98% 84%);
+
+        &:hover,
+        &:focus {
+            border-color: hsl(35deg 55% 70%);
         }
 
-        &.add-subscription-button {
-            &:focus-visible {
-                border: 1px solid;
-                border-color: var(
-                    --color-border-add-subscription-button-focus
-                ) !important;
-            }
+        &:active {
+            color: hsl(35deg 82% 40%);
+            border-color: hsl(35deg 55% 70%);
+            background-color: hsl(33deg 48% 96%);
+        }
+    }
+
+    &.btn-danger {
+        color: hsl(357deg 64% 72%);
+        border-color: hsl(4deg 56% 82%);
+
+        &:hover,
+        &:focus {
+            border-color: hsl(2deg 46% 68%);
         }
 
-        &.sea-green {
-            color: hsl(156deg 41% 40%);
-            border-color: hsl(156deg 28% 70%);
-
-            &:hover,
-            &:focus {
-                border-color: hsl(156deg 30% 50%);
-            }
-
-            &:active {
-                border-color: hsl(156deg 30% 40%);
-                color: hsl(156deg 44% 43%);
-                background-color: hsl(154deg 33% 96%);
-            }
+        &:active {
+            color: hsl(357deg 55% 63%);
+            border-color: hsl(2deg 46% 68%);
+            background-color: hsl(7deg 82% 98%);
         }
+    }
 
-        &.btn-warning {
-            color: hsl(35deg 70% 56%);
-            border-color: hsl(35deg 98% 84%);
+    &.btn-link {
+        color: hsl(208deg 56% 53%);
+        text-decoration: none;
 
-            &:hover,
-            &:focus {
-                border-color: hsl(35deg 55% 70%);
-            }
-
-            &:active {
-                color: hsl(35deg 82% 40%);
-                border-color: hsl(35deg 55% 70%);
-                background-color: hsl(33deg 48% 96%);
-            }
+        &:hover,
+        &:focus {
+            color: hsl(208deg 56% 38%);
         }
+    }
 
-        &.btn-danger {
-            color: hsl(357deg 64% 72%);
-            border-color: hsl(4deg 56% 82%);
+    &:disabled {
+        cursor: not-allowed;
+        filter: saturate(0);
+        background-color: hsl(0deg 0% 93%);
+        color: hsl(0deg 3% 52%);
 
-            &:hover,
-            &:focus {
-                border-color: hsl(2deg 46% 68%);
-            }
-
-            &:active {
-                color: hsl(357deg 55% 63%);
-                border-color: hsl(2deg 46% 68%);
-                background-color: hsl(7deg 82% 98%);
-            }
-        }
-
-        &.btn-link {
-            color: hsl(208deg 56% 53%);
-            text-decoration: none;
-
-            &:hover,
-            &:focus {
-                color: hsl(208deg 56% 38%);
-            }
-        }
-
-        &:disabled {
-            cursor: not-allowed;
-            filter: saturate(0);
+        &:hover {
             background-color: hsl(0deg 0% 93%);
-            color: hsl(0deg 3% 52%);
-
-            &:hover {
-                background-color: hsl(0deg 0% 93%);
-                color: hsl(156deg 39% 54%);
-                border-color: hsl(156deg 39% 77%);
-            }
+            color: hsl(156deg 39% 54%);
+            border-color: hsl(156deg 39% 77%);
         }
     }
 }

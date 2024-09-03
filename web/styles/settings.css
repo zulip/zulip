@@ -193,11 +193,6 @@ h3,
     }
 }
 
-td .button {
-    margin: 2px 0;
-    box-shadow: none;
-}
-
 #language_selection_modal {
     & table {
         width: 90%;
@@ -347,12 +342,9 @@ select.settings_select {
     word-break: normal;
 }
 
-.button,
 .input-group {
     margin: 0 0 20px;
-}
 
-.input-group {
     /* Class to use when the following input-group is related and should
        appear just after this element. Normally the margin is 20px, but
        for related settings, we set it to 10px. */
