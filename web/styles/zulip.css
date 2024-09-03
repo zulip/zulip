@@ -1887,7 +1887,7 @@ body:not(.hide-left-sidebar) {
             background: hsl(240deg 96% 68% / 50%);
             border-radius: 50%;
 
-            & i {
+            & .scroll-to-bottom-icon {
                 color: hsl(0deg 0% 100%);
                 margin: 0 auto;
                 font-size: 21px;
