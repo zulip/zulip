@@ -93,6 +93,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to next unread topic**: <kbd>N</kbd>
 
+* **Go to next unread followed topic**: <kbd>Shift</kbd> + <kbd>N</kbd>
+
 * **Go to next unread direct message**: <kbd>P</kbd>
 
 * **Go to topic or DM conversation**: <kbd>S</kbd>
