@@ -369,14 +369,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
 
     // active stream-row is not included in results
     $(".stream-row-denmark").addClass("active");
-    $(".stream-row.active").hasClass = (cls) => {
-        assert.equal(cls, "notdisplayed");
-        return $(".stream-row-denmark").hasClass("active");
-    };
-    $(".stream-row.active").removeClass = (cls) => {
-        assert.equal(cls, "active");
-        $(".stream-row-denmark").removeClass("active");
-    };
+    $.set_results(".stream-row.active", [$(".stream-row-denmark")[0]]);
 
     test_filter({input: "d", show_subscribed: true}, [poland]);
     assert.ok($(".stream-row-denmark").hasClass("active"));
