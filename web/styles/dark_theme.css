@@ -410,7 +410,6 @@
     input[type="url"],
     input[type="date"],
     textarea,
-    .new-style .tab-switcher .ind-tab:not(.selected),
     select,
     .pill-container,
     .user-status-content-wrapper,
@@ -475,14 +474,9 @@
         border-color: hsl(0deg 0% 0% / 60%);
     }
 
-    .new-style .tab-switcher .ind-tab.selected,
     .table-striped thead th {
         background-color: hsl(0deg 0% 0% / 50%);
         border-color: hsl(0deg 0% 0% / 90%);
-    }
-
-    .ind-tab.disabled {
-        color: hsl(0deg 0% 42% / 90%) !important;
     }
 
     & input[type="text"]:focus,
