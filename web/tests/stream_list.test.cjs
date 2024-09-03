@@ -380,7 +380,7 @@ function initialize_stream_data() {
 }
 
 function elem($obj) {
-    return {to_$: () => $obj};
+    return {to_$: () => $obj, classList: $obj[0].classList};
 }
 
 test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
@@ -409,11 +409,6 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     assert.ok($stream_li2.hasClass("hide"));
     assert.ok($("#streams_list").hasClass("zoom-in"));
     assert.ok(filter_topics_appended);
-
-    $("#stream_filters li.narrow-filter").toggleClass = (classname, value) => {
-        $stream_li1.toggleClass(classname, value);
-        $stream_li2.toggleClass(classname, value);
-    };
 
     $(".filter-topics").remove = () => {
         filter_topics_appended = false;

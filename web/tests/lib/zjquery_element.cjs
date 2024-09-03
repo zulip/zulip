@@ -6,6 +6,10 @@ const FakeEvent = require("./zjquery_event.cjs");
 
 const noop = function () {};
 
+function split_words(x) {
+    return Array.isArray(x) ? x : x.trim().split(/\s+/);
+}
+
 const ignore_missing = Symbol("ignore_missing");
 
 const reject_missing_handler = {
@@ -32,8 +36,34 @@ class RejectMissing {
     }
 }
 
+class FakeClassList extends RejectMissing {
+    #list = new Set();
+
+    contains(class_name) {
+        return this.#list.has(class_name);
+    }
+    add(...class_names) {
+        for (const class_name of class_names) {
+            this.#list.add(String(class_name));
+        }
+    }
+    remove(...class_names) {
+        for (const class_name of class_names) {
+            this.#list.delete(String(class_name));
+        }
+    }
+    toggle(class_name, state = !this.#list.has(String(class_name))) {
+        if (state) {
+            this.#list.add(String(class_name));
+        } else {
+            this.#list.delete(String(class_name));
+        }
+    }
+}
+
 class FakeElement extends RejectMissing {
     _tippy = undefined;
+    classList = new FakeClassList();
 }
 
 // TODO: convert this to a true class
@@ -49,13 +79,15 @@ exports.FakeJQuery = function (selector, opts) {
     const parents_result = new Map();
     const properties = new Map();
     const attrs = new Map();
-    const classes = new Map();
     const event_store = make_event_store(selector);
 
     const $self = {
         [Symbol.iterator]: Array.prototype.values,
-        addClass(class_name) {
-            classes.set(class_name, true);
+        addClass(class_names) {
+            class_names = split_words(class_names);
+            for (const element of this) {
+                element.classList.add(...class_names);
+            }
             return this;
         },
         append(arg) {
@@ -128,7 +160,7 @@ exports.FakeJQuery = function (selector, opts) {
             return event_store.get_on_handler(name, child_selector);
         },
         hasClass(class_name) {
-            return classes.has(class_name);
+            return [...this].some((element) => element.classList.contains(class_name));
         },
         height() {
             assert.notEqual(height, undefined, `Please call $("${selector}").set_height`);
@@ -201,9 +233,9 @@ exports.FakeJQuery = function (selector, opts) {
             return this;
         },
         removeClass(class_names) {
-            class_names = class_names.split(" ");
-            for (const class_name of class_names) {
-                classes.delete(class_name);
+            class_names = split_words(class_names);
+            for (const element of this) {
+                element.classList.remove(...class_names);
             }
             return this;
         },
@@ -258,11 +290,12 @@ exports.FakeJQuery = function (selector, opts) {
             shown = show;
             return this;
         },
-        toggleClass(class_name, add) {
-            if (add) {
-                classes.set(class_name, true);
-            } else {
-                classes.delete(class_name);
+        toggleClass(class_names, add) {
+            class_names = split_words(class_names);
+            for (const element of this) {
+                for (const class_name of class_names) {
+                    element.classList.toggle(class_name, add);
+                }
             }
             return this;
         },
