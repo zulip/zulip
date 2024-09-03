@@ -12779,6 +12779,16 @@ paths:
                     type: object
                   example:
                     [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
+                new_email:
+                  description: |
+                    New email address for the user. Requires the user making
+                    the request to be an organization administrator and
+                    additionally have the `.can_change_user_emails` special
+                    permission.
+
+                    **Changes**: New in Zulip 10.0 (feature level 313).
+                  type: string
+                  example: username@example.com
             encoding:
               role:
                 contentType: application/json

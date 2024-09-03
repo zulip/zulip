@@ -59,7 +59,8 @@ with test_server_running(
     # Prepare the admin client
     email = "iago@zulip.com"  # Iago is an admin
     realm = get_realm("zulip")
-    user = get_user(email, realm)
+    iago = get_user(email, realm)
+    user = iago
 
     # Iago needs permission to manage all user groups.
     admins_group = NamedUserGroup.objects.get(
@@ -69,9 +70,10 @@ with test_server_running(
         realm, "can_manage_all_groups", admins_group, acting_user=None
     )
 
-    # Required to test can_create_users endpoints.
+    # Required to test can_create_users and can_change_user_emails endpoints.
     user.can_create_users = True
-    user.save(update_fields=["can_create_users"])
+    user.can_change_user_emails = True
+    user.save(update_fields=["can_create_users", "can_change_user_emails"])
 
     api_key = get_api_key(user)
     site = "http://zulip.zulipdev.com:9981"
@@ -85,6 +87,7 @@ with test_server_running(
     email = "desdemona@zulip.com"  # desdemona is an owner
     realm = get_realm("zulip")
     user = get_user(email, realm)
+
     api_key = get_api_key(user)
     site = "http://zulip.zulipdev.com:9981"
     owner_client = Client(
