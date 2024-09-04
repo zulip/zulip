@@ -50,9 +50,7 @@ def remove_attachment(user_profile: UserProfile, attachment: Attachment) -> None
     attachment.delete()
 
 
-def validate_attachment_request_for_spectator_access(
-    realm: Realm, attachment: Attachment
-) -> bool | None:
+def validate_attachment_request_for_spectator_access(realm: Realm, attachment: Attachment) -> bool:
     if attachment.realm != realm:
         return False
 
