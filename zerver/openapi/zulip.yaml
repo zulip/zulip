@@ -12634,6 +12634,52 @@ paths:
                             "delivery_email": null,
                           },
                       }
+    patch:
+      operationId: update-user-by-email
+      summary: Update a user by email
+      tags: ["users"]
+      x-requires-administrator: true
+      description: |
+        Administrative endpoint to update the details of another user in the organization by their email address.
+        Works the same way as [`PATCH /users/{user_id}`](/api/update-user) but fetching the target user by their
+        real email address.
+
+        The requester needs to have permission to view the target user's real email address, subject to the
+        user's email address visibility setting. Otherwise, the dummy address of the format
+        `user{id}@{realm.host}` needs be used. This follows the same rules as `GET /users/{email}`.
+
+        **Changes**: New in Zulip 10.0 (feature level 313).
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: |
+            The email address of the user, specified following the same rules as
+            [`GET /users/{email}`](/api/get-user-by-email).
+          schema:
+            type: string
+          example: hamlet@zulip.com
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateUser"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Guests cannot be organization administrators",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      A typical unsuccessful JSON response:
   /users/{user_id}:
     get:
       operationId: get-user
@@ -12738,62 +12784,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
-        required: false
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                full_name:
-                  description: |
-                    The user's full name.
-
-                    **Changes**: Removed unnecessary JSON-encoding of this parameter in
-                    Zulip 5.0 (feature level 106).
-                  type: string
-                  example: NewName
-                role:
-                  description: |
-                    New [role](/api/roles-and-permissions) for the user. Roles are encoded as:
-
-                    - Organization owner: 100
-                    - Organization administrator: 200
-                    - Organization moderator: 300
-                    - Member: 400
-                    - Guest: 600
-
-                    Only organization owners can add or remove the owner role.
-
-                    The owner role cannot be removed from the only organization owner.
-
-                    **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
-                    pair of `is_admin` and `is_guest` boolean parameters. Organization moderator
-                    role added in Zulip 4.0 (feature level 60).
-                  type: integer
-                  example: 400
-                profile_data:
-                  description: |
-                    A dictionary containing the to be updated custom profile field data for the user.
-                  type: array
-                  items:
-                    type: object
-                  example:
-                    [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
-                new_email:
-                  description: |
-                    New email address for the user. Requires the user making
-                    the request to be an organization administrator and
-                    additionally have the `.can_change_user_emails` special
-                    permission.
-
-                    **Changes**: New in Zulip 10.0 (feature level 313).
-                  type: string
-                  example: username@example.com
-            encoding:
-              role:
-                contentType: application/json
-              profile_data:
-                contentType: application/json
+        $ref: "#/components/requestBodies/UpdateUser"
 
       responses:
         "200":
@@ -24474,6 +24465,67 @@ components:
           schema:
             allOf:
               - $ref: "#/components/schemas/IgnoredParametersSuccess"
+
+  ################
+  # Shared request bodies
+  ################
+  requestBodies:
+    UpdateUser:
+      required: false
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              full_name:
+                description: |
+                  The user's full name.
+
+                  **Changes**: Removed unnecessary JSON-encoding of this parameter in
+                  Zulip 5.0 (feature level 106).
+                type: string
+                example: NewName
+              role:
+                description: |
+                  New [role](/api/roles-and-permissions) for the user. Roles are encoded as:
+
+                  - Organization owner: 100
+                  - Organization administrator: 200
+                  - Organization moderator: 300
+                  - Member: 400
+                  - Guest: 600
+
+                  Only organization owners can add or remove the owner role.
+
+                  The owner role cannot be removed from the only organization owner.
+
+                  **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
+                  pair of `is_admin` and `is_guest` boolean parameters. Organization moderator
+                  role added in Zulip 4.0 (feature level 60).
+                type: integer
+                example: 400
+              profile_data:
+                description: |
+                  A dictionary containing the updated custom profile field data for the user.
+                type: array
+                items:
+                  type: object
+                example:
+                  [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
+              new_email:
+                description: |
+                  New email address for the user. Requires the user making the request
+                  to be an organization owner and additionally have the `.can_change_user_emails`
+                  special permission.
+
+                  **Changes**: New in Zulip 10.0 (feature level 285).
+                type: string
+                example: username@example.com
+          encoding:
+            role:
+              contentType: application/json
+            profile_data:
+              contentType: application/json
 
   ####################
   # Shared parameters

@@ -1121,6 +1121,63 @@ class BulkCreateUserTest(ZulipTestCase):
         )
 
 
+class UpdateUserByEmailEndpointTest(ZulipTestCase):
+    def test_update_user_by_email(self) -> None:
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        do_change_user_setting(
+            hamlet,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+
+        result = self.client_patch(
+            f"/json/users/{hamlet.delivery_email}",
+            dict(full_name="Newname"),
+        )
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Newname")
+
+        do_change_user_setting(
+            hamlet,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            acting_user=None,
+        )
+        result = self.client_patch(
+            f"/json/users/{hamlet.delivery_email}",
+            dict(full_name="Newname2"),
+        )
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Newname2")
+
+        do_change_user_setting(
+            hamlet,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
+        )
+        result = self.client_patch(
+            f"/json/users/{hamlet.delivery_email}",
+            dict(full_name="Newname2"),
+        )
+        self.assert_json_error(result, "No such user")
+
+        # The dummy email can be used, when we don't have access
+        # to the target's email address.
+        dummy_email = hamlet.email
+        result = self.client_patch(
+            f"/json/users/{dummy_email}",
+            dict(full_name="Newname3"),
+        )
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Newname3")
+
+
 class AdminChangeUserEmailTest(ZulipTestCase):
     def test_change_user_email_backend(self) -> None:
         cordelia = self.example_user("cordelia")

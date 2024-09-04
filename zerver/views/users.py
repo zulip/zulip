@@ -202,7 +202,7 @@ class ProfileDataElement(BaseModel):
 
 @typed_endpoint
 @transaction.atomic(durable=True)
-def update_user_backend(
+def update_user_by_id_api(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
@@ -215,7 +215,53 @@ def update_user_backend(
     target = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
     )
+    return update_user_backend(
+        request,
+        user_profile,
+        target,
+        full_name=full_name,
+        role=role,
+        profile_data=profile_data,
+        new_email=new_email,
+    )
 
+
+@typed_endpoint
+@transaction.atomic(durable=True)
+def update_user_by_email_api(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    email: PathOnly[str],
+    full_name: str | None = None,
+    role: Json[RoleParamType] | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    new_email: str | None = None,
+) -> HttpResponse:
+    target = access_user_by_email(
+        user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=True
+    )
+    return update_user_backend(
+        request,
+        user_profile,
+        target,
+        full_name=full_name,
+        role=role,
+        profile_data=profile_data,
+        new_email=new_email,
+    )
+
+
+def update_user_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    target: UserProfile,
+    *,
+    full_name: str | None = None,
+    role: Json[RoleParamType] | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    new_email: str | None = None,
+) -> HttpResponse:
     if new_email is not None and (
         not user_profile.can_change_user_emails or not user_profile.is_realm_admin
     ):
