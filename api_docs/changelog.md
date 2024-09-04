@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 287**
+
+* [Markdown message
+  formatting](/api/message-formatting#image-previews): Added
+  `data-original-dimensions` attributes to placeholder images
+  (`image-loading-placeholder`), containing the dimensions of the
+  original image. This change was also backported to the Zulip 9.x
+  series, at feature level 278.
+
 **Feature level 286**
 
 * [`POST /user_uploads`](/api/upload-file): Added `filename` field to
@@ -86,6 +95,14 @@ Feature levels 278-279 are reserved for future use in 9.x maintenance
 releases.
 
 ## Changes in Zulip 9.0
+
+**Feature level 278**
+
+* [Markdown message
+  formatting](/api/message-formatting#image-previews): Added
+  `data-original-dimensions` attributes to placeholder images
+  (`image-loading-placeholder`), containing the dimensions of the
+  original image. Backported change from feature level 287.
 
 **Feature level 277**
 
