@@ -56,11 +56,20 @@
 
         & input[type="checkbox"] {
             ~ .custom-checkbox {
+                display: inline-block;
+                vertical-align: middle;
                 position: static;
-                margin-right: 0;
+
+                padding: 2px;
+                margin: 0;
 
                 height: 12px;
                 width: 12px;
+
+                font-weight: 300;
+                line-height: 0.8;
+                font-size: 1.3rem;
+                text-align: center;
                 border: 2px solid hsl(156deg 28% 70%);
 
                 border-radius: 4px;
