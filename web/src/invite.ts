@@ -437,7 +437,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         });
 
         if (!user_has_email_set) {
-            $("#invite-user-form :input").prop("disabled", !user_has_email_set);
+            $(util.the($<HTMLFormElement>("form#invite-user-form")).elements).prop(
+                "disabled",
+                true,
+            );
         }
 
         const invite_tips_data = generate_invite_tips_data();
