@@ -209,7 +209,7 @@ Last task`,
                     <label class="checkbox">
                         <div>
                             <input type="checkbox" class="task" checked="checked">
-                            <span></span>
+                            <span class="rendered-checkbox"></span>
                         </div>
                         <div>
                             <strike><strong>Task 1:</strong> This is the first task.</strike>
@@ -220,7 +220,7 @@ Last task`,
                     <label class="checkbox">
                         <div>
                             <input type="checkbox" class="task">
-                            <span></span>
+                            <span class="rendered-checkbox"></span>
                         </div>
                         <div>
                             <strong>Task 2:</strong> This is the second task.
@@ -231,7 +231,7 @@ Last task`,
                     <label class="checkbox">
                         <div>
                             <input type="checkbox" class="task">
-                            <span></span>
+                            <span class="rendered-checkbox"></span>
                         </div>
                         <div>
                             <strong>Last task</strong>

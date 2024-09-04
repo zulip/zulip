@@ -20,7 +20,7 @@
         <span class="profile_field_display_in_profile_summary">
             <label class="checkbox display_in_profile_summary_{{display_in_profile_summary}}" for="profile_field_display_in_profile_summary_{{id}}">
                 <input class="display_in_profile_summary display_in_profile_summary_checkbox_{{display_in_profile_summary}}" type="checkbox" id="profile_field_display_in_profile_summary_{{id}}" {{#if display_in_profile_summary}} checked="checked" {{/if}} data-profile-field-id="{{id}}"/>
-                <span></span>
+                <span class="rendered-checkbox"></span>
             </label>
         </span>
         {{/if}}
@@ -29,7 +29,7 @@
         <span class="profile-field-required">
             <label class="checkbox" for="profile-field-required-{{id}}">
                 <input class="required-field-toggle required-checkbox-{{required}}" type="checkbox" id="profile-field-required-{{id}}" {{#if required}} checked="checked" {{/if}} data-profile-field-id="{{id}}"/>
-                <span></span>
+                <span class="rendered-checkbox"></span>
             </label>
         </span>
     </td>

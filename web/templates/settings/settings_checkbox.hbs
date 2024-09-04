@@ -3,7 +3,7 @@
     <label class="checkbox">
         <input type="checkbox" class="{{setting_name}} inline-block setting-widget {{#unless skip_prop_element}}prop-element{{/unless}}" name="{{setting_name}}" data-setting-widget-type="boolean"
           id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" {{#if is_checked}}checked="checked"{{/if}} {{#if is_disabled}}disabled{{/if}} />
-        <span></span>
+        <span class="rendered-checkbox"></span>
     </label>
     <label for="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" class="inline {{setting_name}}_label" id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}_label">
         {{label}}
