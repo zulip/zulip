@@ -653,19 +653,13 @@ run_test("emoji", ({override}) => {
     const $content = get_content_element();
     const $emoji = $.create("emoji-stub");
     $emoji.attr("title", "tada");
-    let called = false;
-    $emoji.text = (f) => {
-        const text = f.call($emoji);
-        assert.equal(":tada:", text);
-        called = true;
-        return {contents: () => ({unwrap() {}})};
-    };
+    $emoji.contents = () => ({unwrap() {}});
     $content.set_find_results(".emoji", $emoji);
     override(user_settings, "emojiset", "text");
 
     rm.update_elements($content);
 
-    assert.ok(called);
+    assert.equal($emoji.text(), ":tada:");
 
     // Set page parameters back so that test run order is independent
     override(user_settings, "emojiset", "apple");

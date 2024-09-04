@@ -65,11 +65,11 @@ class FakeElement extends RejectMissing {
     _tippy = undefined;
     classList = new FakeClassList();
     innerHTML = "never-been-set";
+    textContent = "never-been-set";
 }
 
 // TODO: convert this to a true class
 exports.FakeJQuery = function (selector, opts) {
-    let text = "never-been-set";
     let value;
     let shown = false;
     let height;
@@ -278,13 +278,18 @@ exports.FakeJQuery = function (selector, opts) {
             return this;
         },
         text(...args) {
-            if (args.length > 0) {
-                if (args[0] !== undefined) {
-                    text = args[0].toString();
-                }
-                return this;
+            if (args.length === 0) {
+                return [...this].map((element) => element.textContent).join("");
             }
-            return text;
+            const [arg] = args;
+            for (const [i, element] of [...this].entries()) {
+                element.textContent =
+                    (typeof arg === "function"
+                        ? arg.call(element, i, element.textContent)
+                        : arg
+                    )?.toString() ?? "";
+            }
+            return this;
         },
         // Used by zjquery to support $($x) === $x
         to_$() {
@@ -329,7 +334,6 @@ exports.FakeJQuery = function (selector, opts) {
     } else {
         $self.length = 1;
         $self[0] = new FakeElement();
-        $self[0].textContent = text;
         $self[0].to_$ = () => $self;
         if (selector[0] === "<") {
             $self.html(selector);
