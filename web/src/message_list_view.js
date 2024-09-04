@@ -124,10 +124,10 @@ function get_group_display_date(message) {
     return date_element.outerHTML;
 }
 
-function update_group_date(group, message_container, prev) {
+function update_group_date(group, message, prev) {
     // Mark whether we should display a date marker because this
     // message has a different date than the previous one.
-    group.date_unchanged = same_day(message_container?.msg, prev?.msg);
+    group.date_unchanged = same_day(message, prev);
 }
 
 function clear_group_date(group) {
@@ -630,7 +630,7 @@ export class MessageListView {
                 current_group = start_group();
                 add_message_container_to_group(message_container);
 
-                update_group_date(current_group, message_container, prev);
+                update_group_date(current_group, message_container.msg, prev?.msg);
                 message_container.want_date_divider = false;
                 message_container.date_divider_html = undefined;
 
@@ -783,7 +783,7 @@ export class MessageListView {
                 )
             ) {
                 // The groups did not merge, so we need up update the date row for the old group
-                update_group_date(second_group, curr_msg_container, prev_msg_container);
+                update_group_date(second_group, curr_msg_container.msg, prev_msg_container?.msg);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
             }
@@ -800,7 +800,11 @@ export class MessageListView {
                 } else {
                     // If we just sent the first message on a new day
                     // in a narrow, make sure we render a date.
-                    update_group_date(second_group, curr_msg_container, prev_msg_container);
+                    update_group_date(
+                        second_group,
+                        curr_msg_container.msg,
+                        prev_msg_container?.msg,
+                    );
                 }
             }
             message_actions.append_groups = new_message_groups;
