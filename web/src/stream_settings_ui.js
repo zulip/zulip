@@ -256,6 +256,10 @@ export function add_sub_to_table(sub) {
 }
 
 export function remove_stream(stream_id) {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
     // It is possible that row is empty when we deactivate a
     // stream, but we let jQuery silently handle that.
     const $row = stream_ui_updates.row_for_stream_id(stream_id);
