@@ -2,6 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
+import {the} from "../util";
+
 import * as helpers from "./helpers";
 
 const is_remotely_hosted = $("#sponsorship-form").attr("data-is-remotely-hosted") === "True";
@@ -93,9 +95,8 @@ export function initialize(): void {
 
     function update_discount_details(): void {
         const selected_org_type =
-            $<HTMLSelectElement>("select#organization-type")
-                .find(":selected")
-                .attr("data-string-value") ?? "";
+            the($<HTMLSelectElement>("select#organization-type")).selectedOptions[0]?.dataset
+                .stringValue ?? "";
         helpers.update_discount_details(selected_org_type, is_remotely_hosted);
     }
 
