@@ -47,7 +47,7 @@ desired. For example:
 ``` html
 <div class="message_inline_image">
     <a href="/user_uploads/path/to/image.png" title="image.png">
-        <img class="image-loading-placeholder" src="/path/to/spinner.png">
+        <img class="image-loading-placeholder" data-original-dimensions="1920x1080" src="/path/to/spinner.png">
     </a>
 </div>
 ```
@@ -69,6 +69,13 @@ and triggers a message update.
 Clients are recommended to do the following when processing image
 previews:
 
+- Clients that would like to use the image's aspect ratio to lay out
+  one or more images in the message feed may use the
+  `data-original-dimensions` attribute, which is present even if the
+  image is a placeholder spinner.  This attribute encodes the
+  dimensions of the original image as `{width}x{height}`.  These
+  dimensions are for the image as rendered, _after_ any EXIF rotation
+  and mirroring has been applied.
 - If the client would like to control the thumbnail resolution used,
   it can replace the final section of the URL (`840x560.webp` in the
   example above) with the `name` of its preferred format from the set
@@ -85,9 +92,7 @@ previews:
   thumbnail from the server, to be transparently swapped in once it is
   available. Clients that would like to size the lightbox based on the
   size of the original image can use the `data-original-dimensions`
-  attribute, which encodes the dimensions of the original image as
-  `{width}x{height}`, to do so.  These dimensions are for the image as
-  rendered, _after_ any EXIF rotation and mirroring has been applied.
+  attribute, as described above.
 - Animated images will have a `data-animated` attribute on the `img`
   tag. As detailed in `server_thumbnail_formats`, both animated and
   still images are available for clients to use, depending on their
@@ -102,10 +107,14 @@ previews:
   format match what they requested.
 - No other processing of the URLs is recommended.
 
-**Changes**: In Zulip 9.0 (feature level 276), added
-`data-original-dimensions` attribute to images that have been
-thumbnailed, containing the dimensions of the full-size version of the
-image. Thumbnailing itself was reintroduced at feature level 275.
+**Changes**: In Zulip 9.2 (feature levels 278-279, and 287+), added
+`data-original-dimensions` to the `image-loading-placeholder` spinner
+images, containing the dimensions of the original image.
+
+In Zulip 9.0 (feature level 276), added `data-original-dimensions`
+attribute to images that have been thumbnailed, containing the
+dimensions of the full-size version of the image. Thumbnailing itself
+was reintroduced at feature level 275.
 
 Previously, with the exception of Zulip servers that used the beta
 Thumbor-based implementation years ago, all image previews in Zulip

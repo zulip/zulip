@@ -130,7 +130,7 @@ class DbData:
     sent_by_bot: bool
     stream_names: dict[str, int]
     translate_emoticons: bool
-    user_upload_previews: dict[str, MarkdownImageMetadata | None]
+    user_upload_previews: dict[str, MarkdownImageMetadata]
 
 
 # Format version of the Markdown rendering; stored along with rendered
@@ -628,6 +628,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # (even if that's "no preview yet") from the database
             # before rendering; is_image should have enforced that.
             assert path_id in self.zmd.zulip_db_data.user_upload_previews
+            metadata = self.zmd.zulip_db_data.user_upload_previews[path_id]
 
             # Insert a placeholder image spinner.  We post-process
             # this content (see rewrite_thumbnailed_images in
@@ -636,6 +637,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # already exists when the message is sent.
             img.set("class", "image-loading-placeholder")
             img.set("src", "/static/images/loading/loader-black.svg")
+            img.set(
+                "data-original-dimensions",
+                f"{metadata.original_width_px}x{metadata.original_height_px}",
+            )
         else:
             img.set("src", image_url)
 

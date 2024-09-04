@@ -327,7 +327,7 @@ def split_thumbnail_path(file_path: str) -> tuple[str, BaseThumbnailFormat]:
 
 @dataclass
 class MarkdownImageMetadata:
-    url: str
+    url: str | None
     is_animated: bool
     original_width_px: int
     original_height_px: int
@@ -339,13 +339,13 @@ def get_user_upload_previews(
     lock: bool = False,
     enqueue: bool = True,
     path_ids: list[str] | None = None,
-) -> dict[str, MarkdownImageMetadata | None]:
+) -> dict[str, MarkdownImageMetadata]:
     if path_ids is None:
         path_ids = re.findall(r"/user_uploads/(\d+/[/\w.-]+)", content)
     if not path_ids:
         return {}
 
-    upload_preview_data: dict[str, MarkdownImageMetadata | None] = {}
+    upload_preview_data: dict[str, MarkdownImageMetadata] = {}
 
     image_attachments = ImageAttachment.objects.filter(realm_id=realm_id, path_id__in=path_ids)
     if lock:
@@ -355,7 +355,12 @@ def get_user_upload_previews(
             # Image exists, and header of it parsed as a valid image,
             # but has not been thumbnailed yet; we will render a
             # spinner.
-            upload_preview_data[image_attachment.path_id] = None
+            upload_preview_data[image_attachment.path_id] = MarkdownImageMetadata(
+                url=None,
+                is_animated=False,
+                original_width_px=image_attachment.original_width_px,
+                original_height_px=image_attachment.original_height_px,
+            )
 
             # We re-queue the row for thumbnailing to make sure that
             # we do eventually thumbnail it (e.g. if this is a
@@ -410,7 +415,7 @@ html_formatter = HTMLFormatter(
 
 def rewrite_thumbnailed_images(
     rendered_content: str,
-    images: dict[str, MarkdownImageMetadata | None],
+    images: dict[str, MarkdownImageMetadata],
     to_delete: set[str] | None = None,
 ) -> tuple[str | None, set[str]]:
     if not images and not to_delete:
@@ -449,10 +454,13 @@ def rewrite_thumbnailed_images(
 
         image_data = images.get(path_id)
         if image_data is None:
-            # Has not been thumbnailed yet; leave it as a spinner.
-            # This happens routinely when a message contained multiple
-            # unthumbnailed images, and only one of those images just
-            # completed thumbnailing.
+            # The message has multiple images, and we're updating just
+            # one image, and it's not this one.  Leave this one as-is.
+            remaining_thumbnails.add(path_id)
+        elif image_data.url is None:
+            # We're re-rendering the whole message, so fetched all of
+            # the image metadata rows; this is one of the images we
+            # about, but is not thumbnailed yet.
             remaining_thumbnails.add(path_id)
         else:
             changed = True
