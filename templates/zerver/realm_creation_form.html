@@ -59,7 +59,7 @@
         <label class="checkbox static" for="realm_in_root_domain">
             <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
               {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
-            <span></span>
+            <span class="rendered-checkbox"></span>
             {% trans %}Use {{ external_host }}{% endtrans %}
         </label>
         {% endif %}

@@ -929,6 +929,9 @@
     --color-border-zulip-button: hsl(0deg 0% 80%);
     --color-border-zulip-button-interactive: hsl(0deg 0% 60%);
 
+    /* Zulip-style checkbox colors. */
+    --color-border-rendered-checkbox: hsl(0deg 0% 0% / 60%);
+
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 93%);
     --color-background-emoji-picker-popover-tab-item-active: hsl(
@@ -1353,6 +1356,9 @@
     );
     --color-border-zulip-button: hsl(0deg 0% 0% / 60%);
     --color-border-zulip-button-interactive: var(--color-border-zulip-button);
+
+    /* Zulip-style checkbox colors. */
+    --color-border-rendered-checkbox: hsl(0deg 0% 100% / 40%);
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 0% / 20%);

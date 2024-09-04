@@ -319,10 +319,6 @@
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
-    .new-style label.checkbox input[type="checkbox"] ~ span {
-        border-color: hsl(0deg 0% 100% / 40%);
-    }
-
     #stream-actions-menu-popover .sp-container {
         background-color: transparent;
 
@@ -901,7 +897,6 @@
 
     & a:not(:active):focus,
     button:focus,
-    .new-style label.checkbox input[type="checkbox"]:focus ~ span,
     i.fa:focus,
     i.zulip-icon:focus,
     [role="button"]:focus {
