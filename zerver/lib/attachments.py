@@ -90,15 +90,15 @@ def validate_attachment_request(
     maybe_user_profile: UserProfile | AnonymousUser,
     path_id: str,
     realm: Realm | None = None,
-) -> bool | None:
+) -> tuple[bool, Attachment | None]:
     try:
         attachment = Attachment.objects.get(path_id=path_id)
     except Attachment.DoesNotExist:
-        return None
+        return False, None
 
     if isinstance(maybe_user_profile, AnonymousUser):
         assert realm is not None
-        return validate_attachment_request_for_spectator_access(realm, attachment)
+        return validate_attachment_request_for_spectator_access(realm, attachment), attachment
 
     user_profile = maybe_user_profile
     assert isinstance(user_profile, UserProfile)
@@ -122,20 +122,20 @@ def validate_attachment_request(
 
     if user_profile == attachment.owner:
         # If you own the file, you can access it.
-        return True
+        return True, attachment
     if (
         attachment.is_realm_public
         and attachment.realm == user_profile.realm
         and user_profile.can_access_public_streams()
     ):
         # Any user in the realm can access realm-public files
-        return True
+        return True, attachment
 
     messages = attachment.messages.all()
     if UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
         # If it was sent in a direct message or private stream
         # message, then anyone who received that message can access it.
-        return True
+        return True, attachment
 
     # The user didn't receive any of the messages that included this
     # attachment.  But they might still have access to it, if it was
@@ -150,11 +150,11 @@ def validate_attachment_request(
         recipient__in=[m.recipient_id for m in messages],
     ).values_list("recipient__type_id", flat=True)
     if len(relevant_stream_ids) == 0:
-        return False
+        return False, attachment
 
     return Stream.objects.filter(
         id__in=relevant_stream_ids, history_public_to_subscribers=True
-    ).exists()
+    ).exists(), attachment
 
 
 def get_old_unclaimed_attachments(

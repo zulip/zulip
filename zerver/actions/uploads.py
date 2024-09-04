@@ -48,7 +48,7 @@ def do_claim_attachments(
             is_message_realm_public = stream.is_public()
             is_message_web_public = stream.is_web_public
 
-        if not validate_attachment_request(user_profile, path_id):
+        if not validate_attachment_request(user_profile, path_id)[0]:
             # Technically, there are 2 cases here:
             # * The user put something in their message that has the form
             # of an upload URL, but does not actually correspond to a previously

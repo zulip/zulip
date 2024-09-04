@@ -250,7 +250,7 @@ def serve_file(
 ) -> HttpResponseBase:
     path_id = f"{realm_id_str}/{filename}"
     realm = get_valid_realm_from_request(request)
-    is_authorized = validate_attachment_request(maybe_user_profile, path_id, realm)
+    is_authorized, attachment = validate_attachment_request(maybe_user_profile, path_id, realm)
 
     def serve_image_error(status: int, image_path: str) -> HttpResponseBase:
         # We cannot use X-Accel-Redirect to offload the serving of
@@ -258,7 +258,7 @@ def serve_file(
         # code of this response, nor the Vary: header.
         return FileResponse(open(static_path(image_path), "rb"), status=status)  # noqa: SIM115
 
-    if is_authorized is None:
+    if attachment is None:
         if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
             response = serve_image_error(404, "images/errors/image-not-exist.png")
         else:

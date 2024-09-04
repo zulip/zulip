@@ -1232,8 +1232,8 @@ class StreamAdminTest(ZulipTestCase):
         self.assertIsNone(attachment.is_realm_public)
 
         cordelia = self.example_user("cordelia")
-        self.assertFalse(validate_attachment_request(cordelia, attachment.path_id))
-        self.assertTrue(validate_attachment_request(owner, attachment.path_id))
+        self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+        self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
         attachment.refresh_from_db()
         self.assertFalse(attachment.is_realm_public)
         self.assertFalse(validate_attachment_request_for_spectator_access(realm, attachment))
@@ -1258,7 +1258,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(attachment.is_web_public)
         self.assertIsNone(attachment.is_realm_public)
 
-        self.assertTrue(validate_attachment_request(cordelia, attachment.path_id))
+        self.assertTrue(validate_attachment_request(cordelia, attachment.path_id)[0])
         attachment.refresh_from_db()
         self.assertTrue(attachment.is_realm_public)
 
@@ -1311,8 +1311,8 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(attachment.is_web_public)
         self.assertIsNone(attachment.is_realm_public)
 
-        self.assertFalse(validate_attachment_request(cordelia, attachment.path_id))
-        self.assertTrue(validate_attachment_request(owner, attachment.path_id))
+        self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+        self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
         attachment.refresh_from_db()
         self.assertFalse(attachment.is_realm_public)
 
