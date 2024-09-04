@@ -55,7 +55,7 @@ function same_sender(a, b) {
     if (a === undefined || b === undefined) {
         return false;
     }
-    return util.same_sender(a.msg, b.msg);
+    return a.msg.sender_id === b.msg.sender_id;
 }
 
 function same_recipient(a, b) {

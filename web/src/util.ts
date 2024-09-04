@@ -93,17 +93,6 @@ export const same_recipient = function util_same_recipient(a?: Recipient, b?: Re
     return false;
 };
 
-export const same_sender = function util_same_sender(
-    a: RawMessage | undefined,
-    b: RawMessage | undefined,
-): boolean {
-    return (
-        a !== undefined &&
-        b !== undefined &&
-        a.sender_email.toLowerCase() === b.sender_email.toLowerCase()
-    );
-};
-
 export function normalize_recipients(recipients: string): string {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
