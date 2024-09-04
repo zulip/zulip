@@ -180,6 +180,16 @@ input::placeholder {
         background-color: var(--color-background-zulip-button-hover);
     }
 
+    &:focus {
+        /* Maintain no outline for pointer focus. */
+        outline: 0;
+    }
+
+    &:focus-visible {
+        /* Set Zulip outline style with keyboard/assistive focus. */
+        outline: 2px solid var(--color-outline-focus);
+    }
+
     &:active {
         color: inherit;
         background-color: var(--color-background-zulip-button-active);
