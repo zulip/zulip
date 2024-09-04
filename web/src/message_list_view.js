@@ -119,7 +119,7 @@ function analyze_edit_history(message, last_edit_timestr) {
 
 function get_group_display_date(message) {
     const time = new Date(message.timestamp * 1000);
-    const date_element = util.the(timerender.render_date(time));
+    const date_element = timerender.render_date(time);
 
     return date_element.outerHTML;
 }
@@ -165,7 +165,7 @@ function get_message_date_divider_data(opts) {
 
     return {
         want_date_divider: true,
-        date_divider_html: util.the(timerender.render_date(curr_time)).outerHTML,
+        date_divider_html: timerender.render_date(curr_time).outerHTML,
     };
 }
 
@@ -404,7 +404,7 @@ export class MessageListView {
         }
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
-            let date = util.the(timerender.render_date(last_edit_time)).textContent;
+            let date = timerender.render_date(last_edit_time).textContent;
             // If the date is today or yesterday, we don't want to show the date as capitalized.
             // Thus, we need to check if the date string contains a digit or not using regex,
             // since any other date except today/yesterday will contain a digit.
@@ -1832,7 +1832,7 @@ export class MessageListView {
         }
         this.sticky_recipient_message_id = message.id;
         const time = new Date(message.timestamp * 1000);
-        const rendered_date = util.the(timerender.render_date(time));
+        const rendered_date = timerender.render_date(time);
         dom_updates.html_updates.push({
             $element: $sticky_header.find(".recipient_row_date"),
             rendered_date,

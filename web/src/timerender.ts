@@ -14,6 +14,7 @@ import {$t} from "./i18n";
 import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util";
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 let next_timerender_id = 0;
 
@@ -353,7 +354,7 @@ function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-export function render_date(time: Date): JQuery {
+export function render_date(time: Date): HTMLElement {
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
     const rendered_time = render_now(time);
@@ -364,7 +365,7 @@ export function render_date(time: Date): JQuery {
         className,
         time,
     });
-    return $node;
+    return util.the($node);
 }
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
