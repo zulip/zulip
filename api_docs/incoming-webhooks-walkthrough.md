@@ -146,7 +146,7 @@ integration and is always lower-case.
 At minimum, the webhook function must accept `request` (Django
 [HttpRequest](https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpRequest)
 object), and `user_profile` (Zulip's user object). You may also want to
-define additional parameters using the `REQ` object.
+define additional parameters using the `typed_endpoint` decorator.
 
 In the example above, we have defined `payload` which is populated
 from the body of the http request, `stream` with a default of `test`
@@ -569,10 +569,11 @@ For example, here is the definition of a webhook function that gets both `stream
 and `topic` from the query parameters:
 
 ```python
+@typed_endpoint
 def api_querytest_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: str=REQ(argument_type='body'),
-                          stream: str=REQ(default='test'),
-                          topic: str=REQ(default='Default Alert')):
+                          payload: Annotated[str, ApiParamConfig(argument_type_is_body=True)],
+                          stream: str = "test",
+                          topic: str= "Default Alert":
 ```
 
 In actual use, you might configure the 3rd party service to call your Zulip
@@ -583,7 +584,7 @@ http://myhost/api/v1/external/querytest?api_key=abcdefgh&stream=alerts&topic=que
 ```
 
 It provides values for `stream` and `topic`, and the webhook can get those
-using `REQ` without any special handling. How does this work in a test?
+using `@typed_endpoint` without any special handling. How does this work in a test?
 
 The new attribute `TOPIC` exists only in our class so far. In order to
 construct a URL with a query parameter for `topic`, you can pass the

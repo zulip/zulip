@@ -131,26 +131,6 @@ Django, TypeScript/JavaScript, and CSS.
 
 [typescript-migration]: https://chat.zulip.org/#narrow/channel/6-frontend/topic/typescript.20migration
 
-- Migrate server's Python codebase from the legacy
-  `@has_request_variables` decorator to the new `@typed_endpoint`
-  decorator, and update our contributor documentation to recommend the
-  new system. The `@typed_endpoint` framework uses [Pydantic
-  V2](https://docs.pydantic.dev/latest/) in order to better express
-  how we want to parse API requests and turn them into fully typed
-  Python objects. **Skills required**: A good understanding of the
-  Python 3 / mypy type system and Pydantic 2, and the ability to
-  efficiently read Python code and write clear, structured commits. No
-  prior Pydantic experience required, but please take the time to go
-  through the Pydantic upstream tutorials and skim all the existing
-  endpoints using `typed_endpoint` before doing your first Zulip
-  changes. A good first PR is to migrate a smaller views file to the new
-  framework; one commit per smaller file is likely to be a good
-  structure. See the last commits from [the new framework's main
-  PR](https://github.com/zulip/zulip/pull/26365) for examples of
-  well-written migration commits.
-
-  Expert: Zixuan James Li, Anders Kaseorg
-
 - Contribute to Zulip's [**migration to user groups for
   permissions**][user-group-permissions]. This migration is intended to replace
   every setting in Zulip that currently allows organizations to assign
