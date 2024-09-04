@@ -61,17 +61,27 @@ class FakeClassList extends RejectMissing {
     }
 }
 
+class FakeElementState {
+    shown = false;
+}
+
+const fake_element_state = new WeakMap();
+
 class FakeElement extends RejectMissing {
     _tippy = undefined;
     classList = new FakeClassList();
     innerHTML = "never-been-set";
     textContent = "never-been-set";
     value = undefined;
+
+    constructor() {
+        super();
+        fake_element_state.set(this, new FakeElementState());
+    }
 }
 
 // TODO: convert this to a true class
 exports.FakeJQuery = function (selector, opts) {
-    let shown = false;
     let height;
 
     const find_results = new Map();
@@ -166,7 +176,9 @@ exports.FakeJQuery = function (selector, opts) {
             return height;
         },
         hide() {
-            shown = false;
+            for (const element of this) {
+                fake_element_state.get(element).shown = false;
+            }
             return this;
         },
         html(...args) {
@@ -184,7 +196,7 @@ exports.FakeJQuery = function (selector, opts) {
         is(arg) {
             switch (arg) {
                 case ":visible":
-                    return shown;
+                    return [...this].some((element) => fake_element_state.get(element).shown);
                 case ":focus":
                     return this.is_focused();
                 /* istanbul ignore next */
@@ -276,7 +288,9 @@ exports.FakeJQuery = function (selector, opts) {
             parents_result.set(selector, $result);
         },
         show() {
-            shown = true;
+            for (const element of this) {
+                fake_element_state.get(element).shown = true;
+            }
             return this;
         },
         text(...args) {
@@ -299,7 +313,9 @@ exports.FakeJQuery = function (selector, opts) {
         },
         toggle(show) {
             assert.ok([true, false].includes(show));
-            shown = show;
+            for (const element of this) {
+                fake_element_state.get(element).shown = show;
+            }
             return this;
         },
         toggleClass(class_names, add) {
@@ -326,7 +342,7 @@ exports.FakeJQuery = function (selector, opts) {
             return this;
         },
         visible() {
-            return shown;
+            return [...this].some((element) => fake_element_state.get(element).shown);
         },
     };
 
