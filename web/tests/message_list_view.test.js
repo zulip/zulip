@@ -13,7 +13,7 @@ set_global("document", "document-stub");
 // timerender calls setInterval when imported
 mock_esm("../src/timerender", {
     render_date(time) {
-        return [{outerHTML: String(time.getTime())}];
+        return {outerHTML: String(time.getTime())};
     },
     stringify_time(time) {
         return time.toString("h:mm TT");

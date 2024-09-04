@@ -360,8 +360,14 @@ run_test("render_date_renders_time_html", () => {
         return $span_stub;
     };
 
-    const $actual = timerender.render_date(message_time);
-    assert.equal($actual.text(), expected_text);
+    let actual_text;
+    $span_stub.text = (val) => {
+        actual_text = val;
+        return $span_stub;
+    };
+
+    timerender.render_date(message_time);
+    assert.equal(actual_text, expected_text);
     assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
     assert.equal(attrs.class, "timerender-content timerender0");
 
