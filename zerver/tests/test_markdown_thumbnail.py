@@ -123,7 +123,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
             expected = (
                 f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+                '<img class="image-loading-placeholder" data-original-dimensions="128x128" src="/static/images/loading/loader-black.svg"></a></div>'
             )
 
             message_id = self.send_message_content(content)
@@ -203,9 +203,9 @@ class MarkdownThumbnailTest(ZulipTestCase):
                 f'<p><a href="/user_uploads/{first_path_id}">first image</a><br>\n'
                 f'<a href="/user_uploads/{second_path_id}">second image</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{first_path_id}" title="first image">'
-                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+                '<img class="image-loading-placeholder" data-original-dimensions="128x128" src="/static/images/loading/loader-black.svg"></a></div>'
                 f'<div class="message_inline_image"><a href="/user_uploads/{second_path_id}" title="second image">'
-                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+                '<img class="image-loading-placeholder" data-original-dimensions="128x128" src="/static/images/loading/loader-black.svg"></a></div>'
             ),
         )
 
@@ -217,7 +217,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
                 f'<p><a href="/user_uploads/{first_path_id}">first image</a><br>\n'
                 f'<a href="/user_uploads/{second_path_id}">second image</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{first_path_id}" title="first image">'
-                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+                '<img class="image-loading-placeholder" data-original-dimensions="128x128" src="/static/images/loading/loader-black.svg"></a></div>'
                 f'<div class="message_inline_image"><a href="/user_uploads/{second_path_id}" title="second image">'
                 f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{second_path_id}/840x560.webp"></a></div>'
             ),
@@ -304,7 +304,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
         )
         placeholder = (
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+            '<img class="image-loading-placeholder" data-original-dimensions="128x128" src="/static/images/loading/loader-black.svg"></a></div>'
         )
         self.assert_message_content_is(
             channel_message_id,
@@ -363,7 +363,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
         expected = (
             f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+            '<img class="image-loading-placeholder" data-original-dimensions="128x128" src="/static/images/loading/loader-black.svg"></a></div>'
         )
         self.assertEqual(send_request.message.rendered_content, expected)
 
@@ -398,7 +398,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
             expected = (
                 f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+                '<img class="image-loading-placeholder" data-original-dimensions="128x128" src="/static/images/loading/loader-black.svg"></a></div>'
             )
 
             message_id = self.send_message_content(content)
