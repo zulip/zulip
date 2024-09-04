@@ -853,8 +853,6 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "enter_sends") {
                 user_settings.enter_sends = event.value;
-                $(`.enter_sends_${!user_settings.enter_sends}`).hide();
-                $(`.enter_sends_${user_settings.enter_sends}`).show();
                 break;
             }
             if (event.property === "presence_enabled") {
