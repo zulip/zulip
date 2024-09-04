@@ -66,18 +66,17 @@ class FakeElement extends RejectMissing {
     classList = new FakeClassList();
     innerHTML = "never-been-set";
     textContent = "never-been-set";
+    value = undefined;
 }
 
 // TODO: convert this to a true class
 exports.FakeJQuery = function (selector, opts) {
-    let value;
     let shown = false;
     let height;
 
     const find_results = new Map();
     let $my_parent;
     const parents_result = new Map();
-    const properties = new Map();
     const attrs = new Map();
     const event_store = make_event_store(selector);
 
@@ -226,11 +225,14 @@ exports.FakeJQuery = function (selector, opts) {
             assert.notEqual(typeof arg, "string");
             return this;
         },
-        prop(name, val) {
-            if (val === undefined) {
-                return properties.get(name);
+        prop(name, ...args) {
+            if (args.length === 0) {
+                return this[0]?.[name];
             }
-            properties.set(name, val);
+            const [value] = args;
+            for (const element of this) {
+                element[name] = value;
+            }
             return this;
         },
         removeAttr(name) {
@@ -315,9 +317,12 @@ exports.FakeJQuery = function (selector, opts) {
         },
         val(...args) {
             if (args.length === 0) {
-                return value || "";
+                return 0 in this ? (this[0].value ?? "") : undefined;
             }
-            [value] = args;
+            const [value] = args;
+            for (const element of this) {
+                element.value = value;
+            }
             return this;
         },
         visible() {
