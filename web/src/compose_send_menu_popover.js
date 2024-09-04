@@ -186,8 +186,6 @@ export function initialize() {
                     .attr("value");
                 selected_behaviour = selected_behaviour === "true"; // Convert to bool
                 user_settings.enter_sends = selected_behaviour;
-                $(`.enter_sends_${!selected_behaviour}`).hide();
-                $(`.enter_sends_${selected_behaviour}`).show();
 
                 // Refocus in the content box so you can continue typing or
                 // press Enter to send.
