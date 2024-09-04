@@ -472,6 +472,10 @@ def do_change_user_role(
         },
     )
     maybe_enqueue_audit_log_upload(user_profile.realm)
+    if settings.BILLING_ENABLED and UserProfile.ROLE_GUEST in [old_value, value]:
+        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+        billing_session.update_license_ledger_if_needed(timezone_now())
+
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )

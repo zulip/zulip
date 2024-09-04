@@ -86,7 +86,7 @@ from zerver.actions.create_user import (
     do_reactivate_user,
 )
 from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
-from zerver.actions.users import do_deactivate_user
+from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
@@ -5713,6 +5713,19 @@ class LicenseLedgerTest(StripeTestCase):
         do_reactivate_user(user, acting_user=None)
         # Not a proper use of do_activate_mirror_dummy_user, but fine for this test
         do_activate_mirror_dummy_user(user, acting_user=None)
+        # Add a guest user
+        guest = do_create_user(
+            "guest_email",
+            "guest_password",
+            get_realm("zulip"),
+            "guest_name",
+            role=UserProfile.ROLE_GUEST,
+            acting_user=None,
+        )
+        # Change guest user role to member
+        do_change_user_role(guest, UserProfile.ROLE_MEMBER, acting_user=None)
+        # Change again to moderator, no LicenseLedger created
+        do_change_user_role(guest, UserProfile.ROLE_MODERATOR, acting_user=None)
         ledger_entries = list(
             LicenseLedger.objects.values_list(
                 "is_renewal", "licenses", "licenses_at_next_renewal"
@@ -5726,6 +5739,8 @@ class LicenseLedgerTest(StripeTestCase):
                 (False, self.seat_count + 1, self.seat_count),
                 (False, self.seat_count + 1, self.seat_count + 1),
                 (False, self.seat_count + 1, self.seat_count + 1),
+                (False, self.seat_count + 1, self.seat_count + 1),
+                (False, self.seat_count + 2, self.seat_count + 2),
             ],
         )
 
@@ -5896,6 +5911,52 @@ class InvoiceTest(StripeTestCase):
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month + timedelta(days=29))
+
+    @mock_stripe()
+    def test_invoice_for_additional_license(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with time_machine.travel(self.now, tick=False):
+            self.add_card_and_upgrade(user)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.next_invoice_date, self.next_month)
+        assert plan.customer.realm is not None
+        realm = plan.customer.realm
+
+        # Adding a guest user and then changing their role to member
+        # should invoice for a pro-rated license at the next invoice
+        # date on a plan with annual billing.
+        with time_machine.travel(self.now + timedelta(days=5), tick=False):
+            user = do_create_user(
+                "email",
+                "password",
+                realm,
+                "name",
+                role=UserProfile.ROLE_GUEST,
+                acting_user=None,
+            )
+
+        with time_machine.travel(self.now + timedelta(days=10), tick=False):
+            do_change_user_role(user, UserProfile.ROLE_MEMBER, acting_user=None)
+
+        billing_session = RealmBillingSession(realm=realm)
+        billing_session.invoice_plan(plan, self.next_month)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.next_invoice_date, self.next_month + timedelta(days=29))
+        stripe_customer_id = plan.customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        self.assertIsNotNone(invoice0.status_transitions.finalized_at)
+        [item0] = iter(invoice0.lines)
+        line_item_params = {
+            "amount": int(8000 * (1 - ((366 - 356) / 366)) + 0.5),
+            "description": "Additional license (Jan 12, 2012 - Jan 2, 2013)",
+            "quantity": 1,
+        }
+        for key, value in line_item_params.items():
+            self.assertEqual(item0.get(key), value)
 
 
 class TestTestClasses(ZulipTestCase):
