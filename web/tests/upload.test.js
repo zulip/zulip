@@ -523,17 +523,6 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     assert.ok(compose_ui_replace_syntax_called);
     assert.ok(compose_ui_autosize_textarea_called);
 
-    response = {
-        body: {
-            url: undefined,
-        },
-    };
-    compose_ui_replace_syntax_called = false;
-    compose_ui_autosize_textarea_called = false;
-    on_upload_success_callback(file, response);
-    assert.equal(compose_ui_replace_syntax_called, false);
-    assert.equal(compose_ui_autosize_textarea_called, false);
-
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");
         assert.equal(data.banner_text, "Some error message");

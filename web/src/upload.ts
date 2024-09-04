@@ -372,10 +372,7 @@ export function setup_upload(config: Config): Uppy {
 
     uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
-        const {url} = z.object({url: z.string().optional()}).parse(response.body);
-        if (url === undefined) {
-            return;
-        }
+        const {url} = z.object({url: z.string()}).parse(response.body);
         const split_url = url.split("/");
         const filename = split_url.at(-1);
         const syntax_to_insert = "[" + filename + "](" + url + ")";
