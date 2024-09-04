@@ -34,8 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 277  # Last bumped for Zulip 9.0
-
+API_FEATURE_LEVEL = 278  # Last bumped for backporting original-dimensions on spinner
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump

@@ -18,6 +18,16 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 9.2
+
+**Feature level 278**
+
+* [Markdown message
+  formatting](/api/message-formatting#image-previews): Added
+  `data-original-dimensions` attributes to placeholder images
+  (`image-loading-placeholder`), containing the dimensions of the
+  original image. Backported change from feature level 287.
+
 ## Changes in Zulip 9.0
 
 **Feature level 277**
