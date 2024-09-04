@@ -875,7 +875,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(response.getvalue(), b"zulip!")
 
         with self.assert_database_query_count(6):
-            self.assertTrue(validate_attachment_request(user, fp_path_id))
+            self.assertTrue(validate_attachment_request(user, fp_path_id)[0])
 
         self.logout()
 
