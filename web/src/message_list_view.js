@@ -174,26 +174,31 @@ function get_timestr(message) {
     return timerender.stringify_time(time);
 }
 
-function set_topic_edit_properties(group, message) {
-    group.always_visible_topic_edit = false;
-    group.on_hover_topic_edit = false;
+function get_topic_edit_properties(message) {
+    let always_visible_topic_edit = false;
+    let on_hover_topic_edit = false;
 
     const is_topic_editable = message_edit.is_topic_editable(message);
 
     // if a user who can edit a topic, can resolve it as well
-    group.user_can_resolve_topic = is_topic_editable;
+    const user_can_resolve_topic = is_topic_editable;
 
-    if (!is_topic_editable) {
-        return;
+    if (is_topic_editable) {
+        // Messages with no topics should always have an edit icon visible
+        // to encourage updating them. Admins can also edit any topic.
+        if (message.topic === compose_state.empty_topic_placeholder()) {
+            always_visible_topic_edit = true;
+        } else {
+            on_hover_topic_edit = true;
+        }
     }
 
-    // Messages with no topics should always have an edit icon visible
-    // to encourage updating them. Admins can also edit any topic.
-    if (message.topic === compose_state.empty_topic_placeholder()) {
-        group.always_visible_topic_edit = true;
-    } else {
-        group.on_hover_topic_edit = true;
-    }
+    return {
+        always_visible_topic_edit,
+        on_hover_topic_edit,
+        is_topic_editable,
+        user_can_resolve_topic,
+    };
 }
 
 function get_users_for_recipient_row(message) {
@@ -325,7 +330,7 @@ function populate_group_from_message_container(group, message_container) {
     group.display_recipient = message_container.msg.display_recipient;
     group.topic_links = message_container.msg.topic_links;
 
-    set_topic_edit_properties(group, message_container.msg);
+    Object.assign(group, get_topic_edit_properties(message_container.msg));
     group.date = get_group_display_date(message_container.msg);
 }
 
