@@ -512,6 +512,10 @@ h4.user_group_setting_subsection_title {
     margin-left: -1px;
 }
 
+#search_stream_name:placeholder-shown + #clear_search_stream_name {
+    visibility: hidden;
+}
+
 .stream-title {
     font-size: 1.3em;
     font-weight: 400;
