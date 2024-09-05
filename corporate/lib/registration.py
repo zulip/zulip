@@ -60,13 +60,13 @@ def send_user_unable_to_signup_group_direct_message_to_admins(
     realm: Realm, user_email: str
 ) -> None:
     message = _(
-        "A new member ({email}) was unable to join your organization because all Zulip licenses "
-        "are in use. Please [increase the number of licenses]({billing_page_link}) or "
-        "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new members to join."
+        "A new user ({email}) was unable to join because your organization does not have enough "
+        "Zulip licenses. To allow new users to join, make sure that the [number of licenses for "
+        "the current and next billing period]({billing_page_link}) is greater than the current "
+        "number of users."
     ).format(
         email=user_email,
         billing_page_link="/billing/",
-        deactivate_user_help_page_link="/help/deactivate-or-reactivate-a-user",
     )
 
     send_group_direct_message_to_admins(
@@ -77,9 +77,12 @@ def send_user_unable_to_signup_group_direct_message_to_admins(
 def check_spare_licenses_available(
     realm: Realm, plan: CustomerPlan, extra_non_guests_count: int = 0, extra_guests_count: int = 0
 ) -> None:
-    if plan.licenses() < get_seat_count(
+    seat_count = get_seat_count(
         realm, extra_non_guests_count=extra_non_guests_count, extra_guests_count=extra_guests_count
-    ):
+    )
+    current_licenses = plan.licenses()
+    renewal_licenses = plan.licenses_at_next_renewal()
+    if current_licenses < seat_count or (renewal_licenses and renewal_licenses < seat_count):
         raise LicenseLimitError
 
 
@@ -105,7 +108,6 @@ def check_spare_licenses_available_for_registering_new_user(
 def check_spare_licenses_available_for_inviting_new_users(
     realm: Realm, extra_non_guests_count: int = 0, extra_guests_count: int = 0
 ) -> None:
-    num_invites = extra_non_guests_count + extra_guests_count
     plan = get_plan_if_manual_license_management_enforced(realm)
     if plan is None:
         return
@@ -113,10 +115,7 @@ def check_spare_licenses_available_for_inviting_new_users(
     try:
         check_spare_licenses_available(realm, plan, extra_non_guests_count, extra_guests_count)
     except LicenseLimitError:
-        if num_invites == 1:
-            message = _("All Zulip licenses for this organization are currently in use.")
-        else:
-            message = _(
-                "Your organization does not have enough unused Zulip licenses to invite {num_invites} users."
-            ).format(num_invites=num_invites)
+        message = _(
+            "Your organization does not have enough Zulip licenses. Invitations were not sent."
+        )
         raise InvitationError(message, [], sent_invitations=False, license_limit_reached=True)
