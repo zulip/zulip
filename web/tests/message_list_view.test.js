@@ -171,8 +171,8 @@ test("msg_moved_var", () => {
             Object.assign(
                 message_container,
                 list._maybe_get_me_message(message_container.is_hidden, message_container.msg),
+                list._get_message_edited_vars(message_container.msg),
             );
-            list._add_msg_edited_vars(message_container);
         }
 
         const result = list._message_groups[0].message_containers;
@@ -200,7 +200,7 @@ test("msg_moved_var", () => {
     })();
 });
 
-test("msg_edited_vars", () => {
+test("message_edited_vars", () => {
     // This is a test to verify that only one of the three bools,
     // `message_edit_notices_in_left_col`, `message_edit_notices_alongside_sender`,
     // `message_edit_notices_for_status_message` is not false; Tests for three
@@ -270,7 +270,7 @@ test("msg_edited_vars", () => {
             include_sender && status_message;
     }
 
-    (function test_msg_edited_vars() {
+    (function test_message_edited_vars() {
         const messages = [
             build_message_context(),
             build_message_context({}, {include_sender: false}),
@@ -283,8 +283,8 @@ test("msg_edited_vars", () => {
             Object.assign(
                 message_container,
                 list._maybe_get_me_message(message_container.is_hidden, message_container.msg),
+                list._get_message_edited_vars(message_container.msg),
             );
-            list._add_msg_edited_vars(message_container);
         }
 
         const result = list._message_groups[0].message_containers;
@@ -361,7 +361,7 @@ test("muted_message_vars", () => {
         ];
         const message_group = build_message_group(messages);
         const list = build_list([message_group]);
-        list._add_msg_edited_vars = noop;
+        list._get_message_edited_vars = noop;
 
         // Sender is not muted.
         let result = calculate_variables(list, messages);
