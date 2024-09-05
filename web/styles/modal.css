@@ -391,6 +391,8 @@
 
 .modal-field-label {
     margin-bottom: var(--margin-bottom-field-description);
+    /* Avoid having the clickable area extend to the full width of the containing element */
+    width: fit-content;
 }
 
 .dropdown-widget-button {
