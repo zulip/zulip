@@ -753,8 +753,8 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
 }
 
 function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-    console.log("get_sent_by_me_suggestions function called");
 
+    
     const last_string = Filter.unparse([last]).toLowerCase();
     const negated =
         last.negated === true || (last.operator === "search" && last.operand.startsWith("-"));
