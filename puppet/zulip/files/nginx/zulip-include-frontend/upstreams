@@ -11,3 +11,7 @@ upstream localhost_sso {
 upstream camo {
     server 127.0.0.1:9292;
 }
+
+upstream tusd {
+    server 127.0.0.1:9900;
+}

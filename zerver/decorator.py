@@ -256,20 +256,31 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
     if not user_profile.is_active:
         raise UserDeactivatedError
 
-    # Either the subdomain matches, or we're accessing Tornado from
-    # and to localhost (aka spoofing a request as the user).
-    if not user_matches_subdomain(get_subdomain(request), user_profile) and not (
+    remote_addr = request.META.get("REMOTE_ADDR", None)
+    server_name = request.META.get("SERVER_NAME", None)
+
+    if (
         settings.RUNNING_INSIDE_TORNADO
-        and request.META["SERVER_NAME"] == "127.0.0.1"
-        and request.META["REMOTE_ADDR"] == "127.0.0.1"
-    ):
-        logging.warning(
-            "User %s (%s) attempted to access API on wrong subdomain (%s)",
-            user_profile.delivery_email,
-            user_profile.realm.subdomain,
-            get_subdomain(request),
-        )
-        raise JsonableError(_("Account is not associated with this subdomain"))
+        and remote_addr == "127.0.0.1"
+        and server_name == "127.0.0.1"
+    ):  # nocoverage
+        # We're accessing Tornado from and to localhost (aka spoofing
+        # a request as the user)
+        return
+    if remote_addr == "127.0.0.1" and server_name == "localhost":  # nocoverage
+        # For tusd hook requests.
+        return
+
+    if user_matches_subdomain(get_subdomain(request), user_profile):
+        return
+
+    logging.warning(
+        "User %s (%s) attempted to access API on wrong subdomain (%s)",
+        user_profile.delivery_email,
+        user_profile.realm.subdomain,
+        get_subdomain(request),
+    )
+    raise JsonableError(_("Account is not associated with this subdomain"))
 
 
 def access_user_by_api_key(

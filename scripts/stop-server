@@ -49,6 +49,7 @@ if has_application_server():
     services.append("zulip-django")
     services.append("zulip-tornado:*")
     services.append("zulip-workers:*")
+    services.append("zulip-tus")
     services.append("zulip-katex")
     if has_application_server(once=True):
         # These used to be included in "zulip-workers:*"; we may be

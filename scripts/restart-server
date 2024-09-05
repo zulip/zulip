@@ -105,6 +105,11 @@ if has_application_server():
     # This is an optional service, so may or may not exist
     workers.extend(list_supervisor_processes(["zulip-katex"]))
 
+    # This does have some Python code, which reads from settings.py,
+    # so we need to restart it on every deploy.  A short outage during
+    # the restart is fine, as clients will transparently retry.
+    workers.append("zulip-tus")
+
 if has_process_fts_updates():
     workers.append("process-fts-updates")
 

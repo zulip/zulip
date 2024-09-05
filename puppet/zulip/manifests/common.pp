@@ -74,6 +74,15 @@ class zulip::common {
       'sha256'  => 'f8cc99cb708cbd549e06099628ef286a5fdda73bb327d8c140d3014441bfefc2',
     },
 
+    # https://github.com/tus/tusd/releases
+    'tusd' => {
+      'version' => '2.5.0',
+      'sha256'  => {
+        'amd64'   => 'f4cbdb8d228b28f46c3e7b9e29e5db262e7416f7ca1033c6c5e8186cf6c7381c',
+        'aarch64' => 'b2101951789857765d64c33d672a38b5825946163aa058b208fc862867cdc405',
+      },
+    },
+
     # https://github.com/wal-g/wal-g/releases
     'wal-g' => {
       'version' => '3.0.0',
