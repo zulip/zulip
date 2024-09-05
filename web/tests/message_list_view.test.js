@@ -330,10 +330,17 @@ test("muted_message_vars", () => {
         return list;
     }
 
-    function calculate_variables(list, messages, is_revealed) {
-        list.set_calculated_message_container_variables(messages[0], is_revealed);
-        list.set_calculated_message_container_variables(messages[1], is_revealed);
-        list.set_calculated_message_container_variables(messages[2], is_revealed);
+    function calculate_variables(list, message_containers, is_revealed) {
+        for (const container of message_containers) {
+            Object.assign(
+                container,
+                list.get_calculated_message_container_variables(
+                    container.msg,
+                    container.include_sender,
+                    is_revealed,
+                ),
+            );
+        }
         return list._message_groups[0].message_containers;
     }
 
