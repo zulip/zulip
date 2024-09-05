@@ -421,6 +421,9 @@ def main(options: argparse.Namespace) -> NoReturn:
     # Install transifex-cli.
     run_as_root([*proxy_env, "tools/setup/install-transifex-cli"])
 
+    # Install tusd
+    run_as_root([*proxy_env, "tools/setup/install-tusd"])
+
     setup_venvs.main()
 
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])

@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 294  # Last bumped for `include_daectivated_groups` client c
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (292, 3)  # bumped 2024-08-25 to upgrade Transifex CLI
+PROVISION_VERSION = (292, 4)  # added tusd

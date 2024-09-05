@@ -2,6 +2,7 @@
 # Default nginx configuration is included in extension app_frontend.pp.
 class zulip::app_frontend_base {
   include zulip::nginx
+  include zulip::tusd
   include zulip::sasl_modules
   include zulip::supervisor
   include zulip::tornado_sharding
