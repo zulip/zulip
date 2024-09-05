@@ -3026,7 +3026,7 @@ class UserSignUpTest(ZulipTestCase):
             last_message = Message.objects.last()
             assert last_message is not None
             self.assertIn(
-                f"A new member ({self.nonreg_email('test')}) was unable to join your organization because all Zulip",
+                f"A new user ({self.nonreg_email('test')}) was unable to join because your organization",
                 last_message.content,
             )
             self.assertEqual(
@@ -3044,7 +3044,27 @@ class UserSignUpTest(ZulipTestCase):
             )
 
         ledger.licenses = 50
-        ledger.save(update_fields=["licenses"])
+        ledger.licenses_at_next_renewal = 5
+        ledger.save(update_fields=["licenses", "licenses_at_next_renewal"])
+        with self.settings(BILLING_ENABLED=True):
+            form = HomepageForm({"email": self.nonreg_email("test")}, realm=realm)
+            self.assertIn(
+                "New members cannot join this organization because all Zulip licenses",
+                form.errors["email"][0],
+            )
+            last_message = Message.objects.last()
+            assert last_message is not None
+            self.assertIn(
+                f"A new user ({self.nonreg_email('test')}) was unable to join because your organization",
+                last_message.content,
+            )
+            self.assertEqual(
+                set(get_direct_message_group_user_ids(last_message.recipient)),
+                expected_group_direct_message_user_ids,
+            )
+
+        ledger.licenses_at_next_renewal = 50
+        ledger.save(update_fields=["licenses_at_next_renewal"])
         with self.settings(BILLING_ENABLED=True):
             form = HomepageForm({"email": self.nonreg_email("test")}, realm=realm)
             self.assertEqual(form.errors, {})
