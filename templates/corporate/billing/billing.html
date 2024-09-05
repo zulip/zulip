@@ -143,7 +143,7 @@
                     </label>
                     <div class="number-input-with-label">
                         <form id="current-license-change-form">
-                            <input type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses }}" value="{{ licenses }}" required/>
+                            <input type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses }}" value="{{ licenses }}" {%if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} required/>
                         </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
                         <button id="current-manual-license-count-update-button" class="license-count-update-button hide">
@@ -170,7 +170,7 @@
                     </label>
                     <div class="number-input-with-label">
                         <form id="next-license-change-form">
-                            <input type="number" name="licenses_at_next_renewal" autocomplete="off" id="next-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses_at_next_renewal }}" value="{{ licenses_at_next_renewal }}" required/>
+                            <input type="number" name="licenses_at_next_renewal" autocomplete="off" id="next-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses_at_next_renewal }}" value="{{ licenses_at_next_renewal }}" {%if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} required/>
                         </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
                         <button id="next-manual-license-count-update-button" class="license-count-update-button hide">

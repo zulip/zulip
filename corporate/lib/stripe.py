@@ -2545,6 +2545,7 @@ class BillingSession(ABC):
             "licenses": licenses,
             "licenses_at_next_renewal": licenses_at_next_renewal,
             "seat_count": seat_count,
+            "exempt_from_license_number_check": customer.exempt_from_license_number_check,
             "renewal_date": renewal_date,
             "renewal_amount": cents_to_dollar_string(renewal_cents) if renewal_cents != 0 else None,
             "payment_method": payment_method,
