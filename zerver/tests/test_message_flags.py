@@ -432,6 +432,61 @@ class UnreadCountTests(ZulipTestCase):
             )
         )
 
+        # Testing the response when marking messages as unread in a
+        # narrow that contains messages from unsubscribed streams
+        stream_name = "Test Stream"
+        stream = self.subscribe(user, stream_name)
+        self.subscribe(self.example_user("cordelia"), stream_name)
+        message_id = self.send_stream_message(self.example_user("cordelia"), stream_name, "hello")
+
+        self.assert_json_success(
+            self.client_post(
+                "/json/mark_stream_as_read",
+                {
+                    "stream_id": stream.id,
+                },
+            )
+        )
+        um = UserMessage.objects.get(
+            user_profile_id=user.id,
+            message_id=message_id,
+        )
+        self.assertTrue(um.flags.read)
+
+        # Unsubscribe the user from the stream
+        self.unsubscribe(user, stream_name)
+
+        # Marking recently added message and all other
+        # messages added at the start of the test as unread
+        # from an interleaved public narrow
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_id,
+                    "num_before": 10,
+                    "num_after": 0,
+                    "narrow": orjson.dumps([{"operator": "streams", "operand": "public"}]).decode(),
+                    "op": "remove",
+                    "flag": "read",
+                },
+            )
+        )
+
+        self.assertEqual(response["processed_count"], 11)
+        self.assertEqual(response["updated_count"], 5)
+        self.assertEqual(response["first_processed_id"], message_ids[0])
+        self.assertEqual(response["last_processed_id"], message_id)
+        self.assertEqual(response["found_oldest"], False)
+        self.assertEqual(response["found_newest"], False)
+        self.assertEqual(response["ignored_because_not_subscribed_channels"], [stream.id])
+        self.assertCountEqual(
+            UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
+            .values_list("message_id", flat=True),
+            message_ids,
+        )
+
     def test_update_flags_for_narrow_misuse(self) -> None:
         self.login("hamlet")
 

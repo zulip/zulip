@@ -53,7 +53,9 @@ def update_message_flags(
     request_notes = RequestNotes.get_notes(request)
     assert request_notes.log_data is not None
 
-    count = do_update_message_flags(user_profile, operation, flag, messages)
+    (count, ignored_because_not_subscribed_channels) = do_update_message_flags(
+        user_profile, operation, flag, messages
+    )
 
     target_count_str = str(len(messages))
     log_data_str = f"[{operation} {flag}/{target_count_str}] actually {count}"
@@ -63,6 +65,7 @@ def update_message_flags(
         request,
         data={
             "messages": messages,  # Useless, but included for backwards compatibility.
+            "ignored_because_not_subscribed_channels": ignored_because_not_subscribed_channels,
         },
     )
 
@@ -110,7 +113,9 @@ def update_message_flags_for_narrow(
     )
 
     messages = [row[0] for row in query_info.rows]
-    updated_count = do_update_message_flags(user_profile, operation, flag, messages)
+    (updated_count, ignored_because_not_subscribed_channels) = do_update_message_flags(
+        user_profile, operation, flag, messages
+    )
 
     return json_success(
         request,
@@ -121,6 +126,7 @@ def update_message_flags_for_narrow(
             "last_processed_id": messages[-1] if messages else None,
             "found_oldest": query_info.found_oldest,
             "found_newest": query_info.found_newest,
+            "ignored_because_not_subscribed_channels": ignored_because_not_subscribed_channels,
         },
     )
 
