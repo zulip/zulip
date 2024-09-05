@@ -1192,6 +1192,11 @@ div.settings-radio-input-parent {
     height: inherit;
 }
 
+.group-setting-label {
+    /* Avoid having the clickable area extend to the full width of the containing element */
+    width: fit-content;
+}
+
 @media (width < $lg_min) {
     .user-groups-container,
     .subscriptions-container {
