@@ -157,16 +157,15 @@ export function show(opts: FeedbackWidgetOptions): void {
 
     meta.$container = $("#feedback_container");
 
-    let has_undo_button = true;
-    if (opts.on_undo === undefined) {
-        has_undo_button = false;
+    let has_undo_button = false;
+    if (opts.on_undo) {
+        has_undo_button = true;
+        meta.undo = opts.on_undo;
     }
     const html = render_feedback_container({has_undo_button});
     meta.$container.html(html);
 
     set_up_handlers();
-
-    meta.undo = opts.on_undo;
 
     // add a four second delay before closing up.
     meta.hide_me_time = Date.now() + 4000;
