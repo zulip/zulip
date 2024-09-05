@@ -90,6 +90,11 @@ class TestCustomEmails(ZulipTestCase):
             str(msg.alternatives[0][0]),
         )
         self.assertIn("Unsubscribe", str(msg.alternatives[0][0]))
+        # Verify that the Text version contains the footer.
+        self.assertIn(
+            "You are receiving this email to update you about important changes to Zulip", msg.body
+        )
+        self.assertIn("Unsubscribe", msg.body)
 
     def test_send_custom_email_headers(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -107,7 +112,7 @@ class TestCustomEmails(ZulipTestCase):
         msg = mail.outbox[0]
         self.assertEqual(msg.subject, "Test subject")
         self.assertFalse(msg.reply_to)
-        self.assertEqual("Test body", msg.body)
+        self.assertIn("Test body", msg.body)
 
     def test_send_custom_email_context(self) -> None:
         hamlet = self.example_user("hamlet")
