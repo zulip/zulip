@@ -427,7 +427,7 @@ export class MessageListView {
         return undefined;
     }
 
-    _add_msg_edited_vars(message_container) {
+    _get_message_edited_vars(message) {
         // This function computes data on whether the message was edited
         // and in what ways, as well as where the "EDITED" or "MOVED"
         // label should be located, and adds it to the message_container
@@ -438,8 +438,8 @@ export class MessageListView {
         //   * `edited_in_left_col`      -- when label appears in left column.
         //   * `edited_alongside_sender` -- when label appears alongside sender info.
         //   * `edited_status_msg`       -- when label appears for a "/me" message.
-        const last_edit_timestr = this._get_msg_timestring(message_container.msg);
-        const edit_history_details = analyze_edit_history(message_container.msg, last_edit_timestr);
+        const last_edit_timestr = this._get_msg_timestring(message);
+        const edit_history_details = analyze_edit_history(message, last_edit_timestr);
 
         if (
             last_edit_timestr === undefined ||
@@ -450,16 +450,19 @@ export class MessageListView {
             // notice at all. (The message actions popover will still
             // display an edit history option, so you can see when it
             // was marked as resolved if you need to).
-            delete message_container.last_edit_timestr;
-            message_container.edited_in_left_col = false;
-            message_container.edited_alongside_sender = false;
-            message_container.edited_status_msg = false;
-            return;
+            return {
+                last_edit_timestr: undefined,
+                edited_in_left_col: false,
+                edited_alongside_sender: false,
+                edited_status_msg: false,
+            };
         }
 
-        message_container.last_edit_timestr = last_edit_timestr;
-        message_container.moved = edit_history_details.moved && !edit_history_details.edited;
-        message_container.modified = true;
+        return {
+            last_edit_timestr,
+            moved: edit_history_details.moved && !edit_history_details.edited,
+            modified: true,
+        };
     }
 
     is_current_message_list() {
@@ -548,9 +551,8 @@ export class MessageListView {
         Object.assign(
             message_container,
             this._maybe_get_me_message(message_container.is_hidden, message_container.msg),
+            this._get_message_edited_vars(message_container.msg),
         );
-        // Once all other variables are updated
-        this._add_msg_edited_vars(message_container);
     }
 
     maybe_add_subscription_marker(group, last_msg_container, first_msg_container) {
