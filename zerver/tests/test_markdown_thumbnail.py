@@ -150,8 +150,8 @@ class MarkdownThumbnailTest(ZulipTestCase):
             self.assertTrue(ImageAttachment.objects.filter(path_id=path_id).exists())
         message_id = self.send_message_content(f"[I am 95% ± 5% certain!](/user_uploads/{path_id})")
         expected = (
-            f'<p><a href="/user_uploads/{path_id}">I am 95% &plusmn; 5% certain!</a></p>\n'
-            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="I am 95% &plusmn; 5% certain!">'
+            f'<p><a href="/user_uploads/{path_id}">I am 95% ± 5% certain!</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="I am 95% ± 5% certain!">'
             f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
         )
         self.assert_message_content_is(message_id, expected)
