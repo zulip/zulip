@@ -89,6 +89,7 @@ class TestCustomEmails(ZulipTestCase):
             "You are receiving this email to update you about important changes to Zulip",
             str(msg.alternatives[0][0]),
         )
+        self.assertIn("Unsubscribe", str(msg.alternatives[0][0]))
 
     def test_send_custom_email_headers(self) -> None:
         hamlet = self.example_user("hamlet")
