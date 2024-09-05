@@ -560,6 +560,16 @@ def custom_email_sender(
         #     vary user-to-user
         f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
 
+    # Add the manage_preferences block content in the plain_text template.
+    manage_preferences_block_template_path = (
+        "templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt"
+    )
+    with (
+        open(plain_text_template_path, "a") as f,
+        open(manage_preferences_block_template_path) as manage_preferences_block,
+    ):
+        f.write(manage_preferences_block.read())
+
     with open(subject_path, "w") as f:
         f.write(get_header(subject, parsed_email_template.get("subject"), "subject"))
 
