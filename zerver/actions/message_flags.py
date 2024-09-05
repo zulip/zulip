@@ -259,7 +259,7 @@ def do_clear_mobile_push_notifications_for_ids(
 
 def do_update_message_flags(
     user_profile: UserProfile, operation: str, flag: str, messages: list[int]
-) -> int:
+) -> tuple[int, list[int]]:
     valid_flags = [item for item in UserMessage.flags if item not in UserMessage.NON_API_FLAGS]
     if flag not in valid_flags:
         raise JsonableError(_("Invalid flag: '{flag}'").format(flag=flag))
@@ -273,6 +273,7 @@ def do_update_message_flags(
     flagattr = getattr(UserMessage.flags, flag)
     flag_target = flagattr if is_adding else 0
 
+    ignored_because_not_subscribed_channels = []
     with transaction.atomic(durable=True):
         if flag == "read" and not is_adding:
             # We have an invariant that all stream messages marked as
@@ -283,12 +284,20 @@ def do_update_message_flags(
             # currently subscribed to.
             subscribed_recipient_ids = get_subscribed_stream_recipient_ids_for_user(user_profile)
 
-            message_ids_in_unsubscribed_streams = set(
+            messages_in_unsubscribed_streams = set(
                 # Uses index: zerver_message_pkey
                 Message.objects.select_related("recipient")
                 .filter(id__in=messages, recipient__type=Recipient.STREAM)
                 .exclude(recipient_id__in=subscribed_recipient_ids)
-                .values_list("id", flat=True)
+                .values_list("id", "recipient__type_id")
+            )
+
+            message_ids_in_unsubscribed_streams = {
+                message[0] for message in messages_in_unsubscribed_streams
+            }
+
+            ignored_because_not_subscribed_channels = list(
+                {message[1] for message in messages_in_unsubscribed_streams}
             )
 
             messages = [
@@ -395,4 +404,4 @@ def do_update_message_flags(
                 increment=min(1, count),
             )
 
-    return count
+    return (count, ignored_because_not_subscribed_channels)
