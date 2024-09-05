@@ -101,9 +101,10 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    function get_old_and_new_license_count_for_current_cycle(): {
+    function get_license_counts_for_current_cycle(): {
         new_current_manual_license_count: number;
         old_current_manual_license_count: number;
+        min_current_manual_license_count: number;
     } {
         const new_current_manual_license_count: number = Number.parseInt(
             $<HTMLInputElement>("input#current-manual-license-count").val()!,
@@ -113,15 +114,25 @@ export function initialize(): void {
             $<HTMLInputElement>("input#current-manual-license-count").attr("data-original-value")!,
             10,
         );
+        let min_current_manual_license_count: number = Number.parseInt(
+            $<HTMLInputElement>("input#current-manual-license-count").attr("min")!,
+            10,
+        );
+        if (Number.isNaN(min_current_manual_license_count)) {
+            // Customer is exempt from license number checks.
+            min_current_manual_license_count = 0;
+        }
         return {
             new_current_manual_license_count,
             old_current_manual_license_count,
+            min_current_manual_license_count,
         };
     }
 
-    function get_old_and_new_license_count_for_next_cycle(): {
+    function get_license_counts_for_next_cycle(): {
         new_next_manual_license_count: number;
         old_next_manual_license_count: number;
+        min_next_manual_license_count: number;
     } {
         const new_next_manual_license_count: number = Number.parseInt(
             $<HTMLInputElement>("input#next-manual-license-count").val()!,
@@ -131,10 +142,41 @@ export function initialize(): void {
             $<HTMLInputElement>("input#next-manual-license-count").attr("data-original-value")!,
             10,
         );
+        let min_next_manual_license_count: number = Number.parseInt(
+            $<HTMLInputElement>("input#next-manual-license-count").attr("min")!,
+            10,
+        );
+        if (Number.isNaN(min_next_manual_license_count)) {
+            // Customer is exempt from license number checks.
+            min_next_manual_license_count = 0;
+        }
         return {
             new_next_manual_license_count,
             old_next_manual_license_count,
+            min_next_manual_license_count,
         };
+    }
+
+    function check_for_manual_billing_errors(): void {
+        const {old_next_manual_license_count, min_next_manual_license_count} =
+            get_license_counts_for_next_cycle();
+        if (old_next_manual_license_count < min_next_manual_license_count) {
+            $("#next-license-change-error").text(
+                "Number of licenses for next billing period less than licenses in use.",
+            );
+        } else {
+            $("#next-license-change-error").text("");
+        }
+
+        const {old_current_manual_license_count, min_current_manual_license_count} =
+            get_license_counts_for_current_cycle();
+        if (old_current_manual_license_count < min_current_manual_license_count) {
+            $("#current-license-change-error").text(
+                "Number of licenses for current billing period less than licenses in use.",
+            );
+        } else {
+            $("#current-license-change-error").text("");
+        }
     }
 
     $("#current-license-change-form, #next-license-change-form").on("submit", (e) => {
@@ -149,7 +191,7 @@ export function initialize(): void {
         }
         e.preventDefault();
         const {new_current_manual_license_count, old_current_manual_license_count} =
-            get_old_and_new_license_count_for_current_cycle();
+            get_license_counts_for_current_cycle();
         const $modal = $("#confirm-licenses-modal-increase");
         $modal.find(".new_license_count_holder").text(new_current_manual_license_count);
         $modal.find(".current_license_count_holder").text(old_current_manual_license_count);
@@ -166,7 +208,7 @@ export function initialize(): void {
         }
         e.preventDefault();
         const {new_next_manual_license_count, old_next_manual_license_count} =
-            get_old_and_new_license_count_for_next_cycle();
+            get_license_counts_for_next_cycle();
         let $modal;
         if (new_next_manual_license_count > old_next_manual_license_count) {
             $modal = $("#confirm-licenses-modal-increase");
@@ -290,15 +332,23 @@ export function initialize(): void {
 
     let timeout: ReturnType<typeof setTimeout> | null = null;
 
+    check_for_manual_billing_errors();
+
     $("#current-manual-license-count").on("keyup", () => {
         if (timeout !== null) {
             clearTimeout(timeout);
         }
 
         timeout = setTimeout(() => {
-            const {new_current_manual_license_count, old_current_manual_license_count} =
-                get_old_and_new_license_count_for_current_cycle();
-            if (new_current_manual_license_count > old_current_manual_license_count) {
+            const {
+                new_current_manual_license_count,
+                old_current_manual_license_count,
+                min_current_manual_license_count,
+            } = get_license_counts_for_current_cycle();
+            if (
+                new_current_manual_license_count > old_current_manual_license_count &&
+                new_current_manual_license_count > min_current_manual_license_count
+            ) {
                 $("#current-manual-license-count-update-button").toggleClass("hide", false);
                 $("#current-license-change-error").text("");
             } else if (new_current_manual_license_count < old_current_manual_license_count) {
@@ -308,7 +358,7 @@ export function initialize(): void {
                 $("#current-manual-license-count-update-button").toggleClass("hide", true);
             } else {
                 $("#current-manual-license-count-update-button").toggleClass("hide", true);
-                $("#current-license-change-error").text("");
+                check_for_manual_billing_errors();
             }
         }, 300); // Wait for 300ms after the user stops typing
     });
@@ -319,16 +369,26 @@ export function initialize(): void {
         }
 
         timeout = setTimeout(() => {
-            const {new_next_manual_license_count, old_next_manual_license_count} =
-                get_old_and_new_license_count_for_next_cycle();
+            const {
+                new_next_manual_license_count,
+                old_next_manual_license_count,
+                min_next_manual_license_count,
+            } = get_license_counts_for_next_cycle();
             if (
                 !new_next_manual_license_count ||
                 new_next_manual_license_count < 0 ||
                 new_next_manual_license_count === old_next_manual_license_count
             ) {
                 $("#next-manual-license-count-update-button").toggleClass("hide", true);
+                check_for_manual_billing_errors();
+            } else if (new_next_manual_license_count < min_next_manual_license_count) {
+                $("#next-manual-license-count-update-button").toggleClass("hide", true);
+                $("#next-license-change-error").text(
+                    "Cannot be less than the number of licenses currently in use.",
+                );
             } else {
                 $("#next-manual-license-count-update-button").toggleClass("hide", false);
+                $("#next-license-change-error").text("");
             }
         }, 300); // Wait for 300ms after the user stops typing
     });
