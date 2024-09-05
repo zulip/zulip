@@ -8,6 +8,7 @@ from typing import TypeVar
 
 import pyvips
 from bs4 import BeautifulSoup
+from bs4.formatter import EntitySubstitution, HTMLFormatter
 from django.utils.translation import gettext as _
 from typing_extensions import override
 
@@ -396,6 +397,17 @@ def get_default_thumbnail_url(image_attachment: ImageAttachment) -> tuple[str, b
     )
 
 
+# Like HTMLFormatter.REGISTRY["html5"], this formatter avoids producing
+# self-closing tags, but it differs by avoiding unnecessary escaping with
+# HTML5-specific entities that cannot be parsed by lxml and libxml2
+# (https://bugs.launchpad.net/lxml/+bug/2031045).
+html_formatter = HTMLFormatter(
+    entity_substitution=EntitySubstitution.substitute_xml,  # not substitute_html
+    void_element_close_prefix="",
+    empty_attributes_are_booleans=True,
+)
+
+
 def rewrite_thumbnailed_images(
     rendered_content: str,
     images: dict[str, MarkdownImageMetadata | None],
@@ -453,7 +465,8 @@ def rewrite_thumbnailed_images(
                 image_tag["data-animated"] = "true"
 
     if changed:
-        # The formatter="html5" means we do not produce self-closing tags
-        return parsed_message.encode(formatter="html5").decode().strip(), remaining_thumbnails
+        return parsed_message.encode(
+            formatter=html_formatter
+        ).decode().strip(), remaining_thumbnails
     else:
         return None, remaining_thumbnails
