@@ -4,14 +4,17 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_skipped_marking_unread from "../templates/skipped_marking_unread.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as feedback_widget from "./feedback_widget.ts";
 import {Filter} from "./filter.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_flags from "./message_flags.ts";
 import * as message_lists from "./message_lists.ts";
@@ -24,11 +27,14 @@ import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import type {MessageDetails} from "./server_event_types.ts";
 import type {NarrowTerm} from "./state_data.ts";
+import * as sub_store from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
+import * as util from "./util.ts";
 
 let loading_indicator_displayed = false;
+let unsubscribed_ignored_channels: number[] = [];
 
 // We might want to use a slightly smaller batch for the first
 // request, because empirically, the first request can be
@@ -70,7 +76,48 @@ const update_flags_for_narrow_response_schema = z.object({
     last_processed_id: z.number().nullable(),
     found_oldest: z.boolean(),
     found_newest: z.boolean(),
+    ignored_because_not_subscribed_channels: z.array(z.number()),
 });
+
+const update_flags_for_response_schema = z.object({
+    ignored_because_not_subscribed_channels: z.array(z.number()),
+});
+
+function handle_skipped_unsubscribed_streams(
+    ignored_because_not_subscribed_channels: number[],
+): void {
+    if (ignored_because_not_subscribed_channels.length > 0) {
+        // Zulip has an invariant that all unread messages must be in streams
+        // the user is subscribed to. Notify the user if messages from
+        // unsubscribed streams are ignored by the server.
+        const stream_names_with_privacy_symbol_html = ignored_because_not_subscribed_channels.map(
+            (stream_id) => {
+                const stream = sub_store.get(stream_id);
+                const decorated_stream_name = render_inline_decorated_stream_name({stream});
+                return `<span class="white-space-nowrap">${decorated_stream_name}</span>`;
+            },
+        );
+
+        const populate: (element: JQuery) => void = ($container) => {
+            const formatted_stream_list_text = util.format_array_as_list(
+                stream_names_with_privacy_symbol_html,
+                "long",
+                "conjunction",
+            );
+            const rendered_html = render_skipped_marking_unread({
+                streams: formatted_stream_list_text,
+            });
+            $container.html(rendered_html);
+        };
+
+        const title_text = $t({defaultMessage: "Skipped unsubscribed channels"});
+
+        feedback_widget.show({
+            populate,
+            title_text,
+        });
+    }
+}
 
 function bulk_update_read_flags_for_narrow(
     narrow: NarrowTerm[],
@@ -330,6 +377,12 @@ function do_mark_unread_by_narrow(
         success(raw_data) {
             const data = update_flags_for_narrow_response_schema.parse(raw_data);
             messages_marked_unread_till_now += data.updated_count;
+            unsubscribed_ignored_channels = [
+                ...new Set([
+                    ...unsubscribed_ignored_channels,
+                    ...data.ignored_because_not_subscribed_channels,
+                ]),
+            ];
             if (!data.found_newest) {
                 assert(data.last_processed_id !== null);
                 // If we weren't able to complete the request fully in
@@ -358,8 +411,14 @@ function do_mark_unread_by_narrow(
                     FOLLOWUP_BATCH_SIZE,
                     narrow,
                 );
-            } else if (loading_indicator_displayed) {
-                finish_loading(messages_marked_unread_till_now);
+            } else {
+                if (loading_indicator_displayed) {
+                    finish_loading(messages_marked_unread_till_now);
+                }
+                if (unsubscribed_ignored_channels.length > 0) {
+                    handle_skipped_unsubscribed_streams(unsubscribed_ignored_channels);
+                    unsubscribed_ignored_channels = [];
+                }
             }
         },
         error(xhr) {
@@ -382,9 +441,15 @@ function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
     void channel.post({
         url: "/json/messages/flags",
         data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
-        success() {
+        success(raw_data) {
             if (loading_indicator_displayed) {
                 finish_loading(message_ids_to_update.length);
+            }
+            const data = update_flags_for_response_schema.parse(raw_data);
+            const ignored_because_not_subscribed_channels =
+                data.ignored_because_not_subscribed_channels;
+            if (ignored_because_not_subscribed_channels.length > 0) {
+                handle_skipped_unsubscribed_streams(ignored_because_not_subscribed_channels);
             }
         },
         error(xhr) {

@@ -389,6 +389,10 @@ body.has-overlay-scrollbar {
     white-space: pre;
 }
 
+.white-space-nowrap {
+    white-space: nowrap;
+}
+
 /* Set flex display on login buttons only in the
    spectator view. We want them to display none
    otherwise. */
