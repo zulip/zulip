@@ -469,9 +469,11 @@ export class MessageListView {
         return this.list === message_lists.current;
     }
 
-    set_calculated_message_container_variables(message_container, is_revealed) {
-        message_container.timestr = get_timestr(message_container.msg);
-
+    get_calculated_message_container_variables(
+        message,
+        existing_include_sender,
+        is_revealed = false,
+    ) {
         /*
             If the message needs to be hidden because the sender was muted, we do
             a few things:
@@ -484,23 +486,23 @@ export class MessageListView {
             the sender.
         */
 
-        const is_hidden =
-            muted_users.is_user_muted(message_container.msg.sender_id) && !is_revealed;
+        const is_hidden = muted_users.is_user_muted(message.sender_id) && !is_revealed;
 
-        message_container.is_hidden = is_hidden;
+        let mention_classname;
+
         // Make sure the right thing happens if the message was edited to mention us.
-        if (!is_hidden && message_container.msg.mentioned) {
+        if (!is_hidden && message.mentioned) {
             // Currently the API does not differentiate between a group mention and
             // a user mention. For now, we parse the markdown to see if the message
             // mentions the user.
             let is_user_mention = false;
-            const $msg = $(message_container.msg.content);
+            const $msg = $(message.content);
             $msg.find(".user-mention:not(.silent)").each(function () {
                 const user_id = rendered_markdown.get_user_id_for_mention_button(this);
                 if (user_id === "*") {
                     return;
                 }
-                if (people.is_my_user_id(user_id)) {
+                if (user_id !== undefined && people.is_my_user_id(user_id)) {
                     is_user_mention = true;
                 }
             });
@@ -509,50 +511,57 @@ export class MessageListView {
             // group/wildcard mention, and color the message as a user mention. If the
             // message didn't include a user mention, then it was a usergroup/wildcard
             // mention (which is the only other option for `mentioned` being true).
-            if (message_container.msg.mentioned_me_directly && is_user_mention) {
+            if (message.mentioned_me_directly && is_user_mention) {
                 // Highlight messages having personal mentions only in DMs and subscribed streams.
                 if (
-                    message_container.msg.type === "private" ||
-                    stream_data.is_user_subscribed(
-                        message_container.msg.stream_id,
-                        people.my_current_user_id(),
-                    )
+                    message.type === "private" ||
+                    stream_data.is_user_subscribed(message.stream_id, people.my_current_user_id())
                 ) {
-                    message_container.mention_classname = "direct_mention";
+                    mention_classname = "direct_mention";
                 }
             } else {
-                message_container.mention_classname = "group_mention";
+                mention_classname = "group_mention";
             }
         } else {
             // If there are no mentions, the classname might need to be updated (i.e.
             // removed) to reflect this.
-            message_container.mention_classname = null;
+            mention_classname = null;
         }
-        message_container.include_sender = message_container.include_sender && !is_hidden;
+        let include_sender = existing_include_sender && !is_hidden;
         if (is_revealed) {
             // If the message is to be revealed, we show the sender anyways, because the
             // the first message in the group (which would hold the sender) can still be
             // hidden.
-            message_container.include_sender = true;
+            include_sender = true;
         }
 
-        message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
-        message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
-        message_container.should_add_guest_indicator_for_sender =
-            people.should_add_guest_user_indicator(message_container.msg.sender_id);
-
-        message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
-        if (message_container.msg.stream_id) {
-            message_container.background_color = stream_data.get_color(
-                message_container.msg.stream_id,
-            );
-        }
-
-        Object.assign(
-            message_container,
-            this._maybe_get_me_message(message_container.is_hidden, message_container.msg),
-            this._get_message_edited_vars(message_container.msg),
+        const sender_is_bot = people.sender_is_bot(message);
+        const sender_is_guest = people.sender_is_guest(message);
+        const should_add_guest_indicator_for_sender = people.should_add_guest_user_indicator(
+            message.sender_id,
         );
+
+        const small_avatar_url = people.small_avatar_url(message);
+        let background_color;
+        if (message.type === "stream") {
+            background_color = stream_data.get_color(message.stream_id);
+        }
+
+        return {
+            timestr: get_timestr(message),
+            // this is only relevant for streams, don't use it if it wasn't set
+            ...(background_color && {background_color}),
+            small_avatar_url,
+            sender_is_bot,
+            sender_is_guest,
+            should_add_guest_indicator_for_sender,
+            is_hidden,
+            // don't set this unless we found a new value for it.
+            ...(mention_classname !== undefined && {mention_classname}),
+            include_sender,
+            ...this._maybe_get_me_message(is_hidden, message),
+            ...this._get_message_edited_vars(message),
+        };
     }
 
     maybe_add_subscription_marker(group, last_msg_container, first_msg_container) {
@@ -670,7 +679,13 @@ export class MessageListView {
                 message_container.include_sender = false;
             }
 
-            this.set_calculated_message_container_variables(message_container);
+            Object.assign(
+                message_container,
+                this.get_calculated_message_container_variables(
+                    message_container.msg,
+                    message_container.include_sender,
+                ),
+            );
 
             prev = message_container;
         }
@@ -1441,7 +1456,14 @@ export class MessageListView {
         const $row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
 
-        this.set_calculated_message_container_variables(message_container, is_revealed);
+        Object.assign(
+            message_container,
+            this.get_calculated_message_container_variables(
+                message_container.msg,
+                message_container.include_sender,
+                is_revealed,
+            ),
+        );
 
         const $rendered_msg = $(this._get_message_template(message_container));
         if (message_content_edited) {
