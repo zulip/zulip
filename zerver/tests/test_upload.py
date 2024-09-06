@@ -10,12 +10,11 @@ import orjson
 import pyvips
 import time_machine
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.timezone import now as timezone_now
 from pyvips import at_least_libvips
 from pyvips import version as libvips_version
 from typing_extensions import override
-from urllib3 import encode_multipart_formdata
-from urllib3.fields import RequestField
 
 import zerver.lib.upload
 from analytics.models import RealmCount
@@ -151,21 +150,29 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         Test coverage for files without content-type in the metadata;
         in which case we try to guess the content-type from the filename.
         """
-        field = RequestField("file", b"zulip!", filename="somefile")
-        field.make_multipart()
-        data, content_type = encode_multipart_formdata([field])
+        uploaded_file = SimpleUploadedFile("somefile", b"zulip!", content_type="")
         result = self.api_post(
-            self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
+            self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
+        )
+
+        self.login("hamlet")
+        response_dict = self.assert_json_success(result)
+        url = response_dict["url"]
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], "application/octet-stream")
+
+        uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="")
+        result = self.api_post(
+            self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
         )
         self.assert_json_success(result)
 
-        field = RequestField("file", b"zulip!", filename="somefile.txt")
-        field.make_multipart()
-        data, content_type = encode_multipart_formdata([field])
-        result = self.api_post(
-            self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
-        )
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
+        url = response_dict["url"]
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], "text/plain")
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when Zulip is in DEVELOPMENT mode.
