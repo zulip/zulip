@@ -753,8 +753,6 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
 }
 
 function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-
-    
     const last_string = Filter.unparse([last]).toLowerCase();
     const negated =
         last.negated === true || (last.operator === "search" && last.operand.startsWith("-"));
@@ -773,7 +771,6 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
         return [];
     }
 
-
     if (
         last.operator === "" ||
         sender_query.startsWith(last_string) ||
@@ -783,17 +780,15 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     ) {
         return [
             {
-                
                 search_string: last_string === "sender:me" ? sender_me_query : sender_query,
                 description_html,
                 is_people: false,
             },
         ];
     }
-    
+
     return [];
 }
-
 
 function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
     if (!(last.operator === "search")) {
