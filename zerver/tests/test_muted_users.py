@@ -9,6 +9,7 @@ from zerver.lib.muted_users import get_mute_object, get_muting_users, get_user_m
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import RealmAuditLog, UserMessage, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 class MutedUsersTests(ZulipTestCase):
@@ -111,7 +112,7 @@ class MutedUsersTests(ZulipTestCase):
         self.assertEqual(
             audit_log_entry,
             (
-                RealmAuditLog.USER_MUTED,
+                AuditLogEventType.USER_MUTED,
                 mute_time,
                 {"muted_user_id": cordelia.id},
             ),
@@ -171,7 +172,7 @@ class MutedUsersTests(ZulipTestCase):
         self.assertEqual(
             audit_log_entry,
             (
-                RealmAuditLog.USER_UNMUTED,
+                AuditLogEventType.USER_UNMUTED,
                 mute_time,
                 {"unmuted_user_id": cordelia.id},
             ),

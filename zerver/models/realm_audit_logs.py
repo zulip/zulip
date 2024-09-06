@@ -71,6 +71,9 @@ class AuditLogEventType(IntEnum):
     SUBSCRIPTION_DEACTIVATED = 303
     SUBSCRIPTION_PROPERTY_CHANGED = 304
 
+    USER_MUTED = 350
+    USER_UNMUTED = 351
+
 
 class AbstractRealmAuditLog(models.Model):
     """Defines fields common to RealmAuditLog and RemoteRealmAuditLog."""
@@ -91,9 +94,6 @@ class AbstractRealmAuditLog(models.Model):
     extra_data = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
     # Event types
-    USER_MUTED = 350
-    USER_UNMUTED = 351
-
     STRIPE_CUSTOMER_CREATED = 401
     STRIPE_CARD_CHANGED = 402
     STRIPE_PLAN_CHANGED = 403
