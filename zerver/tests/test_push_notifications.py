@@ -1729,7 +1729,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # Verify the RemoteRealmAuditLog entries created.
         remote_audit_logs = (
             RemoteRealmAuditLog.objects.filter(
-                event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
                 remote_realm=zephyr_remote_realm,
             )
             .order_by("id")
@@ -1740,7 +1740,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             list(remote_audit_logs),
             [
                 dict(
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
                     remote_id=None,
                     realm_id=zephyr_realm.id,
                     extra_data={
@@ -1750,7 +1750,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     },
                 ),
                 dict(
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
                     remote_id=None,
                     realm_id=zephyr_realm.id,
                     extra_data={
@@ -1760,7 +1760,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     },
                 ),
                 dict(
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
                     remote_id=None,
                     realm_id=zephyr_realm.id,
                     extra_data={
@@ -1770,7 +1770,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     },
                 ),
                 dict(
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
                     remote_id=None,
                     realm_id=zephyr_realm.id,
                     extra_data={
@@ -1780,7 +1780,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     },
                 ),
                 dict(
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
                     remote_id=None,
                     realm_id=zephyr_realm.id,
                     extra_data={
@@ -2719,7 +2719,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(analytics_logger.output, ["WARNING:zulip.analytics:Dummy warning"])
 
         audit_log = RemoteRealmAuditLog.objects.latest("id")
-        self.assertEqual(audit_log.event_type, RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED)
+        self.assertEqual(audit_log.event_type, AuditLogEventType.REMOTE_REALM_LOCALLY_DELETED)
         self.assertEqual(audit_log.remote_realm, remote_realm_for_deleted_realm)
 
         from django.core.mail import outbox
@@ -2758,7 +2758,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         audit_log = RemoteRealmAuditLog.objects.latest("id")
         self.assertEqual(
-            audit_log.event_type, RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED_RESTORED
+            audit_log.event_type, AuditLogEventType.REMOTE_REALM_LOCALLY_DELETED_RESTORED
         )
         self.assertEqual(audit_log.remote_realm, remote_realm_for_deleted_realm)
 

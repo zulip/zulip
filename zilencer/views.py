@@ -917,7 +917,7 @@ def update_remote_realm_data_for_server(
                     remote_id=None,
                     remote_realm=remote_realm,
                     realm_id=realm.id,
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
                     event_time=now,
                     extra_data={
                         "attr_name": remote_realm_attr,
@@ -936,7 +936,7 @@ def update_remote_realm_data_for_server(
                     remote_id=None,
                     remote_realm=remote_realm,
                     realm_id=uuid_to_realm_dict[str(remote_realm.uuid)].id,
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED_RESTORED,
+                    event_type=AuditLogEventType.REMOTE_REALM_LOCALLY_DELETED_RESTORED,
                     event_time=now,
                 )
             )
@@ -977,7 +977,7 @@ def update_remote_realm_data_for_server(
                     remote_id=None,
                     remote_realm=remote_realm,
                     realm_id=None,
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED,
+                    event_type=AuditLogEventType.REMOTE_REALM_LOCALLY_DELETED,
                     event_time=now,
                 )
             )
@@ -1133,7 +1133,7 @@ def handle_customer_migration_from_server_to_realm(
         RemoteRealmAuditLog(
             server=server,
             remote_realm=remote_realm,
-            event_type=RemoteRealmAuditLog.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
+            event_type=AuditLogEventType.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
             event_time=event_time,
             extra_data={
                 "attr_name": "plan_type",

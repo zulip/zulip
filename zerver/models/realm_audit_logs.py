@@ -120,6 +120,14 @@ class AuditLogEventType(IntEnum):
     REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED = 10213
     REMOTE_SERVER_CREATED = 10215
 
+    # This value is for RemoteRealmAuditLog entries tracking changes to the
+    # RemoteRealm model resulting from modified realm information sent to us
+    # via send_server_data_to_push_bouncer.
+    REMOTE_REALM_VALUE_UPDATED = 20001
+    REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM = 20002
+    REMOTE_REALM_LOCALLY_DELETED = 20003
+    REMOTE_REALM_LOCALLY_DELETED_RESTORED = 20004
+
 
 class AbstractRealmAuditLog(models.Model):
     """Defines fields common to RealmAuditLog and RemoteRealmAuditLog."""
@@ -139,16 +147,7 @@ class AbstractRealmAuditLog(models.Model):
 
     extra_data = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
-    # Event types
-
-    # This value is for RemoteRealmAuditLog entries tracking changes to the
-    # RemoteRealm model resulting from modified realm information sent to us
-    # via send_server_data_to_push_bouncer.
-    REMOTE_REALM_VALUE_UPDATED = 20001
-    REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM = 20002
-    REMOTE_REALM_LOCALLY_DELETED = 20003
-    REMOTE_REALM_LOCALLY_DELETED_RESTORED = 20004
-
+    # See AuditLogEventType class above.
     event_type = models.PositiveSmallIntegerField()
 
     # event_types synced from on-prem installations to Zulip Cloud when
