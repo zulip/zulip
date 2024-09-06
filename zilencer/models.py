@@ -12,6 +12,7 @@ from analytics.models import BaseCount
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.rate_limiter import rules as rate_limiter_rules
 from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog, Realm, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 def get_remote_server_by_uuid(uuid: str) -> "RemoteZulipServer":
@@ -292,7 +293,8 @@ class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
 
     @override
     def __str__(self) -> str:
-        return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
+        event_type_name = AuditLogEventType(self.event_type).name
+        return f"{event_type_name} {self.event_time} (id={self.id}): {self.server!r}"
 
 
 class RemoteRealmAuditLog(AbstractRealmAuditLog):
@@ -319,7 +321,8 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
 
     @override
     def __str__(self) -> str:
-        return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
+        event_type_name = AuditLogEventType(self.event_type).name
+        return f"{event_type_name} {self.event_time} (id={self.id}): {self.server!r}"
 
     class Meta:
         constraints = [
