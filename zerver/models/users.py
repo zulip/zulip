@@ -770,7 +770,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return False
 
     def has_permission(self, policy_name: str, realm: Optional["Realm"] = None) -> bool:
-        from zerver.lib.user_groups import is_user_in_group
+        from zerver.lib.user_groups import user_has_permission_for_group_setting
         from zerver.models import Realm
 
         if policy_name not in [
@@ -798,7 +798,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
                 # setting fields using select_related.
                 realm = self.realm
             allowed_user_group = getattr(realm, policy_name)
-            return is_user_in_group(allowed_user_group, self)
+            setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS[policy_name]
+            return user_has_permission_for_group_setting(allowed_user_group, self, setting_config)
 
         policy_value = getattr(self.realm, policy_name)
         if policy_value == Realm.POLICY_NOBODY:

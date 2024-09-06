@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
 
@@ -23,6 +23,8 @@ const isaac = {
     user_id: 30,
     full_name: "Isaac",
 };
+
+const group_permission_settings = mock_esm("../src/group_permission_settings", {});
 
 run_test("user_can_change_email", () => {
     const can_change_email = settings_data.user_can_change_email;
@@ -306,11 +308,16 @@ function test_realm_group_settings(setting_name, validation_func) {
         direct_subgroup_ids: new Set([1]),
     };
 
+    group_permission_settings.get_group_permission_setting_config = () => ({
+        allow_everyone_group: false,
+    });
+
     user_groups.initialize({realm_user_groups: [admins, moderators]});
     page_params.is_spectator = true;
     assert.equal(validation_func(), false);
 
     page_params.is_spectator = false;
+    current_user.is_guest = false;
     realm[setting_name] = 1;
     current_user.user_id = admin_user_id;
     assert.equal(validation_func(), true);
@@ -324,6 +331,15 @@ function test_realm_group_settings(setting_name, validation_func) {
 
     current_user.user_id = member_user_id;
     assert.equal(validation_func(), false);
+
+    current_user.user_id = moderator_user_id;
+    current_user.is_guest = true;
+    assert.equal(validation_func(), false);
+
+    group_permission_settings.get_group_permission_setting_config = () => ({
+        allow_everyone_group: true,
+    });
+    assert.equal(validation_func(), true);
 }
 
 run_test("user_can_create_multiuse_invite", () => {

@@ -1,3 +1,6 @@
+import assert from "minimalistic-assert";
+
+import * as group_permission_settings from "./group_permission_settings";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import {current_user, realm} from "./state_data";
@@ -105,6 +108,24 @@ function user_has_permission(policy_value: number): boolean {
     return user_join_days >= realm.realm_waiting_period_threshold;
 }
 
+export function user_has_permission_for_group_setting(
+    setting_group_id: number,
+    setting_name: string,
+    setting_type: "realm" | "stream" | "group",
+): boolean {
+    const settings_config = group_permission_settings.get_group_permission_setting_config(
+        setting_name,
+        setting_type,
+    );
+    assert(settings_config !== undefined);
+
+    if (!settings_config.allow_everyone_group && current_user.is_guest) {
+        return false;
+    }
+
+    return user_groups.is_user_in_group(setting_group_id, current_user.user_id);
+}
+
 export function user_can_invite_users_by_email(): boolean {
     return user_has_permission(realm.realm_invite_to_realm_policy);
 }
@@ -113,9 +134,10 @@ export function user_can_create_multiuse_invite(): boolean {
     if (page_params.is_spectator) {
         return false;
     }
-    return user_groups.is_user_in_group(
+    return user_has_permission_for_group_setting(
         realm.realm_create_multiuse_invite_group,
-        current_user.user_id,
+        "create_multiuse_invite_group",
+        "realm",
     );
 }
 
@@ -127,9 +149,10 @@ export function user_can_create_private_streams(): boolean {
     if (page_params.is_spectator) {
         return false;
     }
-    return user_groups.is_user_in_group(
+    return user_has_permission_for_group_setting(
         realm.realm_can_create_private_channel_group,
-        current_user.user_id,
+        "can_create_private_channel_group",
+        "realm",
     );
 }
 
@@ -137,9 +160,10 @@ export function user_can_create_public_streams(): boolean {
     if (page_params.is_spectator) {
         return false;
     }
-    return user_groups.is_user_in_group(
+    return user_has_permission_for_group_setting(
         realm.realm_can_create_public_channel_group,
-        current_user.user_id,
+        "can_create_public_channel_group",
+        "realm",
     );
 }
 
@@ -152,9 +176,10 @@ export function user_can_create_web_public_streams(): boolean {
         return false;
     }
 
-    return user_groups.is_user_in_group(
+    return user_has_permission_for_group_setting(
         realm.realm_can_create_web_public_channel_group,
-        current_user.user_id,
+        "can_create_web_public_channel_group",
+        "realm",
     );
 }
 
@@ -186,7 +211,11 @@ export function can_edit_user_group(group_id: number): boolean {
     }
 
     const group = user_groups.get_user_group_from_id(group_id);
-    return user_groups.is_user_in_group(group.can_manage_group, current_user.user_id);
+    return user_has_permission_for_group_setting(
+        group.can_manage_group,
+        "can_manage_group",
+        "group",
+    );
 }
 
 export function user_can_create_user_groups(): boolean {
@@ -205,9 +234,11 @@ export function user_can_delete_any_message(): boolean {
     if (page_params.is_spectator) {
         return false;
     }
-    return user_groups.is_user_in_group(
+
+    return user_has_permission_for_group_setting(
         realm.realm_can_delete_any_message_group,
-        current_user.user_id,
+        "can_delete_any_message_group",
+        "realm",
     );
 }
 
@@ -215,9 +246,11 @@ export function user_can_delete_own_message(): boolean {
     if (page_params.is_spectator) {
         return false;
     }
-    return user_groups.is_user_in_group(
+
+    return user_has_permission_for_group_setting(
         realm.realm_can_delete_own_message_group,
-        current_user.user_id,
+        "can_delete_own_message_group",
+        "realm",
     );
 }
 
@@ -276,9 +309,10 @@ export function user_can_access_all_other_users(): boolean {
         return true;
     }
 
-    return user_groups.is_user_in_group(
+    return user_has_permission_for_group_setting(
         realm.realm_can_access_all_users_group,
-        current_user.user_id,
+        "can_access_all_users_group",
+        "realm",
     );
 }
 

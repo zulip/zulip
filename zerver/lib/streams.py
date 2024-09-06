@@ -22,7 +22,7 @@ from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_str
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import APIStreamDict
-from zerver.lib.user_groups import is_user_in_group
+from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.models import (
     DefaultStreamGroup,
     NamedUserGroup,
@@ -642,7 +642,11 @@ def can_remove_subscribers_from_stream(
 
     group_allowed_to_remove_subscribers = stream.can_remove_subscribers_group
     assert group_allowed_to_remove_subscribers is not None
-    return is_user_in_group(group_allowed_to_remove_subscribers, user_profile)
+    return user_has_permission_for_group_setting(
+        group_allowed_to_remove_subscribers,
+        user_profile,
+        Stream.stream_permission_group_settings["can_remove_subscribers_group"],
+    )
 
 
 def filter_stream_authorization(
