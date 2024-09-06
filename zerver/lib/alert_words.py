@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-
 import ahocorasick
 from django.db import transaction
 
@@ -46,27 +45,50 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
     return alert_word_automaton
 
 
-def user_alert_words(user_profile: UserProfile) -> list[str]:
-    return list(AlertWord.objects.filter(user_profile=user_profile).values_list("word", flat=True))
+def user_alert_words(user_profile: UserProfile, all=False) -> list[str]:
+    if all:
+        alert_words = list(AlertWord.objects.filter(user_profile=user_profile).values_list("word", flat=True))
+    else:
+        alert_words = list(AlertWord.objects.filter(user_profile=user_profile, deactivated=False).values_list("word", flat=True))
+    return alert_words
 
 
 @transaction.atomic(savepoint=False)
 def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) -> list[str]:
-    existing_words_lower = {word.lower() for word in user_alert_words(user_profile)}
+    existing_alert_words = {
+        word.lower(): word for word in user_alert_words(user_profile, all=True)
+    }
 
-    # Keeping the case, use a dictionary to get the set of
-    # case-insensitive distinct, new alert words
     word_dict: dict[str, str] = {}
-    for word in new_words:
-        if word.lower() in existing_words_lower:
-            continue
-        word_dict[word.lower()] = word
+    words_to_reactivate = []
 
+    for word in new_words:
+        word_lower = word.lower()
+
+        if word_lower in existing_alert_words:
+            # If the word exists, check if it's deactivated and needs reactivation
+            alert_word_obj = AlertWord.objects.filter(
+                user_profile=user_profile, word__iexact=word, deactivated=True
+            ).first()
+
+            if alert_word_obj:
+                words_to_reactivate.append(alert_word_obj)
+            continue
+
+        word_dict[word_lower] = word
+
+    # Reactivate deactivated alert words
+    for alert_word_obj in words_to_reactivate:
+        alert_word_obj.deactivated = False
+        alert_word_obj.save()
+
+    # Bulk create new alert words that were not present before
     AlertWord.objects.bulk_create(
         AlertWord(user_profile=user_profile, word=word, realm=user_profile.realm)
         for word in word_dict.values()
     )
-    # Django bulk_create operations don't flush caches, so we need to do this ourselves.
+
+    # Flush cache after updating or creating alert words
     flush_realm_alert_words(user_profile.realm_id)
 
     return user_alert_words(user_profile)
@@ -78,5 +100,5 @@ def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[st
     # We can clean this up if/when PostgreSQL has more native support for case-insensitive fields.
     # If we turn this into a bulk operation, we will need to call flush_realm_alert_words() here.
     for delete_word in delete_words:
-        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).delete()
+        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).update(deactivated=True)
     return user_alert_words(user_profile)
