@@ -116,7 +116,11 @@ def has_user_group_access(
     if can_edit_all_user_groups:
         return True
 
-    return is_user_in_group(user_group.can_manage_group, user_profile)
+    return user_has_permission_for_group_setting(
+        user_group.can_manage_group,
+        user_profile,
+        NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_manage_group"],
+    )
 
 
 def access_user_group_by_id(
@@ -621,6 +625,19 @@ def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserG
         )
     )
     return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+
+
+def user_has_permission_for_group_setting(
+    user_group: UserGroup,
+    user: UserProfile,
+    setting_config: GroupPermissionSetting,
+    *,
+    direct_member_only: bool = False,
+) -> bool:
+    if not setting_config.allow_everyone_group and user.is_guest:
+        return False
+
+    return is_user_in_group(user_group, user, direct_member_only=direct_member_only)
 
 
 def is_user_in_group(

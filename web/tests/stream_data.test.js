@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
@@ -19,6 +19,14 @@ const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
 const stream_settings_data = zrequire("stream_settings_data");
 const user_groups = zrequire("user_groups");
+
+mock_esm("../src/group_permission_settings", {
+    get_group_permission_setting_config() {
+        return {
+            allow_everyone_group: false,
+        };
+    },
+});
 
 const me = {
     email: "me@zulip.com",

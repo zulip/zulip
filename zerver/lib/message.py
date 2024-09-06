@@ -29,7 +29,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.streams import can_access_stream_history, get_web_public_streams_queryset
 from zerver.lib.topic import MESSAGE__TOPIC, TOPIC_NAME, messages_for_topic
 from zerver.lib.types import UserDisplayRecipient
-from zerver.lib.user_groups import is_user_in_group
+from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
@@ -1223,7 +1223,12 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[i
                 )
             )
 
-        if not is_user_in_group(can_mention_group, sender, direct_member_only=False):
+        if not user_has_permission_for_group_setting(
+            can_mention_group,
+            sender,
+            NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"],
+            direct_member_only=False,
+        ):
             raise JsonableError(
                 _("You are not allowed to mention user group '{user_group_name}'.").format(
                     user_group_name=group.name

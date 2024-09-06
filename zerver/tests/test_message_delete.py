@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
+from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, NamedUserGroup, UserProfile
 from zerver.models.groups import SystemGroups
@@ -404,6 +405,22 @@ class DeleteMessageTest(ZulipTestCase):
         check_delete_message_by_other_user("iago", "shiva")
         check_delete_message_by_other_user(
             "hamlet", "cordelia", "You don't have permission to delete this message"
+        )
+
+        # Check that guest cannot delete any message even when they are member
+        # of the group which is allowed to delete any message.
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        user_group = check_add_user_group(realm, "test-group", [hamlet, polonius], acting_user=None)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_delete_any_message_group",
+            user_group,
+            acting_user=None,
+        )
+        check_delete_message_by_other_user("cordelia", "hamlet")
+        check_delete_message_by_other_user(
+            "cordelia", "polonius", "You don't have permission to delete this message"
         )
 
     def test_delete_message_according_to_can_delete_own_message_group(self) -> None:

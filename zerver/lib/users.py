@@ -27,7 +27,7 @@ from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, RawUserDict
-from zerver.lib.user_groups import is_user_in_group
+from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -656,7 +656,11 @@ def check_user_can_access_all_users(acting_user: UserProfile | None) -> bool:
         return True
 
     realm = acting_user.realm
-    if is_user_in_group(realm.can_access_all_users_group, acting_user):
+    if user_has_permission_for_group_setting(
+        realm.can_access_all_users_group,
+        acting_user,
+        Realm.REALM_PERMISSION_GROUP_SETTINGS["can_access_all_users_group"],
+    ):
         return True
 
     return False
