@@ -262,10 +262,13 @@ class RealmAuditLog(AbstractRealmAuditLog):
 
     @override
     def __str__(self) -> str:
+        event_type_name = AuditLogEventType(self.event_type).name
         if self.modified_user is not None:
-            return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
+            return f"{event_type_name} {self.event_time} (id={self.id}): {self.modified_user!r}"
         if self.modified_stream is not None:
-            return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
+            return f"{event_type_name} {self.event_time} (id={self.id}): {self.modified_stream!r}"
         if self.modified_user_group is not None:
-            return f"{self.modified_user_group!r} {self.event_type} {self.event_time} {self.id}"
-        return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
+            return (
+                f"{event_type_name} {self.event_time} (id={self.id}): {self.modified_user_group!r}"
+            )
+        return f"{event_type_name} {self.event_time} (id={self.id}): {self.realm!r}"

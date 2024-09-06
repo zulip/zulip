@@ -292,7 +292,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assertTrue(
             repr(audit_entry).startswith(
-                f"<RealmAuditLog: <UserProfile: {user.email} {user.realm!r}> {AuditLogEventType.USER_EMAIL_CHANGED} "
+                f"<RealmAuditLog: {AuditLogEventType.USER_EMAIL_CHANGED.name} "
             )
         )
 
