@@ -29,6 +29,7 @@ from corporate.models import (
     get_current_plan_by_customer,
 )
 from zerver.models import Realm
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_org_type_display_name, get_realm
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
@@ -410,7 +411,7 @@ def get_data_for_remote_support_view(billing_session: BillingSession) -> RemoteS
         user_data = get_remote_server_guest_and_non_guest_count(billing_session.remote_server.id)
         stale_audit_log_data = has_stale_audit_log(billing_session.remote_server)
         date_created = RemoteZulipServerAuditLog.objects.get(
-            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+            event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
             server__id=billing_session.remote_server.id,
         ).event_time
         mobile_data = get_mobile_push_data(billing_session.remote_server)

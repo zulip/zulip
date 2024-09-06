@@ -107,6 +107,19 @@ class AuditLogEventType(IntEnum):
     USER_GROUP_DESCRIPTION_CHANGED = 721
     USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
 
+    # The following values are only for remote server/realm logs.
+    # Values should be exactly 10000 greater than the corresponding
+    # value used for the same purpose in realm audit logs (e.g.,
+    # REALM_DEACTIVATED = 201, and REMOTE_SERVER_DEACTIVATED = 10201).
+    REMOTE_SERVER_DEACTIVATED = 10201
+    REMOTE_SERVER_REACTIVATED = 10202
+    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
+    REMOTE_SERVER_DISCOUNT_CHANGED = 10209
+    REMOTE_SERVER_SPONSORSHIP_APPROVED = 10210
+    REMOTE_SERVER_BILLING_MODALITY_CHANGED = 10211
+    REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED = 10213
+    REMOTE_SERVER_CREATED = 10215
+
 
 class AbstractRealmAuditLog(models.Model):
     """Defines fields common to RealmAuditLog and RemoteRealmAuditLog."""
@@ -127,19 +140,6 @@ class AbstractRealmAuditLog(models.Model):
     extra_data = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
     # Event types
-
-    # The following values are only for RemoteZulipServerAuditLog
-    # Values should be exactly 10000 greater than the corresponding
-    # value used for the same purpose in RealmAuditLog (e.g.
-    # REALM_DEACTIVATED = 201, and REMOTE_SERVER_DEACTIVATED = 10201).
-    REMOTE_SERVER_DEACTIVATED = 10201
-    REMOTE_SERVER_REACTIVATED = 10202
-    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
-    REMOTE_SERVER_DISCOUNT_CHANGED = 10209
-    REMOTE_SERVER_SPONSORSHIP_APPROVED = 10210
-    REMOTE_SERVER_BILLING_MODALITY_CHANGED = 10211
-    REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED = 10213
-    REMOTE_SERVER_CREATED = 10215
 
     # This value is for RemoteRealmAuditLog entries tracking changes to the
     # RemoteRealm model resulting from modified realm information sent to us

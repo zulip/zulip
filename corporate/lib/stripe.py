@@ -4210,19 +4210,19 @@ class RemoteRealmBillingSession(BillingSession):
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_CREATED:
             return AuditLogEventType.CUSTOMER_PLAN_CREATED
         elif event_type is BillingSessionEventType.DISCOUNT_CHANGED:
-            return RemoteRealmAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED
+            return AuditLogEventType.REMOTE_SERVER_DISCOUNT_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PROPERTY_CHANGED:
             return AuditLogEventType.CUSTOMER_PROPERTY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.SPONSORSHIP_APPROVED:
-            return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
+            return AuditLogEventType.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is BillingSessionEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
-            return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
+            return AuditLogEventType.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is BillingSessionEventType.BILLING_MODALITY_CHANGED:
-            return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
+            return AuditLogEventType.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
             return AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED
         elif event_type is BillingSessionEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
-            return RemoteRealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
+            return AuditLogEventType.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (
             event_type is BillingSessionEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         ):  # nocoverage
@@ -4653,19 +4653,19 @@ class RemoteServerBillingSession(BillingSession):
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_CREATED:
             return AuditLogEventType.CUSTOMER_PLAN_CREATED
         elif event_type is BillingSessionEventType.DISCOUNT_CHANGED:
-            return RemoteZulipServerAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED  # nocoverage
+            return AuditLogEventType.REMOTE_SERVER_DISCOUNT_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.CUSTOMER_PROPERTY_CHANGED:
             return AuditLogEventType.CUSTOMER_PROPERTY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.SPONSORSHIP_APPROVED:
-            return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
+            return AuditLogEventType.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is BillingSessionEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
-            return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
+            return AuditLogEventType.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is BillingSessionEventType.BILLING_MODALITY_CHANGED:
-            return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
+            return AuditLogEventType.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
             return AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
-            return RemoteZulipServerAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
+            return AuditLogEventType.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (
             event_type is BillingSessionEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         ):  # nocoverage
@@ -5168,7 +5168,7 @@ def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     remote_server.deactivated = False
     remote_server.save(update_fields=["deactivated"])
     RemoteZulipServerAuditLog.objects.create(
-        event_type=RealmAuditLog.REMOTE_SERVER_REACTIVATED,
+        event_type=AuditLogEventType.REMOTE_SERVER_REACTIVATED,
         server=remote_server,
         event_time=timezone_now(),
     )
@@ -5218,7 +5218,7 @@ def do_deactivate_remote_server(
     remote_server.deactivated = True
     remote_server.save(update_fields=["deactivated"])
     RemoteZulipServerAuditLog.objects.create(
-        event_type=RealmAuditLog.REMOTE_SERVER_DEACTIVATED,
+        event_type=AuditLogEventType.REMOTE_SERVER_DEACTIVATED,
         server=remote_server,
         event_time=timezone_now(),
     )

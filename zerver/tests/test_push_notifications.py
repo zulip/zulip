@@ -5164,7 +5164,7 @@ class PushBouncerSignupTest(ZulipTestCase):
 
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
         remote_realm_audit_log = RemoteZulipServerAuditLog.objects.filter(
-            event_type=RealmAuditLog.REMOTE_SERVER_DEACTIVATED
+            event_type=AuditLogEventType.REMOTE_SERVER_DEACTIVATED
         ).last()
         assert remote_realm_audit_log is not None
         self.assertTrue(server.deactivated)

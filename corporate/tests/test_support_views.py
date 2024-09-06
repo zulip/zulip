@@ -116,7 +116,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 hostname=hostname, contact_email=f"admin@{hostname}", uuid=uuid.uuid4()
             )
             RemoteZulipServerAuditLog.objects.create(
-                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
                 server=remote_server,
                 event_time=remote_server.last_updated,
             )
@@ -688,7 +688,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         remote_server_no_upgrade.refresh_from_db()
         self.assertTrue(remote_server_no_upgrade.deactivated)
         audit_log = RemoteZulipServerAuditLog.objects.filter(
-            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_DEACTIVATED
+            event_type=AuditLogEventType.REMOTE_SERVER_DEACTIVATED
         ).last()
         assert audit_log is not None
         self.assertEqual(audit_log.server, remote_server_no_upgrade)
@@ -709,7 +709,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         remote_server.refresh_from_db()
         self.assertFalse(remote_server.deactivated)
         audit_log = RemoteZulipServerAuditLog.objects.filter(
-            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_REACTIVATED
+            event_type=AuditLogEventType.REMOTE_SERVER_REACTIVATED
         ).last()
         assert audit_log is not None
         self.assertEqual(audit_log.server, remote_server)
