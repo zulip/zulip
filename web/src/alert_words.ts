@@ -17,6 +17,32 @@ export function set_words(words: string[]): void {
     my_alert_words.sort((a, b) => b.length - a.length);
 }
 
+export function remove_alert_words(wordsToRemove: string[]): void {
+    // Ensure wordsToRemove is a set for efficient lookups
+    const wordsToRemoveSet = new Set(wordsToRemove);
+
+    // Update the my_alert_words array
+    my_alert_words = my_alert_words.filter(word => !wordsToRemoveSet.has(word));
+
+    // Remove alert-word class from span elements in the HTML
+    const alertWordSpans = document.querySelectorAll("span.alert-word");
+
+    alertWordSpans.forEach(span => {
+        // Check if the span contains a word to remove
+        const spanText = span.textContent || "";
+
+        if (wordsToRemoveSet.has(spanText)) {
+            // Remove the class from the span element
+            span.classList.remove("alert-word");
+
+            // Optionally, you might want to handle cases where the span should be removed
+            // or have some other visual effect
+        }
+    });
+}
+
+
+
 export function get_word_list(): {word: string}[] {
     // Returns a array of objects
     // (with each alert_word as value and 'word' as key to the object.)
