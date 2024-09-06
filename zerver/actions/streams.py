@@ -203,7 +203,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
         realm=stream.realm,
         acting_user=acting_user,
         modified_stream=stream,
-        event_type=RealmAuditLog.STREAM_DEACTIVATED,
+        event_type=AuditLogEventType.CHANNEL_DEACTIVATED,
         event_time=event_time,
     )
 
@@ -286,7 +286,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
         realm=realm,
         acting_user=acting_user,
         modified_stream=stream,
-        event_type=RealmAuditLog.STREAM_REACTIVATED,
+        event_type=AuditLogEventType.CHANNEL_REACTIVATED,
         event_time=timezone_now(),
     )
 
@@ -1226,7 +1226,7 @@ def do_change_stream_permission(
             realm=realm,
             acting_user=acting_user,
             modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
             event_time=event_time,
             extra_data={
                 RealmAuditLog.OLD_VALUE: old_invite_only_value,
@@ -1240,7 +1240,7 @@ def do_change_stream_permission(
             realm=realm,
             acting_user=acting_user,
             modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
             event_time=event_time,
             extra_data={
                 RealmAuditLog.OLD_VALUE: old_history_public_to_subscribers_value,
@@ -1266,7 +1266,7 @@ def do_change_stream_permission(
             realm=realm,
             acting_user=acting_user,
             modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
             event_time=event_time,
             extra_data={
                 RealmAuditLog.OLD_VALUE: old_is_web_public_value,
@@ -1376,7 +1376,7 @@ def do_change_stream_post_policy(
         realm=stream.realm,
         acting_user=acting_user,
         modified_stream=stream,
-        event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
         event_time=timezone_now(),
         extra_data={
             RealmAuditLog.OLD_VALUE: old_post_policy,
@@ -1427,7 +1427,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         realm=stream.realm,
         acting_user=user_profile,
         modified_stream=stream,
-        event_type=RealmAuditLog.STREAM_NAME_CHANGED,
+        event_type=AuditLogEventType.CHANNEL_NAME_CHANGED,
         event_time=timezone_now(),
         extra_data={
             RealmAuditLog.OLD_VALUE: old_name,
@@ -1516,7 +1516,7 @@ def do_change_stream_description(
         realm=stream.realm,
         acting_user=acting_user,
         modified_stream=stream,
-        event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+        event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
         event_time=timezone_now(),
         extra_data={
             RealmAuditLog.OLD_VALUE: old_description,
@@ -1603,7 +1603,7 @@ def do_change_stream_message_retention_days(
         realm=stream.realm,
         acting_user=acting_user,
         modified_stream=stream,
-        event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED,
+        event_type=AuditLogEventType.CHANNEL_MESSAGE_RETENTION_DAYS_CHANGED,
         event_time=timezone_now(),
         extra_data={
             RealmAuditLog.OLD_VALUE: old_message_retention_days_value,
@@ -1647,7 +1647,7 @@ def do_change_stream_group_based_setting(
         realm=stream.realm,
         acting_user=acting_user,
         modified_stream=stream,
-        event_type=RealmAuditLog.STREAM_GROUP_BASED_SETTING_CHANGED,
+        event_type=AuditLogEventType.CHANNEL_GROUP_BASED_SETTING_CHANGED,
         event_time=timezone_now(),
         extra_data={
             RealmAuditLog.OLD_VALUE: old_user_group_id,
