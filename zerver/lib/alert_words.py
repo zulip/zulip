@@ -50,7 +50,6 @@ def user_alert_words(user_profile: UserProfile, all=False) -> list[str]:
         alert_words = list(AlertWord.objects.filter(user_profile=user_profile).values_list("word", flat=True))
     else:
         alert_words = list(AlertWord.objects.filter(user_profile=user_profile, deactivated=False).values_list("word", flat=True))
-    print(f"alert words: {alert_words}")
     return alert_words
 
 

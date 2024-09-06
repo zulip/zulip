@@ -70,9 +70,7 @@ function remove_alert_word(alert_word: string): void {
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
         success() {
-            console.log(`alert words before ${alert_words.get_word_list()}`)
             alert_words.remove_alert_words(words_to_be_removed);
-            console.log(`alert words after ${alert_words.get_word_list()}`)
             update_alert_word_status(
                 $t(
                     {defaultMessage: `Alert word "{alert_word}" removed successfully!`},
