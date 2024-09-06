@@ -783,7 +783,7 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     ) {
         return [
             {
-                // Handling "sender:me" case  
+                
                 search_string: last_string === "sender:me" ? sender_me_query : sender_query,
                 description_html,
                 is_people: false,
