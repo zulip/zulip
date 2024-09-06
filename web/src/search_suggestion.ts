@@ -3,15 +3,15 @@ import assert from "minimalistic-assert";
 
 import render_user_pill from "../templates/user_pill.hbs";
 
-import { MAX_ITEMS } from "./bootstrap_typeahead";
+import {MAX_ITEMS} from "./bootstrap_typeahead";
 import * as common from "./common";
 import * as direct_message_group_data from "./direct_message_group_data";
-import { Filter, create_user_pill_context } from "./filter";
+import {Filter, create_user_pill_context} from "./filter";
 import * as narrow_state from "./narrow_state";
-import { page_params } from "./page_params";
+import {page_params} from "./page_params";
 import * as people from "./people";
-import type { User } from "./people";
-import { type NarrowTerm, current_user } from "./state_data";
+import type {User} from "./people";
+import {type NarrowTerm, current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -31,16 +31,16 @@ export type Suggestion = {
     description_html: string;
     search_string: string;
 } & (
-        | {
-            is_people: false;
-        }
-        | {
-            is_people: true;
-            users: {
-                user_pill_context: UserPillItem;
-            }[];
-        }
-    );
+    | {
+          is_people: false;
+      }
+    | {
+          is_people: true;
+          users: {
+              user_pill_context: UserPillItem;
+          }[];
+      }
+);
 
 export const max_num_of_search_results = MAX_ITEMS;
 
@@ -146,11 +146,11 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     // have suggestions with "channel:" operator.
     const valid = ["stream", "channel", "search", ""];
     const incompatible_patterns = [
-        { operator: "channel" },
-        { operator: "channels" },
-        { operator: "is", operand: "dm" },
-        { operator: "dm" },
-        { operator: "dm-including" },
+        {operator: "channel"},
+        {operator: "channels"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm"},
+        {operator: "dm-including"},
     ];
     if (!check_validity(last, terms, valid, incompatible_patterns)) {
         return [];
@@ -177,7 +177,7 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
-        return { description_html, search_string, is_people: false };
+        return {description_html, search_string, is_people: false};
     });
 }
 
@@ -194,7 +194,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
             last_complete_term,
             terms.slice(-1),
             ["dm", "pm-with"],
-            [{ operator: "channel" }],
+            [{operator: "channel"}],
         )
     ) {
         return [];
@@ -286,7 +286,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 
         let terms: NarrowTerm[] = [term];
         if (negated) {
-            terms = [{ operator: "is", operand: "dm" }, term];
+            terms = [{operator: "is", operand: "dm"}, term];
         }
 
         const all_user_pill_contexts = [
@@ -298,7 +298,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
             description_html: prefix,
             search_string: Filter.unparse(terms),
             is_people: true,
-            users: all_user_pill_contexts.map((user_pill_context) => ({ user_pill_context })),
+            users: all_user_pill_contexts.map((user_pill_context) => ({user_pill_context})),
         };
     });
 }
@@ -340,7 +340,7 @@ function get_person_suggestions(
 ): Suggestion[] {
     if ((last.operator === "is" && last.operand === "dm") || last.operator === "pm-with") {
         // Interpret "is:dm" or "pm-with:" operator as equivalent to "dm:".
-        last = { operator: "dm", operand: "", negated: false };
+        last = {operator: "dm", operand: "", negated: false};
     }
 
     const query = last.operand;
@@ -355,20 +355,20 @@ function get_person_suggestions(
 
     switch (autocomplete_operator) {
         case "dm-including":
-            incompatible_patterns = [{ operator: "channel" }, { operator: "is", operand: "resolved" }];
+            incompatible_patterns = [{operator: "channel"}, {operator: "is", operand: "resolved"}];
             break;
         case "dm":
         case "pm-with":
             incompatible_patterns = [
-                { operator: "dm" },
-                { operator: "pm-with" },
-                { operator: "channel" },
-                { operator: "is", operand: "resolved" },
+                {operator: "dm"},
+                {operator: "pm-with"},
+                {operator: "channel"},
+                {operator: "is", operand: "resolved"},
             ];
             break;
         case "sender":
         case "from":
-            incompatible_patterns = [{ operator: "sender" }, { operator: "from" }];
+            incompatible_patterns = [{operator: "sender"}, {operator: "from"}];
             break;
     }
 
@@ -398,7 +398,7 @@ function get_person_suggestions(
             // In the special case of "-dm" or "-pm-with", add "is:dm" before
             // it because we assume the user still wants to narrow to direct
             // messages.
-            terms.unshift({ operator: "is", operand: "dm" });
+            terms.unshift({operator: "is", operand: "dm"});
         }
 
         return {
@@ -416,7 +416,7 @@ function get_person_suggestions(
 
 function get_default_suggestion_line(terms: NarrowTerm[]): SuggestionLine {
     if (terms.length === 0) {
-        return [{ description_html: "", search_string: "", is_people: false }];
+        return [{description_html: "", search_string: "", is_people: false}];
     }
     return terms.map((term) => format_as_suggestion([term]));
 }
@@ -461,10 +461,10 @@ export function get_topic_suggestions_from_candidates({
 
 function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     const incompatible_patterns = [
-        { operator: "dm" },
-        { operator: "is", operand: "dm" },
-        { operator: "dm-including" },
-        { operator: "topic" },
+        {operator: "dm"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm-including"},
+        {operator: "topic"},
     ];
     if (!check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns)) {
         return [];
@@ -507,7 +507,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
             } else {
                 channel = narrow_state.stream_name();
                 if (channel) {
-                    suggest_terms.push({ operator: "channel", operand: channel });
+                    suggest_terms.push({operator: "channel", operand: channel});
                 }
             }
             break;
@@ -541,7 +541,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     }
 
     assert(guess !== undefined);
-    const topics = get_topic_suggestions_from_candidates({ candidate_topics, guess });
+    const topics = get_topic_suggestions_from_candidates({candidate_topics, guess});
 
     // Just use alphabetical order.  While recency and read/unreadness of
     // topics do matter in some contexts, you can get that from the left sidebar,
@@ -550,7 +550,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     topics.sort();
 
     return topics.map((topic) => {
-        const topic_term = { operator: "topic", operand: topic, negated };
+        const topic_term = {operator: "topic", operand: topic, negated};
         const terms = [...suggest_terms, topic_term];
         return format_as_suggestion(terms);
     });
@@ -574,7 +574,7 @@ function get_term_subset_suggestions(terms: NarrowTerm[]): Suggestion[] {
     return suggestions;
 }
 
-type SuggestionAndIncompatiblePatterns = Suggestion & { incompatible_patterns: TermPattern[] };
+type SuggestionAndIncompatiblePatterns = Suggestion & {incompatible_patterns: TermPattern[]};
 
 function get_special_filter_suggestions(
     last: NarrowTerm,
@@ -613,7 +613,7 @@ function get_special_filter_suggestions(
             s.description_html.toLowerCase().startsWith(last_string)
         );
     });
-    const filtered_suggestions = suggestions.map(({ incompatible_patterns, ...s }) => s);
+    const filtered_suggestions = suggestions.map(({incompatible_patterns, ...s}) => s);
 
     return filtered_suggestions;
 }
@@ -637,12 +637,12 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
             description_html,
             is_people: false,
             incompatible_patterns: [
-                { operator: "is", operand: "dm" },
-                { operator: "channel" },
-                { operator: "dm-including" },
-                { operator: "dm" },
-                { operator: "in" },
-                { operator: "channels" },
+                {operator: "is", operand: "dm"},
+                {operator: "channel"},
+                {operator: "dm-including"},
+                {operator: "dm"},
+                {operator: "in"},
+                {operator: "channels"},
             ],
         },
     ];
@@ -655,57 +655,57 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             description_html: "direct messages",
             is_people: false,
             incompatible_patterns: [
-                { operator: "is", operand: "dm" },
-                { operator: "is", operand: "resolved" },
-                { operator: "channel" },
-                { operator: "dm" },
-                { operator: "in" },
+                {operator: "is", operand: "dm"},
+                {operator: "is", operand: "resolved"},
+                {operator: "channel"},
+                {operator: "dm"},
+                {operator: "in"},
             ],
         },
         {
             search_string: "is:starred",
             description_html: "starred messages",
             is_people: false,
-            incompatible_patterns: [{ operator: "is", operand: "starred" }],
+            incompatible_patterns: [{operator: "is", operand: "starred"}],
         },
         {
             search_string: "is:mentioned",
             description_html: "@-mentions",
             is_people: false,
-            incompatible_patterns: [{ operator: "is", operand: "mentioned" }],
+            incompatible_patterns: [{operator: "is", operand: "mentioned"}],
         },
         {
             search_string: "is:followed",
             description_html: "followed topics",
             is_people: false,
             incompatible_patterns: [
-                { operator: "is", operand: "followed" },
-                { operator: "is", operand: "dm" },
-                { operator: "dm" },
-                { operator: "dm-including" },
+                {operator: "is", operand: "followed"},
+                {operator: "is", operand: "dm"},
+                {operator: "dm"},
+                {operator: "dm-including"},
             ],
         },
         {
             search_string: "is:alerted",
             description_html: "alerted messages",
             is_people: false,
-            incompatible_patterns: [{ operator: "is", operand: "alerted" }],
+            incompatible_patterns: [{operator: "is", operand: "alerted"}],
         },
         {
             search_string: "is:unread",
             description_html: "unread messages",
             is_people: false,
-            incompatible_patterns: [{ operator: "is", operand: "unread" }],
+            incompatible_patterns: [{operator: "is", operand: "unread"}],
         },
         {
             search_string: "is:resolved",
             description_html: "topics marked as resolved",
             is_people: false,
             incompatible_patterns: [
-                { operator: "is", operand: "resolved" },
-                { operator: "is", operand: "dm" },
-                { operator: "dm" },
-                { operator: "dm-including" },
+                {operator: "is", operand: "resolved"},
+                {operator: "is", operand: "dm"},
+                {operator: "dm"},
+                {operator: "dm-including"},
             ],
         },
     ];
@@ -714,7 +714,7 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
     const other_suggestions = [];
     if (last.operator === "is" && common.phrase_match(last.operand, "private")) {
         const is_dm = format_as_suggestion([
-            { operator: last.operator, operand: "dm", negated: last.negated },
+            {operator: last.operator, operand: "dm", negated: last.negated},
         ]);
         other_suggestions.push(is_dm);
     }
@@ -728,25 +728,25 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
             search_string: "has:link",
             description_html: "messages with links",
             is_people: false,
-            incompatible_patterns: [{ operator: "has", operand: "link" }],
+            incompatible_patterns: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
             description_html: "messages with images",
             is_people: false,
-            incompatible_patterns: [{ operator: "has", operand: "image" }],
+            incompatible_patterns: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
             description_html: "messages with attachments",
             is_people: false,
-            incompatible_patterns: [{ operator: "has", operand: "attachment" }],
+            incompatible_patterns: [{operator: "has", operand: "attachment"}],
         },
         {
             search_string: "has:reaction",
             description_html: "messages with reactions",
             is_people: false,
-            incompatible_patterns: [{ operator: "has", operand: "reaction" }],
+            incompatible_patterns: [{operator: "has", operand: "reaction"}],
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
@@ -765,7 +765,7 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     const sent_string = negated_symbol + "sent";
     const description_html = verb + "sent by me";
 
-    const incompatible_patterns = [{ operator: "sender" }, { operator: "from" }];
+    const incompatible_patterns = [{operator: "sender"}, {operator: "from"}];
 
     if (match_criteria(terms, incompatible_patterns)) {
         return [];
@@ -826,7 +826,7 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
         if (choice === "stream") {
             choice = "channel";
         }
-        const op = [{ operator: choice, operand: "", negated }];
+        const op = [{operator: choice, operand: "", negated}];
         return format_as_suggestion(op);
     });
 }
@@ -985,7 +985,7 @@ export function get_search_result(
 
     // `last` will always be a text term, not a pill term. If there is no
     // text, then `last` is this default empty term.
-    let last: NarrowTerm = { operator: "", operand: "", negated: false };
+    let last: NarrowTerm = {operator: "", operand: "", negated: false};
     if (text_search_terms.length > 0) {
         last = text_search_terms.at(-1)!;
     }
