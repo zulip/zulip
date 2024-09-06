@@ -3832,11 +3832,11 @@ class RealmBillingSession(BillingSession):
         elif event_type is BillingSessionEventType.STRIPE_CARD_CHANGED:
             return AuditLogEventType.STRIPE_CARD_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_CREATED:
-            return RealmAuditLog.CUSTOMER_PLAN_CREATED
+            return AuditLogEventType.CUSTOMER_PLAN_CREATED
         elif event_type is BillingSessionEventType.DISCOUNT_CHANGED:
             return AuditLogEventType.REALM_DISCOUNT_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PROPERTY_CHANGED:
-            return RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
+            return AuditLogEventType.CUSTOMER_PROPERTY_CHANGED
         elif event_type is BillingSessionEventType.SPONSORSHIP_APPROVED:
             return AuditLogEventType.REALM_SPONSORSHIP_APPROVED
         elif event_type is BillingSessionEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
@@ -3844,11 +3844,11 @@ class RealmBillingSession(BillingSession):
         elif event_type is BillingSessionEventType.BILLING_MODALITY_CHANGED:
             return AuditLogEventType.REALM_BILLING_MODALITY_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
-            return RealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
+            return AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
-            return RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+            return AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         elif event_type is BillingSessionEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
-            return RealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
+            return AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -4208,11 +4208,11 @@ class RemoteRealmBillingSession(BillingSession):
         elif event_type is BillingSessionEventType.STRIPE_CARD_CHANGED:
             return AuditLogEventType.STRIPE_CARD_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_CREATED:
-            return RemoteRealmAuditLog.CUSTOMER_PLAN_CREATED
+            return AuditLogEventType.CUSTOMER_PLAN_CREATED
         elif event_type is BillingSessionEventType.DISCOUNT_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PROPERTY_CHANGED:
-            return RemoteRealmAuditLog.CUSTOMER_PROPERTY_CHANGED  # nocoverage
+            return AuditLogEventType.CUSTOMER_PROPERTY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.SPONSORSHIP_APPROVED:
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is BillingSessionEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
@@ -4220,17 +4220,17 @@ class RemoteRealmBillingSession(BillingSession):
         elif event_type is BillingSessionEventType.BILLING_MODALITY_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
-            return RemoteRealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED
+            return AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED
         elif event_type is BillingSessionEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (
             event_type is BillingSessionEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         ):  # nocoverage
-            return RemoteRealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+            return AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         elif (
             event_type is BillingSessionEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
         ):  # nocoverage
-            return RemoteRealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
+            return AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
         else:  # nocoverage
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -4651,11 +4651,11 @@ class RemoteServerBillingSession(BillingSession):
         elif event_type is BillingSessionEventType.STRIPE_CARD_CHANGED:
             return AuditLogEventType.STRIPE_CARD_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_CREATED:
-            return RemoteZulipServerAuditLog.CUSTOMER_PLAN_CREATED
+            return AuditLogEventType.CUSTOMER_PLAN_CREATED
         elif event_type is BillingSessionEventType.DISCOUNT_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.CUSTOMER_PROPERTY_CHANGED:
-            return RemoteZulipServerAuditLog.CUSTOMER_PROPERTY_CHANGED  # nocoverage
+            return AuditLogEventType.CUSTOMER_PROPERTY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.SPONSORSHIP_APPROVED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is BillingSessionEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
@@ -4663,17 +4663,17 @@ class RemoteServerBillingSession(BillingSession):
         elif event_type is BillingSessionEventType.BILLING_MODALITY_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
-            return RemoteZulipServerAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
+            return AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
         elif event_type is BillingSessionEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (
             event_type is BillingSessionEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         ):  # nocoverage
-            return RemoteZulipServerAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+            return AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         elif (
             event_type is BillingSessionEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
         ):  # nocoverage
-            return RemoteZulipServerAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
+            return AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
         else:  # nocoverage
             raise BillingSessionAuditLogEventError(event_type)
 

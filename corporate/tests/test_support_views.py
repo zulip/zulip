@@ -30,6 +30,7 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
 from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserMessage, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import OrgTypeEnum, get_org_type_display_name, get_realm
 from zilencer.lib.remote_counts import MissingDataError
 
@@ -477,7 +478,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         self.assertEqual(plan.next_invoice_date, datetime(2050, 3, 1, tzinfo=timezone.utc))
         self.assertFalse(plan.reminder_to_review_plan_email_sent)
         audit_logs = RemoteRealmAuditLog.objects.filter(
-            event_type=RemoteRealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED
+            event_type=AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED
         ).order_by("-id")
         assert audit_logs.exists()
         reminder_to_review_plan_email_sent_changed_audit_log = audit_logs[0]

@@ -969,12 +969,12 @@ class StripeTest(StripeTestCase):
                     timestamp_to_datetime(stripe_customer.created),
                 ),
                 (AuditLogEventType.STRIPE_CARD_CHANGED, self.now),
-                (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
+                (AuditLogEventType.CUSTOMER_PLAN_CREATED, self.now),
             ],
         )
         self.assertEqual(audit_log_entries[3][0], AuditLogEventType.REALM_PLAN_TYPE_CHANGED)
         first_audit_log_entry = (
-            RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+            RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED)
             .values_list("extra_data", flat=True)
             .first()
         )
@@ -1098,13 +1098,13 @@ class StripeTest(StripeTestCase):
                     AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                     timestamp_to_datetime(stripe_customer.created),
                 ),
-                (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
+                (AuditLogEventType.CUSTOMER_PLAN_CREATED, self.now),
                 (AuditLogEventType.REALM_PLAN_TYPE_CHANGED, self.now),
             ],
         )
         self.assertEqual(audit_log_entries[2][0], AuditLogEventType.REALM_PLAN_TYPE_CHANGED)
         first_audit_log_entry = (
-            RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+            RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED)
             .values_list("extra_data", flat=True)
             .first()
         )
@@ -1239,12 +1239,12 @@ class StripeTest(StripeTestCase):
                     timestamp_to_datetime(stripe_customer.created),
                 ),
                 (AuditLogEventType.STRIPE_CARD_CHANGED, self.now),
-                (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
+                (AuditLogEventType.CUSTOMER_PLAN_CREATED, self.now),
             ],
         )
         self.assertEqual(audit_log_entries[3][0], AuditLogEventType.REALM_PLAN_TYPE_CHANGED)
         first_audit_log_entry = (
-            RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+            RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED)
             .values_list("extra_data", flat=True)
             .first()
         )
@@ -1381,13 +1381,13 @@ class StripeTest(StripeTestCase):
                     AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                     timestamp_to_datetime(stripe_customer.created),
                 ),
-                (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
+                (AuditLogEventType.CUSTOMER_PLAN_CREATED, self.now),
                 (AuditLogEventType.REALM_PLAN_TYPE_CHANGED, self.now),
             ],
         )
         self.assertEqual(audit_log_entries[2][0], AuditLogEventType.REALM_PLAN_TYPE_CHANGED)
         first_audit_log_entry = (
-            RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+            RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED)
             .values_list("extra_data", flat=True)
             .first()
         )
@@ -1499,13 +1499,13 @@ class StripeTest(StripeTestCase):
                         AuditLogEventType.STRIPE_CARD_CHANGED,
                         self.now,
                     ),
-                    (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
+                    (AuditLogEventType.CUSTOMER_PLAN_CREATED, self.now),
                     (AuditLogEventType.REALM_PLAN_TYPE_CHANGED, self.now),
                 ],
             )
             self.assertEqual(audit_log_entries[3][0], AuditLogEventType.REALM_PLAN_TYPE_CHANGED)
             first_audit_log_entry = (
-                RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+                RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED)
                 .values_list("extra_data", flat=True)
                 .first()
             )
@@ -1728,13 +1728,13 @@ class StripeTest(StripeTestCase):
                         AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                         timestamp_to_datetime(stripe_customer.created),
                     ),
-                    (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
+                    (AuditLogEventType.CUSTOMER_PLAN_CREATED, self.now),
                     (AuditLogEventType.REALM_PLAN_TYPE_CHANGED, self.now),
                 ],
             )
             self.assertEqual(audit_log_entries[2][0], AuditLogEventType.REALM_PLAN_TYPE_CHANGED)
             first_audit_log_entry = (
-                RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+                RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED)
                 .values_list("extra_data", flat=True)
                 .first()
             )
@@ -1886,13 +1886,13 @@ class StripeTest(StripeTestCase):
                         AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                         timestamp_to_datetime(stripe_customer.created),
                     ),
-                    (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
+                    (AuditLogEventType.CUSTOMER_PLAN_CREATED, self.now),
                     (AuditLogEventType.REALM_PLAN_TYPE_CHANGED, self.now),
                 ],
             )
             self.assertEqual(audit_log_entries[2][0], AuditLogEventType.REALM_PLAN_TYPE_CHANGED)
             first_audit_log_entry = (
-                RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+                RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED)
                 .values_list("extra_data", flat=True)
                 .first()
             )
@@ -3128,7 +3128,7 @@ class StripeTest(StripeTestCase):
             annual_ledger_entries.values_list("licenses", "licenses_at_next_renewal")[1], (25, 25)
         )
         audit_log = RealmAuditLog.objects.get(
-            event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+            event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         )
         self.assertEqual(audit_log.realm, user.realm)
         self.assertEqual(audit_log.extra_data["monthly_plan_id"], monthly_plan.id)
@@ -3503,7 +3503,7 @@ class StripeTest(StripeTestCase):
             monthly_ledger_entries.values_list("licenses", "licenses_at_next_renewal")[1], (25, 25)
         )
         audit_log = RealmAuditLog.objects.get(
-            event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
+            event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
         )
         self.assertEqual(audit_log.realm, user.realm)
         self.assertEqual(audit_log.extra_data["annual_plan_id"], annual_plan.id)
@@ -3679,7 +3679,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(new_plan.invoiced_through, ledger_entry)
 
             realm_audit_log = RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+                event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
             ).last()
             assert realm_audit_log is not None
 
@@ -3733,7 +3733,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(new_plan.invoiced_through, ledger_entry)
 
             realm_audit_log = RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
+                event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
             ).last()
             assert realm_audit_log is not None
 
@@ -6297,7 +6297,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         message = billing_session.process_support_view_request(support_view_request)
         self.assertEqual("Minimum licenses for zulip changed to 25 from 0.", message)
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {"old_value": None, "new_value": 25, "property": "minimum_licenses"}
@@ -6337,7 +6337,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         message = billing_session.process_support_view_request(support_view_request)
         self.assertEqual("Required plan tier for zulip set to Zulip Cloud Standard.", message)
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
@@ -6414,7 +6414,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         )
         self.assertEqual(discount_for_plus_plan, None)
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
@@ -6628,14 +6628,13 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
             session = session_class(remote_object)
             session.write_to_audit_log(
                 # This "ordinary billing" event type value gets translated by write_to_audit_log
-                # into a RemoteRealmBillingSession.CUSTOMER_PLAN_CREATED or
-                # RemoteServerBillingSession.CUSTOMER_PLAN_CREATED value.
+                # into a AuditLogEventType.CUSTOMER_PLAN_CREATED value.
                 event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
                 event_time=event_time,
             )
             audit_log = audit_log_model.objects.latest("id")
             assert_audit_log(
-                audit_log, None, None, audit_log_class.CUSTOMER_PLAN_CREATED, event_time
+                audit_log, None, None, AuditLogEventType.CUSTOMER_PLAN_CREATED, event_time
             )
 
             session = session_class(remote_object, remote_billing_user=remote_user)
@@ -6645,7 +6644,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
             )
             audit_log = audit_log_model.objects.latest("id")
             assert_audit_log(
-                audit_log, remote_user, None, audit_log_class.CUSTOMER_PLAN_CREATED, event_time
+                audit_log, remote_user, None, AuditLogEventType.CUSTOMER_PLAN_CREATED, event_time
             )
 
             session = session_class(
@@ -6657,7 +6656,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
             )
             audit_log = audit_log_model.objects.latest("id")
             assert_audit_log(
-                audit_log, None, support_admin, audit_log_class.CUSTOMER_PLAN_CREATED, event_time
+                audit_log, None, support_admin, AuditLogEventType.CUSTOMER_PLAN_CREATED, event_time
             )
 
 
