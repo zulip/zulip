@@ -78,6 +78,7 @@ from zerver.models.clients import get_client
 from zerver.models.custom_profile_fields import check_valid_user_ids
 from zerver.models.groups import SystemGroups
 from zerver.models.prereg_users import filter_to_valid_prereg_users
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import InvalidFakeEmailDomainError, get_fake_email_domain, get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import (
@@ -995,7 +996,7 @@ class BulkCreateUserTest(ZulipTestCase):
             RealmAuditLog.objects.filter(
                 realm=realm,
                 modified_user=bono,
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
                 event_time__gte=now,
             ).values_list("modified_user_group__name", flat=True)
         )
@@ -1010,7 +1011,7 @@ class BulkCreateUserTest(ZulipTestCase):
             RealmAuditLog.objects.filter(
                 realm=realm,
                 modified_user=cher,
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
                 event_time__gte=now,
             ).values_list("modified_user_group__name", flat=True)
         )

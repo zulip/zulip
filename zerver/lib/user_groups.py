@@ -29,6 +29,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 @dataclass
@@ -692,7 +693,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
         RealmAuditLog(
             realm=realm,
             acting_user=None,
-            event_type=RealmAuditLog.USER_GROUP_CREATED,
+            event_type=AuditLogEventType.USER_GROUP_CREATED,
             event_time=creation_time,
             modified_user_group=user_group,
         )
@@ -718,7 +719,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
                 RealmAuditLog(
                     realm=realm,
                     modified_user_group=supergroup,
-                    event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                    event_type=AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
                     event_time=now,
                     acting_user=None,
                     extra_data={"subgroup_ids": [subgroup.id]},
@@ -726,7 +727,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
                 RealmAuditLog(
                     realm=realm,
                     modified_user_group=subgroup,
-                    event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                    event_type=AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
                     event_time=now,
                     acting_user=None,
                     extra_data={"supergroup_ids": [supergroup.id]},
