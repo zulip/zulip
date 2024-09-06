@@ -214,7 +214,6 @@ $alert-error-red: hsl(0deg 80% 40%);
 /* animation section */
 @keyframes fadeIn {
     0% {
-        display: block;
         opacity: 0;
         transform: translateY(-100px);
     }
@@ -232,7 +231,6 @@ $alert-error-red: hsl(0deg 80% 40%);
     }
 
     100% {
-        display: none;
         opacity: 0;
         transform: translateY(-100px);
     }
