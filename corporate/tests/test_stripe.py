@@ -965,10 +965,10 @@ class StripeTest(StripeTestCase):
             audit_log_entries[:3],
             [
                 (
-                    RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                    AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                     timestamp_to_datetime(stripe_customer.created),
                 ),
-                (RealmAuditLog.STRIPE_CARD_CHANGED, self.now),
+                (AuditLogEventType.STRIPE_CARD_CHANGED, self.now),
                 (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
             ],
         )
@@ -1095,7 +1095,7 @@ class StripeTest(StripeTestCase):
             audit_log_entries[:3],
             [
                 (
-                    RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                    AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                     timestamp_to_datetime(stripe_customer.created),
                 ),
                 (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
@@ -1235,10 +1235,10 @@ class StripeTest(StripeTestCase):
             audit_log_entries[:3],
             [
                 (
-                    RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                    AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                     timestamp_to_datetime(stripe_customer.created),
                 ),
-                (RealmAuditLog.STRIPE_CARD_CHANGED, self.now),
+                (AuditLogEventType.STRIPE_CARD_CHANGED, self.now),
                 (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
             ],
         )
@@ -1378,7 +1378,7 @@ class StripeTest(StripeTestCase):
             audit_log_entries[:3],
             [
                 (
-                    RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                    AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                     timestamp_to_datetime(stripe_customer.created),
                 ),
                 (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
@@ -1492,11 +1492,11 @@ class StripeTest(StripeTestCase):
                 audit_log_entries[:4],
                 [
                     (
-                        RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                        AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                         timestamp_to_datetime(stripe_customer.created),
                     ),
                     (
-                        RealmAuditLog.STRIPE_CARD_CHANGED,
+                        AuditLogEventType.STRIPE_CARD_CHANGED,
                         self.now,
                     ),
                     (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
@@ -1725,7 +1725,7 @@ class StripeTest(StripeTestCase):
                 audit_log_entries[:3],
                 [
                     (
-                        RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                        AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                         timestamp_to_datetime(stripe_customer.created),
                     ),
                     (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
@@ -1883,7 +1883,7 @@ class StripeTest(StripeTestCase):
                 audit_log_entries[:3],
                 [
                     (
-                        RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                        AuditLogEventType.STRIPE_CUSTOMER_CREATED,
                         timestamp_to_datetime(stripe_customer.created),
                     ),
                     (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
@@ -2795,7 +2795,7 @@ class StripeTest(StripeTestCase):
         stripe.InvoiceItem.create(amount=5000, currency="usd", customer=stripe_customer_id)
         stripe_invoice = stripe.Invoice.create(customer=stripe_customer_id)
         stripe.Invoice.finalize_invoice(stripe_invoice)
-        RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).delete()
+        RealmAuditLog.objects.filter(event_type=AuditLogEventType.STRIPE_CARD_CHANGED).delete()
 
         start_session_json_response = self.client_billing_post(
             "/billing/session/start_card_update_session"
@@ -2857,7 +2857,9 @@ class StripeTest(StripeTestCase):
 
         response = self.client_get("/billing/")
         self.assert_in_success_response(["Visa ending in 0341"], response)
-        assert RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists()
+        assert RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.STRIPE_CARD_CHANGED
+        ).exists()
         stripe_payment_methods = stripe.PaymentMethod.list(customer=stripe_customer_id, type="card")
         self.assert_length(stripe_payment_methods, 2)
 
@@ -2904,7 +2906,8 @@ class StripeTest(StripeTestCase):
         for stripe_invoice in stripe.Invoice.list(customer=stripe_customer_id):
             self.assertEqual(stripe_invoice.status, "paid")
         self.assertEqual(
-            2, RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).count()
+            2,
+            RealmAuditLog.objects.filter(event_type=AuditLogEventType.STRIPE_CARD_CHANGED).count(),
         )
 
         # Test if manual license management upgrade session is created and is successfully recovered.

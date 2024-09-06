@@ -3828,9 +3828,9 @@ class RealmBillingSession(BillingSession):
     @override
     def get_audit_log_event(self, event_type: BillingSessionEventType) -> int:
         if event_type is BillingSessionEventType.STRIPE_CUSTOMER_CREATED:
-            return RealmAuditLog.STRIPE_CUSTOMER_CREATED
+            return AuditLogEventType.STRIPE_CUSTOMER_CREATED
         elif event_type is BillingSessionEventType.STRIPE_CARD_CHANGED:
-            return RealmAuditLog.STRIPE_CARD_CHANGED
+            return AuditLogEventType.STRIPE_CARD_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_CREATED:
             return RealmAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is BillingSessionEventType.DISCOUNT_CHANGED:
@@ -4204,9 +4204,9 @@ class RemoteRealmBillingSession(BillingSession):
     @override
     def get_audit_log_event(self, event_type: BillingSessionEventType) -> int:
         if event_type is BillingSessionEventType.STRIPE_CUSTOMER_CREATED:
-            return RemoteRealmAuditLog.STRIPE_CUSTOMER_CREATED
+            return AuditLogEventType.STRIPE_CUSTOMER_CREATED
         elif event_type is BillingSessionEventType.STRIPE_CARD_CHANGED:
-            return RemoteRealmAuditLog.STRIPE_CARD_CHANGED
+            return AuditLogEventType.STRIPE_CARD_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_CREATED:
             return RemoteRealmAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is BillingSessionEventType.DISCOUNT_CHANGED:
@@ -4647,9 +4647,9 @@ class RemoteServerBillingSession(BillingSession):
     @override
     def get_audit_log_event(self, event_type: BillingSessionEventType) -> int:
         if event_type is BillingSessionEventType.STRIPE_CUSTOMER_CREATED:
-            return RemoteZulipServerAuditLog.STRIPE_CUSTOMER_CREATED
+            return AuditLogEventType.STRIPE_CUSTOMER_CREATED
         elif event_type is BillingSessionEventType.STRIPE_CARD_CHANGED:
-            return RemoteZulipServerAuditLog.STRIPE_CARD_CHANGED
+            return AuditLogEventType.STRIPE_CARD_CHANGED
         elif event_type is BillingSessionEventType.CUSTOMER_PLAN_CREATED:
             return RemoteZulipServerAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is BillingSessionEventType.DISCOUNT_CHANGED:
