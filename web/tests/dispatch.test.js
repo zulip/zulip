@@ -35,7 +35,9 @@ const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
 const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
-const message_events = mock_esm("../src/message_events");
+const message_events = mock_esm("../src/message_events", {
+    update_views_filtered_on_message_property: noop,
+});
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");

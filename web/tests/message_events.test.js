@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {realm} = require("./lib/zpage_params");
 
@@ -13,11 +13,17 @@ const message_notifications = mock_esm("../src/message_notifications");
 const pm_list = mock_esm("../src/pm_list");
 const stream_list = mock_esm("../src/stream_list");
 const unread_ui = mock_esm("../src/unread_ui");
+mock_esm("../src/message_parser", {
+    message_has_attachment: noop,
+    message_has_image: noop,
+    message_has_link: noop,
+});
 message_lists.current = {};
 message_lists.all_rendered_message_lists = () => [message_lists.current];
 
 const people = zrequire("people");
 const message_events = zrequire("message_events");
+message_events.__Rewire__("update_views_filtered_on_message_property", () => {});
 const message_helper = zrequire("message_helper");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
