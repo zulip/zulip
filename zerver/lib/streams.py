@@ -35,6 +35,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import (
     bulk_get_streams,
     get_realm_stream,
@@ -182,7 +183,7 @@ def create_stream_if_needed(
             realm=realm,
             acting_user=acting_user,
             modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_CREATED,
+            event_type=AuditLogEventType.CHANNEL_CREATED,
             event_time=event_time,
         )
 

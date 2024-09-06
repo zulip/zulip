@@ -7,6 +7,7 @@ from typing_extensions import override
 from zerver.actions.streams import deactivated_streams_by_old_name, do_unarchive_stream
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import RealmAuditLog, Stream
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 class Command(ZulipBaseCommand):
@@ -70,7 +71,7 @@ class Command(ZulipBaseCommand):
                         RealmAuditLog.objects.filter(
                             realm=realm,
                             modified_stream=channel,
-                            event_type=RealmAuditLog.STREAM_DEACTIVATED,
+                            event_type=AuditLogEventType.CHANNEL_DEACTIVATED,
                         )
                         .order_by("-id")
                         .first()

@@ -1324,7 +1324,7 @@ class RealmImportExportTest(ExportFile):
             realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
                 event_type__in=[
                     AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
-                    RealmAuditLog.STREAM_CREATED,
+                    AuditLogEventType.CHANNEL_CREATED,
                     AuditLogEventType.REALM_IMPORTED,
                 ]
             )

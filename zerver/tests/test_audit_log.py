@@ -456,7 +456,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.STREAM_CREATED,
+                event_type=AuditLogEventType.CHANNEL_CREATED,
                 event_time__gte=now,
                 acting_user=user,
                 modified_stream=stream,
@@ -474,7 +474,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.STREAM_DEACTIVATED,
+                event_type=AuditLogEventType.CHANNEL_DEACTIVATED,
                 event_time__gte=now,
                 acting_user=user,
                 modified_stream=stream,
@@ -759,7 +759,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=user.realm,
-                event_type=RealmAuditLog.STREAM_NAME_CHANGED,
+                event_type=AuditLogEventType.CHANNEL_NAME_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
                 modified_stream=stream,
