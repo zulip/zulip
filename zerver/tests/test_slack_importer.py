@@ -1360,10 +1360,10 @@ class SlackImporter(ZulipTestCase):
                 AuditLogEventType.REALM_PROPERTY_CHANGED,
                 AuditLogEventType.REALM_CREATED,
                 AuditLogEventType.REALM_IMPORTED,
-                RealmAuditLog.USER_GROUP_CREATED,
-                RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
-                RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
-                RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                AuditLogEventType.USER_GROUP_CREATED,
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
             },
         )
 

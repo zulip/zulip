@@ -130,8 +130,8 @@ class TestRealmAuditLog(ZulipTestCase):
             event_types,
             [
                 AuditLogEventType.USER_CREATED,
-                RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
-                RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
                 AuditLogEventType.USER_DEACTIVATED,
                 AuditLogEventType.USER_ACTIVATED,
                 AuditLogEventType.USER_DEACTIVATED,
@@ -147,7 +147,7 @@ class TestRealmAuditLog(ZulipTestCase):
             event_time__gte=now,
             event_time__lte=now + timedelta(minutes=60),
         ):
-            if event.event_type == RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED:
+            if event.event_type == AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED:
                 self.assertDictEqual(event.extra_data, {})
                 modified_user_group_names.append(assert_is_not_none(event.modified_user_group).name)
                 continue
@@ -220,7 +220,7 @@ class TestRealmAuditLog(ZulipTestCase):
         ]
         user_group_modified_names = (
             RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
                 realm=realm,
                 modified_user=user_profile,
                 acting_user=acting_user,
@@ -240,7 +240,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         user_group_modified_names = (
             RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+                event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
                 realm=realm,
                 modified_user=user_profile,
                 acting_user=acting_user,
@@ -1118,7 +1118,7 @@ class TestRealmAuditLog(ZulipTestCase):
         logged_system_group_ids = sorted(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.USER_GROUP_CREATED,
+                event_type=AuditLogEventType.USER_GROUP_CREATED,
                 event_time__gte=now,
                 acting_user=None,
             ).values_list("modified_user_group_id", flat=True)
@@ -1128,7 +1128,7 @@ class TestRealmAuditLog(ZulipTestCase):
         logged_subgroup_entries = sorted(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                event_type=AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
                 event_time__gte=now,
                 acting_user=None,
             ).values_list("modified_user_group_id", "extra_data")
@@ -1136,7 +1136,7 @@ class TestRealmAuditLog(ZulipTestCase):
         logged_supergroup_entries = sorted(
             RealmAuditLog.objects.filter(
                 realm=realm,
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                event_type=AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
                 event_time__gte=now,
                 acting_user=None,
             ).values_list("modified_user_group_id", "extra_data")
@@ -1180,7 +1180,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=hamlet,
             realm=hamlet.realm,
             event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_CREATED,
+            event_type=AuditLogEventType.USER_GROUP_CREATED,
         )
         self.assert_length(audit_log_entries, 1)
         self.assertIsNone(audit_log_entries[0].modified_user)
@@ -1190,7 +1190,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=hamlet,
             realm=hamlet.realm,
             event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
         )
         self.assert_length(audit_log_entries, 2)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
@@ -1208,7 +1208,7 @@ class TestRealmAuditLog(ZulipTestCase):
             realm=hamlet.realm,
             modified_user_group=user_group,
             event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
         )
         self.assert_length(audit_log_entries, 2)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
@@ -1220,7 +1220,7 @@ class TestRealmAuditLog(ZulipTestCase):
             realm=hamlet.realm,
             modified_user_group=user_group,
             event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
         )
         self.assert_length(audit_log_entries, 1)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
@@ -1239,7 +1239,7 @@ class TestRealmAuditLog(ZulipTestCase):
         audit_log_entry = RealmAuditLog.objects.get(
             realm=hamlet.realm,
             event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
         )
         self.assertEqual(audit_log_entry.modified_user_group, user_group)
         self.assertEqual(audit_log_entry.acting_user, hamlet)
@@ -1250,7 +1250,7 @@ class TestRealmAuditLog(ZulipTestCase):
         audit_log_entries = RealmAuditLog.objects.filter(
             realm=hamlet.realm,
             event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
         ).order_by("id")
         self.assert_length(audit_log_entries, 3)
         for i in range(3):
@@ -1265,7 +1265,7 @@ class TestRealmAuditLog(ZulipTestCase):
         audit_log_entry = RealmAuditLog.objects.get(
             realm=hamlet.realm,
             event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
         )
         self.assertEqual(audit_log_entry.modified_user_group, user_group)
         self.assertEqual(audit_log_entry.acting_user, hamlet)
@@ -1276,7 +1276,7 @@ class TestRealmAuditLog(ZulipTestCase):
         audit_log_entries = RealmAuditLog.objects.filter(
             realm=hamlet.realm,
             event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED,
         ).order_by("id")
         self.assert_length(audit_log_entries, 2)
         for i in range(2):
@@ -1301,7 +1301,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_update_user_group_name(user_group, "bar", acting_user=hamlet)
         audit_log_entries = RealmAuditLog.objects.filter(
             realm=hamlet.realm,
-            event_type=RealmAuditLog.USER_GROUP_NAME_CHANGED,
+            event_type=AuditLogEventType.USER_GROUP_NAME_CHANGED,
             event_time__gte=now,
         )
         self.assert_length(audit_log_entries, 1)
@@ -1316,7 +1316,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_update_user_group_description(user_group, "Foo", acting_user=hamlet)
         audit_log_entries = RealmAuditLog.objects.filter(
             realm=hamlet.realm,
-            event_type=RealmAuditLog.USER_GROUP_DESCRIPTION_CHANGED,
+            event_type=AuditLogEventType.USER_GROUP_DESCRIPTION_CHANGED,
             event_time__gte=now,
         )
         self.assert_length(audit_log_entries, 1)
@@ -1341,7 +1341,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_type=AuditLogEventType.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
             event_time__gte=now,
         )
         self.assert_length(audit_log_entries, 1)
@@ -1370,7 +1370,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_type=AuditLogEventType.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
             event_time__gte=now,
         )
         self.assert_length(audit_log_entries, 1)
@@ -1405,7 +1405,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_type=AuditLogEventType.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
             event_time__gte=now,
         )
         self.assert_length(audit_log_entries, 1)
@@ -1438,7 +1438,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=None,
         )
         audit_log_entries = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_type=AuditLogEventType.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
             event_time__gte=now,
         )
         self.assert_length(audit_log_entries, 1)

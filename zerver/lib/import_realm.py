@@ -1982,7 +1982,7 @@ def add_users_to_system_user_groups(
             realm=realm,
             modified_user=membership.user_profile,
             modified_user_group=membership.user_group.named_user_group,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=now,
             acting_user=None,
         )

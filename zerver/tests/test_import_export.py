@@ -1920,7 +1920,7 @@ class RealmImportExportTest(ExportFile):
             imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
         user_membership_logs = RealmAuditLog.objects.filter(
             realm=imported_realm,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
         ).values_list("modified_user_id", "modified_user_group__name")
         logged_membership_by_user_id = defaultdict(set)
         for user_id, user_group_name in user_membership_logs:

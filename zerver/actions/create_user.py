@@ -572,7 +572,7 @@ def do_create_user(
             realm=user_profile.realm,
             modified_user=user_profile,
             modified_user_group=system_user_group,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=event_time,
             acting_user=acting_user,
         )
@@ -590,7 +590,7 @@ def do_create_user(
                 realm=user_profile.realm,
                 modified_user=user_profile,
                 modified_user_group=full_members_system_group,
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
                 event_time=event_time,
                 acting_user=acting_user,
             )

@@ -25,6 +25,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -72,7 +73,7 @@ def create_user_group_in_database(
         RealmAuditLog(
             realm=realm,
             acting_user=acting_user,
-            event_type=RealmAuditLog.USER_GROUP_CREATED,
+            event_type=AuditLogEventType.USER_GROUP_CREATED,
             event_time=creation_time,
             modified_user_group=user_group,
         ),
@@ -80,7 +81,7 @@ def create_user_group_in_database(
         RealmAuditLog(
             realm=realm,
             acting_user=acting_user,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=creation_time,
             modified_user=member,
             modified_user_group=user_group,
@@ -228,7 +229,7 @@ def do_update_user_group_name(
         RealmAuditLog.objects.create(
             realm=user_group.realm,
             modified_user_group=user_group,
-            event_type=RealmAuditLog.USER_GROUP_NAME_CHANGED,
+            event_type=AuditLogEventType.USER_GROUP_NAME_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
             extra_data={
@@ -251,7 +252,7 @@ def do_update_user_group_description(
     RealmAuditLog.objects.create(
         realm=user_group.realm,
         modified_user_group=user_group,
-        event_type=RealmAuditLog.USER_GROUP_DESCRIPTION_CHANGED,
+        event_type=AuditLogEventType.USER_GROUP_DESCRIPTION_CHANGED,
         event_time=timezone_now(),
         acting_user=acting_user,
         extra_data={
@@ -293,7 +294,7 @@ def bulk_add_members_to_user_groups(
             realm=user_group.realm,
             modified_user_id=user_id,
             modified_user_group=user_group,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=now,
             acting_user=acting_user,
         )
@@ -326,7 +327,7 @@ def bulk_remove_members_from_user_groups(
             realm=user_group.realm,
             modified_user_id=user_id,
             modified_user_group=user_group,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
             event_time=now,
             acting_user=acting_user,
         )
@@ -365,7 +366,7 @@ def add_subgroups_to_user_group(
         RealmAuditLog(
             realm=user_group.realm,
             modified_user_group=user_group,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
             event_time=now,
             acting_user=acting_user,
             extra_data={"subgroup_ids": subgroup_ids},
@@ -374,7 +375,7 @@ def add_subgroups_to_user_group(
             RealmAuditLog(
                 realm=user_group.realm,
                 modified_user_group_id=subgroup_id,
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                event_type=AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
                 event_time=now,
                 acting_user=acting_user,
                 extra_data={"supergroup_ids": [user_group.id]},
@@ -402,7 +403,7 @@ def remove_subgroups_from_user_group(
         RealmAuditLog(
             realm=user_group.realm,
             modified_user_group=user_group,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
             event_time=now,
             acting_user=acting_user,
             extra_data={"subgroup_ids": subgroup_ids},
@@ -411,7 +412,7 @@ def remove_subgroups_from_user_group(
             RealmAuditLog(
                 realm=user_group.realm,
                 modified_user_group_id=subgroup_id,
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED,
+                event_type=AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED,
                 event_time=now,
                 acting_user=acting_user,
                 extra_data={"supergroup_ids": [user_group.id]},
@@ -469,7 +470,7 @@ def do_change_user_group_permission_setting(
     RealmAuditLog.objects.create(
         realm=user_group.realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+        event_type=AuditLogEventType.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
         event_time=timezone_now(),
         modified_user_group=user_group,
         extra_data={
