@@ -439,7 +439,7 @@
     }
 }
 
-.showing-cloud,
+.showing-cloud:not(:has(div[id^="showing-tab"])),
 #showing-tab-cloud {
     .comparison-tab-cloud {
         background-color: hsl(0deg 0% 100%);
@@ -476,7 +476,7 @@
     }
 }
 
-.showing-self-hosted,
+.showing-self-hosted:not(:has(div[id^="showing-tab"])),
 #showing-tab-hosted {
     .comparison-tab-self-hosted {
         background-color: hsl(0deg 0% 100%);
