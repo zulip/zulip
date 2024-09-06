@@ -93,6 +93,13 @@
         text-overflow: ellipsis;
         position: relative;
         top: -1px;
+
+        & > a {
+            color: var(--color-dropdown-item);
+            text-decoration: underline 1px;
+            text-decoration-color: var(--color-dropdown-item-link-underline);
+            opacity: 0.6;
+        }
     }
 
     .autocomplete_secondary {
