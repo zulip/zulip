@@ -188,8 +188,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
 
-        # In the future, local file requests will follow the same style as S3
-        # requests; they will be first authenticated and redirected
         self.assertEqual(self.client_get(url).getvalue(), b"zulip!")
 
         # Check the download endpoint
