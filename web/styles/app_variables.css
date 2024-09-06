@@ -926,6 +926,7 @@
 
     /* Dropdown / Typeahead constants */
     --color-dropdown-item: hsl(0deg 0% 20%);
+    --color-dropdown-item-link-underline: hsla(0deg 0% 20% 60%);
     --color-active-dropdown-item: hsl(0deg 0% 0%);
     --background-color-active-dropdown-item: hsl(220deg 12% 4.9% / 5%);
     --background-color-active-typeahead-item: hsl(221.14deg 89.74% 92.35%);
@@ -1327,6 +1328,7 @@
 
     /* Dropdown / Typeahead constants */
     --color-dropdown-item: hsl(0deg 0% 75%);
+    --color-dropdown-item-link-underline: hsla(0deg 0% 75% 60%);
     --color-active-dropdown-item: hsl(0deg 0% 90%);
     --background-color-active-dropdown-item: hsl(220deg 12% 100% / 7%);
     --background-color-active-typeahead-item: hsl(
