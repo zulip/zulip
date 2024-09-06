@@ -74,6 +74,11 @@ class AuditLogEventType(IntEnum):
     USER_MUTED = 350
     USER_UNMUTED = 351
 
+    STRIPE_CUSTOMER_CREATED = 401
+    STRIPE_CARD_CHANGED = 402
+    STRIPE_PLAN_CHANGED = 403
+    STRIPE_PLAN_QUANTITY_RESET = 404
+
 
 class AbstractRealmAuditLog(models.Model):
     """Defines fields common to RealmAuditLog and RemoteRealmAuditLog."""
@@ -94,11 +99,6 @@ class AbstractRealmAuditLog(models.Model):
     extra_data = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
     # Event types
-    STRIPE_CUSTOMER_CREATED = 401
-    STRIPE_CARD_CHANGED = 402
-    STRIPE_PLAN_CHANGED = 403
-    STRIPE_PLAN_QUANTITY_RESET = 404
-
     CUSTOMER_CREATED = 501
     CUSTOMER_PLAN_CREATED = 502
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 503
