@@ -406,7 +406,7 @@ class Command(ZulipBaseCommand):
                 contact_email="remotezulipserver@zulip.com",
             )
             RemoteZulipServerAuditLog.objects.create(
-                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
                 server=server,
                 event_time=server.last_updated,
             )

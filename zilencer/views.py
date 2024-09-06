@@ -77,6 +77,7 @@ from zerver.lib.typed_endpoint import (
 )
 from zerver.lib.typed_endpoint_validators import check_string_fixed_length
 from zerver.lib.types import RemoteRealmDictValue
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import DisposableEmailError
 from zerver.views.push_notifications import validate_token
 from zilencer.auth import InvalidZulipServerKeyError
@@ -226,7 +227,7 @@ def register_remote_server(
                 last_request_datetime=timezone_now(),
             )
             RemoteZulipServerAuditLog.objects.create(
-                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
                 server=remote_server,
                 event_time=remote_server.last_updated,
             )

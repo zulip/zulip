@@ -170,7 +170,7 @@ class ActivityTest(ZulipTestCase):
             contact_email="email@example.com",
         )
         RemoteZulipServerAuditLog.objects.create(
-            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+            event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
             server=server,
             event_time=server.last_updated,
         )
@@ -303,7 +303,7 @@ class ActivityTest(ZulipTestCase):
                 hostname=hostname, contact_email=f"admin@{hostname}", uuid=uuid.uuid4()
             )
             RemoteZulipServerAuditLog.objects.create(
-                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
                 server=remote_server,
                 event_time=remote_server.last_updated,
             )
