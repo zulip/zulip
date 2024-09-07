@@ -780,7 +780,7 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     ) {
         return [
             {
-                search_string: sender_query,
+                search_string: last_string.startsWith("sender:me") ? sender_me_query : sender_query,
                 description_html,
                 is_people: false,
             },
