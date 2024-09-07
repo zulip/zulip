@@ -580,14 +580,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.deactivate_bot()
         self.assert_num_bots_equal(0)
 
-    def test_deactivate_bogus_bot(self) -> None:
-        """Deleting a bogus bot will succeed silently."""
+    def test_deactivate_bot_invalid_id(self) -> None:
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
-        invalid_user_id = 1000
-        result = self.client_delete(f"/json/bots/{invalid_user_id}")
+        invalid_bot_id = 1000
+        result = self.client_delete(f"/json/bots/{invalid_bot_id}")
         self.assert_json_error(result, "No such bot")
         self.assert_num_bots_equal(1)
 
