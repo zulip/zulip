@@ -75,6 +75,12 @@ TAG_WITH_URL_TEMPLATE = "[{tag_name}]({tag_url})"
 TAG_WITHOUT_URL_TEMPLATE = "{tag_name}"
 
 RELEASE_MESSAGE_TEMPLATE = "{user_name} {action} release [{release_name}]({url}) for tag {tagname}."
+RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME = (
+    "Release [{release_name}]({url}) for tag {tagname} was {action}."
+)
+RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME_WITHOUT_URL = (
+    "Release {release_name} for tag {tagname} was {action}."
+)
 
 
 def get_assignee_string(assignees: list[dict[str, Any]]) -> str:
