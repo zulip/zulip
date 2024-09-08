@@ -4,6 +4,7 @@ import $ from "jquery";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
+import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
@@ -12,6 +13,7 @@ import * as popover_menus_data from "./popover_menus_data";
 import * as starred_messages_ui from "./starred_messages_ui";
 import {realm} from "./state_data";
 import * as stream_popover from "./stream_popover";
+import * as topic_settings from "./topic_settings";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_topics from "./user_topics";
@@ -150,6 +152,27 @@ export function initialize() {
 
                 $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
                     stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, false);
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.one("click", ".sidebar-popover-change-topic-lock-status", () => {
+                    const data = {
+                        stream_id,
+                        topic: topic_name,
+                        is_locked: !topic_settings.get_topic_lock_status(stream_id, topic_name),
+                    };
+                    console.log({stream_id, topic_name});
+                    channel.post({
+                        url: "/json/topic_settings",
+                        data,
+                        success() {
+                            console.log("sucess");
+                        },
+                        error() {
+                            console.log("err");
+                        },
+                    });
+                    // stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, false);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
 

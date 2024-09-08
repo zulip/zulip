@@ -1220,6 +1220,10 @@ ul.popover-group-menu-member-list {
         line-height: 1.0667em;
         min-height: 26px;
 
+        .zulip-icon-lock {
+            margin-top: 0 !important;
+        }
+
         .popover-menu-icon {
             /* 16px at 15px/1em */
             font-size: 1.0667em;

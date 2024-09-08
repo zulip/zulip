@@ -20,6 +20,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
+from zerver.lib.topic_settings import get_topic_lock_status
 from zerver.lib.typed_endpoint import (
     DOCUMENTATION_PENDING,
     ApiParamConfig,
@@ -245,6 +246,17 @@ def send_message_backend(
         # Legacy default: a message you sent from a non-API client is
         # automatically marked as read for yourself.
         read_by_sender = client.default_read_by_sender()
+
+    if topic_name is not None:
+        print(
+            f"\ntopic_name {topic_name}, message to: {message_to} message to Type: {type(message_to)} message to Type: {type(message_to[0])}\n"
+        )
+        is_topic_locked = get_topic_lock_status(
+            user_profile=user_profile, topic_name=topic_name, stream_id=int(message_to[0])
+        )
+
+        if not user_profile.is_realm_admin and not user_profile.is_moderator and is_topic_locked:
+            raise JsonableError(_("This topic has been locked by a moderator."))
 
     data: dict[str, int] = {}
     sent_message_result = check_send_message(

@@ -105,7 +105,7 @@ function retrieve_search_query_data(): SearchData {
     return search_string_result;
 }
 
-export function pick_empty_narrow_banner(): NarrowBannerData {
+export function pick_empty_narrow_banner(button_type?: string): NarrowBannerData {
     const default_banner = {
         title: $t({defaultMessage: "There are no messages here."}),
         // Spectators cannot start a conversation.
@@ -137,7 +137,7 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
     const first_operand = first_term.operand;
     const num_terms = current_filter.terms().length;
 
-    if (num_terms !== 1) {
+    if (num_terms !== 1 && !button_type) {
         // For invalid-multi-operator narrows, we display an invalid narrow message
         const streams = current_filter.operands("channel");
         const topics = current_filter.operands("topic");
@@ -263,7 +263,31 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
             }
             // fallthrough to default case if no match is found
             break;
-        case "channel":
+        case "channel": {
+            const stream_id = narrow_state.stream_id();
+            const topic_name = narrow_state.topic();
+
+            if (stream_id && topic_name) {
+                const stream_message_error_string =
+                    compose_validate.check_lock_topic_permission_and_get_error_string(
+                        topic_name,
+                        stream_id,
+                    );
+                if (stream_message_error_string) {
+                    return {
+                        title: stream_message_error_string,
+                        html: $t_html(
+                            {
+                                defaultMessage: "<z-link>Learn more.</z-link>",
+                            },
+                            {
+                                "z-link": (content_html) =>
+                                    `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
+                            },
+                        ),
+                    };
+                }
+            }
             if (!stream_data.is_subscribed_by_name(first_operand)) {
                 // You are narrowed to a stream which does not exist or is a private stream
                 // in which you were never subscribed.
@@ -294,6 +318,8 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
             }
             // else fallthrough to default case
             break;
+        }
+
         case "search": {
             // You are narrowed to empty search results.
             return {

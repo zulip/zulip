@@ -21,6 +21,7 @@ import * as starred_messages from "./starred_messages";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import * as topic_settings from "./topic_settings";
 import {num_unread_for_topic} from "./unread";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
@@ -53,6 +54,7 @@ type TopicPopoverContext = {
     topic_unmuted: boolean;
     is_spectator: boolean;
     can_move_topic: boolean;
+    is_topic_locked: boolean;
     can_rename_topic: boolean;
     is_realm_admin: boolean;
     topic_is_resolved: boolean;
@@ -238,6 +240,7 @@ export function get_topic_popover_content_context({
     const sub = sub_store.get(stream_id);
     assert(sub !== undefined);
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
+    const is_topic_locked = topic_settings.get_topic_lock_status(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
@@ -253,6 +256,7 @@ export function get_topic_popover_content_context({
         topic_unmuted,
         is_spectator,
         can_move_topic,
+        is_topic_locked,
         can_rename_topic,
         is_realm_admin: current_user.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),

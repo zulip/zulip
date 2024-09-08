@@ -407,6 +407,19 @@ muted_users_event = event_dict_type(
 )
 check_muted_users = make_checker(muted_users_event)
 
+topic_settings_event = DictType(
+    required_keys=[
+        ("id", int),
+        ("type", Equals("topic_settings")),
+        ("stream_id", int),
+        ("topic_name", str),
+        ("last_updated", int),
+        ("is_locked", bool),
+    ]
+)
+
+check_user_topic = make_checker(topic_settings_event)
+
 _check_topic_links = DictType(
     required_keys=[
         ("text", str),
