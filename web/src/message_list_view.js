@@ -334,65 +334,73 @@ function populate_group_from_message_container(group, message_container) {
     group.date = get_group_display_date(message_container.msg);
 }
 
+// MessageListView is the module responsible for rendering a
+// MessageList into the DOM, and maintaining it over time.
+//
+// Logic to compute context, render templates, insert them into
+// the DOM, and generally
 export class MessageListView {
-    // MessageListView is the module responsible for rendering a
-    // MessageList into the DOM, and maintaining it over time.
+    // The MessageList that this MessageListView is responsible for rendering.
+    list;
+    // The jQuery element for the rendered list element.
+    $list;
+    // TODO: Access this via .list.data.
+    collapse_messages;
+
+    // These three data structures keep track of groups of messages in the DOM.
     //
-    // Logic to compute context, render templates, insert them into
-    // the DOM, and generally
+    // The message_groups are blocks of messages rendered into the
+    // DOM that will share a common recipient bar heading.
+    //
+    // A message_container an object containing a Message object
+    // plus additional computed metadata needed for rendering it
+    // in the DOM.
+    //
+    // _rows contains jQuery objects for the `message_row`
+    // elements rendered by single_message.hbs.
+    //
+    // TODO: Consider renaming _message_groups to something like _recipient_groups.
+    // TODO: Consider renaming _rows to something like $rows.
+    _rows;
+    message_containers;
+    _message_groups;
 
-    constructor(list, collapse_messages, is_node_test = false) {
-        // The MessageList that this MessageListView is responsible for rendering.
-        this.list = list;
-        this._add_message_list_to_DOM();
-        // The jQuery element for the rendered list element.
-        this.$list = $(`.message-list[data-message-list-id="${this.list.id}"]`);
+    // For performance reasons, this module renders at most
+    // _RENDER_WINDOW_SIZE messages into the DOM at a time, and
+    // will transparently adjust which messages are rendered
+    // whenever the user scrolls within _RENDER_THRESHOLD of the
+    // edge of the rendered window.
+    //
+    // These two values are a half-open interval keeping track of
+    // what range of messages is currently rendered in the dOM.
+    _render_win_start;
+    _render_win_end;
 
-        // TODO: Access this via .list.data.
-        this.collapse_messages = collapse_messages;
-
-        // These three data structures keep track of groups of messages in the DOM.
-        //
-        // The message_groups are blocks of messages rendered into the
-        // DOM that will share a common recipient bar heading.
-        //
-        // A message_container an object containing a Message object
-        // plus additional computed metadata needed for rendering it
-        // in the DOM.
-        //
-        // _rows contains jQuery objects for the `message_row`
-        // elements rendered by single_message.hbs.
-        //
-        // TODO: Consider renaming _message_groups to something like _recipient_groups.
-        // TODO: Consider renaming _rows to something like $rows.
-        this._rows = new Map();
-        this.message_containers = new Map();
-        this._message_groups = [];
-
-        if (!is_node_test) {
-            // Skip running this in node tests.
-            this.clear_table();
-        }
-        // For performance reasons, this module renders at most
-        // _RENDER_WINDOW_SIZE messages into the DOM at a time, and
-        // will transparently adjust which messages are rendered
-        // whenever the user scrolls within _RENDER_THRESHOLD of the
-        // edge of the rendered window.
-        //
-        // These two values are a half-open interval keeping track of
-        // what range of messages is currently rendered in the dOM.
-        this._render_win_start = 0;
-        this._render_win_end = 0;
-
-        // ID of message under the sticky recipient bar if there is one.
-        this.sticky_recipient_message_id = undefined;
-    }
+    // ID of message under the sticky recipient bar if there is one.
+    sticky_recipient_message_id;
 
     // Number of messages to render at a time
     _RENDER_WINDOW_SIZE = 250;
     // Number of messages away from edge of render window at which we
     // trigger a re-render
     _RENDER_THRESHOLD = 50;
+
+    constructor(list, collapse_messages, is_node_test = false) {
+        this.list = list;
+        this._add_message_list_to_DOM();
+        this.$list = $(`.message-list[data-message-list-id="${this.list.id}"]`);
+        this.collapse_messages = collapse_messages;
+        this._rows = new Map();
+        this.message_containers = new Map();
+        this._message_groups = [];
+        if (!is_node_test) {
+            // Skip running this in node tests.
+            this.clear_table();
+        }
+        this._render_win_start = 0;
+        this._render_win_end = 0;
+        this.sticky_recipient_message_id = undefined;
+    }
 
     _add_message_list_to_DOM() {
         $("#message-lists-container").append(
