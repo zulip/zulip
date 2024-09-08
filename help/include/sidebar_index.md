@@ -141,6 +141,7 @@
 * [Introduction to topics](/help/introduction-to-topics)
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
+* [Lock a topic](/help/lock-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
 * [Delete a topic](/help/delete-a-topic)
 
