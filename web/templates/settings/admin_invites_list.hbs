@@ -29,9 +29,12 @@
         {{/if}}
     </td>
     <td>
-        <span>{{invited_as_text}}</span>
+        <span class="invited_as">{{invited_as_text}}</span>
     </td>
     <td class="actions">
+        <button class="button rounded small view_invitations" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}" data-is-multiuse="{{is_multiuse}}">
+            <i class="fa fa-eye"></i>
+        </button>
         {{#unless is_multiuse}}
         <button class="button rounded small resend btn-warning" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}">
             {{t "Resend" }}

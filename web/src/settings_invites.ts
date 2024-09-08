@@ -4,6 +4,7 @@ import {z} from "zod";
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
+import render_view_invitaion_modal from "../templates/settings/view_invitation_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -15,6 +16,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
+import {stream_schema} from "./stream_types";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -39,16 +41,23 @@ export const invite_schema = z.intersection(
         }),
     ]),
 );
-type Invite = z.output<typeof invite_schema> & {
-    invited_as_text?: string | undefined;
-    invited_absolute_time?: string;
-    expiry_date_absolute_time?: string;
-    is_admin?: boolean;
-    disable_buttons?: boolean;
-    referrer_name?: string;
-    img_src?: string;
-    notify_referrer_on_join?: boolean;
-};
+
+const extended_invite_schema = z.intersection(
+    invite_schema,
+    z.object({
+        invited_as_text: z.string().optional(),
+        invited_absolute_time: z.string().optional(),
+        expiry_date_absolute_time: z.string().optional(),
+        is_admin: z.boolean().optional(),
+        disable_buttons: z.boolean().optional(),
+        referrer_name: z.string().optional(),
+        img_src: z.string().url().optional(),
+        notify_referrer_on_join: z.boolean().optional(),
+        streams: z.array(stream_schema).optional(),
+    }),
+);
+
+type Invite = z.infer<typeof extended_invite_schema>;
 
 const meta = {
     loaded: false,
@@ -62,6 +71,15 @@ function failed_listing_invites(xhr: JQuery.jqXHR): void {
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
     ui_report.error(
         $t_html({defaultMessage: "Error listing invites"}),
+        xhr,
+        $("#invites-field-status"),
+    );
+}
+
+function failed_to_get_invite_details(xhr: JQuery.jqXHR): void {
+    loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
+    ui_report.error(
+        $t_html({defaultMessage: "Error fetching invite details."}),
         xhr,
         $("#invites-field-status"),
     );
@@ -141,6 +159,63 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
     });
 
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
+}
+
+function get_invite_details({
+    invite_id,
+    is_multiuse,
+}: {
+    invite_id: string;
+    is_multiuse: string;
+}): void {
+    let url = "/json/invites/" + invite_id;
+
+    if (is_multiuse === "true") {
+        url = "/json/invites/multiuse/" + invite_id;
+    }
+    void channel.get({
+        url,
+        timeout: 10 * 1000,
+        success(raw_data) {
+            const data = extended_invite_schema.parse(raw_data);
+            const invite = data;
+            open_invite_details_modal(invite);
+        },
+        error: failed_to_get_invite_details,
+    });
+}
+
+function open_invite_details_modal(invite: Invite): void {
+    const ctx = {
+        is_multiuse: invite.is_multiuse,
+        email: invite.is_multiuse ? invite.link_url : invite.email,
+        invited_by_user_id: invite.invited_by_user_id,
+        is_admin: current_user.is_admin,
+        referrer_name: people.get_by_user_id(invite.invited_by_user_id).full_name,
+        // referred_by,
+        img_src: people.small_avatar_url_for_person(
+            people.get_by_user_id(invite.invited_by_user_id),
+        ),
+        invited_at: invite.invited_absolute_time,
+        invite_id: invite.id,
+        expires_at: invite.expiry_date_absolute_time,
+        invited_as: invite.invited_as,
+        streams: invite.streams,
+    };
+
+    const html_body = render_view_invitaion_modal(ctx);
+    const $modal = $(html_body);
+    $("body").append($modal);
+
+    $modal.find(".modal__close").on("click", () => {
+        $modal.remove();
+    });
+
+    $(document).on("click", (e) => {
+        if ($(e.target).hasClass("modal__overlay")) {
+            $modal.remove();
+        }
+    });
 }
 
 function do_revoke_invite({
@@ -288,6 +363,16 @@ export function on_load_success(
         });
 
         $(".dialog_submit_button").attr("data-invite-id", invite_id);
+    });
+
+    $(".admin_invites_table").on("click", ".view_invitations", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const invite_id = $(this).attr("data-invite-id")!;
+        const is_multiuse = $(this).attr("data-is-multiuse")!;
+
+        get_invite_details({invite_id, is_multiuse});
     });
 }
 

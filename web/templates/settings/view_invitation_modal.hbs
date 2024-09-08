@@ -1,0 +1,70 @@
+<div class="micromodal invite-modal-overlay" id="user-profile-modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container new-style" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <div class="modal__header">
+                <h1 class="modal__title user-profile-name-heading" id="name">
+                    <span class="user-profile-name">Invite Details</span>
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </div>
+            <main class="modal__body" id="body" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+                <div class="tab-data">
+                    <div class="tabcontent active" id="profile-tab">
+                        <div class="top">
+                            <div class="col-wrap col-left">
+                                <div id="default-section">
+                                    {{#if is_multiuse}}
+                                    <div id="email" class="default-field"></div>
+                                        <div class="name">{{t "Email" }}</div>
+                                        <div class="value">
+                                            <a href="{{link_url}}" target="_blank" rel="noopener noreferrer">
+                                                {{t 'Invite link'}}
+                                            </a>
+                                            </div>
+                                        </div> 
+                                    {{else}}
+                                    <div id="email" class="default-field">
+                                        <div class="name">{{t "Email" }}</div>
+                                        <div class="value">{{email}}</div>
+                                    </div>
+                                    {{/if}}
+                                    <div id="invite-id" class="default-field">
+                                        <div class="name">{{t "Invite ID" }}</div>
+                                        <div class="value">{{invite_id}}</div>
+                                    </div>
+                                    {{#if is_admin}}
+                                    <div id="invite-id" class="default-field">
+                                        <div class="name" data->{{t "Invited By" }}</div>
+                                                <span class="referred_by panel_user_list">
+            {{> ../user_display_only_pill display_value=referrer_name user_id=invited_by_user_id is_active=true}}
+        </span>
+                                    </div>
+                                    {{/if}}
+                                    <div id="invited-at" class="default-field">
+                                        <div class="name">{{t "Invited At" }}</div>
+                                        <div class="value">{{invited_at}}</div>
+                                    </div>
+                                    <div id="expires-at" class="default-field">
+                                        <div class="name">{{t "Expires At" }}</div>
+                                        <div class="value">{{expires_at}}</div>
+                                    </div>
+                                    <div id="streams" class="default-field">
+                                        <div class="name">{{t "Streams" }}</div>
+                                        {{#if streams.length}}
+                                        <ul>
+                                        {{#each streams}}
+                                        <li><div class="value">{{name}}</div></li>
+                                        {{/each}}
+                                        </ul>
+                                        {{else}}
+                                        <div class="value">{{t 'NOT invited to any of the streams.'}}</div> 
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </main>
+        </div>
+    </div>
+</div>
