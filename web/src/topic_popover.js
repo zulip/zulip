@@ -153,6 +153,11 @@ export function initialize() {
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
 
+                $popper.one("click", ".sidebar-popover-change-topic-lock-status", () => {
+                    message_edit.toggle_topic_lock(stream_id, topic_name);
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
                 $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
                     stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
                     popover_menus.hide_current_popover_if_visible(instance);

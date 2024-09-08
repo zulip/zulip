@@ -1155,6 +1155,13 @@ exports.fixtures = {
         last_updated: fake_now,
         visibility_policy: 1,
     },
+    topic_settings: {
+        type: "topic_settings",
+        stream_id: 101,
+        topic_name: "failure",
+        last_updated: fake_now,
+        is_locked: true,
+    },
 
     web_reload_client: {
         type: "web_reload_client",
