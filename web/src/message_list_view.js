@@ -930,10 +930,20 @@ export class MessageListView {
         const include_sender = message_container.include_sender;
         const is_hidden = message_container.is_hidden;
         const status_message = Boolean(message_container.status_message);
-        message_container.message_edit_notices_in_left_col = !include_sender && !is_hidden;
-        message_container.message_edit_notices_alongside_sender = include_sender && !status_message;
-        message_container.message_edit_notices_for_status_message =
-            include_sender && status_message;
+        Object.assign(
+            message_container,
+            this.get_edited_notice_locations(include_sender, is_hidden, status_message),
+        );
+    }
+
+    get_edited_notice_locations(include_sender, is_hidden, status_message) {
+        // Based on the variables that define the overall message's HTML layout, set
+        // variables defining where the message-edited notices should be placed.
+        return {
+            message_edit_notices_in_left_col: !include_sender && !is_hidden,
+            message_edit_notices_alongside_sender: include_sender && !status_message,
+            message_edit_notices_for_status_message: include_sender && status_message,
+        };
     }
 
     render(messages, where, messages_are_new) {
