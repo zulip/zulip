@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("./lib/i18n");
+const { JSDOM } = require("jsdom");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -43,7 +44,13 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
     assert.equal(list_widget_create_called, true);
 });
 
+
 run_test("remove_alert_word", ({override_rewire}) => {
+    // Create a new JSDOM instance to mock the document
+    const dom = new JSDOM(`<!DOCTYPE html><body><table id="alert-words-table"><tr class="alert-word-item"><span class="alert-word">zot</span></tr></table><div id="alert_word_status"><span class="alert_word_status_text"></span></div></body>`);
+    global.document = dom.window.document;
+    global.window = dom.window;
+
     override_rewire(alert_words_ui, "rerender_alert_words_ui", noop);
     alert_words_ui.set_up_alert_words();
 
