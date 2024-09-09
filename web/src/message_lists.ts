@@ -1,18 +1,11 @@
 import $ from "jquery";
 
+import type {MessageContainer} from "./compose_fade";
 import * as inbox_util from "./inbox_util";
 import type {MessageListData} from "./message_list_data";
 import * as message_list_data_cache from "./message_list_data_cache";
 import type {Message} from "./message_store";
 import * as ui_util from "./ui_util";
-
-// TODO(typescript): Move this to message_list_view when it's
-// converted to TypeScript.
-export type MessageContainer = {
-    msg: Message;
-    is_hidden: boolean;
-    url: string;
-};
 
 // TODO(typescript): Move this to message_list_view when it's
 // converted to typescript.
