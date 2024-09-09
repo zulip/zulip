@@ -2175,7 +2175,12 @@ class RealmAPITest(ZulipTestCase):
             # duplicate code. default_language is currently present in Realm table also and thus
             # is updated using '/realm' endpoint, but this will be removed in future and the
             # settings in RealmUserDefault table will be used.
-            if prop in ["default_language", "enable_login_emails", "enable_marketing_emails"]:
+            if prop in [
+                "default_language",
+                "enable_login_emails",
+                "enable_marketing_emails",
+                "allow_private_data_export",
+            ]:
                 continue
             if prop in ["dense_mode"]:
                 # Testing this is complicated, see test_update_default_information_density_settings.

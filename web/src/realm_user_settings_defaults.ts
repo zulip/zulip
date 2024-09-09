@@ -3,6 +3,7 @@ import {z} from "zod";
 import type {StateData} from "./state_data";
 
 export const realm_default_settings_schema = z.object({
+    allow_private_data_export: z.boolean(),
     automatically_follow_topics_policy: z.number(),
     automatically_follow_topics_where_mentioned: z.boolean(),
     automatically_unmute_topics_in_muted_streams_policy: z.number(),

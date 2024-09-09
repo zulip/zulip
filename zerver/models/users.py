@@ -267,6 +267,7 @@ class UserBaseSettings(models.Model):
     send_stream_typing_notifications = models.BooleanField(default=True)
     send_private_typing_notifications = models.BooleanField(default=True)
     send_read_receipts = models.BooleanField(default=True)
+    allow_private_data_export = models.BooleanField(default=False)
 
     # Whether the user wants to see typing notifications.
     receives_typing_notifications = models.BooleanField(default=True)
@@ -347,6 +348,7 @@ class UserBaseSettings(models.Model):
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
+        allow_private_data_export=bool,
         web_mark_read_on_scroll_policy=int,
         web_channel_default_view=int,
         user_list_style=int,

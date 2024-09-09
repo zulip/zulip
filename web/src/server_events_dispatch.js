@@ -717,6 +717,7 @@ export function dispatch_normal_event(event) {
                 "send_read_receipts",
                 "presence_enabled",
                 "email_address_visibility",
+                "allow_private_data_export",
             ];
 
             if (privacy_settings.includes(event.property)) {

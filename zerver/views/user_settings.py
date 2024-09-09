@@ -314,6 +314,7 @@ def json_change_settings(
     send_private_typing_notifications: Json[bool] | None = None,
     send_stream_typing_notifications: Json[bool] | None = None,
     send_read_receipts: Json[bool] | None = None,
+    allow_private_data_export: Json[bool] | None = None,
     user_list_style: Annotated[
         Json[int], check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)
     ]

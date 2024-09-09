@@ -34,6 +34,7 @@ export const user_settings_schema = stream_notification_settings_schema
     .merge(pm_notification_settings_schema)
     .merge(followed_topic_notification_settings_schema)
     .extend({
+        allow_private_data_export: z.boolean(),
         automatically_follow_topics_policy: z.number(),
         automatically_follow_topics_where_mentioned: z.boolean(),
         automatically_unmute_topics_in_muted_streams_policy: z.number(),
