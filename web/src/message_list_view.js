@@ -679,7 +679,7 @@ export class MessageListView {
                     message_container.msg,
                 );
 
-                if (message_container.msg.stream_id) {
+                if (message_container.msg.type === "stream") {
                     message_container.stream_url = hash_util.by_stream_url(
                         message_container.msg.stream_id,
                     );
