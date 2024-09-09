@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import CommandError
 from typing_extensions import override
 
@@ -10,6 +11,7 @@ from zerver.actions.users import (
     do_change_is_billing_admin,
     do_change_user_role,
 )
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserProfile
 
@@ -52,7 +54,7 @@ ONLY perform this on customer request from an authorized person.
     def handle(self, *args: Any, **options: Any) -> None:
         email = options["email"]
         realm = self.get_realm(options)
-
+        assert realm is not None
         user = self.get_user(email, realm)
 
         user_role_map = {
@@ -71,6 +73,17 @@ ONLY perform this on customer request from an authorized person.
                 )
             if new_role == user.role:
                 raise CommandError("User already has this role.")
+            if settings.BILLING_ENABLED and user.is_guest:
+                from corporate.lib.registration import (
+                    check_spare_license_available_for_changing_guest_user_role,
+                )
+
+                try:
+                    check_spare_license_available_for_changing_guest_user_role(realm)
+                except JsonableError:
+                    raise CommandError(
+                        "This realm does not have enough licenses to change a guest user's role."
+                    )
             old_role_name = UserProfile.ROLE_ID_TO_NAME_MAP[user.role]
             do_change_user_role(user, new_role, acting_user=None)
             new_role_name = UserProfile.ROLE_ID_TO_NAME_MAP[user.role]
