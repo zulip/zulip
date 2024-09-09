@@ -192,21 +192,23 @@ run_test("attachments", ({override}) => {
 run_test("user groups", ({override}) => {
     let event = event_fixtures.user_group__add;
     {
-        const stub = make_stub();
         const user_group_settings_ui_stub = make_stub();
 
-        override(user_groups, "add", stub.f);
+        let add_called = false;
+        override(user_groups, "add", (arg) => {
+            assert_same(arg, event.group);
+            add_called = true;
+            return event.group;
+        });
         override(overlays, "groups_open", () => true);
         override(user_group_edit, "add_group_to_table", user_group_settings_ui_stub.f);
 
         dispatch(event);
 
-        assert.equal(stub.num_calls, 1);
+        assert.equal(add_called, true);
         assert.equal(user_group_settings_ui_stub.num_calls, 1);
 
-        let args = stub.get_args("group");
-        assert_same(args.group, event.group);
-        args = user_group_settings_ui_stub.get_args("group");
+        const args = user_group_settings_ui_stub.get_args("group");
         assert_same(args.group, event.group);
     }
 

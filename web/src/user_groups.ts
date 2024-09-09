@@ -39,7 +39,7 @@ export function init(): void {
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
-export function add(user_group_raw: UserGroupRaw): void {
+export function add(user_group_raw: UserGroupRaw): UserGroup {
     // Reformat the user group members structure to be a set.
     const user_group = {
         description: user_group_raw.description,
@@ -56,6 +56,7 @@ export function add(user_group_raw: UserGroupRaw): void {
 
     user_group_name_dict.set(user_group.name, user_group);
     user_group_by_id_dict.set(user_group.id, user_group);
+    return user_group;
 }
 
 export function remove(user_group: UserGroup): void {
