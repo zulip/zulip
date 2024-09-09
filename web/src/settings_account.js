@@ -20,6 +20,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_bots from "./settings_bots";
+import * as settings_components from "./settings_components";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
@@ -248,6 +249,16 @@ export function hide_confirm_email_banner() {
         return;
     }
     $("#account-settings-status").hide();
+}
+
+export function update_privacy_settings_box(property) {
+    if (!overlays.settings_open()) {
+        return;
+    }
+
+    const $container = $("#account-settings");
+    const $input_elem = $container.find(`[name=${CSS.escape(property)}]`);
+    settings_components.set_input_element_value($input_elem, user_settings[property]);
 }
 
 export function set_up() {

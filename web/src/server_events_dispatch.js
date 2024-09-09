@@ -706,6 +706,18 @@ export function dispatch_normal_event(event) {
                 break;
             }
 
+            const privacy_settings = [
+                "send_stream_typing_notifications",
+                "send_private_typing_notifications",
+                "send_read_receipts",
+            ];
+
+            if (privacy_settings.includes(event.property)) {
+                user_settings[event.property] = event.value;
+                settings_account.update_privacy_settings_box(event.property);
+                break;
+            }
+
             const user_preferences = [
                 "color_scheme",
                 "web_font_size_px",
@@ -729,9 +741,6 @@ export function dispatch_normal_event(event) {
                 "web_animate_image_previews",
                 "web_stream_unreads_count_display_policy",
                 "starred_message_counts",
-                "send_stream_typing_notifications",
-                "send_private_typing_notifications",
-                "send_read_receipts",
                 "web_navigate_to_sent_message",
                 "enter_sends",
             ];
