@@ -29,6 +29,9 @@ export let settings_label;
 function setup_settings_label() {
     settings_label = {
         // settings_notification
+        allow_private_data_export: $t({
+            defaultMessage: "Let administrators export my private data",
+        }),
         presence_enabled: $t({
             defaultMessage: "Display my availability to other users",
         }),

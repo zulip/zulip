@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 293**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added a new `allow_private_data_export` setting to allow users to decide
+  whether to let administrators export their private data.
+
 **Feature level 292**
 
 * [`POST /register`](/api/register-queue), [`GET

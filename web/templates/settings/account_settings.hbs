@@ -94,6 +94,12 @@
                   label_parens_text=settings_label.presence_enabled_parens_text
                   help_link="/help/status-and-availability"
                   prefix="user_"}}
+                {{> settings_checkbox
+                  setting_name="allow_private_data_export"
+                  is_checked=settings_object.allow_private_data_export
+                  label=settings_label.allow_private_data_export
+                  help_link="/help/export-your-organization#full-export-with-member-consent"
+                  }}
             </div>
             <div class="input-group">
                 <label for="email_address_visibility" class="settings-field-label">{{t "Who can access your email address" }}

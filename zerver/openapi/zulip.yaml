@@ -14873,6 +14873,13 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          allow_private_data_export:
+                            type: boolean
+                            description: |
+                              Whether organization administrators are allowed to
+                              export your private data.
+
+                              **Changes**: New in Zulip 10.0 (feature level 293).
                           email_address_visibility:
                             $ref: "#/components/schemas/EmailAddressVisibility"
                           web_navigate_to_sent_message:
@@ -17370,6 +17377,13 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          allow_private_data_export:
+                            type: boolean
+                            description: |
+                              Whether organization administrators are allowed to
+                              export your private data.
+
+                              **Changes**: New in Zulip 10.0 (feature level 293).
                           email_address_visibility:
                             $ref: "#/components/schemas/EmailAddressVisibility"
                           web_navigate_to_sent_message:
@@ -18672,6 +18686,14 @@ paths:
                     **Changes**: New in Zulip 5.0 (feature level 105).
                   type: boolean
                   example: true
+                allow_private_data_export:
+                  description: |
+                    Whether organization administrators are allowed to
+                    export your private data.
+
+                    **Changes**: New in Zulip 10.0 (feature level 293).
+                  type: boolean
+                  example: true
                 email_address_visibility:
                   description: |
                     The [policy][permission-level] this user has selected for [which other
@@ -18806,6 +18828,8 @@ paths:
               send_stream_typing_notifications:
                 contentType: application/json
               send_read_receipts:
+                contentType: application/json
+              allow_private_data_export:
                 contentType: application/json
               email_address_visibility:
                 contentType: application/json
