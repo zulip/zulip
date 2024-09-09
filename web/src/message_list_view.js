@@ -572,7 +572,14 @@ export class MessageListView {
         };
     }
 
-    maybe_add_subscription_marker(group, last_msg_container, first_msg_container) {
+    maybe_add_subscription_marker_to_group(group, last_message, first_message) {
+        const markers = this.get_possible_group_subscription_markers(last_message, first_message);
+        if (markers) {
+            Object.assign(group, markers);
+        }
+    }
+
+    get_possible_group_subscription_markers(last_message, first_message) {
         // The `historical` flag is present on messages which were
         // sent a time when the current user was not subscribed to the
         // stream receiving the message.
@@ -582,30 +589,34 @@ export class MessageListView {
         // between adjacent messages, the current user must have
         // (un)subscribed in between those messages.
         if (!this.list.data.filter.has_operator("channel")) {
-            return;
+            return undefined;
         }
-        if (last_msg_container === undefined) {
-            return;
+        if (last_message === undefined) {
+            return undefined;
         }
 
-        const last_subscribed = !last_msg_container.msg.historical;
-        const first_subscribed = !first_msg_container.msg.historical;
-        const stream_id = first_msg_container.msg.stream_id;
+        const last_subscribed = !last_message.historical;
+        const first_subscribed = !first_message.historical;
+        const stream_id = first_message.stream_id;
         const stream_name = stream_data.get_stream_name_from_id(stream_id);
 
         if (!last_subscribed && first_subscribed) {
-            group.bookend_top = true;
-            group.subscribed = true;
-            group.stream_name = stream_name;
-            return;
+            return {
+                bookend_top: true,
+                subscribed: true,
+                stream_name,
+            };
         }
 
         if (last_subscribed && !first_subscribed) {
-            group.bookend_top = true;
-            group.just_unsubscribed = true;
-            group.stream_name = stream_name;
-            return;
+            return {
+                bookend_top: true,
+                just_unsubscribed: true,
+                stream_name,
+            };
         }
+
+        return undefined;
     }
 
     build_message_groups(message_containers) {
@@ -662,7 +673,11 @@ export class MessageListView {
                 message_container.subscribed = false;
                 message_container.unsubscribed = false;
 
-                this.maybe_add_subscription_marker(current_group, prev, message_container);
+                this.maybe_add_subscription_marker_to_group(
+                    current_group,
+                    prev?.msg,
+                    message_container.msg,
+                );
 
                 if (message_container.msg.stream_id) {
                     message_container.stream_url = hash_util.by_stream_url(
@@ -737,7 +752,11 @@ export class MessageListView {
         }
 
         // We may need to add a subscription marker after merging the groups.
-        this.maybe_add_subscription_marker(second_group, last_msg_container, first_msg_container);
+        this.maybe_add_subscription_marker_to_group(
+            second_group,
+            last_msg_container?.msg,
+            first_msg_container.msg,
+        );
 
         return false;
     }
