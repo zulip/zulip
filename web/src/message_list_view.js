@@ -284,54 +284,85 @@ function maybe_restore_focus_to_message_edit_form() {
     }, 0);
 }
 
-function populate_group_from_message_container(group, message_container) {
-    group.is_stream = message_container.msg.is_stream;
-    group.is_private = message_container.msg.is_private;
+function populate_group_from_message(message, date_unchanged, subscription_markers) {
+    const is_stream = message.is_stream;
+    const is_private = message.is_private;
+    const display_recipient = message.display_recipient;
+    const message_group_id = _.uniqueId("message_group_");
+    const date = get_group_display_date(message);
 
-    if (group.is_stream) {
-        const color = stream_data.get_color(message_container.msg.stream_id);
-        group.recipient_bar_color = stream_color.get_recipient_bar_color(color);
-        group.stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
-        group.invite_only = stream_data.is_invite_only_by_stream_id(
-            message_container.msg.stream_id,
-        );
-        group.is_web_public = stream_data.is_web_public(message_container.msg.stream_id);
-        group.topic = message_container.msg.topic;
-        group.match_topic = util.get_match_topic(message_container.msg);
-        group.stream_url = message_container.stream_url;
-        group.topic_url = message_container.topic_url;
-        const sub = sub_store.get(message_container.msg.stream_id);
+    if (is_stream) {
+        const color = stream_data.get_color(message.stream_id);
+        const recipient_bar_color = stream_color.get_recipient_bar_color(color);
+        const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
+        const invite_only = stream_data.is_invite_only_by_stream_id(message.stream_id);
+        const is_web_public = stream_data.is_web_public(message.stream_id);
+        const topic = message.topic;
+        const match_topic = util.get_match_topic(message);
+        const stream_url = hash_util.by_stream_url(message.stream_id);
+        const topic_url = hash_util.by_stream_topic_url(message.stream_id, message.topic);
+
+        const sub = sub_store.get(message.stream_id);
+        let stream_id;
         if (sub === undefined) {
             // Hack to handle unusual cases like the tutorial where
             // the streams used don't actually exist in the subs
             // module.  Ideally, we'd clean this up by making the
             // tutorial populate stream_settings_ui.js "properly".
-            group.stream_id = -1;
+            stream_id = -1;
         } else {
-            group.stream_id = sub.stream_id;
+            stream_id = sub.stream_id;
         }
-        group.is_subscribed = stream_data.is_subscribed(group.stream_id);
-        group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
-        group.visibility_policy = user_topics.get_topic_visibility_policy(
-            group.stream_id,
-            group.topic,
-        );
 
+        const is_subscribed = stream_data.is_subscribed(stream_id);
+        const topic_is_resolved = resolved_topic.is_resolved(topic);
+        const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic);
         // The following field is not specific to this group, but this is the
         // easiest way we've figured out for passing the data to the template rendering.
-        group.all_visibility_policies = user_topics.all_visibility_policies;
-    } else if (group.is_private) {
-        group.pm_with_url = message_container.pm_with_url;
-        group.recipient_users = get_users_for_recipient_row(message_container.msg);
-        group.display_reply_to_for_tooltip = message_store.get_pm_full_names(
-            people.pm_with_user_ids(message_container.msg),
-        );
-    }
-    group.display_recipient = message_container.msg.display_recipient;
-    group.topic_links = message_container.msg.topic_links;
+        const all_visibility_policies = user_topics.all_visibility_policies;
 
-    Object.assign(group, get_topic_edit_properties(message_container.msg));
-    group.date = get_group_display_date(message_container.msg);
+        const topic_links = message.topic_links;
+
+        return {
+            message_group_id,
+            message_containers: [],
+            is_stream,
+            ...get_topic_edit_properties(message),
+            ...subscription_markers,
+            date,
+            display_recipient,
+            date_unchanged,
+            topic_links,
+            topic,
+            recipient_bar_color,
+            stream_privacy_icon_color,
+            invite_only,
+            is_web_public,
+            match_topic,
+            stream_url,
+            topic_url,
+            stream_id,
+            is_subscribed,
+            topic_is_resolved,
+            visibility_policy,
+            all_visibility_policies,
+        };
+    }
+    // Private message group
+    const user_ids = people.pm_with_user_ids(message);
+    return {
+        message_group_id,
+        message_containers: [],
+        is_stream,
+        is_private,
+        ...get_topic_edit_properties(message),
+        date,
+        date_unchanged,
+        display_recipient,
+        pm_with_url: message.pm_with_url,
+        recipient_users: get_users_for_recipient_row(message),
+        display_reply_to_for_tooltip: message_store.get_pm_full_names(user_ids),
+    };
 }
 
 // MessageListView is the module responsible for rendering a
@@ -619,101 +650,114 @@ export class MessageListView {
         return undefined;
     }
 
-    build_message_groups(message_containers) {
-        const start_group = (prev_message, message_for_next_group) => {
-            const group = {
-                message_containers: [],
-                message_group_id: _.uniqueId("message_group_"),
-            };
-
-            update_group_date(group, message_for_next_group, prev_message);
-            this.maybe_add_subscription_marker_to_group(
-                group,
-                prev_message,
-                message_for_next_group,
-            );
-            return group;
-        };
-
-        let current_group = start_group();
+    build_message_groups(messages) {
         const new_message_groups = [];
-        let prev;
+
+        let current_group;
+        let current_group_message_containers = [];
+
+        let prev_message_container;
 
         const add_message_container_to_group = (message_container) => {
-            current_group.message_containers.push(message_container);
+            current_group_message_containers.push(message_container);
+        };
+
+        const start_group = (prev_message, message_for_next_group) => {
+            current_group = populate_group_from_message(
+                message_for_next_group,
+                same_day(message_for_next_group, prev_message),
+                this.get_possible_group_subscription_markers(prev_message, message_for_next_group),
+            );
         };
 
         const finish_group = () => {
-            if (current_group.message_containers.length > 0) {
-                populate_group_from_message_container(
-                    current_group,
-                    current_group.message_containers[0],
-                );
+            if (current_group_message_containers.length > 0) {
+                current_group.message_containers = current_group_message_containers;
                 new_message_groups.push(current_group);
             }
+            current_group_message_containers = [];
         };
 
-        for (const message_container of message_containers) {
-            const message_reactions = reactions.get_message_reactions(message_container.msg);
-            message_container.msg.message_reactions = message_reactions;
-            message_container.include_recipient = false;
+        for (const message of messages) {
+            const message_reactions = reactions.get_message_reactions(message);
+            message.message_reactions = message_reactions;
+
+            // These will be used to build the message container
+            let include_recipient = false;
+            let subscribed;
+            let unsubscribed;
+            let stream_url;
+            let topic_url;
+            let pm_with_url;
+            let include_sender;
+            let want_date_divider;
+            let date_divider_html;
 
             if (
-                same_recipient(prev, message_container) &&
+                prev_message_container &&
+                util.same_recipient(prev_message_container.msg, message) &&
                 this.collapse_messages &&
-                prev.msg.historical === message_container.msg.historical
+                prev_message_container.msg.historical === message.historical
             ) {
-                add_message_container_to_group(message_container);
                 const date_divider_data = get_message_date_divider_data({
-                    prev_message: prev.msg,
-                    curr_message: message_container.msg,
+                    prev_message: prev_message_container.msg,
+                    curr_message: message,
                 });
-                message_container.want_date_divider = date_divider_data.want_date_divider;
-                message_container.date_divider_html = date_divider_data.date_divider_html;
+                want_date_divider = date_divider_data.want_date_divider;
+                date_divider_html = date_divider_data.date_divider_html;
             } else {
                 finish_group();
-                current_group = start_group(prev?.msg, message_container.msg);
-                add_message_container_to_group(message_container);
+                start_group(prev_message_container?.msg, message);
+                want_date_divider = false;
+                date_divider_html = undefined;
+                include_recipient = true;
+                subscribed = false;
+                unsubscribed = false;
 
-                message_container.want_date_divider = false;
-                message_container.date_divider_html = undefined;
-
-                message_container.include_recipient = true;
-                message_container.subscribed = false;
-                message_container.unsubscribed = false;
-
-                if (message_container.msg.type === "stream") {
-                    message_container.stream_url = hash_util.by_stream_url(
-                        message_container.msg.stream_id,
-                    );
-                    message_container.topic_url = hash_util.by_stream_topic_url(
-                        message_container.msg.stream_id,
-                        message_container.msg.topic,
-                    );
+                if (message.type === "stream") {
+                    stream_url = hash_util.by_stream_url(message.stream_id);
+                    topic_url = hash_util.by_stream_topic_url(message.stream_id, message.topic);
                 } else {
-                    message_container.pm_with_url = message_container.msg.pm_with_url;
+                    pm_with_url = message.pm_with_url;
                 }
             }
 
-            message_container.include_sender = true;
+            include_sender = true;
             if (
-                !message_container.include_recipient &&
-                !prev.status_message &&
-                same_day(prev?.msg, message_container?.msg) &&
-                same_sender(prev, message_container)
+                !include_recipient &&
+                prev_message_container &&
+                !prev_message_container.status_message &&
+                same_day(prev_message_container.msg, message) &&
+                prev_message_container.msg.sender_id === message.sender_id
             ) {
-                message_container.include_sender = false;
+                include_sender = false;
             }
 
-            Object.assign(
-                message_container,
-                this.get_calculated_message_container_variables(
-                    message_container.msg,
-                    message_container.include_sender,
-                ),
+            const calculated_variables = this.get_calculated_message_container_variables(
+                message,
+                include_sender,
             );
+            const message_container = {
+                msg: message,
+                include_recipient,
+                ...(subscribed && {subscribed}),
+                ...(unsubscribed && {unsubscribed}),
+                ...(stream_url && {stream_url}),
+                ...(topic_url && {topic_url}),
+                ...(pm_with_url && {pm_with_url}),
+                want_date_divider,
+                date_divider_html,
+                mention_classname: null,
+                ...calculated_variables,
+                ...this.get_edited_notice_locations(
+                    include_sender,
+                    calculated_variables.is_hidden,
+                    Boolean(calculated_variables.status_message),
+                ),
+            };
+            add_message_container_to_group(message_container);
 
-            prev = message_container;
+            prev_message_container = message_container;
         }
 
         finish_group();
@@ -986,15 +1030,9 @@ export class MessageListView {
         // than auto-scrolling.
         const started_scrolled_up = message_viewport.is_scrolled_up();
 
-        // The messages we are being asked to render are shared with between
-        // all messages lists. To prevent having both list views overwriting
-        // each other's data we will make a new message object to add data to
-        // for rendering.
-        const message_containers = messages.map((message) => {
+        for (const message of messages) {
             message.url = hash_util.by_conversation_and_time_url(message);
-
-            return {msg: message};
-        });
+        }
 
         const save_scroll_position = () => {
             if (orig_scrolltop_offset === undefined && this.selected_row().length > 0) {
@@ -1013,11 +1051,8 @@ export class MessageListView {
             }
         };
 
-        if (message_containers.length === 0) {
-            return undefined;
-        }
-
-        const new_message_groups = this.build_message_groups(message_containers);
+        const new_message_groups = this.build_message_groups(messages);
+        const message_containers = new_message_groups.flatMap((group) => group.message_containers);
         const message_actions = this.merge_message_groups(new_message_groups, where);
         const new_dom_elements = [];
         let $rendered_groups;
@@ -1484,7 +1519,14 @@ export class MessageListView {
         // call; it was introduced in an earlier version of this code
         // where we constructed an artificial message group for this
         // rerendering rather than looking up the original version.
-        populate_group_from_message_container(group, group.message_containers[0]);
+        Object.assign(
+            group,
+            populate_group_from_message(
+                group.message_containers[0].msg,
+                group.date_unchanged,
+                undefined,
+            ),
+        );
 
         const $rendered_recipient_row = $(render_recipient_row(group));
 
