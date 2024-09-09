@@ -224,6 +224,14 @@ def update_user_backend(
             raise JsonableError(
                 _("The owner permission cannot be removed from the only organization owner.")
             )
+
+        if settings.BILLING_ENABLED and target.is_guest:
+            from corporate.lib.registration import (
+                check_spare_license_available_for_changing_guest_user_role,
+            )
+
+            check_spare_license_available_for_changing_guest_user_role(user_profile.realm)
+
         do_change_user_role(target, role, acting_user=user_profile)
 
     if full_name is not None and target.full_name != full_name and full_name.strip() != "":

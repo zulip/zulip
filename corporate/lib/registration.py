@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 from corporate.lib.stripe import LicenseLimitError, get_latest_seat_count, get_seat_count
 from corporate.models import CustomerPlan, get_current_plan_by_realm
 from zerver.actions.create_user import send_group_direct_message_to_admins
-from zerver.lib.exceptions import InvitationError
+from zerver.lib.exceptions import InvitationError, JsonableError
 from zerver.models import Realm, UserProfile
 from zerver.models.users import get_system_bot
 
@@ -119,3 +119,17 @@ def check_spare_licenses_available_for_inviting_new_users(
             "Your organization does not have enough Zulip licenses. Invitations were not sent."
         )
         raise InvitationError(message, [], sent_invitations=False, license_limit_reached=True)
+
+
+def check_spare_license_available_for_changing_guest_user_role(realm: Realm) -> None:
+    plan = get_plan_if_manual_license_management_enforced(realm)
+    if plan is None:
+        return
+
+    try:
+        check_spare_licenses_available(realm, plan, extra_non_guests_count=1)
+    except LicenseLimitError:
+        error_message = _(
+            "Your organization does not have enough Zulip licenses to change a guest user's role."
+        )
+        raise JsonableError(error_message)

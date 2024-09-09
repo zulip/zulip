@@ -13,6 +13,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation
+from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
@@ -205,6 +206,40 @@ class PermissionTest(ZulipTestCase):
         invalid_user_id = 1000
         result = self.client_patch(f"/json/users/{invalid_user_id}", {})
         self.assert_json_error(result, "No such user")
+
+    def test_change_guest_user_role_with_manual_license_plan(self) -> None:
+        desdemona = self.example_user("desdemona")
+        polonius = self.example_user("polonius")
+        self.login("desdemona")
+        _, ledger = self.subscribe_realm_to_monthly_plan_on_manual_license_management(
+            desdemona.realm, 5, 5
+        )
+        assert polonius.is_guest
+        req = dict(role=UserProfile.ROLE_MEMBER)
+
+        with self.settings(BILLING_ENABLED=True):
+            result = self.client_patch(f"/json/users/{polonius.id}", req)
+        self.assert_json_error(
+            result,
+            "Your organization does not have enough Zulip licenses to change a guest user's role.",
+        )
+
+        ledger.licenses = get_latest_seat_count(desdemona.realm) + 1
+        ledger.save(update_fields=["licenses"])
+        with self.settings(BILLING_ENABLED=True):
+            result = self.client_patch(f"/json/users/{polonius.id}", req)
+        self.assert_json_error(
+            result,
+            "Your organization does not have enough Zulip licenses to change a guest user's role.",
+        )
+
+        ledger.licenses_at_next_renewal = get_latest_seat_count(desdemona.realm) + 1
+        ledger.save(update_fields=["licenses_at_next_renewal"])
+        with self.settings(BILLING_ENABLED=True):
+            result = self.client_patch(f"/json/users/{polonius.id}", req)
+        self.assert_json_success(result)
+        polonius.refresh_from_db()
+        assert polonius.role == UserProfile.ROLE_MEMBER
 
     def test_owner_api(self) -> None:
         self.login("iago")
