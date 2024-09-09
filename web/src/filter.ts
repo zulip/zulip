@@ -153,11 +153,11 @@ function message_matches_search_term(message: Message, operator: string, operand
         case "has":
             switch (operand) {
                 case "image":
-                    return message_parser.message_has_image(message);
+                    return message_parser.message_has_image(message.content);
                 case "link":
-                    return message_parser.message_has_link(message);
+                    return message_parser.message_has_link(message.content);
                 case "attachment":
-                    return message_parser.message_has_attachment(message);
+                    return message_parser.message_has_attachment(message.content);
                 case "reaction":
                     return message_parser.message_has_reaction(message);
                 default:

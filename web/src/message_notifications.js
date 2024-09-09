@@ -26,8 +26,8 @@ function get_notification_content(message) {
 
     if (
         $content.text().trim() === "" &&
-        (message_parser.message_has_image(message) ||
-            message_parser.message_has_attachment(message))
+        (message_parser.message_has_image(message.content) ||
+            message_parser.message_has_attachment(message.content))
     ) {
         content = $t({defaultMessage: "(attached file)"});
     } else {
