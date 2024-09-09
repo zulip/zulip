@@ -710,11 +710,16 @@ export function dispatch_normal_event(event) {
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
                 "send_read_receipts",
+                "presence_enabled",
+                "email_address_visibility",
             ];
 
             if (privacy_settings.includes(event.property)) {
                 user_settings[event.property] = event.value;
                 settings_account.update_privacy_settings_box(event.property);
+                if (event.property === "presence_enabled") {
+                    activity_ui.redraw_user(current_user.user_id);
+                }
                 break;
             }
 
@@ -860,17 +865,6 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_escape_navigates_to_home_view") {
                 $("#go-to-home-view-hotkey-help").toggleClass("notdisplayed", !event.value);
-            }
-            if (event.property === "presence_enabled") {
-                user_settings.presence_enabled = event.value;
-                $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
-                activity_ui.redraw_user(current_user.user_id);
-                break;
-            }
-            if (event.property === "email_address_visibility") {
-                user_settings.email_address_visibility = event.value;
-                $("#user_email_address_visibility").val(event.value);
-                break;
             }
             settings_preferences.update_page(event.property);
             break;
