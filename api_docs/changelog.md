@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 286**
+
+* [`POST /user_uploads`](/api/upload-file): Added `filename` field to
+  the response, which is closer to the original filename than the
+  basename of the `url` field in the response.
+
 **Feature level 285**
 
 * [`PATCH /messages/{message_id}`](/api/update-message): Added
