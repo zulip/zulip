@@ -87,7 +87,7 @@ export const raw_message_schema = z.intersection(
         z.discriminatedUnion("type", [
             z.object({
                 type: z.literal("private"),
-                topic_links: z.optional(z.array(z.undefined())),
+                topic_links: z.optional(z.undefined()),
             }),
             z.object({
                 type: z.literal("stream"),
