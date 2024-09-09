@@ -772,7 +772,6 @@ export class MessageListView {
         // prepend_groups are group to add to the bottom of the rendered DOM
         // rerender_groups are group that should be updated in place in the DOM
         // append_messages are messages which should be added to the last group in the DOM
-        // rerender_messages are messages which should be updated in place in the DOM
 
         const message_actions = {
             append_groups: [],
