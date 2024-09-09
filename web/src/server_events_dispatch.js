@@ -733,6 +733,7 @@ export function dispatch_normal_event(event) {
                 "send_private_typing_notifications",
                 "send_read_receipts",
                 "web_navigate_to_sent_message",
+                "enter_sends",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -850,9 +851,6 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_escape_navigates_to_home_view") {
                 $("#go-to-home-view-hotkey-help").toggleClass("notdisplayed", !event.value);
-            }
-            if (event.property === "enter_sends") {
-                user_settings.enter_sends = event.value;
             }
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
