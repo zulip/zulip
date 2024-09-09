@@ -14,7 +14,6 @@ import render_single_message from "../templates/single_message.hbs";
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
 import * as compose_fade from "./compose_fade";
-import type {MessageContainer, MessageGroup} from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as hash_util from "./hash_util";
@@ -42,8 +41,83 @@ import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import {is_same_day} from "./time_zone_util";
 import * as timerender from "./timerender";
+import type {TopicLink} from "./types";
 import * as user_topics from "./user_topics";
+import type {AllVisibilityPolicies} from "./user_topics";
 import * as util from "./util";
+
+export type MessageContainer = {
+    background_color?: string;
+    date_divider_html: string | undefined;
+    edited_alongside_sender?: boolean;
+    edited_in_left_col?: boolean;
+    edited_status_msg?: boolean;
+    include_recipient: boolean;
+    include_sender: boolean;
+    is_hidden: boolean;
+    last_edit_timestr: string | undefined;
+    mention_classname: string | null;
+    message_edit_notices_in_left_col: boolean;
+    message_edit_notices_alongside_sender: boolean;
+    message_edit_notices_for_status_message: boolean;
+    modified?: boolean;
+    moved?: boolean;
+    msg: Message;
+    sender_is_bot: boolean;
+    sender_is_guest: boolean;
+    should_add_guest_indicator_for_sender: boolean;
+    small_avatar_url: string;
+    status_message: string | false;
+    stream_url?: string;
+    subscribed?: boolean;
+    pm_with_url?: string;
+    timestr: string;
+    topic_url?: string;
+    unsubscribed?: boolean;
+    want_date_divider: boolean;
+};
+
+export type MessageGroup = {
+    bookend_top?: boolean;
+    date: string;
+    date_unchanged: boolean;
+    message_containers: MessageContainer[];
+    message_group_id: string;
+} & (
+    | {
+          is_stream: true;
+          all_visibility_policies: AllVisibilityPolicies;
+          always_visible_topic_edit: boolean;
+          display_recipient: string;
+          invite_only: boolean;
+          is_subscribed: boolean;
+          is_topic_editable: boolean;
+          is_web_public: boolean;
+          just_unsubscribed?: boolean;
+          match_topic: string | undefined;
+          on_hover_topic_edit: boolean;
+          recipient_bar_color: string;
+          stream_id: number;
+          stream_name?: string;
+          stream_privacy_icon_color: string;
+          stream_url: string;
+          subscribed?: boolean;
+          topic: string;
+          topic_is_resolved: boolean;
+          topic_links: TopicLink[] | undefined;
+          topic_url: string | undefined;
+          user_can_resolve_topic: boolean;
+          visibility_policy: number | false;
+      }
+    | {
+          is_stream: false;
+          display_recipient: {email: string; full_name: string; id: number}[];
+          display_reply_to_for_tooltip: string;
+          is_private: true;
+          pm_with_url: string;
+          recipient_users: RecipientRowUser[];
+      }
+);
 
 type RenderingPlan = {
     append_groups: MessageGroup[];
@@ -238,7 +312,7 @@ function get_topic_edit_properties(message: Message): {
     };
 }
 
-export type RecipientRowUser = {
+type RecipientRowUser = {
     full_name: string;
     should_add_guest_user_indicator: boolean;
 };
