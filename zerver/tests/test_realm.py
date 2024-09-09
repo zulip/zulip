@@ -839,7 +839,9 @@ class RealmTest(ZulipTestCase):
         self.assertFalse(realm.deactivated)
 
     def test_invalid_integer_attribute_values(self) -> None:
-        integer_values = [key for key, value in Realm.property_types.items() if value is int]
+        integer_values = [
+            key for key, value in Realm.property_types.items() if value in (int, (int, type(None)))
+        ]
 
         invalid_values = dict(
             bot_creation_policy=10,
@@ -879,6 +881,7 @@ class RealmTest(ZulipTestCase):
             f"Bad value for '{val_name}': {invalid_val}",
             f"Invalid {val_name} {invalid_val}",
             f"{val_name} is too small",
+            "Must be an organization owner",
         }
 
         req = {val_name: invalid_val}
