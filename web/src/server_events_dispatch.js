@@ -918,12 +918,13 @@ export function dispatch_normal_event(event) {
 
         case "user_group":
             switch (event.op) {
-                case "add":
-                    user_groups.add(event.group);
+                case "add": {
+                    const user_group = user_groups.add(event.group);
                     if (overlays.groups_open()) {
-                        user_group_edit.add_group_to_table(event.group);
+                        user_group_edit.add_group_to_table(user_group);
                     }
                     break;
+                }
                 case "remove":
                     user_groups.remove(user_groups.get_user_group_from_id(event.group_id));
                     user_group_edit.handle_deleted_group(event.group_id);
