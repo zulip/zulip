@@ -620,10 +620,20 @@ export class MessageListView {
     }
 
     build_message_groups(message_containers) {
-        const start_group = () => ({
-            message_containers: [],
-            message_group_id: _.uniqueId("message_group_"),
-        });
+        const start_group = (prev_message, message_for_next_group) => {
+            const group = {
+                message_containers: [],
+                message_group_id: _.uniqueId("message_group_"),
+            };
+
+            update_group_date(group, message_for_next_group, prev_message);
+            this.maybe_add_subscription_marker_to_group(
+                group,
+                prev_message,
+                message_for_next_group,
+            );
+            return group;
+        };
 
         let current_group = start_group();
         const new_message_groups = [];
@@ -662,22 +672,15 @@ export class MessageListView {
                 message_container.date_divider_html = date_divider_data.date_divider_html;
             } else {
                 finish_group();
-                current_group = start_group();
+                current_group = start_group(prev?.msg, message_container.msg);
                 add_message_container_to_group(message_container);
 
-                update_group_date(current_group, message_container.msg, prev?.msg);
                 message_container.want_date_divider = false;
                 message_container.date_divider_html = undefined;
 
                 message_container.include_recipient = true;
                 message_container.subscribed = false;
                 message_container.unsubscribed = false;
-
-                this.maybe_add_subscription_marker_to_group(
-                    current_group,
-                    prev?.msg,
-                    message_container.msg,
-                );
 
                 if (message_container.msg.type === "stream") {
                     message_container.stream_url = hash_util.by_stream_url(
