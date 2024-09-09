@@ -11,13 +11,18 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 from zerver.actions.bots import do_change_bot_owner
 from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.streams import do_change_stream_permission
-from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
+from zerver.actions.users import (
+    do_change_can_create_users,
+    do_change_user_role,
+    do_deactivate_user,
+    get_service_dicts_for_bot,
+)
 from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
-from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
+from zerver.models import BotConfigData, RealmUserDefault, Service, Subscription, UserProfile
 from zerver.models.bots import get_bot_services
 from zerver.models.realms import BotCreationPolicyEnum, get_realm
 from zerver.models.streams import get_stream
@@ -758,7 +763,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.login("hamlet")
         self.assert_num_bots_equal(0)
-        self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+        self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT, integration_name="helloworld")
         self.assert_num_bots_equal(1)
 
         profile = get_user(bot_email, bot_realm)
@@ -797,7 +802,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # But can create an incoming webhook
         self.assert_num_bots_equal(0)
-        self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+        self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT, integration_name="helloworld")
         self.assert_num_bots_equal(1)
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
@@ -853,6 +858,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Also, a regular user cannot create a incoming bot
         bot_info["bot_type"] = 2
+        bot_info["integration_name"] = "helloworld"
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         result = self.client_post("/json/bots", bot_info)
@@ -1788,6 +1794,23 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(service.name, "followup")
         self.assertEqual(service.user_profile, bot)
 
+    def test_get_bot_config_exception_embedded_bot(self, **extras: Any) -> None:
+        self.user_profile = self.example_user("hamlet")
+        self.login_user(self.user_profile)
+        bot_info = {
+            "short_name": "embeddedservicebot",
+            "full_name": "Foo Bot",
+            "bot_type": UserProfile.EMBEDDED_BOT,
+            "service_name": "followup",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_email = f"{bot_info['short_name']}-bot@zulip.testserver"
+        bot_realm = get_realm("zulip")
+        bot = get_user(bot_email, bot_realm)
+        with self.assertRaises(ConfigError):
+            get_bot_config(bot)
+
     def test_create_embedded_bot_with_incorrect_service_name(self, **extras: Any) -> None:
         self.fail_to_create_test_bot(
             short_name="embeddedservicebot",
@@ -1842,13 +1865,19 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
+            "integration_name": "stripe",
             "config_data": orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
         }
         self.create_bot(**bot_metadata)
         new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
         config_data = get_bot_config(new_bot)
         self.assertEqual(
-            config_data, {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
+            config_data,
+            {
+                "integration_name": "stripe",
+                "integration_id": "stripe",
+                "stripe_api_key": "sample-api-key",
+            },
         )
 
     @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
@@ -1859,6 +1888,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
+            "integration_name": "helloworld",
             "config_data": orjson.dumps({"stripe_api_key": "_invalid_key"}).decode(),
         }
         response = self.client_post("/json/bots", bot_metadata)
@@ -1876,6 +1906,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
+            "integration_name": "helloworld",
         }
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)
@@ -1891,11 +1922,36 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "full_name": "My Stripe Bot",
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "integration_name": "helloworld",
         }
         self.create_bot(**bot_metadata)
         new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
-        with self.assertRaises(ConfigError):
-            get_bot_config(new_bot)
+        bot_config_info = {"integration_name": "helloworld"}
+        bot_config = get_bot_config(new_bot)
+        self.assertEqual(bot_config, bot_config_info)
+
+    def test_create_incoming_webhook_bot_without_integration_name(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+        }
+        with self.assertRaises(AssertionError):
+            self.create_bot(**bot_metadata)
+
+    def test_create_incoming_webhook_bot_without_botConfigData(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "integration_name": "helloworld",
+        }
+        self.create_bot(**bot_metadata)
+        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        BotConfigData.objects.filter(bot_profile=new_bot).delete()
+        self.assertEqual(get_service_dicts_for_bot(new_bot.id), [])
 
     @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
     def test_create_incoming_webhook_bot_with_incorrect_service_name(self) -> None:
@@ -1905,6 +1961,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripes",
+            "integration_name": "helloworld",
         }
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)

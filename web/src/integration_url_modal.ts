@@ -5,19 +5,39 @@ import type * as tippy from "tippy.js";
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 import render_integration_events from "../templates/settings/integration_events.hbs";
 
+import * as bot_data from "./bot_data";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import type {DropdownWidget, Option} from "./dropdown_widget";
 import {$t_html} from "./i18n";
+import * as people from "./people";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
 
-export function show_generate_integration_url_modal(api_key: string): void {
+export function get_options_for_integration_input_dropdown_widget(
+    default_integration_option: Option,
+): Option[] {
+    const options = [
+        default_integration_option,
+        ...realm.realm_incoming_webhook_bots
+            .sort((a, b) => util.strcmp(a.display_name, b.display_name))
+            .map((bot) => ({
+                name: bot.display_name,
+                unique_id: bot.name,
+            })),
+    ];
+    return options;
+}
+export function show_generate_integration_url_modal(api_key: string, bot_id: number): void {
+    type Services = bot_data.Services;
+    type incoming_service_schema = bot_data.incoming_service_schema;
+    type service_schema = bot_data.service_schema;
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
-    const default_integration_option = {
+
+    const default_integration_option: Option = {
         name: $t_html({defaultMessage: "Select an integration"}),
         unique_id: "",
     };
@@ -30,13 +50,26 @@ export function show_generate_integration_url_modal(api_key: string): void {
         default_url_message,
         max_topic_length: realm.max_topic_length,
     });
+    function get_service_for_bot(bot_id: number): Services | undefined {
+        const bot = people.maybe_get_user_by_id(bot_id);
 
+        if (bot && bot.user_id) {
+            const services = bot_data.get_services(bot.user_id);
+
+            if (services && services.length > 0) {
+                return services;
+            }
+        }
+
+        return undefined;
+    }
     function generate_integration_url_post_render(): void {
         let selected_integration = "";
         let stream_input_dropdown_widget: DropdownWidget;
         let integration_input_dropdown_widget: DropdownWidget;
         let previous_selected_integration = "";
 
+        const services = get_service_for_bot(bot_id)![0];
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
@@ -87,6 +120,30 @@ export function show_generate_integration_url_modal(api_key: string): void {
         $("#generate-integration-url-modal .integration-url-parameter").on("change input", () => {
             update_url();
         });
+        function isIncomingServiceSchema(
+            service: service_schema,
+        ): service is incoming_service_schema {
+            return "integration_name" in service;
+        }
+
+        function get_default_integration_option(service: service_schema | undefined): Option {
+            if (service !== undefined && isIncomingServiceSchema(service)) {
+                const unique_id: string = service.integration_name;
+                const option = get_option_by_unique_id(unique_id);
+                if (option) {
+                    const params = new URLSearchParams({api_key});
+                    const pre_populate_base_url = `${realm.realm_url}/api/v1/external/${service.integration_name}?${params.toString()}`;
+                    $integration_url.text(pre_populate_base_url);
+                    return option;
+                }
+            }
+            return {
+                name: $t_html({defaultMessage: "Select an integration"}),
+                unique_id: "unique_id",
+            };
+        }
+
+        const prepopulate_integration_option: Option = get_default_integration_option(services);
 
         function update_url(render_events = false): void {
             selected_integration = integration_input_dropdown_widget.value()!.toString();
@@ -153,25 +210,21 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
         integration_input_dropdown_widget = new dropdown_widget.DropdownWidget({
             widget_name: "integration-name",
-            get_options: get_options_for_integration_input_dropdown_widget,
+            get_options: () =>
+                get_options_for_integration_input_dropdown_widget(default_integration_option),
             item_click_callback: integration_item_click_callback,
             $events_container: $("#generate-integration-url-modal"),
-            default_id: default_integration_option.unique_id,
+            default_id: prepopulate_integration_option.unique_id,
             unique_id_type: dropdown_widget.DataTypes.STRING,
         });
         integration_input_dropdown_widget.setup();
 
-        function get_options_for_integration_input_dropdown_widget(): Option[] {
-            const options = [
+        function get_option_by_unique_id(unique_id: string): Option | undefined {
+            const options = get_options_for_integration_input_dropdown_widget(
                 default_integration_option,
-                ...realm.realm_incoming_webhook_bots
-                    .sort((a, b) => util.strcmp(a.display_name, b.display_name))
-                    .map((bot) => ({
-                        name: bot.display_name,
-                        unique_id: bot.name,
-                    })),
-            ];
-            return options;
+            );
+            const filteredOption = options.find((option) => option.unique_id === unique_id);
+            return filteredOption;
         }
 
         function integration_item_click_callback(

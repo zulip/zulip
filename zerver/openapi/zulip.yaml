@@ -20810,6 +20810,17 @@ components:
               - type: object
                 additionalProperties: false
                 description: |
+                  When the bot is an Generic.
+                properties:
+                  integration_name:
+                    type: string
+                    description: |
+                      String describing the integration name of the bot
+                required:
+                  - integration_name
+              - type: object
+                additionalProperties: false
+                description: |
                   When the bot is an embedded bot.
                 properties:
                   service_name:
