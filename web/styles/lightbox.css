@@ -166,6 +166,9 @@
     }
 
     .center {
+        display: flex;
+        justify-items: center;
+
         .arrow {
             display: inline-block;
             vertical-align: top;
