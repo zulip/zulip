@@ -1,10 +1,3 @@
-server {
-    listen 80;
-    listen [::]:80;
-    server_name staging.zulip.com;
-    return 301 https://$server_name$request_uri;
-}
-
 include /etc/nginx/zulip-include/trusted-proto;
 include /etc/nginx/zulip-include/s3-cache;
 include /etc/nginx/zulip-include/upstreams;
