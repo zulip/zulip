@@ -326,6 +326,10 @@ function create_stream() {
     );
     data.can_remove_subscribers_group = can_remove_subscribers_group_id;
 
+    data.default_code_block_language = JSON.stringify(
+        stream_settings_components.new_stream_default_code_block_language_widget.value(),
+    );
+
     loading.make_indicator($("#stream_creating_indicator"), {
         text: $t({defaultMessage: "Creating channel..."}),
     });
@@ -519,4 +523,5 @@ export function set_up_handlers() {
     });
 
     stream_settings_components.new_stream_can_remove_subscribers_group_widget.setup();
+    stream_settings_components.new_stream_default_code_block_language_widget.setup();
 }

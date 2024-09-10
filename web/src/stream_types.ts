@@ -28,6 +28,7 @@ export const stream_schema = z.object({
         MODERATORS: StreamPostPolicy.MODERATORS,
     }),
     can_remove_subscribers_group: z.number(),
+    default_code_block_language: z.string(),
 });
 
 export const stream_specific_notification_settings_schema = z.object({

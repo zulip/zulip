@@ -31,6 +31,7 @@ from zerver.actions.message_send import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_default_code_block_language,
     do_change_stream_description,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
@@ -252,6 +253,7 @@ def update_stream_backend(
     can_remove_subscribers_group_id: Annotated[
         Json[int | None], ApiParamConfig("can_remove_subscribers_group")
     ] = None,
+    default_code_block_language: str | None = None,
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
@@ -401,6 +403,11 @@ def update_stream_backend(
             do_change_stream_group_based_setting(
                 stream, setting_name, user_group, acting_user=user_profile
             )
+
+    if default_code_block_language is not None:
+        do_change_default_code_block_language(
+            stream, default_code_block_language, acting_user=user_profile
+        )
 
     return json_success(request)
 
@@ -563,6 +570,7 @@ def add_subscriptions_backend(
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
+    default_code_block_language: Json[str] = "",
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -612,7 +620,7 @@ def add_subscriptions_backend(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
         stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group
-
+        stream_dict_copy["default_code_block_language"] = default_code_block_language
         stream_dicts.append(stream_dict_copy)
 
     is_subscribing_other_users = False
@@ -729,10 +737,10 @@ def send_messages_for_new_subscribers(
     if new_subscriptions:
         for email, subscribed_stream_names in new_subscriptions.items():
             if email == user_profile.email:
-                # Don't send a Zulip if you invited yourself.
+                # Don't send a Zulip invitation if you invited yourself.
                 continue
             if bots[email]:
-                # Don't send invitation Zulips to bots
+                # Don't send Zulip invitations to bots
                 continue
 
             # For each user, we notify them about newly subscribed streams, except for

@@ -484,6 +484,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_delete_any_message_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
+    ["default_code_block_language", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -848,6 +849,7 @@ export function check_stream_settings_property_changed(
     let proposed_val;
     switch (property_name) {
         case "can_remove_subscribers_group":
+        case "default_code_block_language":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "message_retention_days":

@@ -1256,15 +1256,22 @@ function get_header_html(): string | false {
         case "silent_mention":
             tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
             break;
-        case "syntax":
-            if (realm.realm_default_code_block_language !== "") {
+        case "syntax": {
+            let language = realm.realm_default_code_block_language;
+            // Prefer the stream default if it is set.
+            const stream = compose_state.stream();
+            if (stream && stream.default_code_block_language) {
+                language = stream.default_code_block_language;
+            }
+            if (language) {
                 tip_text = $t(
                     {defaultMessage: "Default is {language}. Use 'text' to disable highlighting."},
-                    {language: realm.realm_default_code_block_language},
+                    {language},
                 );
                 break;
             }
             return false;
+        }
         default:
             return false;
     }

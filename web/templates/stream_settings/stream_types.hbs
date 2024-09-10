@@ -71,6 +71,12 @@
           label=(t 'Who can unsubscribe others from this channel?')
           value_type="number"}}
 
+        {{> ../dropdown_widget_with_label
+          widget_name=default_code_block_language_setting_widget_name
+          label=(t 'Default code block language')
+          value_type="string"}}
+
+
         {{#if (or is_owner is_stream_edit)}}
             <div>
                 <div class="input-group inline-block message-retention-setting-group time-limit-setting">

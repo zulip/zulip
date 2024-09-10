@@ -16,6 +16,7 @@ import type {Typeahead} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as channel from "./channel";
 import * as common from "./common";
+import * as compose_state from "./compose_state";
 import type {TypeaheadSuggestion} from "./composebox_typeahead";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
@@ -1227,9 +1228,17 @@ export function render_and_show_preview(
             // authoritative backend rendering from the server).
             markdown.render(content);
         }
+        let default_code_block_language;
+        const current_stream = compose_state.stream();
+        if (current_stream) {
+            default_code_block_language = current_stream.default_code_block_language;
+        }
         void channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data: {
+                content,
+                default_code_block_language,
+            },
             success(response_data) {
                 const data = message_render_response_schema.parse(response_data);
                 if (markdown.contains_backend_only_syntax(content)) {

@@ -109,6 +109,9 @@ export function update_property(stream_id, property, value, other_values) {
         case "can_remove_subscribers_group":
             stream_settings_ui.update_can_remove_subscribers_group_id(sub, value);
             break;
+        case "default_code_block_language":
+            sub.default_code_block_language = value;
+            break;
         default:
             blueslip.warn("Unexpected subscription property type", {
                 property,

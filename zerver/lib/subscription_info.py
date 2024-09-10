@@ -54,6 +54,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         message_retention_days = stream.message_retention_days
         name = stream.name
         rendered_description = stream.rendered_description
+        default_code_block_language = stream.default_code_block_language
         stream_id = stream.id
         stream_post_policy = stream.stream_post_policy
 
@@ -93,6 +94,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             pin_to_top=pin_to_top,
             push_notifications=push_notifications,
             rendered_description=rendered_description,
+            default_code_block_language=default_code_block_language,
             stream_id=stream_id,
             stream_post_policy=stream_post_policy,
             stream_weekly_traffic=stream_weekly_traffic,
@@ -124,6 +126,7 @@ def build_unsubscribed_sub_from_stream_dict(
         name=stream_dict["name"],
         rendered_description=stream_dict["rendered_description"],
         id=stream_dict["stream_id"],
+        default_code_block_language=stream_dict["default_code_block_language"],
         stream_post_policy=stream_dict["stream_post_policy"],
     )
 
@@ -156,6 +159,7 @@ def build_stream_dict_for_sub(
     name = raw_stream_dict["name"]
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
+    default_code_block_language = raw_stream_dict["default_code_block_language"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
 
     # Handle Subscription.API_FIELDS.
@@ -208,6 +212,7 @@ def build_stream_dict_for_sub(
         push_notifications=push_notifications,
         rendered_description=rendered_description,
         stream_id=stream_id,
+        default_code_block_language=default_code_block_language,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
         wildcard_mentions_notify=wildcard_mentions_notify,
@@ -231,6 +236,7 @@ def build_stream_dict_for_never_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
+    default_code_block_language = raw_stream_dict["default_code_block_language"]
 
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -256,6 +262,7 @@ def build_stream_dict_for_never_sub(
         message_retention_days=message_retention_days,
         name=name,
         rendered_description=rendered_description,
+        default_code_block_language=default_code_block_language,
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
