@@ -1082,12 +1082,12 @@ def do_send_messages(
             users.append(user_data)
 
         sender = send_request.message.sender
-        message_type = wide_message_dict["type"]
+        recipient_type = wide_message_dict["type"]
         user_notifications_data_list = [
             UserMessageNotificationsData.from_user_id_sets(
                 user_id=user_id,
                 flags=user_flags.get(user_id, []),
-                private_message=message_type == "private",
+                private_message=recipient_type == "private",
                 disable_external_notifications=send_request.disable_external_notifications,
                 online_push_user_ids=send_request.online_push_user_ids,
                 dm_mention_push_disabled_user_ids=send_request.dm_mention_push_disabled_user_ids,
