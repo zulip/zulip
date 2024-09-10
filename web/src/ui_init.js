@@ -115,6 +115,7 @@ import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import {current_user, realm, set_current_user, set_realm, state_data_schema} from "./state_data";
+import * as stream_card_popover from "./stream_card_popover";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -533,6 +534,7 @@ export function initialize_everything(state_data) {
     stream_edit_subscribers.initialize();
     stream_data.initialize(state_data.stream_data);
     user_group_edit_members.initialize();
+    stream_card_popover.initialize();
     pm_conversations.recent.initialize(state_data.pm_conversations);
     user_topics.initialize(state_data.user_topics);
     muted_users.initialize(state_data.muted_users);

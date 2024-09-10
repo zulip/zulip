@@ -236,6 +236,7 @@ EXEMPT_FILES = make_set(
         "web/src/spoilers.ts",
         "web/src/starred_messages_ui.ts",
         "web/src/state_data.ts",
+        "web/src/stream_card_popover.ts",
         "web/src/stream_color.ts",
         "web/src/stream_color_events.ts",
         "web/src/stream_create.js",
