@@ -94,7 +94,7 @@ def add_user_group(
 
 @require_member_or_admin
 @typed_endpoint
-def get_user_group(
+def get_user_groups(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
