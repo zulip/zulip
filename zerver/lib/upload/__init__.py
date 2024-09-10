@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import IO, Any, BinaryIO
 from urllib.parse import unquote, urljoin
 
+import pyvips
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
@@ -26,7 +27,7 @@ from zerver.lib.thumbnail import (
     resize_avatar,
     resize_emoji,
 )
-from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
+from zerver.lib.upload.base import INLINE_MIME_TYPES, StreamingSourceWithSize, ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 from zerver.models.users import is_cross_realm_bot_email
 
@@ -48,22 +49,28 @@ def create_attachment(
     file_name: str,
     path_id: str,
     content_type: str,
-    file_data: bytes,
+    file_data: bytes | StreamingSourceWithSize,
     user_profile: UserProfile,
     realm: Realm,
 ) -> None:
     assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
         user_profile.delivery_email
     )
+    if isinstance(file_data, bytes):
+        file_size = len(file_data)
+        file_real_data: bytes | pyvips.Source = file_data
+    else:
+        file_size = file_data.size
+        file_real_data = file_data.source
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
         owner=user_profile,
         realm=realm,
-        size=len(file_data),
+        size=file_size,
         content_type=content_type,
     )
-    maybe_thumbnail(attachment, file_data)
+    maybe_thumbnail(attachment, file_real_data)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
@@ -192,6 +199,10 @@ def upload_message_attachment_from_request(
     return upload_message_attachment(
         uploaded_file_name, content_type, user_file.read(), user_profile
     )
+
+
+def attachment_vips_source(path_id: str) -> StreamingSourceWithSize:
+    return upload_backend.attachment_vips_source(path_id)
 
 
 def save_attachment_contents(path_id: str, filehandle: BinaryIO) -> None:

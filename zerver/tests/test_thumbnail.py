@@ -26,7 +26,13 @@ from zerver.lib.thumbnail import (
     resize_emoji,
     split_thumbnail_path,
 )
-from zerver.lib.upload import all_message_attachments, save_attachment_contents
+from zerver.lib.upload import (
+    all_message_attachments,
+    attachment_vips_source,
+    create_attachment,
+    save_attachment_contents,
+    upload_backend,
+)
 from zerver.models import Attachment, ImageAttachment
 from zerver.views.upload import closest_thumbnail_format
 from zerver.worker.thumbnail import ensure_thumbnails
@@ -561,6 +567,19 @@ class TestStoreThumbnail(ZulipTestCase):
         image_attachment.frames = 10
         with self.thumbnail_formats(still_webp, anim_webp, still_jpeg):
             self.assertEqual(missing_thumbnails(image_attachment), [anim_webp, still_jpeg])
+
+    def test_maybe_thumbnail_from_stream(self) -> None:
+        # If we put the file in place directly (e.g. simulating a
+        # chunked upload), and then use the streaming source to
+        # create the attachment, we still thumbnail correctly.
+        hamlet = self.example_user("hamlet")
+        path_id = upload_backend.generate_message_upload_path(str(hamlet.realm.id), "img.png")
+        upload_backend.upload_message_attachment(
+            path_id, "img.png", "image/png", read_test_image_file("img.png"), hamlet
+        )
+        source = attachment_vips_source(path_id)
+        create_attachment("img.png", path_id, "image/png", source, hamlet, hamlet.realm)
+        self.assertTrue(ImageAttachment.objects.filter(path_id=path_id).exists())
 
 
 class TestThumbnailRetrieval(ZulipTestCase):

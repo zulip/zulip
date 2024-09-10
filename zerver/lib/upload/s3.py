@@ -8,14 +8,17 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import boto3
 import botocore
+import pyvips
 from botocore.client import Config
+from botocore.response import StreamingBody
 from django.conf import settings
 from django.utils.http import content_disposition_header
 from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import override
 
+from zerver.lib.partial import partial
 from zerver.lib.thumbnail import resize_avatar, resize_logo
-from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
+from zerver.lib.upload.base import INLINE_MIME_TYPES, StreamingSourceWithSize, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile
 
 # Duration that the signed upload URLs that we redirect to when
@@ -235,6 +238,17 @@ class S3UploadBackend(ZulipUploadBackend):
     def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
         for chunk in self.uploads_bucket.Object(path_id).get()["Body"]:
             filehandle.write(chunk)
+
+    @override
+    def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
+        metadata = self.uploads_bucket.Object(path_id).get()
+
+        def s3_read(streamingbody: StreamingBody, size: int) -> bytes:
+            return streamingbody.read(amt=size)
+
+        source: pyvips.Source = pyvips.SourceCustom()
+        source.on_read(partial(s3_read, metadata["Body"]))
+        return StreamingSourceWithSize(size=metadata["ContentLength"], source=source)
 
     @override
     def delete_message_attachment(self, path_id: str) -> bool:

@@ -7,13 +7,14 @@ from collections.abc import Callable, Iterator
 from datetime import datetime
 from typing import IO, Any, BinaryIO, Literal
 
+import pyvips
 from django.conf import settings
 from typing_extensions import override
 
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import resize_avatar, resize_logo
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.upload.base import ZulipUploadBackend
+from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmEmoji, UserProfile
 
@@ -99,6 +100,13 @@ class LocalUploadBackend(ZulipUploadBackend):
     @override
     def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
         filehandle.write(read_local_file("files", path_id))
+
+    @override
+    def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
+        file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "files", path_id)
+        assert_is_local_storage_path("files", file_path)
+        source = pyvips.Source.new_from_file(file_path)
+        return StreamingSourceWithSize(size=os.path.getsize(file_path), source=source)
 
     @override
     def delete_message_attachment(self, path_id: str) -> bool:

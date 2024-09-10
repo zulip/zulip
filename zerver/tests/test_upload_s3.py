@@ -30,6 +30,7 @@ from zerver.lib.thumbnail import (
 )
 from zerver.lib.upload import (
     all_message_attachments,
+    attachment_vips_source,
     delete_export_tarball,
     delete_message_attachment,
     delete_message_attachments,
@@ -37,6 +38,7 @@ from zerver.lib.upload import (
     upload_export_tarball,
     upload_message_attachment,
 )
+from zerver.lib.upload.base import StreamingSourceWithSize
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Attachment, RealmEmoji, UserProfile
 from zerver.models.realms import get_realm
@@ -74,6 +76,22 @@ class S3Test(ZulipTestCase):
         output = BytesIO()
         save_attachment_contents(path_id, output)
         self.assertEqual(output.getvalue(), b"zulip!")
+
+    @use_s3_backend
+    def test_attachment_vips_source(self) -> None:
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+        user_profile = self.example_user("hamlet")
+        url = upload_message_attachment(
+            "img.png", "image/png", read_test_image_file("img.png"), user_profile
+        )[0]
+        path_id = re.sub(r"/user_uploads/", "", url)
+
+        source = attachment_vips_source(path_id)
+        self.assertIsInstance(source, StreamingSourceWithSize)
+        self.assertEqual(source.size, len(read_test_image_file("img.png")))
+        image = pyvips.Image.new_from_source(source.source, "", access="sequential")
+        self.assertEqual(128, image.height)
+        self.assertEqual(128, image.width)
 
     @use_s3_backend
     def test_upload_message_attachment_s3_cross_realm_path(self) -> None:
