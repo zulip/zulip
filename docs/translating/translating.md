@@ -76,6 +76,9 @@ Some useful tips for your translating journey:
   HTML tags `<...>`, or enclosed in braces like `{variable}`); just
   keep them verbatim.
 
+- Be consistent with translations; so make sure you are using the same translation
+  for the same word/phrase across all files (unless the context is different).
+
 - When context is unclear, you may find [GitHub
   search](https://github.com/search?q=org%3Azulip+%22alert+word+already+exists%22&type=code)
   helpful for finding the code using a given string (ignore `.po` and
