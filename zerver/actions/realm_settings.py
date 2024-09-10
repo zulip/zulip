@@ -60,7 +60,7 @@ def do_set_realm_property(
     realm: Realm, name: str, value: Any, *, acting_user: UserProfile | None
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
-    value to update and and the user who initiated the update.
+    value to update and the user who initiated the update.
     """
     property_type = Realm.property_types[name]
     assert isinstance(
@@ -168,7 +168,7 @@ def do_change_realm_permission_group_setting(
     acting_user: UserProfile | None,
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
-    user_group to update and and the user who initiated the update.
+    user_group to update and the user who initiated the update.
     """
     assert setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
     old_value = getattr(realm, setting_name)
