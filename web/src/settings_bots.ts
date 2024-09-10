@@ -160,6 +160,7 @@ export function add_a_new_bot(): void {
             success() {
                 create_avatar_widget.clear();
                 dialog_widget.close();
+                window.location.href = "/#organization/bots/your-bots";
             },
             error(xhr) {
                 ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
