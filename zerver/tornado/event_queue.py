@@ -1572,18 +1572,7 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     elif event["type"] == "update_message":
         process_message_update_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "delete_message":
-        if len(users) > 0 and isinstance(users[0], dict):
-            # do_delete_messages used to send events with users in
-            # dict format {"id": <int>} This block is here for
-            # compatibility with events in that format still in the
-            # queue at the time of upgrade.
-            #
-            # TODO/compatibility: Remove this block once you can no
-            # longer directly upgrade directly from 4.x to main.
-            user_ids: list[int] = [user["id"] for user in cast(list[Mapping[str, Any]], users)]
-        else:
-            user_ids = cast(list[int], users)
-        process_deletion_event(event, user_ids)
+        process_deletion_event(event, cast(list[int], users))
     elif event["type"] == "presence":
         process_presence_event(event, cast(list[int], users))
     elif event["type"] == "custom_profile_fields":
