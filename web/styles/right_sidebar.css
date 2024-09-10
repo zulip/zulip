@@ -34,7 +34,13 @@ $user_status_emoji_width: 24px;
     }
 
     .buddy-list-user-link {
-        margin-left: 15px;
+        margin-left: 20px;
+        color: var(--color-text-sidebar-action-heading);
+        font-size: var(--font-size-sidebar-action-heading);
+        font-weight: var(--font-weight-sidebar-action-heading);
+        letter-spacing: var(--letter-spacing-sidebar-action-heading);
+        font-variant: var(--font-variant-sidebar-action-heading);
+        text-transform: var(--text-transform-sidebar-action-heading);
     }
 }
 
