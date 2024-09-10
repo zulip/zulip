@@ -1001,6 +1001,8 @@ input[type="checkbox"] {
 
     #current_bot_avatar_image {
         margin: 5px 0 8px;
+        width: 100px;
+        height: 100px;
     }
 
     .edit_bot_avatar_preview_text {
