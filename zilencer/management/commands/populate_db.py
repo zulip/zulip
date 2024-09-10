@@ -1248,17 +1248,17 @@ def generate_and_send_messages(
             and random.randint(1, random_max) * 100.0 / random_max < options["stickiness"]
         ):
             # Use an old recipient
-            message_type, recipient_id, saved_data = recipients[num_messages - 1]
-            if message_type == Recipient.PERSONAL:
+            recipient_type, recipient_id, saved_data = recipients[num_messages - 1]
+            if recipient_type == Recipient.PERSONAL:
                 personals_pair = saved_data["personals_pair"]
                 random.shuffle(personals_pair)
-            elif message_type == Recipient.STREAM:
+            elif recipient_type == Recipient.STREAM:
                 message.subject = saved_data["subject"]
                 message.recipient = get_recipient_by_id(recipient_id)
-            elif message_type == Recipient.DIRECT_MESSAGE_GROUP:
+            elif recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
                 message.recipient = get_recipient_by_id(recipient_id)
         elif randkey <= random_max * options["percent_direct_message_groups"] / 100.0:
-            message_type = Recipient.DIRECT_MESSAGE_GROUP
+            recipient_type = Recipient.DIRECT_MESSAGE_GROUP
             message.recipient = get_recipient_by_id(random.choice(recipient_direct_message_groups))
         elif (
             randkey
@@ -1266,23 +1266,23 @@ def generate_and_send_messages(
             * (options["percent_direct_message_groups"] + options["percent_personals"])
             / 100.0
         ):
-            message_type = Recipient.PERSONAL
+            recipient_type = Recipient.PERSONAL
             personals_pair = random.choice(personals_pairs)
             random.shuffle(personals_pair)
         elif randkey <= random_max * 1.0:
-            message_type = Recipient.STREAM
+            recipient_type = Recipient.STREAM
             message.recipient = get_recipient_by_id(random.choice(recipient_streams))
 
-        if message_type == Recipient.DIRECT_MESSAGE_GROUP:
+        if recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
             sender_id = random.choice(direct_message_group_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
-        elif message_type == Recipient.PERSONAL:
+        elif recipient_type == Recipient.PERSONAL:
             message.recipient = Recipient.objects.get(
                 type=Recipient.PERSONAL, type_id=personals_pair[0]
             )
             message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data["personals_pair"] = personals_pair
-        elif message_type == Recipient.STREAM:
+        elif recipient_type == Recipient.STREAM:
             # Pick a random subscriber to the stream
             message.sender = random.choice(
                 list(Subscription.objects.filter(recipient=message.recipient))
@@ -1295,7 +1295,7 @@ def generate_and_send_messages(
         )
         messages.append(message)
 
-        recipients[num_messages] = (message_type, message.recipient.id, saved_data)
+        recipients[num_messages] = (recipient_type, message.recipient.id, saved_data)
         num_messages += 1
 
         if (num_messages % message_batch_size) == 0:
