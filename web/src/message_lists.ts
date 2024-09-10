@@ -94,6 +94,11 @@ export function set_current(msg_list: MessageList | undefined): void {
     current = msg_list;
 }
 
+function delete_message_list(message_list: MessageList): void {
+    message_list.view.$list.remove();
+    rendered_message_lists.delete(message_list.id);
+}
+
 export function update_current_message_list(msg_list: MessageList | undefined): void {
     // Since we change `current` message list in the function, we need to decide if the
     // current message list needs to be cached or discarded.
@@ -105,8 +110,7 @@ export function update_current_message_list(msg_list: MessageList | undefined): 
     // current message list from the DOM.
     if (current && !current.should_preserve_current_rendered_state()) {
         // Remove the current message list from the DOM.
-        current.view.$list.remove();
-        rendered_message_lists.delete(current.id);
+        delete_message_list(current);
     } else {
         // We plan to keep the current message list cached.
         current?.view.$list.removeClass("focused-message-list");
@@ -116,8 +120,7 @@ export function update_current_message_list(msg_list: MessageList | undefined): 
         if (current?.data.filter.is_in_home()) {
             for (const [id, msg_list] of rendered_message_lists) {
                 if (id !== current.id && msg_list.data.filter.is_in_home()) {
-                    msg_list.view.$list.remove();
-                    rendered_message_lists.delete(id);
+                    delete_message_list(msg_list);
                     // We only expect to have one instance of a message list filter cached.
                     break;
                 }
