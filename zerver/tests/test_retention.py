@@ -44,8 +44,6 @@ from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 
-# Class with helper functions useful for testing archiving of reactions:
-
 ZULIP_REALM_DAYS = 30
 MIT_REALM_DAYS = 100
 
