@@ -138,7 +138,7 @@ class BadImageError(JsonableError):
 
 
 @contextmanager
-def libvips_check_image(image_data: bytes) -> Iterator[pyvips.Image]:
+def libvips_check_image(image_data: bytes | pyvips.Source) -> Iterator[pyvips.Image]:
     # The primary goal of this is to verify that the image is valid,
     # and raise BadImageError otherwise.  The yielded `source_image`
     # may be ignored, since calling `thumbnail_buffer` is faster than
@@ -146,7 +146,10 @@ def libvips_check_image(image_data: bytes) -> Iterator[pyvips.Image]:
     # cannot make use of shrink-on-load optimizations:
     # https://www.libvips.org/API/current/libvips-resample.html#vips-thumbnail-image
     try:
-        source_image = pyvips.Image.new_from_buffer(image_data, "")
+        if isinstance(image_data, bytes):
+            source_image = pyvips.Image.new_from_buffer(image_data, "")
+        else:
+            source_image = pyvips.Image.new_from_source(image_data, "", access="sequential")
     except pyvips.Error:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
 
@@ -275,7 +278,9 @@ def missing_thumbnails(image_attachment: ImageAttachment) -> list[ThumbnailForma
     return needed_thumbnails
 
 
-def maybe_thumbnail(attachment: AbstractAttachment, content: bytes) -> ImageAttachment | None:
+def maybe_thumbnail(
+    attachment: AbstractAttachment, content: bytes | pyvips.Source
+) -> ImageAttachment | None:
     if attachment.content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
         # If it doesn't self-report as an image file that we might want
         # to thumbnail, don't parse the bytes at all.
