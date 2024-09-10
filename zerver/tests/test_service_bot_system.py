@@ -488,7 +488,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         content = "@**FooBot** foo bar!!!"
         recipient = "Denmark"
         trigger = "mention"
-        message_type = Recipient._type_names[Recipient.STREAM]
+        recipient_type = Recipient._type_names[Recipient.STREAM]
 
         def check_values_passed(
             queue_name: Any,
@@ -500,7 +500,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertEqual(trigger_event["message"]["content"], content)
             self.assertEqual(trigger_event["message"]["display_recipient"], recipient)
             self.assertEqual(trigger_event["message"]["sender_email"], self.user_profile.email)
-            self.assertEqual(trigger_event["message"]["type"], message_type)
+            self.assertEqual(trigger_event["message"]["type"], recipient_type)
             self.assertEqual(trigger_event["trigger"], trigger)
             self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
 
