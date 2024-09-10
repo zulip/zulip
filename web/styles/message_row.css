@@ -410,6 +410,12 @@
             }
         }
     }
+
+    .collapsed ~ .message_length_controller .message_length_toggle {
+        /* Collapse top margin to avoid extra space
+           between the button and sender line. */
+        margin-top: 0;
+    }
 }
 
 .message_controls {
