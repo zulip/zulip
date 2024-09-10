@@ -22,7 +22,6 @@ class AlertWord(models.Model):
     word = models.TextField()
     deactivated = models.BooleanField(default=False)
 
-
     class Meta:
         unique_together = ("user_profile", "word")
 
