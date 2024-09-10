@@ -1,6 +1,6 @@
 import type {Meta, UppyFile} from "@uppy/core";
 import {Uppy} from "@uppy/core";
-import XHRUpload from "@uppy/xhr-upload";
+import Tus from "@uppy/tus";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -14,7 +14,6 @@ import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
-import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as rows from "./rows";
@@ -266,23 +265,11 @@ export function setup_upload(config: Config): Uppy {
             pluralize: (_n) => 0,
         },
     });
-    uppy.setMeta({
-        csrfmiddlewaretoken: csrf_token,
-    });
-    uppy.use(XHRUpload, {
-        endpoint: "/json/user_uploads",
-        formData: true,
-        fieldName: "file",
+    uppy.use(Tus, {
+        // https://uppy.io/docs/tus/#options
+        endpoint: "/api/v1/tus/",
         // Number of concurrent uploads
         limit: 5,
-        locale: {
-            strings: {
-                uploadStalled: $t({
-                    defaultMessage: "Upload stalled for %'{seconds}' seconds, aborting.",
-                }),
-            },
-            pluralize: (_n) => 0,
-        },
     });
 
     if (config.mode === "edit") {
@@ -370,13 +357,18 @@ export function setup_upload(config: Config): Uppy {
         upload_files(uppy, config, files);
     });
 
-    uppy.on("upload-success", (file, response) => {
+    uppy.on("upload-success", (file, _response) => {
         assert(file !== undefined);
-        const {url, filename} = z
-            .object({url: z.string(), filename: z.string()})
-            .parse(response.body);
-        // Our markdown does not have escape characters, so we cannot link any text with brackets;
-        // strip them out, if present.
+        // TODO: Because of https://github.com/transloadit/uppy/issues/5444 we can't get the actual
+        // response with the URL and filename, so we hack it together.
+        const filename = file.name!;
+        // With the S3 backend, the path_id we chose has a multipart-id appended with a '+'; since
+        // our path-ids cannot contain '+', we strip any suffix starting with '+'.
+        const url = new URL(file.tus!.uploadUrl!.replace(/\+.*/, "")).pathname.replace(
+            "/api/v1/tus/",
+            "/user_uploads/",
+        );
+
         const filtered_filename = filename.replaceAll("[", "").replaceAll("]", "");
         const syntax_to_insert = "[" + filtered_filename + "](" + url + ")";
         const $text_area = config.textarea();
