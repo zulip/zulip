@@ -682,7 +682,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
-        bot_avatar_url: bot.avatar_url,
+        bot_avatar_url: bot.avatar_url ?? people.medium_avatar_url_for_person(bot),
         owner_full_name,
         current_bot_owner: bot.bot_owner_id,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
@@ -873,7 +873,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         // Show the avatar if the user has cleared the image
         $("#bot-edit-form").on("click", ".edit_bot_avatar_clear_button", () => {
             $("#current_bot_avatar_image").show();
-            $(".edit_bot_avatar_file_input").trigger("input");
         });
 
         $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
