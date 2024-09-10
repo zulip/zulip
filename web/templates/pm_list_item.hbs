@@ -5,6 +5,8 @@
         <span class="conversation-partners-icon zulip-icon zulip-icon-triple-users"></span>
         {{else if is_bot}}
         <span class="conversation-partners-icon zulip-icon zulip-icon-bot" aria-hidden="true"></span>
+        {{else if deactivated}}
+        <span class="fa fa-ban custom-deactivated-icon"></span>
         {{else}}
         <span class="conversation-partners-icon {{user_circle_class}} user_circle"></span>
         {{/if}}

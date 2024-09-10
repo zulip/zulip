@@ -10,7 +10,7 @@ export type RawPresence = z.infer<typeof presence_schema> & {
 };
 
 export type PresenceStatus = {
-    status: "active" | "idle" | "offline";
+    status: "active" | "idle" | "offline"|"deactivated";
     last_active?: number | undefined;
 };
 
@@ -50,6 +50,9 @@ export function clear_internal_data(): void {
 const BIG_REALM_COUNT = 250;
 
 export function get_status(user_id: number): PresenceStatus["status"] {
+    if(people.get_non_active_human_ids().includes(user_id)){
+        return "deactivated";
+    }
     if (people.is_my_user_id(user_id)) {
         if (user_settings.presence_enabled) {
             // if the current user is sharing presence, they always see themselves as online.

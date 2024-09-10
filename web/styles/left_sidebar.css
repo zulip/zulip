@@ -1247,6 +1247,11 @@ li.topic-list-item {
         font-size: 90%; /* Reduce the bulkiness of this icon */
     }
 
+    .custom-deactivated-icon{
+        margin-left:13px;
+        font-size: 80%;
+    }
+
     .unread_count {
         grid-area: markers-and-controls;
         /* TODO: This is an alternative method

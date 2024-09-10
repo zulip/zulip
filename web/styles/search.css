@@ -372,6 +372,14 @@
             line-height: var(--height-input-pill);
             align-self: center;
         }
+        .slashed-circle-icon {
+            position: absolute;
+            bottom: -4px;
+            left: 12px;
+            opacity: 1;
+            color: #FFFFFFFB;
+            font-size: 12px;
+        }
     }
 
     /* Break really long words (unlikely to happen). */

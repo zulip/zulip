@@ -1471,7 +1471,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     z-index: 20000;
 }
 
-.deactivated_user .deactivated-user-icon {
+.deactivated_user . {
     color: inherit;
     margin-left: 2px;
     font-size: 0.9em;
