@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+
 import ahocorasick
 from django.db import transaction
 
@@ -45,19 +46,23 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
     return alert_word_automaton
 
 
-def user_alert_words(user_profile: UserProfile, all=False) -> list[str]:
+def user_alert_words(user_profile: UserProfile, all: bool = False) -> list[str]:
     if all:
-        alert_words = list(AlertWord.objects.filter(user_profile=user_profile).values_list("word", flat=True))
+        alert_words = list(
+            AlertWord.objects.filter(user_profile=user_profile).values_list("word", flat=True)
+        )
     else:
-        alert_words = list(AlertWord.objects.filter(user_profile=user_profile, deactivated=False).values_list("word", flat=True))
+        alert_words = list(
+            AlertWord.objects.filter(user_profile=user_profile, deactivated=False).values_list(
+                "word", flat=True
+            )
+        )
     return alert_words
 
 
 @transaction.atomic(savepoint=False)
 def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) -> list[str]:
-    existing_alert_words = {
-        word.lower(): word for word in user_alert_words(user_profile, all=True)
-    }
+    existing_alert_words = {word.lower(): word for word in user_alert_words(user_profile, all=True)}
 
     word_dict: dict[str, str] = {}
     words_to_reactivate = []
@@ -100,5 +105,7 @@ def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[st
     # We can clean this up if/when PostgreSQL has more native support for case-insensitive fields.
     # If we turn this into a bulk operation, we will need to call flush_realm_alert_words() here.
     for delete_word in delete_words:
-        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).update(deactivated=True)
+        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).update(
+            deactivated=True
+        )
     return user_alert_words(user_profile)
