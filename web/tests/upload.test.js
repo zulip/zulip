@@ -24,13 +24,11 @@ mock_esm("@uppy/core", {
         return uppy_stub.call(this, options);
     },
 });
-
-mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
+mock_esm("@uppy/tus", {default: class Tus {}});
 
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_reply = mock_esm("../src/compose_reply");
 const compose_state = mock_esm("../src/compose_state");
-mock_esm("../src/csrf", {csrf_token: "csrf_token"});
 const rows = mock_esm("../src/rows");
 
 const compose_ui = zrequire("compose_ui");
@@ -306,8 +304,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
 
 test("uppy_config", () => {
     let uppy_stub_called = false;
-    let uppy_set_meta_called = false;
-    let uppy_used_xhrupload = false;
+    let uppy_used_tusupload = false;
 
     uppy_stub = function (config) {
         uppy_stub_called = true;
@@ -318,20 +315,12 @@ test("uppy_config", () => {
         assert.ok("exceedsSize" in config.locale.strings);
 
         return {
-            setMeta(params) {
-                uppy_set_meta_called = true;
-                assert.equal(params.csrfmiddlewaretoken, "csrf_token");
-            },
             use(func, params) {
                 const func_name = func.name;
-                if (func_name === "XHRUpload") {
-                    uppy_used_xhrupload = true;
-                    assert.equal(params.endpoint, "/json/user_uploads");
-                    assert.equal(params.formData, true);
-                    assert.equal(params.fieldName, "file");
+                if (func_name === "Tus") {
+                    uppy_used_tusupload = true;
+                    assert.equal(params.endpoint, "/api/v1/tus/");
                     assert.equal(params.limit, 5);
-                    assert.equal(Object.keys(params.locale.strings).length, 1);
-                    assert.ok("uploadStalled" in params.locale.strings);
                 } else {
                     /* istanbul ignore next */
                     assert.fail(`Missing tests for ${func_name}`);
@@ -343,8 +332,7 @@ test("uppy_config", () => {
     upload.setup_upload(upload.compose_config);
 
     assert.equal(uppy_stub_called, true);
-    assert.equal(uppy_set_meta_called, true);
-    assert.equal(uppy_used_xhrupload, true);
+    assert.equal(uppy_used_tusupload, true);
 });
 
 test("file_input", ({override_rewire}) => {
@@ -497,13 +485,12 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     const file = {
         name: "copenhagen.png",
         id: "123",
-    };
-    let response = {
-        body: {
-            url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
-            filename: "copenhagen.png",
+        tus: {
+            uploadUrl:
+                "https://localhost/api/v1/tus/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png+something",
         },
     };
+    let response = {}; // -- https://github.com/transloadit/uppy/issues/5444
 
     let compose_ui_replace_syntax_called = false;
     override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
