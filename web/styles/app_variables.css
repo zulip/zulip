@@ -336,7 +336,7 @@
     /* 46px at 14px/1em */
     --message-box-avatar-column-width: 3.2857em;
     /* Increase the margin here to account for the
-       focus ring, which is is offset by -1px, as well
+       focus ring, which is offset by -1px, as well
        as the vertical height between the hover icons
        and focus ring. */
     --message-box-vertical-margin: calc(

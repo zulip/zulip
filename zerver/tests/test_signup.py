@@ -2751,7 +2751,7 @@ class UserSignUpTest(ZulipTestCase):
         user_profile = UserProfile.objects.get(delivery_email=email)
         self.assertEqual(user_profile.delivery_email, email)
 
-        # Now try to to register using the first confirmation url:
+        # Now try to register using the first confirmation url:
         result = self.client_get(first_confirmation_url)
         self.assertEqual(result.status_code, 404)
         result = self.client_post(

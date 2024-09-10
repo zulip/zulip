@@ -281,7 +281,7 @@ _"Schränke auf ... ein." (Transifex) "Begrenze auf ... ." (Transifex)_
 
 - Filter - **Filtern**
 
-A direct translation is fine here. Watch out to to use the infinitive instead
+A direct translation is fine here. Watch out to use the infinitive instead
 of the imperative, e.g., "Nachrichten filtern" instead of "Filtere Nachrichten".
 
 _"Filtern" (Thunderbird, LinkedIn)_

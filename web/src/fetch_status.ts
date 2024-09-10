@@ -101,7 +101,7 @@ export class FetchStatus {
             //
             // 1. Client initiates GET /messages to fetch the last
             //    batch of messages in this view.  The server
-            //    completes the database access and and starts sending
+            //    completes the database access and starts sending
             //    the response with found_newest=true.
             // 1. A new message is sent matching the view, the event reaches
             //    the client.  We discard the message because found_newest=false.
