@@ -7,7 +7,12 @@ import * as group_permission_settings from "./group_permission_settings";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
-import type {GroupSettingType, StateData, user_group_schema} from "./state_data";
+import type {
+    GroupPermissionSetting,
+    GroupSettingType,
+    StateData,
+    user_group_schema,
+} from "./state_data";
 import {current_user} from "./state_data";
 import type {UserOrMention} from "./typeahead_helper";
 import type {UserGroupUpdateEvent} from "./types";
@@ -317,6 +322,41 @@ function get_display_name_for_system_group_option(setting_name: string, name: st
     return name;
 }
 
+export function check_system_user_group_allowed_for_setting(
+    group_name: string,
+    group_setting_config: GroupPermissionSetting,
+): boolean {
+    const {
+        allow_internet_group,
+        allow_owners_group,
+        allow_nobody_group,
+        allow_everyone_group,
+        allowed_system_groups,
+    } = group_setting_config;
+
+    if (!allow_internet_group && group_name === "role:internet") {
+        return false;
+    }
+
+    if (!allow_owners_group && group_name === "role:owners") {
+        return false;
+    }
+
+    if (!allow_nobody_group && group_name === "role:nobody") {
+        return false;
+    }
+
+    if (!allow_everyone_group && group_name === "role:everyone") {
+        return false;
+    }
+
+    if (allowed_system_groups.length && !allowed_system_groups.includes(group_name)) {
+        return false;
+    }
+
+    return true;
+}
+
 export function get_realm_user_groups_for_setting(
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
@@ -330,39 +370,10 @@ export function get_realm_user_groups_for_setting(
         return [];
     }
 
-    const {
-        require_system_group,
-        allow_internet_group,
-        allow_owners_group,
-        allow_nobody_group,
-        allow_everyone_group,
-        allowed_system_groups,
-    } = group_setting_config;
-
     const system_user_groups = settings_config.system_user_groups_list
-        .filter((group) => {
-            if (!allow_internet_group && group.name === "role:internet") {
-                return false;
-            }
-
-            if (!allow_owners_group && group.name === "role:owners") {
-                return false;
-            }
-
-            if (!allow_nobody_group && group.name === "role:nobody") {
-                return false;
-            }
-
-            if (!allow_everyone_group && group.name === "role:everyone") {
-                return false;
-            }
-
-            if (allowed_system_groups.length && !allowed_system_groups.includes(group.name)) {
-                return false;
-            }
-
-            return true;
-        })
+        .filter((group) =>
+            check_system_user_group_allowed_for_setting(group.name, group_setting_config),
+        )
         .map((group) => {
             const user_group = get_user_group_from_name(group.name);
             if (!user_group) {
@@ -373,7 +384,7 @@ export function get_realm_user_groups_for_setting(
 
     if (
         (setting_name !== "can_mention_group" && !page_params.development_environment) ||
-        require_system_group
+        group_setting_config.require_system_group
     ) {
         return system_user_groups;
     }
