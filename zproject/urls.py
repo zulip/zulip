@@ -193,8 +193,8 @@ from zerver.views.user_groups import (
     edit_user_group,
     get_is_user_group_member,
     get_subgroups_of_user_group,
-    get_user_group,
     get_user_group_members,
+    get_user_groups,
     update_subgroups_of_user_group,
     update_user_group_backend,
 )
@@ -398,7 +398,7 @@ v1_api_and_json_patterns = [
     rest_path("users/me/status", POST=update_user_status_backend),
     rest_path("users/<int:user_id>/status", GET=get_status_backend),
     # user_groups -> zerver.views.user_groups
-    rest_path("user_groups", GET=get_user_group),
+    rest_path("user_groups", GET=get_user_groups),
     rest_path("user_groups/create", POST=add_user_group),
     rest_path("user_groups/<int:user_group_id>", PATCH=edit_user_group, DELETE=delete_user_group),
     rest_path(
