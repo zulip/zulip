@@ -96,6 +96,7 @@ export function generate_pill_html(item: StreamPill): string {
         has_stream: true,
         stream,
         display_value: get_display_value_from_item(item),
+        stream_id: item.stream_id,
     });
 }
 

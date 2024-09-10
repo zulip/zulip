@@ -281,6 +281,7 @@
     --user-group-info-popover-min-width: 16.4285em; /* 230px / 14px em */
     --topic-actions-popover-min-width: 200px;
     --user-card-popover-min-width: 200px;
+    --stream-card-popover-min-width: 16.4285em;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */

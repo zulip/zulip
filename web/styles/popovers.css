@@ -246,7 +246,8 @@
     z-index: 106;
 }
 
-#stream-actions-menu-popover {
+#stream-actions-menu-popover,
+#stream-card-popover {
     .popover-stream-name {
         font-weight: 600;
         color: var(--color-text-popover-menu);
@@ -263,6 +264,10 @@
            at the top-level, since we don't need to pull up this
            icon for the stream actions popover header.  */
         margin: 0 !important;
+    }
+
+    .popover-stream-info-menu-description {
+        color: var(--color-text-popover-menu);
     }
 
     .colorpicker-container {
@@ -1333,6 +1338,12 @@ ul.popover-group-menu-member-list {
 .user-group-info-popover {
     .simplebar-content {
         min-width: var(--user-group-info-popover-min-width);
+    }
+}
+
+#stream-card-popover {
+    .simplebar-content {
+        min-width: var(--stream-card-popover-min-width);
     }
 }
 
