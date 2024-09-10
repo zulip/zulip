@@ -11,8 +11,8 @@ import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import {page_params} from "./page_params.ts";
-import * as settings_data from "./settings_data.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
@@ -186,6 +186,7 @@ export function add_a_new_bot(): void {
             success() {
                 create_avatar_widget.clear();
                 dialog_widget.close();
+                window.location.href = "/#organization/bots/your-bots";
             },
             error(xhr) {
                 ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
