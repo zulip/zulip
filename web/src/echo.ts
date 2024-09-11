@@ -171,7 +171,6 @@ function resend_message(
     function on_success(raw_data: unknown): void {
         const data = send_message_api_response_schema.parse(raw_data);
         const message_id = data.id;
-        message.locally_echoed = true;
 
         hide_retry_spinner($row);
 
