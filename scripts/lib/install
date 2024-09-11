@@ -443,7 +443,7 @@ EOF
 
     # We only need the PostgreSQL version setting on database hosts; but
     # we don't know if this is a database host until we have the catalog summary.
-    if ! has_class "zulip::postgresql_common" || [ "$package_system" != apt ]; then
+    if (! has_class "zulip::postgresql_common" && ! has_class "zulip::postgresql_client") || [ "$package_system" != apt ]; then
         crudini --del /etc/zulip/zulip.conf postgresql
     fi
 
