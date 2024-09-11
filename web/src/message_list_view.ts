@@ -336,11 +336,17 @@ function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
     return users.sort(compare_by_name);
 }
 
-let message_id_to_focus_after_processing_message_events: {
-    id: number | undefined;
-    selectionStart: number | undefined;
-    selectionEnd: number | undefined;
-} = {
+let message_id_to_focus_after_processing_message_events:
+    | {
+          id: number;
+          selectionStart: number;
+          selectionEnd: number;
+      }
+    | {
+          id: undefined;
+          selectionStart: undefined;
+          selectionEnd: undefined;
+      } = {
     id: undefined,
     selectionStart: undefined,
     selectionEnd: undefined,
