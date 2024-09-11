@@ -204,7 +204,7 @@ Last task`,
     <div class="widget-content">
         <div class="todo-widget">
             <h4>Today's tasks</h4>
-            <ul class="todo-widget new-style">
+            <ul class="todo-widget">
                 <li>
                     <label class="checkbox">
                         <div>

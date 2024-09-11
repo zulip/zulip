@@ -1,7 +1,7 @@
 {{!-- If setting is disabled on realm level, then render setting as control-label-disabled and do not set setting value. Setting status should not change on any click handler, as it is disabled at realm level. --}}
 <div class="sub_setting_checkbox">
     <div id="sub_{{setting_name}}_setting" class="{{#if disabled_realm_setting}}control-label-disabled
-      {{else if notification_setting}}sub_notification_setting{{/if}} new-style">
+      {{else if notification_setting}}sub_notification_setting{{/if}}">
         <span {{#if (and disabled_realm_setting (eq setting_name "push_notifications"))}}class="tippy-zulip-tooltip" data-tooltip-template-id="mobile-push-notification-tooltip-template"{{/if}}>
             <label class="checkbox">
                 <input id="{{setting_name}}_{{stream_id}}" name="{{setting_name}}"
