@@ -57,8 +57,8 @@ export type MessageContainer = {
     message_edit_notices_in_left_col: boolean;
     message_edit_notices_alongside_sender: boolean;
     message_edit_notices_for_status_message: boolean;
-    modified?: boolean;
-    moved?: boolean;
+    modified: boolean;
+    moved: boolean;
     msg: Message;
     sender_is_bot: boolean;
     sender_is_guest: boolean;
@@ -602,8 +602,8 @@ export class MessageListView {
 
     _get_message_edited_vars(message: Message): {
         last_edit_timestr: string | undefined;
-        moved?: boolean;
-        modified?: boolean;
+        moved: boolean;
+        modified: boolean;
     } {
         const last_edit_timestr = this._get_msg_timestring(message);
         const edit_history_details = analyze_edit_history(message, last_edit_timestr);
@@ -619,6 +619,8 @@ export class MessageListView {
             // was marked as resolved if you need to).
             return {
                 last_edit_timestr: undefined,
+                moved: false,
+                modified: false,
             };
         }
 
@@ -649,8 +651,8 @@ export class MessageListView {
         include_sender: boolean;
         status_message: string | false;
         last_edit_timestr: string | undefined;
-        moved?: boolean;
-        modified?: boolean;
+        moved: boolean;
+        modified: boolean;
     } {
         /*
             If the message needs to be hidden because the sender was muted, we do
