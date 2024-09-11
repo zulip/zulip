@@ -50,7 +50,6 @@ from zerver.lib.validator import check_capped_url, check_string
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.models.realms import (
     BotCreationPolicyEnum,
-    CommonMessagePolicyEnum,
     CommonPolicyEnum,
     DigestWeekdayEnum,
     EditTopicPolicyEnum,
@@ -115,7 +114,6 @@ def update_realm(
     add_custom_emoji_policy: Json[CommonPolicyEnum] | None = None,
     can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
-    delete_own_message_policy: Json[CommonMessagePolicyEnum] | None = None,
     message_content_delete_limit_seconds_raw: Annotated[
         Json[int | str] | None,
         ApiParamConfig("message_content_delete_limit_seconds"),

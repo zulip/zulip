@@ -145,7 +145,6 @@ class HomeTest(ZulipTestCase):
         "realm_default_language",
         "realm_default_stream_groups",
         "realm_default_streams",
-        "realm_delete_own_message_policy",
         "realm_description",
         "realm_digest_emails_enabled",
         "realm_digest_weekday",

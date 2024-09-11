@@ -63,7 +63,6 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import (
-    CommonMessagePolicyEnum,
     CommonPolicyEnum,
     InviteToRealmPolicyEnum,
     MoveMessagesBetweenStreamsPolicyEnum,
@@ -857,7 +856,6 @@ class RealmTest(ZulipTestCase):
             invite_to_realm_policy=10,
             move_messages_between_streams_policy=10,
             add_custom_emoji_policy=10,
-            delete_own_message_policy=10,
             edit_topic_policy=10,
             message_content_edit_limit_seconds=0,
             move_messages_within_stream_limit_seconds=0,
@@ -1709,7 +1707,6 @@ class RealmAPITest(ZulipTestCase):
             invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
             move_messages_between_streams_policy=Realm.MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES,
             add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
-            delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
             edit_topic_policy=Realm.EDIT_TOPIC_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
@@ -2350,51 +2347,6 @@ class RealmAPITest(ZulipTestCase):
             "move_messages_between_streams_limit_seconds", orjson.dumps("unlimited").decode()
         )
         self.assertEqual(realm.move_messages_between_streams_limit_seconds, None)
-
-    def test_update_realm_delete_own_message_policy(self) -> None:
-        """Tests updating the realm property 'delete_own_message_policy'."""
-        realm = get_realm("zulip")
-        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.EVERYONE)
-        realm = self.update_with_api(
-            "delete_own_message_policy", CommonMessagePolicyEnum.ADMINS_ONLY
-        )
-        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.ADMINS_ONLY)
-        self.assertEqual(realm.message_content_delete_limit_seconds, 600)
-        realm = self.update_with_api("delete_own_message_policy", CommonMessagePolicyEnum.EVERYONE)
-        realm = self.update_with_api("message_content_delete_limit_seconds", 100)
-        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.EVERYONE)
-        self.assertEqual(realm.message_content_delete_limit_seconds, 100)
-        realm = self.update_with_api(
-            "message_content_delete_limit_seconds", orjson.dumps("unlimited").decode()
-        )
-        self.assertEqual(realm.message_content_delete_limit_seconds, None)
-        realm = self.update_with_api("message_content_delete_limit_seconds", 600)
-        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.EVERYONE)
-        self.assertEqual(realm.message_content_delete_limit_seconds, 600)
-        realm = self.update_with_api(
-            "delete_own_message_policy", CommonMessagePolicyEnum.MODERATORS_ONLY
-        )
-        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.MODERATORS_ONLY)
-        realm = self.update_with_api(
-            "delete_own_message_policy", CommonMessagePolicyEnum.FULL_MEMBERS_ONLY
-        )
-        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.FULL_MEMBERS_ONLY)
-        realm = self.update_with_api(
-            "delete_own_message_policy", CommonMessagePolicyEnum.MEMBERS_ONLY
-        )
-        self.assertEqual(realm.delete_own_message_policy, CommonMessagePolicyEnum.MEMBERS_ONLY)
-
-        # Test that 0 is invalid value.
-        req = dict(message_content_delete_limit_seconds=orjson.dumps(0).decode())
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Bad value for 'message_content_delete_limit_seconds': 0")
-
-        # Test that only "unlimited" string is valid and others are invalid.
-        req = dict(message_content_delete_limit_seconds=orjson.dumps("invalid").decode())
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_error(
-            result, "Bad value for 'message_content_delete_limit_seconds': invalid"
-        )
 
     def do_test_changing_settings_by_owners_only(self, setting_name: str) -> None:
         bool_tests: list[bool] = [False, True]

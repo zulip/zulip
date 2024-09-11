@@ -15698,26 +15698,6 @@ paths:
                               setting controlled this permission; `true` corresponded to `Everyone`, and
                               `false` to `Admins`.
                           - $ref: "#/components/schemas/GroupSettingValue"
-                      realm_delete_own_message_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] defining which users can delete
-                          messages that they had sent.
-
-                          - 1 = Members only
-                          - 2 = Admins only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Admins and moderators only
-                          - 5 = Everyone
-
-                          **Changes**: New in Zulip 5.0 (feature level 101), replacing the
-                          previous `allow_message_deleting` boolean;
-                          `true` corresponded to `everyone`, and `false` to `admins only`.
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_bot_creation_policy:
                         type: integer
                         description: |
