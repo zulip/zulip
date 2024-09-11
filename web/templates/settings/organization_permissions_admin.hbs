@@ -241,14 +241,10 @@
                   label=(t 'Who can delete any message')
                   value_type="number" }}
 
-                <div class="input-group">
-                    <label for="realm_delete_own_message_policy" class="settings-field-label">
-                        {{t "Who can delete their own messages" }}
-                    </label>
-                    <select name="realm_delete_own_message_policy" id="id_realm_delete_own_message_policy" class="prop-element bootstrap-focus-style settings_select" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=common_message_policy_values}}
-                    </select>
-                </div>
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_delete_own_message_group"
+                  label=(t 'Who can delete their own messages')
+                  value_type="number" }}
 
                 <div class="input-group time-limit-setting">
                     <label for="realm_message_content_delete_limit_seconds" class="settings-field-label">

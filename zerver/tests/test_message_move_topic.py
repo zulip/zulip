@@ -14,7 +14,7 @@ from zerver.actions.message_edit import (
     maybe_send_resolve_topic_notifications,
 )
 from zerver.actions.reactions import do_add_reaction
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
@@ -27,7 +27,7 @@ from zerver.lib.user_topics import (
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
-from zerver.models.realms import CommonMessagePolicyEnum
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.streams import Stream
 
 
@@ -888,10 +888,13 @@ class MessageMoveTopicTest(ZulipTestCase):
 
             # Delete the message in target topic to make it empty.
             self.login("hamlet")
-            do_set_realm_property(
+            members_system_group = NamedUserGroup.objects.get(
+                name=SystemGroups.MEMBERS, realm=hamlet.realm, is_system_group=True
+            )
+            do_change_realm_permission_group_setting(
                 hamlet.realm,
-                "delete_own_message_policy",
-                CommonMessagePolicyEnum.MEMBERS_ONLY,
+                "can_delete_own_message_group",
+                members_system_group,
                 acting_user=None,
             )
             self.client_delete(f"/json/messages/{target_message_id}")

@@ -210,6 +210,7 @@ export function dispatch_normal_event(event) {
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 can_delete_any_message_group: noop,
+                can_delete_own_message_group: noop,
                 create_multiuse_invite_group: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
