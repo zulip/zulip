@@ -37,7 +37,15 @@
     <span data-tooltip-template-id="slow-send-spinner-tooltip-template" class="fa fa-circle-o-notch slow-send-spinner{{#unless msg/show_slow_send_spinner }} hidden{{/unless}}"></span>
 {{/if}}
 
-{{> message_controls}}
+<div class="message_controls no-select">
+    {{#if msg/locally_echoed}}
+        {{#if msg/failed_request}}
+            {{> message_controls_failed_msg}}
+        {{/if}}
+    {{else}}
+        {{> message_controls}}
+    {{/if}}
+</div>
 
 {{#unless status_message}}
     {{#unless is_hidden}}
