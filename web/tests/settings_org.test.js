@@ -443,8 +443,6 @@ function test_discard_changes_button(discard_changes) {
     realm.realm_edit_topic_policy = settings_config.common_message_policy_values.by_everyone.code;
     realm.realm_allow_message_editing = true;
     realm.realm_message_content_edit_limit_seconds = 3600;
-    realm.realm_delete_own_message_policy =
-        settings_config.common_message_policy_values.by_everyone.code;
     realm.realm_message_content_delete_limit_seconds = 120;
 
     const $allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
