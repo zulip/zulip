@@ -175,6 +175,9 @@ function analyze_edit_history(
             }
 
             if (edit_history_event.prev_topic) {
+                // TODO: Possibly this assert could be removed if we tightened the type
+                // on edit history elements such that a `prev_topic` being present means a
+                // `topic` element is.
                 assert(edit_history_event.topic !== undefined);
                 // We know it has a topic edit. Now we need to determine if
                 // it was a true move or a resolve/unresolve.
