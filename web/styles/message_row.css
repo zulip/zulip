@@ -77,8 +77,7 @@
       padding on either side of the message box. */
     padding: 0 5px 0 3px;
 
-    &:hover .message_controls,
-    &:hover .message_failed {
+    &:hover .message_controls {
         .empty-star:hover {
             cursor: pointer;
         }
@@ -142,8 +141,8 @@
 
         @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
             /* This is intended to target the first message_controls child
-               when there are 3 displayed. 4 = 3 + hidden message_failed element. */
-            .message_control_button:nth-last-child(4) {
+               when there are 3 displayed. */
+            .message_control_button:nth-last-child(3) {
                 display: none;
             }
         }
@@ -504,34 +503,15 @@
         }
     }
 
-    .message_failed {
-        display: inline-flex;
-        justify-content: space-between;
-        cursor: pointer;
-        position: relative;
-        vertical-align: middle;
-        padding-left: 2px;
-
-        &.hide {
-            display: none;
-        }
+    .failed_message_action {
+        color: var(--color-failed-message-send-icon);
+        font-weight: bold;
+        padding: 1px;
+        opacity: 1;
+        visibility: visible;
 
         .rotating {
-            display: inline-block;
-            outline: none;
-
             animation: rotate 1s infinite linear;
-        }
-
-        .failed_message_action {
-            opacity: 1 !important;
-            color: var(--color-failed-message-send-icon);
-            font-weight: bold;
-            padding: 1px;
-        }
-
-        .message_control_button {
-            visibility: inherit;
         }
     }
 
