@@ -1051,6 +1051,7 @@ group_setting_update_data_type = DictType(
         ("can_create_private_channel_group", group_setting_type),
         ("can_create_web_public_channel_group", group_setting_type),
         ("can_delete_any_message_group", group_setting_type),
+        ("can_delete_own_message_group", group_setting_type),
         ("direct_message_initiator_group", group_setting_type),
         ("direct_message_permission_group", group_setting_type),
     ],

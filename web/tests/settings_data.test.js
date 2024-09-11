@@ -237,9 +237,8 @@ test_realm_group_settings(
     settings_data.user_can_delete_any_message,
 );
 
-test_message_policy(
-    "user_can_delete_own_message",
-    "realm_delete_own_message_policy",
+test_realm_group_settings(
+    "realm_can_delete_own_message_group",
     settings_data.user_can_delete_own_message,
 );
 

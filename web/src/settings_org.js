@@ -266,41 +266,19 @@ function message_delete_limit_setting_enabled() {
     // should be enabled. The setting is disabled when every user
     // who is allowed to delete their own messages is also allowed
     // to delete any message in the organization.
-    const realm_delete_own_message_policy = Number.parseInt(
-        $("#id_realm_delete_own_message_policy").val(),
-        10,
-    );
+    const realm_can_delete_own_message_group_id =
+        settings_components.get_dropdown_list_widget_setting_value(
+            $("#id_realm_can_delete_own_message_group"),
+        );
     const realm_can_delete_any_message_group_id =
         settings_components.get_dropdown_list_widget_setting_value(
             $("#id_realm_can_delete_any_message_group"),
         );
-    const realm_can_delete_any_message_group_name = user_groups.get_user_group_from_id(
-        realm_can_delete_any_message_group_id,
-    ).name;
-    const common_message_policy_values = settings_config.common_message_policy_values;
-
-    if (realm_delete_own_message_policy === common_message_policy_values.by_admins_only.code) {
-        return false;
-    }
-    if (realm_can_delete_any_message_group_name === "role:administrators") {
-        return true;
-    }
-    if (realm_delete_own_message_policy === common_message_policy_values.by_moderators_only.code) {
-        return false;
-    }
-    if (realm_can_delete_any_message_group_name === "role:moderators") {
-        return true;
-    }
-    if (realm_delete_own_message_policy === common_message_policy_values.by_full_members.code) {
-        return false;
-    }
-    if (realm_can_delete_any_message_group_name === "role:fullmembers") {
-        return true;
-    }
-    if (realm_delete_own_message_policy === common_message_policy_values.by_members.code) {
-        return false;
-    }
-    return true;
+    const can_delete_any_message_subgroups = user_groups.get_recursive_subgroups(
+        user_groups.get_user_group_from_id(realm_can_delete_any_message_group_id),
+    );
+    can_delete_any_message_subgroups.add(realm_can_delete_any_message_group_id);
+    return !can_delete_any_message_subgroups.has(realm_can_delete_own_message_group_id);
 }
 
 function check_disable_message_delete_limit_setting_dropdown() {
@@ -316,11 +294,6 @@ function check_disable_message_delete_limit_setting_dropdown() {
             true,
         );
     }
-}
-
-function set_delete_own_message_policy_dropdown(setting_value) {
-    $("#id_realm_delete_own_message_policy").val(setting_value);
-    check_disable_message_delete_limit_setting_dropdown();
 }
 
 function set_msg_delete_limit_dropdown() {
@@ -488,8 +461,8 @@ function update_dependent_subsettings(property_name) {
         case "realm_can_delete_any_message_group":
             check_disable_message_delete_limit_setting_dropdown();
             break;
-        case "realm_delete_own_message_policy":
-            set_delete_own_message_policy_dropdown(realm.realm_delete_own_message_policy);
+        case "realm_can_delete_own_message_group":
+            check_disable_message_delete_limit_setting_dropdown();
             break;
         case "realm_org_join_restrictions":
             set_org_join_restrictions_dropdown();
@@ -542,6 +515,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_can_create_private_channel_group":
         case "realm_can_create_web_public_channel_group":
         case "realm_can_delete_any_message_group":
+        case "realm_can_delete_own_message_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,
@@ -861,7 +835,10 @@ export function set_up_dropdown_widget_for_realm_group_settings() {
         if (setting_name === "direct_message_permission_group") {
             dropdown_list_item_click_callback =
                 check_disable_direct_message_initiator_group_dropdown;
-        } else if (setting_name === "can_delete_any_message_group") {
+        } else if (
+            setting_name === "can_delete_any_message_group" ||
+            setting_name === "can_delete_own_message_group"
+        ) {
             dropdown_list_item_click_callback = check_disable_message_delete_limit_setting_dropdown;
         }
         set_up_dropdown_widget(
@@ -1044,7 +1021,6 @@ export function build_page() {
     set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
     set_msg_move_limit_setting("realm_move_messages_between_streams_limit_seconds");
     set_msg_delete_limit_dropdown();
-    set_delete_own_message_policy_dropdown(realm.realm_delete_own_message_policy);
     set_message_retention_setting_dropdown();
     set_org_join_restrictions_dropdown();
     set_message_content_in_email_notifications_visibility();
@@ -1153,11 +1129,6 @@ export function build_page() {
         );
     });
 
-    $("#id_realm_delete_own_message_policy").on("change", (e) => {
-        const setting_value = Number.parseInt($(e.target).val(), 10);
-        set_delete_own_message_policy_dropdown(setting_value);
-    });
-
     $("#id_realm_org_join_restrictions").on("click", (e) => {
         // This prevents the disappearance of modal when there are
         // no allowed domains otherwise it gets closed due to
@@ -1224,6 +1195,8 @@ export function build_page() {
             },
         });
     }
+
+    check_disable_message_delete_limit_setting_dropdown();
 
     realm_icon.build_realm_icon_widget(upload_realm_logo_or_icon, null, true);
     if (realm.zulip_plan_is_not_limited) {
