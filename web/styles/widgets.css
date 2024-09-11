@@ -49,7 +49,7 @@
         display: flex; /* Arrange that a multi-line description line wraps properly. */
         /* Keep checkboxes vertically aligned, including with multi-line tasks. */
         align-items: baseline;
-        /* Reset things from .new-style */
+        /* Reset default label.checkbox styles. */
         gap: 5px;
         position: static;
         min-height: 0;
