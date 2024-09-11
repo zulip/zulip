@@ -1756,7 +1756,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             um = most_recent_usermessage(user)
             self.assertFalse(um.flags.mentioned)
 
-    def test_user_group_edit_policy_for_creating_user_group(self) -> None:
+    def test_can_create_groups_for_creating_user_group(self) -> None:
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
@@ -1778,10 +1778,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check only admins are allowed to create user group. Admins are allowed even if
         # they are not a member of the group.
-        do_set_realm_property(
+        admins_group = NamedUserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.ADMINS_ONLY,
+            "can_create_groups",
+            admins_group,
             acting_user=None,
         )
         check_create_user_group("shiva", "Insufficient permission")
@@ -1790,10 +1791,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check moderators are allowed to create user group but not members. Moderators are
         # allowed even if they are not a member of the group.
-        do_set_realm_property(
+        moderators_group = NamedUserGroup.objects.get(name=SystemGroups.MODERATORS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.MODERATORS_ONLY,
+            "can_create_groups",
+            moderators_group,
             acting_user=None,
         )
         check_create_user_group("hamlet", "Insufficient permission")
@@ -1801,10 +1803,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         NamedUserGroup.objects.get(name="support", realm=realm).delete()
 
         # Check only members are allowed to create the user group.
-        do_set_realm_property(
+        members_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.MEMBERS_ONLY,
+            "can_create_groups",
+            members_group,
             acting_user=None,
         )
         check_create_user_group("polonius", "Not allowed for guest users")
@@ -1812,10 +1815,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         NamedUserGroup.objects.get(name="support", realm=realm).delete()
 
         # Check only full members are allowed to create the user group.
-        do_set_realm_property(
+        full_members_group = NamedUserGroup.objects.get(name=SystemGroups.FULL_MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.FULL_MEMBERS_ONLY,
+            "can_create_groups",
+            full_members_group,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
@@ -1828,6 +1832,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         othello.date_joined = timezone_now() - timedelta(days=11)
         othello.save()
+        promote_new_full_members()
         check_create_user_group("othello")
 
     def test_realm_level_setting_for_updating_user_groups(self) -> None:
