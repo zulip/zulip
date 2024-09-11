@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 290**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Removed the
+  `prev_rendered_content` field from the `edit_history` object
+  within message objects. It was the rendered HTML representation of
+  `prev_content`. Now, clients can access the same HTML representation
+  via `prev_content` with `apply_markdown` set.
+
 **Feature level 289**
 
 * [`POST /users/{user_id}/subscription`](/api/subscribe): In the response,
