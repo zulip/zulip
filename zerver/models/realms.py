@@ -106,14 +106,6 @@ class CommonPolicyEnum(IntEnum):
     MODERATORS_ONLY = 4
 
 
-class CommonMessagePolicyEnum(IntEnum):
-    MEMBERS_ONLY = 1
-    ADMINS_ONLY = 2
-    FULL_MEMBERS_ONLY = 3
-    MODERATORS_ONLY = 4
-    EVERYONE = 5
-
-
 class EditTopicPolicyEnum(IntEnum):
     MEMBERS_ONLY = 1
     ADMINS_ONLY = 2
@@ -269,8 +261,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     }
 
     COMMON_POLICY_TYPES = [field.value for field in CommonPolicyEnum]
-
-    COMMON_MESSAGE_POLICY_TYPES = [field.value for field in CommonMessagePolicyEnum]
 
     INVITE_TO_REALM_POLICY_TYPES = [field.value for field in InviteToRealmPolicyEnum]
 
