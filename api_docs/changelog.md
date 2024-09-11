@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 299**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_create_groups`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to create user groups.
+
 **Feature level 298**
 
 * [`POST /user_groups/{user_group_id}/deactivate`](/api/deactivate-user-group):

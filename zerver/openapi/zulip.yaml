@@ -4296,6 +4296,20 @@ paths:
                                         `"role:internet"` and `"role:owners"`.
 
                                         **Changes**: New in Zulip 8.0 (feature level 209).
+                                    can_create_groups:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create user
+                                            groups in this organization.
+
+                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                                            and `"role:nobody"` system groups.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 299). Previously
+                                            `user_group_edit_policy` field used to control the permission
+                                            to create user groups.
                                     can_create_public_channel_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -16050,6 +16064,20 @@ paths:
 
                           The [policy](/api/roles-and-permissions#permission-levels)
                           for which users can create bot users in this organization.
+                      realm_can_create_groups:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create user
+                              groups in this organization.
+
+                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
+                              and `"role:nobody"` system groups.
+
+                              **Changes**: New in Zulip 10.0 (feature level 299). Previously
+                              `realm_user_group_edit_policy` field used to control the
+                              permission to create user groups.
                       realm_can_create_public_channel_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
