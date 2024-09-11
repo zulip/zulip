@@ -2,6 +2,7 @@
 
 import datetime
 import uuid
+from enum import IntEnum
 
 import bitfield.models
 import django.contrib.auth.models
@@ -19,6 +20,14 @@ import zerver.lib.utils
 import zerver.models.linkifiers
 import zerver.models.realms
 import zerver.models.streams
+
+
+class LegacyCommonMessagePolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    EVERYONE = 5
 
 
 def get_fts_sql() -> str:
@@ -729,7 +738,7 @@ class Migration(migrations.Migration):
                 (
                     "delete_own_message_policy",
                     models.PositiveSmallIntegerField(
-                        default=zerver.models.realms.CommonMessagePolicyEnum["EVERYONE"]
+                        default=LegacyCommonMessagePolicyEnum["EVERYONE"]
                     ),
                 ),
                 (
