@@ -8,6 +8,11 @@ Recent invoice is overdue for payment.
 Last data upload: {{ last_audit_log_update }}
 {% elif notice_reason == "locally_deleted_realm_on_paid_plan" %}
 Investigate why remote realm is marked as locally deleted when it's on a paid plan.
+{% elif notice_reason == "license_discrepancy" %}
+Discrepancy in licenses when upgraded to current plan.
+
+Licenses paid for: {{ paid_licenses }}.
+Reported licenses in use: {{ current_licenses }}.
 {% endif %}
 
 Support URL: {{ support_url }}

@@ -1704,6 +1704,15 @@ class BillingSession(ABC):
         )
         return self.create_stripe_invoice_and_charge(updated_metadata)
 
+    def stale_seat_count_check(self, request_seat_count: int, tier: int) -> int:
+        current_seat_count = self.current_count_for_billed_licenses()
+        minimum_seat_count = self.min_licenses_for_plan(tier)
+        if request_seat_count == minimum_seat_count and current_seat_count < minimum_seat_count:
+            # Continue to use the minimum licenses for the plan tier.
+            return request_seat_count
+        # Otherwise, use a current count for billed licenses.
+        return current_seat_count
+
     def ensure_current_plan_is_upgradable(self, customer: Customer, new_plan_tier: int) -> None:
         # Upgrade for customers with an existing plan is only supported for remote realm / server right now.
         if isinstance(self, RealmBillingSession):
@@ -1785,13 +1794,18 @@ class BillingSession(ABC):
         # TODO: The correctness of this relies on user creation, deactivation, etc being
         # in a transaction.atomic() with the relevant RealmAuditLog entries
         with transaction.atomic():
-            # billed_licenses can be greater than licenses if users are added between the start of
-            # this function (process_initial_upgrade) and now
+            # We get the current license count here in case the number of billable
+            # licenses has changed since the upgrade process began.
             current_licenses_count = self.get_billable_licenses_for_customer(
                 customer, plan_tier, licenses
             )
-            # In case user wants more licenses for the plan. (manual license management)
-            billed_licenses = max(current_licenses_count, licenses)
+            if current_licenses_count != licenses and not automanage_licenses:
+                # With manual license management, the user may want to purchase more
+                # licenses than are currently in use.
+                billable_licenses = max(current_licenses_count, licenses)
+            else:
+                billable_licenses = current_licenses_count
+
             plan_params = {
                 "automanage_licenses": automanage_licenses,
                 "charge_automatically": charge_automatically,
@@ -1862,7 +1876,7 @@ class BillingSession(ABC):
                 )
                 # Update license_at_next_renewal as per new plan.
                 assert last_ledger_entry is not None
-                last_ledger_entry.licenses_at_next_renewal = billed_licenses
+                last_ledger_entry.licenses_at_next_renewal = billable_licenses
                 last_ledger_entry.save(update_fields=["licenses_at_next_renewal"])
                 remote_server_legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
                 remote_server_legacy_plan.save(update_fields=["status"])
@@ -1910,21 +1924,47 @@ class BillingSession(ABC):
                 # TODO: Do a check for max licenses for fixed price plans here after we add that.
                 if (
                     stripe_invoice_paid
-                    and billed_licenses != licenses
+                    and billable_licenses != licenses
                     and not customer.exempt_from_license_number_check
                     and not fixed_price_plan_offer
                 ):
-                    # Customer paid for less licenses than they have.
-                    # We need to create a new ledger entry to track the additional licenses.
-                    LicenseLedger.objects.create(
-                        plan=plan,
-                        is_renewal=False,
-                        event_time=event_time,
-                        licenses=billed_licenses,
-                        licenses_at_next_renewal=billed_licenses,
-                    )
-                    # Creates due today invoice for additional licenses.
-                    self.invoice_plan(plan, event_time)
+                    # Billable licenses in use do not match what was paid/invoiced by customer.
+                    if billable_licenses > licenses:
+                        # Customer paid for less licenses than they have in use.
+                        # We need to create a new ledger entry to track the additional licenses.
+                        LicenseLedger.objects.create(
+                            plan=plan,
+                            is_renewal=False,
+                            event_time=event_time,
+                            licenses=billable_licenses,
+                            licenses_at_next_renewal=billable_licenses,
+                        )
+                        # Creates due today invoice for additional licenses.
+                        self.invoice_plan(plan, event_time)
+                    else:
+                        # Customer paid for more licenses than they have in use.
+                        # We need to create a new ledger entry to track the reduced renewal licenses.
+                        LicenseLedger.objects.create(
+                            plan=plan,
+                            is_renewal=False,
+                            event_time=event_time,
+                            licenses=licenses,
+                            licenses_at_next_renewal=billable_licenses,
+                        )
+                        # Send internal billing notice about license discrepancy.
+                        context = {
+                            "billing_entity": self.billing_entity_display_name,
+                            "support_url": self.support_url(),
+                            "paid_licenses": licenses,
+                            "current_licenses": billable_licenses,
+                            "notice_reason": "license_discrepancy",
+                        }
+                        send_email(
+                            "zerver/emails/internal_billing_notice",
+                            to_emails=[BILLING_SUPPORT_EMAIL],
+                            from_address=FromAddress.tokenized_no_reply_address(),
+                            context=context,
+                        )
 
         if not stripe_invoice_paid and not (
             free_trial or should_schedule_upgrade_for_legacy_remote_server
@@ -1936,7 +1976,7 @@ class BillingSession(ABC):
                 customer,
                 price_per_license=price_per_license,
                 fixed_price=plan.fixed_price,
-                licenses=billed_licenses,
+                licenses=billable_licenses,
                 plan_tier=plan.tier,
                 billing_schedule=billing_schedule,
                 charge_automatically=False,
@@ -1953,7 +1993,7 @@ class BillingSession(ABC):
             # fails to pay the invoice before expiration, we downgrade the customer.
             self.generate_stripe_invoice(
                 plan_tier,
-                licenses=billed_licenses,
+                licenses=billable_licenses,
                 license_management="automatic" if automanage_licenses else "manual",
                 billing_schedule=billing_schedule,
                 billing_modality="send_invoice",
@@ -1968,14 +2008,20 @@ class BillingSession(ABC):
             self.ensure_current_plan_is_upgradable(customer, upgrade_request.tier)
         billing_modality = upgrade_request.billing_modality
         schedule = upgrade_request.schedule
-        license_management = upgrade_request.license_management
-        licenses = upgrade_request.licenses
 
-        seat_count = unsign_seat_count(upgrade_request.signed_seat_count, upgrade_request.salt)
-        if billing_modality == "charge_automatically" and license_management == "automatic":
-            licenses = seat_count
+        license_management = upgrade_request.license_management
         if billing_modality == "send_invoice":
             license_management = "manual"
+
+        licenses = upgrade_request.licenses
+        request_seat_count = unsign_seat_count(
+            upgrade_request.signed_seat_count, upgrade_request.salt
+        )
+        # For automated license management, we check for changes to the
+        # billable licenses count made after the billing portal was loaded.
+        seat_count = self.stale_seat_count_check(request_seat_count, upgrade_request.tier)
+        if billing_modality == "charge_automatically" and license_management == "automatic":
+            licenses = seat_count
 
         exempt_from_license_number_check = (
             customer is not None and customer.exempt_from_license_number_check
