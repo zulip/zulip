@@ -19,7 +19,7 @@
 # Manuel Esteban, 2022
 # Manuel Tondeur <manueltondeur@gmail.com>, 2017-2018
 # Mathieu Grimard <mathieu.grimard@hotmail.fr>, 2017
-# Paul Lubawy <paul.lubawy@hotmail.fr>, 2017
+# e83e85c2c00c9ff2c6ba7eb229e3d1c4_821f2e7 <edba9ab8cdf576ab3824ac292775127d_640234>, 2017
 # psyray <psyray@free.fr>, 2017
 # Reid Barton <rwbarton@gmail.com>, 2015
 # sephii, 2024

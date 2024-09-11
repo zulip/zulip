@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-02 20:44+0000\n"
+"POT-Creation-Date: 2024-09-11 18:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4143,31 +4143,31 @@ msgstr ""
 msgid "Unable to render message"
 msgstr ""
 
-#: zerver/actions/message_send.py:1281
+#: zerver/actions/message_send.py:1282
 msgid "Expected exactly one channel"
 msgstr ""
 
-#: zerver/actions/message_send.py:1292
+#: zerver/actions/message_send.py:1293
 msgid "Invalid data type for channel"
 msgstr ""
 
-#: zerver/actions/message_send.py:1308 zerver/actions/message_send.py:1318
+#: zerver/actions/message_send.py:1309 zerver/actions/message_send.py:1319
 #: zerver/lib/recipient_parsing.py:23
 msgid "Invalid data type for recipients"
 msgstr ""
 
-#: zerver/actions/message_send.py:1326 zerver/actions/message_send.py:1334
+#: zerver/actions/message_send.py:1327 zerver/actions/message_send.py:1335
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr ""
 
-#: zerver/actions/message_send.py:1484
+#: zerver/actions/message_send.py:1485
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel ID {channel_id}, "
 "but there is no channel with that ID."
 msgstr ""
 
-#: zerver/actions/message_send.py:1495
+#: zerver/actions/message_send.py:1496
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}, "
@@ -4175,26 +4175,26 @@ msgid ""
 "it."
 msgstr ""
 
-#: zerver/actions/message_send.py:1507
+#: zerver/actions/message_send.py:1508
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}. "
 "The channel exists but does not have any subscribers."
 msgstr ""
 
-#: zerver/actions/message_send.py:1608
+#: zerver/actions/message_send.py:1609
 msgid "You do not have permission to access some of the recipients."
 msgstr ""
 
-#: zerver/actions/message_send.py:1740
+#: zerver/actions/message_send.py:1741
 msgid "Topics are required in this organization"
 msgstr ""
 
-#: zerver/actions/message_send.py:1803
+#: zerver/actions/message_send.py:1804
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr ""
 
-#: zerver/actions/message_send.py:1809
+#: zerver/actions/message_send.py:1810
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr ""
@@ -5488,15 +5488,15 @@ msgstr ""
 msgid "Unable to retrieve subscribers for private channel"
 msgstr ""
 
-#: zerver/lib/thumbnail.py:150
+#: zerver/lib/thumbnail.py:151
 msgid "Could not decode image; did you upload an image file?"
 msgstr ""
 
-#: zerver/lib/thumbnail.py:156
+#: zerver/lib/thumbnail.py:157
 msgid "Image size exceeds limit."
 msgstr ""
 
-#: zerver/lib/thumbnail.py:162
+#: zerver/lib/thumbnail.py:163
 msgid "Image is corrupted or truncated"
 msgstr ""
 
@@ -5778,7 +5778,7 @@ msgstr ""
 msgid "Unexpected arguments: {keys}"
 msgstr ""
 
-#: zerver/lib/validator.py:327 zerver/views/realm.py:91
+#: zerver/lib/validator.py:327 zerver/views/realm.py:90
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
 msgstr ""
@@ -6359,26 +6359,26 @@ msgstr ""
 msgid "Read receipts are disabled in this organization."
 msgstr ""
 
-#: zerver/views/realm.py:195
+#: zerver/views/realm.py:194
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr ""
 
-#: zerver/views/realm.py:202
+#: zerver/views/realm.py:201
 msgid "At least one authentication method must be enabled."
 msgstr ""
 
-#: zerver/views/realm.py:209
+#: zerver/views/realm.py:207
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr ""
 
-#: zerver/views/realm.py:217
+#: zerver/views/realm.py:215
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr ""
 
-#: zerver/views/realm.py:476
+#: zerver/views/realm.py:474
 msgid "Must be a demo organization."
 msgstr ""
 
@@ -6946,14 +6946,14 @@ msgstr ""
 msgid "You need to reset your password."
 msgstr ""
 
-#: zproject/backends.py:2362
+#: zproject/backends.py:2371
 msgid "Missing id_token parameter"
 msgstr ""
 
-#: zproject/backends.py:3077
+#: zproject/backends.py:3086
 msgid "Invalid OTP"
 msgstr ""
 
-#: zproject/backends.py:3080
+#: zproject/backends.py:3089
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""

@@ -34,11 +34,11 @@ msgstr "Неправильна організація"
 
 #: analytics/views/stats.py:312
 msgid "Public channels"
-msgstr ""
+msgstr "Публічні канали"
 
 #: analytics/views/stats.py:313
 msgid "Private channels"
-msgstr ""
+msgstr "Приватні канали"
 
 #: analytics/views/stats.py:314
 msgid "Direct messages"
@@ -440,11 +440,11 @@ msgstr ""
 
 #: templates/analytics/stats.html:30
 msgid "Total number of messages"
-msgstr ""
+msgstr "Загальна кількість повідомлень"
 
 #: templates/analytics/stats.html:31
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "Кількість повідомлень за останні 30 днів"
 
 #: templates/analytics/stats.html:32
 msgid "File storage in use"
