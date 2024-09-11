@@ -1962,6 +1962,7 @@ class StripeTest(StripeTestCase):
     def test_upgrade_by_card_with_outdated_seat_count(self, *mocks: Mock) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
+        # Higher than original seat count
         new_seat_count = 23
         initial_upgrade_request = InitialUpgradeRequest(
             manual_license_management=False,
@@ -1972,8 +1973,12 @@ class StripeTest(StripeTestCase):
         _, context_when_upgrade_page_is_rendered = billing_session.get_initial_upgrade_context(
             initial_upgrade_request
         )
-        # Change the seat count while the user is going through the upgrade flow
+        # Change the seat count in upgrade flow: after do_upgrade, during process_initial_upgrade
         with (
+            patch(
+                "corporate.lib.stripe.BillingSession.stale_seat_count_check",
+                return_value=self.seat_count,
+            ),
             patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count),
             patch(
                 "corporate.lib.stripe.RealmBillingSession.get_initial_upgrade_context",
@@ -2005,6 +2010,65 @@ class StripeTest(StripeTestCase):
         assert ledger_entry is not None
         self.assertEqual(ledger_entry.licenses, new_seat_count)
         self.assertEqual(ledger_entry.licenses_at_next_renewal, new_seat_count)
+
+    @mock_stripe()
+    def test_upgrade_by_card_with_outdated_lower_seat_count(self, *mocks: Mock) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        new_seat_count = self.seat_count - 1
+        initial_upgrade_request = InitialUpgradeRequest(
+            manual_license_management=False,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            billing_modality="charge_automatically",
+        )
+        billing_session = RealmBillingSession(hamlet)
+        _, context_when_upgrade_page_is_rendered = billing_session.get_initial_upgrade_context(
+            initial_upgrade_request
+        )
+        # Change the seat count in upgrade flow: after do_upgrade, during process_initial_upgrade
+        with (
+            patch(
+                "corporate.lib.stripe.BillingSession.stale_seat_count_check",
+                return_value=self.seat_count,
+            ),
+            patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count),
+            patch(
+                "corporate.lib.stripe.RealmBillingSession.get_initial_upgrade_context",
+                return_value=(_, context_when_upgrade_page_is_rendered),
+            ),
+        ):
+            self.add_card_and_upgrade(hamlet)
+
+        customer = Customer.objects.first()
+        assert customer is not None
+        stripe_customer_id: str = assert_is_not_none(customer.stripe_customer_id)
+        # Check that the Charge used the old quantity, not new_seat_count
+        [charge] = iter(stripe.Charge.list(customer=stripe_customer_id))
+        self.assertEqual(8000 * self.seat_count, charge.amount)
+        [upgrade_invoice] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        self.assertEqual(
+            [8000 * self.seat_count],
+            [item.amount for item in upgrade_invoice.lines],
+        )
+        # Check LicenseLedger has the reduced license count at renewal
+        ledger_entry = LicenseLedger.objects.last()
+        assert ledger_entry is not None
+        self.assertEqual(ledger_entry.licenses, self.seat_count)
+        self.assertEqual(ledger_entry.licenses_at_next_renewal, new_seat_count)
+
+        # Check that we informed the support team about the potential billing error.
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        for message in outbox:
+            self.assert_length(message.to, 1)
+            self.assertEqual(message.to[0], "sales@zulip.com")
+            self.assertEqual(
+                message.subject,
+                f"Check initial licenses invoiced for {billing_session.billing_entity_display_name}",
+            )
+            self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
 
     def test_upgrade_with_tampered_seat_count(self) -> None:
         hamlet = self.example_user("hamlet")
