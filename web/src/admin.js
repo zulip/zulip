@@ -185,9 +185,7 @@ export function build_page() {
         can_create_user_groups: settings_data.user_can_create_user_groups(),
         policy_values: settings_config.common_policy_values,
         realm_can_delete_any_message_group: realm.realm_can_delete_any_message_group,
-        realm_delete_own_message_policy: realm.realm_delete_own_message_policy,
-        DELETE_OWN_MESSAGE_POLICY_ADMINS_ONLY:
-            settings_config.common_message_policy_values.by_admins_only.code,
+        realm_can_delete_own_message_group: realm.realm_can_delete_own_message_group,
         ...settings_org.get_organization_settings_options(),
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:

@@ -154,7 +154,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
         # Users can only delete messages sent by them or by their bots.
         raise JsonableError(_("You don't have permission to delete this message"))
     if not user_profile.can_delete_own_message():
-        # Only user with roles as allowed by delete_own_message_policy can delete message.
+        # Only user with roles as allowed by can_delete_own_message_group can delete message.
         raise JsonableError(_("You don't have permission to delete this message"))
 
     deadline_seconds: int | None = user_profile.realm.message_content_delete_limit_seconds

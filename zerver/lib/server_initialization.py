@@ -34,7 +34,6 @@ def create_internal_realm() -> None:
     # is changed later before the transaction is committed.
     for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
         setattr(realm, permission_configuration.id_field_name, -1)
-    realm.delete_own_message_policy = 1
     realm.save()
 
     RealmAuditLog.objects.create(

@@ -4326,6 +4326,21 @@ paths:
                                             **Changes**: New in Zulip 10.0 (feature level 281). Previously, this
                                             permission was limited to administrators only and was uneditable.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_delete_own_message_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to delete messages that they have sent in the
+                                            organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 291). Previously, this
+                                            permission was controlled by the enum `delete_own_message_policy`. Values
+                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone.
+
+                                            Before Zulip 5.0 (feature level 101), the `allow_message_deleting` boolean
+                                            setting controlled this permission; `true` corresponded to `Everyone`, and
+                                            `false` to `Admins`.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     default_code_block_language:
                                       type: string
                                       description: |
@@ -15665,6 +15680,23 @@ paths:
 
                               **Changes**: New in Zulip 10.0 (feature level 281). Previously, this
                               permission was limited to administrators only and was uneditable.
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_delete_own_message_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to delete messages that they have sent in the
+                              organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 291). Previously, this
+                              permission was controlled by the enum `delete_own_message_policy`. Values
+                              were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone.
+
+                              Before Zulip 5.0 (feature level 101), the `allow_message_deleting` boolean
+                              setting controlled this permission; `true` corresponded to `Everyone`, and
+                              `false` to `Admins`.
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_delete_own_message_policy:
                         type: integer

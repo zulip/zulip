@@ -482,6 +482,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_create_private_channel_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["realm_can_delete_any_message_group", null],
+    ["realm_can_delete_own_message_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
 ]);
@@ -802,6 +803,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_create_private_channel_group":
         case "realm_can_create_web_public_channel_group":
         case "realm_can_delete_any_message_group":
+        case "realm_can_delete_own_message_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
@@ -1000,6 +1002,7 @@ export function populate_data_for_realm_settings_request(
                     "can_create_public_channel_group",
                     "can_create_web_public_channel_group",
                     "can_delete_any_message_group",
+                    "can_delete_own_message_group",
                     "direct_message_initiator_group",
                     "direct_message_permission_group",
                 ]);

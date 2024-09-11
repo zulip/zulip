@@ -313,6 +313,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # Who in the organization is allowed to delete their own message.
+    can_delete_own_message_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Who in the organization is allowed to delete messages they themselves sent.
     delete_own_message_policy = models.PositiveSmallIntegerField(
         default=CommonMessagePolicyEnum.EVERYONE
@@ -737,6 +742,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="can_delete_any_message_group_id",
         ),
+        can_delete_own_message_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="can_delete_own_message_group_id",
+        ),
         direct_message_initiator_group=GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
@@ -777,6 +791,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "can_create_public_channel_group",
         "can_create_web_public_channel_group",
         "can_delete_any_message_group",
+        "can_delete_own_message_group",
         "direct_message_initiator_group",
         "direct_message_permission_group",
     ]
@@ -1148,6 +1163,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_create_web_public_channel_group__named_user_group",
         "can_delete_any_message_group",
         "can_delete_any_message_group__named_user_group",
+        "can_delete_own_message_group",
+        "can_delete_own_message_group__named_user_group",
         "direct_message_initiator_group",
         "direct_message_initiator_group__named_user_group",
         "direct_message_permission_group",
