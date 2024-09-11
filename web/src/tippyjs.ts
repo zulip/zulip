@@ -211,6 +211,15 @@ export function initialize(): void {
         },
     });
 
+    tippy.delegate("body", {
+        target: ".unsubscribed_icon",
+        placement: "right",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
     // Variant of .tippy-left-sidebar-tooltip configuration. Here
     // we need to dynamically check which view is the home view.
     tippy.delegate("body", {
