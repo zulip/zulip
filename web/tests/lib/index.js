@@ -103,6 +103,8 @@ async function run_one_module(file) {
 test.set_verbose(files.length === 1);
 
 (async () => {
+    let exit_code = 0;
+
     for (const file of files) {
         namespace.start();
         namespace.set_global("window", window);
@@ -134,7 +136,12 @@ test.set_verbose(files.length === 1);
         namespace.mock_esm("../../src/realm_user_settings_defaults", zpage_params);
         require("../../src/realm_user_settings_defaults");
 
-        await run_one_module(file);
+        try {
+            await run_one_module(file);
+        } catch (error) /* istanbul ignore next */ {
+            console.error(error);
+            exit_code = 1;
+        }
 
         if (blueslip.reset) {
             blueslip.reset();
@@ -142,6 +149,8 @@ test.set_verbose(files.length === 1);
 
         namespace.finish();
     }
+
+    process.exit(exit_code);
 })().catch((error) => /* istanbul ignore next */ {
     console.error(error);
     process.exit(1);
