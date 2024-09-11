@@ -3,7 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words";
-import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_notifications from "./compose_notifications";
