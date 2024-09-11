@@ -7,7 +7,7 @@
 # Ansgar Hofmann <ansgar@trollgames.de>, 2016
 # Ansgar Hofmann <ansgar@trollgames.de>, 2017,2019
 # n3w2oo <kontakt@n3w2oo.net>, 2016
-# Gustav Gyges, 2019
+# Christian Spaan, 2019
 # Daniel W. <daniel.wos.86@googlemail.com>, 2015
 # Dante Cassius <exaltedunmelody@gmail.com>, 2016
 # Dennis Stengele <dennis@stengele.me>, 2019
@@ -21,6 +21,7 @@
 # 93626949be8c715c052f6dc10733548d_3902a33 <09e2a0f08f39803f6bbf1b16e4ef9612_386425>, 2016
 # Jnnk b <jannikbuddeberg@icloud.com>, 2020
 # Johannes Hoch <hojo11@gmx.de>, 2019-2020
+# K B, 2024
 # Keyhan, 2019
 # L Petersen <lpetersen@gmx.net>, 2019
 # BornToBeRoot, 2015
@@ -43,7 +44,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Roman Bannack <apxwn@yandex.ru>, 2020-2024\n"
+"Last-Translator: K B, 2024\n"
 "Language-Team: German (http://app.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -54,7 +55,7 @@ msgstr ""
 #: analytics/views/stats.py:109 zerver/decorator.py:635
 #: zerver/decorator.py:653
 msgid "Not allowed for guest users"
-msgstr "Nicht erlaubt für Gastnutzer:innen"
+msgstr "Nicht erlaubt für Gastnutzer"
 
 #: analytics/views/stats.py:152
 msgid "Invalid organization"
@@ -93,7 +94,7 @@ msgstr "Die Startzeit ist später als die Endzeit. Start: {start}, Ende: {end}"
 
 #: analytics/views/stats.py:378 analytics/views/stats.py:415
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Keine Analysedaten verfügbar. Bitte kontaktiere den:die Server-Administrator:in."
+msgstr "Keine Analysedaten verfügbar. Bitte kontaktiere den Server-Administrator."
 
 #: corporate/lib/registration.py:28
 #, python-brace-format
@@ -102,7 +103,7 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr "Deine Organisation hat keine Zulip-Lizenzen übrig und kann keine weiteren Nutzer:innen akzeptieren. Bitte [erhöhe die Anzahl der Lizenzen]({billing_page_link}) oder [deaktiviere inaktive Nutzer:innen]({deactivate_user_help_page_link}), damit neue Nutzer:innen beitreten können."
+msgstr "Deine Organisation hat keine Zulip-Lizenzen übrig und kann keine weiteren Nutzer akzeptieren. Bitte [erhöhe die Anzahl der Lizenzen]({billing_page_link}) oder [deaktiviere inaktive Nutzer]({deactivate_user_help_page_link}), damit neue Nutzer beitreten können."
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
@@ -165,7 +166,7 @@ msgstr "Ungültiger Remote-Server."
 msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
-msgstr "Du musst Lizenzen für alle aktiven Nutzer:innen in deiner Organisation erwerben (mindestens {min_licenses})."
+msgstr "Du musst Lizenzen für alle aktiven Nutzer in deiner Organisation erwerben (mindestens {min_licenses})."
 
 #: corporate/lib/stripe.py:223
 #, python-brace-format
@@ -456,7 +457,7 @@ msgstr "Überblick über die Organisation"
 
 #: templates/analytics/stats.html:27
 msgid "Number of users"
-msgstr "Anzahl an Nutzer:innen"
+msgstr "Anzahl an Nutzer"
 
 #: templates/analytics/stats.html:28
 msgid "Users active during the last 15 days"
@@ -480,7 +481,7 @@ msgstr "Genutzter Dateispeicher"
 
 #: templates/analytics/stats.html:37
 msgid "Active users"
-msgstr "Aktive Nutzer:innen"
+msgstr "Aktive Nutzer"
 
 #: templates/analytics/stats.html:40
 msgid "Daily actives"
@@ -497,7 +498,7 @@ msgstr "Gesamtzahl der aktiven Nutzer:innen"
 #: templates/analytics/stats.html:50
 #: zerver/models/custom_profile_fields.py:101
 msgid "Users"
-msgstr "Nutzer:innen"
+msgstr "Nutzer"
 
 #: templates/analytics/stats.html:58
 msgid "Messages sent by recipient type"
@@ -1247,7 +1248,7 @@ msgstr "Die Community der Zulip-Entwickler"
 #: templates/corporate/development-community.html:30
 #: templates/corporate/development-community.html:55
 msgid "Join as a user"
-msgstr "Als Nutzer:in beitreten"
+msgstr "Als Nutzer beitreten"
 
 #: templates/corporate/development-community.html:33
 #: templates/corporate/development-community.html:58
@@ -1712,27 +1713,27 @@ msgstr "Oder fahre in deinem Browser fort."
 
 #: templates/zerver/development/dev_login.html:26
 msgid "Anonymous user"
-msgstr "Anonyme:r Nutzer:in"
+msgstr "Anonymer Nutzer"
 
 #: templates/zerver/development/dev_login.html:32
 msgid "Owners"
-msgstr "Besitzer:innen"
+msgstr "Besitzer"
 
 #: templates/zerver/development/dev_login.html:49
 msgid "Administrators"
-msgstr "Administrator:innen"
+msgstr "Administratoren"
 
 #: templates/zerver/development/dev_login.html:60
 msgid "Moderators"
-msgstr "Moderator:innen"
+msgstr "Moderatoren"
 
 #: templates/zerver/development/dev_login.html:71
 msgid "Guest users"
-msgstr "Gastnutzer:innen"
+msgstr "Gastnutzer"
 
 #: templates/zerver/development/dev_login.html:85
 msgid "Normal users"
-msgstr "Normale Nutzer:innen"
+msgstr "Normale Nutzer"
 
 #: templates/zerver/development/email_log.html:31
 msgid "Forward emails to an email account"
@@ -4001,7 +4002,7 @@ msgstr "Um Nutzer:innen zu schützen, beschränkt Zulip die Anzahl der Einladung
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "Dein Account ist noch zu neu, um Einladungen für diese Organisation verschicken zu können. Frage eine:n Administrator:in der Organisation oder eine:n erfahrenere:n Nutzer:in."
+msgstr "Dein Account ist noch zu neu, um Einladungen für diese Organisation verschicken zu können. Frage eine Administrator der Organisation oder einen erfahreneren Nutzer."
 
 #: zerver/actions/invites.py:248
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -4709,7 +4710,7 @@ msgstr "Organisations-Besitzer:in"
 
 #: zerver/lib/exceptions.py:213
 msgid "user"
-msgstr "Nutzer:in"
+msgstr "Nutzer"
 
 #: zerver/lib/exceptions.py:218
 #, python-brace-format

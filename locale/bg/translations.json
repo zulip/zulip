@@ -12,7 +12,7 @@
   "({message_retention_days} days)": "({message_retention_days} дни)",
   "/dark (Switch to the dark theme)": "/dark (Преминаване към тъмен режим)",
   "/light (Switch to light theme)": "/light (Преминаване към светъл режим)",
-  "/me (Action message)": "",
+  "/me (Action message)": "/me (Съобщение за действие)",
   "/poll (Create a poll)": "",
   "/todo (Create a collaborative to-do list)": "",
   "1 day": "1 ден",
