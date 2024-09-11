@@ -49,9 +49,6 @@ import * as util from "./util";
 export type MessageContainer = {
     background_color?: string;
     date_divider_html: string | undefined;
-    edited_alongside_sender?: boolean;
-    edited_in_left_col?: boolean;
-    edited_status_msg?: boolean;
     include_recipient: boolean;
     include_sender: boolean;
     is_hidden: boolean;
@@ -605,22 +602,9 @@ export class MessageListView {
 
     _get_message_edited_vars(message: Message): {
         last_edit_timestr: string | undefined;
-        edited_in_left_col?: boolean;
-        edited_alongside_sender?: boolean;
-        edited_status_msg?: boolean;
         moved?: boolean;
         modified?: boolean;
     } {
-        // This function computes data on whether the message was edited
-        // and in what ways, as well as where the "EDITED" or "MOVED"
-        // label should be located, and adds it to the message_container
-        // object.
-        //
-        // The bools can be defined only when the message is edited
-        // (or when the `last_edit_timestr` is defined). The bools are:
-        //   * `edited_in_left_col`      -- when label appears in left column.
-        //   * `edited_alongside_sender` -- when label appears alongside sender info.
-        //   * `edited_status_msg`       -- when label appears for a "/me" message.
         const last_edit_timestr = this._get_msg_timestring(message);
         const edit_history_details = analyze_edit_history(message, last_edit_timestr);
 
@@ -635,9 +619,6 @@ export class MessageListView {
             // was marked as resolved if you need to).
             return {
                 last_edit_timestr: undefined,
-                edited_in_left_col: false,
-                edited_alongside_sender: false,
-                edited_status_msg: false,
             };
         }
 
@@ -668,9 +649,6 @@ export class MessageListView {
         include_sender: boolean;
         status_message: string | false;
         last_edit_timestr: string | undefined;
-        edited_in_left_col?: boolean;
-        edited_alongside_sender?: boolean;
-        edited_status_msg?: boolean;
         moved?: boolean;
         modified?: boolean;
     } {
