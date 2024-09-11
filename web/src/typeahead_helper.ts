@@ -99,7 +99,6 @@ export function render_typeahead_item(args: {
     pronouns?: string | undefined;
     is_user_group?: boolean;
     stream?: StreamData;
-    is_unsubscribed?: boolean;
     emoji_code?: string | undefined;
 }): string {
     const has_image = args.img_src !== undefined;
@@ -173,7 +172,6 @@ export function render_stream(stream: StreamData): string {
     return render_typeahead_item({
         secondary_html: stream.rendered_description,
         stream,
-        is_unsubscribed: !stream.subscribed,
     });
 }
 
