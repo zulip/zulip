@@ -1,4 +1,4 @@
-<div class="new-style user-status-content-wrapper">
+<div class="user-status-content-wrapper">
     <div class="tippy-zulip-tooltip" data-tippy-content="{{t 'Select emoji' }}" data-tippy-placement="top" aria-label="{{t 'Select emoji' }}" id="selected_emoji">
         <div class="status-emoji-wrapper" tabindex="0">
             {{> status_emoji_selector}}
@@ -9,7 +9,7 @@
         <i class="fa fa-remove" aria-hidden="true"></i>
     </button>
 </div>
-<div class="new-style user-status-options">
+<div class="user-status-options">
     {{#each default_status_messages_and_emoji_info}}
         <button type="button" class="button no-style user-status-value">
             {{#if emoji.emoji_alt_code}}

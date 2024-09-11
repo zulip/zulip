@@ -1,5 +1,5 @@
 <div id="bot-edit-form" data-user-id="{{user_id}}" data-email="{{email}}">
-    <form class="new-style edit_bot_form name-setting">
+    <form class="edit_bot_form name-setting">
         <div class="alert" id="bot-edit-form-error"></div>
         <div class="input-group name_change_container">
             <label for="edit_bot_full_name" class="modal-field-label">{{t "Name" }}</label>
@@ -43,13 +43,13 @@
         </div>
     </form>
     {{#if is_incoming_webhook_bot}}
-    <div class="input-group new-style">
+    <div class="input-group">
         <button class="button rounded generate_url_for_integration">
             {{t 'Generate URL for an integration' }}
         </button>
     </div>
     {{/if}}
-    <div class="input-group new-style">
+    <div class="input-group">
         {{#if is_active}}
         <button class="button rounded btn-danger deactivate_bot_button">
             {{t 'Deactivate bot' }}
