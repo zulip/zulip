@@ -659,8 +659,7 @@
     }
 
     &:disabled {
-        /* Replicate the `.new-style` disabled values,
-           without any color shifts. */
+        /* Replicate disabled values, without any color shifts. */
         cursor: not-allowed;
         opacity: 0.5;
     }

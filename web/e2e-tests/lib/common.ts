@@ -538,7 +538,7 @@ export async function open_streams_modal(page: Page): Promise<void> {
     await page.waitForSelector(all_streams_selector, {visible: true});
     await page.click(all_streams_selector);
 
-    await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
+    await page.waitForSelector("#subscription_overlay", {visible: true});
     const url = await page_url_with_fragment(page);
     assert.ok(url.includes("#channels/notsubscribed"));
 }
