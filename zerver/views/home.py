@@ -57,6 +57,18 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
                     email_address_visibility,
                     acting_user=request.user,
                 )
+
+            enable_marketing_emails = form.cleaned_data["enable_marketing_emails"]
+            if (
+                enable_marketing_emails is not None
+                and enable_marketing_emails != request.user.enable_marketing_emails
+            ):
+                do_change_user_setting(
+                    request.user,
+                    "enable_marketing_emails",
+                    enable_marketing_emails,
+                    acting_user=request.user,
+                )
             return redirect(home)
     else:
         form = ToSForm()

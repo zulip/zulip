@@ -234,6 +234,7 @@ class RegistrationForm(RealmDetailsForm):
 
 class ToSForm(forms.Form):
     terms = forms.BooleanField(required=False)
+    enable_marketing_emails = forms.BooleanField(required=False)
     email_address_visibility = forms.TypedChoiceField(
         required=False,
         coerce=int,

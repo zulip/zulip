@@ -59,6 +59,16 @@ the registration flow has its own (nearly identical) copy of the fields below in
                         {% endfor %}
                     {% endif %}
                 </div>
+                {% if first_time_terms_of_service_message_template %}
+                <div class="input-group">
+                    <label for="id_enable_marketing_emails_first_login" class="inline-block checkbox marketing_emails_checkbox">
+                        <input id="id_enable_marketing_emails_first_login" type="checkbox" name="enable_marketing_emails"
+                          checked="checked" />
+                        <span class="rendered-checkbox"></span>
+                        {% trans %}Subscribe me to Zulip's low-traffic newsletter (a few emails a year).{% endtrans %}
+                    </label>
+                </div>
+                {% endif %}
                 {% endif %}
                 <div class="controls">
                     <button id="accept_tos_button" type="submit">{{ _('Continue') }}</button>
