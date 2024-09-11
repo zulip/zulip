@@ -11,9 +11,11 @@ from django.views.decorators.csrf import csrf_exempt
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_pascal
 
+from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.decorator import get_basic_credentials, validate_api_key
 from zerver.lib.exceptions import AccessDeniedError, JsonableError
 from zerver.lib.mime_types import guess_type
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.upload import (
@@ -21,11 +23,12 @@ from zerver.lib.upload import (
     attachment_vips_source,
     check_upload_within_quota,
     create_attachment,
+    delete_message_attachment,
     sanitize_name,
     upload_backend,
 )
 from zerver.lib.upload.base import INLINE_MIME_TYPES
-from zerver.models import UserProfile
+from zerver.models import PreregistrationRealm, UserProfile
 
 
 # See https://tus.github.io/tusd/advanced-topics/hooks/ for the spec
@@ -223,6 +226,49 @@ def authenticate_user(request: HttpRequest) -> UserProfile | AnonymousUser:
     return request.user
 
 
+def handle_preregistration_pre_create_hook(
+    request: HttpRequest, preregistration_realm: PreregistrationRealm, data: TusUpload
+) -> HttpResponse:
+    MAX_PREREGISTRATION_SIZE = 1024 * 1024 * 1024  # 1G
+    if data.size_is_deferred or data.size is None:
+        return reject_upload("SizeIsDeferred is not supported", 411)
+    if data.size > MAX_PREREGISTRATION_SIZE:
+        return reject_upload(
+            _("Uploaded file is larger than the allowed limit of {max_file_size} MiB").format(
+                max_file_size=1024
+            ),
+            413,
+        )
+
+    filename = f"import/{preregistration_realm.id}/slack.zip"
+
+    # Delete any existing upload, so tusd doesn't declare that there's nothing to do
+    delete_message_attachment(filename)
+
+    return tusd_json_response({"ChangeFileInfo": {"ID": filename}})
+
+
+def handle_preregistration_pre_finish_hook(
+    request: HttpRequest, preregistration_realm: PreregistrationRealm, data: TusUpload
+) -> HttpResponse:
+    # With an S3 backend, the filename we passed in pre_create's
+    # data.id has a randomly-generated "mutlipart-id" appended with a
+    # `+`.  Our path_ids cannot contain `+`, so we strip any suffix
+    # starting with `+`.
+    filename = data.id.partition("+")[0]
+
+    queue_json_publish(
+        "deferred_work",
+        {
+            "type": "import_slack_data",
+            "preregistration_realm_id": preregistration_realm.id,
+            "filename": filename,
+            "slack_access_token": data.meta_data["slack_access_token"],
+        },
+    )
+    return tusd_json_response({})
+
+
 @csrf_exempt
 @typed_endpoint
 def handle_tusd_hook(
@@ -234,14 +280,34 @@ def handle_tusd_hook(
     if not is_local_addr(request.META["REMOTE_ADDR"]):
         raise AccessDeniedError
 
+    hook_name = payload.type
     maybe_user = authenticate_user(request)
-    if isinstance(maybe_user, AnonymousUser):
+    if maybe_user.is_authenticated:
+        # Authenticated requests are file upload requests
+        if hook_name == "pre-create":
+            return handle_upload_pre_create_hook(request, maybe_user, payload.event.upload)
+        elif hook_name == "pre-finish":
+            return handle_upload_pre_finish_hook(request, maybe_user, payload.event.upload)
+        else:
+            return HttpResponseNotFound()
+
+    # Check if unauthenticated requests are for realm creation
+    key = payload.event.upload.meta_data.get("key")
+    if key is None:
+        return reject_upload("Unauthenticated upload", 401)
+    try:
+        prereg_object = get_object_from_key(
+            key, [Confirmation.REALM_CREATION], mark_object_used=False
+        )
+    except ConfirmationKeyError:
         return reject_upload("Unauthenticated upload", 401)
 
-    hook_name = payload.type
+    assert isinstance(prereg_object, PreregistrationRealm)
+    assert prereg_object.created_realm is None
+
     if hook_name == "pre-create":
-        return handle_upload_pre_create_hook(request, maybe_user, payload.event.upload)
+        return handle_preregistration_pre_create_hook(request, prereg_object, payload.event.upload)
     elif hook_name == "pre-finish":
-        return handle_upload_pre_finish_hook(request, maybe_user, payload.event.upload)
+        return handle_preregistration_pre_finish_hook(request, prereg_object, payload.event.upload)
     else:
         return HttpResponseNotFound()
