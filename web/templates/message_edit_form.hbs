@@ -1,7 +1,7 @@
 {{! Client-side Handlebars template for rendering the message edit form. }}
 <div class="message_edit">
     <div class="message_edit_form">
-        <form id="edit_form_{{message_id}}" class="new-style">
+        <form id="edit_form_{{message_id}}">
             <div class="edit_form_banners"></div>
             <div class="edit-controls edit-content-container {{#if is_editable}}surround-formatting-buttons-row{{/if}}">
                 {{> copy_message_button message_id=this.message_id}}
