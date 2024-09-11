@@ -303,6 +303,14 @@ td .button {
     }
 }
 
+#image_loading_indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5em;
+}
+
 /* list_select is similar to settings_select, but without the height styling. */
 .settings_select,
 .list_select {
@@ -762,12 +770,74 @@ input[type="checkbox"] {
     }
 
     #emoji_preview_text {
+        display: none;
         margin-top: 6px;
     }
 }
 
 #emoji_file_input_error {
     vertical-align: middle;
+}
+
+#emoji_image_clear_button.image_clear {
+    margin-bottom: 24px;
+}
+
+.uppy-DashboardContent-back,
+.uppy-DashboardContent-save {
+    display: none;
+}
+
+.uppy-DashboardContent-bar .uppy-crop-tool {
+    display: none !important;
+}
+
+.uppy-ImageCropper-controls {
+    padding-top: 0;
+}
+
+.modal__footer:has(#scale_to_fit) {
+    display: flex;
+    justify-content: space-between;
+}
+
+.dialog_submit_button_container {
+    display: flex;
+}
+
+#scale_to_fit {
+    order: -1;
+    color: hsl(0deg 0% 100%);
+}
+
+#reset_scale_to_fit {
+    order: -1;
+    color: hsl(0deg 0% 100%);
+}
+
+#image_editor {
+    display: flex;
+    justify-content: space-between;
+}
+
+.image_clear,
+.image_save {
+    display: none;
+    color: hsl(0deg 0% 100%) !important;
+    margin-top: 24px;
+}
+
+.image_save {
+    background-color: hsl(240deg 96% 68%);
+    margin-left: 12px;
+}
+
+.image_clear {
+    background-color: hsl(0deg 100% 20%);
+}
+
+.direct_widget_save {
+    background-color: hsl(240deg 96% 68%);
 }
 
 .add-new-linkifier-box,
@@ -1003,13 +1073,9 @@ input[type="checkbox"] {
         margin: 5px 0 8px;
     }
 
-    .edit_bot_avatar_preview_text {
+    #edit_bot_avatar_preview_text {
         display: none;
     }
-}
-
-#add_bot_preview_text {
-    display: none;
 }
 
 .edit_bot_avatar_preview_image,

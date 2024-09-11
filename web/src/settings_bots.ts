@@ -23,6 +23,7 @@ import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
+import * as upload_widget from "./upload_widget";
 import type {UploadWidget} from "./upload_widget";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
@@ -269,11 +270,8 @@ export function add_a_new_bot(): void {
             });
             formData.append("config_data", JSON.stringify(config_data));
         }
-        const files = $<HTMLInputElement>("input#bot_avatar_file_input")[0]!.files;
-        assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            formData.append("file-" + i, file);
-        }
+
+        formData.append("file-0", upload_widget.get_edited_file());
 
         void channel.post({
             url: "/json/bots",

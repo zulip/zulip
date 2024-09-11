@@ -23,6 +23,7 @@ import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
+import type {CropperOptions} from "./upload_widget";
 import * as util from "./util";
 
 const meta = {
@@ -180,9 +181,19 @@ export function add_custom_emoji_post_render(): void {
     const $input_error = $("#emoji_file_input_error");
     const $clear_button = $("#emoji_image_clear_button");
     const $upload_button = $("#emoji_upload_button");
+    const $save_button = $("#emoji_image_save_button");
+    const $scale_to_fit_button = $("#emoji_scale_to_fit_button");
+    const $reset_scale_to_fit_button = $("#emoji_reset_button");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
     const $placeholder_icon = $("#emoji_placeholder_icon");
+    const $other_elements_to_hide = $(
+        "#add-custom-emoji-modal .dialog_submit_button, #add-custom-emoji-modal .dialog_exit_button, .emoji_name_input, .modal__footer, #preview_label",
+    );
+    const cropper_options: CropperOptions = {
+        aspectRatio: 1,
+        cropSquare: true,
+    };
 
     $preview_image.hide();
 
@@ -192,8 +203,13 @@ export function add_custom_emoji_post_render(): void {
         $input_error,
         $clear_button,
         $upload_button,
+        $save_button,
+        $scale_to_fit_button,
+        $reset_scale_to_fit_button,
+        cropper_options,
         $preview_text,
         $preview_image,
+        $other_elements_to_hide,
     );
 
     get_file_input().on("input", () => {
@@ -270,8 +286,11 @@ function show_modal(): void {
         const formData = new FormData();
         const files = util.the($<HTMLInputElement>("input#emoji_file_input")).files;
         assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            formData.append("file-" + i, file);
+        if (files[0] && files[0].type === "image/gif") {
+            // we cannot crop a gif with uppy
+            formData.append("file-0", files[0]);
+        } else {
+            formData.append("file-0", upload_widget.get_edited_file());
         }
 
         if (is_default_emoji(emoji.name)) {
