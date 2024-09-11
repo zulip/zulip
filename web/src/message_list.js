@@ -421,8 +421,8 @@ export class MessageList {
             just_unsubscribed,
             can_toggle_subscription,
             page_params.is_spectator,
-            invite_only,
-            is_web_public,
+            invite_only ?? false,
+            is_web_public ?? false,
         );
     }
 

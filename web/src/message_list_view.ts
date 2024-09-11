@@ -1934,8 +1934,8 @@ export class MessageListView {
         just_unsubscribed: boolean,
         can_toggle_subscription: boolean,
         is_spectator: boolean,
-        invite_only: boolean | undefined,
-        is_web_public: boolean | undefined,
+        invite_only: boolean,
+        is_web_public: boolean,
     ): void {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
