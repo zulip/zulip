@@ -123,7 +123,6 @@ function set_page_params_no_edit_restrictions() {
     realm.realm_message_content_edit_limit_seconds = null;
     realm.realm_allow_edit_history = true;
     realm.realm_message_content_delete_limit_seconds = null;
-    realm.realm_delete_own_message_policy = 1;
     realm.realm_enable_read_receipts = true;
     realm.realm_edit_topic_policy = 5;
     realm.realm_move_messages_within_stream_limit_seconds = null;

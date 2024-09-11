@@ -94,7 +94,6 @@ from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import (
-    CommonMessagePolicyEnum,
     EditTopicPolicyEnum,
     get_corresponding_policy_value_for_group_setting,
     get_realm_domains,
@@ -332,11 +331,6 @@ def fetch_initial_state_data(
         )
         state["realm_edit_topic_policy"] = (
             EditTopicPolicyEnum.ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
-        )
-        state["realm_delete_own_message_policy"] = (
-            CommonMessagePolicyEnum.ADMINS_ONLY
-            if user_profile is None
-            else realm.delete_own_message_policy
         )
 
         # This setting determines whether to send presence and also

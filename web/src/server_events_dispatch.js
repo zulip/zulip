@@ -215,7 +215,6 @@ export function dispatch_normal_event(event) {
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
-                delete_own_message_policy: noop,
                 description: noop,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,

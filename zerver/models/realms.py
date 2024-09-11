@@ -318,11 +318,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
-    # Who in the organization is allowed to delete messages they themselves sent.
-    delete_own_message_policy = models.PositiveSmallIntegerField(
-        default=CommonMessagePolicyEnum.EVERYONE
-    )
-
     # Who in the organization is allowed to edit topics of any message.
     edit_topic_policy = models.PositiveSmallIntegerField(default=EditTopicPolicyEnum.EVERYONE)
 
@@ -657,7 +652,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         bot_creation_policy=int,
         default_code_block_language=str,
         default_language=str,
-        delete_own_message_policy=int,
         description=str,
         digest_emails_enabled=bool,
         digest_weekday=int,
