@@ -53,7 +53,7 @@ export type MessageContainer = {
     include_sender: boolean;
     is_hidden: boolean;
     last_edit_timestr: string | undefined;
-    mention_classname: string | null;
+    mention_classname: string | undefined;
     message_edit_notices_in_left_col: boolean;
     message_edit_notices_alongside_sender: boolean;
     message_edit_notices_for_status_message: boolean;
@@ -653,7 +653,7 @@ export class MessageListView {
         sender_is_guest: boolean;
         should_add_guest_indicator_for_sender: boolean;
         is_hidden: boolean;
-        mention_classname?: string | null;
+        mention_classname: string | undefined;
         include_sender: boolean;
         status_message: string | false;
         last_edit_timestr: string | undefined;
@@ -704,14 +704,14 @@ export class MessageListView {
                     stream_data.is_user_subscribed(message.stream_id, people.my_current_user_id())
                 ) {
                     mention_classname = "direct_mention";
+                } else {
+                    mention_classname = undefined;
                 }
             } else {
                 mention_classname = "group_mention";
             }
         } else {
-            // If there are no mentions, the classname might need to be updated (i.e.
-            // removed) to reflect this.
-            mention_classname = null;
+            mention_classname = undefined;
         }
         let include_sender = existing_include_sender && !is_hidden;
         if (is_revealed) {
@@ -742,8 +742,7 @@ export class MessageListView {
             sender_is_guest,
             should_add_guest_indicator_for_sender,
             is_hidden,
-            // don't set this unless we found a new value for it.
-            ...(mention_classname !== undefined && {mention_classname}),
+            mention_classname,
             include_sender,
             ...this._maybe_get_me_message(is_hidden, message),
             ...this._get_message_edited_vars(message),
@@ -905,7 +904,6 @@ export class MessageListView {
                 ...(pm_with_url && {pm_with_url}),
                 want_date_divider,
                 date_divider_html,
-                mention_classname: null,
                 ...calculated_variables,
                 ...this.get_edited_notice_locations(
                     include_sender,
