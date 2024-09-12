@@ -4328,8 +4328,15 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     @classmethod
     def check_config(cls) -> bool:
         mandatory_config_keys = ["oidc_url", "client_id", "secret"]
-        for idp_config_dict in settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values():
-            if not all(idp_config_dict.get(key) for key in mandatory_config_keys):
+        logger = logging.getLogger(f"zulip.auth.{cls.name}")
+        for idp_name, idp_config_dict in settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.items():
+            missing_keys = [key for key in mandatory_config_keys if not idp_config_dict.get(key)]
+            if missing_keys:
+                logger.error(
+                    "OIDC IdP %r is missing required configuration keys: %r",
+                    idp_name,
+                    missing_keys,
+                )
                 return False
 
         return True

@@ -5234,8 +5234,13 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
         mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
         [idp_config_dict] = mock_oidc_setting_dict.values()
         del idp_config_dict["client_id"]
+        missing_keys_log = self.logger_output(
+            "OIDC IdP 'testoidc' is missing required configuration keys: ['client_id']",
+            "error",
+        )
         with (
             self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict),
+            self.assertLogs(self.logger_string, level="ERROR") as oidc_log,
             self.assertLogs("django.request", level="ERROR") as m,
         ):
             result = self.social_auth_test(
@@ -5248,9 +5253,11 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
                 m.output,
                 [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"],
             )
+            self.assertEqual(oidc_log.output, [missing_keys_log])
 
         with (
             self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict),
+            self.assertLogs(self.logger_string, level="ERROR") as oidc_log,
             self.assertLogs("django.request", level="ERROR") as m,
         ):
             result = self.social_auth_test(
@@ -5262,6 +5269,7 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
             self.assertEqual(
                 m.output, [f"ERROR:django.request:Internal Server Error: {self.SIGNUP_URL}"]
             )
+            self.assertEqual(oidc_log.output, [missing_keys_log])
 
     def test_social_auth_oidc_multiple_idps_configured(self) -> None:
         idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
