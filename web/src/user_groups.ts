@@ -95,6 +95,12 @@ export function update(event: UserGroupUpdateEvent): void {
         user_group_name_dict.set(group.name, group);
     }
 
+    if (event.data.deactivated !== undefined) {
+        group.deactivated = event.data.deactivated;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
     if (event.data.can_mention_group !== undefined) {
         group.can_mention_group = event.data.can_mention_group;
         user_group_name_dict.delete(group.name);
