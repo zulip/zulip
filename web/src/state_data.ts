@@ -146,6 +146,7 @@ export const user_group_schema = z.object({
     direct_subgroup_ids: z.array(z.number()),
     can_manage_group: z.number(),
     can_mention_group: z.number(),
+    deactivated: z.boolean(),
 });
 
 export const user_topic_schema = z.object({

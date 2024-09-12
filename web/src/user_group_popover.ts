@@ -101,6 +101,7 @@ export function toggle_user_group_info_popover(
                     group_edit_url: hash_util.group_edit_url(group, "general"),
                     is_guest: current_user.is_guest,
                     is_system_group: group.is_system_group,
+                    deactivated: group.deactivated,
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
             },
