@@ -90,6 +90,7 @@ def request_event_queue(
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
+    include_deactivated_groups: bool = False,
 ) -> str | None:
     if not settings.USING_TORNADO:
         return None
@@ -113,6 +114,7 @@ def request_event_queue(
         "pronouns_field_type_supported": orjson.dumps(pronouns_field_type_supported),
         "linkifier_url_template": orjson.dumps(linkifier_url_template),
         "user_list_incomplete": orjson.dumps(user_list_incomplete),
+        "include_deactivated_groups": orjson.dumps(include_deactivated_groups),
     }
 
     if event_types is not None:

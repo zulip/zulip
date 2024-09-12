@@ -78,6 +78,7 @@ class ClientDescriptor:
         pronouns_field_type_supported: bool = True,
         linkifier_url_template: bool = False,
         user_list_incomplete: bool = False,
+        include_deactivated_groups: bool = False,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -108,6 +109,7 @@ class ClientDescriptor:
         self.pronouns_field_type_supported = pronouns_field_type_supported
         self.linkifier_url_template = linkifier_url_template
         self.user_list_incomplete = user_list_incomplete
+        self.include_deactivated_groups = include_deactivated_groups
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -138,6 +140,7 @@ class ClientDescriptor:
             pronouns_field_type_supported=self.pronouns_field_type_supported,
             linkifier_url_template=self.linkifier_url_template,
             user_list_incomplete=self.user_list_incomplete,
+            include_deactivated_groups=self.include_deactivated_groups,
         )
 
     @override
@@ -174,6 +177,7 @@ class ClientDescriptor:
             d.get("pronouns_field_type_supported", True),
             d.get("linkifier_url_template", False),
             d.get("user_list_incomplete", False),
+            d.get("include_deactivated_groups", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -231,6 +235,16 @@ class ClientDescriptor:
             # events are sent only if user_settings_object is False,
             # otherwise only 'user_settings' event is sent.
             return False
+        if event["type"] == "user_group":
+            if event["op"] == "remove":
+                # 'user_group/remove' events are only sent if the client
+                # cannot filter out deactivated groups by themselves.
+                return not self.include_deactivated_groups
+            if event["op"] == "update" and "deactivated" in event["data"]:
+                # 'update' events for group deactivation are only sent to
+                # clients who can filter out deactivated groups by themselves.
+                # Other clients receive 'remove' event.
+                return self.include_deactivated_groups
         return True
 
     # TODO: Refactor so we don't need this function
@@ -1556,6 +1570,21 @@ def reformat_legacy_send_message_event(
     return (modern_event, user_dicts)
 
 
+def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    user_group_event = dict(event)
+    # 'deactivated' field is no longer needed and can be popped, as we now
+    # know whether the group that was renamed is deactivated or not and can
+    # avoid sending the event to client with 'include_deactivated_groups'
+    # client capability set to false.
+    event_for_deactivated_group = user_group_event.pop("deactivated", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(user_group_event):
+                if event_for_deactivated_group and not client.include_deactivated_groups:
+                    continue
+                client.add_event(user_group_event)
+
+
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: list[int] | list[Mapping[str, Any]] = notice["users"]
@@ -1579,6 +1608,11 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_custom_profile_fields_event(event, cast(list[int], users))
     elif event["type"] == "realm_user" and event["op"] == "add":
         process_realm_user_add_event(event, cast(list[int], users))
+    elif event["type"] == "user_group" and event["op"] == "update" and "name" in event["data"]:
+        # Only name can be changed for deactivated groups, so we handle the
+        # event sent for updating name separately for clients with different
+        # capabilities.
+        process_user_group_name_update_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.
