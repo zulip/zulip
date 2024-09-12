@@ -314,7 +314,7 @@ export class MessageList {
         // false.
         if (!opts.use_closest && closest_id !== id) {
             error_data = {
-                filter_terms: this.filter.terms(),
+                filter_terms: this.data.filter.terms(),
                 id,
                 closest_id,
             };
@@ -323,7 +323,7 @@ export class MessageList {
 
         if (closest_id === -1 && !opts.empty_ok) {
             error_data = {
-                filter_terms: this.filter.terms(),
+                filter_terms: this.data.filter.terms(),
                 id,
                 items_length: this.data.num_items(),
             };
