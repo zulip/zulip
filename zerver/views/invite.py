@@ -60,6 +60,9 @@ def invite_users_backend(
     stream_ids: Json[list[int]],
     include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
+    
+    is_guest_invite = invite_as == PreregistrationUser.INVITE_AS["GUEST"]
+    
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.
@@ -93,7 +96,14 @@ def invite_users_backend(
 
     if len(streams) and not user_profile.can_subscribe_other_users():
         raise JsonableError(_("You do not have permission to subscribe other users to channels."))
-
+    
+    if is_guest_invite:
+        visible_users_count = sum(len(stream.recipient.get_users()) for stream in streams)
+        # Construct a message to be sent to the frontend
+        message = f"Guests will be able to see {visible_users_count} users in their channels when they join."
+    else:
+        message = ""
+    
     skipped = do_invite_users(
         user_profile,
         invitee_emails,
@@ -115,7 +125,7 @@ def invite_users_backend(
             sent_invitations=True,
         )
 
-    return json_success(request)
+    return json_success(request, data={"visible_users_message": message})
 
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
