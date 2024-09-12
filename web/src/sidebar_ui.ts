@@ -268,6 +268,11 @@ export function initialize_right_sidebar(): void {
         },
     );
 
+    $("#buddy-list-participants-container").on("click", ".buddy-list-subsection-header", (e) => {
+        e.stopPropagation();
+        buddy_list.toggle_participants_section();
+    });
+
     $("#buddy-list-other-users-container").on("click", ".buddy-list-subsection-header", (e) => {
         e.stopPropagation();
         buddy_list.toggle_other_users_section();

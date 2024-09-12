@@ -15,6 +15,7 @@ import type {BuddyUserInfo} from "./buddy_data";
 import {media_breakpoints_num} from "./css_variables";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as padded_widget from "./padded_widget";
@@ -78,6 +79,7 @@ type BuddyListRenderData = {
     other_users_count: number;
     total_human_users: number;
     hide_headers: boolean;
+    participant_ids_set: Set<number>;
 };
 
 function get_render_data(): BuddyListRenderData {
@@ -88,6 +90,17 @@ function get_render_data(): BuddyListRenderData {
     const total_human_users = people.get_active_human_count();
     const other_users_count = total_human_users - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
+    const participant_ids_set = new Set<number>();
+    if (current_sub && narrow_state.topic() && message_lists.current) {
+        for (const message of message_lists.current.all_messages()) {
+            if (
+                !people.is_valid_bot_user(message.sender_id) &&
+                people.is_person_active(message.sender_id)
+            ) {
+                participant_ids_set.add(message.sender_id);
+            }
+        }
+    }
 
     return {
         current_sub,
@@ -96,10 +109,12 @@ function get_render_data(): BuddyListRenderData {
         other_users_count,
         total_human_users,
         hide_headers,
+        participant_ids_set,
     };
 }
 
 class BuddyListConf {
+    participants_list_selector = "#buddy-list-participants";
     matching_view_list_selector = "#buddy-list-users-matching-view";
     other_user_list_selector = "#buddy-list-other-users";
     scroll_container_selector = "#buddy_list_wrapper";
@@ -149,14 +164,17 @@ class BuddyListConf {
 
 export class BuddyList extends BuddyListConf {
     all_user_ids: number[] = [];
+    participant_user_ids: number[] = [];
     users_matching_view_ids: number[] = [];
     other_user_ids: number[] = [];
+    participants_is_collapsed = false;
     users_matching_view_is_collapsed = false;
     other_users_is_collapsed = true;
     render_count = 0;
     render_data = get_render_data();
     // This is a bit of a hack to make sure we at least have
     // an empty list to start, before we get the initial payload.
+    $participants_list = $(this.participants_list_selector);
     $users_matching_view_list = $(this.matching_view_list_selector);
     $other_users_list = $(this.other_user_list_selector);
 
@@ -198,9 +216,29 @@ export class BuddyList extends BuddyListConf {
                             current_sub,
                             pm_ids_set,
                         );
+                        const participant_count = Number.parseInt(
+                            $("#buddy-list-participants-section-heading").attr("data-user-count")!,
+                            10,
+                        );
                         const elem_id = $elem.attr("id");
-                        if (elem_id === "buddy-list-users-matching-view-section-heading") {
-                            if (current_sub) {
+                        if (elem_id === "buddy-list-participants-section-heading") {
+                            tooltip_text = $t(
+                                {
+                                    defaultMessage:
+                                        "{N, plural, one {# participant} other {# participants}}",
+                                },
+                                {N: participant_count},
+                            );
+                        } else if (elem_id === "buddy-list-users-matching-view-section-heading") {
+                            if (participant_count) {
+                                tooltip_text = $t(
+                                    {
+                                        defaultMessage:
+                                            "{N, plural, one {# other subscriber} other {# other subscribers}}",
+                                    },
+                                    {N: total_human_subscribers_count - participant_count},
+                                );
+                            } else if (current_sub) {
                                 tooltip_text = $t(
                                     {
                                         defaultMessage:
@@ -242,6 +280,8 @@ export class BuddyList extends BuddyListConf {
 
     populate(opts: {all_user_ids: number[]}): void {
         this.render_count = 0;
+        this.$participants_list.empty();
+        this.participant_user_ids = [];
         this.$users_matching_view_list.empty();
         this.users_matching_view_ids = [];
         this.$other_users_list.empty();
@@ -332,11 +372,23 @@ export class BuddyList extends BuddyListConf {
             other_users_count,
             total_human_users,
             hide_headers,
+            participant_ids_set,
         } = this.render_data;
-        $("#buddy-list-users-matching-view-container .buddy-list-subsection-header").empty();
-        $("#buddy-list-other-users-container .buddy-list-subsection-header").empty();
+        $(".buddy-list-subsection-header").empty();
 
+        // If we're in the mode of hiding headers, that means we're only showing the "other users"
+        // section, so hide the other two sections.
         $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
+        const show_participants_list = !hide_headers && participant_ids_set.size;
+        $("#buddy-list-participants-container").toggleClass("no-display", !show_participants_list);
+        // This is the case where every subscriber is in the participants list. In this case, we
+        // hide the "others in this channel" section.
+        if (
+            show_participants_list &&
+            total_human_subscribers_count === this.participant_user_ids.length
+        ) {
+            $("#buddy-list-users-matching-view-container").toggleClass("no-display", true);
+        }
 
         // Usually we show the user counts in the headers, but if we're hiding
         // those headers then we show the total user count in the main title.
@@ -351,17 +403,35 @@ export class BuddyList extends BuddyListConf {
 
         let header_text;
         if (current_sub) {
-            header_text = $t({defaultMessage: "In this channel"});
+            if (participant_ids_set.size) {
+                header_text = $t({defaultMessage: "Others in this channel"});
+            } else {
+                header_text = $t({defaultMessage: "In this channel"});
+            }
         } else {
             header_text = $t({defaultMessage: "In this conversation"});
         }
+
+        $("#buddy-list-participants-container .buddy-list-subsection-header").append(
+            $(
+                render_section_header({
+                    id: "buddy-list-participants-section-heading",
+                    header_text: $t({defaultMessage: "In this conversation"}),
+                    user_count: get_formatted_sub_count(this.participant_user_ids.length),
+                    toggle_class: "toggle-participants",
+                    is_collapsed: this.participants_is_collapsed,
+                }),
+            ),
+        );
 
         $("#buddy-list-users-matching-view-container .buddy-list-subsection-header").append(
             $(
                 render_section_header({
                     id: "buddy-list-users-matching-view-section-heading",
                     header_text,
-                    user_count: get_formatted_sub_count(total_human_subscribers_count),
+                    user_count: get_formatted_sub_count(
+                        total_human_subscribers_count - this.participant_user_ids.length,
+                    ),
                     toggle_class: "toggle-users-matching-view",
                     is_collapsed: this.users_matching_view_is_collapsed,
                 }),
@@ -379,6 +449,26 @@ export class BuddyList extends BuddyListConf {
                 }),
             ),
         );
+    }
+
+    toggle_participants_section(): void {
+        this.participants_is_collapsed = !this.participants_is_collapsed;
+        $("#buddy-list-participants-container").toggleClass(
+            "collapsed",
+            this.participants_is_collapsed,
+        );
+        $("#buddy-list-participants-container .toggle-participants").toggleClass(
+            "fa-caret-down",
+            !this.participants_is_collapsed,
+        );
+        $("#buddy-list-participants-container .toggle-participants").toggleClass(
+            "fa-caret-right",
+            this.participants_is_collapsed,
+        );
+
+        // Collapsing and uncollapsing sections has a similar effect to
+        // scrolling, so we make sure to fill screen with content here as well.
+        this.fill_screen_with_content();
     }
 
     toggle_users_matching_view_section(): void {
@@ -434,6 +524,7 @@ export class BuddyList extends BuddyListConf {
         }
 
         const items = this.get_data_from_user_ids(more_user_ids);
+        const participants = [];
         const subscribed_users = [];
         const other_users = [];
         const current_sub = this.render_data.current_sub;
@@ -441,12 +532,25 @@ export class BuddyList extends BuddyListConf {
 
         for (const item of items) {
             if (buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)) {
-                subscribed_users.push(item);
-                this.users_matching_view_ids.push(item.user_id);
+                if (this.render_data.participant_ids_set.has(item.user_id)) {
+                    participants.push(item);
+                    this.participant_user_ids.push(item.user_id);
+                } else {
+                    subscribed_users.push(item);
+                    this.users_matching_view_ids.push(item.user_id);
+                }
             } else {
                 other_users.push(item);
                 this.other_user_ids.push(item.user_id);
             }
+        }
+
+        this.$participants_list = $(this.participants_list_selector);
+        if (participants.length) {
+            const participants_html = this.items_to_html({
+                items: participants,
+            });
+            this.$participants_list.append($(participants_html));
         }
 
         this.$users_matching_view_list = $(this.matching_view_list_selector);
@@ -486,7 +590,8 @@ export class BuddyList extends BuddyListConf {
     render_view_user_list_links(): void {
         const {current_sub, total_human_subscribers_count, other_users_count} = this.render_data;
         const has_inactive_users_matching_view =
-            total_human_subscribers_count > this.users_matching_view_ids.length;
+            total_human_subscribers_count >
+            this.users_matching_view_ids.length + this.participant_user_ids.length;
         const has_inactive_other_users = other_users_count > this.other_user_ids.length;
 
         // For stream views, we show a link at the bottom of the list of subscribed users that
@@ -514,10 +619,16 @@ export class BuddyList extends BuddyListConf {
         if (has_inactive_other_users) {
             $("#buddy-list-other-users-container").append($(render_view_all_users()));
         }
+
+        // Note that we don't show a link for the participants list because we expect
+        // all participants to be shown (except bots or deactivated users).
     }
 
     // From `type List<Key>`, where the key is a user_id.
     first_key(): number | undefined {
+        if (this.participant_user_ids.length) {
+            return this.participant_user_ids[0];
+        }
         if (this.users_matching_view_ids.length) {
             return this.users_matching_view_ids[0];
         }
@@ -529,14 +640,29 @@ export class BuddyList extends BuddyListConf {
 
     // From `type List<Key>`, where the key is a user_id.
     prev_key(key: number): number | undefined {
-        let i = this.users_matching_view_ids.indexOf(key);
+        let i = this.participant_user_ids.indexOf(key);
+        // This would be the middle of the list of participants,
+        // moving to a prev participant.
+        if (i > 0) {
+            return this.participant_user_ids[i - 1];
+        }
+        // If it's the first participant, we don't move the selection.
+        if (i === 0) {
+            return undefined;
+        }
+
+        i = this.users_matching_view_ids.indexOf(key);
         // This would be the middle of the list of users matching view,
         // moving to a prev user matching the view.
         if (i > 0) {
             return this.users_matching_view_ids[i - 1];
         }
-        // If it's the first user matching the view, we don't move the selection.
+        // The key before the first user matching view is the last participant, if that exists,
+        // and if it doesn't then we don't move the selection.
         if (i === 0) {
+            if (this.participant_user_ids.length > 0) {
+                return this.participant_user_ids.at(-1);
+            }
             return undefined;
         }
 
@@ -551,12 +677,17 @@ export class BuddyList extends BuddyListConf {
             if (this.users_matching_view_ids.length > 0) {
                 return this.users_matching_view_ids.at(-1);
             }
+            // If there are no matching users but there are participants, go there
+            if (this.participant_user_ids.length > 0) {
+                return this.participant_user_ids.at(-1);
+            }
             return undefined;
         }
         // The only way we reach here is if the key isn't found in either list,
         // which shouldn't happen.
         blueslip.error("Couldn't find key in buddy list", {
             key,
+            participant_user_ids: this.participant_user_ids,
             users_matching_view_ids: this.users_matching_view_ids,
             other_user_ids: this.other_user_ids,
         });
@@ -565,7 +696,25 @@ export class BuddyList extends BuddyListConf {
 
     // From `type List<Key>`, where the key is a user_id.
     next_key(key: number): number | undefined {
-        let i = this.users_matching_view_ids.indexOf(key);
+        let i = this.participant_user_ids.indexOf(key);
+        // Moving from participants to the list of users matching view,
+        // if they exist, otherwise do nothing.
+        if (i >= 0 && i === this.participant_user_ids.length - 1) {
+            if (this.users_matching_view_ids.length > 0) {
+                return this.users_matching_view_ids[0];
+            }
+            // If there are no matching users but there are other users, go there
+            if (this.other_user_ids.length > 0) {
+                return this.other_user_ids[0];
+            }
+            return undefined;
+        }
+        // This is a regular move within the list of users matching the view.
+        if (i >= 0) {
+            return this.participant_user_ids[i + 1];
+        }
+
+        i = this.users_matching_view_ids.indexOf(key);
         // Moving from users matching the view to the list of other users,
         // if they exist, otherwise do nothing.
         if (i >= 0 && i === this.users_matching_view_ids.length - 1) {
@@ -593,6 +742,7 @@ export class BuddyList extends BuddyListConf {
         // which shouldn't happen.
         blueslip.error("Couldn't find key in buddy list", {
             key,
+            participant_user_ids: this.participant_user_ids,
             users_matching_view_ids: this.users_matching_view_ids,
             other_user_ids: this.other_user_ids,
         });
@@ -601,7 +751,11 @@ export class BuddyList extends BuddyListConf {
 
     maybe_remove_user_id(opts: {user_id: number}): void {
         let was_removed = false;
-        for (const user_id_list of [this.users_matching_view_ids, this.other_user_ids]) {
+        for (const user_id_list of [
+            this.participant_user_ids,
+            this.users_matching_view_ids,
+            this.other_user_ids,
+        ]) {
             const pos = user_id_list.indexOf(opts.user_id);
             if (pos >= 0) {
                 user_id_list.splice(pos, 1);
@@ -699,14 +853,18 @@ export class BuddyList extends BuddyListConf {
         new_user_id: number | undefined;
         html: string;
         is_subscribed_user: boolean;
+        is_participant_user: boolean;
     }): void {
         const user_id_following_insertion = opts.new_user_id;
         const html = opts.html;
         const is_subscribed_user = opts.is_subscribed_user;
+        const is_participant_user = opts.is_participant_user;
 
         // This means we're inserting at the end
         if (user_id_following_insertion === undefined) {
-            if (is_subscribed_user) {
+            if (is_participant_user) {
+                this.$participants_list.append($(html));
+            } else if (is_subscribed_user) {
                 this.$users_matching_view_list.append($(html));
             } else {
                 this.$other_users_list.append($(html));
@@ -739,9 +897,14 @@ export class BuddyList extends BuddyListConf {
             pm_ids_set,
             current_sub?.stream_id,
         );
-        const user_id_list = is_subscribed_user
-            ? this.users_matching_view_ids
-            : this.other_user_ids;
+        let user_id_list;
+        if (this.render_data.participant_ids_set.has(user_id)) {
+            user_id_list = this.participant_user_ids;
+        } else if (is_subscribed_user) {
+            user_id_list = this.users_matching_view_ids;
+        } else {
+            user_id_list = this.other_user_ids;
+        }
         const new_pos_in_user_list = this.find_position({
             user_id,
             user_id_list,
@@ -760,6 +923,7 @@ export class BuddyList extends BuddyListConf {
             html,
             new_user_id,
             is_subscribed_user,
+            is_participant_user: this.render_data.participant_ids_set.has(user_id),
         });
     }
 

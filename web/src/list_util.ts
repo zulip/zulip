@@ -5,6 +5,7 @@ const list_selectors = [
     "#left-sidebar-navigation-list",
     "#buddy-list-users-matching-view",
     "#buddy-list-other-users",
+    "#buddy-list-participants",
     "#send_later_options",
 ];
 
