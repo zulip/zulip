@@ -11,7 +11,7 @@
         <div class="bot-settings-tip" id="personal-bot-settings-tip">
         </div>
         <div>
-            <button class="button rounded sea-green add-a-new-bot {{#unless can_create_new_bots}}hide{{/unless}}">{{t "Add a new bot" }}</button>
+            <button class="button rounded add-a-new-bot {{#unless can_create_new_bots}}hide{{/unless}}">{{t "Add a new bot" }}</button>
         </div>
         {{/unless}}
 
@@ -23,7 +23,7 @@
             <div class="config-download-text">
                 <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
                 <a type="submit" download="{{botserverrc}}" id= "download_botserverrc" class="btn tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download botserverrc' }}">
-                    <i class="fa fa-download sea-green" aria-hidden="true"></i>
+                    <i class="fa fa-download" aria-hidden="true"></i>
                 </a>
             </div>
             <ol id="active_bots_list" class="bots_list" data-empty="{{t 'You have no active bots.' }}">
