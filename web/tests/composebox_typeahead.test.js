@@ -432,6 +432,7 @@ const hamletcharacters = user_group_item({
     direct_subgroup_ids: new Set([]),
     can_manage_group: 2,
     can_mention_group: 2,
+    deactivated: false,
 });
 
 const backend = user_group_item({
@@ -445,6 +446,7 @@ const backend = user_group_item({
     direct_subgroup_ids: new Set([1]),
     can_manage_group: 1,
     can_mention_group: 1,
+    deactivated: false,
 });
 
 const call_center = user_group_item({
@@ -458,6 +460,7 @@ const call_center = user_group_item({
     direct_subgroup_ids: new Set([]),
     can_manage_group: 2,
     can_mention_group: 2,
+    deactivated: false,
 });
 
 const make_emoji = (emoji_dict) => ({

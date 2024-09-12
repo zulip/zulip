@@ -57,6 +57,7 @@ export function add(user_group_raw: UserGroupRaw): UserGroup {
         direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),
         can_manage_group: user_group_raw.can_manage_group,
         can_mention_group: user_group_raw.can_mention_group,
+        deactivated: user_group_raw.deactivated,
     };
 
     user_group_name_dict.set(user_group.name, user_group);
@@ -111,9 +112,19 @@ export function get_user_group_from_name(name: string): UserGroup | undefined {
     return user_group_name_dict.get(name);
 }
 
-export function get_realm_user_groups(): UserGroup[] {
+export function get_realm_user_groups(include_deactivated = false): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
-    return user_groups.filter((group) => !group.is_system_group);
+    return user_groups.filter((group) => {
+        if (group.is_system_group) {
+            return false;
+        }
+
+        if (!include_deactivated && group.deactivated) {
+            return false;
+        }
+
+        return true;
+    });
 }
 
 export function get_user_groups_allowed_to_mention(): UserGroup[] {

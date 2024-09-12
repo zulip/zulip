@@ -21,6 +21,7 @@ run_test("user_groups", () => {
         direct_subgroup_ids: new Set([4, 5]),
         can_manage_group: 1,
         can_mention_group: 2,
+        deactivated: false,
     };
 
     const params = {};
@@ -42,6 +43,7 @@ run_test("user_groups", () => {
         direct_subgroup_ids: new Set([]),
         can_manage_group: 1,
         can_mention_group: 2,
+        deactivated: false,
     };
     const all = {
         name: "Everyone",
@@ -51,6 +53,17 @@ run_test("user_groups", () => {
         direct_subgroup_ids: new Set([4, 5, 6]),
         can_manage_group: 1,
         can_mention_group: 1,
+        deactivated: false,
+    };
+    const deactivated_group = {
+        name: "Deactivated test group",
+        id: 3,
+        members: new Set([1, 2, 3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4, 5, 6]),
+        can_manage_group: 1,
+        can_mention_group: 1,
+        deactivated: true,
     };
 
     user_groups.add(admins);
@@ -92,10 +105,17 @@ run_test("user_groups", () => {
     assert.equal(user_groups.get_user_group_from_name("new admins").id, 1);
 
     user_groups.add(all);
+    user_groups.add(deactivated_group);
     const user_groups_array = user_groups.get_realm_user_groups();
     assert.equal(user_groups_array.length, 2);
     assert.equal(user_groups_array[1].name, "Everyone");
     assert.equal(user_groups_array[0].name, "new admins");
+
+    const all_user_groups_array = user_groups.get_realm_user_groups(true);
+    assert.equal(all_user_groups_array.length, 3);
+    assert.equal(all_user_groups_array[2].name, "Deactivated test group");
+    assert.equal(all_user_groups_array[1].name, "Everyone");
+    assert.equal(all_user_groups_array[0].name, "new admins");
 
     const groups_of_users = user_groups.get_user_groups_of_user(user_id_part_of_a_group);
     assert.equal(groups_of_users.length, 1);
