@@ -4,9 +4,11 @@ import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import * as compose_tooltips from "./compose_tooltips";
+import type {Filter} from "./filter";
 import {MessageListData} from "./message_list_data";
 import * as message_list_tooltips from "./message_list_tooltips";
 import {MessageListView} from "./message_list_view";
+import type {Message} from "./message_store";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -15,21 +17,57 @@ import * as stream_data from "./stream_data";
 import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 
+export type RenderInfo = {need_user_to_scroll: boolean};
+
+type SelectIdOpts = {
+    then_scroll?: boolean;
+    target_scroll_offset?: number;
+    use_closest?: boolean;
+    empty_ok?: boolean;
+    mark_read?: boolean;
+    force_rerender?: boolean;
+    from_scroll?: boolean;
+    from_rendering?: boolean;
+};
+
+// A MessageList is the main interface for a message feed that is
+// rendered in the DOM. Code outside the message feed rendering
+// internals will directly call this module in order to manipulate
+// a message feed.
+//
+// Each MessageList has an associated MessageListData, which
+// manages the messages, and a MessageListView, which manages the
+// the templates/HTML rendering as well as invisible pagination.
+//
+// TODO: The abstraction boundary between this and MessageListView
+// is not particularly well-defined; it could be nice to figure
+// out a good rule.
 export class MessageList {
     static id_counter = 0;
-    // A MessageList is the main interface for a message feed that is
-    // rendered in the DOM. Code outside the message feed rendering
-    // internals will directly call this module in order to manipulate
-    // a message feed.
+
+    id: number;
+    data: MessageListData;
+    // The MessageListView object that is responsible for
+    // maintaining this message feed's HTML representation in the
+    // DOM.
+    view: MessageListView;
+    // If this message list is for the combined feed view.
+    is_combined_feed_view: boolean;
+    // Keeps track of whether the user has done a UI interaction,
+    // such as "Mark as unread", that should disable marking
+    // messages as read until prevent_reading is called again.
     //
-    // Each MessageList has an associated MessageListData, which
-    // manages the messages, and a MessageListView, which manages the
-    // the templates/HTML rendering as well as invisible pagination.
-    //
-    // TODO: The abstraction boundary between this and MessageListView
-    // is not particularly well-defined; it could be nice to figure
-    // out a good rule.
-    constructor(opts) {
+    // Distinct from filter.can_mark_messages_read(), which is a
+    // property of the type of narrow, regardless of actions by
+    // the user. Possibly this can be unified in some nice way.
+    reading_prevented: boolean;
+    last_message_historical?: boolean;
+    constructor(opts: {
+        data: MessageListData;
+        filter: Filter;
+        excludes_muted_topics: boolean;
+        is_node_test: boolean;
+    }) {
         MessageList.id_counter += 1;
         this.id = MessageList.id_counter;
         // The MessageListData keeps track of the actual sequence of
@@ -55,27 +93,14 @@ export class MessageList {
         // query .data.filter directly.
         const collapse_messages = this.data.filter.supports_collapsing_recipients();
 
-        // The MessageListView object that is responsible for
-        // maintaining this message feed's HTML representation in the
-        // DOM.
         this.view = new MessageListView(this, collapse_messages, opts.is_node_test);
-
-        // If this message list is for the combined feed view.
         this.is_combined_feed_view = this.data.filter.is_in_home();
-
-        // Keeps track of whether the user has done a UI interaction,
-        // such as "Mark as unread", that should disable marking
-        // messages as read until prevent_reading is called again.
-        //
-        // Distinct from filter.can_mark_messages_read(), which is a
-        // property of the type of narrow, regardless of actions by
-        // the user. Possibly this can be unified in some nice way.
         this.reading_prevented = false;
 
         return this;
     }
 
-    should_preserve_current_rendered_state() {
+    should_preserve_current_rendered_state(): boolean {
         // Whether this message list is preserved in the DOM even
         // when viewing other views -- a valuable optimization for
         // fast toggling between the combined feed and other views,
@@ -125,19 +150,22 @@ export class MessageList {
         return true;
     }
 
-    is_current_message_list() {
+    is_current_message_list(): boolean {
         return this.view.is_current_message_list();
     }
 
-    prevent_reading() {
+    prevent_reading(): void {
         this.reading_prevented = true;
     }
 
-    resume_reading() {
+    resume_reading(): void {
         this.reading_prevented = false;
     }
 
-    add_messages(messages, opts) {
+    add_messages(
+        messages: Message[],
+        append_to_view_opts: {messages_are_new?: boolean},
+    ): RenderInfo | undefined {
         // This adds all messages to our data, but only returns
         // the currently viewable ones.
         const info = this.data.add_messages(messages);
@@ -161,7 +189,7 @@ export class MessageList {
         }
 
         if (bottom_messages.length > 0) {
-            render_info = this.append_to_view(bottom_messages, opts);
+            render_info = this.append_to_view(bottom_messages, append_to_view_opts);
         }
 
         if (!this.visibly_empty() && this.is_current_message_list()) {
@@ -185,51 +213,51 @@ export class MessageList {
         return render_info;
     }
 
-    get(id) {
+    get(id: number): Message | undefined {
         return this.data.get(id);
     }
 
-    msg_id_in_fetched_range(msg_id) {
+    msg_id_in_fetched_range(msg_id: number): boolean {
         return this.data.msg_id_in_fetched_range(msg_id);
     }
 
-    num_items() {
+    num_items(): number {
         return this.data.num_items();
     }
 
-    empty() {
+    empty(): boolean {
         return this.data.empty();
     }
 
-    visibly_empty() {
+    visibly_empty(): boolean {
         return this.data.visibly_empty();
     }
 
-    first() {
+    first(): Message | undefined {
         return this.data.first();
     }
 
-    last() {
+    last(): Message | undefined {
         return this.data.last();
     }
 
-    prev() {
+    prev(): number | undefined {
         return this.data.prev();
     }
 
-    next() {
+    next(): number | undefined {
         return this.data.next();
     }
 
-    is_at_end() {
+    is_at_end(): boolean {
         return this.data.is_at_end();
     }
 
-    is_keyword_search() {
+    is_keyword_search(): boolean {
         return this.data.is_keyword_search();
     }
 
-    can_mark_messages_read() {
+    can_mark_messages_read(): boolean {
         /* Automatically marking messages as read can be disabled for
            three different reasons:
            * The view is structurally a search view, encoded in the
@@ -256,7 +284,7 @@ export class MessageList {
         );
     }
 
-    can_mark_messages_read_without_setting() {
+    can_mark_messages_read_without_setting(): boolean {
         /*
             Similar to can_mark_messages_read() above, this is a helper
             function to check if messages can be automatically read without
@@ -265,7 +293,7 @@ export class MessageList {
         return this.data.can_mark_messages_read() && !this.reading_prevented;
     }
 
-    clear({clear_selected_id = true} = {}) {
+    clear({clear_selected_id = true} = {}): void {
         this.data.clear();
         this.view.clear_rendering_state(true);
 
@@ -274,33 +302,30 @@ export class MessageList {
         }
     }
 
-    selected_id() {
+    selected_id(): number {
         return this.data.selected_id();
     }
 
-    select_id(id, opts) {
-        opts = {
+    select_id(id: number | string, select_id_opts?: SelectIdOpts): void {
+        if (typeof id === "string") {
+            blueslip.warn("Call to select_id with string id");
+            id = Number.parseFloat(id);
+            if (Number.isNaN(id)) {
+                throw new TypeError("Bad message id " + id);
+            }
+        }
+        const opts = {
             then_scroll: false,
             target_scroll_offset: undefined,
             use_closest: false,
             empty_ok: false,
             mark_read: true,
             force_rerender: false,
-            ...opts,
+            ...select_id_opts,
             id,
             msg_list: this,
             previously_selected_id: this.data.selected_id(),
         };
-
-        const convert_id = (str_id) => {
-            const id = Number.parseFloat(str_id);
-            if (Number.isNaN(id)) {
-                throw new TypeError("Bad message id " + str_id);
-            }
-            return id;
-        };
-
-        id = convert_id(id);
 
         const closest_id = this.closest_id(id);
 
@@ -353,30 +378,30 @@ export class MessageList {
         }
     }
 
-    selected_message() {
+    selected_message(): Message | undefined {
         return this.get(this.data.selected_id());
     }
 
-    selected_row() {
+    selected_row(): JQuery {
         return this.get_row(this.data.selected_id());
     }
 
-    closest_id(id) {
+    closest_id(id: number): number {
         return this.data.closest_id(id);
     }
 
-    advance_past_messages(msg_ids) {
-        return this.data.advance_past_messages(msg_ids);
+    advance_past_messages(msg_ids: number[]): void {
+        this.data.advance_past_messages(msg_ids);
     }
 
-    selected_idx() {
+    selected_idx(): number {
         return this.data.selected_idx();
     }
 
     // Maintains a trailing bookend element explaining any changes in
     // your subscribed/unsubscribed status at the bottom of the
     // message list.
-    update_trailing_bookend(force_render = false) {
+    update_trailing_bookend(force_render = false): void {
         this.view.clear_trailing_bookend();
         if (this.is_combined_feed_view) {
             return;
@@ -415,7 +440,7 @@ export class MessageList {
         }
 
         this.view.render_trailing_bookend(
-            sub.name,
+            sub?.name,
             subscribed,
             deactivated,
             just_unsubscribed,
@@ -426,26 +451,25 @@ export class MessageList {
         );
     }
 
-    unmuted_messages(messages) {
+    unmuted_messages(messages: Message[]): Message[] {
         return this.data.unmuted_messages(messages);
     }
 
-    append(messages, opts) {
+    append(messages: Message[], opts: {messages_are_new: boolean}): void {
         const viewable_messages = this.data.append(messages);
         this.append_to_view(viewable_messages, opts);
     }
 
-    append_to_view(messages, {messages_are_new = false} = {}) {
-        const render_info = this.view.append(messages, messages_are_new);
-        return render_info;
+    append_to_view(messages: Message[], {messages_are_new = false} = {}): RenderInfo | undefined {
+        return this.view.append(messages, messages_are_new);
     }
 
-    remove_and_rerender(message_ids) {
+    remove_and_rerender(message_ids: number[]): void {
         this.data.remove(message_ids);
         this.rerender();
     }
 
-    show_edit_message($row, $form) {
+    show_edit_message($row: JQuery, $form: JQuery): void {
         if ($row.find(".message_edit_form form").length !== 0) {
             return;
         }
@@ -457,7 +481,7 @@ export class MessageList {
         autosize($row.find(".message_edit_content"));
     }
 
-    hide_edit_message($row) {
+    hide_edit_message($row: JQuery): void {
         if ($row.find(".message_edit_form form").length === 0) {
             return;
         }
@@ -468,7 +492,7 @@ export class MessageList {
         $row.trigger("mouseleave");
     }
 
-    show_edit_topic_on_recipient_row($recipient_row, $form) {
+    show_edit_topic_on_recipient_row($recipient_row: JQuery, $form: JQuery): void {
         $recipient_row.find(".topic_edit_form").append($form);
         $recipient_row.find(".on_hover_topic_edit").hide();
         $recipient_row.find(".edit_message_button").hide();
@@ -479,7 +503,7 @@ export class MessageList {
         $recipient_row.find(".on_hover_topic_unresolve").hide();
     }
 
-    hide_edit_topic_on_recipient_row($recipient_row) {
+    hide_edit_topic_on_recipient_row($recipient_row: JQuery): void {
         $recipient_row.find(".stream_topic").show();
         $recipient_row.find(".on_hover_topic_edit").show();
         $recipient_row.find(".edit_message_button").show();
@@ -490,7 +514,7 @@ export class MessageList {
         $recipient_row.find(".on_hover_topic_unresolve").show();
     }
 
-    reselect_selected_id() {
+    reselect_selected_id(): void {
         const selected_id = this.data.selected_id();
 
         if (selected_id !== -1) {
@@ -498,12 +522,12 @@ export class MessageList {
         }
     }
 
-    rerender_view() {
+    rerender_view(): void {
         this.view.rerender_preserving_scrolltop();
         this.reselect_selected_id();
     }
 
-    rerender() {
+    rerender(): void {
         // We need to destroy all the tippy instances from the DOM before re-rendering to
         // prevent the appearance of tooltips whose reference has been removed.
         message_list_tooltips.destroy_all_message_list_tooltips();
@@ -531,7 +555,7 @@ export class MessageList {
         this.rerender_view();
     }
 
-    update_muting_and_rerender() {
+    update_muting_and_rerender(): void {
         this.data.update_items_for_muting();
         // We need to rerender whether or not the narrow hides muted
         // topics, because we need to update recipient bars for topics
@@ -549,34 +573,34 @@ export class MessageList {
         this.rerender();
     }
 
-    all_messages() {
+    all_messages(): Message[] {
         return this.data.all_messages();
     }
 
-    first_unread_message_id() {
+    first_unread_message_id(): number | undefined {
         return this.data.first_unread_message_id();
     }
 
-    has_unread_messages() {
+    has_unread_messages(): boolean {
         return this.data.has_unread_messages();
     }
 
-    message_range(start, end) {
+    message_range(start: number, end: number): Message[] {
         return this.data.message_range(start, end);
     }
 
-    get_row(id) {
+    get_row(id: number): JQuery {
         return this.view.get_row(id);
     }
 
-    change_message_id(old_id, new_id) {
+    change_message_id(old_id: number, new_id: number): void {
         const require_rerender = this.data.change_message_id(old_id, new_id);
         if (require_rerender) {
             this.rerender_view();
         }
     }
 
-    get_last_message_sent_by_me() {
+    get_last_message_sent_by_me(): Message | undefined {
         return this.data.get_last_message_sent_by_me();
     }
 }

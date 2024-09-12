@@ -161,6 +161,7 @@ export function reply_with_mention(opts: {
         keep_composebox_empty: true,
     });
     const message = message_lists.current.selected_message();
+    assert(message !== undefined);
     const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
     compose_ui.insert_syntax_and_focus(mention);
 }

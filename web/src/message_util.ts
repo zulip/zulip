@@ -1,8 +1,8 @@
 import assert from "minimalistic-assert";
 
 import {all_messages_data} from "./all_messages_data";
+import type {MessageList, RenderInfo} from "./message_list";
 import type {MessageListData} from "./message_list_data";
-import {type MessageList, type RenderInfo} from "./message_lists";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";

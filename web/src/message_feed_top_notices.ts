@@ -3,8 +3,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util";
+import type {MessageList} from "./message_list";
 import * as message_lists from "./message_lists";
-import type {MessageList} from "./message_lists";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";

@@ -2,7 +2,7 @@ import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import type {MessageList} from "./message_lists";
+import type {MessageList} from "./message_list";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import type {PollWidgetOutboundData} from "./poll_widget";

@@ -19,9 +19,9 @@ import * as condense from "./condense";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
+import type {MessageList} from "./message_list";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
-import type {MessageList} from "./message_lists";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import * as message_viewport from "./message_viewport";
@@ -1936,7 +1936,7 @@ export class MessageListView {
     }
 
     render_trailing_bookend(
-        stream_name: string,
+        stream_name: string | undefined,
         subscribed: boolean,
         deactivated: boolean,
         just_unsubscribed: boolean,

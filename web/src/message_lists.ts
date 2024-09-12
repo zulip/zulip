@@ -1,68 +1,10 @@
 import $ from "jquery";
 
 import * as inbox_util from "./inbox_util";
+import type {MessageList} from "./message_list";
 import type {MessageListData} from "./message_list_data";
 import * as message_list_data_cache from "./message_list_data_cache";
-import type {MessageListView} from "./message_list_view";
-import type {Message} from "./message_store";
 import * as ui_util from "./ui_util";
-
-export type RenderInfo = {need_user_to_scroll: boolean};
-
-export type SelectIdOpts = {
-    then_scroll?: boolean;
-    target_scroll_offset?: number;
-    use_closest?: boolean;
-    empty_ok?: boolean;
-    mark_read?: boolean;
-    force_rerender?: boolean;
-    from_scroll?: boolean;
-};
-
-export type MessageList = {
-    id: number;
-    view: MessageListView;
-    is_combined_feed_view: boolean;
-    selected_id: () => number;
-    selected_row: () => JQuery;
-    selected_idx: () => number;
-    all_messages: () => Message[];
-    get: (id: number) => Message | undefined;
-    has_unread_messages: () => boolean;
-    can_mark_messages_read: () => boolean;
-    can_mark_messages_read_without_setting: () => boolean;
-    change_message_id: (old_id: number, new_id: number) => boolean;
-    remove_and_rerender: (id: number[]) => void;
-    rerender_view: () => void;
-    update_muting_and_rerender: () => void;
-    prev: () => number | undefined;
-    next: () => number | undefined;
-    is_at_end: () => boolean;
-    prevent_reading: () => void;
-    resume_reading: () => void;
-    data: MessageListData;
-    select_id: (message_id: number, opts?: SelectIdOpts) => void;
-    get_row: (message_id: number) => JQuery;
-    add_messages: (
-        messages: Message[],
-        append_opts: {messages_are_new: boolean},
-    ) => RenderInfo | undefined;
-    first: () => Message | undefined;
-    last: () => Message | undefined;
-    visibly_empty: () => boolean;
-    selected_message: () => Message;
-    should_preserve_current_rendered_state: () => boolean;
-    show_edit_message: ($row: JQuery, $form: JQuery) => void;
-    show_edit_topic_on_recipient_row: ($recipient_row: JQuery, $form: JQuery) => void;
-    hide_edit_topic_on_recipient_row: ($recipient_row: JQuery) => void;
-    hide_edit_message: ($row: JQuery) => void;
-    get_last_message_sent_by_me: () => Message | undefined;
-    num_items: () => number;
-    last_message_historical: boolean;
-    reselect_selected_id: () => void;
-    is_keyword_search: () => boolean;
-    update_trailing_bookend: (force_render?: boolean) => void;
-};
 
 export let current: MessageList | undefined;
 export const rendered_message_lists = new Map<number, MessageList>();

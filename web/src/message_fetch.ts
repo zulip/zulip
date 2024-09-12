@@ -11,6 +11,7 @@ import * as direct_message_group_data from "./direct_message_group_data";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
+import type {MessageList} from "./message_list";
 import type {MessageListData} from "./message_list_data";
 import * as message_lists from "./message_lists";
 import {raw_message_schema} from "./message_store";
@@ -44,7 +45,7 @@ type MessageFetchOptions = {
     cont: (data: MessageFetchResponse, args: MessageFetchOptions) => void;
     fetch_again?: boolean;
     msg_list_data: MessageListData;
-    msg_list?: message_lists.MessageList | undefined;
+    msg_list?: MessageList | undefined;
     validate_filter_topic_post_fetch?: boolean | undefined;
 };
 
@@ -496,7 +497,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
 
 export function load_messages_for_narrow(opts: {
     anchor: string | number;
-    msg_list: message_lists.MessageList;
+    msg_list: MessageList;
     cont: () => void;
     validate_filter_topic_post_fetch?: boolean | undefined;
 }): void {
@@ -520,7 +521,7 @@ export function get_backfill_anchor(msg_list_data: MessageListData): string | nu
     return "first_unread";
 }
 
-export function get_frontfill_anchor(msg_list: message_lists.MessageList): number | string {
+export function get_frontfill_anchor(msg_list: MessageList): number | string {
     const last_msg = msg_list.data.last_including_muted();
 
     if (last_msg) {
@@ -557,7 +558,7 @@ export function maybe_load_older_messages(opts: {
     recent_view?: boolean;
     first_unread_message_id?: number;
     cont?: () => void;
-    msg_list?: message_lists.MessageList | undefined;
+    msg_list?: MessageList | undefined;
     msg_list_data: MessageListData;
 }): void {
     // This function gets called when you scroll to the top
@@ -626,7 +627,7 @@ export function do_backfill(opts: {
     num_before: number;
     cont?: () => void;
     msg_list_data: MessageListData;
-    msg_list?: message_lists.MessageList | undefined;
+    msg_list?: MessageList | undefined;
 }): void {
     const msg_list_data = opts.msg_list_data;
     const anchor = get_backfill_anchor(msg_list_data);
@@ -648,7 +649,7 @@ export function do_backfill(opts: {
     });
 }
 
-export function maybe_load_newer_messages(opts: {msg_list: message_lists.MessageList}): void {
+export function maybe_load_newer_messages(opts: {msg_list: MessageList}): void {
     // This function gets called when you scroll to the bottom
     // of your window, and you want to get messages newer
     // than what the browsers originally fetched.

@@ -9,7 +9,7 @@ const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {current_user} = require("./lib/zpage_params");
 
-// These unit tests for web/src/message_list.js emphasize the model-ish
+// These unit tests for web/src/message_list.ts emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
 
