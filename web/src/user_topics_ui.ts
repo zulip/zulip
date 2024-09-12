@@ -76,7 +76,7 @@ export function handle_topic_updates(user_topic_event: ServerUserTopic): void {
     setTimeout(() => {
         // Defer updates for any background-rendered messages lists until the visible one has been updated.
         for (const list of message_lists.all_rendered_message_lists()) {
-            if (list.preserve_rendered_state && message_lists.current !== list) {
+            if (message_lists.current !== list) {
                 list.update_muting_and_rerender();
             }
         }
