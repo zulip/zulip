@@ -178,6 +178,9 @@ input::placeholder {
 
     &:hover {
         background-color: var(--color-background-zulip-button-hover);
+        /* Reset styles on a.button instances. */
+        text-decoration: none;
+        color: inherit;
     }
 
     &:focus {
