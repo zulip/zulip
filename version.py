@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 291  # Last bumped for can_delete_own_message_group
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (292, 3)  # bumped 2024-08-25 to upgrade Transifex CLI
+PROVISION_VERSION = (292, 4)  # bumped 2024-08-28 to add types for Google analytics

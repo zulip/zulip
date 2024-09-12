@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "../blueslip";
 import * as common from "../common";
@@ -8,14 +9,42 @@ import {$t} from "../i18n";
 import * as google_analytics from "./google-analytics";
 import {path_parts} from "./landing-page";
 
+type State = {
+    category: string;
+    integration: string | null | undefined;
+    query: string;
+};
+
+enum ACTIONS {
+    CHANGE_CATEGORY = "CHANGE_CATEGORY",
+    SHOW_INTEGRATION = "SHOW_INTEGRATION",
+    HIDE_INTEGRATION = "HIDE_INTEGRATION",
+    SHOW_CATEGORY = "SHOW_CATEGORY",
+    UPDATE_QUERY = "UPDATE_QUERY",
+    LOAD_PATH = "LOAD_PATH",
+}
+
+type ActionPayload<T extends ACTIONS, U extends Record<string, string> | null = null> = {
+    action: T;
+    payload: U;
+};
+
+type DispatchActions =
+    | ActionPayload<ACTIONS.CHANGE_CATEGORY, {category: string}>
+    | ActionPayload<ACTIONS.SHOW_INTEGRATION, {integration: string}>
+    | ActionPayload<ACTIONS.HIDE_INTEGRATION>
+    | ActionPayload<ACTIONS.SHOW_CATEGORY, {category: string}>
+    | ActionPayload<ACTIONS.UPDATE_QUERY, {query: string}>
+    | ActionPayload<ACTIONS.LOAD_PATH>;
+
 // these constants are populated immediately with data from the DOM on page load
 // name -> display name
-const INTEGRATIONS = new Map();
-const CATEGORIES = new Map();
+const INTEGRATIONS = new Map<string, string>();
+const CATEGORIES = new Map<string, string>();
 
-function load_data() {
+function load_data(): void {
     for (const integration of $(".integration-lozenge")) {
-        const name = $(integration).data("name");
+        const name: string = $(integration).data("name");
         const display_name = $(integration).find(".integration-name").text().trim();
 
         if (display_name && name) {
@@ -24,7 +53,7 @@ function load_data() {
     }
 
     for (const category of $(".integration-category")) {
-        const name = $(category).data("category");
+        const name: string = $(category).data("category");
         const display_name = $(category).text().trim();
 
         if (display_name && name) {
@@ -33,38 +62,38 @@ function load_data() {
     }
 }
 
-const INITIAL_STATE = {
+const INITIAL_STATE: State = {
     category: "all",
     integration: null,
     query: "",
 };
 
-let state = {...INITIAL_STATE};
+let state: State = {...INITIAL_STATE};
 
-function adjust_font_sizing() {
+function adjust_font_sizing(): void {
     for (const integration of $(".integration-lozenge")) {
         const $integration_name = $(integration).find(".integration-name");
         const $integration_category = $(integration).find(".integration-category");
 
         // if the text has wrapped to two lines, decrease font-size
-        if ($integration_name.height() > 30) {
+        if ($integration_name.height()! > 30) {
             $integration_name.css("font-size", "1em");
-            if ($integration_name.height() > 30) {
+            if ($integration_name.height()! > 30) {
                 $integration_name.css("font-size", ".95em");
             }
         }
 
-        if ($integration_category.height() > 30) {
+        if ($integration_category.height()! > 30) {
             $integration_category.css("font-size", ".8em");
-            if ($integration_category.height() > 30) {
+            if ($integration_category.height()! > 30) {
                 $integration_category.css("font-size", ".75em");
             }
         }
     }
 }
 
-function update_path() {
-    let next_path;
+function update_path(): void {
+    let next_path: string | undefined;
     if (state.integration) {
         next_path = $(`.integration-lozenge[data-name="${CSS.escape(state.integration)}"]`)
             .closest("a")
@@ -81,7 +110,7 @@ function update_path() {
     google_analytics.config({page_path: next_path});
 }
 
-function update_categories() {
+function update_categories(): void {
     $(".integration-lozenges").css("opacity", 0);
 
     $(".integration-category").removeClass("selected");
@@ -91,7 +120,7 @@ function update_categories() {
     if (state.category === INITIAL_STATE.category) {
         $dropdown_label.text($t({defaultMessage: "Filter by category"}));
     } else {
-        $dropdown_label.text(CATEGORIES.get(state.category));
+        $dropdown_label.text(CATEGORIES.get(state.category)!);
     }
 
     $(".integration-lozenges").animate({opacity: 1}, {duration: 400});
@@ -115,7 +144,7 @@ const update_integrations = _.debounce(() => {
         }
 
         if (!$integration.hasClass("integration-create-your-own")) {
-            const display_name = INTEGRATIONS.get($integration.data("name"));
+            const display_name = INTEGRATIONS.get($integration.data("name"))!;
             const display =
                 common.phrase_match(state.query, display_name) &&
                 ($integration.data("categories").includes(CATEGORIES.get(state.category)) ||
@@ -134,7 +163,8 @@ const update_integrations = _.debounce(() => {
     adjust_font_sizing();
 }, 50);
 
-function hide_catalog_show_integration() {
+function hide_catalog_show_integration(): void {
+    assert(state.integration, "No integration name is stored in current state object");
     const $lozenge_icon = $(
         `.integration-lozenge.integration-${CSS.escape(state.integration)}`,
     ).clone(false);
@@ -144,20 +174,21 @@ function hide_catalog_show_integration() {
         .data("categories")
         .slice(1, -1)
         .split(",")
-        .map((category) => category.trim().slice(1, -1));
+        .map((category: string) => category.trim().slice(1, -1));
 
-    function show_integration(doc) {
-        $("#integration-instructions-group .name").text(INTEGRATIONS.get(state.integration));
+    function show_integration(doc: string): void {
+        $("#integration-instructions-group .name").text(INTEGRATIONS.get(state.integration!)!);
         $("#integration-instructions-group .categories .integration-category").remove();
         for (const category of categories) {
-            let link;
+            let link = "";
             for (const [name, display_name] of CATEGORIES) {
                 if (display_name === category) {
                     link = name;
                 }
             }
+            assert(link !== "", "can't find link");
             const $category_el = $("<a>")
-                .attr("href", "/integrations/" + link)
+                .attr("href", `/integrations/${link}`)
                 .append(
                     $("<h3>")
                         .addClass("integration-category")
@@ -170,6 +201,9 @@ function hide_catalog_show_integration() {
             opacity: 0,
             display: "flex",
         });
+
+        assert(state.integration, "No integration name is stored in current state object");
+
         $(".integration-instructions").css("display", "none");
         $(`#${CSS.escape(state.integration)}.integration-instructions .help-content`).html(doc);
         $("#integration-instruction-block .integration-lozenge").remove();
@@ -182,7 +216,7 @@ function hide_catalog_show_integration() {
         adjust_font_sizing();
     }
 
-    function hide_catalog(doc) {
+    function hide_catalog(doc: string): void {
         $(".integration-categories-dropdown").css("display", "none");
         $(".integrations .catalog").addClass("hide");
         $(".extra, .integration-main-text, #integration-search").css("display", "none");
@@ -191,7 +225,7 @@ function hide_catalog_show_integration() {
         $(".main").css("visibility", "visible");
     }
 
-    $.get({
+    void $.get({
         url: "/integrations/doc-html/" + state.integration,
         dataType: "html",
         success: hide_catalog,
@@ -207,8 +241,8 @@ function hide_catalog_show_integration() {
     });
 }
 
-function hide_integration_show_catalog() {
-    function show_catalog() {
+function hide_integration_show_catalog(): void {
+    function show_catalog(): void {
         $("html, body").animate({scrollTop: 0}, {duration: 200});
 
         $(".integration-categories-dropdown").css("display", "");
@@ -217,7 +251,7 @@ function hide_integration_show_catalog() {
         adjust_font_sizing();
     }
 
-    function hide_integration() {
+    function hide_integration(): void {
         $("#integration-instruction-block").css("display", "none");
         $("#integration-instructions-group").css("display", "none");
         $(".inner-content").css({padding: ""});
@@ -228,21 +262,21 @@ function hide_integration_show_catalog() {
     hide_integration();
 }
 
-function get_state_from_path() {
+function get_state_from_path(): State {
     const result = {...INITIAL_STATE};
     result.query = state.query;
 
     const parts = path_parts();
-    if (parts[1] === "doc" && INTEGRATIONS.get(parts[2])) {
+    if (parts[1] === "doc" && INTEGRATIONS.get(parts[2]!)) {
         result.integration = parts[2];
-    } else if (CATEGORIES.has(parts[1])) {
-        result.category = parts[1];
+    } else if (CATEGORIES.has(parts[1]!)) {
+        result.category = parts[1]!;
     }
 
     return result;
 }
 
-function render(next_state) {
+function render(next_state: State): void {
     const previous_state = {...state};
     state = next_state;
 
@@ -266,33 +300,33 @@ function render(next_state) {
     }
 }
 
-function dispatch(action, payload) {
+function dispatch({action, payload}: DispatchActions): void {
     switch (action) {
-        case "CHANGE_CATEGORY":
+        case ACTIONS.CHANGE_CATEGORY:
             render({...state, category: payload.category});
             update_path();
             break;
 
-        case "SHOW_INTEGRATION":
+        case ACTIONS.SHOW_INTEGRATION:
             render({...state, integration: payload.integration});
             update_path();
             break;
 
-        case "HIDE_INTEGRATION":
+        case ACTIONS.HIDE_INTEGRATION:
             render({...state, integration: null});
             update_path();
             break;
 
-        case "SHOW_CATEGORY":
+        case ACTIONS.SHOW_CATEGORY:
             render({...state, integration: null, category: payload.category});
             update_path();
             break;
 
-        case "UPDATE_QUERY":
+        case ACTIONS.UPDATE_QUERY:
             render({...state, query: payload.query});
             break;
 
-        case "LOAD_PATH":
+        case ACTIONS.LOAD_PATH:
             render(get_state_from_path());
             google_analytics.config({page_path: window.location.pathname});
             break;
@@ -303,15 +337,15 @@ function dispatch(action, payload) {
     }
 }
 
-function toggle_categories_dropdown() {
+function toggle_categories_dropdown(): void {
     const $dropdown_list = $(".integration-categories-dropdown .dropdown-list");
     $dropdown_list.slideToggle(250);
 }
 
-function integration_events() {
-    $('#integration-search input[type="text"]').on("keypress", (e) => {
+function integration_events(): void {
+    $<HTMLInputElement>('#integration-search input[type="text"]').on("keypress", (e) => {
         if (e.key === "Enter" && e.target.value !== "") {
-            $(".integration-lozenges .integration-lozenge:visible")[0]?.closest("a").click();
+            $(".integration-lozenges .integration-lozenge:visible")[0]?.closest("a")!.click();
         }
     });
 
@@ -325,33 +359,42 @@ function integration_events() {
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
         e.preventDefault();
         const category = $(e.target).data("category");
-        dispatch("SHOW_CATEGORY", {category});
+        dispatch({
+            action: ACTIONS.SHOW_CATEGORY,
+            payload: {category},
+        });
     });
 
     $(".integrations a .integration-category").on("click", (e) => {
         e.preventDefault();
         const category = $(e.target).data("category");
-        dispatch("CHANGE_CATEGORY", {category});
+        dispatch({
+            action: ACTIONS.CHANGE_CATEGORY,
+            payload: {category},
+        });
         toggle_categories_dropdown();
     });
 
     $(".integrations a .integration-lozenge").on("click", (e) => {
         if (!$(e.target).closest(".integration-lozenge").hasClass("integration-create-your-own")) {
             e.preventDefault();
-            const integration = $(e.target).closest(".integration-lozenge").data("name");
-            dispatch("SHOW_INTEGRATION", {integration});
+            const integration: string = $(e.target).closest(".integration-lozenge").data("name");
+            dispatch({
+                action: ACTIONS.SHOW_INTEGRATION,
+                payload: {integration},
+            });
         }
     });
 
     $("a#integration-list-link span, a#integration-list-link i").on("click", (e) => {
         e.preventDefault();
-        dispatch("HIDE_INTEGRATION");
+        dispatch({action: ACTIONS.HIDE_INTEGRATION, payload: null});
     });
 
     // combine selector use for both focusing the integrations searchbar and adding
     // the input event.
-    $(".integrations .searchbar input[type='text']").on("input", (e) => {
-        dispatch("UPDATE_QUERY", {query: e.target.value.toLowerCase()});
+    $<HTMLInputElement>(".integrations .searchbar input[type='text']").on("input", (e) => {
+        dispatch({action: ACTIONS.UPDATE_QUERY, payload: {query: e.target.value.toLowerCase()}});
     });
 
     $(window).on("scroll", () => {
@@ -368,9 +411,9 @@ function integration_events() {
 
     $(window).on("popstate", () => {
         if (window.location.pathname.startsWith("/integrations/")) {
-            dispatch("LOAD_PATH");
+            dispatch({action: ACTIONS.LOAD_PATH, payload: null});
         } else {
-            window.location = window.location.href;
+            (window as Window).location = window.location.href;
         }
     });
 }
@@ -379,7 +422,7 @@ function integration_events() {
 $(() => {
     integration_events();
     load_data();
-    dispatch("LOAD_PATH");
+    dispatch({action: ACTIONS.LOAD_PATH, payload: null});
     $(".integrations .searchbar input[type='text']").trigger("focus");
     adjust_font_sizing();
 });
