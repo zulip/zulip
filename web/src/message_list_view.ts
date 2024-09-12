@@ -52,7 +52,7 @@ export type MessageContainer = {
     include_recipient: boolean;
     include_sender: boolean;
     is_hidden: boolean;
-    last_edit_timestr: string | undefined;
+    last_edit_timestamp: number | undefined;
     mention_classname: string | undefined;
     message_edit_notices_in_left_col: boolean;
     message_edit_notices_alongside_sender: boolean;
@@ -150,7 +150,7 @@ function same_recipient(a: MessageContainer | undefined, b: MessageContainer | u
 
 function analyze_edit_history(
     message: Message,
-    last_edit_timestr: string | undefined,
+    last_edit_timestamp: number | undefined,
 ): {
     edited: boolean;
     moved: boolean;
@@ -201,9 +201,9 @@ function analyze_edit_history(
                 moved = true;
             }
         }
-    } else if (last_edit_timestr !== undefined) {
+    } else if (last_edit_timestamp !== undefined) {
         // When the edit_history is disabled for the organization, we do not receive the edit_history
-        // variable in the message object. In this case, we will check if the last_edit_timestr is
+        // variable in the message object. In this case, we will check if the last_edit_timestamp is
         // available or not. Since we don't have the edit_history, we can't determine if the message
         // was moved or edited. Therefore, we simply mark the messages as edited.
         edited = true;
@@ -582,59 +582,34 @@ export class MessageListView {
         );
     }
 
-    _get_msg_timestring(message: Message): string | undefined {
+    _get_message_edited_vars(message: Message): {
+        last_edit_timestamp: number | undefined;
+        moved: boolean;
+        modified: boolean;
+    } {
         let last_edit_timestamp;
         if (message.local_edit_timestamp !== undefined) {
             last_edit_timestamp = message.local_edit_timestamp;
         } else {
             last_edit_timestamp = message.last_edit_timestamp;
         }
-        if (last_edit_timestamp !== undefined) {
-            const last_edit_time = new Date(last_edit_timestamp * 1000);
-            let date = timerender.render_date(last_edit_time).textContent;
-            // If the date is today or yesterday, we don't want to show the date as capitalized.
-            // Thus, we need to check if the date string contains a digit or not using regex,
-            // since any other date except today/yesterday will contain a digit.
-            if (date && !/\d/.test(date)) {
-                date = date.toLowerCase();
-            }
-            return $t(
-                {defaultMessage: "{date} at {time}"},
-                {
-                    date,
-                    time: timerender.stringify_time(last_edit_time),
-                },
-            );
-        }
-        return undefined;
-    }
+        const edit_history_details = analyze_edit_history(message, last_edit_timestamp);
 
-    _get_message_edited_vars(message: Message): {
-        last_edit_timestr: string | undefined;
-        moved: boolean;
-        modified: boolean;
-    } {
-        const last_edit_timestr = this._get_msg_timestring(message);
-        const edit_history_details = analyze_edit_history(message, last_edit_timestr);
-
-        if (
-            last_edit_timestr === undefined ||
-            !(edit_history_details.moved || edit_history_details.edited)
-        ) {
+        if (!last_edit_timestamp || !(edit_history_details.moved || edit_history_details.edited)) {
             // For messages whose edit history at most includes
             // resolving topics, we don't display an EDITED/MOVED
             // notice at all. (The message actions popover will still
             // display an edit history option, so you can see when it
             // was marked as resolved if you need to).
             return {
-                last_edit_timestr: undefined,
+                last_edit_timestamp: undefined,
                 moved: false,
                 modified: false,
             };
         }
 
         return {
-            last_edit_timestr,
+            last_edit_timestamp,
             moved: edit_history_details.moved && !edit_history_details.edited,
             modified: true,
         };
@@ -659,7 +634,7 @@ export class MessageListView {
         mention_classname: string | undefined;
         include_sender: boolean;
         status_message: string | false;
-        last_edit_timestr: string | undefined;
+        last_edit_timestamp: number | undefined;
         moved: boolean;
         modified: boolean;
     } {
