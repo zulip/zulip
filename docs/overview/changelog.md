@@ -24,6 +24,41 @@ _Unreleased_
 
 ## Zulip Server 9.x series
 
+### Zulip Server 9.2
+
+_Released 2024-09-12_
+
+- Fixed a bug where images uploaded before the upgrade to Zulip 9.x
+  would not be previewed properly if linked in a new message. This
+  change involves a database migration,
+  `0576_backfill_imageattachment.py`, that may take a long time to run
+  on systems with many uploaded files. The Zulip server can be safely
+  started using `scripts/restart-server` while this migration is
+  running.
+- Fixed size of EDITED/MOVED indicators when not using compact mode.
+- Fixed Firefox being installed via an indirect `apt` recommendation.
+- Fixed calculation of PostgreSQL client dependency.
+- Fixed PGroonga installation on Ubuntu 24.04.
+- Fixed incorrect HTML-encoding of unicode in email notifications.
+- Fixed some bugs and documentation for the Rocket.Chat, Slack and
+  Mattermost data import tools.
+- Fixed several rare web app exceptions.
+- Fixed an exception when deleting hundreds of uploaded files at once
+  with the S3 file upload backend.
+- Fixed data export tool to preserve original custom emoji files,
+  rather than exporting a thumbnail.
+- Fixed nonstandard specification of Sunday in cron configuration.
+- Added new `change_auth_backends` management command to recover after
+  locking oneself out by disabling authentication methods.
+- Removed the `presence` queue worker, reducing memory requirements.
+- Improved rendering performance for the main Zulip message feed.
+- Improved formatting for Jira integration comment notifications.
+- Improved layout for image loading indicators.
+- Updated AzureAD authentication backend to use the v2.0 API, which
+  supports personal accounts as well.
+- Updated documentation for several webhook integrations.
+- Updated translations.
+
 ### Zulip Server 9.1
 
 _Released 2024-08-02_
