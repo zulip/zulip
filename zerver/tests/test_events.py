@@ -299,6 +299,7 @@ class BaseAction(ZulipTestCase):
         linkifier_url_template: bool = True,
         user_list_incomplete: bool = False,
         client_is_old: bool = False,
+        include_deactivated_groups: bool = False,
     ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -329,6 +330,7 @@ class BaseAction(ZulipTestCase):
                 pronouns_field_type_supported=pronouns_field_type_supported,
                 linkifier_url_template=linkifier_url_template,
                 user_list_incomplete=user_list_incomplete,
+                include_deactivated_groups=include_deactivated_groups,
             )
         )
 
@@ -346,6 +348,7 @@ class BaseAction(ZulipTestCase):
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
+            include_deactivated_groups=include_deactivated_groups,
         )
 
         if client_is_old:
@@ -386,6 +389,7 @@ class BaseAction(ZulipTestCase):
             include_subscribers=include_subscribers,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
+            include_deactivated_groups=include_deactivated_groups,
         )
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = orjson.dumps(hybrid_state)
@@ -415,6 +419,7 @@ class BaseAction(ZulipTestCase):
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
+            include_deactivated_groups=include_deactivated_groups,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -1924,7 +1929,22 @@ class NormalActionsTest(BaseAction):
         # Test deactivate event
         with self.verify_action() as events:
             do_deactivate_user_group(backend, acting_user=None)
+        check_user_group_remove("events[0]", events[0])
+
+        with self.verify_action(include_deactivated_groups=True) as events:
+            do_deactivate_user_group(api_design, acting_user=None)
         check_user_group_update("events[0]", events[0], "deactivated")
+
+        with self.verify_action(num_events=0, state_change_expected=False):
+            do_update_user_group_name(api_design, "api-deisgn-team", acting_user=None)
+
+        with self.verify_action(include_deactivated_groups=True) as events:
+            do_update_user_group_name(api_design, "api-deisgn", acting_user=None)
+        check_user_group_update("events[0]", events[0], "name")
+
+        # Reactivate the group to test "remove" event.
+        backend.deactivated = False
+        backend.save()
 
         # Test remove event
         with self.verify_action() as events:

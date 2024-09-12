@@ -20,6 +20,23 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 294**
+
+* [`POST /register`](/api/register-queue): Clients that do not
+  support the `include_deactivated_groups`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  do not receive deactivated user groups in the response.
+* [`GET /events`](/api/get-events): Clients that do not support the
+  `include_deactivated_groups`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  receive `remove` event on user group deactivation instead of `update`
+  event.
+* [`GET /events`](/api/get-events): Clients that do not support the
+  `include_deactivated_groups`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  do not receive `update` event when name of a deactivated user group
+  is updated.
+
 **Feature level 293**
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):

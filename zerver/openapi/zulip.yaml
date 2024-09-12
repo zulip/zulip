@@ -3163,6 +3163,14 @@ paths:
                               description: |
                                 Event sent to all users in a Zulip organization
                                 when a property of a user group is changed.
+
+                                For group deactivation, this event is only sent
+                                if `include_deactivated_groups` client capability
+                                is set to `true`.
+
+                                **Changes**: Prior to Zulip 10.0 (feature level 294),
+                                this event was sent to all clients when a user group
+                                was deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3410,6 +3418,13 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users when a user group has been deleted.
+
+                                This event is also sent when a user group is deactivated
+                                but only to clients with `include_deactivated_groups` client
+                                capability set to `false`.
+
+                                **Changes**: Prior to Zulip 10.0 (feature level 294), this
+                                event was only sent when a user group was deleted.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -13485,6 +13500,16 @@ paths:
                       **Changes**: New in Zulip 8.0 (feature level 232). This
                       capability is for backwards-compatibility.
 
+                    - `include_deactivated_groups`: Boolean for whether the client can handle
+                      deactivated user groups by themselves. If false, then the `realm_user_groups`
+                      array in the `/register` response will only include active groups, clients
+                      will receive a `remove` event instead of `update` event when a group is
+                      deactivated and no `update` event will be sent to the client if a deactivated
+                      user group is renamed.
+                      <br />
+                      **Changes**: New in Zulip 10.0 (feature level 294). This
+                      capability is for backwards-compatibility.
+
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
                     [events-linkifiers]: /api/get-events#realm_linkifiers
@@ -14021,6 +14046,12 @@ paths:
 
                           An array of dictionaries where each dictionary describes a
                           [user group](/help/user-groups) in the Zulip organization.
+
+                          Deactivated groups will only be included if `include_deactivated_groups`
+                          client capability is set to `true`.
+
+                          **Changes**: Prior to Zulip 10.0 (feature level 294), deactivated
+                          groups were included for all the clients.
                       realm_bots:
                         type: array
                         items:

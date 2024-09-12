@@ -141,6 +141,7 @@ def fetch_initial_state_data(
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
+    include_deactivated_groups: bool = False,
 ) -> dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -507,7 +508,9 @@ def fetch_initial_state_data(
         state["realm_playgrounds"] = get_realm_playgrounds(realm)
 
     if want("realm_user_groups"):
-        state["realm_user_groups"] = user_groups_in_realm_serialized(realm, allow_deactivated=True)
+        state["realm_user_groups"] = user_groups_in_realm_serialized(
+            realm, allow_deactivated=include_deactivated_groups
+        )
 
     if user_profile is not None:
         settings_user = user_profile
@@ -782,6 +785,7 @@ def apply_events(
     include_subscribers: bool,
     linkifier_url_template: bool,
     user_list_incomplete: bool,
+    include_deactivated_groups: bool,
 ) -> None:
     for event in events:
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
@@ -803,6 +807,7 @@ def apply_events(
             include_subscribers=include_subscribers,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
+            include_deactivated_groups=include_deactivated_groups,
         )
 
 
@@ -816,6 +821,7 @@ def apply_event(
     include_subscribers: bool,
     linkifier_url_template: bool,
     user_list_incomplete: bool,
+    include_deactivated_groups: bool,
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
@@ -1662,6 +1668,7 @@ class ClientCapabilities(TypedDict):
     user_settings_object: NotRequired[bool]
     linkifier_url_template: NotRequired[bool]
     user_list_incomplete: NotRequired[bool]
+    include_deactivated_groups: NotRequired[bool]
 
 
 def do_events_register(
@@ -1698,6 +1705,7 @@ def do_events_register(
     user_settings_object = client_capabilities.get("user_settings_object", False)
     linkifier_url_template = client_capabilities.get("linkifier_url_template", False)
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
+    include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -1739,6 +1747,7 @@ def do_events_register(
             # Force include_streams=False for security reasons.
             include_streams=include_streams,
             spectator_requested_language=spectator_requested_language,
+            include_deactivated_groups=include_deactivated_groups,
         )
 
         post_process_state(user_profile, ret, notification_settings_null=False)
@@ -1767,6 +1776,7 @@ def do_events_register(
         pronouns_field_type_supported=pronouns_field_type_supported,
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
+        include_deactivated_groups=include_deactivated_groups,
     )
 
     if queue_id is None:
@@ -1788,6 +1798,7 @@ def do_events_register(
         pronouns_field_type_supported=pronouns_field_type_supported,
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
+        include_deactivated_groups=include_deactivated_groups,
     )
 
     # Apply events that came in while we were fetching initial data
@@ -1802,6 +1813,7 @@ def do_events_register(
         include_subscribers=include_subscribers,
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
+        include_deactivated_groups=include_deactivated_groups,
     )
 
     post_process_state(user_profile, ret, notification_settings_null)
