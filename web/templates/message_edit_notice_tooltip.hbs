@@ -1,7 +1,11 @@
 <div>
     <div>{{t "View edit history"}}</div>
     {{#if realm_allow_edit_history}}
-        <div class="tooltip-inner-content italic">{{edited_notice_str}}</div>
+        {{#if message_container/moved}}
+            <div class="tooltip-inner-content italic">{{t 'Last moved {last_edit_timestr}.'}}</div>
+        {{else}}
+            <div class="tooltip-inner-content italic">{{t 'Last edited {last_edit_timestr}.'}}</div>
+        {{/if}}
     {{/if}}
 </div>
 {{tooltip_hotkey_hints "Shift" "H"}}

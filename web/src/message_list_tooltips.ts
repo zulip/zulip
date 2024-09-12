@@ -6,7 +6,9 @@ import render_message_edit_notice_tooltip from "../templates/message_edit_notice
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
+import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
+import type {Message} from "./message_store";
 import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
@@ -118,6 +120,30 @@ export function destroy_all_message_list_tooltips(): void {
         instance.destroy();
     }
     message_list_tippy_instances.clear();
+}
+
+function get_last_edit_timestr(message: Message): string {
+    let last_edit_timestamp;
+    if (message.local_edit_timestamp !== undefined) {
+        last_edit_timestamp = message.local_edit_timestamp;
+    } else {
+        last_edit_timestamp = message.last_edit_timestamp!;
+    }
+    const last_edit_time = new Date(last_edit_timestamp * 1000);
+    let date = timerender.render_date(last_edit_time).textContent;
+    // If the date is today or yesterday, we don't want to show the date as capitalized.
+    // Thus, we need to check if the date string contains a digit or not using regex,
+    // since any other date except today/yesterday will contain a digit.
+    if (date && !/\d/.test(date)) {
+        date = date.toLowerCase();
+    }
+    return $t(
+        {defaultMessage: "{date} at {time}"},
+        {
+            date,
+            time: timerender.stringify_time(last_edit_time),
+        },
+    );
 }
 
 export function initialize(): void {
@@ -338,11 +364,16 @@ export function initialize(): void {
         },
         onShow(instance) {
             const $elem = $(instance.reference);
-            const edited_notice_str = $elem.attr("data-tippy-content");
+            assert(message_lists.current !== undefined);
+            const message_id = Number($elem.closest(".message_row").attr("data-message-id"));
+            const message_container = message_lists.current.view.message_containers.get(message_id);
+            assert(message_container !== undefined);
+            const last_edit_timestr = get_last_edit_timestr(message_container.msg);
             instance.setContent(
                 parse_html(
                     render_message_edit_notice_tooltip({
-                        edited_notice_str,
+                        message_container,
+                        last_edit_timestr,
                         realm_allow_edit_history: realm.realm_allow_edit_history,
                     }),
                 ),
