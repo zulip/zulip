@@ -159,11 +159,6 @@ test_policy(
     settings_data.user_can_move_messages_between_streams,
 );
 test_policy(
-    "user_can_create_user_groups",
-    "realm_user_group_edit_policy",
-    settings_data.user_can_create_user_groups,
-);
-test_policy(
     "user_can_edit_all_user_groups",
     "realm_user_group_edit_policy",
     settings_data.user_can_edit_all_user_groups,
@@ -504,6 +499,10 @@ run_test("user_can_create_public_streams", () => {
         "realm_can_create_public_channel_group",
         settings_data.user_can_create_public_streams,
     );
+});
+
+run_test("user_can_create_user_groups", () => {
+    test_realm_group_settings("realm_can_create_groups", settings_data.user_can_create_user_groups);
 });
 
 run_test("user_can_create_private_streams", () => {
