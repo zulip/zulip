@@ -18,6 +18,7 @@ export type UserGroupUpdateEvent = {
         description?: string;
         can_manage_group?: number;
         can_mention_group?: number;
+        deactivated?: boolean;
     };
 };
 

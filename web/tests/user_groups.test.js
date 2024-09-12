@@ -152,6 +152,15 @@ run_test("user_groups", () => {
     };
     assert.ok(!user_groups.is_user_group(object));
 
+    const update_deactivated_event = {
+        group_id: admins.id,
+        data: {
+            deactivated: true,
+        },
+    };
+    user_groups.update(update_deactivated_event);
+    assert.ok(user_groups.get_user_group_from_id(admins.id).deactivated);
+
     user_groups.init();
     assert.equal(user_groups.get_realm_user_groups().length, 0);
 

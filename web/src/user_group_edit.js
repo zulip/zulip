@@ -594,6 +594,11 @@ export function update_group(event) {
         $group_row.find(".description").text(group.description);
     }
 
+    if (event.data.deactivated) {
+        handle_deleted_group(group.id);
+        return;
+    }
+
     if (get_active_data().id === group.id) {
         // update right side pane
         update_settings_pane(group);
@@ -890,12 +895,9 @@ export function initialize() {
         if (!user_group || !settings_data.can_edit_user_group(group_id)) {
             return;
         }
-        function delete_user_group() {
-            channel.del({
-                url: "/json/user_groups/" + group_id,
-                data: {
-                    id: group_id,
-                },
+        function deactivate_user_group() {
+            channel.post({
+                url: "/json/user_groups/" + group_id + "/deactivate",
                 success() {
                     active_group_data.$row.remove();
                 },
@@ -916,9 +918,12 @@ export function initialize() {
         const user_group_name = user_group.name;
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete {user_group_name}?"}, {user_group_name}),
+            html_heading: $t_html(
+                {defaultMessage: "Deactivate {user_group_name}?"},
+                {user_group_name},
+            ),
             html_body,
-            on_click: delete_user_group,
+            on_click: deactivate_user_group,
         });
     });
 
