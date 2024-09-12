@@ -402,7 +402,7 @@ test("muted_message_vars", () => {
 
         // Additionally test that, both there is no mention classname even on that message
         // which has a mention, since we don't want to display muted mentions so visibly.
-        assert.equal(result[1].mention_classname, null);
+        assert.equal(result[1].mention_classname, undefined);
 
         // Now, reveal the hidden messages.
         let is_revealed = true;
@@ -435,7 +435,7 @@ test("muted_message_vars", () => {
 
         // Additionally test that, both there is no mention classname even on that message
         // which has a mention, since we don't want to display hidden mentions so visibly.
-        assert.equal(result[1].mention_classname, null);
+        assert.equal(result[1].mention_classname, undefined);
     })();
 });
 
