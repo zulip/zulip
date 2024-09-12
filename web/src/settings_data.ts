@@ -220,7 +220,14 @@ export function can_edit_user_group(group_id: number): boolean {
 }
 
 export function user_can_create_user_groups(): boolean {
-    return user_has_permission(realm.realm_user_group_edit_policy);
+    if (page_params.is_spectator) {
+        return false;
+    }
+    return user_has_permission_for_group_setting(
+        realm.realm_can_create_groups,
+        "can_create_groups",
+        "realm",
+    );
 }
 
 export function user_can_add_custom_emoji(): boolean {

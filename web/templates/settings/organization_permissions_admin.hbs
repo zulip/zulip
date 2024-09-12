@@ -338,6 +338,12 @@
                     </select>
                 </div>
 
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_create_groups"
+                  label=(t 'Who can create user groups')
+                  value_type="number"
+                  is_setting_disabled=(not is_owner)}}
+
                 <div class="input-group">
                     <label for="realm_user_group_edit_policy" class="settings-field-label">{{t "Who can create and manage user groups" }}</label>
                     <select name="realm_user_group_edit_policy" id="id_realm_user_group_edit_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
