@@ -2,11 +2,13 @@ import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
 import * as compose_tooltips from "./compose_tooltips";
 import type {MessageListData} from "./message_list_data";
 import * as message_list_tooltips from "./message_list_tooltips";
 import {MessageListView} from "./message_list_view";
+import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
@@ -200,6 +202,11 @@ export class MessageList {
             const first_unread_message_id = this.first_unread_message_id();
             assert(first_unread_message_id !== undefined);
             this.select_id(first_unread_message_id, {then_scroll: true, use_closest: true});
+        }
+
+        // Rebuild message list, since we might need to shuffle around the participant users.
+        if (this === message_lists.current && narrow_state.stream_sub() && narrow_state.topic()) {
+            activity_ui.build_user_sidebar();
         }
 
         return render_info;
@@ -459,6 +466,11 @@ export class MessageList {
     remove_and_rerender(message_ids: number[]): void {
         this.data.remove(message_ids);
         this.rerender();
+        // Rebuild message list if we're deleting messages from the current list,
+        // since we might need to remove a participant user.
+        if (this.is_current_message_list()) {
+            activity_ui.build_user_sidebar();
+        }
     }
 
     show_edit_message($row: JQuery, $form: JQuery): void {

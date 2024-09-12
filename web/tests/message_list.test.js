@@ -23,6 +23,7 @@ set_global("document", {
     },
 });
 
+const activity_ui = mock_esm("../src/activity_ui");
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_data = mock_esm("../src/stream_data");
 
@@ -43,6 +44,7 @@ mock_esm("../src/message_list_view", {
 const {Filter} = zrequire("filter");
 
 run_test("basics", ({override}) => {
+    override(activity_ui, "build_user_sidebar", noop);
     const filter = new Filter([]);
 
     const list = new MessageList({
@@ -433,7 +435,9 @@ run_test("bookend", ({override}) => {
     }
 });
 
-run_test("add_remove_rerender", () => {
+run_test("add_remove_rerender", ({override}) => {
+    override(activity_ui, "build_user_sidebar", noop);
+
     const filter = new Filter([]);
     const list = new MessageList({
         data: new MessageListData({
