@@ -231,7 +231,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         on_escape() {
             exit_search({keep_search_narrow_open: false});
         },
-        tabIsEnter: false,
+        tabIsEnter: true,
         openInputFieldOnKeyUp(): void {
             if ($(".navbar-search.expanded").length === 0) {
                 open_search_bar_and_close_narrow_description();
