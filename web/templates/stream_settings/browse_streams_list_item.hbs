@@ -21,7 +21,7 @@
                 </div>
             {{else}}
                 <div class="check sub_unsub_button {{#unless should_display_subscription_button}}disabled{{/unless}} tippy-zulip-tooltip"
-                data-tooltip-template-id="{{#if should_display_subscription_button}}subscribe-to-{{name}}-stream-tooltip-template{{else}}cannot-subscribe-to-{{name}}-stream-tooltip-template{{/if}}">
+                  data-tooltip-template-id="{{#if should_display_subscription_button}}subscribe-to-{{name}}-stream-tooltip-template{{else}}cannot-subscribe-to-{{name}}-stream-tooltip-template{{/if}}">
 
                     <template id="subscribe-to-{{name}}-stream-tooltip-template">
                         <span>
@@ -71,5 +71,4 @@
             </div>
         </div>
     {{/if}}
-</div>
 {{/with}}
