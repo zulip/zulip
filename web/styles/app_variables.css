@@ -689,6 +689,17 @@
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
 
+    /* Tippy popover colors */
+    --color-tippy-background: hsl(0deg 0% 20%);
+    --color-tippy-arrow-border-top: hsl(0deg 0% 20%);
+    --color-tippy-arrow-border-bottom: hsl(0deg 0% 20%);
+    --color-tippy-arrow-border-left: hsl(0deg 0% 20%);
+    --color-tippy-arrow-border-right: hsl(0deg 0% 20%);
+    --color-tippy-dropdown-background: hsl(240deg 20% 98%);
+    --color-tippy-dropdown-border: hsl(0deg 0% 0% / 40%);
+    --box-shadow-tippy-dropdown: 0 7px 13px hsl(0deg 0% 0% / 15%),
+        0 5px 8px hsl(0deg 0% 0% / 12%), 0 2px 4px hsl(0deg 0% 0% / 10%);
+
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
@@ -1139,6 +1150,17 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+
+    /* Tippy popover colors */
+    --color-tippy-background: hsl(0deg 0% 0%);
+    --color-tippy-arrow-border-top: hsl(0deg 0% 0%);
+    --color-tippy-arrow-border-bottom: hsl(0deg 0% 0%);
+    --color-tippy-arrow-border-left: hsl(0deg 0% 0%);
+    --color-tippy-arrow-border-right: hsl(0deg 0% 0%);
+    --color-tippy-dropdown-background: hsl(240deg 5% 16%);
+    --color-tippy-dropdown-border: hsl(0deg 0% 0%);
+    --box-shadow-tippy-dropdown: 0 7px 13px hsl(0deg 0% 0% / 35%),
+        0 5px 8px hsl(0deg 0% 0% / 32%), 0 2px 4px hsl(0deg 0% 0% / 20%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
