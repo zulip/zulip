@@ -22,7 +22,6 @@
 
 {end_tabs}
 
-
 ## Unmute a channel
 
 {start_tabs}
@@ -68,6 +67,18 @@
 {!mobile-channel-settings-menu-tip.md!}
 
 {end_tabs}
+
+## Managing muted channels
+
+Zulip works best when most of the messages you receive are not muted. If you
+find yourself muting a lot of channels, consider
+[unsubscribing](/help/unsubscribe-from-a-channel) from public channels you've
+muted. You can always
+[re-subscribe](/help/introduction-to-channels#browse-and-subscribe-to-channels)
+if you need to, [view the channel
+feed](/help/channel-feed#go-to-channel-feed-for-an-unsubscribed-channel) without
+subscribing, or search for messages [in all public
+channels](/help/search-for-messages#search-by-location).
 
 ## Related articles
 
