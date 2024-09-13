@@ -212,25 +212,6 @@ run_test("user groups", ({override}) => {
         assert_same(args.group, event.group);
     }
 
-    event = event_fixtures.user_group__remove;
-    {
-        const stub = make_stub();
-        override(user_groups, "get_user_group_from_id", stub.f);
-        override(user_groups, "remove", noop);
-        const user_group_edit_stub = make_stub();
-        override(user_group_edit, "handle_deleted_group", user_group_edit_stub.f);
-
-        dispatch(event);
-
-        assert.equal(stub.num_calls, 1);
-        assert.equal(user_group_edit_stub.num_calls, 1);
-
-        let args = stub.get_args("group_id");
-        assert_same(args.group_id, event.group_id);
-        args = user_group_edit_stub.get_args("group_id");
-        assert_same(args.group_id, event.group_id);
-    }
-
     event = event_fixtures.user_group__add_members;
     {
         const stub = make_stub();

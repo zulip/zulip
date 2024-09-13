@@ -813,8 +813,8 @@ def get_user_groups(client: Client) -> int:
     validate_against_openapi_schema(result, "/user_groups", "get", "200")
     [hamlet_user_group] = (u for u in result["user_groups"] if u["name"] == "hamletcharacters")
     assert hamlet_user_group["description"] == "Characters of Hamlet"
-    [marketing_user_group] = (u for u in result["user_groups"] if u["name"] == "marketing")
-    return marketing_user_group["id"]
+    [leadership_user_group] = (u for u in result["user_groups"] if u["name"] == "leadership")
+    return leadership_user_group["id"]
 
 
 def test_user_not_authorized_error(nonadmin_client: Client) -> None:
@@ -1628,8 +1628,8 @@ def create_user_group(client: Client) -> None:
     ensure_users(user_ids, ["aaron", "zoe", "cordelia", "hamlet"])
     # {code_example|start}
     request = {
-        "name": "marketing",
-        "description": "The marketing team.",
+        "name": "leadership",
+        "description": "The leadership team.",
         "members": user_ids,
     }
     result = client.create_user_group(request)
@@ -1643,22 +1643,13 @@ def update_user_group(client: Client, user_group_id: int) -> None:
     # {code_example|start}
     request = {
         "group_id": user_group_id,
-        "name": "marketing",
-        "description": "The marketing team.",
+        "name": "leadership",
+        "description": "The leadership team.",
     }
     result = client.update_user_group(request)
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/user_groups/{user_group_id}", "patch", "200")
-
-
-@openapi_test_function("/user_groups/{user_group_id}:delete")
-def remove_user_group(client: Client, user_group_id: int) -> None:
-    # {code_example|start}
-    result = client.remove_user_group(user_group_id)
-    # {code_example|end}
-    assert_success_response(result)
-    validate_against_openapi_schema(result, "/user_groups/{user_group_id}", "delete", "200")
 
 
 @openapi_test_function("/user_groups/{user_group_id}/members:post")
@@ -1761,7 +1752,6 @@ def test_users(client: Client, owner_client: Client) -> None:
     user_group_id = get_user_groups(client)
     update_user_group(client, user_group_id)
     update_user_group_members(client, user_group_id)
-    remove_user_group(client, user_group_id)
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)

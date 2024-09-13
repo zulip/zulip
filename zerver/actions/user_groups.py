@@ -440,17 +440,6 @@ def remove_subgroups_from_user_group(
     do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)
 
 
-def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: int) -> None:
-    event = dict(type="user_group", op="remove", group_id=user_group_id)
-    send_event_on_commit(realm, event, active_user_ids(realm_id))
-
-
-def check_delete_user_group(user_group: NamedUserGroup, *, acting_user: UserProfile) -> None:
-    user_group_id = user_group.id
-    user_group.delete()
-    do_send_delete_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
-
-
 @transaction.atomic(savepoint=False)
 def do_deactivate_user_group(
     user_group: NamedUserGroup, *, acting_user: UserProfile | None

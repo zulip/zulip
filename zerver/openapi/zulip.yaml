@@ -3417,14 +3417,11 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users when a user group has been deleted.
-
-                                This event is also sent when a user group is deactivated
-                                but only to clients with `include_deactivated_groups` client
-                                capability set to `false`.
+                                Event sent when a user group is deactivated but only to clients
+                                with `include_deactivated_groups` client capability set to `false`.
 
                                 **Changes**: Prior to Zulip 10.0 (feature level 294), this
-                                event was only sent when a user group was deleted.
+                                event was sent when a user group was deleted.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -19995,34 +19992,6 @@ paths:
                       }
                     description: |
                       An example JSON response when the user group ID is invalid:
-    delete:
-      operationId: remove-user-group
-      summary: Delete a user group
-      tags: ["users"]
-      description: |
-        Delete a [user group](/help/user-groups).
-      parameters:
-        - $ref: "#/components/parameters/UserGroupId"
-      responses:
-        "200":
-          $ref: "#/components/responses/SimpleSuccess"
-
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid user group",
-                        "result": "error",
-                      }
-                    description: |
-                      An example JSON error response for an invalid user group ID:
-
   /user_groups:
     get:
       operationId: get-user-groups
