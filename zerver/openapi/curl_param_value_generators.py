@@ -259,9 +259,7 @@ def create_user_group_data() -> dict[str, object]:
     }
 
 
-@openapi_param_value_generator(
-    ["/user_groups/{user_group_id}:patch", "/user_groups/{user_group_id}:delete"]
-)
+@openapi_param_value_generator(["/user_groups/{user_group_id}:patch"])
 def get_temp_user_group_id() -> dict[str, object]:
     user_group, _ = NamedUserGroup.objects.get_or_create(
         name="temp",

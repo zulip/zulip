@@ -38,6 +38,8 @@ format used by the Zulip server that they are interacting with.
   is updated.
 * [`GET /user_groups`](/api/get-user-groups): Renamed `allow_deactivated`
   parameter to `include_deactivated_groups`.
+* `DELETE /user_groups/{user_group_id}`: Removed support for user group
+  deletion as we now support deactivating user groups.
 
 **Feature level 293**
 

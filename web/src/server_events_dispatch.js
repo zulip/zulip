@@ -925,10 +925,6 @@ export function dispatch_normal_event(event) {
                     }
                     break;
                 }
-                case "remove":
-                    user_groups.remove(user_groups.get_user_group_from_id(event.group_id));
-                    user_group_edit.handle_deleted_group(event.group_id);
-                    break;
                 case "add_members":
                     user_groups.add_members(event.group_id, event.user_ids);
                     user_group_edit.handle_member_edit_event(event.group_id, event.user_ids);

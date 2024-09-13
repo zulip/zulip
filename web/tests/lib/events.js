@@ -835,12 +835,6 @@ exports.fixtures = {
         direct_subgroup_ids: [3],
     },
 
-    user_group__remove: {
-        type: "user_group",
-        op: "remove",
-        group_id: 1,
-    },
-
     user_group__remove_members: {
         type: "user_group",
         op: "remove_members",

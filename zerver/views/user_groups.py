@@ -11,7 +11,6 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
     check_add_user_group,
-    check_delete_user_group,
     do_change_user_group_permission_setting,
     do_deactivate_user_group,
     do_update_user_group_description,
@@ -180,22 +179,6 @@ def edit_user_group(
                 acting_user=user_profile,
             )
 
-    return json_success(request)
-
-
-@require_member_or_admin
-@typed_endpoint
-def delete_user_group(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    *,
-    user_group_id: PathOnly[Json[int]],
-) -> HttpResponse:
-    # For deletion, the user group's recursive subgroups and the user group itself are locked.
-    with lock_subgroups_with_respect_to_supergroup(
-        [user_group_id], user_group_id, acting_user=user_profile
-    ) as context:
-        check_delete_user_group(context.supergroup, acting_user=user_profile)
     return json_success(request)
 
 
