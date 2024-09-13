@@ -175,7 +175,7 @@ export type TimeRender = {
     needs_update: boolean;
 };
 
-export function render_now(time: Date, today = new Date()): TimeRender {
+export function render_now(time: Date, today = new Date(), display_year?: boolean): TimeRender {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used for tippy tooltip
@@ -194,7 +194,7 @@ export function render_now(time: Date, today = new Date()): TimeRender {
     } else if (days_old === 1) {
         time_str = $t({defaultMessage: "Yesterday"});
         needs_update = true;
-    } else if (time.getFullYear() !== today.getFullYear()) {
+    } else if (time.getFullYear() !== today.getFullYear() || display_year) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is from an older year
         time_str = get_localized_date_or_time_for_format(time, "dayofyear_year");
@@ -354,10 +354,11 @@ function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-export function render_date(time: Date): HTMLElement {
+export function render_date(time: Date, display_year?: boolean): HTMLElement {
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
-    const rendered_time = render_now(time);
+    const today = new Date();
+    const rendered_time = render_now(time, today, display_year);
     let $node = $("<span>").attr("class", `timerender-content ${className}`);
     $node = render_date_span($node, rendered_time);
     maybe_add_update_list_entry({
