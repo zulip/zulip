@@ -228,6 +228,7 @@ def update_realm(
         invite_to_realm_policy is not None
         or invite_required is not None
         or create_multiuse_invite_group_id is not None
+        or can_create_groups is not None
     ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
 
