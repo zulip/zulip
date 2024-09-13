@@ -49,6 +49,7 @@ import * as util from "./util";
 export type MessageContainer = {
     background_color?: string;
     date_divider_html: string | undefined;
+    year_changed: boolean;
     include_recipient: boolean;
     include_sender: boolean;
     is_hidden: boolean;
@@ -134,6 +135,16 @@ function same_day(earlier_msg: Message | undefined, later_msg: Message | undefin
     );
 }
 
+function same_year(earlier_msg: Message | undefined, later_msg: Message | undefined): boolean {
+    if (earlier_msg === undefined || later_msg === undefined) {
+        return true;
+    }
+    return (
+        new Date(earlier_msg.timestamp * 1000).getFullYear() ===
+        new Date(later_msg.timestamp * 1000).getFullYear()
+    );
+}
+
 function same_sender(a: MessageContainer | undefined, b: MessageContainer | undefined): boolean {
     if (a === undefined || b === undefined) {
         return false;
@@ -211,9 +222,9 @@ function analyze_edit_history(
     return {edited, moved, resolve_toggled};
 }
 
-function get_group_display_date(message: Message): string {
+function get_group_display_date(message: Message, display_year: boolean): string {
     const time = new Date(message.timestamp * 1000);
-    const date_element = timerender.render_date(time);
+    const date_element = timerender.render_date(time, display_year);
 
     return date_element.outerHTML;
 }
@@ -244,6 +255,7 @@ function update_message_date_divider(opts: {
         get_message_date_divider_data({
             prev_message: opts.prev_msg_container?.msg,
             curr_message: opts.curr_msg_container.msg,
+            display_year: !same_year(opts.curr_msg_container.msg, opts.prev_msg_container?.msg),
         }),
     );
 }
@@ -251,12 +263,14 @@ function update_message_date_divider(opts: {
 function get_message_date_divider_data(opts: {
     prev_message: Message | undefined;
     curr_message: Message;
+    display_year: boolean;
 }): {
     want_date_divider: boolean;
     date_divider_html: string | undefined;
 } {
     const prev_message = opts.prev_message;
     const curr_message = opts.curr_message;
+    const display_year = opts.display_year;
 
     if (!prev_message || same_day(curr_message, prev_message)) {
         return {
@@ -268,7 +282,7 @@ function get_message_date_divider_data(opts: {
 
     return {
         want_date_divider: true,
-        date_divider_html: timerender.render_date(curr_time).outerHTML,
+        date_divider_html: timerender.render_date(curr_time, display_year).outerHTML,
     };
 }
 
@@ -420,13 +434,14 @@ type SubscriptionMarkers = {
 function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
+    year_changed: boolean,
     subscription_markers: SubscriptionMarkers | undefined,
 ): MessageGroup {
     const is_stream = message.is_stream;
     const is_private = message.is_private;
     const display_recipient = message.display_recipient;
     const message_group_id = _.uniqueId("message_group_");
-    const date = get_group_display_date(message);
+    const date = get_group_display_date(message, year_changed);
 
     if (is_stream) {
         assert(message.type === "stream");
@@ -826,6 +841,7 @@ export class MessageListView {
             current_group = populate_group_from_message(
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
+                !same_year(message_for_next_group, prev_message),
                 this.get_possible_group_subscription_markers(prev_message, message_for_next_group),
             );
         };
@@ -852,6 +868,7 @@ export class MessageListView {
             let include_sender;
             let want_date_divider;
             let date_divider_html;
+            const year_changed = !same_year(message, prev_message_container?.msg);
 
             if (
                 prev_message_container &&
@@ -862,6 +879,7 @@ export class MessageListView {
                 const date_divider_data = get_message_date_divider_data({
                     prev_message: prev_message_container.msg,
                     curr_message: message,
+                    display_year: year_changed,
                 });
                 want_date_divider = date_divider_data.want_date_divider;
                 date_divider_html = date_divider_data.date_divider_html;
@@ -907,6 +925,7 @@ export class MessageListView {
                 ...(pm_with_url && {pm_with_url}),
                 want_date_divider,
                 date_divider_html,
+                year_changed,
                 ...calculated_variables,
                 ...this.get_edited_notice_locations(
                     include_sender,
@@ -1701,6 +1720,7 @@ export class MessageListView {
             populate_group_from_message(
                 group.message_containers[0]!.msg,
                 group.date_unchanged,
+                group.message_containers[0]!.year_changed,
                 undefined,
             ),
         );
@@ -2156,7 +2176,8 @@ export class MessageListView {
         }
         this.sticky_recipient_message_id = message.id;
         const time = new Date(message.timestamp * 1000);
-        const rendered_date = timerender.render_date(time);
+        const message_container = this.message_containers.get(message.id)!;
+        const rendered_date = timerender.render_date(time, message_container.year_changed);
         dom_updates.html_updates.push({
             $element: $sticky_header.find(".recipient_row_date"),
             rendered_date,
