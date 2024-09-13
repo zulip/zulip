@@ -5,7 +5,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import Realm, Stream, UserProfile
 from zerver.models.users import get_user_by_id_in_realm_including_cross_realm
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_rollback_unsafe
 
 
 def do_send_typing_notification(
@@ -32,7 +32,7 @@ def do_send_typing_notification(
         if user.is_active and user.receives_typing_notifications
     ]
 
-    send_event(realm, event, user_ids_to_notify)
+    send_event_rollback_unsafe(realm, event, user_ids_to_notify)
 
 
 # check_send_typing_notification:
@@ -98,4 +98,4 @@ def do_send_stream_typing_notification(
         .values_list("user_profile_id", flat=True)
     )
 
-    send_event(sender.realm, event, user_ids_to_notify)
+    send_event_rollback_unsafe(sender.realm, event, user_ids_to_notify)

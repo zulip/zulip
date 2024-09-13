@@ -170,15 +170,21 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
 
 # The core function for sending an event from Django to Tornado (which
 # will then push it to web and mobile clients for the target users).
-# By convention, send_event should only be called from
-# zerver/actions/*.py, which helps make it easy to find event
-# generation code.
+#
+# One should generally use `send_event_on_commit` unless there's a strong
+# reason to use `send_event_rollback_unsafe` directly, as it doesn't wait
+# for the db transaction (within which it gets called, if any) to commit
+# and sends event irrespective of commit or rollback.
+#
+# By convention, `send_event_rollback_unsafe` / `send_event_on_commit`
+# should only be called from zerver/actions/*.py, which helps make it
+# easy to find event generation code.
 #
 # Every call point should be covered by a test in `test_events.py`,
 # with the schema verified in `zerver/lib/event_schema.py`.
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
-def send_event(
+def send_event_rollback_unsafe(
     realm: Realm, event: Mapping[str, Any], users: Iterable[int] | Iterable[Mapping[str, Any]]
 ) -> None:
     """`users` is a list of user IDs, or in some special cases like message
@@ -203,4 +209,4 @@ def send_event(
 def send_event_on_commit(
     realm: Realm, event: Mapping[str, Any], users: Iterable[int] | Iterable[Mapping[str, Any]]
 ) -> None:
-    transaction.on_commit(lambda: send_event(realm, event, users))
+    transaction.on_commit(lambda: send_event_rollback_unsafe(realm, event, users))

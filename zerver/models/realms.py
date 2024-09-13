@@ -856,7 +856,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         self, include_realm_owners: bool = True
     ) -> QuerySet["UserProfile"]:
         """Use this in contexts where we want administrative users as well as
-        bots with administrator privileges, like send_event calls for
+        bots with administrator privileges, like send_event_on_commit calls for
         notifications to all administrator users.
         """
         if include_realm_owners:

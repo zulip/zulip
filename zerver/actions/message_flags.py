@@ -20,7 +20,7 @@ from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_f
 from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import Message, Recipient, UserMessage, UserProfile
-from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
 
 
 @dataclass
@@ -96,7 +96,7 @@ def do_mark_all_as_read(user_profile: UserProfile, *, timeout: float | None = No
             all=True,
         )
     )
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event_rollback_unsafe(user_profile.realm, event, [user_profile.id])
 
     return count
 

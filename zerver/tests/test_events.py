@@ -252,7 +252,7 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_rollback_unsafe
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
@@ -267,7 +267,7 @@ from zerver.worker.thumbnail import ensure_thumbnails
 
 class BaseAction(ZulipTestCase):
     """Core class for verifying the apply_event race handling logic as
-    well as the event formatting logic of any function using send_event.
+    well as the event formatting logic of any function using send_event_rollback_unsafe.
 
     See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html#testing
     for extensive design details for this testing system.
@@ -355,8 +355,8 @@ class BaseAction(ZulipTestCase):
 
         events: list[dict[str, Any]] = []
 
-        # We want even those `send_event` calls which have been hooked to
-        # `transaction.on_commit` to execute in tests.
+        # We want even those `send_event_rollback_unsafe` calls which have
+        # been hooked to `transaction.on_commit` to execute in tests.
         # See the comment in `ZulipTestCase.capture_send_event_calls`.
         with self.captureOnCommitCallbacks(execute=True):
             yield events
@@ -1174,7 +1174,7 @@ class NormalActionsTest(BaseAction):
 
     def test_heartbeat_event(self) -> None:
         with self.verify_action(state_change_expected=False) as events:
-            send_event(
+            send_event_rollback_unsafe(
                 self.user_profile.realm,
                 create_heartbeat_event(),
                 [self.user_profile.id],

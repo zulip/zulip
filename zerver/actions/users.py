@@ -123,8 +123,8 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
     conversations that they may have participated in.
 
     Not recommended for general use due to the following quirks:
-    * Does not live-update other clients via `send_event` about the
-      user's new name, email, or other attributes.
+    * Does not live-update other clients via `send_event_on_commit`
+      about the user's new name, email, or other attributes.
     * Not guaranteed to clear caches containing the deleted users. The
       temporary user may be visible briefly in caches due to the
       UserProfile model's post_save hook.

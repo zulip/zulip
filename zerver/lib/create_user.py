@@ -24,7 +24,7 @@ def copy_default_settings(
     settings_source: UserProfile | RealmUserDefault, target_profile: UserProfile
 ) -> None:
     # Important note: Code run from here to configure the user's
-    # settings should not call send_event, as that would cause clients
+    # settings should not send events, as that would cause clients
     # to throw an exception (we haven't sent the realm_user/add event
     # yet, so that event will include the updated details of target_profile).
     #
