@@ -2011,6 +2011,22 @@ $option_title_width: 180px;
         max-width: 160px;
         margin-top: 12px;
     }
+
+    @media (width <= 645px) {
+        & h3 {
+            display: block;
+        }
+
+        .user_filters {
+            float: left;
+            margin-bottom: 12px;
+        }
+
+        & input.search {
+            float: left;
+            margin-bottom: 12px;
+        }
+    }
 }
 
 #add-new-custom-profile-field-form,
