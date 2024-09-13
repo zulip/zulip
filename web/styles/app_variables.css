@@ -689,6 +689,9 @@
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
 
+    /* .settings-sticky-footer colors */
+    --color-settings-sticky-footer-shadow: hsl(0deg 0% 100%);
+
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
@@ -1139,6 +1142,9 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+
+    /* .settings-sticky-footer colors */
+    --color-settings-sticky-footer-shadow: hsl(0deg 0% 0% / 20%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
