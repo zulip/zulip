@@ -845,6 +845,12 @@ export function set_up_dropdown_widget_for_realm_group_settings() {
             dropdown_list_item_click_callback = check_disable_message_delete_limit_setting_dropdown;
         }
 
+        if (setting_name === "can_manage_all_groups") {
+            // Temporarily skip this setting until further commits
+            // where this setting will be ready to use.
+            continue;
+        }
+
         set_up_dropdown_widget(
             "realm_" + setting_name,
             get_setting_options,

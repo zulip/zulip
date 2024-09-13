@@ -344,6 +344,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # UserGroup which is allowed to create groups.
     can_create_groups = models.ForeignKey("UserGroup", on_delete=models.RESTRICT, related_name="+")
 
+    # UserGroup which is allowed to manage all groups.
+    can_manage_all_groups = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy = models.PositiveSmallIntegerField(
         default=CommonPolicyEnum.MEMBERS_ONLY
@@ -780,6 +785,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             default_group_name=SystemGroups.MEMBERS,
             id_field_name="can_create_groups_id",
         ),
+        can_manage_all_groups=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.OWNERS,
+            id_field_name="can_manage_all_groups_id",
+        ),
     )
 
     REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
@@ -791,6 +805,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "direct_message_initiator_group",
         "direct_message_permission_group",
         "can_create_groups",
+        "can_manage_all_groups",
     ]
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -1168,6 +1183,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "direct_message_permission_group__named_user_group",
         "can_create_groups",
         "can_create_groups__named_user_group",
+        "can_manage_all_groups",
+        "can_manage_all_groups__named_user_group",
         "new_stream_announcements_stream",
         "signup_announcements_stream",
         "zulip_update_announcements_stream",

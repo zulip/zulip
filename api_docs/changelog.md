@@ -26,6 +26,10 @@ format used by the Zulip server that they are interacting with.
   [`GET /events`](/api/get-events): Added `can_create_groups`
   realm setting, which is a [group-setting value](/api/group-setting-values)
   describing the set of users with permission to create user groups.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_manage_all_groups`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to manage all user groups.
 
 **Feature level 298**
 
