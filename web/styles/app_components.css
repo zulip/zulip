@@ -25,12 +25,12 @@
 
 kbd {
     display: inline-block;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: 1px solid var(--color-kbd-border);
     border-radius: 4px;
     font-weight: 600;
     white-space: nowrap;
-    background-color: hsl(0deg 0% 98%);
-    color: hsl(0deg 0% 20%);
+    background-color: var(--color-kbd-background);
+    color: var(--color-kbd-text);
     margin: 0.25em 0.1em;
     padding: 0.1em 0.4em;
     text-shadow: 0 1px 0 hsl(0deg 0% 100%);
