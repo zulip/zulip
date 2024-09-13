@@ -335,22 +335,22 @@ export class MessageList {
         opts.id = id;
         this.data.set_selected_id(id);
 
+        // Avoid recursive calls to message_selected event
+        // by temporarily blocking triggering the event by
+        // setting `should_trigger_message_selected_event`.
         if (opts.force_rerender) {
-            // TODO: Because rerender() itself will call
-            // reselect_selected_id after doing the rendering, we
-            // actually end up with this function being called
-            // recursively in this case. The ordering will end up
-            // being that the message_selected.zulip event for that
-            // rerender is processed before execution returns here.
-            //
-            // The recursive call is unnecessary, so we should figure
-            // out how to avoid that, both here and in the next block.
+            this.should_trigger_message_selected_event = false;
             this.rerender();
+            this.should_trigger_message_selected_event = true;
         } else if (!opts.from_rendering) {
+            this.should_trigger_message_selected_event = false;
             this.view.maybe_rerender();
+            this.should_trigger_message_selected_event = true;
         }
 
-        $(document).trigger(new $.Event("message_selected.zulip", opts));
+        if (this.should_trigger_message_selected_event) {
+            $(document).trigger(new $.Event("message_selected.zulip", opts));
+        }
     }
 
     selected_message() {
