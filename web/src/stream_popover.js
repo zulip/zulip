@@ -21,7 +21,6 @@ import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
 import {web_channel_default_view_values} from "./settings_config";
 import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
@@ -153,7 +152,7 @@ function build_stream_popover(opts) {
 
                 // Admin can change any stream's name & description either stream is public or
                 // private, subscribed or unsubscribed.
-                const can_change_name_description = current_user.is_admin;
+                const can_change_name_description = stream_data.can_edit_description();
                 const can_change_stream_permissions = stream_data.can_change_permissions(sub);
                 let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
                 if (!can_change_stream_permissions && !can_change_name_description) {

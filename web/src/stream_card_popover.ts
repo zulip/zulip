@@ -7,7 +7,6 @@ import * as browser_history from "./browser_history";
 import * as hash_util from "./hash_util";
 import * as modals from "./modals";
 import * as popover_menus from "./popover_menus";
-import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
@@ -49,7 +48,7 @@ export function initialize(): void {
                 // modals.close_active_if_any() is mainly used to handle navigation to channel settings
                 // using the popover that is opened when clicking on channel pills in the invite user modal.
                 modals.close_active_if_any();
-                const can_change_name_description = current_user.is_admin;
+                const can_change_name_description = stream_data.can_edit_description();
                 const can_change_stream_permissions = stream_data.can_change_permissions(sub);
                 let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
                 if (!can_change_stream_permissions && !can_change_name_description) {
