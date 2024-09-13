@@ -2401,7 +2401,7 @@ class RealmAPITest(ZulipTestCase):
         self.do_test_changing_settings_by_owners_only("disallow_disposable_email_addresses")
         self.do_test_changing_settings_by_owners_only("waiting_period_threshold")
 
-    def test_can_create_groups_setting_requires_owner(self) -> None:
+    def do_test_changing_groups_setting_by_owners_only(self, setting_name: str) -> None:
         realm = get_realm("zulip")
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
@@ -2409,17 +2409,23 @@ class RealmAPITest(ZulipTestCase):
 
         self.login("iago")
         result = self.client_patch(
-            "/json/realm", {"can_create_groups": orjson.dumps({"new": admins_group.id}).decode()}
+            "/json/realm", {setting_name: orjson.dumps({"new": admins_group.id}).decode()}
         )
         self.assert_json_error(result, "Must be an organization owner")
 
         self.login("desdemona")
         result = self.client_patch(
-            "/json/realm", {"can_create_groups": orjson.dumps({"new": admins_group.id}).decode()}
+            "/json/realm", {setting_name: orjson.dumps({"new": admins_group.id}).decode()}
         )
         self.assert_json_success(result)
         realm = get_realm("zulip")
-        self.assertEqual(realm.can_create_groups.id, admins_group.id)
+        self.assertEqual(getattr(realm, setting_name).id, admins_group.id)
+
+    def test_can_create_groups_setting_requires_owner(self) -> None:
+        self.do_test_changing_groups_setting_by_owners_only("can_create_groups")
+
+    def test_can_manage_all_groups_setting_requires_owner(self) -> None:
+        self.do_test_changing_groups_setting_by_owners_only("can_manage_all_groups")
 
     def test_enable_spectator_access_for_limited_plan_realms(self) -> None:
         self.login("iago")
