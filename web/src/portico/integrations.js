@@ -196,7 +196,7 @@ function hide_catalog_show_integration() {
         dataType: "html",
         success: hide_catalog,
         error(err) {
-            if (err.readyState !== 0) {
+            if (err.readyState !== 0 && err.status >= 400 && err.status < 500) {
                 blueslip.error(`Integration documentation for '${state.integration}' not found.`, {
                     readyState: err.readyState,
                     status: err.status,
