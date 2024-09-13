@@ -53,7 +53,7 @@ def resolve_conflicts(conflicts: list[str], files_list: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    MIGRATIONS_TO_SKIP = {"0209", "0261", "0501"}
+    MIGRATIONS_TO_SKIP = {"0209", "0261", "0501", "0001"}
     while True:
         conflicts: list[str] = []
         stack: list[str] = []
