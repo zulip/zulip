@@ -62,26 +62,7 @@
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button,
     .user-profile-manage-own-copy-link-button {
-        color: hsl(200deg 100% 50%);
         cursor: pointer;
-
-        &:hover {
-            color: hsl(200deg 79% 66%);
-        }
-    }
-
-    .modal__content.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid hsl(0deg 0% 100% / 20%);
-    }
-
-    .modal__close {
-        &::before {
-            color: hsl(236deg 33% 90%);
-        }
-
-        &:hover {
-            background: hsl(0deg 0% 91% / 10%);
-        }
     }
 
     #subscription_overlay #stream-creation .settings-sticky-footer,
@@ -994,17 +975,6 @@
     #stream-specific-notify-table .unmute_stream {
         &:hover {
             color: hsl(0deg 0% 100%);
-        }
-    }
-
-    #read_receipts_modal .read_receipts_list li {
-        &:hover {
-            background-color: hsl(0deg 0% 100% / 5%);
-        }
-
-        &:active,
-        &:focus {
-            background-color: hsl(0deg 0% 100% / 10%);
         }
     }
 

@@ -689,6 +689,14 @@
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
 
+    /* Modal colors */
+    --color-user-profile-manage-button: hsl(200deg 100% 50%);
+    --color-user-profile-manage-button-hover: hsl(200deg 100% 25%);
+    --color-modal-footer-border: hsl(0deg 0% 87%);
+    --color-modal-close-hover-bg: hsl(0deg 0% 90%);
+    --color-read-receipts-item-hover: hsl(0deg 0% 0% / 5%);
+    --color-read-receipts-item-active-focus: hsl(0deg 0% 0% / 10%);
+
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
@@ -1139,6 +1147,14 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+
+    /* Modal colors */
+    --color-user-profile-manage-button: hsl(200deg 100% 50%);
+    --color-user-profile-manage-button-hover: hsl(200deg 79% 66%);
+    --color-modal-footer-border: hsl(0deg 0% 100% / 20%);
+    --color-modal-close-hover-bg: hsl(0deg 0% 91% / 10%);
+    --color-read-receipts-item-hover: hsl(0deg 0% 100% / 5%);
+    --color-read-receipts-item-active-focus: hsl(0deg 0% 100% / 10%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
