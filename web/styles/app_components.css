@@ -586,14 +586,16 @@ input.settings_text_input {
 .demo-organization-warning {
     position: relative;
     display: block;
-    background-color: hsl(4deg 35% 90%);
-    border: 1px solid hsl(3deg 57% 33% / 40%);
+    background-color: var(
+        --color-background-settings-demo-organization-warning
+    );
+    border: 1px solid var(--color-border-settings-demo-organization-warning);
     border-radius: 4px;
     padding: 10px;
     margin: 10px 0;
     font-size: 1rem;
     line-height: 1.5;
-    color: hsl(4deg 58% 33%);
+    color: var(--color-text-settings-demo-organization-warning);
 
     a {
         text-decoration: none;
@@ -601,7 +603,8 @@ input.settings_text_input {
 
     .convert-demo-organization-button {
         &:focus {
-            outline: 1px solid hsl(200deg 100% 25%);
+            outline: 1px solid
+                var(--color-focus-outline-settings-convert-demo-organization);
             outline-offset: 0;
         }
     }
