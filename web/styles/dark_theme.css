@@ -36,19 +36,8 @@
 
     & ul.dm-list,
     & ul.filters {
-        color: hsl(0deg 0% 100% / 80%);
-
         & a:hover {
             color: inherit;
-        }
-
-        .has-unmuted-mentions .unread_mention_info {
-            color: hsl(236deg 33% 90%);
-        }
-
-        & li.muted_topic,
-        li.out_of_home_view {
-            color: hsl(236deg 33% 90%/50%);
         }
 
         & li.out_of_home_view {
@@ -844,15 +833,6 @@
     /* Search highlight used in both topics and rendered_markdown */
     .highlight {
         background-color: hsl(51deg 100% 23%);
-    }
-
-    .streams_subheader {
-        color: hsl(240deg 11% 85%);
-
-        & .streams_subheader_name::before,
-        .streams_subheader_name::after {
-            border-color: hsl(240deg 11% 85%);
-        }
     }
 
     .sub-unsub-message span::before,

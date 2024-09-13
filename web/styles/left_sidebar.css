@@ -372,7 +372,7 @@ li.show-more-topics {
 ul.filters {
     list-style-type: none;
     margin-left: 0;
-    color: hsl(0deg 0% 20% / 100%);
+    color: var(--color-left-sidebar-text-filters);
     /* Streams take a standard row height. */
     line-height: var(--line-height-sidebar-row);
 
@@ -417,10 +417,10 @@ ul.filters {
 
     & li.muted_topic,
     li.out_of_home_view {
-        color: hsl(0deg 0% 20% / 50%);
+        color: var(--color-left-sidebar-muted-topic);
 
         .has-unmuted-mentions .unread_mention_info {
-            color: hsl(0deg 0% 20%);
+            color: var(--color-left-sidebar-unmuted-mentions-icon);
         }
 
         .stream-privacy {
@@ -1478,7 +1478,7 @@ li.topic-list-item {
     cursor: pointer;
     text-align: center;
     margin-right: var(--left-sidebar-right-margin);
-    color: hsl(240deg 10% 50%);
+    color: var(--color-text-streams-subheader);
 
     & .streams_subheader_name {
         display: flex;
@@ -1495,7 +1495,7 @@ li.topic-list-item {
         flex: 1 1;
         vertical-align: middle;
         margin: auto;
-        border: 0.5px solid hsl(240deg 10% 50%);
+        border: 0.5px solid var(--color-left-sidebar-streams-subheader-border);
         opacity: 0.2;
     }
 

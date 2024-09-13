@@ -688,6 +688,13 @@
     --color-text-url: hsl(200deg 100% 40%);
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
+    --color-text-streams-subheader: hsl(240deg 10% 50%);
+
+    /* Left Sidebar colors */
+    --color-left-sidebar-text-filters: hsl(0deg 0% 20% / 100%);
+    --color-left-sidebar-muted-topic: hsl(0deg 0% 20% / 50%);
+    --color-left-sidebar-out-of-home-hover: hsla(0deg 0% 20% / 75%);
+    --color-left-sidebar-streams-subheader-border: hsl(240deg 10% 50%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
@@ -726,6 +733,7 @@
     --color-message-action-interactive: hsl(216deg 43% 20% / 100%);
     --color-message-star-action: hsl(41deg 100% 47% / 100%);
     --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 0%);
+    --color-left-sidebar-unmuted-mentions-icon: hsl(0deg 0% 20%);
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
     --color-left-sidebar-navigation-icon: hsl(0deg 0% 20% / 70%);
@@ -1139,6 +1147,14 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+    --color-text-streams-subheader: hsl(240deg 11% 85%);
+
+    /* Left Sidebar colors */
+    --color-left-sidebar-text-filters: hsl(0deg 0% 100% / 80%);
+    --color-left-sidebar-unmuted-mentions-icon: hsl(236deg 33% 90%);
+    --color-left-sidebar-muted-topic: hsl(236deg 33% 90% / 50%);
+    --color-left-sidebar-out-of-home-hover: hsl(236deg 33% 90% / 75%);
+    --color-left-sidebar-streams-subheader-border: hsl(240deg 11% 85%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
@@ -1189,6 +1205,7 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
+    --color-modal-close-icon: hsl(236deg 33% 90%);
     /* hsl(229deg 9% 65%) corresponds to --grey-350.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
