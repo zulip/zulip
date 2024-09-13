@@ -1531,6 +1531,13 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         border-radius: 4px;
     }
 
+    .zulip-version-info,
+    .zulip-merge-base-info {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
     .about-zulip-logo {
         text-align: center;
         margin: 30px;
@@ -1538,14 +1545,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 
     .about-zulip-logo img {
         height: 40px;
-    }
-
-    & i.fa-copy {
-        cursor: pointer;
-    }
-
-    .fa-copy:hover {
-        color: hsl(170deg 48% 54%);
     }
 
     .overlay-body {
