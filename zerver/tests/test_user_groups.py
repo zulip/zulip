@@ -1343,6 +1343,51 @@ class UserGroupAPITestCase(UserGroupTestCase):
         support_group.deactivated = False
         support_group.save()
 
+        do_set_realm_property(
+            realm, "user_group_edit_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        )
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        do_change_user_group_permission_setting(
+            support_group, "can_manage_group", admins_group, acting_user=None
+        )
+
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_change_user_group_permission_setting(
+            support_group, "can_manage_group", moderators_group, acting_user=None
+        )
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertTrue(support_group.deactivated)
+
+        support_group.deactivated = False
+        support_group.save()
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.example_user("shiva")], [admins_group]
+        )
+        do_change_user_group_permission_setting(
+            support_group, "can_manage_group", setting_group, acting_user=None
+        )
+
+        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertTrue(support_group.deactivated)
+
+        support_group.deactivated = False
+        support_group.save()
+
+        do_set_realm_property(
+            realm, "user_group_edit_policy", CommonPolicyEnum.MODERATORS_ONLY, acting_user=None
+        )
         # Check that group that is subgroup of another group cannot be deactivated.
         result = self.client_post(f"/json/user_groups/{leadership_group.id}/deactivate")
         self.assert_json_error(
