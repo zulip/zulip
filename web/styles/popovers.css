@@ -598,7 +598,8 @@ ul.popover-group-menu-member-list {
         }
 
         .stream-privacy {
-            display: inline-block;
+            display: flex;
+            align-items: center;
         }
 
         .filter-icon i {
@@ -676,6 +677,8 @@ ul.popover-group-menu-member-list {
 
                     &.subscription_list_stream {
                         padding-left: 10px;
+                        display: flex;
+                        gap: 3px;
                     }
                 }
             }
