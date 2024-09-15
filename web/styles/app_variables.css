@@ -914,6 +914,10 @@
     --color-kbd-text: hsl(0deg 0% 20%);
     --color-kbd-enter-sends: hsl(0deg 0% 40%);
 
+    /* Settings */
+    --color-realm-enable-spectator-access-link: hsl(0deg 0% 20%);
+    --color-unmute-stream-hover: hsl(0deg 0% 20%);
+
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
@@ -1903,6 +1907,10 @@
     --color-kbd-border: hsl(211deg 29% 14%);
     --color-kbd-text: hsl(236deg 33% 90%);
     --color-kbd-enter-sends: hsl(236deg 33% 90%);
+
+    /* Settings */
+    --color-realm-enable-spectator-access-link: hsl(236deg 33% 90%);
+    --color-unmute-stream-hover: hsl(0deg 0% 100%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
