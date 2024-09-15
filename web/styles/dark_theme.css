@@ -686,10 +686,6 @@
 
     #request-progress-status-banner {
         background-color: hsl(212deg 32% 14%);
-
-        .alert-content {
-            color: hsl(236deg 33% 90%);
-        }
     }
 
     .alert.home-error-bar {

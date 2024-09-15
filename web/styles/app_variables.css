@@ -613,6 +613,7 @@
     --color-border-sidebar: hsl(0deg 0% 87%);
     --color-text-sidebar-base: hsl(0deg 0% 0%);
     --color-border-sidebar-subheader: hsl(0deg 0% 0% / 15%);
+    --color-request-progress-status-alert-text: hsl(0deg 0% 20%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 87%);
@@ -1071,6 +1072,7 @@
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
     --color-text-sidebar-base: hsl(0deg 0% 100%);
     --color-border-sidebar-subheader: hsl(0deg 0% 100% / 15%);
+    --color-request-progress-status-alert-text: hsl(236deg 33% 90%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 0% / 20%);
