@@ -958,6 +958,12 @@
     /* Same color as background color of header / footer */
     --color-border-emoji-picker-tippy-arrow: hsl(0deg 0% 93%);
 
+    /* Color-picker colors */
+    --color-stream-actions-menu-popover-button-background: hsl(0deg 0% 100%);
+    --color-stream-actions-menu-popover-button-border: hsl(0deg 0% 80%);
+    --color-stream-actions-menu-popover-button-text: hsl(0deg 0% 25%);
+    --color-stream-actions-menu-popover-picker-border-left: hsl(0deg 0% 88%);
+
     /* Dropdown / Typeahead constants */
     --color-dropdown-item: hsl(0deg 0% 20%);
     --color-active-dropdown-item: hsl(0deg 0% 0%);
@@ -1399,6 +1405,12 @@
     --color-border-add-subscription-button-focus: hsl(0deg 0% 67%);
     /* Same color as background color of header / footer */
     --color-border-emoji-picker-tippy-arrow: hsl(211.58deg 33.33% 11.18%);
+
+    /* Color-picker colors */
+    --color-stream-actions-menu-popover-button-background: hsl(208deg 35% 11%);
+    --color-stream-actions-menu-popover-button-border: hsl(210deg 36% 4%);
+    --color-stream-actions-menu-popover-button-text: hsl(236deg 31% 90%);
+    --color-stream-actions-menu-popover-picker-border-left: hsl(210deg 36% 4%);
 
     /* Dropdown / Typeahead constants */
     --color-dropdown-item: hsl(0deg 0% 75%);
