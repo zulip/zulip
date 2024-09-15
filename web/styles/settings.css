@@ -283,7 +283,7 @@ h3,
     too light. So, we set the color explicitly to original color of label to
     keep the color of the icon same even when the setting is disabled. */
     #id_realm_enable_spectator_access_label a {
-        color: hsl(0deg 0% 20%);
+        color: var(--color-realm-enable-spectator-access-link);
     }
 
     .settings_select {
@@ -462,7 +462,7 @@ input[type="checkbox"] {
     top: 2px;
 
     &:hover {
-        color: hsl(0deg 0% 20%);
+        color: var(--color-unmute-stream-hover);
         cursor: pointer;
     }
 }
