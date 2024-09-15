@@ -54,9 +54,9 @@
                                         <div class="name">{{t "Channels" }}</div>
                                         {{#if streams.length}}
                                         <ul>
-                                        {{#each streams}}
-                                        <li><div class="value">{{this}}</div></li>
-                                        {{/each}}
+                                            {{#each streams}}
+                                                <li><div class="value">{{this}}</div></li>
+                                            {{/each}}
                                         </ul>
                                         {{else}}
                                         <div class="value">{{t 'NOT invited to any of the channels.'}}</div> 
@@ -67,6 +67,18 @@
                         </div>
                     </div>
             </main>
+            <footer class="modal__footer">
+                <div class="actions">
+                    {{#unless is_multiuse}}
+                    <button class="button rounded small resend btn-warning" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{invite_id}}">
+                        {{t "Resend" }}
+                    </button>
+                    {{/unless}}
+                    <button class="button rounded small revoke btn-danger" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{invite_id}}" data-is-multiuse="{{is_multiuse}}">
+                        {{t "Revoke" }}
+                    </button>
+                </div>
+            </footer>
         </div>
     </div>
 </div>

@@ -16,7 +16,7 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
     do_send_user_invite_email,
     get_invite_controlled_by_user,
-    get_multiuse_invite_controlled_by_user
+    get_multiuse_invite_controlled_by_user,
 )
 from zerver.decorator import require_member_or_admin
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
@@ -136,6 +136,7 @@ def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     all_users = do_get_invites_controlled_by_user(user_profile)
     return json_success(request, data={"invites": all_users})
 
+
 @require_member_or_admin
 def get_invite_details(
     request: HttpRequest, user_profile: UserProfile, invite_id: PathOnly[int]
@@ -149,9 +150,10 @@ def get_invite_details(
         raise JsonableError(_("No such invitation"))
 
     if prereg_user.referred_by_id != user_profile.id:
-        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True) 
-    invite = get_invite_controlled_by_user(prereg_user,user_profile)
+        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
+    invite = get_invite_controlled_by_user(prereg_user, user_profile)
     return json_success(request, data={"invite": invite})
+
 
 @require_member_or_admin
 def get_multiuse_invite_details(
@@ -166,12 +168,12 @@ def get_multiuse_invite_details(
         raise JsonableError(_("No such invitation"))
 
     if multiuse_invite.referred_by_id != user_profile.id:
-        check_role_based_permissions(multiuse_invite.invited_as, user_profile, require_admin=True) 
+        check_role_based_permissions(multiuse_invite.invited_as, user_profile, require_admin=True)
 
     if multiuse_invite.status == confirmation_settings.STATUS_REVOKED:
         raise JsonableError(_("Invitation has already been revoked"))
-    
-    invite = get_multiuse_invite_controlled_by_user(multiuse_invite,user_profile)
+
+    invite = get_multiuse_invite_controlled_by_user(multiuse_invite, user_profile)
     return json_success(request, data={"invite": invite})
 
 

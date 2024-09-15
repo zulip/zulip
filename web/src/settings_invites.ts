@@ -16,7 +16,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
-import { get_stream_name_from_id } from "./stream_data";
+import {get_stream_name_from_id} from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -188,7 +188,7 @@ function get_invite_details({
 function open_invite_details_modal(invite: Invite): void {
     const streams = [];
     for (const stream_id of invite.stream_ids!) {
-        streams.push(get_stream_name_from_id(stream_id))
+        streams.push(get_stream_name_from_id(stream_id));
     }
     const ctx = {
         is_multiuse: invite.is_multiuse,
