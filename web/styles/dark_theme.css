@@ -359,14 +359,8 @@
     }
 
     .rendered_markdown .message_inline_image {
-        background: hsl(0deg 0% 100% / 3%);
-
         img.image-loading-placeholder {
             content: url("../images/loading/loader-white.svg");
-        }
-
-        &:hover {
-            background: hsl(0deg 0% 100% / 15%);
         }
     }
 
@@ -685,11 +679,6 @@
         }
     }
 
-    & time {
-        background: hsl(0deg 0% 0% / 20%);
-        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
-    }
-
     .upgrade-tip,
     .upgrade-or-sponsorship-tip,
     .tip,
@@ -839,11 +828,6 @@
         & a:hover {
             color: hsl(0deg 0% 100%);
         }
-    }
-
-    /* Search highlight used in both topics and rendered_markdown */
-    .highlight {
-        background-color: hsl(51deg 100% 23%);
     }
 
     .streams_subheader {

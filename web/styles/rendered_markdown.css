@@ -236,9 +236,9 @@
 
     /* Timestamps */
     & time {
-        background: hsl(0deg 0% 93%);
+        background: var(--color-time-background);
         border-radius: 3px;
-        box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
+        box-shadow: 0 0 0 1px var(--color-time-box-shadow);
         white-space: nowrap;
         margin: 0 2px;
         /* Reduce the font-size to reduce the
@@ -425,10 +425,12 @@
            container. */
         border: solid 1px transparent;
         transition: background 0.3s ease;
-        background: hsl(0deg 0% 0% / 3%);
+        background: var(--color-rendered-markdown-inline-image-background);
 
         &:hover {
-            background: hsl(0deg 0% 0% / 15%);
+            background: var(
+                --color-rendered-markdown-inline-image-background-hover
+            );
         }
 
         & a {
@@ -964,7 +966,7 @@
 
 /* Search highlight used in both topics and rendered_markdown */
 .highlight {
-    background-color: hsl(51deg 100% 79%);
+    background-color: var(--color-highlight-background);
 }
 
 /* For elements where we want to show as much markdown content we can

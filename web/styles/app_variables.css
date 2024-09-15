@@ -692,6 +692,13 @@
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
+    --color-rendered-markdown-inline-image-background: hsl(0deg 0% 0% / 3%);
+    --color-rendered-markdown-inline-image-background-hover: hsl(
+        0deg 0% 0% / 15%
+    );
+    --color-highlight-background: hsl(51deg 100% 79%);
+    --color-time-background: hsl(0deg 0% 93%);
+    --color-time-box-shadow: hsl(0deg 0% 80%);
 
     /* Tab-switcher colors */
     --color-background-tab-switcher-ind-tab: hsl(0deg 0% 100%);
@@ -1143,6 +1150,13 @@
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 33%);
+    --color-rendered-markdown-inline-image-background: hsl(0deg 0% 100% / 3%);
+    --color-rendered-markdown-inline-image-background-hover: hsl(
+        0deg 0% 100% / 15%
+    );
+    --color-highlight-background: hsl(51deg 100% 23%);
+    --color-time-background: hsl(0deg 0% 0% / 20%);
+    --color-time-box-shadow: hsl(0deg 0% 0% / 40%);
 
     /* Tab-switcher colors */
     /* The non-selected colors here are shared with numerous other
