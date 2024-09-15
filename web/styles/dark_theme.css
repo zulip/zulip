@@ -923,24 +923,15 @@
     /* Widgets: Poll */
     .poll-widget {
         .poll-vote {
-            color: hsl(185deg 35% 65%);
-            border-color: hsl(185deg 35% 35%);
-
             &:hover {
                 color: hsl(185deg 50% 70%);
-                border-color: hsl(185deg 40% 40%);
                 background-color: hsl(185deg 20% 20%);
             }
 
             &:focus {
                 color: hsl(185deg 50% 65%);
                 border-color: hsl(185deg 40% 50%);
-                background-color: hsl(185deg 40% 35%);
             }
-        }
-
-        .poll-names {
-            color: hsl(236deg 15% 70%);
         }
     }
 
@@ -949,21 +940,11 @@
         & label.checkbox {
             & input[type="checkbox"] {
                 ~ .custom-checkbox {
-                    border-color: hsl(185deg 40% 45%);
                     opacity: 0.7;
                 }
 
                 &:hover ~ .custom-checkbox {
                     background-color: hsl(185deg 20% 20%);
-                    border-color: hsl(185deg 40% 35%);
-                }
-
-                &:checked ~ .custom-checkbox {
-                    background-color: hsl(185deg 40% 45%);
-                }
-
-                &:focus ~ .custom-checkbox {
-                    outline-color: hsl(0deg 0% 100% / 0%);
                 }
             }
         }

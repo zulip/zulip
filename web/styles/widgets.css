@@ -70,7 +70,7 @@
                 line-height: 0.8;
                 font-size: 1.3rem;
                 text-align: center;
-                border: 2px solid hsl(156deg 28% 70%);
+                border: 2px solid var(--color-todo-checkbox-border);
 
                 border-radius: 4px;
                 filter: brightness(1);
@@ -83,7 +83,7 @@
                 background-size: 75%;
                 background-position: 50% 50%;
                 background-repeat: no-repeat;
-                background-color: hsl(156deg 41% 40%);
+                background-color: var(--color-todo-checkbox-background-checked);
                 border: 2px solid hsl(156deg 41% 40%);
             }
 
@@ -93,11 +93,11 @@
             }
 
             &:hover ~ .custom-checkbox {
-                border-color: hsl(156deg 30% 50%);
+                border-color: var(--color-todo-checkbox-border-hover);
             }
 
             &:focus ~ .custom-checkbox {
-                outline-color: hsl(0deg 0% 100% / 0%);
+                outline-color: var(--color-todo-checkbox-outline-focus);
             }
         }
     }
@@ -164,8 +164,8 @@
     }
 
     .poll-vote {
-        color: hsl(156deg 41% 40%);
-        border-color: hsl(156deg 28% 70%);
+        color: var(--color-poll-vote-text);
+        border-color: var(--color-poll-vote-border);
         border-style: solid;
         font-weight: 600;
         border-radius: 3px;
@@ -175,17 +175,17 @@
         background-color: var(--color-background-widget-button);
 
         &:hover {
-            border-color: hsl(156deg 30% 50%);
+            border-color: var(--color-poll-vote-border-hover);
         }
 
         &:focus {
             outline: 0;
-            background-color: hsl(156deg 41% 90%);
+            background-color: var(--color-poll-vote-background-focus);
         }
     }
 
     .poll-names {
-        color: hsl(0deg 0% 45%);
+        color: var(--color-poll-names-text);
         /* Aim for 50% of the flexbox for voting names,
            but also shrink modestly (.5) adjacent a long
            option. */

@@ -689,6 +689,17 @@
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
 
+    /* Widgets colors */
+    --color-todo-checkbox-border: hsl(156deg 28% 70%);
+    --color-todo-checkbox-border-hover: hsl(156deg 30% 50%);
+    --color-todo-checkbox-background-checked: hsl(156deg 41% 40%);
+    --color-todo-checkbox-outline-focus: hsl(0deg 0% 100% / 0%);
+    --color-poll-vote-text: hsl(156deg 41% 40%);
+    --color-poll-vote-border: hsl(156deg 28% 70%);
+    --color-poll-vote-border-hover: hsl(156deg 30% 50%);
+    --color-poll-vote-background-focus: hsl(156deg 41% 90%);
+    --color-poll-names-text: hsl(0deg 0% 45%);
+
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
@@ -1139,6 +1150,17 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+
+    /* Widgets colors */
+    --color-todo-checkbox-border: hsl(185deg 40% 45%);
+    --color-todo-checkbox-border-hover: hsl(185deg 40% 35%);
+    --color-todo-checkbox-background-checked: hsl(185deg 40% 45%);
+    --color-todo-checkbox-outline-focus: hsl(0deg 0% 100% / 0%);
+    --color-poll-vote-text: hsl(185deg 35% 65%);
+    --color-poll-vote-border: hsl(185deg 35% 35%);
+    --color-poll-vote-border-hover: hsl(185deg 40% 40%);
+    --color-poll-vote-background-focus: hsl(185deg 40% 35%);
+    --color-poll-names-text: hsl(236deg 15% 70%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
