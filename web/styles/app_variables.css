@@ -901,6 +901,9 @@
         4deg 75% 53% / 15%
     );
     --color-background-user-pill: hsla(0deg 0% 100% / 85%);
+    --color-background-compose-direct-recipient-pill-container: hsl(
+        0deg 0% 100%
+    );
 
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
@@ -1423,6 +1426,9 @@
     --color-close-deactivated-user-pill: hsl(7deg 100% 74%);
     --color-background-exit-hover-deactivated-user-pill: hsl(0deg 0% 100% / 7%);
     --color-background-user-pill: hsl(0deg 0% 0% / 40%);
+    --color-background-compose-direct-recipient-pill-container: hsl(
+        0deg 0% 0% / 20%
+    );
 
     /* Inbox view */
     --color-background-inbox: var(--color-background);
