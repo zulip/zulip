@@ -27,7 +27,7 @@ export type UserTopic = {
     visibility_policy: number;
 };
 
-const all_user_topics = new Map<
+export const all_user_topics = new Map<
     number,
     FoldDict<{
         stream_name: string;

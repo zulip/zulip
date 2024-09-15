@@ -13,6 +13,8 @@ import * as spectators from "./spectators";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
+import {all_user_topics, all_visibility_policies} from "./user_topics";
+import {get_messages_in_topic} from "./message_util";
 
 const SPECTATOR_STREAM_NARROW_BANNER = {
     title: "",
@@ -126,6 +128,51 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
     const current_filter = narrow_state.filter();
+
+    const stream_id = current_filter?._sub?.stream_id;
+
+    const muted_banner = {
+        title: $t({
+            defaultMessage:
+                "This feed is empty, because you have muted all the topics in this channel.",
+        }),
+        html: page_params.is_spectator
+            ? ""
+            : $t_html(
+                  {
+                      defaultMessage: "Why not <z-link>start the conversation</z-link>?",
+                  },
+                  {
+                      "z-link": (content_html) =>
+                          `<a href="#" class="empty_feed_compose_stream">${content_html.join(
+                              "",
+                          )}</a>`,
+                  },
+              ),
+    };
+
+    const sub_dict = all_user_topics.get(stream_id!);
+    if (sub_dict) {
+        let all_topics_muted = true;
+        let has_messages = false;
+
+        for (const [topic, value] of sub_dict) {
+            const topic_has_messages = get_messages_in_topic(stream_id!, topic).length > 0;
+
+            if (topic_has_messages) {
+                has_messages = true;
+            }
+
+            if (value.visibility_policy !== all_visibility_policies.MUTED) {
+                all_topics_muted = false;
+                break;
+            }
+        }
+
+        if (all_topics_muted && has_messages) {
+            return muted_banner;
+        }
+    }
 
     if (current_filter === undefined || current_filter.is_in_home()) {
         return default_banner;
