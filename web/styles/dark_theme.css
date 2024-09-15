@@ -386,10 +386,6 @@
         border-color: hsl(3deg 73% 74%);
     }
 
-    #compose-direct-recipient .pill-container {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
     #searchbox {
         /* Light theme shows hover mostly through box-shadow,
           and dark theme shows it mostly through changing color
