@@ -804,6 +804,12 @@
     --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 15%);
     --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 20%);
 
+    /* Message edit history colors */
+    --color-message-edit-history-text-inserted: hsl(122deg 72% 30%);
+    --color-message-edit-history-background-inserted: hsl(120deg 64% 95%);
+    --color-message-edit-history-text-deleted: hsl(0deg 100% 50%);
+    --color-message-edit-history-background-deleted: hsl(7deg 90% 92%);
+
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 52% 95%);
     --color-background-group-mention: hsl(180deg 40% 94%);
@@ -1264,6 +1270,12 @@
     --color-show-more-less-button-background: hsla(240deg 44% 56% / 15%);
     --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 25%);
     --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 15%);
+
+    /* Message edit history colors */
+    --color-message-edit-history-text-inserted: hsl(122deg 100% 81%);
+    --color-message-edit-history-background-inserted: hsl(120deg 64% 95% / 30%);
+    --color-message-edit-history-text-deleted: hsl(0deg 90% 67%);
+    --color-message-edit-history-background-deleted: hsl(7deg 54% 62% / 38%);
 
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 13% 20%);

@@ -25,13 +25,17 @@
 
     .message_edit_history_content {
         .highlight_text_inserted {
-            color: hsl(122deg 72% 30%);
-            background-color: hsl(120deg 64% 95%);
+            color: var(--color-message-edit-history-text-inserted);
+            background-color: var(
+                --color-message-edit-history-background-inserted
+            );
         }
 
         .highlight_text_deleted {
-            color: hsl(0deg 100% 50%);
-            background-color: hsl(7deg 90% 92%);
+            color: var(--color-message-edit-history-text-deleted);
+            background-color: var(
+                --color-message-edit-history-background-deleted
+            );
             text-decoration: line-through;
             word-break: break-all;
         }

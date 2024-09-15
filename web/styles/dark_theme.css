@@ -670,20 +670,6 @@
         color: inherit;
     }
 
-    #message-edit-history-overlay-container {
-        .message_edit_history_content {
-            .highlight_text_inserted {
-                color: hsl(122deg 100% 81%);
-                background-color: hsl(120deg 64% 95% / 30%);
-            }
-
-            .highlight_text_deleted {
-                color: hsl(0deg 90% 67%);
-                background-color: hsl(7deg 54% 62% / 38%);
-            }
-        }
-    }
-
     & time {
         background: hsl(0deg 0% 0% / 20%);
         box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
