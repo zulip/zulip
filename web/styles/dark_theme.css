@@ -760,27 +760,6 @@
                 }
             }
         }
-
-        #content {
-            .field-section {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
-            }
-        }
-
-        .subscription-group-list,
-        .subscription-stream-list,
-        .subscription-stream-list .user-stream-list tr,
-        .subscription-group-list .user-group-list tr {
-            border-color: hsl(0deg 0% 0% / 40%);
-        }
-
-        .manage-profile-tab-footer {
-            &.modal__footer_wrapper {
-                border-top: 1px solid hsl(0deg 0% 100% / 20%);
-            }
-        }
     }
 
     .top-messages-logo {

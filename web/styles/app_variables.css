@@ -689,6 +689,12 @@
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
 
+    /* Modal colors */
+    --color-user-profile-name-text: hsl(0deg 0% 20%);
+    --color-user-profile-list-border: hsl(0deg 0% 83%);
+    --color-user-profile-list-tr-border: hsl(0deg 0% 87%);
+    --color-user-profile-footer-border-top: hsl(0deg 0% 87%);
+
     /* Tippy popover colors */
     --color-tippy-background: hsl(0deg 0% 20%);
     --color-tippy-arrow-border-top: hsl(0deg 0% 20%);
@@ -1156,6 +1162,12 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+
+    /* Modal colors */
+    --color-user-profile-name-text: hsl(236deg 33% 90%);
+    --color-user-profile-list-border: hsl(0deg 0% 0% / 40%);
+    --color-user-profile-list-tr-border: hsl(0deg 0% 0% / 40%);
+    --color-user-profile-footer-border-top: hsl(0deg 0% 100% / 20%);
 
     /* Tippy popover colors */
     --color-tippy-background: hsl(0deg 0% 0%);
