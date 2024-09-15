@@ -598,6 +598,11 @@
     --color-background-alert-word: hsl(18deg 100% 84%);
     --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
     --color-border-sidebar: hsl(0deg 0% 87%);
+    --color-feedback-container-background: hsl(0deg 0% 98%);
+    --color-small-square-x-background: hsl(0deg 0% 100%);
+    --color-message-border: hsl(0deg 0% 0%);
+    --color-popover-filter-input-focus-background: hsl(0deg 0% 100%);
+    --color-popover-filter-input-focus-border: hsl(229.09deg 21.57% 10% / 80%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 87%);
@@ -688,6 +693,11 @@
     --color-text-url: hsl(200deg 100% 40%);
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
+    --color-text-small-square-x: hsl(0deg 0% 47%);
+    --color-text-small-square-x-hover: hsl(0deg 0% 18%);
+
+    /* Tippy popover colors */
+    --box-shadow-popover-filter-input-focus: 0 0 6px hsl(228deg 9.8% 20% / 30%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
@@ -1037,6 +1047,11 @@
     --color-background-alert-word: hsl(22deg 70% 35%);
     --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
+    --color-feedback-container-background: hsl(212deg 25% 15%);
+    --color-small-square-x-background: hsl(0deg 0% 95%);
+    --color-message-border: hsl(0deg 0% 100%);
+    --color-popover-filter-input-focus-background: hsl(225deg 6% 7%);
+    --color-popover-filter-input-focus-border: hsl(0deg 0% 100% / 50%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 0% / 20%);
@@ -1139,6 +1154,11 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+    --color-text-small-square-x: hsl(0deg 0% 42%);
+    --color-text-small-square-x-hover: hsl(0deg 0% 18%);
+
+    /* Tippy popover colors */
+    --box-shadow-popover-filter-input-focus: 0 0 5px hsl(0deg 0% 100% / 40%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
