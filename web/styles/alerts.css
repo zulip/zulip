@@ -318,7 +318,7 @@ $alert-error-red: hsl(0deg 80% 40%);
     .alert-content {
         grid-column: 2 / 3;
         grid-row-start: 1;
-        color: hsl(0deg 0% 20%);
+        color: var(--color-request-progress-status-alert-text);
     }
 
     .exit {
