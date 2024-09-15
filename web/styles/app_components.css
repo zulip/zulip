@@ -806,7 +806,7 @@ input.settings_text_input {
     }
 
     tbody > tr:nth-child(odd) > td {
-        background-color: hsl(0deg 0% 98%);
+        background-color: var(--color-background-modal);
     }
 
     /* Force the actions column to use the minimum space necessary */

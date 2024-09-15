@@ -632,10 +632,6 @@
         );
     }
 
-    .table-striped tbody tr:nth-child(odd) td {
-        background-color: var(--color-background-modal);
-    }
-
     .user-groups-container .right .display-type,
     .subscriptions-container .right .display-type,
     .stream-row,
