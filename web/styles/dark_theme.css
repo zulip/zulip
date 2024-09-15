@@ -791,20 +791,6 @@
         }
     }
 
-    /* Originally the icon inherits the color of label, but when the setting
-    is disabled, the color of the label is changed and thus the icon becomes
-    too light. So, we set the color explicitly to original color of label to
-    keep the color of the icon same even when the setting is disabled. */
-    #id_realm_enable_spectator_access_label a {
-        color: hsl(236deg 33% 90%);
-    }
-
-    #stream-specific-notify-table .unmute_stream {
-        &:hover {
-            color: hsl(0deg 0% 100%);
-        }
-    }
-
     #read_receipts_modal .read_receipts_list li {
         &:hover {
             background-color: hsl(0deg 0% 100% / 5%);
