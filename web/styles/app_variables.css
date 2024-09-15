@@ -598,6 +598,11 @@
     --color-background-alert-word: hsl(18deg 100% 84%);
     --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
     --color-border-sidebar: hsl(0deg 0% 87%);
+    --color-create-plus-button-background: hsl(0deg 0% 100%);
+    --color-create-plus-button-border: hsl(0deg 0% 80%);
+    --color-search-section-border: hsl(0deg 0% 87%);
+    --color-stream-group-row-plus-sign-svg: hsl(0deg 0% 72%);
+    --color-active-row-background: hsl(0deg 0% 93%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 87%);
@@ -688,6 +693,7 @@
     --color-text-url: hsl(200deg 100% 40%);
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
+    --color-text-create-plus-button: hsl(0deg 0% 0%);
 
     /* .settings-sticky-footer colors */
     --color-settings-sticky-footer-shadow: hsl(0deg 0% 100%);
@@ -1040,6 +1046,11 @@
     --color-background-alert-word: hsl(22deg 70% 35%);
     --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
+    --color-create-plus-button-background: hsl(0deg 0% 0% / 20%);
+    --color-create-plus-button-border: hsl(0deg 0% 0% / 60%);
+    --color-search-section-border: hsl(0deg 0% 0% / 20%);
+    --color-stream-group-row-plus-sign-svg: hsl(218deg 14% 33%);
+    --color-active-row-background: hsl(0deg 0% 0% / 20%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 0% / 20%);
@@ -1142,6 +1153,7 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+    --color-text-create-plus-button: hsl(0deg 0% 100%);
 
     /* .settings-sticky-footer colors */
     --color-settings-sticky-footer-shadow: hsl(0deg 0% 0% / 20%);

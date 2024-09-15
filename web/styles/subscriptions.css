@@ -77,10 +77,10 @@
     font-weight: 400;
     position: relative;
     top: 2px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: 1px solid var(--color-create-plus-button-border);
     border-radius: 5px;
-    background-color: hsl(0deg 0% 100%);
-    color: hsl(0deg 0% 0%);
+    background-color: var(--color-create-plus-button-background);
+    color: var(--color-text-create-plus-button);
     margin: 0 0 0 5px;
     height: 27px;
 
@@ -494,7 +494,7 @@ h4.user_group_setting_subsection_title {
     justify-content: center;
     margin-bottom: 0;
     height: auto;
-    border-bottom: 1px solid hsl(0deg 0% 87%);
+    border-bottom: 1px solid var(--color-search-section-border);
 }
 
 .user-groups-list,
@@ -550,7 +550,7 @@ h4.user_group_setting_subsection_title {
         background-position: center center;
 
         & svg {
-            fill: hsl(0deg 0% 72%);
+            fill: var(--color-stream-group-row-plus-sign-svg);
             width: 70%;
             margin: 0% 15%;
         }
@@ -651,7 +651,7 @@ h4.user_group_setting_subsection_title {
     }
 
     &.active {
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-active-row-background);
     }
 
     .check:not(.checked, .disabled):hover svg,

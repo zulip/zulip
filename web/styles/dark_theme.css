@@ -425,13 +425,6 @@
         }
     }
 
-    .create_user_group_plus_button,
-    .create_stream_plus_button {
-        color: hsl(0deg 0% 100%);
-        background-color: hsl(0deg 0% 0% / 20%);
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
     .table-striped thead th {
         background-color: hsl(0deg 0% 0% / 50%);
         border-color: hsl(0deg 0% 0% / 90%);
@@ -539,19 +532,8 @@
         }
     }
 
-    .group-row.active,
-    .stream-row.active {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
     .stream-row,
     .group-row {
-        /* This is for coluring the plus sign SVGs in stream-list UI */
-        /* public */
-        .check:not(.checked) svg {
-            fill: hsl(218deg 14% 33%);
-        }
-
         /* private */
         .disabled svg {
             opacity: 0.5;
