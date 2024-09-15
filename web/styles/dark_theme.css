@@ -193,14 +193,6 @@
         }
     }
 
-    #message-content-container {
-        &:has(textarea.new_message_textarea.invalid),
-        &:has(textarea.new_message_textarea.invalid:focus) {
-            border-color: hsl(3deg 73% 74%);
-            box-shadow: 0 0 2px hsl(3deg 73% 74%);
-        }
-    }
-
     .stream_name_search_section,
     .group_name_search_section {
         border-color: hsl(0deg 0% 0% / 20%);
@@ -338,20 +330,8 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose-control-buttons-container .divider {
-        color: hsl(236deg 33% 90% / 25%);
-    }
-
     .compose_control_button:hover {
         color: inherit;
-    }
-
-    #compose-content {
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    .compose_table .stream-selection-header-colorblock {
-        border-color: hsl(240deg 11% 5%);
     }
 
     /* Not that .message_row (below) needs to be more contrast on dark theme */

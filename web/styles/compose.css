@@ -121,7 +121,7 @@
 #compose-content {
     background-color: var(--color-compose-box-background);
     padding: 7px 7px 8px;
-    border: 1px solid hsl(0deg 0% 0% / 10%);
+    border: 1px solid var(--color-compose-content-border);
     border-radius: 9px 9px 0 0;
     box-shadow: 0 0 0 hsl(236deg 11% 28%);
     height: 100%;
@@ -156,7 +156,8 @@
 
     .stream-selection-header-colorblock {
         box-shadow: none;
-        border: 1px solid hsl(0deg 0% 80%);
+        border: 1px solid
+            var(--color-compose-table-stream-selection-header-border);
         border-right: none;
 
         &.message_header_private_message {
@@ -292,8 +293,9 @@
 
     &:has(.new_message_textarea.invalid),
     &:has(.new_message_textarea.invalid:focus) {
-        border-color: hsl(3deg 57% 33%);
-        box-shadow: 0 0 2px hsl(3deg 57% 33%);
+        border-color: var(--color-message-content-container-invalid-border);
+        box-shadow: 0 0 2px
+            var(--color-message-content-container-invalid-box-shadow);
     }
 }
 
@@ -1222,7 +1224,7 @@ textarea.new_message_textarea {
     }
 
     .divider {
-        color: hsl(0deg 0% 75%);
+        color: var(--color-compose-control-buttons-divider);
         /* 20px at 14px/1em */
         font-size: 1.4286em;
         margin: 0 3px;

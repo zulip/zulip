@@ -661,6 +661,11 @@
     --color-message-content-container-border-focus: hsl(0deg 0% 57%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
     --color-compose-focus-ring: var(--color-outline-focus);
+    --color-compose-content-border: hsl(0deg 0% 0% / 10%);
+    --color-compose-table-stream-selection-header-border: hsl(0deg 0% 80%);
+    --color-message-content-container-invalid-border: hsl(3deg 57% 33%);
+    --color-message-content-container-invalid-box-shadow: hsl(3deg 57% 33%);
+    --color-compose-control-buttons-divider: hsl(0deg 0% 75%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -1172,6 +1177,11 @@
     --color-message-content-container-border-focus: hsl(0deg 0% 100% / 27%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 100% / 5%);
     --color-compose-focus-ring: hsl(0deg 0% 67%);
+    --color-compose-content-border: hsl(0deg 0% 0% / 60%);
+    --color-compose-table-stream-selection-header-border: hsl(240deg 11% 5%);
+    --color-message-content-container-invalid-border: hsl(3deg 73% 74%);
+    --color-message-content-container-invalid-box-shadow: hsl(3deg 73% 74%);
+    --color-compose-control-buttons-divider: hsl(236deg 33% 90% / 25%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 85%);
