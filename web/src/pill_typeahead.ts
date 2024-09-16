@@ -127,6 +127,61 @@ export function set_up_stream(
     });
 }
 
+export function set_up_user_group(
+    $input: JQuery,
+    pills: user_group_pill.UserGroupPillWidget,
+    opts: {
+        help_on_empty_strings?: boolean;
+        hide_on_empty_after_backspace?: boolean;
+        update_func?: () => void;
+    },
+): void {
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+    opts.help_on_empty_strings ??= false;
+    opts.hide_on_empty_after_backspace ??= false;
+    new Typeahead(bootstrap_typeahead_input, {
+        dropup: true,
+        helpOnEmptyStrings: opts.help_on_empty_strings,
+        hideOnEmptyAfterBackspace: opts.hide_on_empty_after_backspace,
+        source(_query: string): UserGroupPillData[] {
+            return user_group_pill.typeahead_source(pills);
+        },
+        highlighter_html(item: UserGroupPillData, _query: string): string {
+            return typeahead_helper.render_person_or_user_group(item);
+        },
+        matcher(item: UserGroupPillData, query: string): boolean {
+            query = query.toLowerCase();
+            query = query.replaceAll("\u00A0", " ");
+            query = query.trim();
+            if (query.startsWith("@")) {
+                query = query.slice(1);
+            }
+            return item.name.toLowerCase().includes(query);
+        },
+        sorter(matches: UserGroupPillData[], query: string): UserGroupPillData[] {
+            const user_group_matches: UserGroupPillData[] = [];
+            for (const match of matches) {
+                assert(match.type === "user_group");
+                user_group_matches.push(match);
+            }
+            query = query.trim();
+            if (query.startsWith("@")) {
+                query = query.slice(1);
+            }
+            return typeahead_helper.sort_user_groups(user_group_matches, query);
+        },
+        updater(item: UserGroupPillData, _query: string): undefined {
+            user_group_pill.append_user_group(item, pills);
+            $input.trigger("focus");
+            opts.update_func?.();
+        },
+        stopAdvance: true,
+    });
+}
+
 export function set_up_combined(
     $input: JQuery,
     pills: CombinedPillContainer,

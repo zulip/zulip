@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 293**
+
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Added a new parameter
+  `user_group_ids` which allows users to be added to user groups through
+  invitations.
+
 **Feature level 292**
 
 * [`POST /register`](/api/register-queue), [`GET
@@ -52,9 +59,10 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 289**
 
-* [`POST /users/{user_id}/subscription`](/api/subscribe): In the response,
-  users are identified by their numeric user ID rather than by their
-  Zulip API email address.
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Added a new parameter
+  `user_group_ids` which allows users to be added to user groups through
+  invitations.
 
 **Feature level 288**
 

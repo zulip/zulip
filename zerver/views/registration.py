@@ -79,6 +79,7 @@ from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
     MultiuseInvite,
+    NamedUserGroup,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -768,6 +769,7 @@ def prepare_activation_url(
     *,
     realm: Realm | None,
     streams: Iterable[Stream] | None = None,
+    user_groups: Iterable[NamedUserGroup] | None = None,
     invited_as: int | None = None,
     include_realm_default_subscriptions: bool | None = None,
     multiuse_invite: MultiuseInvite | None = None,
@@ -780,6 +782,9 @@ def prepare_activation_url(
 
     if streams is not None:
         prereg_user.streams.set(streams)
+
+    if user_groups is not None:
+        prereg_user.user_groups.set(user_groups)
 
     if invited_as is not None:
         prereg_user.invited_as = invited_as
@@ -1024,6 +1029,7 @@ def accounts_home(
 
     from_multiuse_invite = False
     streams_to_subscribe = None
+    user_groups_to_subscribe = None
     invited_as = None
     include_realm_default_subscriptions = None
 
@@ -1034,6 +1040,7 @@ def accounts_home(
         assert realm == multiuse_object.realm
 
         streams_to_subscribe = multiuse_object.streams.all()
+        user_groups_to_subscribe = multiuse_object.user_groups.all()
         from_multiuse_invite = True
         invited_as = multiuse_object.invited_as
         include_realm_default_subscriptions = multiuse_object.include_realm_default_subscriptions
@@ -1069,6 +1076,7 @@ def accounts_home(
                 request.session,
                 realm=realm,
                 streams=streams_to_subscribe,
+                user_groups=user_groups_to_subscribe,
                 invited_as=invited_as,
                 include_realm_default_subscriptions=include_realm_default_subscriptions,
                 multiuse_invite=multiuse_object,

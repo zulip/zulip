@@ -120,6 +120,26 @@ run_test("get_stream_id", () => {
     assert.equal(user_group_pill.get_group_name_from_item(admins_pill), admins.name);
 });
 
+run_test("generate_pill_html", () => {
+    assert.deepEqual(
+        user_group_pill.generate_pill_html(testers_pill),
+        `<div class='pill 'data-user-group-id="102" tabindex=0>\n` +
+            '    <span class="pill-label">\n' +
+            '        <span class="pill-value">\n' +
+            "            Testers\n" +
+            "        </span>: 4 Users</span>\n" +
+            '    <div class="exit">\n' +
+            '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +
+            "    </div>\n" +
+            "</div>\n",
+    );
+});
+
+run_test("display_value", () => {
+    assert.deepEqual(user_group_pill.get_display_value_from_item(testers_pill), "Testers");
+    assert.deepEqual(user_group_pill.get_display_value_from_item(admins_pill), "Admins");
+});
+
 run_test("get_user_ids", () => {
     let items = [admins_pill, testers_pill];
     const widget = {items: () => items};
