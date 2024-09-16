@@ -3,14 +3,22 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
-import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
+import render_change_visibility_policy_button_tooltip
+    from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
+import previewable_url_tooltip from "../templates/previewable_url_tooltip.hbs";
+import tooltip_loader from "../templates/tooltip_loader.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
+import * as channel from "./channel";
 import {$t} from "./i18n";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_config from "./settings_config";
+import {
+    github_previewable_url_response_schema,
+    previewable_url_response_schema
+} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
@@ -763,6 +771,83 @@ export function initialize(): void {
                 return undefined;
             }
             return false;
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".rendered_markdown .previewable",
+        appendTo: () => document.body,
+        content() {
+            return ui_util.parse_html(tooltip_loader());
+        },
+        maxWidth: "350px",
+        delay: [300, 20],
+        onShow(instance) {
+            channel.post({
+                url: "/json/previewable",
+                data: {
+                    url: $(instance.reference).attr("href"),
+                },
+                success(response_data) {
+                    const data = previewable_url_response_schema.parse(response_data);
+                    let tooltip_html;
+                    switch (data.platform) {
+                        case "github": {
+                            const github_data = github_previewable_url_response_schema.parse(data.data);
+                            let icon;
+                            if (github_data.type === "pull_request") {
+                                icon = github_data.state;
+                                const merged = github_data.merged_at !== null;
+                                if (github_data.draft) {
+                                    icon += "-draft";
+                                } else if (merged) {
+                                    icon += "-merged";
+                                }
+                            } else {
+                                icon = [github_data.state, github_data.state_reason].filter(Boolean).join("-");
+                            }
+                            const issue = `${github_data.owner}/${github_data.repo}#${github_data.issue_number}`;
+
+                            tooltip_html = previewable_url_tooltip({
+                                hover_preview_title: github_data.title,
+                                hover_preview_details: $t(
+                                    {
+                                        defaultMessage: "{issue} opened by { author }",
+                                    },
+                                    {
+                                        author: github_data.author,
+                                        issue,
+                                    },
+                                ),
+                                hover_preview_icon_path: `/static/images/github/${github_data.type}/${icon}.svg`,
+                            });
+                        }
+                    }
+
+                    instance.setContent(
+                        ui_util.parse_html(
+                            tooltip_html
+                        ),
+                    );
+                },
+                error(error) {
+                    const err_msg = channel.xhr_error_message("", error);
+                    if (err_msg !== "") {
+                        instance.setContent(ui_util.parse_html(`<strong>${err_msg}</strong>`));
+                    } else {
+                        // If the response does not contain a msg, it implies that the request failed prior to reaching the server. Therefore, the data should be re-fetched.
+                        instance._shouldDestroy = true;
+                        instance.setContent(
+                            ui_util.parse_html(`<strong>Unable to preview link.</strong>`),
+                        );
+                    }
+                },
+            });
+        },
+        onHidden(instance) {
+            if (instance._shouldDestroy) {
+                instance.destroy();
+            }
         },
     });
 }

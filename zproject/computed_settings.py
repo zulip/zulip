@@ -516,6 +516,8 @@ DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
 
+GITHUB_API_AUTH_TOKEN = get_secret("github_api_auth_token")
+
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.
 # Please don't make us go over our rate limit.

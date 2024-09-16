@@ -81,10 +81,17 @@ export function postprocess_content(html: string): string {
                         ),
                     },
                 );
-            } else {
-                title = url.toString();
-                legacy_title = href;
+                continue;
             }
+
+            if (is_url_previewable(url)) {
+                elt.classList.add("previewable");
+                continue;
+            }
+
+            title = url.toString();
+            legacy_title = href;
+
             elt.setAttribute(
                 "title",
                 ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
@@ -120,4 +127,17 @@ export function postprocess_content(html: string): string {
     }
 
     return template.innerHTML;
+}
+export function is_url_previewable(url: URL): boolean {
+    try {
+        const is_github =
+            url.protocol.startsWith("http") &&
+            ["github.com", "www.github.com"].includes(url.hostname);
+        if (is_github) {
+            return !url.port && ["issues", "pull"].includes(url.pathname.split("/")[3]);
+        }
+    } catch {
+        return false;
+    }
+    return false;
 }
