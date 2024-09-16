@@ -189,7 +189,14 @@ export function user_can_move_messages_between_streams(): boolean {
 }
 
 export function user_can_edit_all_user_groups(): boolean {
-    return user_has_permission(realm.realm_user_group_edit_policy);
+    if (page_params.is_spectator) {
+        return false;
+    }
+    return user_has_permission_for_group_setting(
+        realm.realm_can_manage_all_groups,
+        "can_manage_all_groups",
+        "realm",
+    );
 }
 
 export function can_edit_user_group(group_id: number): boolean {
@@ -198,6 +205,16 @@ export function can_edit_user_group(group_id: number): boolean {
     }
 
     let can_edit_all_user_groups = user_can_edit_all_user_groups();
+
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    // This is a temporary exception and this should be removed as soon
+    // as `group_creator` is set as a default for `can_manage_group`
+    // property of user groups. See this topic for more details:
+    // https://chat.zulip.org/#narrow/stream/3-backend/topic/Group.20creation.20-.20who.20can.20change.20the.20setting.2E/near/1943861
+    if (group.creator_id && group.creator_id === current_user.user_id) {
+        return true;
+    }
 
     if (
         !current_user.is_admin &&
@@ -211,7 +228,6 @@ export function can_edit_user_group(group_id: number): boolean {
         return true;
     }
 
-    const group = user_groups.get_user_group_from_id(group_id);
     return user_has_permission_for_group_setting(
         group.can_manage_group,
         "can_manage_group",

@@ -512,6 +512,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_direct_message_permission_group":
         case "realm_can_access_all_users_group":
         case "realm_can_create_groups":
+        case "realm_can_manage_all_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
         case "realm_can_create_web_public_channel_group":
@@ -843,12 +844,6 @@ export function set_up_dropdown_widget_for_realm_group_settings() {
             setting_name === "can_delete_own_message_group"
         ) {
             dropdown_list_item_click_callback = check_disable_message_delete_limit_setting_dropdown;
-        }
-
-        if (setting_name === "can_manage_all_groups") {
-            // Temporarily skip this setting until further commits
-            // where this setting will be ready to use.
-            continue;
         }
 
         set_up_dropdown_widget(
