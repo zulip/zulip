@@ -58,7 +58,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import CommonPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 
 
 class UserGroupTestCase(ZulipTestCase):
@@ -74,9 +74,13 @@ class UserGroupTestCase(ZulipTestCase):
         subgroup_ids = get_subgroup_ids(user_group, direct_subgroup_only=True)
         self.assertSetEqual(set(subgroup_ids), {member.id for member in members})
 
-    def create_user_group_for_test(self, group_name: str) -> NamedUserGroup:
+    def create_user_group_for_test(
+        self, group_name: str, acting_user: UserProfile | None = None
+    ) -> NamedUserGroup:
         members = [self.example_user("othello")]
-        return check_add_user_group(get_realm("zulip"), group_name, members, acting_user=None)
+        return check_add_user_group(
+            get_realm("zulip"), group_name, members, acting_user=acting_user
+        )
 
     def test_user_groups_in_realm_serialized(self) -> None:
         def convert_date_created_to_timestamp(date_created: datetime | None) -> int | None:
@@ -759,12 +763,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
             NamedUserGroup.objects.filter(realm=user_profile.realm).count(),
         )
 
-    def test_can_edit_all_user_groups(self) -> None:
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_edit_all_user_groups()
-
-        self.check_has_permission_policies("user_group_edit_policy", validation_func)
-
     def test_user_group_update(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
@@ -1065,9 +1063,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def test_update_user_group_permission_settings(self) -> None:
         hamlet = self.example_user("hamlet")
-        check_add_user_group(hamlet.realm, "support", [hamlet], acting_user=None)
+        check_add_user_group(hamlet.realm, "support", [hamlet], acting_user=hamlet)
         check_add_user_group(hamlet.realm, "marketing", [hamlet], acting_user=None)
-        check_add_user_group(hamlet.realm, "leadership", [hamlet], acting_user=None)
+        check_add_user_group(hamlet.realm, "leadership", [hamlet], acting_user=hamlet)
 
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             self.do_test_update_user_group_permission_settings(setting_name)
@@ -1076,8 +1074,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         realm = get_realm("zulip")
-        support_user_group = check_add_user_group(realm, "support", [hamlet], acting_user=None)
-        marketing_user_group = check_add_user_group(realm, "marketing", [hamlet], acting_user=None)
+        support_user_group = check_add_user_group(realm, "support", [hamlet], acting_user=hamlet)
+        marketing_user_group = check_add_user_group(
+            realm, "marketing", [hamlet], acting_user=hamlet
+        )
 
         params = {
             "name": marketing_user_group.name,
@@ -1087,7 +1087,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def test_update_can_mention_group_setting_with_previous_value_passed(self) -> None:
         hamlet = self.example_user("hamlet")
-        support_group = check_add_user_group(hamlet.realm, "support", [hamlet], acting_user=None)
+        support_group = check_add_user_group(hamlet.realm, "support", [hamlet], acting_user=hamlet)
         marketing_group = check_add_user_group(
             hamlet.realm, "marketing", [hamlet], acting_user=None
         )
@@ -1253,15 +1253,23 @@ class UserGroupAPITestCase(UserGroupTestCase):
         add_subgroups_to_user_group(support_group, [leadership_group], acting_user=None)
         realm = get_realm("zulip")
 
-        do_set_realm_property(
-            realm, "user_group_edit_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        admins_group = NamedUserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            admins_group,
+            acting_user=None,
         )
         self.login("othello")
         result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
         self.assert_json_error(result, "Insufficient permission")
 
-        do_set_realm_property(
-            realm, "user_group_edit_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
+        members_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            members_group,
+            acting_user=None,
         )
 
         self.login("hamlet")
@@ -1289,16 +1297,24 @@ class UserGroupAPITestCase(UserGroupTestCase):
         support_group.save()
 
         # Check moderators can deactivate groups if they are allowed by
-        # user_group_edit_policy even when they are not members of the group.
-        do_set_realm_property(
-            realm, "user_group_edit_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        # can_manage_all_groups even when they are not members of the group.
+        admins_group = NamedUserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            admins_group,
+            acting_user=None,
         )
         self.login("shiva")
         result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
         self.assert_json_error(result, "Insufficient permission")
 
-        do_set_realm_property(
-            realm, "user_group_edit_policy", CommonPolicyEnum.MODERATORS_ONLY, acting_user=None
+        moderators_group = NamedUserGroup.objects.get(name=SystemGroups.MODERATORS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            moderators_group,
+            acting_user=None,
         )
         result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
         self.assert_json_success(result)
@@ -1308,8 +1324,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         support_group.deactivated = False
         support_group.save()
 
-        do_set_realm_property(
-            realm, "user_group_edit_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            admins_group,
+            acting_user=None,
         )
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
@@ -1350,8 +1369,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         support_group.deactivated = False
         support_group.save()
 
-        do_set_realm_property(
-            realm, "user_group_edit_policy", CommonPolicyEnum.MODERATORS_ONLY, acting_user=None
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", moderators_group, acting_user=None
         )
         # Check that group that is subgroup of another group cannot be deactivated.
         result = self.client_post(f"/json/user_groups/{leadership_group.id}/deactivate")
@@ -1378,14 +1400,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
     def test_user_group_deactivation_with_group_used_for_settings(self) -> None:
-        support_group = self.create_user_group_for_test("support")
         realm = get_realm("zulip")
+
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+
+        support_group = self.create_user_group_for_test("support", acting_user=othello)
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
-        hamlet = self.example_user("hamlet")
-        self.login("desdemona")
 
+        self.login("othello")
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             anonymous_setting_group = self.create_or_update_anonymous_group_for_setting(
                 [hamlet], [moderators_group, support_group]
@@ -1415,6 +1440,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             )
 
         stream = ensure_stream(realm, "support", acting_user=None)
+        self.login("desdemona")
         for setting_name in Stream.stream_permission_group_settings:
             do_change_stream_group_based_setting(
                 stream, setting_name, support_group, acting_user=None
@@ -1875,10 +1901,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check only admins are allowed to update user group. Admins are allowed even if
         # they are not a member of the group.
-        do_set_realm_property(
+        admins_group = NamedUserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.ADMINS_ONLY,
+            "can_manage_all_groups",
+            admins_group,
             acting_user=None,
         )
         check_update_user_group("help", "Troubleshooting team", "shiva", "Insufficient permission")
@@ -1886,21 +1913,24 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check moderators are allowed to update user group but not members. Moderators are
         # allowed even if they are not a member of the group.
-        do_set_realm_property(
+        moderators_group = NamedUserGroup.objects.get(name=SystemGroups.MODERATORS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.MODERATORS_ONLY,
+            "can_manage_all_groups",
+            moderators_group,
             acting_user=None,
         )
-        check_update_user_group("support", "Support team", "othello", "Insufficient permission")
-        check_update_user_group("support", "Support team", "iago")
+        check_update_user_group("support", "Support team", "hamlet", "Insufficient permission")
+        check_update_user_group("support1", "Support team - test", "iago")
+        check_update_user_group("support", "Support team", "othello")
 
         # Check only members are allowed to update the user group and only if belong to the
         # user group.
-        do_set_realm_property(
+        members_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.MEMBERS_ONLY,
+            "can_manage_all_groups",
+            members_group,
             acting_user=None,
         )
         check_update_user_group(
@@ -1927,26 +1957,32 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check only full members are allowed to update the user group and only if belong to the
         # user group.
-        do_set_realm_property(
-            realm, "user_group_edit_policy", CommonPolicyEnum.FULL_MEMBERS_ONLY, acting_user=None
+        full_members_group = NamedUserGroup.objects.get(name=SystemGroups.FULL_MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            full_members_group,
+            acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
-        othello = self.example_user("othello")
-        othello.date_joined = timezone_now() - timedelta(days=9)
-        othello.save()
+        aaron = self.example_user("aaron")
+        aaron.date_joined = timezone_now() - timedelta(days=9)
+        aaron.save()
 
         cordelia = self.example_user("cordelia")
         cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
+        promote_new_full_members()
         check_update_user_group(
             "help",
             "Troubleshooting team",
             "cordelia",
         )
-        check_update_user_group("support", "Support team", "othello", "Insufficient permission")
+        check_update_user_group("support", "Support team", "aaron", "Insufficient permission")
 
         othello.date_joined = timezone_now() - timedelta(days=11)
         othello.save()
+        promote_new_full_members()
         check_update_user_group("support", "Support team", "othello")
 
     def test_group_level_setting_for_updating_user_groups(self) -> None:
@@ -1987,18 +2023,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         realm = othello.realm
 
-        do_set_realm_property(
+        nobody_group = NamedUserGroup.objects.get(name=SystemGroups.NOBODY, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            Realm.POLICY_NOBODY,
+            "can_manage_all_groups",
+            nobody_group,
             acting_user=None,
         )
 
         # Default value of can_manage_group is "Nobody" system group.
         check_update_user_group("help", "Troubleshooting team", "iago", "Insufficient permission")
-        check_update_user_group(
-            "help", "Troubleshooting team", "othello", "Insufficient permission"
-        )
+        check_update_user_group("help", "Troubleshooting team", "aaron", "Insufficient permission")
 
         system_group_dict = get_role_based_system_groups_dict(realm)
         owners_group = system_group_dict[SystemGroups.OWNERS]
@@ -2073,10 +2108,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         realm = get_realm("zulip")
         # Check only admins are allowed to add/remove users from the group. Admins are allowed even if
         # they are not a member of the group.
-        do_set_realm_property(
+        admins_group = NamedUserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.ADMINS_ONLY,
+            "can_manage_all_groups",
+            admins_group,
             acting_user=None,
         )
         check_adding_members_to_group("shiva", "Insufficient permission")
@@ -2087,10 +2123,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check moderators are allowed to add/remove users from the group but not members. Moderators are
         # allowed even if they are not a member of the group.
-        do_set_realm_property(
+        moderators_group = NamedUserGroup.objects.get(name=SystemGroups.MODERATORS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.MODERATORS_ONLY,
+            "can_manage_all_groups",
+            moderators_group,
             acting_user=None,
         )
         check_adding_members_to_group("cordelia", "Insufficient permission")
@@ -2101,10 +2138,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check only members are allowed to add/remove users in the group and only if belong to the
         # user group.
-        do_set_realm_property(
+        members_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.MEMBERS_ONLY,
+            "can_manage_all_groups",
+            members_group,
             acting_user=None,
         )
         check_adding_members_to_group("polonius", "Not allowed for guest users")
@@ -2117,34 +2155,40 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check only full members are allowed to add/remove users in the group and only if belong to the
         # user group.
-        do_set_realm_property(
+        full_members_group = NamedUserGroup.objects.get(name=SystemGroups.FULL_MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            CommonPolicyEnum.FULL_MEMBERS_ONLY,
+            "can_manage_all_groups",
+            full_members_group,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
 
         othello.date_joined = timezone_now() - timedelta(days=9)
         othello.save()
+        promote_new_full_members()
         check_adding_members_to_group("cordelia", "Insufficient permission")
 
         cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
+        promote_new_full_members()
         check_adding_members_to_group("cordelia", "Insufficient permission")
 
         othello.date_joined = timezone_now() - timedelta(days=11)
         othello.save()
+        promote_new_full_members()
         check_adding_members_to_group("othello")
 
         othello.date_joined = timezone_now() - timedelta(days=9)
         othello.save()
+        promote_new_full_members()
 
         check_removing_members_from_group("cordelia", "Insufficient permission")
         check_removing_members_from_group("othello", "Insufficient permission")
 
         othello.date_joined = timezone_now() - timedelta(days=11)
         othello.save()
+        promote_new_full_members()
         check_removing_members_from_group("othello")
 
     def test_group_level_setting_for_updating_members(self) -> None:
@@ -2189,10 +2233,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 self.assert_json_error(result, error_msg)
 
         realm = get_realm("zulip")
-        do_set_realm_property(
+        nobody_group = NamedUserGroup.objects.get(name=SystemGroups.NOBODY, realm=realm)
+        do_change_realm_permission_group_setting(
             realm,
-            "user_group_edit_policy",
-            Realm.POLICY_NOBODY,
+            "can_manage_all_groups",
+            nobody_group,
             acting_user=None,
         )
 
@@ -2329,10 +2374,20 @@ class UserGroupAPITestCase(UserGroupTestCase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
+        moderators_group = NamedUserGroup.objects.get(name=SystemGroups.MODERATORS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            moderators_group,
+            acting_user=None,
+        )
+
         leadership_group = check_add_user_group(
             realm, "leadership", [desdemona, iago, hamlet], acting_user=None
         )
-        support_group = check_add_user_group(realm, "support", [hamlet, othello], acting_user=None)
+        support_group = check_add_user_group(
+            realm, "support", [hamlet, othello], acting_user=hamlet
+        )
         test_group = check_add_user_group(realm, "test", [hamlet], acting_user=None)
 
         self.login("cordelia")
@@ -2363,19 +2418,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_subgroup_membership(support_group, [])
 
         self.login("hamlet")
-        # Non-admin and non-moderators who are a member of the user group can add or remove subgroups.
-        params = {"add": orjson.dumps([leadership_group.id]).decode()}
-        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
-        self.assert_json_success(result)
-        self.assert_subgroup_membership(support_group, [leadership_group])
-
-        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
-        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
-        self.assert_json_success(result)
-        self.assert_subgroup_membership(support_group, [])
-
-        # Users need not be part of the subgroup to add or remove it from a user group.
-        self.login("othello")
+        # Group creator can add or remove subgroups.
         params = {"add": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_success(result)
@@ -2637,9 +2680,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
     def test_add_subgroup_from_wrong_realm(self) -> None:
         other_realm = do_create_realm("other", "Other Realm")
         other_user_group = check_add_user_group(other_realm, "user_group", [], acting_user=None)
-
+        iago = self.example_user("iago")
         realm = get_realm("zulip")
-        zulip_group = check_add_user_group(realm, "zulip_test", [], acting_user=None)
+        zulip_group = check_add_user_group(realm, "zulip_test", [], acting_user=iago)
 
         self.login("iago")
         result = self.client_post(

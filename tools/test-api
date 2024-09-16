@@ -32,10 +32,15 @@ with test_server_running(
     # zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
     from zerver.actions.create_user import do_create_user, do_reactivate_user
-    from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
+    from zerver.actions.realm_settings import (
+        do_change_realm_permission_group_setting,
+        do_deactivate_realm,
+        do_reactivate_realm,
+    )
     from zerver.actions.users import change_user_is_active
     from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
     from zerver.lib.users import get_api_key
+    from zerver.models.groups import NamedUserGroup, SystemGroups
     from zerver.models.realms import get_realm
     from zerver.models.users import get_user
     from zerver.openapi.javascript_examples import test_js_bindings
@@ -55,6 +60,15 @@ with test_server_running(
     email = "iago@zulip.com"  # Iago is an admin
     realm = get_realm("zulip")
     user = get_user(email, realm)
+
+    # Iago needs permission to manage all user groups.
+    admins_group = NamedUserGroup.objects.get(
+        name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+    )
+    do_change_realm_permission_group_setting(
+        realm, "can_manage_all_groups", admins_group, acting_user=None
+    )
+
     # Required to test can_create_users endpoints.
     user.can_create_users = True
     user.save(update_fields=["can_create_users"])

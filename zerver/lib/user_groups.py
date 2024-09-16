@@ -139,6 +139,13 @@ def check_permission_for_managing_all_groups(
     permission, which is a permission that requires either certain roles
     or membership in the group itself to be used.
     """
+    # This is a temporary exception and this should be removed as soon
+    # as `group_creator` is set as a default for `can_manage_group`
+    # property of user groups. See this topic for more details:
+    # https://chat.zulip.org/#narrow/stream/3-backend/topic/Group.20creation.20-.20who.20can.20change.20the.20setting.2E/near/1943861
+    if user_group.creator and user_group.creator.id == user_profile.id:
+        return True
+
     can_edit_all_user_groups = user_profile.can_edit_all_user_groups()
     if can_edit_all_user_groups:
         if user_profile.is_realm_admin or user_profile.is_moderator:
