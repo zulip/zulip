@@ -800,13 +800,10 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # S3_SKIP_PROXY = True
 # S3_UPLOADS_STORAGE_CLASS = "STANDARD"
 
-## Maximum allowed size of uploaded files, in megabytes.  This value is
-## capped at 80MB in the nginx configuration, because the file upload
-## implementation doesn't use chunked uploads, and browsers may crash
-## with larger uploads.
-## Set MAX_FILE_UPLOAD_SIZE to 0 to disable file uploads completely
+## Maximum allowed size of uploaded files, in megabytes. Set
+## MAX_FILE_UPLOAD_SIZE to 0 to disable file uploads completely
 ## (including hiding upload-related options from UI).
-MAX_FILE_UPLOAD_SIZE = 25
+MAX_FILE_UPLOAD_SIZE = 100
 
 ## Controls whether name changes are completely disabled for this
 ## installation.  This is useful when you're syncing names from an
