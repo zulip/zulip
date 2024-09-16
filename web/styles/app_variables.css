@@ -929,8 +929,10 @@
     --color-border-zulip-button: hsl(0deg 0% 80%);
     --color-border-zulip-button-interactive: hsl(0deg 0% 60%);
 
-    /* Zulip-style checkbox colors. */
+    /* Zulip-style checkbox values. */
     --color-border-rendered-checkbox: hsl(0deg 0% 0% / 60%);
+    /* The SVG must be adjusted when changing the border color above. */
+    --svg-url-rendered-checkbox: url("../images/checkbox.svg");
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 93%);
@@ -1357,8 +1359,10 @@
     --color-border-zulip-button: hsl(0deg 0% 0% / 60%);
     --color-border-zulip-button-interactive: var(--color-border-zulip-button);
 
-    /* Zulip-style checkbox colors. */
+    /* Zulip-style checkbox values. */
     --color-border-rendered-checkbox: hsl(0deg 0% 100% / 40%);
+    /* The SVG must be adjusted when changing the border color above. */
+    --svg-url-rendered-checkbox: url("../images/checkbox-dark-mode.svg");
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 0% / 20%);
