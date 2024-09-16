@@ -52,6 +52,7 @@ from .configured_settings import (
     REMOTE_POSTGRES_PORT,
     REMOTE_POSTGRES_SSLMODE,
     ROOT_SUBDOMAIN_ALIASES,
+    S3_REGION,
     SENTRY_DSN,
     SOCIAL_AUTH_APPLE_APP_ID,
     SOCIAL_AUTH_APPLE_SERVICES_ID,
@@ -511,6 +512,10 @@ ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
 
 S3_KEY = get_secret("s3_key")
 S3_SECRET_KEY = get_secret("s3_secret_key")
+if S3_KEY is not None and S3_SECRET_KEY is not None and S3_REGION is None:
+    import boto3
+
+    S3_REGION = boto3.client("s3").meta.region_name
 
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
