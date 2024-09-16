@@ -213,6 +213,10 @@ class ActivityTest(ZulipTestCase):
             result = self.client_get(f"/activity/plan_ledger/{plan.id}/")
             self.assertEqual(result.status_code, 200)
 
+        with self.assert_database_query_count(7):
+            result = self.client_get(f"/activity/remote/logs/server/{server.uuid}/")
+            self.assertEqual(result.status_code, 200)
+
     def test_get_remote_server_guest_and_non_guest_count(self) -> None:
         RemoteRealmAuditLog.objects.bulk_create([RemoteRealmAuditLog(**data) for data in data_list])
         server_id = 1
@@ -373,4 +377,8 @@ class ActivityTest(ZulipTestCase):
         self.login("iago")
         with self.assert_database_query_count(11):
             result = self.client_get("/activity/remote")
+            self.assertEqual(result.status_code, 200)
+
+        with self.assert_database_query_count(7):
+            result = self.client_get(f"/activity/remote/logs/server/{remote_server.uuid}/")
             self.assertEqual(result.status_code, 200)

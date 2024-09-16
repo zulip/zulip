@@ -4,6 +4,7 @@ from django.conf.urls import include
 from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 
+from corporate.views.audit_logs import get_remote_server_logs
 from corporate.views.billing_page import (
     billing_page,
     remote_realm_billing_page,
@@ -106,6 +107,7 @@ i18n_urlpatterns: Any = [
     path("user_activity/<user_profile_id>/", get_user_activity),
     path("activity/remote", get_remote_server_activity),
     path("activity/remote/support", remote_servers_support, name="remote_servers_support"),
+    path("activity/remote/logs/server/<uuid>/", get_remote_server_logs),
     path("activity/plan_ledger/<plan_id>/", get_plan_ledger),
 ]
 
