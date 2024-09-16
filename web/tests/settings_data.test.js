@@ -159,11 +159,6 @@ test_policy(
     settings_data.user_can_move_messages_between_streams,
 );
 test_policy(
-    "user_can_edit_all_user_groups",
-    "realm_user_group_edit_policy",
-    settings_data.user_can_edit_all_user_groups,
-);
-test_policy(
     "user_can_add_custom_emoji",
     "realm_add_custom_emoji_policy",
     settings_data.user_can_add_custom_emoji,
@@ -369,7 +364,7 @@ run_test("can_edit_user_group", () => {
         description: "Members",
         name: "role:members",
         id: 3,
-        members: new Set([3]),
+        members: new Set([3, 4]),
         is_system_group: true,
         direct_subgroup_ids: new Set([1, 2]),
         can_manage_group: 4,
@@ -394,6 +389,7 @@ run_test("can_edit_user_group", () => {
         direct_subgroup_ids: new Set([4, 5]),
         can_manage_group: 4,
         can_mention_group: 3,
+        creator_id: 4,
     };
     user_groups.initialize({
         realm_user_groups: [admins, moderators, members, nobody, students],
@@ -403,26 +399,31 @@ run_test("can_edit_user_group", () => {
     assert.ok(!settings_data.can_edit_user_group(students.id));
 
     page_params.is_spectator = false;
-    realm.realm_user_group_edit_policy = settings_config.common_policy_values.by_admins_only.code;
+    realm.realm_can_manage_all_groups = admins.id;
     current_user.user_id = 3;
     assert.ok(!settings_data.can_edit_user_group(students.id));
 
-    current_user.is_admin = true;
+    // non-admin group_creator
+    current_user.user_id = 4;
+    assert.ok(settings_data.can_manage_user_group(students.id));
+
+    // admin user
+    current_user.user_id = 1;
     assert.ok(settings_data.can_edit_user_group(students.id));
 
-    current_user.is_admin = false;
-    current_user.is_moderator = true;
+    // moderator user
+    current_user.user_id = 2;
     assert.ok(!settings_data.can_edit_user_group(students.id));
 
-    realm.realm_user_group_edit_policy = settings_config.common_policy_values.by_members.code;
-    current_user.is_moderator = false;
-    current_user.is_guest = false;
+    realm.realm_can_manage_all_groups = members.id;
+    current_user.user_id = 3;
     assert.ok(!settings_data.can_edit_user_group(students.id));
 
     current_user.user_id = 2;
     assert.ok(settings_data.can_edit_user_group(students.id));
 
-    realm.realm_user_group_edit_policy = settings_config.common_policy_values.by_admins_only.code;
+    realm.realm_can_manage_all_groups = admins.id;
+    current_user.user_id = 2;
     assert.ok(!settings_data.can_edit_user_group(students.id));
 
     const event = {
@@ -503,6 +504,13 @@ run_test("user_can_create_public_streams", () => {
 
 run_test("user_can_create_user_groups", () => {
     test_realm_group_settings("realm_can_create_groups", settings_data.user_can_create_user_groups);
+});
+
+run_test("user_can_edit_all_user_groups", () => {
+    test_realm_group_settings(
+        "realm_can_manage_all_groups",
+        settings_data.user_can_edit_all_user_groups,
+    );
 });
 
 run_test("user_can_create_private_streams", () => {

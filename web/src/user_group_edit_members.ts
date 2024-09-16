@@ -356,7 +356,7 @@ function remove_member({
         });
     }
 
-    if (people.is_my_user_id(target_user_id) && !current_user.is_admin) {
+    if (people.is_my_user_id(target_user_id) && !settings_data.can_edit_user_group(group_id)) {
         const html_body = render_leave_user_group_modal({
             message: $t({
                 defaultMessage: "Once you leave this group, you will not be able to rejoin.",
