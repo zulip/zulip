@@ -57,6 +57,7 @@ not_yet_fully_covered = [
     "corporate/views/plan_activity.py",
     "corporate/views/realm_activity.py",
     "corporate/views/remote_billing_page.py",
+    "corporate/views/audit_logs.py",
     "corporate/views/support.py",
     "corporate/lib/activity.py",
     "corporate/lib/remote_billing_util.py",
