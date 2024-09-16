@@ -95,8 +95,8 @@ that are documented in the
 [architecture overview](../overview/architecture-overview.md), we rely on the
 versions of those packages provided alongside the Linux distribution
 on which Zulip is deployed. Because Zulip
-[only supports Ubuntu in production](../production/requirements.md), this
-usually means `apt`, though we do support
+[only supports Debian or Ubuntu in production](../production/requirements.md),
+this usually means `apt`, though we do support
 [other platforms in development](../development/setup-advanced.md). Since
 we don't control the versions of these dependencies, we avoid relying
 on specific versions of these packages wherever possible.
