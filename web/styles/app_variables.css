@@ -1103,7 +1103,7 @@
     --color-compose-focus-ring: hsl(0deg 0% 67%);
 
     /* Text colors */
-    --color-text-default: hsl(0deg 0% 100% / 75%);
+    --color-text-default: hsl(0deg 0% 85%);
     /* Unlike the light theme, the dark theme renders message
        text in the default color. */
     --color-text-message-default: var(--color-text-default);
