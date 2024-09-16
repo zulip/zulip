@@ -82,15 +82,16 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
         """Build a user groups forming a chain through group-group memberships
         returning a list where each group is the supergroup of its subsequent group.
         """
+        iago = self.example_user("iago")
         groups = [
-            check_add_user_group(realm, f"chain #{self.counter + i}", [], acting_user=None)
+            check_add_user_group(realm, f"chain #{self.counter + i}", [], acting_user=iago)
             for i in range(self.CHAIN_LENGTH)
         ]
         self.counter += self.CHAIN_LENGTH
         self.created_user_groups.extend(groups)
         prev_group = groups[0]
         for group in groups[1:]:
-            add_subgroups_to_user_group(prev_group, [group], acting_user=None)
+            add_subgroups_to_user_group(prev_group, [group], acting_user=iago)
             prev_group = group
         return groups
 
