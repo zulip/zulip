@@ -31,15 +31,18 @@
                the light-mode color value here as a fallback. */
             border: 1px solid
                 var(--color-border-rendered-checkbox, hsl(0deg 0% 0% / 60%));
-
             border-radius: 4px;
-            filter: brightness(0.8);
 
             cursor: pointer;
         }
 
         &:checked ~ .rendered-checkbox {
-            background-image: url("../images/checkbox.svg");
+            /* As with the border color above, we duplicate
+               the light-mode SVG URL value here as a fallback. */
+            background-image: var(
+                --svg-url-rendered-checkbox,
+                url("../images/checkbox.svg")
+            );
             background-size: 85%;
             background-position: 50% 50%;
             background-repeat: no-repeat;
