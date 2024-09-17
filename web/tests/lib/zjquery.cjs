@@ -63,17 +63,15 @@ function make_zjquery() {
                         'do `assert.equal($foo.selector, ".some_class")\n',
                 );
 
-                const val = target[key];
-
                 /* istanbul ignore if */
-                if (val === undefined && typeof key !== "symbol" && key !== "inspect") {
+                if (!(key in target) && typeof key !== "symbol" && key !== "inspect") {
                     // For undefined values, we'll throw errors to devs saying
                     // they need to create stubs.  We ignore certain keys that
                     // are used for simply printing out the object.
                     throw new Error('You must create a stub for $("' + selector + '").' + key);
                 }
 
-                return val;
+                return target[key];
             },
         };
 
