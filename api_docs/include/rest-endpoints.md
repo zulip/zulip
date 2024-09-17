@@ -118,6 +118,7 @@
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
 * [Get all public data exports](/api/get-realm-exports)
 * [Create a public data export](/api/export-realm)
+* [Get data export consent state](/api/get-realm-export-consents)
 
 #### Real-time events
 
