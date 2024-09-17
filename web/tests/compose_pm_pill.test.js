@@ -16,6 +16,13 @@ let pills = {
 };
 
 run_test("pills", ({override, override_rewire}) => {
+    const me = {
+        email: "me@example.com",
+        user_id: 30,
+        full_name: "Me Myself",
+        date_joined: new Date(),
+    };
+
     const othello = {
         user_id: 1,
         email: "othello@example.com",
@@ -34,6 +41,8 @@ run_test("pills", ({override, override_rewire}) => {
         full_name: "Hamlet",
     };
 
+    people.initialize_current_user(me.user_id);
+    people.add_active_user(me);
     people.add_active_user(othello);
     people.add_active_user(iago);
     people.add_active_user(hamlet);
@@ -161,7 +170,7 @@ run_test("pills", ({override, override_rewire}) => {
     compose_pm_pill.set_from_typeahead(othello);
     compose_pm_pill.set_from_typeahead(hamlet);
 
-    const user_ids = compose_pm_pill.get_user_ids();
+    let user_ids = compose_pm_pill.get_user_ids();
     assert.deepEqual(user_ids, [othello.user_id, hamlet.user_id]);
 
     const user_ids_string = compose_pm_pill.get_user_ids_string();
@@ -185,6 +194,12 @@ run_test("pills", ({override, override_rewire}) => {
     assert.ok(pills_cleared);
     assert.ok(appendValue_called);
     assert.ok(text_cleared);
+
+    compose_pm_pill.set_from_typeahead(me);
+    compose_pm_pill.set_from_typeahead(othello);
+
+    user_ids = compose_pm_pill.get_user_ids();
+    assert.deepEqual(user_ids, [othello.user_id]);
 });
 
 run_test("has_unconverted_data", ({override}) => {

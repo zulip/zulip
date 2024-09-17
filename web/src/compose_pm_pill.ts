@@ -51,6 +51,12 @@ export function clear(): void {
 }
 
 export function set_from_typeahead(person: User): void {
+    const current_user_ids = get_user_ids();
+
+    // Remove current user from recipient if user adds other recipient
+    if (current_user_ids.length === 1 && current_user_ids.at(0) === people.my_current_user_id()) {
+        clear();
+    }
     user_pill.append_person({
         pill_widget: widget,
         person,
