@@ -385,7 +385,6 @@ const realm_schema = z.object({
     realm_signup_announcements_stream_id: z.number(),
     realm_upload_quota_mib: z.nullable(z.number()),
     realm_url: z.string(),
-    realm_user_group_edit_policy: z.number(),
     realm_video_chat_provider: z.number(),
     realm_waiting_period_threshold: z.number(),
     realm_want_advertise_in_communities_directory: NOT_TYPED_YET,
