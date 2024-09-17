@@ -26,7 +26,7 @@
         }
     }
 
-    & a:hover {
+    & a:not(.button, .compose_control_button):hover {
         color: hsl(200deg 79% 66%);
 
         & code {
