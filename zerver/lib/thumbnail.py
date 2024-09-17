@@ -347,7 +347,9 @@ def get_user_upload_previews(
 
     upload_preview_data: dict[str, MarkdownImageMetadata] = {}
 
-    image_attachments = ImageAttachment.objects.filter(realm_id=realm_id, path_id__in=path_ids)
+    image_attachments = ImageAttachment.objects.filter(
+        realm_id=realm_id, path_id__in=path_ids
+    ).order_by("id")
     if lock:
         image_attachments = image_attachments.select_for_update()
     for image_attachment in image_attachments:
