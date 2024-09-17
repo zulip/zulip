@@ -807,7 +807,7 @@ function navigate_to_anchor_message({
             filter: message_lists.current.data.filter,
             excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
         });
-        load_local_messages(msg_list_data);
+        load_local_messages(msg_list_data, all_messages_data);
         select_anchor_using_data(msg_list_data);
     } else {
         const msg_list_data = new MessageListData({
