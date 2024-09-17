@@ -273,7 +273,7 @@ export function slug_to_stream_id(slug: string): number | undefined {
     // "New" (2018) format: ${stream_id}-${stream_name} .
     const match = /^(\d+)(?:-.*)?$/.exec(slug);
     const newFormatStreamId = match ? Number.parseInt(match[1]!, 10) : null;
-    if (newFormatStreamId && stream_info.get(newFormatStreamId)) {
+    if (newFormatStreamId !== null && stream_info.get(newFormatStreamId)) {
         return newFormatStreamId;
     }
 
