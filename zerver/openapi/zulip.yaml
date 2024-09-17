@@ -12762,6 +12762,57 @@ paths:
                     description: |
                       An example JSON error response for when the public data export
                       exceeds the maximum allowed data export size.
+  /export/realm/consents:
+    get:
+      operationId: get-realm-export-consents
+      summary: Get data export consent state
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Fetches which users have [consented](/help/export-your-organization#full-export-with-member-consent)
+        for their private data to be exported by organization administrators.
+
+        **Changes**: New in Zulip 10.0 (feature level 295).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      export_consents:
+                        type: array
+                        description: |
+                          An array of objects where each object contains a user ID and
+                          whether the user has consented for their private data to be exported.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            user_id:
+                              description: |
+                                The user ID.
+                              type: integer
+                            consented:
+                              description: |
+                                Whether the user has consented for their private data export.
+                              type: boolean
+                    example:
+                      {
+                        "export_consents":
+                          [
+                            {"user_id": 11, "consented": true},
+                            {"user_id": 6, "consented": false},
+                          ],
+                        "msg": "",
+                        "result": "success",
+                      }
   /invites:
     get:
       operationId: get-invites

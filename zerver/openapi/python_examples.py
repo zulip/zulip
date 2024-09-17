@@ -694,6 +694,16 @@ def export_realm(client: Client) -> None:
     validate_against_openapi_schema(result, "/export/realm", "post", "200")
 
 
+@openapi_test_function("/export/realm/consents:get")
+def get_realm_export_consents(client: Client) -> None:
+    # {code_example|start}
+    # Get the consents of users for their private data exports.
+    result = client.call_endpoint(url="/export/realm/consents", method="GET")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/export/realm/consents", "get", "200")
+
+
 @openapi_test_function("/users/me:get")
 def get_profile(client: Client) -> None:
     # {code_example|start}
@@ -1822,6 +1832,7 @@ def test_server_organizations(client: Client) -> None:
     create_realm_profile_field(client)
     export_realm(client)
     get_realm_exports(client)
+    get_realm_export_consents(client)
 
 
 def test_errors(client: Client) -> None:

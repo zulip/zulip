@@ -112,3 +112,14 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
         raise JsonableError(_("Export still in progress"))
     do_delete_realm_export(user, audit_log_entry)
     return json_success(request)
+
+
+@require_realm_admin
+def get_users_export_consents(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    rows = UserProfile.objects.filter(realm=user.realm, is_active=True, is_bot=False).values(
+        "id", "allow_private_data_export"
+    )
+    export_consents = [
+        {"user_id": row["id"], "consented": row["allow_private_data_export"]} for row in rows
+    ]
+    return json_success(request, data={"export_consents": export_consents})

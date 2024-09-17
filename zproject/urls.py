@@ -119,7 +119,12 @@ from zerver.views.realm_domains import (
     patch_realm_domain,
 )
 from zerver.views.realm_emoji import delete_emoji, list_emoji, upload_emoji
-from zerver.views.realm_export import delete_realm_export, export_realm, get_realm_exports
+from zerver.views.realm_export import (
+    delete_realm_export,
+    export_realm,
+    get_realm_exports,
+    get_users_export_consents,
+)
 from zerver.views.realm_icon import delete_icon_backend, get_icon_backend, upload_icon
 from zerver.views.realm_linkifiers import (
     create_linkifier,
@@ -504,6 +509,7 @@ v1_api_and_json_patterns = [
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
+    rest_path("export/realm/consents", GET=get_users_export_consents),
 ]
 
 integrations_view = IntegrationView.as_view()
