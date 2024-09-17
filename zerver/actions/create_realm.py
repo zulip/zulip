@@ -295,7 +295,11 @@ def do_create_realm(
             "can_create_public_channel_group": {
                 Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
-            }
+            },
+            "can_create_groups": {
+                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
+                Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
+            },
         }
         set_default_for_realm_permission_group_settings(
             realm, group_settings_defaults_for_org_types
