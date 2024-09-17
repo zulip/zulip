@@ -124,7 +124,6 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         realm.invite_to_realm_policy = InviteToRealmPolicyEnum.ADMINS_ONLY
         # Don't allow members (students) to manage user groups or
         # stream subscriptions.
-        realm.user_group_edit_policy = CommonPolicyEnum.MODERATORS_ONLY
         realm.invite_to_stream_policy = CommonPolicyEnum.MODERATORS_ONLY
         # Allow moderators (TAs?) to move topics between streams.
         realm.move_messages_between_streams_policy = (

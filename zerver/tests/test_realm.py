@@ -123,7 +123,6 @@ class RealmTest(ZulipTestCase):
             realm.move_messages_between_streams_policy,
             MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY,
         )
-        self.assertEqual(realm.user_group_edit_policy, CommonPolicyEnum.MODERATORS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_non_profit")
         moderators_group = NamedUserGroup.objects.get(
@@ -148,7 +147,6 @@ class RealmTest(ZulipTestCase):
             realm.move_messages_between_streams_policy,
             MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY,
         )
-        self.assertEqual(realm.user_group_edit_policy, CommonPolicyEnum.MODERATORS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_for_profit")
         moderators_group = NamedUserGroup.objects.get(
@@ -860,7 +858,6 @@ class RealmTest(ZulipTestCase):
             giphy_rating=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
-            user_group_edit_policy=10,
             message_content_delete_limit_seconds=-10,
             wildcard_mention_policy=10,
             invite_to_realm_policy=10,
@@ -1700,7 +1697,6 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,

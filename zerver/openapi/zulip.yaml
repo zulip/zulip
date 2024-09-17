@@ -4779,20 +4779,6 @@ paths:
                                         primarily relevant to clients containing UI for changing it.
 
                                         **Changes**: New in Zulip 9.0 (feature level 242).
-                                    user_group_edit_policy:
-                                      type: integer
-                                      description: |
-                                        The organization's [policy][permission-level] for
-                                        [who can manage user groups][user-group-permissions].
-
-                                        - 1 = All members can create and edit user groups
-                                        - 2 = Only organization administrators can create and edit user groups
-                                        - 3 = Only [full members][calc-full-member] can create and edit user groups
-                                        - 4 = Only organization administrators and moderators can create and edit user groups
-
-                                        [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
-                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     video_chat_provider:
                                       type: integer
                                       description: |
@@ -16609,22 +16595,6 @@ paths:
                               `private_message_policy` realm setting, which supported values of
                               1 (enabled) and 2 (disabled).
                           - $ref: "#/components/schemas/GroupSettingValue"
-                      realm_user_group_edit_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The organization's [policy][permission-level] for
-                          [who can manage user groups][user-group-permissions].
-
-                          - 1 = All members can create and edit user groups
-                          - 2 = Only organization administrators can create and edit user groups
-                          - 3 = Only [full members][calc-full-member] can create and edit user groups.
-                          - 4 = Only organization administrators and moderators can create and edit user groups.
-
-                          [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_default_code_block_language:
                         type: string
                         description: |

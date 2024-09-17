@@ -149,7 +149,6 @@ def update_realm(
     can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
     invite_to_stream_policy: Json[CommonPolicyEnum] | None = None,
     move_messages_between_streams_policy: Json[MoveMessagesBetweenStreamsPolicyEnum] | None = None,
-    user_group_edit_policy: Json[CommonPolicyEnum] | None = None,
     wildcard_mention_policy: Json[WildcardMentionPolicyEnum] | None = None,
     video_chat_provider: Json[int] | None = None,
     jitsi_server_url_raw: Annotated[

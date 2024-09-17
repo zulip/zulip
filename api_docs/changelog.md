@@ -30,6 +30,13 @@ format used by the Zulip server that they are interacting with.
   [`GET /events`](/api/get-events): Added `can_manage_all_groups`
   realm setting, which is a [group-setting value](/api/group-setting-values)
   describing the set of users with permission to manage all user groups.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `user_group_edit_policy` property, as the permission to create user
+  groups is now controlled by `can_create_groups` setting and permission to
+  manage groups in now controlled by `can_manage_all_groups` setting.
+* [`POST /register`](/api/register-queue): `user_group_edit_policy`
+  field is deprecated, having been replaced by `can_create_groups` for user
+  group creation and `can_manage_all_groups` for user group management.
 
 **Feature level 298**
 
