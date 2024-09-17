@@ -102,7 +102,8 @@ def realm_summary_table() -> str:
             coalesce(dau_table.value, 0) dau_count,
             coalesce(user_count_table.value, 0) user_profile_count,
             coalesce(bot_count_table.value, 0) bot_count,
-            coalesce(realm_audit_log_table.how_realm_creator_found_zulip, '') how_realm_creator_found_zulip
+            coalesce(realm_audit_log_table.how_realm_creator_found_zulip, '') how_realm_creator_found_zulip,
+            coalesce(realm_audit_log_table.how_realm_creator_found_zulip_extra_context, '') how_realm_creator_found_zulip_extra_context
         FROM
             zerver_realm as realm
             LEFT OUTER JOIN (
@@ -160,6 +161,7 @@ def realm_summary_table() -> str:
             LEFT OUTER JOIN (
                 SELECT
                     extra_data->>'how_realm_creator_found_zulip' as how_realm_creator_found_zulip,
+                    extra_data->>'how_realm_creator_found_zulip_extra_context' as how_realm_creator_found_zulip_extra_context,
                     realm_id
                 from
                     zerver_realmauditlog
@@ -237,6 +239,10 @@ def realm_summary_table() -> str:
         row["stats_link"] = realm_stats_link(row["string_id"])
         row["support_link"] = realm_support_link(row["string_id"])
         row["string_id"] = realm_activity_link(row["string_id"])
+        if row["how_realm_creator_found_zulip"] == "Other":
+            row["how_realm_creator_found_zulip"] = (
+                "Other: " + row["how_realm_creator_found_zulip_extra_context"]
+            )
 
     # Count active sites
     num_active_sites = sum(row["dau_count"] >= 5 for row in rows)
