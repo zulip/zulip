@@ -3516,7 +3516,6 @@ class RealmPropertyActionTest(BaseAction):
             name=["Zulip", "New Name"],
             waiting_period_threshold=[1000, 2000],
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
-            user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[

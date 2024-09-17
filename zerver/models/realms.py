@@ -359,8 +359,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=POLICY_MEMBERS_ONLY
     )
 
-    user_group_edit_policy = models.PositiveSmallIntegerField(default=CommonPolicyEnum.MEMBERS_ONLY)
-
     # Global policy for who is allowed to use wildcard mentions in
     # streams with a large number of subscribers.  Anyone can use
     # wildcard mentions in small streams regardless of this setting.
@@ -680,7 +678,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         push_notifications_enabled=bool,
         require_unique_names=bool,
         send_welcome_emails=bool,
-        user_group_edit_policy=int,
         video_chat_provider=int,
         waiting_period_threshold=int,
         want_advertise_in_communities_directory=bool,

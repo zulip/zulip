@@ -205,7 +205,6 @@ class HomeTest(ZulipTestCase):
         "realm_upload_quota_mib",
         "realm_uri",
         "realm_url",
-        "realm_user_group_edit_policy",
         "realm_user_groups",
         "realm_user_settings_defaults",
         "realm_users",
