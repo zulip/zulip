@@ -102,6 +102,16 @@ location /user_uploads {
     include uwsgi_params;
 }
 
+location /api/internal/ {
+    # These only need be accessed from localhost
+    allow 127.0.0.1;
+    allow ::1;
+    deny all;
+
+    include /etc/nginx/zulip-include/api_headers;
+    include uwsgi_params;
+}
+
 # Send all API routes not covered above to Django via uWSGI
 location /api/ {
     include /etc/nginx/zulip-include/api_headers;
