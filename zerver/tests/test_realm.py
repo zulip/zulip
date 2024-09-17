@@ -125,6 +125,11 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.user_group_edit_policy, CommonPolicyEnum.MODERATORS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
+        realm = get_realm("test_education_non_profit")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        self.assertEqual(realm.can_create_groups.id, moderators_group.id)
 
     def test_permission_for_education_for_profit_organization(self) -> None:
         realm = do_create_realm(
@@ -145,6 +150,11 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.user_group_edit_policy, CommonPolicyEnum.MODERATORS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
+        realm = get_realm("test_education_for_profit")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        self.assertEqual(realm.can_create_groups.id, moderators_group.id)
 
     def test_realm_enable_spectator_access(self) -> None:
         realm = do_create_realm(
