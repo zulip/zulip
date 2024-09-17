@@ -1696,8 +1696,8 @@ export class MessageListView {
         // call; it was introduced in an earlier version of this code
         // where we constructed an artificial message group for this
         // rerendering rather than looking up the original version.
-        Object.assign(
-            group,
+        const temp_group = Object.assign(
+            {...group},
             populate_group_from_message(
                 group.message_containers[0]!.msg,
                 group.date_unchanged,
@@ -1705,7 +1705,7 @@ export class MessageListView {
             ),
         );
 
-        const $rendered_recipient_row = $(render_recipient_row(group));
+        const $rendered_recipient_row = $(render_recipient_row(temp_group));
 
         $header.replaceWith($rendered_recipient_row);
     }
