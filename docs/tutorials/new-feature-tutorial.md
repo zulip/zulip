@@ -277,7 +277,7 @@ first contacts the server, the server sends the client its
 initial state. Subsequently, clients subscribe to "events," which can
 (among other things) indicate that settings have changed.
 
-For the backend piece, we will need our action to make a call to `send_event`
+For the backend piece, we will need our action to make a call to `send_event_on_commit`
 to send the event to clients that are active. We will also need to
 modify `fetch_initial_state_data` so that the new field is passed to
 clients. See [our event system docs](../subsystems/events-system.md) for all the
@@ -299,7 +299,7 @@ help catch coding mistakes, not to check for bad user input.
 
 After updating the given realm field, `do_set_realm_property` creates
 an 'update' event with the name of the property and the new value. It
-then calls `send_event`, passing the event and the list of users whose
+then calls `send_event_on_commit`, passing the event and the list of users whose
 browser sessions should be notified as the second argument. The latter
 argument can be a single user (if the setting is a personal one, like
 time display format), members in a particular channel only or all
@@ -327,7 +327,7 @@ def do_set_realm_property(
         property=name,
         value=value,
     )
-    send_event(realm, event, active_user_ids(realm))
+    send_event_on_commit(realm, event, active_user_ids(realm))
 ```
 
 If the new realm property being added does not fit into the
@@ -351,7 +351,7 @@ def do_set_realm_authentication_methods(
         property='default',
         data=dict(authentication_methods=realm.authentication_methods_dict())
     )
-    send_event(realm, event, active_user_ids(realm))
+    send_event_on_commit(realm, event, active_user_ids(realm))
 ```
 
 ### Update application state

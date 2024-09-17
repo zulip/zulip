@@ -25,7 +25,7 @@ paths will be familiar to Django developers.
 
 - `zerver/actions/*.py` Most code doing writes to user-facing
   database tables lives here. In particular, we have a policy that
-  all code calling `send_event` to trigger [pushing data to
+  all code calling `send_event_on_commit` to trigger [pushing data to
   clients](../subsystems/events-system.md) must live here.
 
 - `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/5.0/topics/http/views/).

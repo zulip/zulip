@@ -27,11 +27,11 @@ As a reminder, the relevant part of the flow for sending messages is
 as follows:
 
 - `do_send_messages` is the synchronous message-sending code path,
-  and passing the following data in its `send_event` call:
+  and passing the following data in its `send_event_on_commit` call:
   - Data about the message's content (e.g., mentions, wildcard
     mentions, and alert words) and encodes it into the `UserMessage`
     table's `flags` structure, which is in turn passed into
-    `send_event` for each user receiving the message.
+    `send_event_on_commit` for each user receiving the message.
   - Data about user configuration relevant to the message, such as
     `online_push_user_ids` and `stream_notify_user_ids`, are included
     in the main event dictionary.
@@ -141,8 +141,8 @@ structure of the system, when thinking about changes to it:
   details from the database like "which users receiving this message
   are online".
 - **Thousands of users**. Zulip supports thousands of users, and we
-  want to avoid `send_event()` pushing large amounts of per-user data
-  to Tornado via RabbitMQ for scalability reasons.
+  want to avoid `send_event_on_commit()` pushing large amounts of
+  per-user data to Tornado via RabbitMQ for scalability reasons.
 - **Tornado doesn't do database queries**. Because the Tornado system
   is an asynchronous event-driven framework, and our Django database
   library is synchronous, database queries are very expensive. So
