@@ -9,27 +9,39 @@
        reply button and the new-message button. */
     align-items: stretch;
 
-    .new_message_button {
-        .button {
-            /* Keep the new message button sized to match
-               adjacent buttons. */
-            font-size: inherit;
-            min-width: inherit;
-            line-height: var(--line-height-compose-buttons);
-            padding: 3px 10px;
+    .compose_mobile_button {
+        /* Keep the new message button sized to match
+           adjacent buttons. */
+        min-width: inherit;
+        padding: 3px 10px;
+        border-radius: 4px;
+        outline: none;
+        /* This is ugly, but necessary to use the
+           text + for the compose button. An icon
+           would likely be a better choice here.
+           1.2em is 16.8px at 14px em. */
+        font-size: 1.2em;
+        /* 1.2em is 16.8px at 14px em; this
+           maintains the 20px em-equivalent compose
+           line height, but at a 16.8px em. */
+        line-height: 1.19em;
+        font-weight: 400;
+        color: var(--color-text-default);
+        background-color: var(--color-background-compose-new-message-button);
+        border: 1px solid var(--color-border-compose-new-message-button);
+
+        &:hover {
+            background-color: var(
+                --color-background-compose-new-message-button-hover
+            );
+            border-color: var(--color-border-compose-new-message-button-hover);
         }
 
-        .compose_mobile_button {
-            /* This is ugly, but necessary to use the
-               text + for the compose button. An icon
-               would likely be a better choice here.
-               1.2em is 16.8px at 14px em. */
-            font-size: 1.2em !important;
-            /* 1.2em is 16.8px at 14px em; this
-               maintains the 20px em-equivalent compose
-               line height, but at a 16.8px em. */
-            line-height: 1.19em !important;
-            font-weight: 400;
+        &:active {
+            background-color: var(
+                --color-background-compose-new-message-button-active
+            );
+            border-color: var(--color-border-compose-new-message-button-hover);
         }
     }
 
@@ -60,8 +72,14 @@
 
         #left_bar_compose_reply_button_big,
         #new_conversation_button {
-            /* Remove the border inherited from `.button` styles. */
+            /* Keep the new message button sized to match
+               adjacent buttons. */
+            font-size: inherit;
+            min-width: inherit;
+            padding: 3px 10px;
+            outline: none;
             border: none;
+            color: var(--color-text-default);
             background: var(--color-compose-embedded-button-background);
             border-radius: 3px;
             line-height: var(--line-height-compose-buttons);
@@ -83,7 +101,6 @@
         #new_conversation_button {
             /* Remove the  `padding` to prevent margin from affecting parent height. */
             padding: 0 10px;
-            /* Removing the `min-width` inherited from the `.button` styles. */
             min-width: inherit;
             margin: 1px;
             flex-shrink: 0;
@@ -113,6 +130,34 @@
         @media (width < $sm_min) {
             /* Override inline style injected by jQuery hide() */
             display: none !important;
+        }
+    }
+
+    #new_direct_message_button {
+        /* Keep the new message button sized to match
+           adjacent buttons. */
+        font-size: inherit;
+        min-width: inherit;
+        line-height: var(--line-height-compose-buttons);
+        padding: 3px 10px;
+        border-radius: 4px;
+        outline: none;
+        color: var(--color-text-default);
+        background-color: var(--color-background-compose-new-message-button);
+        border: 1px solid var(--color-border-compose-new-message-button);
+
+        &:hover {
+            background-color: var(
+                --color-background-compose-new-message-button-hover
+            );
+            border-color: var(--color-border-compose-new-message-button-hover);
+        }
+
+        &:active {
+            background-color: var(
+                --color-background-compose-new-message-button-active
+            );
+            border-color: var(--color-border-compose-new-message-button-hover);
         }
     }
 }
