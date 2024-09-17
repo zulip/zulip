@@ -218,7 +218,6 @@ type simple_dropdown_realm_settings = Pick<
     typeof realm,
     | "realm_create_private_stream_policy"
     | "realm_invite_to_stream_policy"
-    | "realm_user_group_edit_policy"
     | "realm_add_custom_emoji_policy"
     | "realm_invite_to_realm_policy"
     | "realm_wildcard_mention_policy"

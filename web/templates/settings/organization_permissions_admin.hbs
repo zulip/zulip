@@ -351,13 +351,6 @@
                   is_setting_disabled=(not is_owner)}}
 
                 <div class="input-group">
-                    <label for="realm_user_group_edit_policy" class="settings-field-label">{{t "Who can create and manage user groups" }}</label>
-                    <select name="realm_user_group_edit_policy" id="id_realm_user_group_edit_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=common_policy_values}}
-                    </select>
-                </div>
-
-                <div class="input-group">
                     <label for="realm_add_custom_emoji_policy" class="settings-field-label">{{t "Who can add custom emoji" }}</label>
                     <select name="realm_add_custom_emoji_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_add_custom_emoji_policy" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=common_policy_values}}

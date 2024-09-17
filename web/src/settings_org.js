@@ -125,7 +125,6 @@ export function get_org_type_dropdown_options() {
 
 const simple_dropdown_properties = [
     "realm_invite_to_stream_policy",
-    "realm_user_group_edit_policy",
     "realm_add_custom_emoji_policy",
     "realm_invite_to_realm_policy",
     "realm_wildcard_mention_policy",
