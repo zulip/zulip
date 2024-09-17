@@ -1696,6 +1696,10 @@ export class MessageListView {
         // call; it was introduced in an earlier version of this code
         // where we constructed an artificial message group for this
         // rerendering rather than looking up the original version.
+        const preserved_properties = {
+            message_group_id: group.message_group_id,
+            message_containers: group.message_containers,
+        };
         Object.assign(
             group,
             populate_group_from_message(
@@ -1703,6 +1707,10 @@ export class MessageListView {
                 group.date_unchanged,
                 undefined,
             ),
+            // We don't want `populate_group_from_message` to generate a
+            // new id. We also preserve the message containers, since this
+            // function doesn't generate new ones.
+            preserved_properties,
         );
 
         const $rendered_recipient_row = $(render_recipient_row(group));
