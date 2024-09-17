@@ -1,22 +1,3 @@
 <p>
-    {{t "Choose an option to mark all messages as read? This action cannot be undone." }}
+    {{t "Are you sure you want to mark all messages as read? This action cannot be undone." }}
 </p>
-<div class="new-style settings-section show">
-    <div class="input-group message-checkbox">
-        {{> ../settings/settings_checkbox
-          setting_name="muted_topics"
-          is_checked=0
-          label="Muted topics"
-          }}
-        {{> ../settings/settings_checkbox
-          setting_name="topics_not_followed"
-          is_checked=1
-          label="Topics I don't follow"
-          }}
-        {{> ../settings/settings_checkbox
-          setting_name="all_messages"
-          is_checked=0
-          label="All messages"
-          }}
-    </div>
-</div>

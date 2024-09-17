@@ -53,40 +53,13 @@ export function confirm_mark_all_as_read(): void {
     const html_body = render_confirm_mark_all_as_read();
 
     const modal_id = confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
+        html_heading: $t_html({defaultMessage: "Mark all messages as read?"}),
         html_body,
         on_click() {
             mark_all_as_read(modal_id);
         },
         loading_spinner: true,
     });
-}
-
-export function mark_as_read_with_narrow(narrow: NarrowTerm[], modal_id?: string): void {
-    bulk_update_read_flags_for_narrow(narrow, "add", {}, modal_id);
-}
-
-export function mark_selected_options_as_read(): void {
-    const muted_topics = Boolean($("#muted_topics").prop("checked"));
-    const topics_not_followed = Boolean($("#topics_not_followed").prop("checked"));
-    const all_messages = Boolean($("#all_messages").prop("checked"));
-
-    if (all_messages) {
-        mark_all_as_read();
-        return;
-    }
-
-    const narrow_options = [{operator: "is", operand: "unread", negated: false}];
-
-    if (muted_topics) {
-        narrow_options.push({operator: "topic", operand: "muted", negated: false});
-    }
-
-    if (topics_not_followed) {
-        narrow_options.push({operator: "topic", operand: "followed", negated: true});
-    }
-
-    mark_as_read_with_narrow(narrow_options);
 }
 
 const update_flags_for_narrow_response_schema = z.object({
