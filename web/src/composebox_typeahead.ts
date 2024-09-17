@@ -589,11 +589,22 @@ export function get_pm_people(query: string): (UserGroupPillData | UserPillData)
         filter_groups_for_guests: true,
     };
     const suggestions = get_person_suggestions(query, opts);
+    const current_user_ids = compose_pm_pill.get_user_ids();
+    const my_user_id = people.my_current_user_id();
     // We know these aren't mentions because `want_broadcast` was `false`.
     // TODO: In the future we should separate user and mention so we don't have
     // to do this.
     const user_suggestions: (UserGroupPillData | UserPillData)[] = [];
     for (const suggestion of suggestions) {
+        if (
+            suggestion.type === "user" &&
+            suggestion.user.user_id === my_user_id &&
+            current_user_ids.length > 0
+        ) {
+            // We don't show current user in typeahead suggestion if recipient
+            // box already has a user pill to avoid fading conversation
+            continue;
+        }
         assert(suggestion.type !== "broadcast");
         user_suggestions.push(suggestion);
     }
