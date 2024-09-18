@@ -1710,8 +1710,8 @@ class BillingSession(ABC):
         if request_seat_count == minimum_seat_count and current_seat_count < minimum_seat_count:
             # Continue to use the minimum licenses for the plan tier.
             return request_seat_count
-        # Otherwise, use a current count for billed licenses.
-        return current_seat_count
+        # Otherwise, we want to check the current count against the minimum.
+        return max(current_seat_count, minimum_seat_count)
 
     def ensure_current_plan_is_upgradable(self, customer: Customer, new_plan_tier: int) -> None:
         # Upgrade for customers with an existing plan is only supported for remote realm / server right now.
