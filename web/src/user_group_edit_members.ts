@@ -61,7 +61,7 @@ function format_member_list_elem(person: User): string {
         user_id: person.user_id,
         is_current_user: person.user_id === current_user.user_id,
         email: person.delivery_email,
-        can_remove_subscribers: settings_data.can_edit_user_group(current_group_id),
+        can_remove_subscribers: settings_data.can_manage_user_group(current_group_id),
         for_user_group_members: true,
         img_src: people.small_avatar_url_for_person(person),
     });
@@ -147,7 +147,7 @@ export function rerender_members_list({
 }): void {
     $parent_container.find(".member-list-box").html(
         render_user_group_members_table({
-            can_edit: settings_data.can_edit_user_group(group.id),
+            can_edit: settings_data.can_manage_user_group(group.id),
         }),
     );
     member_list_widget = make_list_widget({
@@ -356,7 +356,7 @@ function remove_member({
         });
     }
 
-    if (people.is_my_user_id(target_user_id) && !settings_data.can_edit_user_group(group_id)) {
+    if (people.is_my_user_id(target_user_id) && !settings_data.can_manage_user_group(group_id)) {
         const html_body = render_leave_user_group_modal({
             message: $t({
                 defaultMessage: "Once you leave this group, you will not be able to rejoin.",

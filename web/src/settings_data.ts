@@ -188,7 +188,7 @@ export function user_can_move_messages_between_streams(): boolean {
     return user_has_permission(realm.realm_move_messages_between_streams_policy);
 }
 
-export function user_can_edit_all_user_groups(): boolean {
+export function user_can_manage_all_groups(): boolean {
     if (page_params.is_spectator) {
         return false;
     }
@@ -199,12 +199,12 @@ export function user_can_edit_all_user_groups(): boolean {
     );
 }
 
-export function can_edit_user_group(group_id: number): boolean {
+export function can_manage_user_group(group_id: number): boolean {
     if (page_params.is_spectator) {
         return false;
     }
 
-    let can_edit_all_user_groups = user_can_edit_all_user_groups();
+    let can_manage_all_groups = user_can_manage_all_groups();
 
     const group = user_groups.get_user_group_from_id(group_id);
 
@@ -221,10 +221,10 @@ export function can_edit_user_group(group_id: number): boolean {
         !current_user.is_moderator &&
         !user_groups.is_direct_member_of(current_user.user_id, group_id)
     ) {
-        can_edit_all_user_groups = false;
+        can_manage_all_groups = false;
     }
 
-    if (can_edit_all_user_groups) {
+    if (can_manage_all_groups) {
         return true;
     }
 
