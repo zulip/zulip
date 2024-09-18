@@ -671,7 +671,7 @@ class SponsorshipRequestSessionSpecificContext(TypedDict):
 
 class UpgradePageContext(TypedDict):
     customer_name: str
-    email: str
+    stripe_email: str
     exempt_from_license_number_check: bool
     free_trial_end_date: str | None
     is_demo_organization: bool
@@ -2728,9 +2728,17 @@ class BillingSession(ABC):
                 )
 
         flat_discount, flat_discounted_months = self.get_flat_discount_info(customer)
+
+        # Invoice is sent to stripe email.
+        stripe_email = customer_specific_context["email"]
+        if customer is not None and customer.stripe_customer_id is not None:
+            stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+            if type(stripe_customer.email) is str:
+                stripe_email = stripe_customer.email
+
         context: UpgradePageContext = {
             "customer_name": customer_specific_context["customer_name"],
-            "email": customer_specific_context["email"],
+            "stripe_email": stripe_email,
             "exempt_from_license_number_check": exempt_from_license_number_check,
             "free_trial_end_date": free_trial_end_date,
             "is_demo_organization": customer_specific_context["is_demo_organization"],
