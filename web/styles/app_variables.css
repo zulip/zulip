@@ -987,9 +987,58 @@
        this file is not imported on billing pages. */
 
     /* Zulip-style button colors. */
-    --color-background-zulip-button: hsl(0deg 0% 100%);
-    --color-background-zulip-button-hover: var(--color-background-zulip-button);
-    --color-background-zulip-button-active: hsl(0deg 0% 95%);
+    --color-text-zulip-button: #393c49;
+    --color-text-zulip-button-danger: #ac0508;
+    --color-text-zulip-button-warning: #764607;
+    --color-shadow-zulip-button: color-mix(in srgb, transparent, #000 20%);
+
+    /* color-mix(in srgb, transparent, var(--gray-550) 12%) */
+
+    --color-background-zulip-button: color-mix(
+        in srgb,
+        transparent,
+        #767988 12%
+    );
+    --color-background-zulip-button-hover: color-mix(
+        in srgb,
+        transparent,
+        #767988 17%
+    );
+    --color-background-zulip-button-active: color-mix(
+        in srgb,
+        transparent,
+        #767988 22%
+    );
+    --color-background-zulip-button-danger: color-mix(
+        in srgb,
+        transparent,
+        #e1392e 13%
+    );
+    --color-background-zulip-button-danger-hover: color-mix(
+        in srgb,
+        transparent,
+        #e1392e 18%
+    );
+    --color-background-zulip-button-danger-active: color-mix(
+        in srgb,
+        transparent,
+        #e1392e 23%
+    );
+    --color-background-zulip-button-warning: color-mix(
+        in srgb,
+        transparent,
+        #eba002 18%
+    );
+    --color-background-zulip-button-warning-hover: color-mix(
+        in srgb,
+        transparent,
+        #eba002 23%
+    );
+    --color-background-zulip-button-warning-active: color-mix(
+        in srgb,
+        transparent,
+        #eba002 28%
+    );
     --color-background-zulip-button-disabled: hsl(0deg 0% 93%);
     --color-border-zulip-button: hsl(0deg 0% 80%);
     --color-border-zulip-button-interactive: hsl(0deg 0% 60%);
@@ -1472,10 +1521,54 @@
     --color-exit-button-background-interactive: hsl(226deg 1% 30% / 65%);
 
     /* Zulip-style button colors. */
-    --color-background-zulip-button: hsl(0deg 0% 0% / 20%);
-    --color-background-zulip-button-hover: hsl(0deg 0% 0% / 15%);
-    --color-background-zulip-button-active: var(
-        --color-background-zulip-button-hover
+    --color-text-zulip-button: #bbbdc8;
+    --color-text-zulip-button-danger: #ff8b7c;
+    --color-text-zulip-button-warning: #f8b325;
+    --color-shadow-zulip-button: color-mix(in srgb, transparent, #fff 21%);
+    --color-background-zulip-button: color-mix(
+        in srgb,
+        transparent,
+        #bbbdc8 12%
+    );
+    --color-background-zulip-button-hover: color-mix(
+        in srgb,
+        transparent,
+        #bbbdc8 17%
+    );
+    --color-background-zulip-button-active: color-mix(
+        in srgb,
+        transparent,
+        #bbbdc8 12%
+    );
+    --color-background-zulip-button-danger: color-mix(
+        in srgb,
+        transparent,
+        #fd5f50 12%
+    );
+    --color-background-zulip-button-danger-hover: color-mix(
+        in srgb,
+        transparent,
+        #fd5f50 17%
+    );
+    --color-background-zulip-button-danger-active: color-mix(
+        in srgb,
+        transparent,
+        #fd5f50 12%
+    );
+    --color-background-zulip-button-warning: color-mix(
+        in srgb,
+        transparent,
+        #db920d 12%
+    );
+    --color-background-zulip-button-warning-hover: color-mix(
+        in srgb,
+        transparent,
+        #db920d 17%
+    );
+    --color-background-zulip-button-warning-active: color-mix(
+        in srgb,
+        transparent,
+        #db920d 12%
     );
     --color-background-zulip-button-disabled: var(
         --color-background-zulip-button
