@@ -449,31 +449,29 @@ export class BuddyList extends BuddyListConf {
             }
         }
 
-        // Remove the empty list message before adding users
-        if (
-            $(`${this.matching_view_list_selector} .empty-list-message`).length > 0 &&
-            subscribed_users.length
-        ) {
-            this.$users_matching_view_list.empty();
-        }
-        const subscribed_users_html = this.items_to_html({
-            items: subscribed_users,
-        });
         this.$users_matching_view_list = $(this.matching_view_list_selector);
-        this.$users_matching_view_list.append($(subscribed_users_html));
-
-        // Remove the empty list message before adding users
-        if (
-            $(`${this.other_user_list_selector} .empty-list-message`).length > 0 &&
-            other_users.length
-        ) {
-            this.$other_users_list.empty();
+        if (subscribed_users.length) {
+            // Remove the empty list message before adding users
+            if ($(`${this.matching_view_list_selector} .empty-list-message`).length > 0) {
+                this.$users_matching_view_list.empty();
+            }
+            const subscribed_users_html = this.items_to_html({
+                items: subscribed_users,
+            });
+            this.$users_matching_view_list.append($(subscribed_users_html));
         }
-        const other_users_html = this.items_to_html({
-            items: other_users,
-        });
+
         this.$other_users_list = $(this.other_user_list_selector);
-        this.$other_users_list.append($(other_users_html));
+        if (other_users.length) {
+            // Remove the empty list message before adding users
+            if ($(`${this.other_user_list_selector} .empty-list-message`).length > 0) {
+                this.$other_users_list.empty();
+            }
+            const other_users_html = this.items_to_html({
+                items: other_users,
+            });
+            this.$other_users_list.append($(other_users_html));
+        }
 
         // Invariant: more_user_ids.length >= items.length.
         // (Usually they're the same, but occasionally user ids

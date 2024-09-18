@@ -68,16 +68,9 @@ run_test("basics", ({override, mock_template}) => {
     stub_buddy_list_elements();
     mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
-    let appended_to_users_matching_view;
-    $("#buddy-list-users-matching-view").append = ($element) => {
-        assert.equal($element.selector, "<html-stub>");
-        appended_to_users_matching_view = true;
-    };
-
     buddy_list.populate({
         all_user_ids: [alice.user_id],
     });
-    assert.ok(appended_to_users_matching_view);
 
     const $alice_li = "alice-stub";
 
@@ -103,10 +96,8 @@ run_test("split list", ({override, override_rewire, mock_template}) => {
     override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
 
     override(buddy_list, "items_to_html", (opts) => {
-        if (opts.items.length > 0) {
-            return "<html-stub>";
-        }
-        return "<empty-list-stub>";
+        assert.ok(opts.items.length > 0);
+        return "<html-stub>";
     });
     override(message_viewport, "height", () => 550);
     override(padded_widget, "update_padding", noop);
@@ -271,9 +262,10 @@ run_test("big_list", ({override, override_rewire, mock_template}) => {
     });
 
     // Chunks are default size 20, so there should be 300/20 = 15 chunks
-    const expected_chunks_inserted = 15;
-    // Two calls per chunk: one for users_matching_view and one for other_users.
-    assert.equal(items_to_html_call_count, 2 * expected_chunks_inserted);
+    // For the first 100/20 = 5 chunks, we only call to add a user matching ivew.
+    // For the last 10 chunks, there are two calls: one for users_matching_view
+    // and one for other_users.
+    assert.equal(items_to_html_call_count, 5 + 10 * 2);
 });
 
 run_test("force_render", ({override}) => {
