@@ -356,7 +356,6 @@
 
     /* these are converting grey things to "new grey".
        :disabled rules are exploded for CSS selector performance reasons. */
-    button:disabled,
     option:disabled,
     select:disabled,
     textarea:disabled,

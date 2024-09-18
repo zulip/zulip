@@ -238,14 +238,10 @@ input::placeholder {
 
     &:disabled {
         cursor: not-allowed;
-        filter: saturate(0);
-        background-color: var(--color-background-zulip-button-disabled);
-        color: hsl(0deg 3% 52%);
+        opacity: 0.5;
 
         &:hover {
-            background-color: var(--color-background-zulip-button-disabled);
-            color: hsl(156deg 39% 54%);
-            border-color: hsl(156deg 39% 77%);
+            opacity: 0.5;
         }
     }
 }
