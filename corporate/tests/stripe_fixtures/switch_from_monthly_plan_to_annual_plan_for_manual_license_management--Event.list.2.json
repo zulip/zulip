@@ -33,7 +33,7 @@
                     "country": "US",
                     "line1": "123 Main St",
                     "line2": null,
-                    "postal_code": "94105",
+                    "postal_code": "12345",
                     "state": "CA"
                   },
                   "email": null,
@@ -44,7 +44,7 @@
                 "captured": true,
                 "created": 1000000000,
                 "currency": "usd",
-                "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
+                "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.retrieve.1.json",
                 "description": "Payment for Invoice",
                 "destination": null,
                 "dispute": null,
@@ -82,8 +82,8 @@
                       "cvc_check": "pass"
                     },
                     "country": "US",
-                    "exp_month": 8,
-                    "exp_year": 2025,
+                    "exp_month": 1,
+                    "exp_year": 9999,
                     "extended_authorization": {
                       "status": "disabled"
                     },
@@ -142,7 +142,7 @@
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.retrieve.1.json",
           "description": "Payment for Invoice",
           "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
           "invoice": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
@@ -196,134 +196,6 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "amount": 28000,
-          "amount_captured": 28000,
-          "amount_refunded": 0,
-          "application": null,
-          "application_fee": null,
-          "application_fee_amount": null,
-          "balance_transaction": "txn_NORMALIZED",
-          "billing_details": {
-            "address": {
-              "city": "San Francisco",
-              "country": "US",
-              "line1": "123 Main St",
-              "line2": null,
-              "postal_code": "94105",
-              "state": "CA"
-            },
-            "email": null,
-            "name": "John Doe",
-            "phone": null
-          },
-          "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
-          "captured": true,
-          "created": 1000000000,
-          "currency": "usd",
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
-          "description": "Payment for Invoice",
-          "destination": null,
-          "dispute": null,
-          "disputed": false,
-          "failure_balance_transaction": null,
-          "failure_code": null,
-          "failure_message": null,
-          "fraud_details": {},
-          "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
-          "invoice": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
-          "livemode": false,
-          "metadata": {},
-          "object": "charge",
-          "on_behalf_of": null,
-          "order": null,
-          "outcome": {
-            "network_status": "approved_by_network",
-            "reason": null,
-            "risk_level": "normal",
-            "risk_score": 0,
-            "seller_message": "Payment complete.",
-            "type": "authorized"
-          },
-          "paid": true,
-          "payment_intent": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
-          "payment_method": "pm_NORMALIZED",
-          "payment_method_details": {
-            "card": {
-              "amount_authorized": 28000,
-              "authorization_code": null,
-              "brand": "visa",
-              "checks": {
-                "address_line1_check": "pass",
-                "address_postal_code_check": "pass",
-                "cvc_check": "pass"
-              },
-              "country": "US",
-              "exp_month": 8,
-              "exp_year": 2025,
-              "extended_authorization": {
-                "status": "disabled"
-              },
-              "fingerprint": "NORMALIZED",
-              "funding": "credit",
-              "incremental_authorization": {
-                "status": "unavailable"
-              },
-              "installments": null,
-              "last4": "4242",
-              "mandate": null,
-              "multicapture": {
-                "status": "unavailable"
-              },
-              "network": "visa",
-              "network_token": {
-                "used": false
-              },
-              "overcapture": {
-                "maximum_amount_capturable": 28000,
-                "status": "unavailable"
-              },
-              "three_d_secure": null,
-              "wallet": null
-            },
-            "type": "card"
-          },
-          "receipt_email": "hamlet@zulip.com",
-          "receipt_number": null,
-          "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",
-          "refunded": false,
-          "refunds": {
-            "data": [],
-            "has_more": false,
-            "object": "list",
-            "total_count": 0,
-            "url": "/v1/charges/switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json/refunds"
-          },
-          "review": null,
-          "shipping": null,
-          "source": null,
-          "source_transfer": null,
-          "statement_descriptor": "Zulip Cloud Standard",
-          "statement_descriptor_suffix": null,
-          "status": "succeeded",
-          "transfer_data": null,
-          "transfer_group": null
-        }
-      },
-      "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 2,
-      "request": {
-        "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
-      },
-      "type": "charge.succeeded"
-    },
-    {
-      "api_version": "2020-08-27",
-      "created": 1000000000,
-      "data": {
-        "object": {
           "account_country": "US",
           "account_name": "Kandra Labs, Inc.",
           "account_tax_ids": null,
@@ -348,7 +220,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.retrieve.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -466,7 +338,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -493,7 +367,7 @@
           "total_excluding_tax": 28000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
@@ -535,7 +409,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.retrieve.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -653,7 +527,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -680,7 +556,7 @@
           "total_excluding_tax": 28000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "effective_at": null,
@@ -738,7 +614,7 @@
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.retrieve.1.json",
           "description": "Payment for Invoice",
           "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
           "invoice": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
@@ -816,7 +692,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.retrieve.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -934,7 +810,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "auto"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -981,7 +859,7 @@
         "object": {
           "amount": 28000,
           "currency": "usd",
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.retrieve.1.json",
           "date": 1000000000,
           "description": "Zulip Cloud Standard",
           "discountable": false,
@@ -1051,7 +929,7 @@
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
+          "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.retrieve.1.json",
           "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,

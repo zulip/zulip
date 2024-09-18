@@ -1,0 +1,60 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": -7200,
+          "created": 1000000000,
+          "currency": "usd",
+          "default_currency": "usd",
+          "default_source": null,
+          "delinquent": false,
+          "description": "lear (Lear & Co.)",
+          "discount": null,
+          "email": "king@lear.org",
+          "id": "invoice_initial_remote_realm_upgrade--Event.list.10.json",
+          "invoice_prefix": "NORMALIZED",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": null,
+            "footer": null,
+            "rendering_options": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "lear"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "balance": 0,
+          "currency": null,
+          "default_currency": null
+        }
+      },
+      "id": "invoice_initial_remote_realm_upgrade--Event.list.11.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 2,
+      "request": {
+        "id": "invoice_initial_remote_realm_upgrade--Event.list.11.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "customer.updated"
+    }
+  ],
+  "has_more": false,
+  "object": "list",
+  "url": "/v1/events"
+}

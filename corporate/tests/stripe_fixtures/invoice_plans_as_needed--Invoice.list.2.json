@@ -237,7 +237,9 @@
         "amount_tax_display": null,
         "pdf": {
           "page_size": "letter"
-        }
+        },
+        "template": null,
+        "template_version": null
       },
       "rendering_options": null,
       "shipping_cost": null,
@@ -311,7 +313,7 @@
       "footer": null,
       "from_invoice": null,
       "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-      "id": "invoice_plans_as_needed--Event.list.2.json",
+      "id": "invoice_plans_as_needed--Event.list.4.json",
       "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
       "issuer": {
         "type": "self"
@@ -328,8 +330,8 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "invoice_plans_as_needed--Event.list.2.json",
-            "invoice": "invoice_plans_as_needed--Event.list.2.json",
+            "id": "invoice_plans_as_needed--Event.list.4.json",
+            "invoice": "invoice_plans_as_needed--Event.list.4.json",
             "invoice_item": "ii_NORMALIZED",
             "livemode": false,
             "metadata": {},
@@ -379,8 +381,8 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "invoice_plans_as_needed--Event.list.2.json",
-            "invoice": "invoice_plans_as_needed--Event.list.2.json",
+            "id": "invoice_plans_as_needed--Event.list.4.json",
+            "invoice": "invoice_plans_as_needed--Event.list.4.json",
             "invoice_item": "ii_NORMALIZED",
             "livemode": false,
             "metadata": {},
@@ -426,7 +428,7 @@
         "has_more": false,
         "object": "list",
         "total_count": 2,
-        "url": "/v1/invoices/invoice_plans_as_needed--Event.list.2.json/lines"
+        "url": "/v1/invoices/invoice_plans_as_needed--Event.list.4.json/lines"
       },
       "livemode": false,
       "metadata": {
@@ -459,7 +461,9 @@
         "amount_tax_display": null,
         "pdf": {
           "page_size": "letter"
-        }
+        },
+        "template": null,
+        "template_version": null
       },
       "rendering_options": null,
       "shipping_cost": null,

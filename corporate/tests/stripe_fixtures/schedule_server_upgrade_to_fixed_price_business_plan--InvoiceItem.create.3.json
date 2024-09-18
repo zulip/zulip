@@ -22,7 +22,7 @@
     "created": 1000000000,
     "currency": "usd",
     "custom_unit_amount": null,
-    "id": "schedule_server_upgrade_to_fixed_price_business_plan--Invoice.create.2.json",
+    "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.2.json",
     "livemode": false,
     "lookup_key": null,
     "metadata": {},

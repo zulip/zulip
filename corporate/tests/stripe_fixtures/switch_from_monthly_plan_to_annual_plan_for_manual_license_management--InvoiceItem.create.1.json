@@ -6,7 +6,7 @@
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
+  "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--InvoiceItem.create.1.json",
   "invoice": null,
   "livemode": false,
   "metadata": {},

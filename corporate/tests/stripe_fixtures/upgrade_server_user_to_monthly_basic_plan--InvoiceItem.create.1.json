@@ -6,7 +6,7 @@
   "description": "Zulip Basic",
   "discountable": false,
   "discounts": [],
-  "id": "upgrade_server_user_to_monthly_basic_plan--Event.list.2.json",
+  "id": "upgrade_server_user_to_monthly_basic_plan--InvoiceItem.create.1.json",
   "invoice": null,
   "livemode": false,
   "metadata": {},

@@ -49,7 +49,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-          "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
+          "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
           "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
@@ -66,8 +66,8 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
-                "invoice": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
+                "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
+                "invoice": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
                 "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
@@ -113,7 +113,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json/lines"
+            "url": "/v1/invoices/switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -147,7 +147,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -180,7 +182,7 @@
       "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -236,7 +238,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-          "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
+          "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
           "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
@@ -253,8 +255,8 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
-                "invoice": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
+                "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
+                "invoice": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
                 "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
@@ -300,7 +302,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json/lines"
+            "url": "/v1/invoices/switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -334,7 +336,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -367,7 +371,7 @@
       "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -423,7 +427,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-          "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
+          "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
           "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
@@ -440,8 +444,8 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
-                "invoice": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
+                "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
+                "invoice": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json",
                 "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
@@ -487,7 +491,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json/lines"
+            "url": "/v1/invoices/switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.3.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -521,7 +525,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,

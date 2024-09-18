@@ -43,7 +43,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-  "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.2.json",
+  "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.3.json",
   "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
   "issuer": {
     "type": "self"
@@ -60,8 +60,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.2.json",
-        "invoice": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.2.json",
+        "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.3.json",
+        "invoice": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.3.json",
         "invoice_item": "ii_NORMALIZED",
         "livemode": false,
         "metadata": {},
@@ -111,8 +111,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.2.json",
-        "invoice": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.2.json",
+        "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.3.json",
+        "invoice": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.3.json",
         "invoice_item": "ii_NORMALIZED",
         "livemode": false,
         "metadata": {},
@@ -158,7 +158,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 2,
-    "url": "/v1/invoices/schedule_server_upgrade_to_fixed_price_business_plan--Event.list.2.json/lines"
+    "url": "/v1/invoices/schedule_server_upgrade_to_fixed_price_business_plan--Event.list.3.json/lines"
   },
   "livemode": false,
   "metadata": {
@@ -191,7 +191,9 @@
     "amount_tax_display": null,
     "pdf": {
       "page_size": "letter"
-    }
+    },
+    "template": null,
+    "template_version": null
   },
   "rendering_options": null,
   "shipping_cost": null,

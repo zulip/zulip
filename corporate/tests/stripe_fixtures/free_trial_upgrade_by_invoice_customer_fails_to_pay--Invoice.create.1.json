@@ -77,7 +77,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.1.json",
+          "id": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.3.json",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
@@ -112,7 +112,7 @@
   "livemode": false,
   "metadata": {
     "billing_schedule": "1",
-    "current_plan_id": "34",
+    "current_plan_id": "1",
     "license_management": "manual",
     "licenses": "123",
     "on_free_trial": "True",
@@ -141,7 +141,9 @@
     "amount_tax_display": null,
     "pdf": {
       "page_size": "auto"
-    }
+    },
+    "template": null,
+    "template_version": null
   },
   "rendering_options": null,
   "shipping_cost": null,

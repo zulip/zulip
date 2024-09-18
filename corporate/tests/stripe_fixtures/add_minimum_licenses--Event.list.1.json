@@ -15,7 +15,7 @@
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "add_minimum_licenses--Customer.create.1.json",
+          "id": "add_minimum_licenses--Event.list.1.json",
           "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,
@@ -39,7 +39,7 @@
         },
         "previous_attributes": {
           "invoice_settings": {
-            "default_payment_method": null
+            "default_payment_method": "pm_NORMALIZED"
           }
         }
       },

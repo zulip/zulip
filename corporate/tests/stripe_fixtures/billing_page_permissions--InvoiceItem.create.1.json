@@ -6,7 +6,7 @@
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "billing_page_permissions--Event.list.2.json",
+  "id": "billing_page_permissions--InvoiceItem.create.1.json",
   "invoice": null,
   "livemode": false,
   "metadata": {},

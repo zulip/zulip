@@ -1,0 +1,56 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "automatic_payment_methods": null,
+          "cancellation_reason": null,
+          "client_secret": "NORMALIZED",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED",
+          "description": null,
+          "flow_directions": null,
+          "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.6.json",
+          "last_setup_error": null,
+          "latest_attempt": null,
+          "livemode": false,
+          "mandate": null,
+          "metadata": {},
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": null,
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "requires_payment_method",
+          "usage": "off_session"
+        }
+      },
+      "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.6.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.6.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "setup_intent.created"
+    }
+  ],
+  "has_more": false,
+  "object": "list",
+  "url": "/v1/events"
+}

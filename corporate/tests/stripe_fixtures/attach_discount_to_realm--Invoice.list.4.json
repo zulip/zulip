@@ -45,7 +45,7 @@
       "footer": null,
       "from_invoice": null,
       "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-      "id": "attach_discount_to_realm--Event.list.6.json",
+      "id": "attach_discount_to_realm--Event.list.10.json",
       "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
       "issuer": {
         "type": "self"
@@ -62,8 +62,8 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "attach_discount_to_realm--Event.list.6.json",
-            "invoice": "attach_discount_to_realm--Event.list.6.json",
+            "id": "attach_discount_to_realm--Event.list.10.json",
+            "invoice": "attach_discount_to_realm--Event.list.10.json",
             "invoice_item": "ii_NORMALIZED",
             "livemode": false,
             "metadata": {},
@@ -79,7 +79,7 @@
               "created": 1000000000,
               "currency": "usd",
               "custom_unit_amount": null,
-              "id": "attach_discount_to_realm--Event.list.6.json",
+              "id": "attach_discount_to_realm--Event.list.10.json",
               "livemode": false,
               "lookup_key": null,
               "metadata": {},
@@ -109,7 +109,7 @@
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/attach_discount_to_realm--Event.list.6.json/lines"
+        "url": "/v1/invoices/attach_discount_to_realm--Event.list.10.json/lines"
       },
       "livemode": false,
       "metadata": {
@@ -143,7 +143,9 @@
         "amount_tax_display": null,
         "pdf": {
           "page_size": "letter"
-        }
+        },
+        "template": null,
+        "template_version": null
       },
       "rendering_options": null,
       "shipping_cost": null,
@@ -315,7 +317,9 @@
         "amount_tax_display": null,
         "pdf": {
           "page_size": "letter"
-        }
+        },
+        "template": null,
+        "template_version": null
       },
       "rendering_options": null,
       "shipping_cost": null,

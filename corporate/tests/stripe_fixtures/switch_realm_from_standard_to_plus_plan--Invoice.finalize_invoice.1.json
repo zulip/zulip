@@ -43,7 +43,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-  "id": "switch_realm_from_standard_to_plus_plan--Event.list.2.json",
+  "id": "switch_realm_from_standard_to_plus_plan--Event.list.3.json",
   "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
   "issuer": {
     "type": "self"
@@ -60,8 +60,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "switch_realm_from_standard_to_plus_plan--Event.list.2.json",
-        "invoice": "switch_realm_from_standard_to_plus_plan--Event.list.2.json",
+        "id": "switch_realm_from_standard_to_plus_plan--Event.list.3.json",
+        "invoice": "switch_realm_from_standard_to_plus_plan--Event.list.3.json",
         "invoice_item": "ii_NORMALIZED",
         "livemode": false,
         "metadata": {},
@@ -77,7 +77,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "switch_realm_from_standard_to_plus_plan--Event.list.2.json",
+          "id": "switch_realm_from_standard_to_plus_plan--Event.list.3.json",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
@@ -107,7 +107,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/switch_realm_from_standard_to_plus_plan--Event.list.2.json/lines"
+    "url": "/v1/invoices/switch_realm_from_standard_to_plus_plan--Event.list.3.json/lines"
   },
   "livemode": false,
   "metadata": {
@@ -141,7 +141,9 @@
     "amount_tax_display": null,
     "pdf": {
       "page_size": "letter"
-    }
+    },
+    "template": null,
+    "template_version": null
   },
   "rendering_options": null,
   "shipping_cost": null,

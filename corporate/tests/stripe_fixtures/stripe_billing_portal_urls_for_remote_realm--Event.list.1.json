@@ -5,42 +5,48 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "address": null,
-          "balance": 0,
+          "ach_credit_transfer": {
+            "account_number": "test_NORMALIZED",
+            "bank_name": "TEST BANK",
+            "fingerprint": "NORMALIZED",
+            "refund_account_holder_name": null,
+            "refund_account_holder_type": null,
+            "refund_routing_number": null,
+            "routing_number": "110000000",
+            "swift_code": "TSTEZ122"
+          },
+          "amount": null,
+          "client_secret": "NORMALIZED",
           "created": 1000000000,
-          "currency": null,
-          "default_currency": null,
-          "default_source": null,
-          "delinquent": false,
-          "description": "zulip.testserver f6d476f5-b66",
-          "discount": null,
-          "email": "hamlet@zulip.com",
-          "id": "stripe_billing_portal_urls_for_remote_realm--Customer.create.1.json",
-          "invoice_prefix": "NORMALIZED",
-          "invoice_settings": {
-            "custom_fields": null,
-            "default_payment_method": "pm_NORMALIZED",
-            "footer": null,
-            "rendering_options": null
-          },
+          "currency": "usd",
+          "customer": "cus_NORMALIZED",
+          "flow": "receiver",
+          "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.1.json",
           "livemode": false,
-          "metadata": {
-            "remote_realm_host": "zulip.testserver",
-            "remote_realm_uuid": "f6d476f5-b66f-45ce-8623-a273ff4d7787"
+          "metadata": {},
+          "object": "source",
+          "owner": {
+            "address": null,
+            "email": "amount_0@stripe.com",
+            "name": null,
+            "phone": null,
+            "verified_address": null,
+            "verified_email": null,
+            "verified_name": null,
+            "verified_phone": null
           },
-          "name": null,
-          "next_invoice_sequence": 1,
-          "object": "customer",
-          "phone": null,
-          "preferred_locales": [],
-          "shipping": null,
-          "tax_exempt": "none",
-          "test_clock": null
-        },
-        "previous_attributes": {
-          "invoice_settings": {
-            "default_payment_method": null
-          }
+          "receiver": {
+            "address": "000000000-test_NORMALIZED",
+            "amount_charged": 0,
+            "amount_received": 0,
+            "amount_returned": 0,
+            "refund_attributes_method": "email",
+            "refund_attributes_status": "missing"
+          },
+          "statement_descriptor": null,
+          "status": "pending",
+          "type": "ach_credit_transfer",
+          "usage": "reusable"
         }
       },
       "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.1.json",
@@ -48,10 +54,10 @@
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.1.json",
+        "id": null,
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "customer.updated"
+      "type": "customer.source.created"
     }
   ],
   "has_more": true,

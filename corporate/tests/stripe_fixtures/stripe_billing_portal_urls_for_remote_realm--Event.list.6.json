@@ -1,0 +1,169 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "automatic_payment_methods": null,
+          "cancellation_reason": null,
+          "client_secret": "NORMALIZED",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED",
+          "description": null,
+          "flow_directions": null,
+          "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+          "last_setup_error": null,
+          "latest_attempt": "setatt_NORMALIZED",
+          "livemode": false,
+          "mandate": null,
+          "metadata": {},
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
+        }
+      },
+      "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 2,
+      "request": {
+        "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "setup_intent.succeeded"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "allow_redisplay": "unspecified",
+          "billing_details": {
+            "address": {
+              "city": "San Francisco",
+              "country": "US",
+              "line1": "123 Main St",
+              "line2": null,
+              "postal_code": "12345",
+              "state": "CA"
+            },
+            "email": null,
+            "name": "John Doe",
+            "phone": null
+          },
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": "pass",
+              "address_postal_code_check": "pass",
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "display_brand": "visa",
+            "exp_month": 1,
+            "exp_year": 9999,
+            "fingerprint": "NORMALIZED",
+            "funding": "credit",
+            "generated_from": null,
+            "last4": "4242",
+            "networks": {
+              "available": [
+                "visa"
+              ],
+              "preferred": null
+            },
+            "three_d_secure_usage": {
+              "supported": true
+            },
+            "wallet": null
+          },
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED",
+          "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+          "livemode": false,
+          "metadata": {},
+          "object": "payment_method",
+          "type": "card"
+        }
+      },
+      "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "payment_method.attached"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "automatic_payment_methods": null,
+          "cancellation_reason": null,
+          "client_secret": "NORMALIZED",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED",
+          "description": null,
+          "flow_directions": null,
+          "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+          "last_setup_error": null,
+          "latest_attempt": "setatt_NORMALIZED",
+          "livemode": false,
+          "mandate": null,
+          "metadata": {},
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
+        }
+      },
+      "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.6.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "setup_intent.created"
+    }
+  ],
+  "has_more": false,
+  "object": "list",
+  "url": "/v1/events"
+}

@@ -6,7 +6,7 @@
   "description": "$20.00/month new customer discount",
   "discountable": false,
   "discounts": [],
-  "id": "invoice_initial_remote_realm_upgrade--Event.list.2.json",
+  "id": "invoice_initial_remote_realm_upgrade--InvoiceItem.create.2.json",
   "invoice": null,
   "livemode": false,
   "metadata": {},
