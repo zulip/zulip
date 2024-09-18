@@ -96,7 +96,7 @@
 
 {end_tabs}
 
-## Delete a user group
+## Deactivate a user group
 
 {start_tabs}
 
@@ -106,14 +106,10 @@
 
 1. Select a user group.
 
-1. Click the **trash** <i class="fa fa-trash-o"></i> icon near the top right
-   corner of the user group settings panel.
+1. Click the **Deactivate group** (<i class="fa fa-trash-o"></i>) button in the
+   upper right corner of the user group settings panel.
 
-1. Approve by clicking **Confirm**.
-
-!!! warn ""
-
-    **Note**: Deleting a user group cannot be undone by anyone.
+1. Click **Confirm**.
 
 {end_tabs}
 
