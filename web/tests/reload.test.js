@@ -10,7 +10,7 @@ window.addEventListener = noop;
 const reload = zrequire("reload");
 
 run_test("old_metadata_string_is_stale", () => {
-    assert.ok(reload.is_stale_refresh_token("1663886962834", "1663883954033"), true);
+    assert.ok(reload.is_stale_refresh_token("#reload:234234235234", Date.now()), true);
 });
 
 run_test("recent_token_is_not_stale ", () => {
