@@ -25,41 +25,30 @@ $user_status_emoji_width: 24px;
     overflow: auto;
 }
 
-.toggle-narrow-users,
-.toggle-other-users {
+.buddy-list-section-toggle {
     width: 7px;
 }
 
-#buddy-list-users-matching-view-container,
-#buddy-list-other-users-container {
+.buddy-list-section-container {
     margin-bottom: 10px;
 
     &.no-display {
         display: none;
     }
 
-    .view-all-subscribers-link,
-    .view-all-users-link {
+    .buddy-list-user-link {
         margin-left: 15px;
     }
 }
 
-#buddy-list-users-matching-view-container.collapsed {
-    #buddy-list-users-matching-view,
-    .view-all-subscribers-link {
+.buddy-list-section-container.collapsed {
+    .buddy-list-section,
+    .buddy-list-user-link {
         display: none;
     }
 }
 
-#buddy-list-other-users-container.collapsed {
-    #buddy-list-other-users,
-    .view-all-users-link {
-        display: none;
-    }
-}
-
-#buddy-list-users-matching-view,
-#buddy-list-other-users {
+.buddy-list-section {
     margin-bottom: 0;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
