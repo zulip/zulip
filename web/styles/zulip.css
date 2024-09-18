@@ -642,36 +642,13 @@ li,
 
 #copy_generated_link_container {
     display: flex;
-    width: 100%;
-    margin-right: -32px;
     gap: 4px;
     align-items: center;
 }
 
 #copy_generated_invite_link {
     position: relative;
-    margin-right: -32px;
-    margin-top: -1px;
-    padding: 6px 3px 6px 13px;
-    float: right;
-
-    /* This property nullifies the box-shadow rendered by .btn class */
-    &:active {
-        box-shadow: none;
-    }
-
-    & path {
-        fill: var(--color-fill-user-invite-copy-icon);
-    }
-
-    &:hover svg path {
-        fill: var(--color-fill-hover-copy-icon);
-    }
-}
-
-#clipboard_image {
-    margin-top: -5px;
-    margin-left: -8px;
+    right: -30px;
 }
 
 /* Classes for hiding and showing controls */
