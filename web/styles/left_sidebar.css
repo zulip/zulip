@@ -1197,8 +1197,8 @@ ul.topic-list:has(.show-more-topics)::after {
 
 /* The grouping border should not be shown
    on zoomed-in views. */
-.zoom-in .topic-list::before,
-.zoom-in .topic-list::after {
+.zoom-in .topic-list.topic-list-has-topics::before,
+.zoom-in .topic-list.topic-list-has-topics::after {
     border: 0;
 }
 
