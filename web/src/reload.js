@@ -160,13 +160,13 @@ function do_reload_app(send_after_reload, save_compose, message_html) {
         $(window).one("focus", () => {
             blueslip.log("Retrying on-focus page reload");
 
-            window.location.reload(true);
+            window.location.reload();
         });
     }, 5000);
 
     function retry_reload() {
         blueslip.log("Retrying page reload due to 30s timer");
-        window.location.reload(true);
+        window.location.reload();
     }
     util.call_function_periodically(retry_reload, 30000);
 
@@ -176,7 +176,7 @@ function do_reload_app(send_after_reload, save_compose, message_html) {
         blueslip.error("Failed to clean up before reloading", undefined, error);
     }
 
-    window.location.reload(true);
+    window.location.reload();
 }
 
 export function initiate({
