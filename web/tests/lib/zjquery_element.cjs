@@ -62,6 +62,7 @@ class FakeClassList extends RejectMissing {
 }
 
 class FakeElementState {
+    selector = undefined;
     shown = false;
 }
 
@@ -92,6 +93,12 @@ exports.FakeJQuery = function (selector, opts) {
 
     const $self = {
         [Symbol.iterator]: Array.prototype.values,
+
+        get selector() {
+            assert.equal(this.length, 1);
+            return fake_element_state.get(this[0]).selector;
+        },
+
         addClass(class_names) {
             class_names = split_words(class_names);
             for (const element of this) {
@@ -172,7 +179,8 @@ exports.FakeJQuery = function (selector, opts) {
             return [...this].some((element) => element.classList.contains(class_name));
         },
         height() {
-            assert.notEqual(height, undefined, `Please call $("${selector}").set_height`);
+            const state = fake_element_state.get(this[0]);
+            assert.notEqual(height, undefined, `Please call $("${state.selector}").set_height`);
             return height;
         },
         hide() {
@@ -226,10 +234,14 @@ exports.FakeJQuery = function (selector, opts) {
             return $my_parent;
         },
         parents(parents_selector) {
+            const state = fake_element_state.get(this[0]);
             const $result = parents_result.get(parents_selector);
             assert.ok(
                 $result,
-                "You need to call set_parents_result for " + parents_selector + " in " + selector,
+                "You need to call set_parents_result for " +
+                    parents_selector +
+                    " in " +
+                    state.selector,
             );
             return $result;
         },
@@ -356,12 +368,11 @@ exports.FakeJQuery = function (selector, opts) {
         $self.length = 1;
         $self[0] = new FakeElement();
         $self[0].to_$ = () => $self;
+        fake_element_state.get($self[0]).selector = selector;
         if (selector[0] === "<") {
             $self.html(selector);
         }
     }
-
-    $self.selector = selector;
 
     $self.__zjquery = true;
 
