@@ -152,6 +152,17 @@ export function initialize(): void {
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "bottom",
+        onShow(instance) {
+            let template = "show-unsubscribe-tooltip-template";
+            if (instance.reference.classList.contains("unsubscribed")) {
+                template = "show-subscribe-tooltip-template";
+            }
+            $(instance.reference).attr("data-tooltip-template-id", template);
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     tippy.delegate("body", {
