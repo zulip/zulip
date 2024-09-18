@@ -529,11 +529,11 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     });
 
     let $users_matching_view_appended;
-    override(buddy_list.$users_matching_view_container, "append", ($element) => {
+    override(buddy_list.$users_matching_view_list, "append", ($element) => {
         $users_matching_view_appended = $element;
     });
     let $other_users_appended;
-    override(buddy_list.$other_users_container, "append", ($element) => {
+    override(buddy_list.$other_users_list, "append", ($element) => {
         $other_users_appended = $element;
     });
 
@@ -573,7 +573,7 @@ test("insert_alice_then_fred", ({override, override_rewire, mock_template}) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
 
     let $other_users_appended;
-    override(buddy_list.$other_users_container, "append", ($element) => {
+    override(buddy_list.$other_users_list, "append", ($element) => {
         $other_users_appended = $element;
     });
     override(padded_widget, "update_padding", noop);
@@ -599,7 +599,7 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
     peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id, fred.user_id]);
 
     let $users_matching_view_appended;
-    override(buddy_list.$users_matching_view_container, "append", ($element) => {
+    override(buddy_list.$users_matching_view_list, "append", ($element) => {
         $users_matching_view_appended = $element;
     });
     override(padded_widget, "update_padding", noop);
@@ -656,7 +656,7 @@ test("insert_fred_then_alice_then_rename, both as other users", ({
     peer_data.set_subscribers(rome_sub.stream_id, []);
 
     let $other_users_appended;
-    override(buddy_list.$other_users_container, "append", ($element) => {
+    override(buddy_list.$other_users_list, "append", ($element) => {
         $other_users_appended = $element;
     });
     override(padded_widget, "update_padding", noop);
@@ -795,10 +795,10 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
     function clear() {
         $.clear_all_elements();
-        buddy_list.$users_matching_view_container = $("#buddy-list-users-matching-view");
-        buddy_list.$users_matching_view_container.append = noop;
-        buddy_list.$other_users_container = $("#buddy-list-other-users");
-        buddy_list.$other_users_container.append = noop;
+        buddy_list.$users_matching_view_list = $("#buddy-list-users-matching-view");
+        buddy_list.$users_matching_view_list.append = noop;
+        buddy_list.$other_users_list = $("#buddy-list-other-users");
+        buddy_list.$other_users_list.append = noop;
         stub_buddy_list_elements();
         mock_template("empty_list_widget_for_list.hbs", false, () => "<empty-list-stub>");
         clear_buddy_list(buddy_list);
