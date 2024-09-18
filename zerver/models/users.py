@@ -874,7 +874,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_create_user_groups(self) -> bool:
         return self.has_permission("can_create_groups")
 
-    def can_edit_all_user_groups(self) -> bool:
+    def can_manage_all_groups(self) -> bool:
         return self.has_permission("can_manage_all_groups")
 
     def can_move_messages_to_another_topic(self) -> bool:

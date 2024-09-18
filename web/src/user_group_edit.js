@@ -87,7 +87,7 @@ function update_add_members_elements(group) {
     const $input_element = $add_members_container.find(".input").expectOne();
     const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
 
-    if (settings_data.can_edit_user_group(group.id)) {
+    if (settings_data.can_manage_user_group(group.id)) {
         $input_element.prop("contenteditable", true);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
@@ -120,7 +120,7 @@ function update_group_permission_settings_elements(group) {
 
     const $permission_pill_container_elements = $group_permission_settings.find(".pill-container");
 
-    if (settings_data.can_edit_user_group(group.id)) {
+    if (settings_data.can_manage_user_group(group.id)) {
         $permission_dropdown_elements.prop("disabled", false);
         $permission_pill_container_elements.find(".input").prop("contenteditable", true);
         $permission_pill_container_elements.removeClass("group_setting_disabled");
@@ -187,7 +187,7 @@ function show_general_settings(group) {
 function update_general_panel_ui(group) {
     const $edit_container = get_edit_container(group);
 
-    if (settings_data.can_edit_user_group(group.id)) {
+    if (settings_data.can_manage_user_group(group.id)) {
         $edit_container.find(".group-header .button-group").show();
         $(`.group_settings_header[data-group-id='${CSS.escape(group.id)}'] .deactivate`).show();
     } else {
@@ -258,7 +258,7 @@ function update_group_membership_button(group_id) {
         $group_settings_button.text($t({defaultMessage: "Join group"}));
     }
 
-    if (settings_data.can_edit_user_group(group_id)) {
+    if (settings_data.can_manage_user_group(group_id)) {
         $group_settings_button.prop("disabled", false);
         $group_settings_button.css("pointer-events", "");
         const $group_settings_button_wrapper = $group_settings_button.closest(
@@ -298,7 +298,7 @@ export function handle_member_edit_event(group_id, user_ids) {
             // is added to it. The whole list is redrawed to
             // maintain the sorted order of groups.
             redraw_user_group_list();
-        } else if (!settings_data.can_edit_user_group(group_id)) {
+        } else if (!settings_data.can_manage_user_group(group_id)) {
             // We remove the group row immediately only if the
             // user cannot join the group again themselves.
             const group_row = row_for_group_id(group_id);
@@ -315,7 +315,7 @@ export function handle_member_edit_event(group_id, user_ids) {
 
         const item = group;
         item.is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
-        item.can_edit = settings_data.can_edit_user_group(item.id);
+        item.can_edit = settings_data.can_manage_user_group(item.id);
         const html = render_browse_user_groups_list_item(item);
         const $new_row = $(html);
 
@@ -831,7 +831,7 @@ export function setup_page(callback) {
                     people.my_current_user_id(),
                     item.id,
                 );
-                item.can_edit = settings_data.can_edit_user_group(item.id);
+                item.can_edit = settings_data.can_manage_user_group(item.id);
                 return render_browse_user_groups_list_item(item);
             },
             filter: {
@@ -956,7 +956,7 @@ export function initialize() {
         const group_id = active_group_data.id;
         const user_group = user_groups.get_user_group_from_id(group_id);
 
-        if (!user_group || !settings_data.can_edit_user_group(group_id)) {
+        if (!user_group || !settings_data.can_manage_user_group(group_id)) {
             return;
         }
         function deactivate_user_group() {

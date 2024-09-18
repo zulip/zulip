@@ -135,7 +135,7 @@ def check_permission_for_managing_all_groups(
 ) -> bool:
     """
     Given a user and a group in the same realm, checks if the user
-    can manage the group through the legacy can_edit_all_user_groups
+    can manage the group through the legacy can_manage_all_groups
     permission, which is a permission that requires either certain roles
     or membership in the group itself to be used.
     """
@@ -146,8 +146,8 @@ def check_permission_for_managing_all_groups(
     if user_group.creator and user_group.creator.id == user_profile.id:
         return True
 
-    can_edit_all_user_groups = user_profile.can_edit_all_user_groups()
-    if can_edit_all_user_groups:
+    can_manage_all_groups = user_profile.can_manage_all_groups()
+    if can_manage_all_groups:
         if user_profile.is_realm_admin or user_profile.is_moderator:
             return True
 
