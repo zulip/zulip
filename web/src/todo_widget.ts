@@ -31,7 +31,7 @@ const todo_widget_inbound_data = z.intersection(
 );
 
 const new_task_inbound_data_schema = z.object({
-    type: z.literal("new_task"),
+    type: z.literal("new_task").optional(),
     key: z.number().int().nonnegative().max(MAX_IDX),
     task: z.string(),
     desc: z.string(),
