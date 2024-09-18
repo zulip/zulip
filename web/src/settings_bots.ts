@@ -507,7 +507,9 @@ export function set_up(): void {
     // Show a tippy tooltip when the bot zuliprc is copied
     clipboard.on("success", (e) => {
         assert(e.trigger instanceof HTMLElement);
-        show_copied_confirmation(e.trigger);
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
     });
 
     $("#bot-settings .add-a-new-bot").on("click", (e) => {
