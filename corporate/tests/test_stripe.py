@@ -2798,14 +2798,23 @@ class StripeTest(StripeTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "http://zulip.testserver/sponsorship")
 
+        stripe_customer_id = "cus_123"
         # Avoid contacting stripe as we only want to check redirects here.
-        with patch(
-            "corporate.lib.stripe.customer_has_credit_card_as_default_payment_method",
-            return_value=False,
+        with (
+            patch(
+                "corporate.lib.stripe.customer_has_credit_card_as_default_payment_method",
+                return_value=False,
+            ),
+            patch(
+                "stripe.Customer.retrieve",
+                return_value=Mock(id=stripe_customer_id, email="test@zulip.com"),
+            ),
         ):
             user.realm.plan_type = Realm.PLAN_TYPE_LIMITED
             user.realm.save()
-            customer = Customer.objects.create(realm=user.realm, stripe_customer_id="cus_123")
+            customer = Customer.objects.create(
+                realm=user.realm, stripe_customer_id=stripe_customer_id
+            )
             response = self.client_get("/upgrade/")
             self.assertEqual(response.status_code, 200)
 
