@@ -2,7 +2,7 @@
     We want his module to load pretty early in the process
     of starting the app, so that people.js can load early.
     All the heavy lifting for reload logic happens in
-    reload.js, which has lots of UI dependencies.  If we
+    reload.ts, which has lots of UI dependencies.  If we
     didn't split out this module, our whole dependency tree
     would be kind of upside down.
 */

@@ -52,7 +52,7 @@ export let client_is_active = document.hasFocus();
 
 // new_user_input is a more strict version of client_is_active used
 // primarily for analytics.  We initialize this to true, to count new
-// page loads, but set it to false in the onload function in reload.js
+// page loads, but set it to false in the onload function in reload.ts
 // if this was a server-initiated-reload to avoid counting a
 // server-initiated reload as user activity.
 export let new_user_input = true;
