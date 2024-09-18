@@ -328,6 +328,54 @@ test("always show pm users", ({override_rewire}) => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
 
+test("show offline channel subscribers for small channels", ({override_rewire}) => {
+    // Add a bunch of users to hit max_size_before_shrinking, which will hide some
+    // offline users.
+    for (const i of _.range(2000, 2700)) {
+        const person = {
+            user_id: i,
+            full_name: `Human ${i}`,
+            email: `person${i}@example.com`,
+        };
+        people.add_active_user(person);
+    }
+    for (const user_id of _.range(2000, 2700)) {
+        set_presence(user_id, "offline");
+    }
+
+    people.add_active_user(alice);
+    set_presence(alice.user_id, "active");
+    people.add_active_user(fred);
+    set_presence(fred.user_id, "offline");
+    people.add_active_user(selma);
+    set_presence(selma.user_id, "offline");
+    people.add_active_user(jill);
+    set_presence(jill.user_id, "offline");
+
+    const stream_id = 1001;
+    const sub = {name: "Rome", subscribed: true, stream_id};
+    stream_data.add_sub(sub);
+    peer_data.set_subscribers(stream_id, [
+        selma.user_id,
+        alice.user_id,
+        fred.user_id,
+        jill.user_id,
+    ]);
+
+    override_rewire(narrow_state, "stream_id", () => stream_id);
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [
+        me.user_id,
+        alice.user_id,
+        fred.user_id,
+        selma.user_id,
+        jill.user_id,
+    ]);
+
+    // Make the max channel size lower, so that we hide the offline users
+    override_rewire(buddy_data, "max_channel_size_to_show_all_subscribers", 2);
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
+});
+
 test("level", () => {
     realm.server_presence_offline_threshold_seconds = 200;
 

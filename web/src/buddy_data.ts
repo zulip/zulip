@@ -5,6 +5,7 @@ import {$t} from "./i18n";
 import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as presence from "./presence";
 import {realm} from "./state_data";
@@ -26,6 +27,7 @@ import * as util from "./util";
 */
 
 export const max_size_before_shrinking = 600;
+export const max_channel_size_to_show_all_subscribers = 75;
 
 let is_searching_users = false;
 
@@ -300,8 +302,15 @@ function maybe_shrink_list(user_ids: number[], user_filter_text: string): number
 
     // We want to always show PM recipients even if they're inactive.
     const pm_ids_set = narrow_state.pm_ids_set();
+    const stream_id = narrow_state.stream_id();
+    const filter_by_stream_id =
+        stream_id &&
+        peer_data.get_subscriber_count(stream_id) <= max_channel_size_to_show_all_subscribers;
+
     user_ids = user_ids.filter(
-        (user_id) => user_is_recently_active(user_id) || user_matches_narrow(user_id, pm_ids_set),
+        (user_id) =>
+            user_is_recently_active(user_id) ||
+            user_matches_narrow(user_id, pm_ids_set, filter_by_stream_id ? stream_id : undefined),
     );
 
     return user_ids;
