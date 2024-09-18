@@ -263,7 +263,14 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".code_external_link");
+    message_list_tooltip(
+        ".rendered_markdown .copy_codeblock, .rendered_markdown .code_external_link",
+        {
+            onHidden(instance) {
+                instance.destroy();
+            },
+        },
+    );
 
     message_list_tooltip("#message_feed_container .change_visibility_policy > i", {
         ...topic_visibility_policy_tooltip_props,
@@ -276,7 +283,7 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".rendered_markdown time, .rendered_markdown .copy_codeblock", {
+    message_list_tooltip(".rendered_markdown time", {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         content: timerender.get_markdown_time_tooltip as tippy.Content,
         onHidden(instance) {

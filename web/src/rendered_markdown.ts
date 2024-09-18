@@ -341,7 +341,9 @@ export const update_elements = ($content: JQuery): void => {
         });
 
         clipboard.on("success", () => {
-            show_copied_confirmation(util.the($copy_button));
+            show_copied_confirmation(util.the($copy_button), {
+                show_check_icon: true,
+            });
         });
         $codehilite.addClass("zulip-code-block");
     });

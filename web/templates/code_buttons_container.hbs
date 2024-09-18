@@ -1,5 +1,7 @@
 <div class="code-buttons-container">
-    {{~> copy_code_button~}}
+    <span class="copy_codeblock copy-btn" data-tippy-content="{{t 'Copy code' }}" aria-label="{{t 'Copy code' }}" role="button">
+        <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
+    </span>
     {{~#if show_playground_button~}}
     {{~> view_code_in_playground~}}
     {{~/if~}}
