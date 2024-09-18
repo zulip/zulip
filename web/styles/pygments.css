@@ -500,7 +500,9 @@
 }
 
 @media not screen {
-    @extend %light-theme;
+    :root {
+        @extend %light-theme;
+    }
 }
 
 @media screen {
