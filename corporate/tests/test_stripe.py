@@ -2070,6 +2070,57 @@ class StripeTest(StripeTestCase):
             )
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
 
+    @mock_stripe()
+    def test_upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier(
+        self, *mocks: Mock
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        # New seat count is under the minimum for the plan tier
+        minimum_for_plan_tier = self.seat_count - 1
+        new_seat_count = self.seat_count - 2
+        initial_upgrade_request = InitialUpgradeRequest(
+            manual_license_management=False,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            billing_modality="charge_automatically",
+        )
+        billing_session = RealmBillingSession(hamlet)
+        _, context_when_upgrade_page_is_rendered = billing_session.get_initial_upgrade_context(
+            initial_upgrade_request
+        )
+        assert context_when_upgrade_page_is_rendered is not None
+        assert context_when_upgrade_page_is_rendered.get("seat_count") == self.seat_count
+        # Change the current and minimum license counts in do_upgrade
+        with (
+            patch(
+                "corporate.lib.stripe.BillingSession.min_licenses_for_plan",
+                return_value=minimum_for_plan_tier,
+            ),
+            patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count),
+            patch(
+                "corporate.lib.stripe.RealmBillingSession.get_initial_upgrade_context",
+                return_value=(_, context_when_upgrade_page_is_rendered),
+            ),
+        ):
+            self.add_card_and_upgrade(hamlet)
+
+        customer = Customer.objects.first()
+        assert customer is not None
+        stripe_customer_id: str = assert_is_not_none(customer.stripe_customer_id)
+        # Check that the Charge used the minimum seat count
+        [charge] = iter(stripe.Charge.list(customer=stripe_customer_id))
+        self.assertEqual(8000 * minimum_for_plan_tier, charge.amount)
+        [upgrade_invoice] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        self.assertEqual(
+            [8000 * minimum_for_plan_tier],
+            [item.amount for item in upgrade_invoice.lines],
+        )
+        # Check LicenseLedger has the minimum license count
+        ledger_entry = LicenseLedger.objects.last()
+        assert ledger_entry is not None
+        self.assertEqual(ledger_entry.licenses, minimum_for_plan_tier)
+        self.assertEqual(ledger_entry.licenses_at_next_renewal, minimum_for_plan_tier)
+
     def test_upgrade_with_tampered_seat_count(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
