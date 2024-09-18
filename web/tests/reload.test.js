@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 
-// override file-level function call in reload.js
+// override file-level function call in reload.ts
 window.addEventListener = noop;
 const reload = zrequire("reload");
 

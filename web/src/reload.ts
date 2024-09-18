@@ -1,10 +1,13 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
 import {csrf_token} from "./csrf";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
+import type {LocalStorage} from "./localstorage";
 import {localstorage} from "./localstorage";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
@@ -14,19 +17,21 @@ import * as util from "./util";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 
-const reload_hooks = [];
+const token_metadata_schema = z.object({url: z.string(), timestamp: z.number()});
 
-export function add_reload_hook(hook) {
+const reload_hooks: (() => void)[] = [];
+
+export function add_reload_hook(hook: () => void): void {
     reload_hooks.push(hook);
 }
 
-function call_reload_hooks() {
+function call_reload_hooks(): void {
     for (const hook of reload_hooks) {
         hook();
     }
 }
 
-function preserve_state(send_after_reload, save_compose) {
+function preserve_state(send_after_reload: boolean, save_compose: boolean): void {
     if (!localstorage.supported()) {
         // If local storage is not supported by the browser, we can't
         // save the browser's position across reloads (since there's
@@ -46,13 +51,16 @@ function preserve_state(send_after_reload, save_compose) {
     }
 
     let url = "#reload:send_after_reload=" + Number(send_after_reload);
+    assert(csrf_token !== undefined);
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
 
     if (save_compose) {
         const msg_type = compose_state.get_message_type();
         if (msg_type === "stream") {
+            const stream_id = compose_state.stream_id();
+            assert(stream_id !== undefined);
             url += "+msg_type=stream";
-            url += "+stream_id=" + encodeURIComponent(compose_state.stream_id());
+            url += "+stream_id=" + encodeURIComponent(stream_id);
             url += "+topic=" + encodeURIComponent(compose_state.topic());
         } else if (msg_type === "private") {
             url += "+msg_type=private";
@@ -94,7 +102,7 @@ function preserve_state(send_after_reload, save_compose) {
     // TODO: Remove the now-unnecessary URL-encoding logic above and
     // just pass the actual data structures through local storage.
     const token = util.random_int(0, 1024 * 1024 * 1024 * 1024);
-    const metadata = {
+    const metadata: z.infer<typeof token_metadata_schema> = {
         url,
         timestamp: Date.now(),
     };
@@ -102,33 +110,39 @@ function preserve_state(send_after_reload, save_compose) {
     window.location.replace("#reload:" + token);
 }
 
-export function is_stale_refresh_token(token_metadata, now) {
+export function is_stale_refresh_token(token_metadata: unknown, now: number): boolean {
+    const parsed = token_metadata_schema.safeParse(token_metadata);
     // TODO/compatibility: the metadata was changed from a string
     // to a map containing the string and a timestamp. For now we'll
     // delete all tokens that only contain the url. Remove this
     // early return once you can no longer directly upgrade from
     // Zulip 5.x to the current version.
-    if (!token_metadata.timestamp) {
+    if (!parsed.success) {
         return true;
     }
+    const {timestamp} = parsed.data;
 
     // The time between reload token generation and use should usually be
     // fewer than 30 seconds, but we keep tokens around for a week just in case
     // (e.g. a tab could fail to load and be refreshed a while later).
     const milliseconds_in_a_day = 1000 * 60 * 60 * 24;
-    const timedelta = now - token_metadata.timestamp;
+    const timedelta = now - timestamp;
     const days_since_token_creation = timedelta / milliseconds_in_a_day;
     return days_since_token_creation > 7;
 }
 
-function delete_stale_tokens(ls) {
+function delete_stale_tokens(ls: LocalStorage): void {
     const now = Date.now();
     ls.removeDataRegexWithCondition("reload:\\d+", (metadata) =>
         is_stale_refresh_token(metadata, now),
     );
 }
 
-function do_reload_app(send_after_reload, save_compose, message_html) {
+function do_reload_app(
+    send_after_reload: boolean,
+    save_compose: boolean,
+    message_html: string,
+): void {
     if (reload_state.is_in_progress()) {
         blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
         return;
@@ -164,7 +178,7 @@ function do_reload_app(send_after_reload, save_compose, message_html) {
         });
     }, 5000);
 
-    function retry_reload() {
+    function retry_reload(): void {
         blueslip.log("Retrying page reload due to 30s timer");
         window.location.reload();
     }
@@ -184,7 +198,7 @@ export function initiate({
     save_compose = true,
     send_after_reload = false,
     message_html = "Reloading ...",
-}) {
+}): void {
     if (immediate) {
         do_reload_app(send_after_reload, save_compose, message_html);
     }
@@ -215,14 +229,13 @@ export function initiate({
     // makes it simple to reason about: We know that reloads will be
     // spread over at least 5 minutes in all cases.
 
-    let idle_control;
+    let idle_control: ReturnType<JQuery["idle"]>;
     const random_variance = util.random_int(0, 1000 * 60 * 5);
     const unconditional_timeout = 1000 * 60 * 30 + random_variance;
     const composing_idle_timeout = 1000 * 60 * 7 + random_variance;
     const basic_idle_timeout = 1000 * 60 * 1 + random_variance;
-    let compose_started_handler;
 
-    function reload_from_idle() {
+    function reload_from_idle(): void {
         do_reload_app(false, save_compose, message_html);
     }
 
@@ -232,22 +245,22 @@ export function initiate({
     // particularly disruptive.
     setTimeout(reload_from_idle, unconditional_timeout);
 
-    const compose_done_handler = function () {
+    function compose_done_handler(): void {
         // If the user sends their message or otherwise closes
         // compose, we return them to the not-composing timeouts.
         idle_control.cancel();
         idle_control = $(document).idle({idle: basic_idle_timeout, onIdle: reload_from_idle});
         $(document).off("compose_canceled.zulip compose_finished.zulip", compose_done_handler);
         $(document).on("compose_started.zulip", compose_started_handler);
-    };
-    compose_started_handler = function () {
+    }
+    function compose_started_handler(): void {
         // If the user stops being idle and starts composing a
         // message, switch to the compose-open timeouts.
         idle_control.cancel();
         idle_control = $(document).idle({idle: composing_idle_timeout, onIdle: reload_from_idle});
         $(document).off("compose_started.zulip", compose_started_handler);
         $(document).on("compose_canceled.zulip compose_finished.zulip", compose_done_handler);
-    };
+    }
 
     if (compose_state.composing()) {
         idle_control = $(document).idle({idle: composing_idle_timeout, onIdle: reload_from_idle});
