@@ -476,7 +476,7 @@ def get_setting_value_for_user_group_object(
 
 
 def user_groups_in_realm_serialized(
-    realm: Realm, *, allow_deactivated: bool
+    realm: Realm, *, include_deactivated_groups: bool
 ) -> list[UserGroupDict]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
@@ -490,7 +490,7 @@ def user_groups_in_realm_serialized(
         "can_mention_group__named_user_group",
     ).filter(realm=realm)
 
-    if not allow_deactivated:
+    if not include_deactivated_groups:
         realm_groups = realm_groups.filter(deactivated=False)
 
     membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(

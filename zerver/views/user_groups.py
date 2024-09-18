@@ -98,10 +98,10 @@ def get_user_groups(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    allow_deactivated: Json[bool] = False,
+    include_deactivated_groups: Json[bool] = False,
 ) -> HttpResponse:
     user_groups = user_groups_in_realm_serialized(
-        user_profile.realm, allow_deactivated=allow_deactivated
+        user_profile.realm, include_deactivated_groups=include_deactivated_groups
     )
     return json_success(request, data={"user_groups": user_groups})
 

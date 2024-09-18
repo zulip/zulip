@@ -36,6 +36,8 @@ format used by the Zulip server that they are interacting with.
   [client capability](/api/register-queue#parameter-client_capabilities)
   do not receive `update` event when name of a deactivated user group
   is updated.
+* [`GET /user_groups`](/api/get-user-groups): Renamed `allow_deactivated`
+  parameter to `include_deactivated_groups`.
 
 **Feature level 293**
 

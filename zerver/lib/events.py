@@ -509,7 +509,7 @@ def fetch_initial_state_data(
 
     if want("realm_user_groups"):
         state["realm_user_groups"] = user_groups_in_realm_serialized(
-            realm, allow_deactivated=include_deactivated_groups
+            realm, include_deactivated_groups=include_deactivated_groups
         )
 
     if user_profile is not None:

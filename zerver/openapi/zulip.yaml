@@ -20043,13 +20043,16 @@ paths:
             schema:
               type: object
               properties:
-                allow_deactivated:
+                include_deactivated_groups:
                   description: |
                     Whether to include deactivated user groups in the response.
 
-                    **Changes**: New in Zulip 10.0 (feature level 290). Previously,
-                    deactivated user groups did not exist and thus would never be
-                    included in the response.
+                    **Changes**: In Zulip 10.0 (feature level 294), renamed
+                    `allow_deactivated` to `include_deactivated_groups`.
+
+                    New in Zulip 10.0 (feature level 290). Previously, deactivated
+                    user groups did not exist and thus would never be included in
+                    the response.
                   type: boolean
                   example: true
                   default: false
