@@ -21,7 +21,7 @@ export type LocalStorage = {
     remove: (name: string) => void;
     removeDataRegexWithCondition: (
         name: string,
-        condition_checker: (value: string | null | undefined) => boolean,
+        condition_checker: (value: unknown) => boolean,
     ) => void;
     migrate: <T = unknown>(
         name: string,
@@ -33,8 +33,10 @@ export type LocalStorage = {
 
 const ls = {
     // check if the datestamp is from before now and if so return true.
-    isExpired(stamp: number): boolean {
-        return new Date(stamp) < new Date();
+    isExpired(stamp: number | null): boolean {
+        // JSON forms of data with `Infinity` turns into `null`,
+        // so if null then it hasn't expired since nothing was specified.
+        return stamp !== null && new Date(stamp) < new Date();
     },
 
     // return the localStorage key that is bound to a version of a key.
@@ -60,12 +62,7 @@ const ls = {
                 return undefined;
             }
             const data = formDataSchema.parse(JSON.parse(raw_data));
-            if (
-                // JSON forms of data with `Infinity` turns into `null`,
-                // so if null then it hasn't expired since nothing was specified.
-                data.expires === null ||
-                !ls.isExpired(data.expires)
-            ) {
+            if (!ls.isExpired(data.expires)) {
                 return data;
             }
         } catch {
@@ -96,7 +93,7 @@ const ls = {
     removeDataRegexWithCondition(
         version: number,
         regex: string,
-        condition_checker: (value: string | null | undefined) => boolean,
+        condition_checker: (value: unknown) => boolean,
     ): void {
         const key_regex = new RegExp(this.formGetter(version, regex));
         let keys: string[] = [];
@@ -109,15 +106,17 @@ const ls = {
         keys = keys.filter((key) => key_regex.test(key));
 
         for (const key of keys) {
-            let value;
-            let value_set = false;
+            let raw_data;
             try {
-                value = localStorage.getItem(key);
-                value_set = true;
+                raw_data = localStorage.getItem(key);
             } catch {
-                // Do nothing if the fetch fails
+                continue;
             }
-            if (value_set && condition_checker(value)) {
+            if (raw_data === null) {
+                continue;
+            }
+            const data = formDataSchema.parse(JSON.parse(raw_data));
+            if (ls.isExpired(data.expires) || condition_checker(data.data)) {
                 try {
                     localStorage.removeItem(key);
                 } catch {
@@ -205,7 +204,7 @@ export const localstorage = function (): LocalStorage {
         // match the pattern given by `name`.
         removeDataRegexWithCondition(
             name: string,
-            condition_checker: (value: string | null | undefined) => boolean,
+            condition_checker: (value: unknown) => boolean,
         ): void {
             ls.removeDataRegexWithCondition(_data.VERSION, name, condition_checker);
         },
