@@ -152,7 +152,7 @@ export class BuddyList extends BuddyListConf {
     users_matching_view_ids: number[] = [];
     other_user_ids: number[] = [];
     users_matching_view_is_collapsed = false;
-    other_users_is_collapsed = false;
+    other_users_is_collapsed = true;
     render_count = 0;
     render_data = get_render_data();
     // This is a bit of a hack to make sure we at least have
