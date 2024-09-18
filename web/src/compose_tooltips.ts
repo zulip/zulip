@@ -51,6 +51,10 @@ export function initialize(): void {
                     instance.setContent(pick_empty_narrow_banner().title);
                     return;
                 }
+                case "stream_disabled": {
+                    instance.setContent(pick_empty_narrow_banner("stream_disabled").title);
+                    return;
+                }
                 case "selected_message": {
                     instance.setContent(
                         parse_html($("#compose_reply_message_button_tooltip_template").html()),

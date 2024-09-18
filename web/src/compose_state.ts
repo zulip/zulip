@@ -17,6 +17,7 @@ let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 // the narrow and the user should still be able to see the banner once after
 // performing these actions
 let recipient_viewed_topic_resolved_banner = false;
+let recipient_viewed_topic_locked_banner = false;
 
 export function set_recipient_edited_manually(flag: boolean): void {
     recipient_edited_manually = flag;
@@ -53,7 +54,13 @@ export function get_message_type(): "stream" | "private" | undefined {
 export function set_recipient_viewed_topic_resolved_banner(flag: boolean): void {
     recipient_viewed_topic_resolved_banner = flag;
 }
+export function set_recipient_viewed_topic_locked_banner(flag: boolean): void {
+    recipient_viewed_topic_locked_banner = flag;
+}
 
+export function has_recipient_viewed_topic_locked_banner(): boolean {
+    return recipient_viewed_topic_locked_banner;
+}
 export function has_recipient_viewed_topic_resolved_banner(): boolean {
     return recipient_viewed_topic_resolved_banner;
 }
