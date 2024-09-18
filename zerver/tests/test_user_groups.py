@@ -89,7 +89,7 @@ class UserGroupTestCase(ZulipTestCase):
         assert user_group is not None
         empty_user_group = check_add_user_group(realm, "newgroup", [], acting_user=user)
 
-        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
+        user_groups = user_groups_in_realm_serialized(realm, include_deactivated_groups=False)
         self.assert_length(user_groups, 10)
         self.assertEqual(user_groups[0]["id"], user_group.id)
         self.assertEqual(user_groups[0]["creator_id"], user_group.creator_id)
@@ -161,7 +161,7 @@ class UserGroupTestCase(ZulipTestCase):
             },
             acting_user=None,
         )
-        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
+        user_groups = user_groups_in_realm_serialized(realm, include_deactivated_groups=False)
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
         self.assertEqual(user_groups[10]["creator_id"], new_user_group.creator_id)
         self.assertEqual(
@@ -194,7 +194,7 @@ class UserGroupTestCase(ZulipTestCase):
             new_user_group, [another_new_group, owners_system_group], acting_user=None
         )
         do_deactivate_user_group(another_new_group, acting_user=None)
-        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=True)
+        user_groups = user_groups_in_realm_serialized(realm, include_deactivated_groups=True)
         self.assert_length(user_groups, 12)
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
         self.assertEqual(user_groups[10]["name"], "newgroup2")
@@ -206,7 +206,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[11]["name"], "newgroup3")
         self.assertTrue(user_groups[11]["deactivated"])
 
-        user_groups = user_groups_in_realm_serialized(realm, allow_deactivated=False)
+        user_groups = user_groups_in_realm_serialized(realm, include_deactivated_groups=False)
         self.assert_length(user_groups, 11)
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
         self.assertEqual(user_groups[10]["name"], "newgroup2")
