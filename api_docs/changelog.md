@@ -28,6 +28,9 @@ format used by the Zulip server that they are interacting with.
 * [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
   `can_join_group` parameter to support changing the user group whose
   members can join the specified user group.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_manage_group` to
+  user group objects.
 
 **Feature level 300**
 
