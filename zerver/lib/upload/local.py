@@ -40,12 +40,12 @@ def write_local_file(type: Literal["avatars", "files"], path: str, file_data: by
         f.write(file_data)
 
 
-def read_local_file(type: Literal["avatars", "files"], path: str) -> bytes:
+def read_local_file(type: Literal["avatars", "files"], path: str) -> Iterator[bytes]:
     file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
     assert_is_local_storage_path(type, file_path)
 
     with open(file_path, "rb") as f:
-        return f.read()
+        yield from iter(lambda: f.read(4 * 1024 * 1024), b"")
 
 
 def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
@@ -99,7 +99,8 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def save_attachment_contents(self, path_id: str, filehandle: IO[bytes]) -> None:
-        filehandle.write(read_local_file("files", path_id))
+        for chunk in read_local_file("files", path_id):
+            filehandle.write(chunk)
 
     @override
     def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
@@ -134,7 +135,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
-        image_data = read_local_file("avatars", file_path + ".original")
+        image_data = b"".join(read_local_file("avatars", file_path + ".original"))
         content_type = guess_type(file_path)[0]
         return image_data, content_type or "application/octet-stream"
 
