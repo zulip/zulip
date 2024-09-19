@@ -12,7 +12,7 @@ Zulip API with a specific account on a Zulip server.
 
 {tab|desktop-web}
 
-{settings_tab|bots}
+{settings_tab|your-bots}
 
 1. Select **Active**.
 
@@ -60,7 +60,7 @@ To invalidate an existing API key, you have to generate a new key.
 
 {tab|desktop-web}
 
-{settings_tab|bots}
+{settings_tab|your-bots}
 
 1. Select **Active**.
 
