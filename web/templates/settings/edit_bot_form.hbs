@@ -1,4 +1,4 @@
-<div id="bot-edit-form" data-user-id="{{user_id}}" data-email="{{email}}">
+<div id="bot-edit-form" class="bots-edit-form" data-user-id="{{user_id}}" data-email="{{email}}">
     <form class="edit_bot_form name-setting">
         <div class="alert" id="bot-edit-form-error"></div>
         <div class="input-group name_change_container">
@@ -21,6 +21,12 @@
             <select name="bot-role-select" id="bot-role-select" class="modal_select bootstrap-focus-style" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
                 {{> dropdown_options_widget option_values=user_role_values}}
             </select>
+        </div>
+        <div class="bot-modal-info">
+            <label class="modal-field-label">{{t "Bot type"}}</label>
+            <div class="bot-info-value-and-button">
+                <input type="text" autocomplete="off" class="modal_text_input" value="{{bot_type}}" readonly/>
+            </div>
         </div>
         {{> ../dropdown_widget_with_label
           widget_name="edit_bot_owner"
@@ -47,6 +53,36 @@
         <button class="button rounded generate_url_for_integration">
             {{t 'Generate URL for an integration' }}
         </button>
+    </div>
+    {{/if}}
+    {{#if (and is_active is_bot_owner_current_user)}}
+    <div id="zuliprc_section" class="bot-modal-info">
+        <label class="modal-field-label">{{t "Zuliprc configuration" }} {{> ../help_link_widget link="/api/configuring-python-bindings" }}</label>
+        <div class="bot-modal-value-and-button">
+            <div class="bot-modal-buttons">
+                <a type="submit" download="{{zuliprc}}" class="btn download-bot-zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download zuliprc' }}" data-email="{{email}}">
+                    <i class="fa fa-download sea-green" aria-hidden="true"></i>
+                </a>
+                <button type="submit" id="copy_zuliprc" class="btn copy-zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Copy zuliprc' }}">
+                    <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="api_key_section" class="bot-modal-info">
+        <span class="modal-field-label">{{t "API key" }}</span>
+        <div class="bot-modal-value-and-button">
+            <input type="text" autocomplete="off" class="modal_text_input api-key" value="{{api_key}}" readonly/>
+            <div class="bot-modal-buttons">
+                <button type="submit" class="button no-style btn-secondary bot-modal-regenerate-bot-api-key tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
+                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                </button>
+                <button data-api-key="{{api_key}}" type="submit" id="copy_api_key" class="btn copy-api-key  tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Copy api key' }}">
+                    <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+        <div class="bot-modal-api-key-error text-error"></div>
     </div>
     {{/if}}
     <div class="input-group">

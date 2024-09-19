@@ -23,11 +23,26 @@ const bot_data_params = {
             services: [],
             extra: "This field should be ignored",
         },
+        {
+            api_key: "1234567890zxcvbnm",
+            avatar_url: "",
+            bot_type: 3, // OUTGOING_WEBHOOK_BOT
+            default_all_public_streams: true,
+            default_events_register_stream: "register stream 314",
+            default_sending_stream: "sending stream 314",
+            email: "outgoingwebhook@zulip.com",
+            full_name: "Outgoing webhook",
+            is_active: true,
+            owner_id: 5,
+            user_id: 3,
+            services: [{base_url: "http://foo.com", interface: 1, token: "basictoken12345"}],
+            extra: "This field should be ignored",
+        },
     ],
 };
 
 const bot_data = zrequire("bot_data");
-const settings_bots = zrequire("settings_bots");
+const bot_helper = zrequire("bot_helper");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 const current_user = {};
@@ -51,7 +66,7 @@ function test(label, f) {
 }
 
 test("generate_zuliprc_url", () => {
-    const url = settings_bots.generate_zuliprc_url(1);
+    const url = bot_helper.generate_zuliprc_url(1);
     const expected =
         "data:application/octet-stream;charset=utf-8," +
         encodeURIComponent(
@@ -65,13 +80,22 @@ test("generate_zuliprc_url", () => {
 
 test("generate_zuliprc_content", () => {
     const bot_user = bot_data.get(1);
-    const content = settings_bots.generate_zuliprc_content(bot_user);
+    const content = bot_helper.generate_zuliprc_content(bot_user);
     const expected =
         "[api]\nemail=error-bot@zulip.org\n" +
         "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
         "site=https://chat.example.com\n";
 
     assert.equal(content, expected);
+    const outgoing_bot_user = bot_data.get(3);
+    const outgoing_content = bot_helper.generate_zuliprc_content(outgoing_bot_user);
+    const outgoing_expected =
+        "[api]\nemail=outgoingwebhook@zulip.com\n" +
+        "key=1234567890zxcvbnm\n" +
+        "site=https://chat.example.com\n" +
+        "token=basictoken12345\n";
+
+    assert.equal(outgoing_content, outgoing_expected);
 });
 
 test("generate_botserverrc_content", () => {
@@ -82,7 +106,7 @@ test("generate_botserverrc_content", () => {
     const service = {
         token: "abcd1234",
     };
-    const content = settings_bots.generate_botserverrc_content(
+    const content = bot_helper.generate_botserverrc_content(
         user.email,
         user.api_key,
         service.token,

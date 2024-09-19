@@ -28,10 +28,17 @@ achieve that:
 
 {tab|for-a-bot}
 
-{settings_tab|your-bots}
+{settings_tab|bots}
 
-1. Click the **download** (<i class="fa fa-download"></i>) icon on the profile
-   card of the desired bot to download the bot's `zuliprc` file.
+1. Select **Active**.
+
+1. Find your bot, Click on a bot's pill to open their **user card**.
+
+1. Click **View profile**.
+
+1. Click on **Manage bot** scroll down to the bottom.
+
+1. Click the **download** (<i class="fa fa-download"></i>) icon right next to **Zuliprc configuration** to download the bot's `zuliprc` file.
 
 !!! warn ""
 
