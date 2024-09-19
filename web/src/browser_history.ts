@@ -172,3 +172,26 @@ export function update_current_history_state_data(new_data: StateData): void {
     const state_data = {...current_state_data, ...new_data};
     window.history.replaceState(state_data, "", window.location.href);
 }
+
+export function get_home_view_hash(): string {
+    let home_view_hash = `#${user_settings.web_home_view}`;
+    if (home_view_hash === "#recent_topics") {
+        home_view_hash = "#recent";
+    }
+
+    if (home_view_hash === "#all_messages") {
+        home_view_hash = "#feed";
+    }
+
+    return home_view_hash;
+}
+
+export function is_current_hash_home_view(): boolean {
+    const current_hash = window.location.hash;
+    if (current_hash === "") {
+        // Empty hash for home view is always valid.
+        return true;
+    }
+
+    return current_hash === get_home_view_hash();
+}
