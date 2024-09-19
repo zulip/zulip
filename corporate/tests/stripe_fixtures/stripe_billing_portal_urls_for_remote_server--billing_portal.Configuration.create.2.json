@@ -12,7 +12,8 @@
     "customer_update": {
       "allowed_updates": [
         "address",
-        "name"
+        "name",
+        "email"
       ],
       "enabled": true
     },

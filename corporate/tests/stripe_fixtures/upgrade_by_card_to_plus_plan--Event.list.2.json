@@ -33,7 +33,7 @@
                     "country": "US",
                     "line1": "123 Main St",
                     "line2": null,
-                    "postal_code": "94105",
+                    "postal_code": "12345",
                     "state": "CA"
                   },
                   "email": null,
@@ -82,8 +82,8 @@
                       "cvc_check": "pass"
                     },
                     "country": "US",
-                    "exp_month": 8,
-                    "exp_year": 2025,
+                    "exp_month": 1,
+                    "exp_year": 9999,
                     "extended_authorization": {
                       "status": "disabled"
                     },
@@ -111,6 +111,7 @@
                   },
                   "type": "card"
                 },
+                "radar_options": {},
                 "receipt_email": "hamlet@zulip.com",
                 "receipt_number": null,
                 "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",
@@ -209,7 +210,7 @@
               "country": "US",
               "line1": "123 Main St",
               "line2": null,
-              "postal_code": "94105",
+              "postal_code": "12345",
               "state": "CA"
             },
             "email": null,
@@ -258,8 +259,8 @@
                 "cvc_check": "pass"
               },
               "country": "US",
-              "exp_month": 8,
-              "exp_year": 2025,
+              "exp_month": 1,
+              "exp_year": 9999,
               "extended_authorization": {
                 "status": "disabled"
               },
@@ -287,6 +288,7 @@
             },
             "type": "card"
           },
+          "radar_options": {},
           "receipt_email": "hamlet@zulip.com",
           "receipt_number": null,
           "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",
@@ -392,7 +394,7 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1357095845,
+                  "end": 1357015845,
                   "start": 1325473445
                 },
                 "plan": null,
@@ -466,7 +468,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -579,7 +583,7 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1357095845,
+                  "end": 1357015845,
                   "start": 1325473445
                 },
                 "plan": null,
@@ -653,7 +657,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -860,7 +866,7 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1357095845,
+                  "end": 1357015845,
                   "start": 1325473445
                 },
                 "plan": null,
@@ -934,7 +940,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "auto"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -992,7 +1000,7 @@
           "metadata": {},
           "object": "invoiceitem",
           "period": {
-            "end": 1357095845,
+            "end": 1357015845,
             "start": 1325473445
           },
           "plan": null,

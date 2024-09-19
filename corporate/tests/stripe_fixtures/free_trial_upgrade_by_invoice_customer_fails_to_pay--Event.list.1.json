@@ -118,7 +118,7 @@
           "livemode": false,
           "metadata": {
             "billing_schedule": "1",
-            "current_plan_id": "33",
+            "current_plan_id": "34",
             "license_management": "manual",
             "licenses": "123",
             "on_free_trial": "True",
@@ -147,7 +147,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,

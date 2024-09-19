@@ -33,7 +33,7 @@
                     "country": "US",
                     "line1": "123 Main St",
                     "line2": null,
-                    "postal_code": "94105",
+                    "postal_code": "12345",
                     "state": "CA"
                   },
                   "email": null,
@@ -44,7 +44,7 @@
                 "captured": true,
                 "created": 1000000000,
                 "currency": "usd",
-                "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+                "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.1.json",
                 "description": "Payment for Invoice",
                 "destination": null,
                 "dispute": null,
@@ -82,8 +82,8 @@
                       "cvc_check": "pass"
                     },
                     "country": "US",
-                    "exp_month": 8,
-                    "exp_year": 2025,
+                    "exp_month": 1,
+                    "exp_year": 9999,
                     "extended_authorization": {
                       "status": "disabled"
                     },
@@ -142,7 +142,7 @@
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.1.json",
           "description": "Payment for Invoice",
           "id": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.2.json",
           "invoice": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.2.json",
@@ -209,7 +209,7 @@
               "country": "US",
               "line1": "123 Main St",
               "line2": null,
-              "postal_code": "94105",
+              "postal_code": "12345",
               "state": "CA"
             },
             "email": null,
@@ -220,7 +220,7 @@
           "captured": true,
           "created": 1000000000,
           "currency": "usd",
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.1.json",
           "description": "Payment for Invoice",
           "destination": null,
           "dispute": null,
@@ -258,8 +258,8 @@
                 "cvc_check": "pass"
               },
               "country": "US",
-              "exp_month": 8,
-              "exp_year": 2025,
+              "exp_month": 1,
+              "exp_year": 9999,
               "extended_authorization": {
                 "status": "disabled"
               },
@@ -348,7 +348,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -466,7 +466,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -535,7 +537,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -653,7 +655,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -738,7 +742,7 @@
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.1.json",
           "description": "Payment for Invoice",
           "id": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.2.json",
           "invoice": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.2.json",
@@ -816,7 +820,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.1.json",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -934,7 +938,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "auto"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -981,7 +987,7 @@
         "object": {
           "amount": 4800,
           "currency": "usd",
-          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+          "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.1.json",
           "date": 1000000000,
           "description": "Zulip Cloud Standard",
           "discountable": false,
@@ -1051,7 +1057,7 @@
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+          "id": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.1.json",
           "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,

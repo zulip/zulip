@@ -17,7 +17,7 @@
           "country": "US",
           "line1": "123 Main St",
           "line2": null,
-          "postal_code": "94105",
+          "postal_code": "12345",
           "state": "CA"
         },
         "email": null,
@@ -33,8 +33,8 @@
         },
         "country": "US",
         "display_brand": "visa",
-        "exp_month": 8,
-        "exp_year": 2025,
+        "exp_month": 1,
+        "exp_year": 9999,
         "fingerprint": "NORMALIZED",
         "funding": "credit",
         "generated_from": null,
@@ -58,7 +58,7 @@
       "object": "payment_method",
       "type": "card"
     },
-    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1724918949",
+    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1726724746",
     "setup_intent": {
       "application": null,
       "automatic_payment_methods": null,
@@ -82,7 +82,7 @@
               "country": "US",
               "line1": "123 Main St",
               "line2": null,
-              "postal_code": "94105",
+              "postal_code": "12345",
               "state": "CA"
             },
             "email": null,
@@ -98,8 +98,8 @@
             },
             "country": "US",
             "display_brand": "visa",
-            "exp_month": 8,
-            "exp_year": 2025,
+            "exp_month": 1,
+            "exp_year": 9999,
             "fingerprint": "NORMALIZED",
             "funding": "credit",
             "generated_from": null,
@@ -164,7 +164,7 @@
     "Content-Type": "application/json",
     "Cross-Origin-Opener-Policy-Report-Only": "same-origin; report-to=\"coop\"",
     "Date": "NORMALIZED DATETIME",
-    "Idempotency-Key": "65ba984a-296c-4de5-b41d-d33106864727",
+    "Idempotency-Key": "6ac8ef14-fc05-473a-86a1-5eef5d312c0a",
     "Original-Request": "req_NORMALIZED",
     "Report-To": "{\"group\": \"coop\",\"max_age\": 8640,\"endpoints\": [{\"url\": \"https://q.stripe.com/coop-report?s=billing-api-srv\"}],\"include_subdomains\": true}",
     "Reporting-Endpoints": "coop=\"https://q.stripe.com/coop-report?s=payins-bapi-srv\"",
@@ -178,7 +178,7 @@
     "X-Stripe-Priority-Routing-Enabled": "true",
     "X-Stripe-Routing-Context-Priority-Tier": "api-testmode"
   },
-  "http_body": "{\"error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"replace_payment_method--PaymentMethod.create.2.json\", \"object\": \"payment_method\", \"allow_redisplay\": \"unspecified\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"94105\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": \"pass\", \"address_postal_code_check\": \"pass\", \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 8, \"exp_year\": 2025, \"fingerprint\": \"NORMALIZED\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"request_log_url\": \"https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1724918949\", \"setup_intent\": {\"id\": \"replace_payment_method--SetupIntent.create.2.json\", \"object\": \"setup_intent\", \"application\": null, \"automatic_payment_methods\": null, \"cancellation_reason\": null, \"client_secret\": \"NORMALIZED\", \"created\": 1000000000, \"customer\": \"cus_NORMALIZED\", \"description\": null, \"flow_directions\": null, \"last_setup_error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"replace_payment_method--PaymentMethod.create.2.json\", \"object\": \"payment_method\", \"allow_redisplay\": \"unspecified\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"94105\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": \"pass\", \"address_postal_code_check\": \"pass\", \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 8, \"exp_year\": 2025, \"fingerprint\": \"NORMALIZED\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"type\": \"card_error\"}, \"latest_attempt\": \"setatt_NORMALIZED\", \"livemode\": false, \"mandate\": null, \"metadata\": {}, \"next_action\": null, \"on_behalf_of\": null, \"payment_method\": null, \"payment_method_configuration_details\": null, \"payment_method_options\": {\"card\": {\"mandate_options\": null, \"network\": null, \"request_three_d_secure\": \"automatic\"}}, \"payment_method_types\": [\"card\"], \"single_use_mandate\": null, \"status\": \"requires_payment_method\", \"usage\": \"off_session\"}, \"type\": \"card_error\"}}",
+  "http_body": "{\"error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"replace_payment_method--PaymentMethod.create.2.json\", \"object\": \"payment_method\", \"allow_redisplay\": \"unspecified\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"12345\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": \"pass\", \"address_postal_code_check\": \"pass\", \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 1, \"exp_year\": 9999, \"fingerprint\": \"NORMALIZED\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"request_log_url\": \"https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1726724746\", \"setup_intent\": {\"id\": \"replace_payment_method--SetupIntent.create.2.json\", \"object\": \"setup_intent\", \"application\": null, \"automatic_payment_methods\": null, \"cancellation_reason\": null, \"client_secret\": \"NORMALIZED\", \"created\": 1000000000, \"customer\": \"cus_NORMALIZED\", \"description\": null, \"flow_directions\": null, \"last_setup_error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"replace_payment_method--PaymentMethod.create.2.json\", \"object\": \"payment_method\", \"allow_redisplay\": \"unspecified\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"12345\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": \"pass\", \"address_postal_code_check\": \"pass\", \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 1, \"exp_year\": 9999, \"fingerprint\": \"NORMALIZED\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"type\": \"card_error\"}, \"latest_attempt\": \"setatt_NORMALIZED\", \"livemode\": false, \"mandate\": null, \"metadata\": {}, \"next_action\": null, \"on_behalf_of\": null, \"payment_method\": null, \"payment_method_configuration_details\": null, \"payment_method_options\": {\"card\": {\"mandate_options\": null, \"network\": null, \"request_three_d_secure\": \"automatic\"}}, \"payment_method_types\": [\"card\"], \"single_use_mandate\": null, \"status\": \"requires_payment_method\", \"usage\": \"off_session\"}, \"type\": \"card_error\"}}",
   "http_status": 402,
   "json_body": {
     "error": {
@@ -194,7 +194,7 @@
             "country": "US",
             "line1": "123 Main St",
             "line2": null,
-            "postal_code": "94105",
+            "postal_code": "12345",
             "state": "CA"
           },
           "email": null,
@@ -210,8 +210,8 @@
           },
           "country": "US",
           "display_brand": "visa",
-          "exp_month": 8,
-          "exp_year": 2025,
+          "exp_month": 1,
+          "exp_year": 9999,
           "fingerprint": "NORMALIZED",
           "funding": "credit",
           "generated_from": null,
@@ -235,7 +235,7 @@
         "object": "payment_method",
         "type": "card"
       },
-      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1724918949",
+      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1726724746",
       "setup_intent": {
         "application": null,
         "automatic_payment_methods": null,
@@ -259,7 +259,7 @@
                 "country": "US",
                 "line1": "123 Main St",
                 "line2": null,
-                "postal_code": "94105",
+                "postal_code": "12345",
                 "state": "CA"
               },
               "email": null,
@@ -275,8 +275,8 @@
               },
               "country": "US",
               "display_brand": "visa",
-              "exp_month": 8,
-              "exp_year": 2025,
+              "exp_month": 1,
+              "exp_year": 9999,
               "fingerprint": "NORMALIZED",
               "funding": "credit",
               "generated_from": null,

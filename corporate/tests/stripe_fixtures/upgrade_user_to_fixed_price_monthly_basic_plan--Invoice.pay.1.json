@@ -43,7 +43,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-  "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
+  "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.3.json",
   "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
   "issuer": {
     "type": "self"
@@ -61,7 +61,7 @@
         "discountable": false,
         "discounts": [],
         "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
-        "invoice": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
+        "invoice": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.3.json",
         "invoice_item": "ii_NORMALIZED",
         "livemode": false,
         "metadata": {},
@@ -107,7 +107,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json/lines"
+    "url": "/v1/invoices/upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.3.json/lines"
   },
   "livemode": false,
   "metadata": {
@@ -140,7 +140,9 @@
     "amount_tax_display": null,
     "pdf": {
       "page_size": "letter"
-    }
+    },
+    "template": null,
+    "template_version": null
   },
   "rendering_options": null,
   "shipping_cost": null,

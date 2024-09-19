@@ -147,7 +147,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -180,9 +182,9 @@
       "id": "upgrade_by_card--Event.list.4.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 0,
       "request": {
-        "id": "upgrade_by_card--Event.list.3.json",
+        "id": "upgrade_by_card--Event.list.4.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.payment_succeeded"
@@ -334,7 +336,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -369,7 +373,7 @@
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "upgrade_by_card--Event.list.3.json",
+        "id": "upgrade_by_card--Event.list.4.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.paid"
@@ -521,7 +525,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -568,7 +574,7 @@
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "upgrade_by_card--Event.list.3.json",
+        "id": "upgrade_by_card--Event.list.4.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.updated"

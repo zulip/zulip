@@ -239,6 +239,9 @@ def normalize_fixture_data(
 
     # We'll replace "invoice_prefix": "A35BC4Q" with something like "invoice_prefix": "NORMA01"
     pattern_translations = {
+        r'"exp_month": ([0-9]+)': "1",
+        r'"exp_year": ([0-9]+)': "9999",
+        r'"postal_code": "([0-9]+)"': "12345",
         r'"invoice_prefix": "([A-Za-z0-9]{7,8})"': "NORMALIZED",
         r'"fingerprint": "([A-Za-z0-9]{16})"': "NORMALIZED",
         r'"number": "([A-Za-z0-9]{7,8}-[A-Za-z0-9]{4})"': "NORMALIZED",

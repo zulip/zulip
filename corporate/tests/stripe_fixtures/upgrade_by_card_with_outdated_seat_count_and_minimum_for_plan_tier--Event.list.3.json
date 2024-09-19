@@ -49,7 +49,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-          "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+          "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json",
           "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
@@ -67,7 +67,7 @@
                 "discountable": false,
                 "discounts": [],
                 "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
-                "invoice": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+                "invoice": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json",
                 "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
@@ -113,7 +113,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json/lines"
+            "url": "/v1/invoices/upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -182,7 +182,7 @@
       "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -238,7 +238,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-          "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+          "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json",
           "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
@@ -256,7 +256,7 @@
                 "discountable": false,
                 "discounts": [],
                 "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
-                "invoice": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+                "invoice": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json",
                 "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
@@ -302,7 +302,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json/lines"
+            "url": "/v1/invoices/upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -427,7 +427,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-          "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+          "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json",
           "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
@@ -445,7 +445,7 @@
                 "discountable": false,
                 "discounts": [],
                 "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
-                "invoice": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+                "invoice": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json",
                 "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
@@ -491,7 +491,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json/lines"
+            "url": "/v1/invoices/upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.3.json/lines"
           },
           "livemode": false,
           "metadata": {

@@ -6,7 +6,7 @@
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
+  "id": "customer_has_credit_card_as_default_payment_method--InvoiceItem.create.1.json",
   "invoice": null,
   "livemode": false,
   "metadata": {},

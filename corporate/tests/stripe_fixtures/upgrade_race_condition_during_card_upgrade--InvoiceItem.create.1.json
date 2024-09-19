@@ -6,7 +6,7 @@
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "upgrade_race_condition_during_card_upgrade--Event.list.2.json",
+  "id": "upgrade_race_condition_during_card_upgrade--InvoiceItem.create.1.json",
   "invoice": null,
   "livemode": false,
   "metadata": {},

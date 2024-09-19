@@ -8,6 +8,6 @@
   "locale": null,
   "object": "billing_portal.session",
   "on_behalf_of": null,
-  "return_url": "http://selfhosting.testserver/realm/f6d476f5-b66f-45ce-8623-a273ff4d7787/billing/",
+  "return_url": "http://selfhosting.testserver/realm/3383e261-95a9-4f36-ae0c-4ecf80fab561/billing/",
   "url": "https://billing.stripe.com/p/session/test_NORMALIZED"
 }

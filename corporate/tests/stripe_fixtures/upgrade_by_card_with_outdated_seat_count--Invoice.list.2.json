@@ -135,7 +135,9 @@
         "amount_tax_display": null,
         "pdf": {
           "page_size": "letter"
-        }
+        },
+        "template": null,
+        "template_version": null
       },
       "rendering_options": null,
       "shipping_cost": null,
@@ -226,7 +228,7 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "upgrade_by_card_with_outdated_seat_count--Event.list.2.json",
+            "id": "upgrade_by_card_with_outdated_seat_count--Event.list.3.json",
             "invoice": "upgrade_by_card_with_outdated_seat_count--Event.list.2.json",
             "invoice_item": "ii_NORMALIZED",
             "livemode": false,
@@ -307,7 +309,9 @@
         "amount_tax_display": null,
         "pdf": {
           "page_size": "letter"
-        }
+        },
+        "template": null,
+        "template_version": null
       },
       "rendering_options": null,
       "shipping_cost": null,

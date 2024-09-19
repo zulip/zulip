@@ -146,7 +146,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -179,7 +181,7 @@
       "id": "schedule_fixed_price_plan_upgrade_to_another_fixed_price_plan--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "schedule_fixed_price_plan_upgrade_to_another_fixed_price_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -332,7 +334,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -518,7 +522,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
