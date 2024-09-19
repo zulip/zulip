@@ -29,6 +29,7 @@ const bot_data_params = {
 
 const bot_data = zrequire("bot_data");
 const settings_bots = zrequire("settings_bots");
+const settings_users = zrequire("settings_users");
 const user_profile = zrequire("user_profile");
 
 bot_data.initialize(bot_data_params);
@@ -78,7 +79,7 @@ test("generate_botserverrc_content", () => {
     const service = {
         token: "abcd1234",
     };
-    const content = settings_bots.generate_botserverrc_content(
+    const content = settings_users.generate_botserverrc_content(
         user.email,
         user.api_key,
         service.token,

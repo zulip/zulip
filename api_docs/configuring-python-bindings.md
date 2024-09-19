@@ -28,7 +28,7 @@ achieve that:
 
 {tab|for-a-bot}
 
-{settings_tab|bots}
+{settings_tab|your-bots-via-personal-settings}
 
 1. Select **Active**.
 

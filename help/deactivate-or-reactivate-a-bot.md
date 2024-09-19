@@ -13,7 +13,7 @@ bot, regardless of who owns them.
 
 {tab|via-personal-settings}
 
-{settings_tab|your-bots}
+{settings_tab|your-bots-via-personal-settings}
 
 1. Click the **deactivate bot** (<i class="fa fa-user-times"></i>) icon on the profile
    card for the bot you want to deactivate.
@@ -29,7 +29,7 @@ bot, regardless of who owns them.
 
 {!admin-only.md!}
 
-{settings_tab|bots}
+{settings_tab|all-bots}
 
 1. In the **Actions** column, click the **deactivate bot** (<i class="fa fa-user-times"></i>)
    icon for the bot you want to deactivate.
@@ -49,7 +49,7 @@ bot, regardless of who owns them.
 
 {tab|via-personal-settings}
 
-{settings_tab|your-bots}
+{settings_tab|your-bots-via-personal-settings}
 
 1. Click the **Inactive bots** tab.
 
@@ -61,7 +61,7 @@ bot, regardless of who owns them.
 
 {!admin-only.md!}
 
-{settings_tab|bots}
+{settings_tab|all-bots}
 
 1. In the **Actions** column, click the **reactivate bot** (<i class="fa fa-user-plus"></i>)
    icon for the bot you want to reactivate.

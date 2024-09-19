@@ -51,7 +51,7 @@ permission](/help/configure-email-visibility) to view it.
 
 {tab|bot}
 
-{settings_tab|bots}
+{settings_tab|all-bots}
 
 1. Click on the name of a bot in the **Name** column to open its **user card**.
 

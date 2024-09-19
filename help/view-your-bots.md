@@ -8,7 +8,7 @@ You can also [deactivate](/help/deactivate-or-reactivate-a-bot#deactivate-a-bot)
 
 {start_tabs}
 
-{settings_tab|your-bots}
+{settings_tab|your-bots-via-personal-settings}
 
 {end_tabs}
 

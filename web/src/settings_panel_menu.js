@@ -8,7 +8,12 @@ import * as keydown_util from "./keydown_util";
 import * as popovers from "./popovers";
 import * as scroll_util from "./scroll_util";
 import * as settings_sections from "./settings_sections";
-import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users";
+import {
+    redraw_active_users_list,
+    redraw_all_bots_list,
+    redraw_deactivated_users_list,
+    redraw_your_bots_list,
+} from "./settings_users";
 
 export let normal_settings;
 export let org_settings;
@@ -59,6 +64,7 @@ export class SettingsPanelMenu {
         this.$curr_li = this.$main_elem.children("li").eq(0);
         this.current_tab = this.$curr_li.data("section");
         this.current_user_settings_tab = "active";
+        this.current_bot_settings_tab = "all-bots";
         this.org_user_settings_toggler = components.toggle({
             html_class: "org-user-settings-switcher",
             child_wants_focus: true,
@@ -82,11 +88,38 @@ export class SettingsPanelMenu {
                 $(`[data-user-settings-section="${CSS.escape(key)}"]`).show();
             },
         });
+        this.org_bot_settings_toggler = components.toggle({
+            html_class: "org-bot-settings-switcher",
+            child_wants_focus: true,
+            values: [
+                {label: $t({defaultMessage: "All bots"}), key: "all-bots"},
+                {
+                    label: $t({defaultMessage: "Your bots"}),
+                    key: "your-bots",
+                },
+            ],
+            callback: (_name, key) => {
+                browser_history.update(`#organization/bots/${key}`);
+                this.set_bot_settings_tab(key);
+                $(".bot-settings-section").hide();
+                if (key === "all-bots") {
+                    redraw_all_bots_list();
+                } else if (key === "your-bots") {
+                    redraw_your_bots_list();
+                }
+                $(`[data-bot-settings-section="${CSS.escape(key)}"]`).show();
+            },
+        });
 
         this.$main_elem.on("click", "li[data-section]", (e) => {
             const section = $(e.currentTarget).attr("data-section");
 
-            this.activate_section_or_default(section, this.current_user_settings_tab);
+            if (section === "users") {
+                this.activate_section_or_default(section, this.current_user_settings_tab);
+            } else {
+                this.activate_section_or_default(section, this.current_bot_settings_tab);
+            }
+
             // You generally want to add logic to activate_section,
             // not to this click handler.
 
@@ -98,9 +131,22 @@ export class SettingsPanelMenu {
         this.$main_elem.show();
         const section = this.current_tab;
         const user_settings_tab = this.current_user_settings_tab;
+        const bot_settings_tab = this.current_bot_settings_tab;
 
         const activate_section_for_mobile = two_column_mode();
-        this.activate_section_or_default(section, user_settings_tab, activate_section_for_mobile);
+        if (section === "users") {
+            this.activate_section_or_default(
+                section,
+                user_settings_tab,
+                activate_section_for_mobile,
+            );
+        } else {
+            this.activate_section_or_default(
+                section,
+                bot_settings_tab,
+                activate_section_for_mobile,
+            );
+        }
         this.$curr_li.trigger("focus");
     }
 
@@ -113,6 +159,18 @@ export class SettingsPanelMenu {
             // destroyed once the settings modal closes.
             this.org_user_settings_toggler.register_event_handlers();
             this.set_key_handlers(this.org_user_settings_toggler, $(".org-user-settings-switcher"));
+        }
+    }
+
+    show_org_bot_settings_toggler() {
+        if ($("#admin-bot-list").find(".tab-switcher").length === 0) {
+            const toggler_html = this.org_bot_settings_toggler.get();
+            $("#admin-bot-list .tab-container").html(toggler_html);
+
+            // We need to re-register these handlers since they are
+            // destroyed once the settings modal closes.
+            this.org_bot_settings_toggler.register_event_handlers();
+            this.set_key_handlers(this.org_bot_settings_toggler, $(".org-bot-settings-switcher"));
         }
     }
 
@@ -171,7 +229,11 @@ export class SettingsPanelMenu {
         this.current_user_settings_tab = tab;
     }
 
-    activate_section_or_default(section, user_settings_tab, activate_section_for_mobile = true) {
+    set_bot_settings_tab(tab) {
+        this.current_bot_settings_tab = tab;
+    }
+
+    activate_section_or_default(section, tab, activate_section_for_mobile = true) {
         popovers.hide_all();
         if (!section) {
             // No section is given so we display the default.
@@ -200,7 +262,7 @@ export class SettingsPanelMenu {
         this.$curr_li.addClass("active");
         this.set_current_tab(section);
 
-        if (section !== "users") {
+        if (section !== "users" && section !== "bots") {
             const settings_section_hash = "#" + this.hash_prefix + section;
 
             // It could be that the hash has already been set.
@@ -208,7 +270,12 @@ export class SettingsPanelMenu {
         }
         if (section === "users" && this.org_user_settings_toggler !== undefined) {
             this.show_org_user_settings_toggler();
-            this.org_user_settings_toggler.goto(user_settings_tab);
+            this.org_user_settings_toggler.goto(tab);
+        }
+
+        if (section === "bots" && this.org_bot_settings_toggler !== undefined) {
+            this.show_org_bot_settings_toggler();
+            this.org_bot_settings_toggler.goto(tab);
         }
 
         $(".settings-section").removeClass("show");
