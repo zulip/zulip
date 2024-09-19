@@ -17,8 +17,8 @@ async function get_decoded_url_in_selector(page: Page, selector: string): Promis
 }
 
 async function open_manage_bot_tab(page: Page, user_id: number): Promise<void> {
-    await page.waitForSelector(`#admin_bots_table .pill[data-user-id="${user_id}"]`);
-    await page.click(`#admin_bots_table .pill[data-user-id="${user_id}"]`);
+    await page.waitForSelector(`#admin_your_bots_table .pill[data-user-id="${user_id}"]`);
+    await page.click(`#admin_your_bots_table .pill[data-user-id="${user_id}"]`);
     await page.click(`.popover-menu-list .view_full_user_profile`);
     await common.wait_for_micromodal_to_open(page);
 
@@ -117,9 +117,6 @@ async function test_get_api_key(page: Page): Promise<void> {
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
-    await page.click('.ind-tab[data-tab-id="1"]');
-    const bots_section = '[data-section="bots"]';
-    await page.click(bots_section);
     await page.click("#admin-bot-list .add-a-new-bot");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
@@ -142,7 +139,7 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_close(page);
 
     const user_id = await common.get_user_id_from_name(page, "Bot 1");
-    assert(user_id !== undefined);
+    assert.ok(user_id !== undefined);
     await open_manage_bot_tab(page, user_id);
     const bot_email = "1-bot@zulip.testserver";
     const download_zuliprc_selector = `.download-bot-zuliprc[data-email="${CSS.escape(
@@ -186,7 +183,7 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_close(page);
 
     const user_id = await common.get_user_id_from_name(page, "Bot 2");
-    assert(user_id !== undefined);
+    assert.ok(user_id !== undefined);
     await open_manage_bot_tab(page, user_id);
     const bot_email = "2-bot@zulip.testserver";
     const download_zuliprc_selector = `.download-bot-zuliprc[data-email="${CSS.escape(
@@ -202,16 +199,13 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
 }
 
 async function test_botserverrc(page: Page): Promise<void> {
-    await page.click('.ind-tab[data-tab-id="0"]');
-    const bots_section = '[data-section="your-bots"]';
-    await page.click(bots_section);
-    await page.click("#download_botserverrc");
-    await page.waitForSelector('#download_botserverrc[href^="data:application"]', {
+    await page.click("#download_botserverrc_file");
+    await page.waitForSelector('#download_botserverrc_file[href^="data:application"]', {
         visible: true,
     });
     const botserverrc_decoded_url = await get_decoded_url_in_selector(
         page,
-        "#download_botserverrc",
+        "#download_botserverrc_file",
     );
     const botserverrc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
@@ -301,7 +295,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
 }
 
 async function test_your_bots_section(page: Page): Promise<void> {
-    await page.click('[data-section="your-bots"]');
+    await page.click(".your-bots-link");
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
     await test_botserverrc(page);
@@ -419,6 +413,7 @@ async function test_i18n_language_precedence(page: Page): Promise<void> {
 }
 
 async function test_default_language_setting(page: Page): Promise<void> {
+    await page.click('.ind-tab[data-tab-id="0"]');
     const preferences_section = '[data-section="preferences"]';
     await page.click(preferences_section);
 
