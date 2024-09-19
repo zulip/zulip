@@ -105,9 +105,9 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image">' +
+        '<div class="message_inline_image landscape-thumbnail" style="aspect-ratio: 1.3333333333333333">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" loading="lazy">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -122,9 +122,9 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image">' +
+        '<div class="message_inline_image landscape-thumbnail" style="aspect-ratio: 1.3333333333333333">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" loading="lazy">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -139,9 +139,9 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image message_inline_animated_image_still">' +
+        '<div class="message_inline_image landscape-thumbnail message_inline_animated_image_still" style="aspect-ratio: 1.3333333333333333">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -155,9 +155,9 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image message_inline_animated_image_still">' +
+        '<div class="message_inline_image landscape-thumbnail message_inline_animated_image_still" style="aspect-ratio: 1.3333333333333333">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>",
     );

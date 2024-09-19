@@ -74,6 +74,41 @@ export function postprocess_content(html: string): string {
                 elt.setAttribute("aria-label", title);
                 elt.removeAttribute("title");
             }
+            // To prevent layout shifts and flexibly size image previews,
+            // we read the image's original dimensions, when present, and
+            // set those values as `height` and `width` attributes on the
+            // image source.
+            const inline_image = elt.querySelector("img");
+            if (inline_image?.hasAttribute("data-original-dimensions")) {
+                const original_dimensions_attribute = inline_image.dataset.originalDimensions;
+                assert(original_dimensions_attribute);
+                const original_dimensions: string[] = original_dimensions_attribute.split("x");
+                assert(
+                    original_dimensions.length === 2 &&
+                        typeof original_dimensions[0] === "string" &&
+                        typeof original_dimensions[1] === "string",
+                );
+                const original_width = Number(original_dimensions[0]);
+                const original_height = Number(original_dimensions[1]);
+                const aspect_ratio: number = original_width / original_height;
+
+                inline_image.setAttribute("width", `${original_width}`);
+                inline_image.setAttribute("height", `${original_height}`);
+                // We set the aspect ratio on `message_inline_image` to ensure
+                // the wrapping flexbox maintains space for the image prior to
+                // the image's loading
+                elt.parentElement?.setAttribute("style", `aspect-ratio: ${aspect_ratio}`);
+
+                // We use slightly different CSS, based on portrait or landscape/square
+                // orientation.
+                // TODO: Handle cases where these dimensions are smaller than the set
+                // width/height for thumbnails.
+                if (original_width >= original_height) {
+                    elt.parentElement?.classList.add("landscape-thumbnail");
+                } else {
+                    elt.parentElement?.classList.add("portrait-thumbnail");
+                }
+            }
         } else {
             // For non-image user uploads, the following block ensures that the title
             // attribute always displays the filename as a security measure.
