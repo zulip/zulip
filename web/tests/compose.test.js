@@ -836,6 +836,26 @@ test_ui("create_message_object", ({override, override_rewire}) => {
     assert.deepEqual(message.to, [alice.email, bob.email]);
 });
 
+test_ui("Stream posting policy disabled", ({override_rewire}) => {
+    let reply_disabled = false;
+    override_rewire(compose_closed_ui, "update_reply_button_state", (disabled = false) => {
+        reply_disabled = disabled;
+    });
+    override_rewire(
+        compose_closed_ui,
+        "maybe_get_selected_message_stream_id",
+        () => social.stream_id,
+    );
+    // Test if "Message X" button is disabled when a user cannot post in a stream.
+    override_rewire(stream_data, "can_post_messages_in_stream", () => false);
+    compose_closed_ui.update_buttons_for_stream_views();
+    assert.ok(reply_disabled);
+    // User can post in the stream, so the "Message X" button is not disabled now.
+    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
+    compose_closed_ui.update_buttons_for_stream_views();
+    assert.ok(!reply_disabled);
+});
+
 test_ui("DM policy disabled", ({override, override_rewire}) => {
     // Disable dms in the organisation
     override(realm, "realm_direct_message_permission_group", nobody.id);
