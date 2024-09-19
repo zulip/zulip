@@ -19,7 +19,7 @@ def generate_licenses_low_warning_message_if_required(realm: Realm) -> str | Non
         return None
 
     format_kwargs = {
-        "billing_page_link": "/billing/#settings",
+        "billing_page_link": "/billing/",
         "deactivate_user_help_page_link": "/help/deactivate-or-reactivate-a-user",
     }
 
@@ -58,7 +58,7 @@ def send_user_unable_to_signup_group_direct_message_to_admins(
         "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new members to join."
     ).format(
         email=user_email,
-        billing_page_link="/billing/#settings",
+        billing_page_link="/billing/",
         deactivate_user_help_page_link="/help/deactivate-or-reactivate-a-user",
     )
 
