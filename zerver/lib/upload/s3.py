@@ -3,7 +3,7 @@ import os
 import secrets
 from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, TYPE_CHECKING, Any, BinaryIO, Literal
+from typing import IO, TYPE_CHECKING, Any, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import botocore
@@ -257,7 +257,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
+    def save_attachment_contents(self, path_id: str, filehandle: IO[bytes]) -> None:
         for chunk in self.uploads_bucket.Object(path_id).get()["Body"]:
             filehandle.write(chunk)
 

@@ -5,7 +5,7 @@ import secrets
 import shutil
 from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Literal
+from typing import IO, Any, Literal
 
 import pyvips
 from django.conf import settings
@@ -98,7 +98,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file("files", path_id, file_data)
 
     @override
-    def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
+    def save_attachment_contents(self, path_id: str, filehandle: IO[bytes]) -> None:
         filehandle.write(read_local_file("files", path_id))
 
     @override

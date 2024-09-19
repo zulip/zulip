@@ -2,7 +2,7 @@ import os
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import datetime
-from typing import IO, Any, BinaryIO
+from typing import IO, Any
 
 import pyvips
 
@@ -54,7 +54,7 @@ class ZulipUploadBackend:
     ) -> None:
         raise NotImplementedError
 
-    def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
+    def save_attachment_contents(self, path_id: str, filehandle: IO[bytes]) -> None:
         raise NotImplementedError
 
     def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
