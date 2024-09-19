@@ -665,11 +665,8 @@ export function query_matches_person(
     return false;
 }
 
-export function query_matches_name(
-    query: string,
-    user_group_or_stream: UserGroupPillData | StreamPillData,
-): boolean {
-    return typeahead.query_matches_string_in_order(query, user_group_or_stream.name, " ");
+export function query_matches_stream_name(query: string, stream: StreamPillData): boolean {
+    return typeahead.query_matches_string_in_order(query, stream.name, " ");
 }
 
 export function query_matches_group_name(query: string, user_group: UserGroupPillData): boolean {

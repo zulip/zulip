@@ -1166,7 +1166,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.equal(matcher(make_emoji(emoji_tada)), true);
                 assert.equal(matcher(make_emoji(emoji_moneybag)), false);
 
-                matcher = ct.get_stream_or_user_group_matcher("swed");
+                matcher = ct.get_stream_matcher("swed");
                 assert.equal(matcher(sweden_stream), true);
                 assert.equal(matcher(denmark_stream), false);
 
@@ -2022,7 +2022,7 @@ test("typeahead_results", () => {
         assert.deepEqual(returned, expected);
     }
     function assert_stream_matches(input, expected) {
-        const matcher = ct.get_stream_or_user_group_matcher(input);
+        const matcher = ct.get_stream_matcher(input);
         const returned = stream_list.filter((item) => matcher(item));
         assert.deepEqual(returned, expected);
     }

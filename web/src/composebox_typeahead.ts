@@ -179,14 +179,12 @@ export function get_language_matcher(query: string): (language: string) => boole
     };
 }
 
-export function get_stream_or_user_group_matcher(
-    query: string,
-): (user_group_or_stream: UserGroupPillData | StreamPillData) => boolean {
+export function get_stream_matcher(query: string): (stream: StreamPillData) => boolean {
     // Case-insensitive.
     query = typeahead.clean_query_lowercase(query);
 
-    return function (user_group_or_stream: UserGroupPillData | StreamPillData) {
-        return typeahead_helper.query_matches_name(query, user_group_or_stream);
+    return function (stream: StreamPillData) {
+        return typeahead_helper.query_matches_stream_name(query, stream);
     };
 }
 
@@ -669,7 +667,7 @@ export function get_person_suggestions(
     }));
 
     const filtered_groups = group_pill_data.filter((item) =>
-        typeahead_helper.query_matches_name(query, item),
+        typeahead_helper.query_matches_group_name(query, item),
     );
 
     /*
@@ -897,7 +895,7 @@ export function get_candidates(
             ...sub,
             type: "stream",
         }));
-        const matcher = get_stream_or_user_group_matcher(token);
+        const matcher = get_stream_matcher(token);
         const matches = candidate_list.filter((item) => matcher(item));
         return typeahead_helper.sort_streams(matches, token);
     }
