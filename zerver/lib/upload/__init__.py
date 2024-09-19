@@ -5,7 +5,7 @@ import re
 import unicodedata
 from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO
+from typing import IO, Any
 from urllib.parse import unquote, urljoin
 
 import pyvips
@@ -212,7 +212,7 @@ def attachment_vips_source(path_id: str) -> StreamingSourceWithSize:
     return upload_backend.attachment_vips_source(path_id)
 
 
-def save_attachment_contents(path_id: str, filehandle: BinaryIO) -> None:
+def save_attachment_contents(path_id: str, filehandle: IO[bytes]) -> None:
     return upload_backend.save_attachment_contents(path_id, filehandle)
 
 
