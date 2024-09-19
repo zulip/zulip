@@ -262,11 +262,10 @@
                 top: 0;
             }
 
-            .zulip-icon-bot {
+            .zulip-icon-bot,
+            .zulip-icon-triple-users {
                 opacity: 0.7;
-                font-size: 11px;
                 margin-right: 5px;
-                margin-left: 1px;
             }
 
             .inbox-row {
@@ -422,12 +421,6 @@
                     .user_block {
                         display: flex;
                         align-items: center;
-
-                        .zulip-icon-triple-users {
-                            margin-right: 5px;
-                            align-self: flex-start;
-                            opacity: 0.7;
-                        }
                     }
                 }
             }
