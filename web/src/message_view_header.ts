@@ -131,15 +131,15 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
 
 export function colorize_message_view_header(): void {
     const filter = narrow_state.filter();
-    let current_stream;
+    let current_sub;
     if (filter?.has_operator("channel")) {
-        current_stream = stream_data.get_valid_sub_by_id_string(filter.operands("channel")[0]!);
+        current_sub = stream_data.get_valid_sub_by_id_string(filter.operands("channel")[0]!);
     }
-    if (!current_stream) {
+    if (!current_sub) {
         return;
     }
     // selecting i instead of .fa because web public streams have custom icon.
-    $("#message_view_header a.stream i").css("color", current_stream.color);
+    $("#message_view_header a.stream i").css("color", current_sub.color);
 }
 
 function append_and_display_title_area(context: MessageViewHeaderContext): void {
