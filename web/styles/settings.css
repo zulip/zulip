@@ -972,6 +972,66 @@ input[type="checkbox"] {
     }
 }
 
+.bots-edit-form {
+    #zuliprc_section {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .bot-modal-info {
+        margin-bottom: 20px;
+
+        .bot-modal-value-and-button {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+
+            .api-key {
+                width: 281px;
+            }
+
+            .bot-modal-buttons {
+                .download-bot-zuliprc {
+                    padding: 6px 0;
+                    color: var(--color-copy-btn);
+                }
+
+                .fa-refresh {
+                    color: var(--color-copy-btn);
+                }
+
+                .bot-modal-regenerate-bot-api-key {
+                    position: relative;
+                    margin-left: 5px;
+                    color: hsl(0deg 0% 67%);
+                    transition: all 0.3s ease;
+
+                    &:hover {
+                        color: hsl(0deg 0% 27%);
+                    }
+                }
+
+                .copy-api-key,
+                .copy-zuliprc {
+                    padding: 6px 4px;
+                    margin-left: 5px;
+                    background-color: transparent;
+
+                    #clipboard_image {
+                        margin: 0 -2px 0 0;
+
+                        path {
+                            fill: var(--color-copy-btn);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 #inactive_bots_list .bot_info .reactivate_bot {
     margin-top: 5px;
 }

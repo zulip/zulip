@@ -19,7 +19,6 @@ import * as modals from "./modals";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_bots from "./settings_bots";
 import * as settings_components from "./settings_components";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
@@ -357,8 +356,8 @@ export function set_up() {
                 email: current_user.delivery_email,
                 api_key: $("#api_key_value").text(),
             };
-            const data = settings_bots.generate_zuliprc_content(bot_object);
-            $(this).attr("href", settings_bots.encode_zuliprc_as_url(data));
+            const data = user_profile.generate_zuliprc_content(bot_object);
+            $(this).attr("href", user_profile.encode_zuliprc_as_url(data));
         });
 
         $("#api_key_modal [data-micromodal-close]").on("click", () => {

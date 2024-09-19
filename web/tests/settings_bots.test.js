@@ -29,6 +29,7 @@ const bot_data_params = {
 
 const bot_data = zrequire("bot_data");
 const settings_bots = zrequire("settings_bots");
+const user_profile = zrequire("user_profile");
 
 bot_data.initialize(bot_data_params);
 
@@ -46,7 +47,7 @@ function test(label, f) {
 }
 
 test("generate_zuliprc_url", () => {
-    const url = settings_bots.generate_zuliprc_url(1);
+    const url = user_profile.generate_zuliprc_url(1);
     const expected =
         "data:application/octet-stream;charset=utf-8," +
         encodeURIComponent(
@@ -60,7 +61,7 @@ test("generate_zuliprc_url", () => {
 
 test("generate_zuliprc_content", () => {
     const bot_user = bot_data.get(1);
-    const content = settings_bots.generate_zuliprc_content(bot_user);
+    const content = user_profile.generate_zuliprc_content(bot_user);
     const expected =
         "[api]\nemail=error-bot@zulip.org\n" +
         "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
