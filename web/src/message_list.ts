@@ -61,7 +61,11 @@ export class MessageList {
     // property of the type of narrow, regardless of actions by
     // the user. Possibly this can be unified in some nice way.
     reading_prevented: boolean;
+
+    // TODO: Clean up these monkey-patched properties somehow.
     last_message_historical?: boolean;
+    should_trigger_message_selected_event?: boolean;
+
     constructor(opts: {
         data: MessageListData;
         filter: Filter;
