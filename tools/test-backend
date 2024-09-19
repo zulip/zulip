@@ -384,6 +384,8 @@ def main() -> None:
                 "corporate.tests.test_stripe",
             ]
             full_suite = False
+        print("-- Forcing serial mode for generating stripe fixtures.", flush=True)
+        default_parallel = 1
         os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
 
     assert_provisioning_status_ok(options.skip_provision_check)
