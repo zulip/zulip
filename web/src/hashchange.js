@@ -91,44 +91,31 @@ function get_user_settings_tab(section) {
 }
 
 export function set_hash_to_home_view(triggered_by_escape_key = false) {
-    const current_hash = window.location.hash;
-    if (current_hash === "") {
-        // Empty hash for home view is always valid.
+    if (browser_history.is_current_hash_home_view()) {
         return;
     }
 
-    let home_view_hash = `#${user_settings.web_home_view}`;
-    if (home_view_hash === "#recent_topics") {
-        home_view_hash = "#recent";
+    const hash_before_current = browser_history.old_hash();
+    if (
+        triggered_by_escape_key &&
+        browser_history.get_home_view_hash() === "#feed" &&
+        (hash_before_current === "" || hash_before_current === "#feed")
+    ) {
+        // If the previous view was the user's Combined Feed home
+        // view, and this change was triggered by escape keypress,
+        // then we simulate the back button in order to reuse
+        // existing code for restoring the user's scroll position.
+        window.history.back();
+        return;
     }
 
-    if (home_view_hash === "#all_messages") {
-        home_view_hash = "#feed";
-    }
-
-    if (current_hash !== home_view_hash) {
-        const hash_before_current = browser_history.old_hash();
-        if (
-            triggered_by_escape_key &&
-            home_view_hash === "#feed" &&
-            (hash_before_current === "" || hash_before_current === "#feed")
-        ) {
-            // If the previous view was the user's Combined Feed home
-            // view, and this change was triggered by escape keypress,
-            // then we simulate the back button in order to reuse
-            // existing code for restoring the user's scroll position.
-            window.history.back();
-            return;
-        }
-
-        // We want to set URL with no hash here. It is not possible
-        // to do so with `window.location.hash` since it will set an empty
-        // hash. So, we use `pushState` which simply updates the current URL
-        // but doesn't trigger `hashchange`. So, we trigger hashchange directly
-        // here to let it handle the whole rendering process for us.
-        browser_history.set_hash("");
-        hashchanged(false);
-    }
+    // We want to set URL with no hash here. It is not possible
+    // to do so with `window.location.hash` since it will set an empty
+    // hash. So, we use `pushState` which simply updates the current URL
+    // but doesn't trigger `hashchange`. So, we trigger hashchange directly
+    // here to let it handle the whole rendering process for us.
+    browser_history.set_hash("");
+    hashchanged(false);
 }
 
 function show_home_view() {
