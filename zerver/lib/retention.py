@@ -120,7 +120,7 @@ def move_rows(
             return []
 
 
-def run_archiving_in_chunks(
+def run_archiving(
     query: SQL,
     type: int,
     realm: Realm | None = None,
@@ -206,7 +206,7 @@ def move_expired_messages_to_archive_by_recipient(
     )
     check_date = timezone_now() - timedelta(days=message_retention_days)
 
-    return run_archiving_in_chunks(
+    return run_archiving(
         query,
         type=ArchiveTransaction.RETENTION_POLICY_BASED,
         realm=realm,
@@ -244,7 +244,7 @@ def move_expired_direct_messages_to_archive(
     """
     )
 
-    message_count = run_archiving_in_chunks(
+    message_count = run_archiving(
         query,
         type=ArchiveTransaction.RETENTION_POLICY_BASED,
         realm=realm,
@@ -470,7 +470,7 @@ def move_messages_to_archive(
     RETURNING id
     """
     )
-    count = run_archiving_in_chunks(
+    count = run_archiving(
         query,
         type=ArchiveTransaction.MANUAL,
         message_ids=Literal(tuple(message_ids)),
