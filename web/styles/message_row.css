@@ -380,9 +380,8 @@
             align-items: baseline;
 
             .zulip-icon.zulip-icon-bot {
-                font-size: 12px;
                 align-self: center;
-                padding: 0 0 0 5px;
+                margin-left: 5px;
             }
 
             .sender_name {

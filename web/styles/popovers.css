@@ -537,10 +537,6 @@ ul.popover-group-menu-member-list {
         vertical-align: middle;
     }
 
-    .zulip-icon.zulip-icon-bot {
-        padding: unset;
-    }
-
     #default-section {
         vertical-align: top;
 
@@ -1046,6 +1042,10 @@ ul.popover-group-menu-member-list {
         line-height: 1.1111em;
         color: var(--color-text-full-name);
         word-break: break-word;
+
+        .zulip-icon.zulip-icon-bot {
+            vertical-align: middle;
+        }
     }
 
     .popover-menu-user-type {

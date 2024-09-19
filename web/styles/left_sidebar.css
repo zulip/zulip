@@ -1243,10 +1243,6 @@ li.topic-list-item {
         }
     }
 
-    .zulip-icon.zulip-icon-bot {
-        font-size: 90%; /* Reduce the bulkiness of this icon */
-    }
-
     .unread_count {
         grid-area: markers-and-controls;
         /* TODO: This is an alternative method

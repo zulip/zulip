@@ -99,8 +99,6 @@ a.no-underline:hover {
 
 i.zulip-icon.zulip-icon-bot {
     color: var(--color-icon-bot);
-    vertical-align: top;
-    padding: 0 2px;
 }
 
 .tippy-content {
