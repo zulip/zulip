@@ -22,6 +22,7 @@ from confirmation.models import Confirmation, one_click_unsubscribe_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
+from zerver.actions.invites import do_invite_users
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_set_realm_authentication_methods,
@@ -4073,6 +4074,42 @@ class UserSignUpTest(ZulipTestCase):
                 ["Enter your account details to complete registration.", "newuser@zulip.com"],
                 result,
             )
+
+    def test_registration_of_mirror_dummy_user_role_comes_from_invite(self) -> None:
+        """
+        Verify that when a mirror dummy user does their registration, their role is set
+        based on the value from the invite rather than the original role set on the UserProfile.
+        """
+
+        admin = self.example_user("iago")
+        realm = get_realm("zulip")
+        mirror_dummy = self.example_user("hamlet")
+        do_deactivate_user(mirror_dummy, acting_user=admin)
+        mirror_dummy.is_mirror_dummy = True
+        mirror_dummy.role = UserProfile.ROLE_MEMBER
+        mirror_dummy.save()
+
+        # Invite the user as a guest.
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                admin,
+                [mirror_dummy.delivery_email],
+                [],
+                invite_expires_in_minutes=None,
+                include_realm_default_subscriptions=True,
+                invite_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+            )
+
+        result = self.submit_reg_form_for_user(
+            mirror_dummy.delivery_email, "testpassword", full_name="New Hamlet"
+        )
+
+        # Verify that we successfully registered and that the role is set correctly.
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{realm.url}/")
+        self.assert_logged_in_user_id(mirror_dummy.id)
+        mirror_dummy.refresh_from_db()
+        self.assertEqual(mirror_dummy.role, UserProfile.ROLE_GUEST)
 
     @patch(
         "DNS.dnslookup",
