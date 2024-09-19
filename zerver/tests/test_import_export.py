@@ -42,7 +42,13 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
-from zerver.lib.export import Record, do_export_realm, do_export_user, export_usermessages_batch
+from zerver.lib.export import (
+    MigrationStatusJson,
+    Record,
+    do_export_realm,
+    do_export_user,
+    export_usermessages_batch,
+)
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -333,6 +339,13 @@ class ExportFile(ZulipTestCase):
         db_paths = {user_avatar_path(user) + ".original"}
         self.assertEqual(exported_paths, db_paths)
 
+    def verify_migration_status_json(self) -> None:
+        exported: MigrationStatusJson = read_json("migration_status.json")
+        fixture: MigrationStatusJson = orjson.loads(
+            self.fixture_data("migration_status.json", "import_fixtures")
+        )
+        self.assertDictEqual(exported, fixture)
+
 
 class RealmImportExportTest(ExportFile):
     def export_realm(
@@ -340,9 +353,17 @@ class RealmImportExportTest(ExportFile):
         realm: Realm,
         export_type: int,
         exportable_user_ids: set[int] | None = None,
+        migration_file_fixture: str = "with_complete_migrations.txt",
     ) -> None:
         output_dir = make_export_output_dir()
-        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
+        with (
+            patch("zerver.lib.export.create_soft_link"),
+            self.assertLogs(level="INFO"),
+            patch("zerver.lib.export.get_migration_status") as m,
+        ):
+            m.return_value = self.fixture_data(
+                migration_file_fixture, "import_fixtures/get_migration_status_fixtures"
+            )
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
@@ -388,6 +409,7 @@ class RealmImportExportTest(ExportFile):
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=False)
         self.verify_realm_logo_and_icon()
+        self.verify_migration_status_json()
 
     def test_public_only_export_files_private_uploads_not_included(self) -> None:
         """
@@ -435,6 +457,7 @@ class RealmImportExportTest(ExportFile):
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=True)
         self.verify_realm_logo_and_icon()
+        self.verify_migration_status_json()
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
