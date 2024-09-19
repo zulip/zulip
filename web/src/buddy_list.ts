@@ -600,17 +600,19 @@ export class BuddyList extends BuddyListConf {
     }
 
     maybe_remove_user_id(opts: {user_id: number}): void {
-        let pos = this.users_matching_view_ids.indexOf(opts.user_id);
-        if (pos >= 0) {
-            this.users_matching_view_ids.splice(pos, 1);
-        } else {
-            pos = this.other_user_ids.indexOf(opts.user_id);
-            if (pos < 0) {
-                return;
+        let was_removed = false;
+        for (const user_id_list of [this.users_matching_view_ids, this.other_user_ids]) {
+            const pos = user_id_list.indexOf(opts.user_id);
+            if (pos >= 0) {
+                user_id_list.splice(pos, 1);
+                was_removed = true;
+                break;
             }
-            this.other_user_ids.splice(pos, 1);
         }
-        pos = this.all_user_ids.indexOf(opts.user_id);
+        if (!was_removed) {
+            return;
+        }
+        const pos = this.all_user_ids.indexOf(opts.user_id);
         this.all_user_ids.splice(pos, 1);
 
         if (pos < this.render_count) {
