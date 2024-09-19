@@ -10,6 +10,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, get_backends
 from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -38,6 +39,7 @@ from zerver.actions.user_settings import (
     do_change_password,
     do_change_user_setting,
 )
+from zerver.actions.users import do_change_user_role
 from zerver.context_processors import (
     get_realm_create_form_context,
     get_realm_from_request,
@@ -626,7 +628,19 @@ def registration_helper(
 
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
-            do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
+            with transaction.atomic(durable=True):
+                # We reactivate the mirror dummy user, but we need to respect the role
+                # that was passed in via the PreregistrationUser. Mirror dummy users can
+                # come from data import from 3rd party tools, with their role not necessarily
+                # set to what the realm admins may want. Such users have to explicitly go through
+                # the sign up flow, and thus their final role should match what the administrators
+                # may have set in the invitation, to avoid surprises.
+                #
+                # It's also important to reactivate the account and adjust the role in a single
+                # transaction, to avoid security issues if the process is interrupted halfway,
+                # e.g. leaving the user reactivated but with the wrong role.
+                do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
+                do_change_user_role(user_profile, role, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
             do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
@@ -636,8 +650,6 @@ def registration_helper(
                 get_default_language_for_new_user(realm, request=request),
                 acting_user=None,
             )
-            # TODO: When we clean up the `do_activate_mirror_dummy_user` code path,
-            # make it respect invited_as_admin / is_realm_admin.
 
         if user_profile is None:
             try:
