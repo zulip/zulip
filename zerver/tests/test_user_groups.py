@@ -2378,6 +2378,106 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_adding_members_to_group("desdemona")
         check_removing_members_from_group("desdemona")
 
+    def test_adding_yourself_to_group(self) -> None:
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        user_group = check_add_user_group(realm, "support", [othello], acting_user=othello)
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        # Make sure that user is allowed to join even when they
+        # are not allowed to add others.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            owners_group,
+            acting_user=None,
+        )
+
+        def check_adding_yourself_to_group(acting_user: str, error_msg: str | None = None) -> None:
+            user = self.example_user(acting_user)
+            self.assert_user_membership(user_group, [othello])
+
+            params = {"add": orjson.dumps([user.id]).decode()}
+            result = self.api_post(
+                user,
+                f"/api/v1/user_groups/{user_group.id}/members",
+                info=params,
+            )
+            if error_msg is not None:
+                self.assert_json_error(result, error_msg)
+                self.assert_user_membership(user_group, [othello])
+            else:
+                self.assert_json_success(result)
+                self.assert_user_membership(user_group, [othello, user])
+
+                # Remove the added user again for further tests.
+                bulk_remove_members_from_user_groups([user_group], [user.id], acting_user=None)
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_join_group",
+            admins_group.usergroup_ptr,
+            acting_user=None,
+        )
+        check_adding_yourself_to_group("shiva", "Insufficient permission")
+        check_adding_yourself_to_group("iago")
+        check_adding_yourself_to_group("desdemona")
+
+        # Test with setting set to a user defined group.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        leadership_group = check_add_user_group(
+            realm, "leadership", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_join_group",
+            leadership_group.usergroup_ptr,
+            acting_user=None,
+        )
+        check_adding_yourself_to_group("iago", "Insufficient permission")
+        check_adding_yourself_to_group("hamlet")
+
+        # Test with setting set to an anonymous group.
+        shiva = self.example_user("shiva")
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [shiva], [leadership_group]
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_join_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        check_adding_yourself_to_group("iago", "Insufficient permission")
+        check_adding_yourself_to_group("cordelia")
+        check_adding_yourself_to_group("shiva")
+
+        # If user is allowed to add anyone, then they can join themselves
+        # even when can_join_group setting does not allow them to do so.
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_join_group",
+            owners_group,
+            acting_user=None,
+        )
+        self.assertEqual(realm.can_manage_all_groups.named_user_group, owners_group)
+        check_adding_yourself_to_group("iago", "Insufficient permission")
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            admins_group,
+            acting_user=None,
+        )
+        check_adding_yourself_to_group("iago")
+
     def test_editing_system_user_groups(self) -> None:
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
