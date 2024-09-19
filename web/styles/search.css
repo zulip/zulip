@@ -43,16 +43,14 @@
         /* Reset iOS button defaults. */
         color: var(--color-search-icons);
         padding: 0;
-
-        &:not(:focus-visible) {
-            outline: none;
-        }
+        outline: none;
 
         &:hover {
             opacity: 1;
         }
 
         &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
             outline-offset: -3px;
         }
 
