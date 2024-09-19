@@ -24,8 +24,6 @@ import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
 import * as user_sort from "./user_sort";
 
-const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
-
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
 export const all_bots_list_dropdown_widget_name = "all_bots_list_select_bot_status";
@@ -770,7 +768,7 @@ export function generate_botserverrc_content(email, api_key, token) {
 export function check_outgoing_webhook() {
     const bots = bot_data.get_all_bots_for_current_user().filter((elem) => {
         const isActive = people.is_person_active(elem.user_id);
-        return elem.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT && isActive;
+        return elem.bot_type === settings_bots.OUTGOING_WEBHOOK_BOT_TYPE_INT && isActive;
     });
     $("#botserverrc_text_container").toggle(bots.length > 0);
 }
@@ -790,7 +788,7 @@ export function set_up_bots() {
         // Get all bots for the current user
         const bots = bot_data.get_all_bots_for_current_user();
         for (const bot of bots) {
-            if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
+            if (bot.is_active && bot.bot_type === settings_bots.OUTGOING_WEBHOOK_BOT_TYPE_INT) {
                 const services = bot_data.get_services(bot.user_id);
                 if (services?.[0] && "token" in services[0]) {
                     token = services[0].token;
