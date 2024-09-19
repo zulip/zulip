@@ -604,8 +604,7 @@
     }
 
     #recent_view_table {
-        .zulip-icon-user,
-        .fa-group {
+        .zulip-icon-user {
             opacity: 0.7;
         }
     }

@@ -231,17 +231,12 @@ li.show-more-topics {
         margin-bottom: 0;
         line-height: var(--line-height-sidebar-row);
 
-        & span.fa-group {
-            font-size: 90%;
-        }
-
         & li.dm-list-item {
             & a {
                 text-decoration: none;
                 color: inherit;
             }
 
-            .fa-group,
             .zulip-icon {
                 opacity: 0.7;
             }
