@@ -41,6 +41,7 @@ run_test("postprocess_content", () => {
             "<a>invalid</a> " +
             "<a>unsafe</a> " +
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
+            '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image">' +
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
             '<a role="button">button</a> ' +
@@ -54,6 +55,7 @@ run_test("postprocess_content", () => {
             '<a class="media-anchor-element" href="https://www.youtube.com/watch?v=tyKJueEk0XM" target="_blank" rel="noopener noreferrer">' +
             '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/mqdefault.jpg" class="media-image-element" loading="lazy">' +
             "</a>" +
+            "</div>" +
             "</div>",
     );
 });
@@ -62,6 +64,61 @@ run_test("ordered_lists", () => {
     assert.equal(
         postprocess_content('<ol start="9"><li>Nine</li><li>Ten</li></ol>'),
         '<ol start="9" class="counter-length-2"><li>Nine</li><li>Ten</li></ol>',
+    );
+});
+
+run_test("inline_image_galleries", ({override}) => {
+    const thumbnail_formats = [
+        {
+            name: "840x560.webp",
+            max_width: 840,
+            max_height: 560,
+            format: "webp",
+            animated: false,
+        },
+    ];
+    override(thumbnail, "preferred_format", thumbnail_formats[0]);
+    assert.equal(
+        postprocess_content(
+            "<p>Message text</p>" +
+                '<div class="message_inline_image">' +
+                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
+                '<img data-original-dimensions="1000x2000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                "</a>" +
+                "</div>" +
+                '<div class="message_inline_image">' +
+                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
+                '<img data-original-dimensions="2000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                "</a>" +
+                "</div>" +
+                "<p>Message text</p>" +
+                '<div class="message_inline_image">' +
+                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
+                '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                "</a>" +
+                "</div>",
+        ),
+        "<p>Message text</p>" +
+            '<div class="message-thumbnail-gallery">' +
+            '<div class="message_inline_image">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="1000x2000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element portrait-thumbnail" width="1000" height="2000" loading="lazy">' +
+            "</a>" +
+            "</div>" +
+            '<div class="message_inline_image">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="2000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element landscape-thumbnail" width="2000" height="1000" loading="lazy">' +
+            "</a>" +
+            "</div>" +
+            "</div>" +
+            "<p>Message text</p>" +
+            '<div class="message-thumbnail-gallery">' +
+            '<div class="message_inline_image">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element portrait-thumbnail" width="1000" height="1000" loading="lazy">' +
+            "</a>" +
+            "</div>" +
+            "</div>",
     );
 });
 
@@ -116,10 +173,12 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image">' +
+        '<div class="message-thumbnail-gallery">' +
+            '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element landscape-thumbnail" width="3264" height="2448" loading="lazy">' +
             "</a>" +
+            "</div>" +
             "</div>",
     );
 
@@ -132,10 +191,12 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image">' +
+        '<div class="message-thumbnail-gallery">' +
+            '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
             '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element portrait-thumbnail" width="100" height="200" loading="lazy">' +
             "</a>" +
+            "</div>" +
             "</div>",
     );
 
@@ -148,10 +209,12 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image">' +
+        '<div class="message-thumbnail-gallery">' +
+            '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
             '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element dinky-thumbnail extreme-aspect-ratio portrait-thumbnail" width="1" height="10" loading="lazy">' +
             "</a>" +
+            "</div>" +
             "</div>",
     );
 
@@ -165,10 +228,12 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image">' +
+        '<div class="message-thumbnail-gallery">' +
+            '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" class="media-image-element landscape-thumbnail" width="3264" height="2448" loading="lazy">' +
             "</a>" +
+            "</div>" +
             "</div>",
     );
 
@@ -182,10 +247,12 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image message_inline_animated_image_still">' +
+        '<div class="message-thumbnail-gallery">' +
+            '<div class="message_inline_image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" width="3264" height="2448" loading="lazy">' +
             "</a>" +
+            "</div>" +
             "</div>",
     );
 
@@ -198,10 +265,12 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</a>" +
                 "</div>",
         ),
-        '<div class="message_inline_image message_inline_animated_image_still">' +
+        '<div class="message-thumbnail-gallery">' +
+            '<div class="message_inline_image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" width="3264" height="2448" loading="lazy">' +
             "</a>" +
+            "</div>" +
             "</div>",
     );
 
