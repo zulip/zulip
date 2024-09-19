@@ -20081,6 +20081,18 @@ paths:
                   items:
                     type: integer
                   example: [1, 2, 3, 4]
+                can_join_group:
+                  allOf:
+                    - description: |
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to join this user group.
+
+                        **Changes**: New in Zulip 10.0 (feature level 301).
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                    - $ref: "#/components/schemas/GroupSettingValue"
+                  example: 11
                 can_manage_group:
                   allOf:
                     - description: |
@@ -20126,6 +20138,8 @@ paths:
                 - members
             encoding:
               members:
+                contentType: application/json
+              can_join_group:
                 contentType: application/json
               can_manage_group:
                 contentType: application/json
@@ -20257,6 +20271,37 @@ paths:
                     a required field.
                   type: string
                   example: The marketing team.
+                can_join_group:
+                  description: |
+                    The set of users who have permission to join this user group
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    **Changes**: New in Zulip 10.0 (feature level 301).
+
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to join the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to join the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 11,
+                    }
                 can_manage_group:
                   description: |
                     The set of users who have permission to [manage this user group][manage-user-groups]
@@ -20341,6 +20386,8 @@ paths:
                       "old": 11,
                     }
             encoding:
+              can_join_group:
+                contentType: application/json
               can_manage_group:
                 contentType: application/json
               can_mention_group:
