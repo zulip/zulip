@@ -33,7 +33,7 @@
                     "country": "US",
                     "line1": "123 Main St",
                     "line2": null,
-                    "postal_code": "94105",
+                    "postal_code": "12345",
                     "state": "CA"
                   },
                   "email": null,
@@ -82,8 +82,8 @@
                       "cvc_check": "pass"
                     },
                     "country": "US",
-                    "exp_month": 8,
-                    "exp_year": 2025,
+                    "exp_month": 1,
+                    "exp_year": 9999,
                     "extended_authorization": {
                       "status": "disabled"
                     },
@@ -111,6 +111,7 @@
                   },
                   "type": "card"
                 },
+                "radar_options": {},
                 "receipt_email": "hamlet@zulip.com",
                 "receipt_number": null,
                 "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",
@@ -209,7 +210,7 @@
               "country": "US",
               "line1": "123 Main St",
               "line2": null,
-              "postal_code": "94105",
+              "postal_code": "12345",
               "state": "CA"
             },
             "email": null,
@@ -258,8 +259,8 @@
                 "cvc_check": "pass"
               },
               "country": "US",
-              "exp_month": 8,
-              "exp_year": 2025,
+              "exp_month": 1,
+              "exp_year": 9999,
               "extended_authorization": {
                 "status": "disabled"
               },
@@ -287,6 +288,7 @@
             },
             "type": "card"
           },
+          "radar_options": {},
           "receipt_email": "hamlet@zulip.com",
           "receipt_number": null,
           "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",
@@ -466,7 +468,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -493,7 +497,7 @@
           "total_excluding_tax": 28000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Event.list.2.json",
@@ -653,7 +657,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -680,7 +686,7 @@
           "total_excluding_tax": 28000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "effective_at": null,
@@ -934,7 +940,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "auto"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,

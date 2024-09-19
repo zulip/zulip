@@ -49,7 +49,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-          "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
+          "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
           "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
@@ -66,8 +66,8 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
-                "invoice": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
+                "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
+                "invoice": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
                 "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
@@ -113,7 +113,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/customer_has_credit_card_as_default_payment_method--Event.list.2.json/lines"
+            "url": "/v1/invoices/customer_has_credit_card_as_default_payment_method--Event.list.3.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -147,7 +147,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -174,13 +176,13 @@
           "total_excluding_tax": 48000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 1,
       "request": {
         "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -236,7 +238,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-          "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
+          "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
           "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
@@ -253,8 +255,8 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
-                "invoice": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
+                "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
+                "invoice": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
                 "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
@@ -300,7 +302,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/customer_has_credit_card_as_default_payment_method--Event.list.2.json/lines"
+            "url": "/v1/invoices/customer_has_credit_card_as_default_payment_method--Event.list.3.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -334,7 +336,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -361,7 +365,7 @@
           "total_excluding_tax": 48000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
@@ -423,7 +427,7 @@
           "footer": null,
           "from_invoice": null,
           "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-          "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
+          "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
           "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
           "issuer": {
             "type": "self"
@@ -440,8 +444,8 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
-                "invoice": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
+                "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
+                "invoice": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
                 "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
@@ -487,7 +491,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/customer_has_credit_card_as_default_payment_method--Event.list.2.json/lines"
+            "url": "/v1/invoices/customer_has_credit_card_as_default_payment_method--Event.list.3.json/lines"
           },
           "livemode": false,
           "metadata": {
@@ -521,7 +525,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -548,7 +554,7 @@
           "total_excluding_tax": 48000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_paid": 0,

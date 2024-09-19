@@ -6,7 +6,7 @@
   "description": "Zulip Basic",
   "discountable": false,
   "discounts": [],
-  "id": "invoice_plans_as_needed--Event.list.2.json",
+  "id": "invoice_plans_as_needed--InvoiceItem.create.1.json",
   "invoice": null,
   "livemode": false,
   "metadata": {},

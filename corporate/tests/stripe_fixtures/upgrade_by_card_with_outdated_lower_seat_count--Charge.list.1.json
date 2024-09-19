@@ -14,7 +14,7 @@
           "country": "US",
           "line1": "123 Main St",
           "line2": null,
-          "postal_code": "94105",
+          "postal_code": "12345",
           "state": "CA"
         },
         "email": null,
@@ -63,8 +63,8 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 9,
-          "exp_year": 2025,
+          "exp_month": 1,
+          "exp_year": 9999,
           "extended_authorization": {
             "status": "disabled"
           },
@@ -92,6 +92,7 @@
         },
         "type": "card"
       },
+      "radar_options": {},
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
       "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",

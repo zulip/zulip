@@ -133,7 +133,9 @@
     "amount_tax_display": null,
     "pdf": {
       "page_size": "auto"
-    }
+    },
+    "template": null,
+    "template_version": null
   },
   "rendering_options": null,
   "shipping_cost": null,

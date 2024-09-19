@@ -33,7 +33,7 @@
                     "country": "US",
                     "line1": "123 Main St",
                     "line2": null,
-                    "postal_code": "94105",
+                    "postal_code": "12345",
                     "state": "CA"
                   },
                   "email": null,
@@ -82,8 +82,8 @@
                       "cvc_check": "pass"
                     },
                     "country": "US",
-                    "exp_month": 8,
-                    "exp_year": 2025,
+                    "exp_month": 1,
+                    "exp_year": 9999,
                     "extended_authorization": {
                       "status": "disabled"
                     },
@@ -184,7 +184,7 @@
       "id": "schedule_fixed_price_plan_upgrade_to_another_fixed_price_plan--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "schedule_fixed_price_plan_upgrade_to_another_fixed_price_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -209,7 +209,7 @@
               "country": "US",
               "line1": "123 Main St",
               "line2": null,
-              "postal_code": "94105",
+              "postal_code": "12345",
               "state": "CA"
             },
             "email": null,
@@ -258,8 +258,8 @@
                 "cvc_check": "pass"
               },
               "country": "US",
-              "exp_month": 8,
-              "exp_year": 2025,
+              "exp_month": 1,
+              "exp_year": 9999,
               "extended_authorization": {
                 "status": "disabled"
               },
@@ -392,7 +392,7 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1357095845,
+                  "end": 1357015845,
                   "start": 1325473445
                 },
                 "plan": null,
@@ -465,7 +465,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -578,7 +580,7 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1357095845,
+                  "end": 1357015845,
                   "start": 1325473445
                 },
                 "plan": null,
@@ -651,7 +653,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -858,7 +862,7 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1357095845,
+                  "end": 1357015845,
                   "start": 1325473445
                 },
                 "plan": null,
@@ -931,7 +935,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "auto"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -989,7 +995,7 @@
           "metadata": {},
           "object": "invoiceitem",
           "period": {
-            "end": 1357095845,
+            "end": 1357015845,
             "start": 1325473445
           },
           "plan": null,
@@ -1045,7 +1051,7 @@
           "default_currency": "usd",
           "default_source": null,
           "delinquent": false,
-          "description": "zulip.testserver f6d476f5-b66",
+          "description": "zulip.testserver 3383e261-15a",
           "discount": null,
           "email": "hamlet@zulip.com",
           "id": "schedule_fixed_price_plan_upgrade_to_another_fixed_price_plan--Customer.create.1.json",
@@ -1059,7 +1065,7 @@
           "livemode": false,
           "metadata": {
             "remote_realm_host": "zulip.testserver",
-            "remote_realm_uuid": "f6d476f5-b66f-45ce-8623-a273ff4d7787"
+            "remote_realm_uuid": "3383e261-15a1-4f36-ae0c-4ecf80fab561"
           },
           "name": null,
           "next_invoice_sequence": 1,

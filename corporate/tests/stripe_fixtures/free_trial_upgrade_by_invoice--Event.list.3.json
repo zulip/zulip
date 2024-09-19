@@ -118,7 +118,7 @@
           "livemode": false,
           "metadata": {
             "billing_schedule": "1",
-            "current_plan_id": "33",
+            "current_plan_id": "34",
             "license_management": "manual",
             "licenses": "123",
             "on_free_trial": "True",
@@ -147,7 +147,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -273,7 +275,7 @@
       "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 1,
       "request": {
         "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"

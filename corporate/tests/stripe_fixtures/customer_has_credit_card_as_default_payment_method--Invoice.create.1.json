@@ -43,7 +43,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": null,
-  "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
+  "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
   "invoice_pdf": null,
   "issuer": {
     "type": "self"
@@ -60,8 +60,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
-        "invoice": "customer_has_credit_card_as_default_payment_method--Event.list.2.json",
+        "id": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
+        "invoice": "customer_has_credit_card_as_default_payment_method--Event.list.3.json",
         "invoice_item": "ii_NORMALIZED",
         "livemode": false,
         "metadata": {},
@@ -107,7 +107,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/customer_has_credit_card_as_default_payment_method--Event.list.2.json/lines"
+    "url": "/v1/invoices/customer_has_credit_card_as_default_payment_method--Event.list.3.json/lines"
   },
   "livemode": false,
   "metadata": {
@@ -141,7 +141,9 @@
     "amount_tax_display": null,
     "pdf": {
       "page_size": "auto"
-    }
+    },
+    "template": null,
+    "template_version": null
   },
   "rendering_options": null,
   "shipping_cost": null,

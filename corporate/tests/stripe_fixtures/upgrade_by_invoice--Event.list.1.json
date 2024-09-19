@@ -8,15 +8,15 @@
           "account_country": "US",
           "account_name": "Kandra Labs, Inc.",
           "account_tax_ids": null,
-          "amount_due": 136000,
-          "amount_paid": 0,
-          "amount_remaining": 136000,
+          "amount_due": 40000,
+          "amount_paid": 40000,
+          "amount_remaining": 0,
           "amount_shipping": 0,
           "application": null,
           "application_fee_amount": null,
-          "attempt_count": 0,
-          "attempted": false,
-          "auto_advance": true,
+          "attempt_count": 1,
+          "attempted": true,
+          "auto_advance": false,
           "automatic_tax": {
             "enabled": false,
             "liability": null,
@@ -24,7 +24,7 @@
           },
           "automatically_finalizes_at": null,
           "billing_reason": "manual",
-          "charge": null,
+          "charge": "ch_NORMALIZED",
           "collection_method": "charge_automatically",
           "created": 1000000000,
           "currency": "usd",
@@ -59,10 +59,10 @@
           "lines": {
             "data": [
               {
-                "amount": 136000,
-                "amount_excluding_tax": 136000,
+                "amount": 40000,
+                "amount_excluding_tax": 40000,
                 "currency": "usd",
-                "description": "Additional license (Jan 2, 2012 - Jan 2, 2013)",
+                "description": "Zulip Cloud Standard",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -102,7 +102,7 @@
                 "proration_details": {
                   "credited_items": null
                 },
-                "quantity": 17,
+                "quantity": 5,
                 "subscription": null,
                 "tax_amounts": [],
                 "tax_rates": [],
@@ -116,12 +116,20 @@
             "url": "/v1/invoices/upgrade_by_invoice--Event.list.1.json/lines"
           },
           "livemode": false,
-          "metadata": {},
-          "next_payment_attempt": 1000000000,
+          "metadata": {
+            "billing_schedule": "1",
+            "current_plan_id": "None",
+            "license_management": "automatic",
+            "licenses": "5",
+            "on_free_trial": "False",
+            "plan_tier": "1",
+            "user_id": "10"
+          },
+          "next_payment_attempt": null,
           "number": "NORMALIZED",
           "object": "invoice",
           "on_behalf_of": null,
-          "paid": false,
+          "paid": true,
           "paid_out_of_band": false,
           "payment_intent": "pi_NORMALIZED",
           "payment_settings": {
@@ -139,34 +147,36 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
           "shipping_details": null,
           "starting_balance": 0,
           "statement_descriptor": "Zulip Cloud Standard",
-          "status": "open",
+          "status": "paid",
           "status_transitions": {
             "finalized_at": 1000000000,
             "marked_uncollectible_at": null,
-            "paid_at": null,
+            "paid_at": 1000000000,
             "voided_at": null
           },
           "subscription": null,
           "subscription_details": {
             "metadata": null
           },
-          "subtotal": 136000,
-          "subtotal_excluding_tax": 136000,
+          "subtotal": 40000,
+          "subtotal_excluding_tax": 40000,
           "tax": null,
           "test_clock": null,
-          "total": 136000,
+          "total": 40000,
           "total_discount_amounts": [],
-          "total_excluding_tax": 136000,
+          "total_excluding_tax": 40000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
       "id": "upgrade_by_invoice--Event.list.1.json",
@@ -177,7 +187,7 @@
         "id": "upgrade_by_invoice--Event.list.1.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "invoice.finalized"
+      "type": "invoice.payment_succeeded"
     }
   ],
   "has_more": true,

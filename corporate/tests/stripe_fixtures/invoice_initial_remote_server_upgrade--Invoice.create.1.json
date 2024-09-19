@@ -43,7 +43,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": null,
-  "id": "invoice_initial_remote_server_upgrade--Event.list.2.json",
+  "id": "invoice_initial_remote_server_upgrade--Event.list.3.json",
   "invoice_pdf": null,
   "issuer": {
     "type": "self"
@@ -61,7 +61,7 @@
         "discountable": false,
         "discounts": [],
         "id": "invoice_initial_remote_server_upgrade--Event.list.2.json",
-        "invoice": "invoice_initial_remote_server_upgrade--Event.list.2.json",
+        "invoice": "invoice_initial_remote_server_upgrade--Event.list.3.json",
         "invoice_item": "ii_NORMALIZED",
         "livemode": false,
         "metadata": {},
@@ -112,7 +112,7 @@
         "discountable": false,
         "discounts": [],
         "id": "invoice_initial_remote_server_upgrade--Event.list.2.json",
-        "invoice": "invoice_initial_remote_server_upgrade--Event.list.2.json",
+        "invoice": "invoice_initial_remote_server_upgrade--Event.list.3.json",
         "invoice_item": "ii_NORMALIZED",
         "livemode": false,
         "metadata": {},
@@ -158,7 +158,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 2,
-    "url": "/v1/invoices/invoice_initial_remote_server_upgrade--Event.list.2.json/lines"
+    "url": "/v1/invoices/invoice_initial_remote_server_upgrade--Event.list.3.json/lines"
   },
   "livemode": false,
   "metadata": {
@@ -191,7 +191,9 @@
     "amount_tax_display": null,
     "pdf": {
       "page_size": "auto"
-    }
+    },
+    "template": null,
+    "template_version": null
   },
   "rendering_options": null,
   "shipping_cost": null,

@@ -6,7 +6,7 @@
   "description": "$20.00/month new customer discount",
   "discountable": false,
   "discounts": [],
-  "id": "schedule_upgrade_to_fixed_price_annual_business_plan--Event.list.2.json",
+  "id": "schedule_upgrade_to_fixed_price_annual_business_plan--InvoiceItem.create.2.json",
   "invoice": null,
   "livemode": false,
   "metadata": {},

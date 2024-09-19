@@ -62,7 +62,7 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "attach_discount_to_realm--Event.list.6.json",
+            "id": "attach_discount_to_realm--Event.list.7.json",
             "invoice": "attach_discount_to_realm--Event.list.6.json",
             "invoice_item": "ii_NORMALIZED",
             "livemode": false,
@@ -143,7 +143,9 @@
         "amount_tax_display": null,
         "pdf": {
           "page_size": "letter"
-        }
+        },
+        "template": null,
+        "template_version": null
       },
       "rendering_options": null,
       "shipping_cost": null,
@@ -315,7 +317,9 @@
         "amount_tax_display": null,
         "pdf": {
           "page_size": "letter"
-        }
+        },
+        "template": null,
+        "template_version": null
       },
       "rendering_options": null,
       "shipping_cost": null,

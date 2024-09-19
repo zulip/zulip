@@ -83,7 +83,7 @@
                   "created": 1000000000,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "upgrade_by_invoice--Event.list.2.json",
+                  "id": "upgrade_by_invoice--Event.list.1.json",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
@@ -147,7 +147,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,
@@ -270,7 +272,7 @@
                   "created": 1000000000,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "upgrade_by_invoice--Event.list.2.json",
+                  "id": "upgrade_by_invoice--Event.list.1.json",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
@@ -334,7 +336,9 @@
             "amount_tax_display": null,
             "pdf": {
               "page_size": "letter"
-            }
+            },
+            "template": null,
+            "template_version": null
           },
           "rendering_options": null,
           "shipping_cost": null,

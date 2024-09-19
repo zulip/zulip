@@ -111,7 +111,7 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "free_trial_not_available_for_ended_legacy_customer--Event.list.2.json",
+        "id": "free_trial_not_available_for_ended_legacy_customer--Event.list.3.json",
         "invoice": "free_trial_not_available_for_ended_legacy_customer--Event.list.2.json",
         "invoice_item": "ii_NORMALIZED",
         "livemode": false,
@@ -191,7 +191,9 @@
     "amount_tax_display": null,
     "pdf": {
       "page_size": "letter"
-    }
+    },
+    "template": null,
+    "template_version": null
   },
   "rendering_options": null,
   "shipping_cost": null,
@@ -218,5 +220,5 @@
   "total_excluding_tax": 4300,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

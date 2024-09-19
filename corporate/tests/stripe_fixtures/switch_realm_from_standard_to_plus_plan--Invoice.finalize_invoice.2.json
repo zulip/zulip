@@ -2,9 +2,9 @@
   "account_country": "US",
   "account_name": "Kandra Labs, Inc.",
   "account_tax_ids": null,
-  "amount_due": 70728,
+  "amount_due": 70939,
   "amount_paid": 0,
-  "amount_remaining": 70728,
+  "amount_remaining": 70939,
   "amount_shipping": 0,
   "application": null,
   "application_fee_amount": null,
@@ -133,12 +133,14 @@
     "amount_tax_display": null,
     "pdf": {
       "page_size": "letter"
-    }
+    },
+    "template": null,
+    "template_version": null
   },
   "rendering_options": null,
   "shipping_cost": null,
   "shipping_details": null,
-  "starting_balance": -1272,
+  "starting_balance": -1061,
   "statement_descriptor": "Zulip Cloud Plus",
   "status": "open",
   "status_transitions": {
