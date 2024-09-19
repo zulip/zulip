@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
-from zerver.data_import.slack import do_convert_data
+from zerver.data_import.slack import do_convert_directory, do_convert_zipfile
 from zerver.lib.management import ZulipBaseCommand
 
 
@@ -67,10 +67,21 @@ class Command(ZulipBaseCommand):
 
             print("Converting data ...")
             convert_slack_threads = not options["no_convert_slack_threads"]
-            do_convert_data(
-                path,
-                output_dir,
-                token,
-                threads=num_threads,
-                convert_slack_threads=convert_slack_threads,
-            )
+            if os.path.isdir(path):
+                do_convert_directory(
+                    path,
+                    output_dir,
+                    token,
+                    threads=num_threads,
+                    convert_slack_threads=convert_slack_threads,
+                )
+            elif os.path.isfile(path) and path.endswith(".zip"):
+                do_convert_zipfile(
+                    path,
+                    output_dir,
+                    token,
+                    threads=num_threads,
+                    convert_slack_threads=convert_slack_threads,
+                )
+            else:
+                raise ValueError(f"Don't know how to import Slack data from {path}")
