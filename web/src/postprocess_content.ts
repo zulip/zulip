@@ -14,6 +14,34 @@ export function postprocess_content(html: string): string {
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
 
+    // This will also process uploaded video thumbnails, which likewise
+    // take the `.message_inline_image` class
+    for (const elt of template.content.querySelectorAll(".message_inline_image")) {
+        let gallery_element;
+
+        const is_part_of_open_gallery = elt.previousElementSibling?.classList.contains(
+            "message-thumbnail-gallery",
+        );
+
+        if (is_part_of_open_gallery) {
+            // If the the current media element's previous sibling is a gallery,
+            // it should be kept with the other media in that gallery.
+            gallery_element = elt.previousElementSibling;
+        } else {
+            // Otherwise, we've found an image element that follows some other
+            // content (or is the first in the message) and need to create a
+            // gallery for it, and perhaps other adjacent sibling media elements,
+            // if they exist.
+            gallery_element = inertDocument.createElement("div");
+            gallery_element.classList.add("message-thumbnail-gallery");
+            // We insert the gallery just before the media element we've found
+            elt.before(gallery_element);
+        }
+
+        // Finally, the media element gets appended to the gallery
+        gallery_element?.append(elt);
+    }
+
     for (const elt of template.content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
         // rel="opener noreferrer".  This ensures that external links
