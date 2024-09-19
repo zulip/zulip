@@ -31,7 +31,7 @@ from zerver.data_import.slack import (
     channels_to_zerver_stream,
     check_token_access,
     convert_slack_workspace_messages,
-    do_convert_data,
+    do_convert_zipfile,
     fetch_shared_channel_users,
     get_admin,
     get_guest,
@@ -1332,7 +1332,7 @@ class SlackImporter(ZulipTestCase):
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
-            do_convert_data(test_slack_zip_file, output_dir, token)
+            do_convert_zipfile(test_slack_zip_file, output_dir, token)
 
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + "/realm.json"))
@@ -1540,4 +1540,4 @@ class SlackImporter(ZulipTestCase):
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
-            do_convert_data(test_slack_zip_file, output_dir, token)
+            do_convert_zipfile(test_slack_zip_file, output_dir, token)
