@@ -9,6 +9,7 @@ import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs"
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
+import * as bot_helper from "./bot_helper.ts";
 import * as channel from "./channel.ts";
 import * as components from "./components.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
@@ -92,66 +93,6 @@ export function render_bots(): void {
 
     list_widget.render_empty_list_message_if_needed($("#active_bots_list"));
     list_widget.render_empty_list_message_if_needed($("#inactive_bots_list"));
-}
-
-export function generate_zuliprc_url(bot_id: number): string {
-    const bot = bot_data.get(bot_id);
-    assert(bot !== undefined);
-    const data = generate_zuliprc_content(bot);
-    return encode_zuliprc_as_url(data);
-}
-
-export function encode_zuliprc_as_url(zuliprc: string): string {
-    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
-}
-
-export function generate_zuliprc_content(bot: {
-    bot_type?: number;
-    user_id: number;
-    email: string;
-    api_key: string;
-}): string {
-    let token;
-    // For outgoing webhooks, include the token in the zuliprc.
-    // It's needed for authenticating to the Botserver.
-    if (bot.bot_type === 3) {
-        const services = bot_data.get_services(bot.user_id);
-        assert(services !== undefined);
-        const service = services[0];
-        assert(service && "token" in service);
-        token = service.token;
-    }
-    return (
-        "[api]" +
-        "\nemail=" +
-        bot.email +
-        "\nkey=" +
-        bot.api_key +
-        "\nsite=" +
-        realm.realm_url +
-        (token === undefined ? "" : "\ntoken=" + token) +
-        // Some tools would not work in files without a trailing new line.
-        "\n"
-    );
-}
-
-export function generate_botserverrc_content(
-    email: string,
-    api_key: string,
-    token: string,
-): string {
-    return (
-        "[]" +
-        "\nemail=" +
-        email +
-        "\nkey=" +
-        api_key +
-        "\nsite=" +
-        realm.realm_url +
-        "\ntoken=" +
-        token +
-        "\n"
-    );
 }
 
 export const bot_creation_policy_values = {
@@ -379,7 +320,11 @@ export function set_up(): void {
                 const service = services[0];
                 assert(service && "token" in service);
                 const bot_token = service.token;
-                content += generate_botserverrc_content(bot.email, bot.api_key, bot_token);
+                content += bot_helper.generate_botserverrc_content(
+                    bot.email,
+                    bot.api_key,
+                    bot_token,
+                );
             }
         }
 
@@ -480,7 +425,7 @@ export function set_up(): void {
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
         const $bot_info = $(this).closest(".bot-information-box").find(".bot-card-info");
         const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
-        $(this).attr("href", generate_zuliprc_url(bot_id));
+        $(this).attr("href", bot_helper.generate_zuliprc_url(bot_id));
     });
 
     $("#active_bots_list").on("click", "button.open_bots_subscribed_streams", function (e) {
@@ -504,7 +449,7 @@ export function set_up(): void {
             const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
             const bot = bot_data.get(bot_id);
             assert(bot !== undefined);
-            const data = generate_zuliprc_content(bot);
+            const data = bot_helper.generate_zuliprc_content(bot);
             return data;
         },
     });

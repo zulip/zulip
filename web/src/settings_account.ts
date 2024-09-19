@@ -9,6 +9,7 @@ import render_settings_api_key_modal from "../templates/settings/api_key_modal.h
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as avatar from "./avatar.ts";
+import * as bot_helper from "./bot_helper.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import {csrf_token} from "./csrf.ts";
@@ -21,7 +22,6 @@ import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import * as settings_bots from "./settings_bots.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
@@ -386,8 +386,8 @@ export function set_up(): void {
                 email: current_user.delivery_email,
                 api_key: $("#api_key_value").text(),
             };
-            const data = settings_bots.generate_zuliprc_content(bot_object);
-            $(this).attr("href", settings_bots.encode_zuliprc_as_url(data));
+            const data = bot_helper.generate_zuliprc_content(bot_object);
+            $(this).attr("href", bot_helper.encode_zuliprc_as_url(data));
         });
 
         $("#api_key_modal [data-micromodal-close]").on("click", () => {

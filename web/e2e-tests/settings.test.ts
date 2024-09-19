@@ -17,6 +17,17 @@ async function get_decoded_url_in_selector(page: Page, selector: string): Promis
     return decodeURIComponent(await (await a!.getProperty("href")).jsonValue());
 }
 
+async function open_manage_bot_tab(page: Page, user_id: number): Promise<void> {
+    await page.waitForSelector(`#admin_bots_table .pill[data-user-id="${user_id}"]`);
+    await page.click(`#admin_bots_table .pill[data-user-id="${user_id}"]`);
+    await page.click(`.popover-menu-list .view_full_user_profile`);
+    await common.wait_for_micromodal_to_open(page);
+
+    const tab_key = `#tab-toggle div[data-tab-key="manage-profile-tab"]`;
+    await page.waitForSelector(tab_key);
+    await page.click(tab_key);
+}
+
 async function open_settings(page: Page): Promise<void> {
     await common.open_personal_menu(page);
 
@@ -107,7 +118,10 @@ async function test_get_api_key(page: Page): Promise<void> {
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
-    await page.click("#bot-settings .add-a-new-bot");
+    await page.click('.ind-tab[data-tab-id="1"]');
+    const bots_section = '[data-section="bots"]';
+    await page.click(bots_section);
+    await page.click("#admin-bot-list .add-a-new-bot");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
@@ -128,8 +142,11 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
+    const user_id = await common.get_user_id_from_name(page, "Bot 1");
+    assert(user_id !== undefined);
+    await open_manage_bot_tab(page, user_id);
     const bot_email = "1-bot@zulip.testserver";
-    const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
+    const download_zuliprc_selector = `.download-bot-zuliprc[data-email="${CSS.escape(
         bot_email,
     )}"]`;
     const outgoing_webhook_zuliprc_regex =
@@ -144,18 +161,20 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
         outgoing_webhook_zuliprc_regex,
         "Incorrect outgoing webhook bot zuliprc format",
     );
+    await page.click(".micromodal .modal__close");
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_normal_bot_creation(page: Page): Promise<void> {
-    await page.click("#bot-settings .add-a-new-bot");
+    await page.click("#admin-bot-list .add-a-new-bot");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".dialog_heading"),
+        await common.get_text_from_selector(page, ".micromodal .dialog_heading"),
         "Add a new bot",
         "Unexpected title for deactivate user modal",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button span"),
         "Add",
         "Deactivate button has incorrect text.",
     );
@@ -167,8 +186,11 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
+    const user_id = await common.get_user_id_from_name(page, "Bot 2");
+    assert(user_id !== undefined);
+    await open_manage_bot_tab(page, user_id);
     const bot_email = "2-bot@zulip.testserver";
-    const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
+    const download_zuliprc_selector = `.download-bot-zuliprc[data-email="${CSS.escape(
         bot_email,
     )}"]`;
 
@@ -176,11 +198,18 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await page.click(download_zuliprc_selector);
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
     assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc format for bot.");
+    await page.click(".micromodal .modal__close");
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_botserverrc(page: Page): Promise<void> {
+    await page.click('.ind-tab[data-tab-id="0"]');
+    const bots_section = '[data-section="your-bots"]';
+    await page.click(bots_section);
     await page.click("#download_botserverrc");
-    await page.waitForSelector('#download_botserverrc[href^="data:application"]', {visible: true});
+    await page.waitForSelector('#download_botserverrc[href^="data:application"]', {
+        visible: true,
+    });
     const botserverrc_decoded_url = await get_decoded_url_in_selector(
         page,
         "#download_botserverrc",
