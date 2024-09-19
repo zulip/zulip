@@ -58,6 +58,16 @@ export function get_all_bots_for_current_user(): Bot[] {
     return ret;
 }
 
+export function get_all_bots_ids_for_current_user(): number[] {
+    const ret = [];
+    for (const bot of bots.values()) {
+        if (bot.owner_id !== null && people.is_my_user_id(bot.owner_id)) {
+            ret.push(bot.user_id);
+        }
+    }
+    return ret;
+}
+
 export function get_editable(): Bot[] {
     const ret = [];
     for (const bot of bots.values()) {

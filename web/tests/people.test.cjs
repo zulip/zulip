@@ -307,6 +307,24 @@ const stewie = {
     },
 };
 
+const my_bot1 = {
+    email: "my_bot1-bot@example.com",
+    user_id: 10001,
+    full_name: "my_bot1",
+    is_bot: true,
+    bot_owner_id: me.user_id,
+    role: 300,
+};
+
+const my_bot2 = {
+    email: "my_bot2-bot@example.com",
+    user_id: 10002,
+    full_name: "my_bot2",
+    is_bot: true,
+    bot_owner_id: me.user_id,
+    role: 300,
+};
+
 function get_all_persons() {
     return people.filter_all_persons(() => true);
 }
@@ -435,6 +453,15 @@ test_people("basics", ({override}) => {
 
     // get_users_from_ids
     assert.deepEqual(people.get_users_from_ids([me.user_id, isaac.user_id]), [me, isaac]);
+
+    // Test get_bot_ids_current_user returns empty array
+    assert.deepEqual([], people.get_bot_ids_current_user());
+
+    people.add_active_user(my_bot1);
+    people.add_active_user(my_bot2);
+
+    // Test get_bot_ids_current_user includes respective bot ids
+    assert.deepEqual([10001, 10002], people.get_bot_ids_current_user());
 });
 
 test_people("sort_but_pin_current_user_on_top with me", () => {
@@ -633,7 +660,7 @@ test_people("get_custom_fields_by_type", ({override}) => {
 
 test_people("bot_custom_profile_data", () => {
     // If this test fails, then try opening organization settings > bots
-    // http://localhost:9991/#organization/bots
+    // http://localhost:9991/#organization/bots/all-bots
     // and then try to edit any of the bots.
     people.add_active_user(bot_botson);
     assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), null);

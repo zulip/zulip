@@ -231,6 +231,7 @@ export function build_page() {
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
         all_bots_list_dropdown_widget_name: settings_users.all_bots_list_dropdown_widget_name,
+        your_bots_list_dropdown_widget_name: settings_users.your_bots_list_dropdown_widget_name,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -246,6 +247,8 @@ export function build_page() {
     }
 
     get_realm_level_notification_settings(options);
+
+    options.botserverrc = "botserverrc";
 
     const rendered_admin_tab = render_admin_tab(options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
@@ -278,7 +281,7 @@ export function build_page() {
     }
 }
 
-export function launch(section, user_settings_tab) {
+export function launch(section, settings_tab) {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
@@ -286,7 +289,10 @@ export function launch(section, user_settings_tab) {
         settings_panel_menu.org_settings.set_current_tab(section);
     }
     if (section === "users") {
-        settings_panel_menu.org_settings.set_user_settings_tab(user_settings_tab);
+        settings_panel_menu.org_settings.set_user_settings_tab(settings_tab);
+    }
+    if (section === "bots") {
+        settings_panel_menu.org_settings.set_bot_settings_tab(settings_tab);
     }
     settings_toggle.goto("organization");
 }

@@ -72,22 +72,26 @@ function is_somebody_else_profile_open() {
     );
 }
 
-function handle_invalid_users_section_url(user_settings_tab) {
-    const valid_user_settings_tab_values = new Set(["active", "deactivated", "invitations"]);
-    if (!valid_user_settings_tab_values.has(user_settings_tab)) {
-        const valid_users_section_url = "#organization/users/active";
-        browser_history.update(valid_users_section_url);
-        return "active";
-    }
-    return user_settings_tab;
-}
+function handle_invalid_section_url(section, settings_tab) {
+    const valid_tab_values = {
+        users: new Set(["active", "deactivated", "invitations"]),
+        bots: new Set(["all-bots", "your-bots"]),
+    };
 
-function get_user_settings_tab(section) {
-    if (section === "users") {
-        const current_user_settings_tab = hash_parser.get_current_nth_hash_section(2);
-        return handle_invalid_users_section_url(current_user_settings_tab);
+    if (section === "bots" || section === "users") {
+        if (!valid_tab_values[section].has(settings_tab)) {
+            const valid_section_url = `#organization/${section}/${[...valid_tab_values[section]][0]}`;
+            browser_history.update(valid_section_url);
+            return [...valid_tab_values[section]][0];
+        }
+        return settings_tab;
     }
     return undefined;
+}
+
+function get_settings_tab(section) {
+    const current_tab = hash_parser.get_current_nth_hash_section(2);
+    return handle_invalid_section_url(section, current_tab);
 }
 
 export function set_hash_to_home_view(triggered_by_escape_key = false) {
@@ -290,6 +294,14 @@ function do_hashchange_overlay(old_hash) {
         // #settings/user-list-admin is being redirected to #settings/users after it was renamed.
         section = "users";
     }
+
+    if (section === "your-bots") {
+        // #settings/your-bots is being redirected to #organization/bots/your-bots.
+        section = "bots";
+        base = "organization";
+        window.history.replaceState(null, "", "#organization/bots/your-bots");
+    }
+
     if ((base === "settings" || base === "organization") && !section) {
         let settings_panel_object = settings_panel_menu.normal_settings;
         if (base === "organization") {
@@ -364,8 +376,16 @@ function do_hashchange_overlay(old_hash) {
             }
             settings_panel_menu.org_settings.activate_section_or_default(
                 section,
-                get_user_settings_tab(section),
+                get_settings_tab(section),
             );
+
+            settings_panel_menu.org_settings.activate_section_or_default(
+                section,
+                section === "bots" && window.location.hash.includes("your-bots")
+                    ? "your-bots"
+                    : get_settings_tab(section),
+            );
+
             return;
         }
 
@@ -386,7 +406,11 @@ function do_hashchange_overlay(old_hash) {
             settings_panel_menu.normal_settings.set_current_tab(section);
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
-            settings_panel_menu.org_settings.set_user_settings_tab(get_user_settings_tab(section));
+            if (section === "users") {
+                settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            } else {
+                settings_panel_menu.org_settings.set_bot_settings_tab(get_settings_tab(section));
+            }
         }
         settings_toggle.goto(base);
         return;
@@ -454,7 +478,16 @@ function do_hashchange_overlay(old_hash) {
     if (base === "organization") {
         settings.build_page();
         admin.build_page();
-        admin.launch(section, get_user_settings_tab(section));
+        if (section === "users") {
+            admin.launch(section, get_settings_tab(section));
+        } else {
+            admin.launch(
+                section,
+                section === "bots" && window.location.hash.includes("your-bots")
+                    ? "your-bots"
+                    : get_settings_tab(section),
+            );
+        }
         return;
     }
 

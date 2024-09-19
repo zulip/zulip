@@ -13,8 +13,10 @@ integration URL.
 
 {settings_tab|your-bots}
 
-1. Click the **link** (<i class="fa fa-link"></i>) icon on the profile card of
-   an **Incoming webhook** bot.
+1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
+   icon for an **Incoming webhook** bot.
+
+1. Scroll down to the bottom, and click **Generate URL for an integration**.
 
 1. Select the desired integration from the **Integration** dropdown.
 
@@ -38,7 +40,7 @@ integration URL.
 
 {!admin-only.md!}
 
-{settings_tab|bots}
+{settings_tab|all-bots}
 
 1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
    icon for an **Incoming webhook** bot.

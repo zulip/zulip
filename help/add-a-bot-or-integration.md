@@ -22,7 +22,7 @@ is visible and available for anyone to use.
 
 {tab|via-organization-settings}
 
-{settings_tab|bots}
+{settings_tab|all-bots}
 
 1. Click **Add a new bot**.
 

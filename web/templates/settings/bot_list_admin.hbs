@@ -1,46 +1,20 @@
-<div id="admin-bot-list" class="settings-section bot-settings-section" data-name="bots">
-    <div class="bot-settings-tip" id="admin-bot-settings-tip">
-    </div>
-    <div class="clear-float"></div>
-    <div>
-        {{t "You are viewing all the bots in this organization." }}
-        <span class="add-new-bots" {{#unless can_create_new_bots}}style="display: none;"{{/unless}}>
-            {{#tr}}
-                You can <z-link-new-bot>add a new bot</z-link-new-bot> or <z-link-manage-bot>manage</z-link-manage-bot> your own bots.
-                {{#*inline "z-link-new-bot"}}<a class="add-a-new-bot">{{> @partial-block}}</a>{{/inline}}
-                {{#*inline "z-link-manage-bot"}}<a href="/#settings/your-bots">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
-        </span>
-        <span class="manage-your-bots" {{#unless (and (not can_create_new_bots) has_bots)}}style="display: none;"{{/unless}}>
-            {{#tr}}
-                You can <z-link>manage</z-link> your own bots.
-                {{#*inline "z-link"}}<a href="/#settings/your-bots">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
-        </span>
-    </div>
-    <div class="settings_panel_list_header">
-        <h3>{{t "Bots"}}</h3>
-        <div class="alert-notification" id="bot-field-status"></div>
-        <div class="bot_filters">
+<div id="admin-bot-list" class="settings-section" data-name="bots">
+    <div class="bot-settings-tip" id="admin-bot-settings-tip"></div>
+    <div class="tab-container"></div>
+    <button class="button round add-a-new-bot"{{#unless can_create_new_bots}}style="display: none;"{{/unless}}>{{t 'Add a new bot'}}</button>
 
-            {{> ../dropdown_widget widget_name=all_bots_list_dropdown_widget_name}}
-            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter bots' }}" aria-label="{{t 'Filter bots' }}"/>
-        </div>
-    </div>
+    {{> bot_list
+      section="all"
+      section_title=(t "All bots")
+      dropdown_widget_name=all_bots_list_dropdown_widget_name
+      show_botserverrc=false
+      }}
 
-    <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
-        <table class="table table-striped wrapped-table">
-            <thead class="table-sticky-headers">
-                <th class="active" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
-                <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
-                <th class="user_role" data-sort="role">{{t "Role" }}</th>
-                <th data-sort="bot_owner">{{t "Owner" }}</th>
-                <th data-sort="alphabetic" data-sort-prop="bot_type" class="bot_type">{{t "Bot type" }}</th>
-                <th class="actions">{{t "Actions" }}</th>
-            </thead>
-            <tbody id="admin_bots_table" class="admin_bot_table"
-              data-empty="{{t 'There are no bots.' }}" data-search-results-empty="{{t 'No bots match your current filter.' }}"></tbody>
-        </table>
-    </div>
-    <div id="admin_page_bots_loading_indicator"></div>
+    {{> bot_list
+      section="your"
+      section_title=(t "Your bots")
+      dropdown_widget_name=your_bots_list_dropdown_widget_name
+      show_botserverrc=true
+      botserverrc=botserverrc
+      }}
 </div>

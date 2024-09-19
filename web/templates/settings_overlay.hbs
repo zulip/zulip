@@ -29,10 +29,12 @@
                         <div class="text">{{t "Notifications" }}</div>
                     </li>
                     {{#unless is_guest}}
-                    <li class="sidebar-item" tabindex="0" data-section="your-bots">
-                        <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-                        <div class="text">{{t "Bots" }}</div>
-                    </li>
+                    <a href="#organization/bots/your-bots" class="text your-bots-link">
+                        <li class="sidebar-item" tabindex="0">
+                            <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                            <div class="text">{{t 'Bots'}}</div>
+                        </li>
+                    </a>
                     {{/unless}}
                     <li class="sidebar-item" tabindex="0" data-section="alert-words">
                         <i class="sidebar-item-icon fa fa-book" aria-hidden="true"></i>

@@ -836,6 +836,14 @@ input[type="checkbox"] {
     max-height: calc(95vh - 280px);
 }
 
+#admin-your-bots-list {
+    .config-download-text {
+        .fa-download {
+            color: var(--color-copy-btn);
+        }
+    }
+}
+
 #bot-settings {
     .add-a-new-bot {
         margin-bottom: 2px;
@@ -1420,6 +1428,11 @@ $option_title_width: 180px;
         height: calc(100% - $settings_header_height);
         overflow-y: auto;
         border-right: 1px solid var(--color-border-modal);
+
+        .your-bots-link {
+            text-decoration: none;
+            color: inherit;
+        }
 
         .header {
             height: auto;
@@ -2231,4 +2244,15 @@ $option_title_width: 180px;
 
 #data-exports .tab-switcher .ind-tab {
     width: 160px;
+}
+
+#admin-bot-list {
+    .tab-switcher {
+        margin: 2px 0;
+    }
+
+    .tab-switcher .ind-tab {
+        margin-bottom: 10px;
+        width: 110px;
+    }
 }

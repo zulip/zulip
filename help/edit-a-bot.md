@@ -23,7 +23,7 @@ active bot in the organization.
 
 {start_tabs}
 
-{settings_tab|bots}
+{settings_tab|all-bots}
 
 1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
    icon for the bot you want to edit.
