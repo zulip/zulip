@@ -290,9 +290,22 @@ def add_members_to_group_backend(
     user_group_id: int,
     members: list[int],
 ) -> HttpResponse:
-    user_group = access_user_group_for_update(
-        user_group_id, user_profile, permission_setting="can_manage_group"
-    )
+    if len(members) == 1 and user_profile.id == members[0]:
+        try:
+            user_group = access_user_group_for_update(
+                user_group_id, user_profile, permission_setting="can_join_group"
+            )
+        except JsonableError:
+            # User can still join the group if user has permission to add
+            # anyone in the group.
+            user_group = access_user_group_for_update(
+                user_group_id, user_profile, permission_setting="can_manage_group"
+            )
+    else:
+        user_group = access_user_group_for_update(
+            user_group_id, user_profile, permission_setting="can_manage_group"
+        )
+
     member_users = user_ids_to_users(members, user_profile.realm)
     existing_member_ids = set(
         get_direct_memberships_of_users(user_group.usergroup_ptr, member_users)
