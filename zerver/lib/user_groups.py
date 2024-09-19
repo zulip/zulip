@@ -55,6 +55,7 @@ class UserGroupDict(TypedDict):
     creator_id: int | None
     date_created: int | None
     is_system_group: bool
+    can_join_group: int | AnonymousSettingGroupDict
     can_manage_group: int | AnonymousSettingGroupDict
     can_mention_group: int | AnonymousSettingGroupDict
     deactivated: bool
@@ -551,6 +552,8 @@ def user_groups_in_realm_serialized(
     UserGroup and UserGroupMembership that we need.
     """
     realm_groups = NamedUserGroup.objects.select_related(
+        "can_join_group",
+        "can_join_group__named_user_group",
         "can_manage_group",
         "can_manage_group__named_user_group",
         "can_mention_group",
@@ -603,6 +606,9 @@ def user_groups_in_realm_serialized(
             members=direct_member_ids,
             direct_subgroup_ids=direct_subgroup_ids,
             is_system_group=user_group.is_system_group,
+            can_join_group=get_setting_value_for_user_group_object(
+                user_group.can_join_group, group_members, group_subgroups
+            ),
             can_manage_group=get_setting_value_for_user_group_object(
                 user_group.can_manage_group, group_members, group_subgroups
             ),

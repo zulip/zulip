@@ -3161,6 +3161,7 @@ paths:
                                       "description": "Backend team",
                                       "id": 2,
                                       "is_system_group": false,
+                                      "can_join_group": 16,
                                       "can_manage_group": 16,
                                       "can_mention_group": 11,
                                     },
@@ -3210,6 +3211,19 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
+                                    can_join_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value][setting-values] defining the set of users who
+                                            have permission to join this group. Only present if this user group
+                                            permissiod setting changed.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 301).
+
+                                            Will be one of the following:
+
+                                            [setting-values]: /api/group-setting-values
                                     can_manage_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -20530,6 +20544,18 @@ paths:
                                 modified by users.
 
                                 **Changes**: New in Zulip 5.0 (feature level 93).
+                            can_join_group:
+                              allOf:
+                                - $ref: "#/components/schemas/GroupSettingValue"
+                                - description: |
+                                    A [group-setting value][setting-values] defining the set of users who
+                                    have permission to join this user group.
+
+                                    **Changes**: New in Zulip 10.0 (feature level 301).
+
+                                    Will be one of the following:
+
+                                    [setting-values]: /api/group-setting-values
                             can_manage_group:
                               allOf:
                                 - $ref: "#/components/schemas/GroupSettingValue"
@@ -20589,6 +20615,7 @@ paths:
                               "members": [1],
                               "direct_subgroup_ids": [],
                               "is_system_group": true,
+                              "can_join_group": 16,
                               "can_manage_group": 16,
                               "can_mention_group": 11,
                             },
@@ -20601,6 +20628,7 @@ paths:
                               "members": [2],
                               "direct_subgroup_ids": [1],
                               "is_system_group": true,
+                              "can_join_group": 17,
                               "can_manage_group": 17,
                               "can_mention_group": 12,
                             },
@@ -20613,6 +20641,7 @@ paths:
                               "members": [3, 4],
                               "direct_subgroup_ids": [],
                               "is_system_group": false,
+                              "can_join_group": 20,
                               "can_manage_group": 20,
                               "can_mention_group": 13,
                             },
@@ -21858,6 +21887,18 @@ components:
             directly modified by users.
 
             **Changes**: New in Zulip 5.0 (feature level 93).
+        can_join_group:
+          allOf:
+            - $ref: "#/components/schemas/GroupSettingValue"
+            - description: |
+                A [group-setting value][setting-values] defining the set of users who
+                have permission to join this user group.
+
+                **Changes**: New in Zulip 10.0 (feature level 301).
+
+                Will be one of the following:
+
+                [setting-values]: /api/group-setting-values
         can_manage_group:
           allOf:
             - $ref: "#/components/schemas/GroupSettingValue"
