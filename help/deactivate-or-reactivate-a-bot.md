@@ -30,7 +30,7 @@ bot, regardless of who owns them.
 
 {!admin-only.md!}
 
-{settings_tab|bots}
+{settings_tab|all-bots}
 
 1. In the **Actions** column, click the **deactivate bot** (<i class="zulip-icon
    zulip-icon-user-x"></i>) icon for the bot you want to deactivate.
@@ -63,7 +63,7 @@ bot, regardless of who owns them.
 
 {!admin-only.md!}
 
-{settings_tab|bots}
+{settings_tab|all-bots}
 
 1. In the **Actions** column, click the **reactivate bot** (<i class="zulip-icon
    zulip-icon-user-plus"></i>) icon for the bot you want to reactivate.

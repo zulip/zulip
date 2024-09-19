@@ -9,7 +9,7 @@ Organization [administrators](/help/user-roles) can also
 
 {start_tabs}
 
-{settings_tab|bots}
+{settings_tab|all-bots}
 
 {end_tabs}
 
