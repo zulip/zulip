@@ -21,17 +21,13 @@ exports.noop = () => {};
 
 exports.suite = [];
 
-async function execute_test(label, f, opts) {
-    const {sloppy_$} = opts || {};
-
+async function execute_test(label, f) {
     /* istanbul ignore if */
     if (verbose) {
         console.info("        test: " + label);
     }
 
-    if (!sloppy_$ && $.clear_all_elements) {
-        $.clear_all_elements();
-    }
+    $.clear_all_elements();
     zpage_billing_params.reset();
     zpage_params.reset();
 

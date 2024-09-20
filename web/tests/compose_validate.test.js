@@ -90,7 +90,6 @@ const admin = {
 
 user_groups.initialize({realm_user_groups: [nobody, everyone, admin]});
 function test_ui(label, f) {
-    // The sloppy_$ flag lets us reuse setup from prior tests.
     run_test(label, (helpers) => {
         $("textarea#compose-textarea").val("some message");
         f(helpers);
