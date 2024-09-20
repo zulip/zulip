@@ -508,7 +508,10 @@ function edit_message($row: JQuery, raw_content: string): void {
     currently_editing_messages.set(message.id, $message_edit_content);
     message_lists.current.show_edit_message($row, $form);
 
-    $message_edit_content.on("keydown", (e) => {
+    // Attach event handlers to `form` instead of `textarea` to allow
+    // typeahead to call stopPropagation if it can handle the event
+    // and prevent the form from submitting.
+    $form.on("keydown", (e) => {
         if (keydown_util.is_enter_event(e)) {
             handle_message_edit_enter(e, $message_edit_content);
         }
