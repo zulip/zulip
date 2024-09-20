@@ -1,7 +1,7 @@
 # Moving to Zulip
 
 Welcome to Zulip! This page will guide you through the process of transitioning
-your organization to Zulip. It assumes that you have [completed you initial
+your organization to Zulip. It assumes that you have [completed your initial
 evaluation](/help/trying-out-zulip) of Zulip, decided [whether to use Zulip
 Cloud or self-host](/help/zulip-cloud-or-self-hosting), and are ready to
 introduce Zulip to your organization.
@@ -29,8 +29,8 @@ think through the transition process in your own context.
 
 ## Create your organization
 
-You can create a new Zulip Cloud organization in less two minutes. Setting up a
-self-hosted server will take a bit longer, but is easy to do with Zulip's
+You can create a new Zulip Cloud organization in less than two minutes. Setting
+up a self-hosted server will take a bit longer, but is easy to do with Zulip's
 [robust
 installer](https://zulip.readthedocs.io/en/stable/production/install.html).
 
