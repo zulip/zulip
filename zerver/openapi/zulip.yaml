@@ -8307,6 +8307,7 @@ paths:
                         "result": "success",
                         "uri": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
                         "url": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
+                        "filename": "zulip.txt",
                       }
   /user_uploads/{realm_id_str}/{filename}:
     get:
