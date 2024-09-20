@@ -19,7 +19,7 @@
    for your organization.
 
 1. Share a link to your registration page, which is
-   https://your-domain.zulipchat.com for Zulip Cloud organizations.
+   https://organization.zulipchat.com for Zulip Cloud organizations.
 
 {tab|imported-organizations}
 
@@ -31,7 +31,7 @@
    a password.
 
 1. Share a link to your Zulip organization, which is
-   https://your-domain.zulipchat.com on Zulip Cloud.
+   https://organization.zulipchat.com on Zulip Cloud.
 
 1. *(optional)* To log in with an email/password, users will need to set their
    initial password. You can:
