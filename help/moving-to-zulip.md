@@ -136,7 +136,7 @@ you will need to upgrade your plan.
    give each conversation its own space, so one channel per team should be
    enough to get you started.
 
-1. *(optional)* [Set up integrations](/help/set-up-integrations) so that your
+1. [Set up integrations](/help/set-up-integrations) so that your
    team can experience all their regular workflows inside the Zulip app. Zulip's
    [Slack-compatible incoming
    webhook](https://zulip.com/integrations/doc/slack_incoming) makes it easy to
@@ -152,7 +152,7 @@ you will need to upgrade your plan.
 
     - Share Zulip's [getting started guide](/help/getting-started-with-zulip).
     - Prepare a live demo / training session. Consider recording it for
-     future use.
+     future use!
 
 1. Inform users about the transition, including why you're moving to Zulip, the
    timeline, and what they'll need to do.
