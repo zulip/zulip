@@ -19,7 +19,7 @@ import {user_settings} from "./user_settings";
 
 export type RenderInfo = {need_user_to_scroll: boolean};
 
-type SelectIdOpts = {
+export type SelectIdOpts = {
     then_scroll?: boolean;
     target_scroll_offset?: number;
     use_closest?: boolean;
@@ -66,12 +66,17 @@ export class MessageList {
     last_message_historical?: boolean;
     should_trigger_message_selected_event?: boolean;
 
-    constructor(opts: {
-        data: MessageListData;
-        filter: Filter;
-        excludes_muted_topics: boolean;
-        is_node_test: boolean;
-    }) {
+    constructor(
+        opts: (
+            | {
+                  data: MessageListData;
+              }
+            | {
+                  data?: undefined;
+                  filter: Filter;
+              }
+        ) & {excludes_muted_topics?: boolean; is_node_test?: boolean},
+    ) {
         MessageList.id_counter += 1;
         this.id = MessageList.id_counter;
         // The MessageListData keeps track of the actual sequence of
@@ -85,7 +90,7 @@ export class MessageList {
             const filter = opts.filter;
 
             this.data = new MessageListData({
-                excludes_muted_topics: opts.excludes_muted_topics,
+                excludes_muted_topics: opts.excludes_muted_topics ?? false,
                 filter,
             });
         }

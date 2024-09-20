@@ -12,15 +12,15 @@ export function next_topic(
     stream_ids: number[],
     get_topics: (stream_id: number) => string[],
     has_unread_messages: (stream_id: number, topic: string) => boolean,
-    curr_stream_id: number,
-    curr_topic: string,
+    curr_stream_id: number | undefined,
+    curr_topic: string | undefined,
 ): {stream_id: number; topic: string} | undefined {
-    const curr_stream_index = stream_ids.indexOf(curr_stream_id); // -1 if not found
+    const curr_stream_index = curr_stream_id ? stream_ids.indexOf(curr_stream_id) : -1; // -1 if not found
 
     if (curr_stream_index >= 0) {
         const stream_id = stream_ids[curr_stream_index]!;
         const topics = get_topics(stream_id);
-        const curr_topic_index = topics.indexOf(curr_topic); // -1 if not found
+        const curr_topic_index = curr_topic ? topics.indexOf(curr_topic) : -1; // -1 if not found
 
         for (let i = curr_topic_index + 1; i < topics.length; i += 1) {
             const topic = topics[i]!;
@@ -59,8 +59,8 @@ export function next_topic(
 }
 
 export function get_next_topic(
-    curr_stream_id: number,
-    curr_topic: string,
+    curr_stream_id: number | undefined,
+    curr_topic: string | undefined,
     only_followed_topics: boolean,
 ): {stream_id: number; topic: string} | undefined {
     let my_streams = stream_list_sort.get_stream_ids();

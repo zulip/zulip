@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as activity_ui from "./activity_ui";
 import {all_messages_data} from "./all_messages_data";
@@ -15,6 +16,7 @@ import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as feedback_widget from "./feedback_widget";
+import type {FetchStatus} from "./fetch_status";
 import {Filter} from "./filter";
 import * as hash_parser from "./hash_parser";
 import * as hash_util from "./hash_util";
@@ -27,11 +29,13 @@ import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_fetch from "./message_fetch";
 import * as message_helper from "./message_helper";
+import type {MessageList, SelectIdOpts} from "./message_list";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
 import * as message_list_data_cache from "./message_list_data_cache";
 import * as message_lists from "./message_lists";
 import * as message_scroll_state from "./message_scroll_state";
+import {raw_message_schema} from "./message_store";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
@@ -48,6 +52,7 @@ import * as resize from "./resize";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
+import type {NarrowTerm} from "./state_data";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
@@ -61,7 +66,11 @@ import * as util from "./util";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
 
-export function reset_ui_state(opts) {
+const fetch_message_response_schema = z.object({
+    message: raw_message_schema,
+});
+
+export function reset_ui_state(opts: {trigger?: string}): void {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
     narrow_banner.hide_empty_narrow_message();
@@ -79,7 +88,7 @@ export function reset_ui_state(opts) {
     compose_banner.clear_message_sent_banners(true, skip_automatic_new_visibility_policy_banner);
 }
 
-export function changehash(newhash, trigger) {
+export function changehash(newhash: string, trigger?: string): void {
     if (browser_history.state.changing_hash) {
         // If we retargeted the narrow operation because a message was moved,
         // we want to have the current narrow hash in the browser history.
@@ -104,7 +113,7 @@ export function changehash(newhash, trigger) {
     }
 }
 
-export function update_hash_to_match_filter(filter, trigger) {
+export function update_hash_to_match_filter(filter: Filter, trigger?: string): void {
     if (browser_history.state.changing_hash && trigger !== "retarget message location") {
         return;
     }
@@ -116,7 +125,22 @@ export function update_hash_to_match_filter(filter, trigger) {
     }
 }
 
-function create_and_update_message_list(filter, id_info, opts) {
+type IdInfo = {
+    target_id: number | undefined;
+    final_select_id: number | undefined;
+    local_select_id: number | undefined;
+};
+
+function create_and_update_message_list(
+    filter: Filter,
+    id_info: IdInfo,
+    opts: ShowMessageViewOpts & {
+        then_select_id: number;
+    },
+): {
+    msg_list: MessageList;
+    restore_rendered_list: boolean;
+} {
     const excludes_muted_topics = filter.excludes_muted_topics();
 
     // Check if we already have a rendered message list for the `filter`.
@@ -221,13 +245,16 @@ function create_and_update_message_list(filter, id_info, opts) {
 }
 
 function handle_post_message_list_change(
-    id_info,
-    msg_list,
-    opts,
-    select_immediately,
-    select_opts,
-    then_select_offset,
-) {
+    id_info: IdInfo,
+    msg_list: MessageList,
+    opts: {
+        change_hash: boolean;
+        show_more_topics: boolean;
+    } & ShowMessageViewOpts,
+    select_immediately: boolean,
+    select_opts: SelectIdOpts,
+    then_select_offset: number | undefined,
+): void {
     // Important: We need to consider opening the compose box
     // before calling render_message_list_with_selected_message, so that the logic in
     // recenter_view for positioning the currently selected
@@ -253,7 +280,10 @@ function handle_post_message_list_change(
     compose_recipient.handle_middle_pane_transition();
 }
 
-export function try_rendering_locally_for_same_narrow(filter, opts) {
+export function try_rendering_locally_for_same_narrow(
+    filter: Filter,
+    opts: ShowMessageViewOpts,
+): boolean {
     const current_filter = narrow_state.filter();
     let target_scroll_offset;
     if (!current_filter) {
@@ -265,7 +295,7 @@ export function try_rendering_locally_for_same_narrow(filter, opts) {
         target_id = opts.then_select_id;
         target_scroll_offset = opts.then_select_offset;
     } else if (filter.has_operator("near")) {
-        target_id = Number.parseInt(filter.operands("near")[0], 10);
+        target_id = Number.parseInt(filter.operands("near")[0]!, 10);
     } else {
         return false;
     }
@@ -289,11 +319,12 @@ export function try_rendering_locally_for_same_narrow(filter, opts) {
         return false;
     }
 
+    assert(message_lists.current !== undefined);
     const currently_selected_id = message_lists.current?.selected_id();
     if (currently_selected_id !== target_id) {
         message_lists.current.select_id(target_id, {
             then_scroll: true,
-            target_scroll_offset,
+            ...(target_scroll_offset !== undefined && {target_scroll_offset}),
         });
     }
 
@@ -303,7 +334,18 @@ export function try_rendering_locally_for_same_narrow(filter, opts) {
     return true;
 }
 
-export function show(raw_terms, show_opts) {
+type ShowMessageViewOpts = {
+    force_rerender?: boolean;
+    force_close?: boolean;
+    change_hash?: boolean;
+    trigger?: string;
+    fetched_target_message?: boolean;
+    then_select_id?: number;
+    then_select_offset?: number;
+    show_more_topics?: boolean;
+};
+
+export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): void {
     /* Main entry point for switching to a new view / message list.
 
        Supported parameters:
@@ -393,7 +435,6 @@ export function show(raw_terms, show_opts) {
 
     const opts = {
         then_select_id: -1,
-        then_select_offset: undefined,
         change_hash: true,
         trigger: "unknown",
         show_more_topics: false,
@@ -417,7 +458,7 @@ export function show(raw_terms, show_opts) {
         const scope = Sentry.getCurrentHub().pushScope();
         scope.setSpan(span);
 
-        const id_info = {
+        const id_info: IdInfo = {
             target_id: undefined,
             local_select_id: undefined,
             final_select_id: undefined,
@@ -428,10 +469,10 @@ export function show(raw_terms, show_opts) {
         // These two narrowing operators specify what message should be
         // selected and should be the center of the narrow.
         if (filter.has_operator("near")) {
-            id_info.target_id = Number.parseInt(filter.operands("near")[0], 10);
+            id_info.target_id = Number.parseInt(filter.operands("near")[0]!, 10);
         }
         if (filter.has_operator("id")) {
-            id_info.target_id = Number.parseInt(filter.operands("id")[0], 10);
+            id_info.target_id = Number.parseInt(filter.operands("id")[0]!, 10);
         }
 
         // Narrow with near / id operator. There are two possibilities:
@@ -453,9 +494,9 @@ export function show(raw_terms, show_opts) {
                 // the stream/topic pair that was requested to some other
                 // location, then we should retarget this narrow operation
                 // to where the message is located now.
-                const narrow_topic = filter.operands("topic")[0];
+                const narrow_topic = filter.operands("topic")[0]!;
                 const narrow_stream_data = stream_data.get_sub_by_id_string(
-                    filter.operands("channel")[0],
+                    filter.operands("channel")[0]!,
                 );
                 if (!narrow_stream_data) {
                     // The stream id is invalid or incorrect in the URL.
@@ -493,6 +534,7 @@ export function show(raw_terms, show_opts) {
                 // topic and then moved back to the current topic. In this
                 // situation, narrow_exists_in_edit_history will be true,
                 // but we don't need to redirect the narrow.
+                assert(target_message.type === "stream");
                 const narrow_matches_target_message = util.same_stream_and_topic(
                     target_message,
                     narrow_dict,
@@ -522,7 +564,8 @@ export function show(raw_terms, show_opts) {
                 // for it.
                 channel.get({
                     url: `/json/messages/${id_info.target_id}`,
-                    success(data) {
+                    success(raw_data) {
+                        const data = fetch_message_response_schema.parse(raw_data);
                         // After the message is fetched, we make the
                         // message locally available and then call
                         // message_view.show recursively, setting a flag to
@@ -585,7 +628,7 @@ export function show(raw_terms, show_opts) {
                 const $row = message_lists.current.get_row(opts.then_select_id);
                 if ($row.length > 0) {
                     const row_props = $row.get_offset_to_window();
-                    const navbar_height = $("#navbar-fixed-container").height();
+                    const navbar_height = $("#navbar-fixed-container").height()!;
                     // 30px height + 10px top margin.
                     const compose_box_top = $("#compose").get_offset_to_window().top;
                     const sticky_header_outer_height = 40;
@@ -615,9 +658,9 @@ export function show(raw_terms, show_opts) {
             opts,
         );
 
-        let select_immediately;
-        let select_opts;
-        let then_select_offset;
+        let select_immediately: boolean;
+        let select_opts: SelectIdOpts;
+        let then_select_offset: number | undefined;
         if (restore_rendered_list) {
             select_immediately = true;
             select_opts = {
@@ -636,6 +679,7 @@ export function show(raw_terms, show_opts) {
             // read messages again in the combined feed if user has
             // marked some messages as unread in the last combined
             // feed session and thus prevented reading.
+            assert(message_lists.current !== undefined);
             message_lists.current.resume_reading();
             // Reset the collapsed status of messages rows.
             condense.condense_and_collapse(message_lists.current.view.$list.find(".message_row"));
@@ -754,11 +798,13 @@ export function show(raw_terms, show_opts) {
     }
 }
 
-function navigate_to_anchor_message({
-    anchor,
-    fetch_status_shows_anchor_fetched,
-    message_list_data_to_target_message_id,
-}) {
+function navigate_to_anchor_message(opts: {
+    anchor: string;
+    fetch_status_shows_anchor_fetched: (fetch_status: FetchStatus) => boolean;
+    message_list_data_to_target_message_id: (data: MessageListData) => number;
+}): void {
+    const {anchor, fetch_status_shows_anchor_fetched, message_list_data_to_target_message_id} =
+        opts;
     // The function navigates user to the anchor in the current
     // message list. We don't use `message_view.show` here due
     // to following reasons:
@@ -776,13 +822,15 @@ function navigate_to_anchor_message({
     //
     // These functions are scoped inside `navigate_to_anchor_message` to
     // to avoid them being used for any other purpose.
-    function duplicate_current_msg_list_with_new_data(data) {
+    function duplicate_current_msg_list_with_new_data(data: MessageListData): MessageList {
+        assert(message_lists.current !== undefined);
         const msg_list = new message_list.MessageList({data});
         msg_list.reading_prevented = message_lists.current.reading_prevented;
         return msg_list;
     }
 
-    function select_msg_id(msg_id, select_opts) {
+    function select_msg_id(msg_id: number, select_opts?: SelectIdOpts): void {
+        assert(message_lists.current !== undefined);
         message_lists.current.select_id(msg_id, {
             then_scroll: true,
             from_scroll: false,
@@ -790,13 +838,14 @@ function navigate_to_anchor_message({
         });
     }
 
-    function select_anchor_using_data(data) {
+    function select_anchor_using_data(data: MessageListData): void {
         const msg_list = duplicate_current_msg_list_with_new_data(data);
         message_lists.update_current_message_list(msg_list);
         // `force_rerender` is required to render the new data.
         select_msg_id(message_list_data_to_target_message_id(data), {force_rerender: true});
     }
 
+    assert(message_lists.current !== undefined);
     if (fetch_status_shows_anchor_fetched(message_lists.current.data.fetch_status)) {
         select_msg_id(message_list_data_to_target_message_id(message_lists.current.data));
     } else if (fetch_status_shows_anchor_fetched(all_messages_data.fetch_status)) {
@@ -830,7 +879,7 @@ function navigate_to_anchor_message({
     }
 }
 
-export function fast_track_current_msg_list_to_anchor(anchor) {
+export function fast_track_current_msg_list_to_anchor(anchor: string): void {
     assert(message_lists.current !== undefined);
     if (message_lists.current.visibly_empty()) {
         return;
@@ -843,7 +892,7 @@ export function fast_track_current_msg_list_to_anchor(anchor) {
                 return fetch_status.has_found_oldest();
             },
             message_list_data_to_target_message_id(msg_list_data) {
-                return msg_list_data.first().id;
+                return msg_list_data.first()!.id;
             },
         });
     } else if (anchor === "newest") {
@@ -853,7 +902,7 @@ export function fast_track_current_msg_list_to_anchor(anchor) {
                 return fetch_status.has_found_newest();
             },
             message_list_data_to_target_message_id(msg_list_data) {
-                return msg_list_data.last().id;
+                return msg_list_data.last()!.id;
             },
         });
     } else {
@@ -861,7 +910,7 @@ export function fast_track_current_msg_list_to_anchor(anchor) {
     }
 }
 
-function min_defined(a, b) {
+function min_defined(a: number | undefined, b: number | undefined): number | undefined {
     if (a === undefined) {
         return b;
     }
@@ -871,7 +920,7 @@ function min_defined(a, b) {
     return a < b ? a : b;
 }
 
-function load_local_messages(msg_data, superset_data) {
+function load_local_messages(msg_data: MessageListData, superset_data: MessageListData): boolean {
     // This little helper loads messages into our narrow message
     // data and returns true unless it's visibly empty.  We use this for
     // cases when our local cache (superset_data) has at least
@@ -883,7 +932,11 @@ function load_local_messages(msg_data, superset_data) {
     return !msg_data.visibly_empty();
 }
 
-export function maybe_add_local_messages(opts) {
+export function maybe_add_local_messages(opts: {
+    id_info: IdInfo;
+    msg_data: MessageListData;
+    superset_data: MessageListData;
+}): void {
     // This function determines whether we need to go to the server to
     // fetch messages for the requested narrow, or whether we have the
     // data cached locally to render the narrow correctly without
@@ -955,6 +1008,7 @@ export function maybe_add_local_messages(opts) {
         // is earlier.  See #2091 for a detailed explanation of why we
         // need to look at unread here.
         id_info.final_select_id = min_defined(id_info.target_id, unread_info.msg_id);
+        assert(id_info.final_select_id !== undefined);
 
         if (!load_local_messages(msg_data, superset_data)) {
             return;
@@ -999,6 +1053,7 @@ export function maybe_add_local_messages(opts) {
         // narrow the server could give us, so we can render locally.
         // and use local latest message id instead of max_int if set earlier.
         const last_msg = msg_data.last();
+        assert(last_msg !== undefined);
         id_info.final_select_id = last_msg.id;
         id_info.local_select_id = id_info.final_select_id;
         return;
@@ -1016,8 +1071,8 @@ export function maybe_add_local_messages(opts) {
     // And similarly for `near: max_int` with has_found_newest.
     if (
         superset_data.visibly_empty() ||
-        id_info.target_id < superset_data.first().id ||
-        id_info.target_id > superset_data.last().id
+        id_info.target_id < superset_data.first()!.id ||
+        id_info.target_id > superset_data.last()!.id
     ) {
         // If the target message is outside the range that we had
         // available for local population, we must go to the server.
@@ -1041,7 +1096,12 @@ export function maybe_add_local_messages(opts) {
     return;
 }
 
-export function render_message_list_with_selected_message(opts) {
+export function render_message_list_with_selected_message(opts: {
+    msg_list: MessageList | undefined;
+    id_info: IdInfo;
+    select_offset: number | undefined;
+    select_opts: SelectIdOpts;
+}): void {
     if (message_lists.current !== undefined && message_lists.current !== opts.msg_list) {
         // If we navigated away from a view while we were fetching
         // messages for it, don't attempt to move the currently
@@ -1049,6 +1109,7 @@ export function render_message_list_with_selected_message(opts) {
         return;
     }
 
+    assert(message_lists.current !== undefined);
     if (message_lists.current.visibly_empty()) {
         // There's nothing to select if there are no messages.
         return;
@@ -1090,13 +1151,13 @@ export function render_message_list_with_selected_message(opts) {
     narrow_history.save_narrow_state_and_flush();
 }
 
-function activate_stream_for_cycle_hotkey(stream_id) {
+function activate_stream_for_cycle_hotkey(stream_id: number): void {
     // This is the common code for A/D hotkeys.
     const filter_expr = [{operator: "channel", operand: stream_id.toString()}];
     show(filter_expr, {});
 }
 
-export function stream_cycle_backward() {
+export function stream_cycle_backward(): void {
     const curr_stream_id = narrow_state.stream_id();
 
     if (!curr_stream_id) {
@@ -1112,7 +1173,7 @@ export function stream_cycle_backward() {
     activate_stream_for_cycle_hotkey(stream_id);
 }
 
-export function stream_cycle_forward() {
+export function stream_cycle_forward(): void {
     const curr_stream_id = narrow_state.stream_id();
 
     if (!curr_stream_id) {
@@ -1128,7 +1189,7 @@ export function stream_cycle_forward() {
     activate_stream_for_cycle_hotkey(stream_id);
 }
 
-export function narrow_to_next_topic(opts = {}) {
+export function narrow_to_next_topic(opts: {trigger: string; only_followed_topics: boolean}): void {
     const curr_info = {
         stream_id: narrow_state.stream_id(),
         topic: narrow_state.topic(),
@@ -1170,8 +1231,9 @@ export function narrow_to_next_topic(opts = {}) {
     show(filter_expr, opts);
 }
 
-export function narrow_to_next_pm_string(opts = {}) {
+export function narrow_to_next_pm_string(opts = {}): void {
     const current_direct_message = narrow_state.pm_ids_string();
+    assert(current_direct_message !== undefined);
 
     const next_direct_message = topic_generator.get_next_unread_pm_string(current_direct_message);
 
@@ -1188,6 +1250,7 @@ export function narrow_to_next_pm_string(opts = {}) {
     // Hopefully someday we can narrow by user_ids_string instead of
     // mapping back to emails.
     const direct_message = people.user_ids_string_to_emails_string(next_direct_message);
+    assert(direct_message !== undefined);
 
     const filter_expr = [{operator: "dm", operand: direct_message}];
 
@@ -1200,9 +1263,15 @@ export function narrow_to_next_pm_string(opts = {}) {
     show(filter_expr, updated_opts);
 }
 
-export function narrow_by_topic(target_id, opts) {
+export function narrow_by_topic(
+    target_id: number,
+    opts: {
+        trigger: string;
+    },
+): void {
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const original = message_store.get(target_id);
+    assert(original !== undefined);
     if (original.type !== "stream") {
         // Only stream messages have topics, but the
         // user wants us to narrow in some way.
@@ -1225,14 +1294,19 @@ export function narrow_by_topic(target_id, opts) {
         {operator: "channel", operand: original.stream_id.toString()},
         {operator: "topic", operand: original.topic},
     ];
-    opts = {then_select_id: target_id, ...opts};
-    show(search_terms, opts);
+    show(search_terms, {then_select_id: target_id, ...opts});
 }
 
-export function narrow_by_recipient(target_id, opts) {
+export function narrow_by_recipient(
+    target_id: number,
+    opts: {
+        trigger: string;
+    },
+): void {
     const show_opts = {then_select_id: target_id, ...opts};
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
+    assert(message !== undefined);
     const emails = message.reply_to.split(",");
     const reply_to = people.sort_emails_by_username(emails);
 
@@ -1275,7 +1349,7 @@ export function narrow_by_recipient(target_id, opts) {
     }
 }
 
-export function to_compose_target() {
+export function to_compose_target(): void {
     if (!compose_state.composing()) {
         return;
     }
@@ -1316,7 +1390,13 @@ export function to_compose_target() {
     }
 }
 
-function handle_post_view_change(msg_list, opts) {
+function handle_post_view_change(
+    msg_list: MessageList,
+    opts: {
+        change_hash: boolean;
+        show_more_topics: boolean;
+    },
+): void {
     const filter = msg_list.data.filter;
 
     if (narrow_state.narrowed_by_reply()) {
