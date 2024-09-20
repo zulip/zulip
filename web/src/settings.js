@@ -80,7 +80,7 @@ export function update_lock_icon_in_sidebar() {
     $(".org-settings-list .locked").show();
 
     if (settings_bots.can_create_new_bots()) {
-        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
+        $(".org-settings-list li[data-section='bots'] .locked").hide();
     }
 
     if (settings_data.user_can_add_custom_emoji()) {

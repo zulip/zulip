@@ -28,7 +28,7 @@ link_mapping = {
     ],
     "preferences": ["Personal settings", "Preferences", "/#settings/preferences"],
     "notifications": ["Personal settings", "Notifications", "/#settings/notifications"],
-    "your-bots": ["Personal settings", "Bots", "/#settings/your-bots"],
+    "your-bots-via-personal-settings": ["Personal settings", "Bots", "/#settings/bots"],
     "alert-words": ["Personal settings", "Alert words", "/#settings/alert-words"],
     "uploaded-files": ["Personal settings", "Uploaded files", "/#settings/uploaded-files"],
     "topics": ["Personal settings", "Topics", "/#settings/topics"],
@@ -74,10 +74,20 @@ link_mapping = {
         "Users",
         "/#organization/users/invitations",
     ],
-    "bot-list-admin": [
+    "bots": [
         "Organization settings",
         "Bots",
-        "/#organization/bot-list-admin",
+        "/#organization/bots",
+    ],
+    "all-bots": [
+        "Organization settings",
+        "Bots",
+        "/#organization/bots/all-bots",
+    ],
+    "your-bots-via-org": [
+        "Organization settings",
+        "Bots",
+        "/#organization/bots/your-bots",
     ],
     "default-channels-list": [
         "Organization settings",

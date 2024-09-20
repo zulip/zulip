@@ -14,7 +14,7 @@ is visible and available for anyone to use.
 
 {tab|via-personal-settings}
 
-{settings_tab|your-bots}
+{settings_tab|your-bots-via-personal-settings}
 
 1. Click **Add a new bot**.
 
@@ -22,7 +22,7 @@ is visible and available for anyone to use.
 
 {tab|via-organization-settings}
 
-{settings_tab|bot-list-admin}
+{settings_tab|all-bots}
 
 1. Click **Add a new bot**.
 

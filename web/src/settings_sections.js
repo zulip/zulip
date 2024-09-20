@@ -31,7 +31,7 @@ export function get_group(section) {
         case "auth-methods":
             return "org_misc";
 
-        case "bot-list-admin":
+        case "bots":
             return "org_bots";
 
         case "users":

@@ -671,21 +671,30 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     const owner_id = bot_user.owner_id;
     assert(owner_id !== null);
+    const is_bot_owner_current_user = owner_id === current_user.user_id;
     const owner_full_name = people.get_full_name(owner_id);
     const is_active = people.is_person_active(user_id);
-
     assert(bot.is_bot);
+    const bot_api_key = bot_data.get(bot.user_id)?.api_key;
+    if (!bot_api_key) {
+        return;
+    }
+
     const html_body = render_edit_bot_form({
         user_id,
         is_active,
+        is_bot_owner_current_user,
         email: bot.email,
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
+        bot_type: settings_data.bot_type_id_to_string(bot.bot_type),
+        api_key: bot_api_key,
         owner_full_name,
         current_bot_owner: bot.bot_owner_id,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        zuliprc: "zuliprc",
     });
     $container.append($(html_body));
     let avatar_widget: UploadWidget;
@@ -975,6 +984,43 @@ function toggle_submit_button($edit_form: JQuery): void {
     }
 }
 
+export function generate_zuliprc_content(bot: bot_data.Bot): string {
+    let token;
+    // For outgoing webhooks, include the token in the zuliprc.
+    // It's needed for authenticating to the Botserver.
+    if (bot.bot_type === 3) {
+        const services = bot_data.get_services(bot.user_id);
+        if (services?.[0] && "token" in services[0]) {
+            token = services[0].token;
+        }
+    }
+    return (
+        "[api]" +
+        "\nemail=" +
+        bot.email +
+        "\nkey=" +
+        bot.api_key +
+        "\nsite=" +
+        realm.realm_url +
+        (token === undefined ? "" : "\ntoken=" + token) +
+        // Some tools would not work in files without a trailing new line.
+        "\n"
+    );
+}
+
+export function generate_zuliprc_url(bot_id: number): string {
+    const bot = bot_data.get(bot_id);
+    if (!bot) {
+        return "";
+    }
+    const data = generate_zuliprc_content(bot);
+    return encode_zuliprc_as_url(data);
+}
+
+export function encode_zuliprc_as_url(zuliprc: string): string {
+    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
+}
+
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -1260,12 +1306,83 @@ export function initialize(): void {
         }
     });
 
+    $("body").on("click", "button.bot-modal-regenerate-bot-api-key", (e) => {
+        e.preventDefault();
+        const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id") ?? "", 10);
+        assert(!Number.isNaN(bot_id));
+        void channel.post({
+            url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
+            success(data) {
+                const parsedData = z
+                    .object({
+                        result: z.string(),
+                        msg: z.string().optional(),
+                        api_key: z.string(),
+                    })
+                    .parse(data);
+                const $row = $<HTMLInputElement>("#bot-edit-form");
+                $row.find(".bot-modal-info").find(".api-key").val(parsedData.api_key);
+                $row.find(".bot-modal-info")
+                    .find("#copy_api_key")
+                    .attr("data-api-key", parsedData.api_key);
+                $row.find(".bot-modal-api-key-error").hide();
+            },
+            error(xhr) {
+                const parsedErrorData = z
+                    .object({
+                        result: z.literal("error"),
+                        msg: z.string(),
+                        code: z.string(),
+                    })
+                    .parse(xhr.responseJSON);
+                if (parsedErrorData) {
+                    const $row = $(e.currentTarget).closest("li");
+                    $row.find(".bot-modal-api-key-error").text(parsedErrorData.msg).show();
+                }
+            },
+        });
+    });
+
+    $("body").on("click", "a.download-bot-zuliprc", function () {
+        const $bot_info = $(this).closest("#bot-edit-form");
+        const bot_id = Number.parseInt($bot_info.attr("data-user-id") ?? "", 10);
+        assert(!Number.isNaN(bot_id));
+        $(this).attr("href", generate_zuliprc_url(bot_id));
+    });
+
     new ClipboardJS(".copy-link-to-user-profile", {
         text(trigger) {
             const user_id = $(trigger).attr("data-user-id");
             const user_profile_link = window.location.origin + "/#user/" + user_id;
 
             return user_profile_link;
+        },
+    }).on("success", (e) => {
+        assert(e.trigger instanceof HTMLElement);
+        show_copied_confirmation(e.trigger);
+    });
+
+    new ClipboardJS("#copy_api_key", {
+        text(trigger) {
+            const data = $(trigger).attr("data-api-key") ?? "";
+            return data;
+        },
+    }).on("success", (e) => {
+        assert(e.trigger instanceof HTMLElement);
+        show_copied_confirmation(e.trigger);
+    });
+
+    new ClipboardJS("#copy_zuliprc", {
+        text(trigger) {
+            const $bot_info = $(trigger).closest("#bot-edit-form");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id") ?? "", 10);
+            assert(!Number.isNaN(bot_id));
+            const bot = bot_data.get(bot_id);
+            if (bot) {
+                const data = generate_zuliprc_content(bot);
+                return data;
+            }
+            return "";
         },
     }).on("success", (e) => {
         assert(e.trigger instanceof HTMLElement);

@@ -821,154 +821,71 @@ input[type="checkbox"] {
     max-height: calc(95vh - 280px);
 }
 
-#bot-settings {
-    .add-a-new-bot {
-        margin-bottom: 2px;
-    }
-
-    hr {
-        margin: 10px 0;
-        border-color: hsl(0deg 0% 85%);
-    }
-
+#admin-your-bots-list {
     .config-download-text {
-        margin-left: 5px;
-    }
-
-    .ind-tab {
-        width: auto;
-        min-width: 90px;
+        .fa-download {
+            color: var(--color-copy-btn);
+        }
     }
 }
 
-.bots_list {
-    list-style-type: none;
-    margin-left: 0;
-
-    .bot-card-image {
-        vertical-align: top;
+.bots-edit-form {
+    #zuliprc_section {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 5px;
     }
 
-    .bot-card-name {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin: 7px 5px;
+    .bot-modal-info {
+        margin-bottom: 20px;
 
-        overflow: hidden;
-        line-height: 1.3em;
-        text-overflow: ellipsis;
-        white-space: pre;
-    }
+        .bot-modal-value-and-button {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
 
-    .bot-card-regenerate-bot-api-key {
-        position: relative;
-        margin-left: 5px;
-        color: hsl(0deg 0% 67%);
-        transition: all 0.3s ease;
+            .api-key {
+                width: 281px;
+            }
 
-        &:hover {
-            color: hsl(0deg 0% 27%);
-        }
-    }
+            .bot-modal-buttons {
+                .download-bot-zuliprc {
+                    padding: 6px 0;
+                    color: var(--color-copy-btn);
+                }
 
-    .edit-bot-buttons {
-        padding-top: 5px;
+                .fa-refresh {
+                    color: var(--color-copy-btn);
+                }
 
-        & button {
-            background-color: transparent;
-        }
+                .bot-modal-regenerate-bot-api-key {
+                    position: relative;
+                    margin-left: 5px;
+                    color: hsl(0deg 0% 67%);
+                    transition: all 0.3s ease;
 
-        .btn {
-            padding: 4px;
-        }
+                    &:hover {
+                        color: hsl(0deg 0% 27%);
+                    }
+                }
 
-        .sea-green {
-            color: hsl(177deg 70% 46%);
-        }
+                .copy-api-key,
+                .copy-zuliprc {
+                    padding: 6px 4px;
+                    margin-left: 5px;
+                    background-color: transparent;
 
-        .blue {
-            color: hsl(203deg 77% 56%);
-        }
+                    #clipboard_image {
+                        margin: 0 -2px 0 0;
 
-        .danger-red {
-            color: hsl(0deg 56% 73%);
-        }
-
-        .copy_zuliprc {
-            padding: 0 4px;
-
-            #clipboard_image {
-                margin: 0 -2px 0 0;
-
-                path {
-                    fill: hsl(51deg 90% 50%);
+                        path {
+                            fill: var(--color-copy-btn);
+                        }
+                    }
                 }
             }
         }
-
-        .purple {
-            color: hsl(278deg 62% 68%);
-        }
-
-        .steel-blue {
-            color: hsl(207deg 44% 49%);
-        }
-    }
-
-    .bot-information-box {
-        position: relative;
-        display: inline-block;
-        width: calc(50% - 10px);
-        margin: 5px;
-
-        border-radius: 4px;
-        box-sizing: border-box;
-
-        overflow: auto;
-
-        .bot-card-details {
-            display: inline-block;
-            width: calc(100% - 75px);
-        }
-    }
-
-    & img.bot-card-avatar {
-        margin: 10px 5px 0 10px;
-        height: 50px;
-        width: 50px;
-        border-radius: 4px;
-        vertical-align: top;
-        box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
-    }
-
-    .bot-card-email,
-    .bot-card-type {
-        margin-bottom: 5px;
-    }
-
-    .bot-card-email .bot-card-value,
-    .bot-card-api-key .bot-card-api-key-value-and-button {
-        display: block;
-        margin-left: 0;
-        word-wrap: break-word;
-        word-break: break-all;
-        white-space: normal;
-    }
-
-    .bot-card-api-key .bot-card-api-key-value-and-button {
-        font-family: "Source Code Pro", monospace;
-        font-size: 0.85em;
-        display: flex;
-    }
-
-    .bot-card-info {
-        padding: 10px;
-    }
-
-    .bot-card-field {
-        text-transform: uppercase;
-        font-weight: 600;
-        color: hsl(0deg 0% 67%);
     }
 }
 
@@ -1327,6 +1244,11 @@ $option_title_width: 180px;
         height: calc(100% - $settings_header_height);
         overflow-y: auto;
         border-right: 1px solid hsl(0deg 0% 93%);
+
+        .your-bots-link {
+            text-decoration: none;
+            color: inherit;
+        }
 
         .header {
             height: auto;
@@ -1963,7 +1885,8 @@ $option_title_width: 180px;
         display: inline-block;
     }
 
-    .user_filters {
+    .user_filters,
+    .bot_filters {
         display: flex;
         float: right;
         flex-wrap: wrap;
@@ -2090,4 +2013,15 @@ $option_title_width: 180px;
 
 #admin-user-list .tab-switcher .ind-tab {
     width: 110px;
+}
+
+#admin-bot-list {
+    .tab-switcher {
+        margin: 2px 0;
+    }
+
+    .tab-switcher .ind-tab {
+        margin-bottom: 10px;
+        width: 110px;
+    }
 }
