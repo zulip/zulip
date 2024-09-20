@@ -199,11 +199,37 @@ test("basics", () => {
     assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), undefined);
     assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "");
 
+    // If this is the name of a stream, its id is returned.
+    const stream_starting_with_25 = {
+        name: "25-or-6-to-4",
+        stream_id: 400,
+    };
+    stream_data.add_sub(stream_starting_with_25);
+    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), 400);
+    assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "400");
+
     assert.equal(stream_data.slug_to_stream_id("2something"), undefined);
     assert.equal(hash_util.decode_operand("channel", "2something"), "");
 
-    assert.equal(stream_data.slug_to_stream_id("99whatever"), undefined);
-    assert.equal(hash_util.decode_operand("channel", "99whatever"), "");
+    assert.equal(stream_data.slug_to_stream_id("99"), undefined);
+    assert.equal(hash_util.decode_operand("channel", "99"), "");
+    // If this is the name of a stream, its id is returned.
+    const stream_99 = {
+        name: "99",
+        stream_id: 401,
+    };
+    stream_data.add_sub(stream_99);
+    assert.equal(stream_data.slug_to_stream_id("99"), 401);
+    assert.equal(hash_util.decode_operand("channel", "99"), "401");
+    // But if there's a stream with id 99, it gets priority over
+    // a stream with name "99".
+    const stream_id_99 = {
+        name: "Some Stream",
+        stream_id: 99,
+    };
+    stream_data.add_sub(stream_id_99);
+    assert.equal(stream_data.slug_to_stream_id("99"), 99);
+    assert.equal(hash_util.decode_operand("channel", "99"), "99");
 
     // sub_store
     assert.equal(sub_store.get(-3), undefined);
