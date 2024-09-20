@@ -619,6 +619,17 @@ export function initialize() {
 
     // MISC
 
+    $("#message-list-navigation-next-unread-conversation").on("click", (e) => {
+        assert(message_lists.current !== undefined);
+        e.currentTarget.blur();
+
+        if (message_lists.current.data.filter.can_show_next_unread_dm_conversation_button()) {
+            message_view.narrow_to_next_pm_string({trigger: "hotkey"});
+        } else {
+            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+        }
+    });
+
     {
         const sel = [
             "#stream_filters",

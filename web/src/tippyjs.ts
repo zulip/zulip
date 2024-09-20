@@ -4,13 +4,17 @@ import * as tippy from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
+import render_mark_as_read_button_tooltip from "../templates/mark_as_read_button_tooltip.hbs";
+import render_next_unread_conversation_tooltip from "../templates/next_unread_conversation_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_config from "./settings_config";
+import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
@@ -726,17 +730,62 @@ export function initialize(): void {
         },
     });
 
+    function set_home_view_tooltip_content(instance: tippy.Instance): void {
+        const escape_navigates_to_home_view = user_settings.web_escape_navigates_to_home_view;
+        const home_view =
+            settings_config.web_home_view_values[user_settings.web_home_view].description;
+        instance.setContent(
+            ui_util.parse_html(render_org_logo_tooltip({home_view, escape_navigates_to_home_view})),
+        );
+    }
+
     tippy.delegate("body", {
         target: "#realm-navbar-wide-logo",
         placement: "right",
         appendTo: () => document.body,
+        onShow: set_home_view_tooltip_content,
+    });
+
+    tippy.delegate("body", {
+        target: "#message-list-navigation-home-view",
+        placement: "bottom",
+        trigger: "mouseenter",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow: set_home_view_tooltip_content,
+    });
+
+    tippy.delegate("body", {
+        target: "#message-list-navigation-next-unread-conversation",
+        trigger: "mouseenter",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "bottom",
         onShow(instance) {
-            const escape_navigates_to_home_view = user_settings.web_escape_navigates_to_home_view;
-            const home_view =
-                settings_config.web_home_view_values[user_settings.web_home_view].description;
+            assert(message_lists.current !== undefined);
+            const is_unread_dm_conversation =
+                message_lists.current.data.filter.contains_only_private_messages();
             instance.setContent(
                 ui_util.parse_html(
-                    render_org_logo_tooltip({home_view, escape_navigates_to_home_view}),
+                    render_next_unread_conversation_tooltip({is_unread_dm_conversation}),
+                ),
+            );
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#message-list-navigation-mark-as-read",
+        trigger: "mouseenter",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "bottom",
+        onShow(instance) {
+            const cannot_read_due_to_settings =
+                user_settings.web_mark_read_on_scroll_policy !==
+                web_mark_read_on_scroll_policy_values.always.code;
+            instance.setContent(
+                ui_util.parse_html(
+                    render_mark_as_read_button_tooltip({cannot_read_due_to_settings}),
                 ),
             );
         },
