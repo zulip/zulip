@@ -134,6 +134,7 @@ test("basics", () => {
 
     // "stream" was renamed to "channel"
     terms = [{operator: "stream", operand: foo_stream_id.toString()}];
+    filter = new Filter(terms);
     assert.ok(filter.has_operator("channel"));
     assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
     assert.ok(filter.includes_full_stream_history());
