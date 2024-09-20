@@ -1305,7 +1305,9 @@ export function initialize({
 }: {
     on_enter_send: (scheduling_message?: boolean) => boolean | undefined;
 }): void {
-    // These handlers are at the "form" level so that they are called after typeahead
+    // Attach event handlers to `form` instead of `textarea` to allow
+    // typeahead to call stopPropagation if it can handle the event
+    // and prevent the form from submitting.
     $("form#send_message_form").on("keydown", (e) => {
         handle_keydown(e, on_enter_send);
     });
