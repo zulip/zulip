@@ -380,6 +380,10 @@
             ) /
             2
     );
+    /* Thumbnail images are constrained to a square, ensuring
+       that neither landscape nor portrait images appear larger
+       than the other. */
+    --max-length-thumbnail-image: 150px;
 
     /* Legacy values */
     --legacy-body-line-height-unitless: calc(20 / 14);

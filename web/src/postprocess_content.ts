@@ -102,6 +102,8 @@ export function postprocess_content(html: string): string {
                 elt.setAttribute("aria-label", title);
                 elt.removeAttribute("title");
             }
+            // Make it more performant to refer to media links
+            elt.classList.add("media-link");
             // To prevent layout shifts and flexibly size image previews,
             // we read the image's original dimensions, when present, and
             // set those values as `height` and `width` attributes on the

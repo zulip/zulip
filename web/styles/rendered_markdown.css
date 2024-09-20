@@ -404,6 +404,99 @@
         }
     }
 
+    /* Thumbnail galleries for uploaded media */
+
+    .message-thumbnail-gallery {
+        display: flex;
+        gap: 5px;
+        flex-flow: row wrap;
+        align-items: center;
+        margin: 0 0 var(--markdown-interelement-space-px);
+    }
+
+    .message_inline_image {
+        max-width: var(--max-length-thumbnail-image);
+        max-height: var(--max-length-thumbnail-image);
+        flex: 0 0 auto;
+    }
+
+    .landscape-thumbnail {
+        width: var(--max-length-thumbnail-image);
+    }
+
+    .portrait-thumbnail {
+        height: var(--max-length-thumbnail-image);
+    }
+
+    .image-loading-placeholder {
+        content: var(--icon-image-loading-placeholder);
+    }
+
+    .media-link {
+        /* Allow <a> elements to grow to surround their contained media. */
+        display: flex;
+    }
+
+    .message_inline_image img,
+    .message_inline_image video {
+        max-width: 100%;
+        max-height: var(--max-length-thumbnail-image);
+        width: auto;
+        height: auto;
+    }
+
+    .message_inline_video,
+    .message_inline_animated_image_still {
+        /* To position the play button, we'll set up the video
+           as a grid. */
+        display: grid;
+        /* We create a grid area called
+           "media", so that both the inner
+           <a> element and the ::before content
+           can sit there. `auto` will take on
+           the height and width otherwise assigned
+           to the video content. Setting
+           the min value to 0 on minmax() ensures
+           that media larger than those dimensions
+           don't cause a grid blowout. */
+        grid-template: "media" minmax(0, auto) / minmax(0, auto);
+
+        &:hover {
+            &::after {
+                transform: scale(1);
+                transition: transform 0.2s;
+            }
+        }
+
+        &::after {
+            content: "";
+            background-image: url("../images/play_button.svg");
+            display: block;
+            width: 32px;
+            height: 32px;
+            border-radius: 100%;
+            transform: scale(0.8);
+        }
+
+        & video {
+            display: block;
+            object-fit: contain;
+            height: 100%;
+            width: 100%;
+        }
+    }
+
+    .message_inline_video::after,
+    .message_inline_video .media-link,
+    .message_inline_animated_image_still::after,
+    .message_inline_animated_image_still .media-link {
+        /* And we explicitly place the . in the thumbnail
+           area, too. Otherwise, grid would generate a new
+           column track for it to sit in. */
+        grid-area: media;
+        place-self: center center;
+    }
+
     /* embedded link previews */
     .message_inline_image_title {
         font-weight: bold;
@@ -474,10 +567,10 @@
        `.rendered_markdown` out of the baseline group
        formed with EDITED/MOVED markers and the
        timestamp when the first child of the rendered
-       markdown is a horizontal rule, a media element,
+       markdown is a horizontal rule, a media gallery,
        or KaTeX. */
     &:has(> hr:first-child),
-    &:has(> .message_inline_image:first-child),
+    &:has(> .message-thumbnail-gallery:first-child),
     &:has(> p:first-child > .katex-display) {
         align-self: center;
     }
@@ -492,6 +585,8 @@
             width: 100%;
         }
 
+        /* This fallback for `.message_inline_image` continues to
+           work in the context of media galleries. */
         p:first-child > .katex-display,
         .message_inline_image {
             /* We'll display this bit of media as
