@@ -1701,11 +1701,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("hi :see no", emoji_objects(["see_no_evil"]));
     assert_typeahead_equals("hi :japanese post of", emoji_objects(["japanese_post_office"]));
 
-    assert_typeahead_equals("#", []);
-    assert_typeahead_equals("# ", []);
-    assert_typeahead_equals(" #", []);
     assert_typeahead_equals("# s", []);
-    assert_typeahead_equals("test #", []);
     assert_typeahead_equals("test # a", []);
     assert_typeahead_equals("test no#o", []);
 

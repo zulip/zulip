@@ -875,7 +875,7 @@ export function get_candidates(
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.stream && current_token.startsWith("#")) {
-        if (current_token.length === 1) {
+        if (current_token.length === 1 && compose_state.get_message_type() !== "stream") {
             return [];
         }
 
