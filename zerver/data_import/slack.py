@@ -3,6 +3,7 @@ import logging
 import os
 import posixpath
 import random
+import re
 import secrets
 import shutil
 import zipfile
@@ -1377,14 +1378,26 @@ def do_convert_zipfile(
         os.makedirs(slack_data_dir, exist_ok=True)
 
         with zipfile.ZipFile(original_path) as zipObj:
-            # Slack's export doesn't set the UTF-8 flag on each
-            # filename entry, despite encoding them as such, so
-            # zipfile mojibake's the output.  Explicitly re-interpret
-            # it as UTF-8 misdecoded as cp437, the default.
             for fileinfo in zipObj.infolist():
+                # Slack's export doesn't set the UTF-8 flag on each
+                # filename entry, despite encoding them as such, so
+                # zipfile mojibake's the output.  Explicitly re-interpret
+                # it as UTF-8 misdecoded as cp437, the default.
                 fileinfo.flag_bits |= 0x800
                 fileinfo.filename = fileinfo.filename.encode("cp437").decode("utf-8")
                 zipObj.NameToInfo[fileinfo.filename] = fileinfo
+
+                # The only files we expect to find in a Slack export are .json files:
+                #   something.json
+                #   channelname/
+                #   channelname/2024-01-02.json
+                #
+                # Canvases may also appear in exports, either in their own
+                # top-level directories, or as `canvas_in_the_conversation.json`
+                # files in channel directories.  We do not parse these currently.
+                if not re.match(r"[^/]+(\.json|/([^/]+\.json)?)$", fileinfo.filename):
+                    raise Exception("This zip file does not look like a Slack archive")
+
             zipObj.extractall(slack_data_dir)
 
         do_convert_directory(slack_data_dir, output_dir, token, threads, convert_slack_threads)
