@@ -25,6 +25,11 @@ format used by the Zulip server that they are interacting with.
 * [`GET /export/realm/consents`](/api/get-realm-export-consents): Added
   a new endpoint to fetch the consents of users for their [private data
   exports](/help/export-your-organization#full-export-with-member-consent).
+* `/api/v1/tus` is an endpoint implementing the [`tus`
+  protocol](https://tus.io/protocols/resumable-upload) for resumable uploads.
+  Clients which send authenticated credentials (either via browser-based
+  cookies, or API key via `Authorization` header) may use this endpoint to
+  create uploads, similar to [`POST /user_uploads`](/api/upload-file).
 
 **Feature level 294**
 
