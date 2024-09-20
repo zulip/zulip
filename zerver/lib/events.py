@@ -621,7 +621,16 @@ def fetch_initial_state_data(
                 "name": integration.name,
                 "display_name": integration.display_name,
                 "all_event_types": get_all_event_types_for_integration(integration),
-                "config": {c[1]: c[0] for c in integration.config_options},
+                "config_options": [
+                    {
+                        "key": c.name,
+                        "label": c.description,
+                        "validator": c.validator.__name__,
+                    }
+                    for c in integration.config_options
+                ]
+                if integration.config_options
+                else [],
             }
             for integration in WEBHOOK_INTEGRATIONS
             if integration.legacy is False

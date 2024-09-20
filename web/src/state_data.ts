@@ -342,7 +342,15 @@ export const realm_schema = z.object({
             display_name: z.string(),
             name: z.string(),
             all_event_types: z.nullable(z.array(z.string())),
-            // We currently ignore the `config` field in these objects.
+            config_options: z
+                .array(
+                    z.object({
+                        key: z.string(),
+                        label: z.string(),
+                        validator: z.string(),
+                    }),
+                )
+                .optional(),
         }),
     ),
     realm_inline_image_preview: z.boolean(),

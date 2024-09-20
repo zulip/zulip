@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 318**
+
+* [`POST /register`](/api/register-queue): Updated
+  `realm_incoming_webhook_bots` with a new `config_options` key,
+  defining which options should be offered when creating URLs for this
+  integration.
+
 **Feature level 317**
 
 * [`POST /user_groups/create`](/api/create-user-group):

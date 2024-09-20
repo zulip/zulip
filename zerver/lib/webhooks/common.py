@@ -1,6 +1,7 @@
 import fnmatch
 import importlib
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
@@ -47,6 +48,13 @@ SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured
 SETUP_MESSAGE_USER_PART = " by {user_name}"
 
 OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig("topic")]
+
+
+@dataclass
+class WebhookConfigOption:
+    name: str
+    description: str
+    validator: Callable[[str, str], str | bool | None]
 
 
 def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
