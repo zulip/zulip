@@ -8246,7 +8246,7 @@ paths:
         The maximum file size for uploads can be configured by the
         administrator of the Zulip server by setting `MAX_FILE_UPLOAD_SIZE`
         in the [server's settings][1]. `MAX_FILE_UPLOAD_SIZE` defaults
-        to 25MB.
+        to 100MB.
 
         [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
       requestBody:
