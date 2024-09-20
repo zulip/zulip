@@ -1426,6 +1426,18 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 33%)
     );
+    --color-background-rendered-markdown-thumbnail: light-dark(
+        hsl(0deg 0% 0% / 3%),
+        hsl(0deg 0% 100% / 3%)
+    );
+    --color-background-rendered-markdown-thumbnail-hover: light-dark(
+        hsl(0deg 0% 0% / 15%),
+        hsl(0deg 0% 100% / 15%)
+    );
+
+    /* Markdown assets */
+    --icon-image-loading-placeholder: content:
+        url("../images/loading/loader-black.svg");
 
     /* Tab-switcher colors */
     /* The non-selected colors here are shared with numerous other
@@ -2572,6 +2584,10 @@
     --color-text-sender-name: hsl(0deg 0% 100% / 85%);
     --color-text-other-mention: hsl(0deg 0% 100% / 80%);
     --color-text-empty-list-message: hsl(0deg 0% 67%);
+
+    /* Markdown assets */
+    --icon-image-loading-placeholder: content:
+        url("../images/loading/loader-white.svg");
 
     /* Settings table colors */
     --color-background-notification-table-thead: hsl(0deg 0% 0% / 20%);

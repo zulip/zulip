@@ -418,6 +418,15 @@
         max-width: var(--max-length-thumbnail-image);
         max-height: var(--max-length-thumbnail-image);
         flex: 0 0 auto;
+        border: solid 1px transparent;
+        transition: background 0.3s ease;
+        background: var(--color-background-rendered-markdown-thumbnail);
+
+        &:hover {
+            background: var(
+                --color-background-rendered-markdown-thumbnail-hover
+            );
+        }
     }
 
     .landscape-thumbnail {
@@ -537,14 +546,16 @@
            container. */
         border: solid 1px transparent;
         transition: background 0.3s ease;
-        background: hsl(0deg 0% 0% / 3%);
+        background: var(--color-background-rendered-markdown-thumbnail);
 
         &:first-child {
             margin-top: var(--markdown-interelement-space-px);
         }
 
         &:hover {
-            background: hsl(0deg 0% 0% / 15%);
+            background: var(
+                --color-background-rendered-markdown-thumbnail-hover
+            );
         }
 
         & a {
