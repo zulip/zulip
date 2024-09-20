@@ -8,6 +8,7 @@ import render_wildcard_mention_not_allowed_error from "../templates/compose_bann
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
+import render_intro_resolve_topic_modal from "../templates/confirm_dialog/intro_resolve_topic.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
 import render_message_moved_widget_body from "../templates/message_moved_widget_body.hbs";
 import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
@@ -42,6 +43,7 @@ import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import * as message_viewport from "./message_viewport";
+import * as onboarding_steps from "./onboarding_steps";
 import * as people from "./people";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -755,6 +757,17 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
     });
 }
 
+function show_intro_resolve_topic_modal(topic_name: string, cb: () => void): void {
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Mark topic as resolved"}),
+        html_body: render_intro_resolve_topic_modal({topic_name}),
+        id: "intro_resolve_topic_modal",
+        on_click: cb,
+        html_submit_button: $t({defaultMessage: "Got it, Confirm"}),
+        html_exit_button: $t({defaultMessage: "Got it, Cancel"}),
+    });
+}
+
 export function toggle_resolve_topic(
     message_id: number,
     old_topic_name: string,
@@ -769,6 +782,39 @@ export function toggle_resolve_topic(
         new_topic_name = resolved_topic.resolve_name(old_topic_name);
     }
 
+    if (
+        !topic_is_resolved &&
+        onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_resolve_topic")
+    ) {
+        show_intro_resolve_topic_modal(old_topic_name, () => {
+            do_toggle_resolve_topic(
+                message_id,
+                new_topic_name,
+                topic_is_resolved,
+                report_errors_in_global_banner,
+                $row,
+            );
+        });
+        onboarding_steps.post_onboarding_step_as_read("intro_resolve_topic");
+        return;
+    }
+
+    do_toggle_resolve_topic(
+        message_id,
+        new_topic_name,
+        topic_is_resolved,
+        report_errors_in_global_banner,
+        $row,
+    );
+}
+
+function do_toggle_resolve_topic(
+    message_id: number,
+    new_topic_name: string,
+    topic_is_resolved: boolean,
+    report_errors_in_global_banner: boolean,
+    $row: JQuery,
+): void {
     if ($row) {
         show_toggle_resolve_topic_spinner($row);
     }
