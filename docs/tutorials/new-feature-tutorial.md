@@ -277,11 +277,13 @@ first contacts the server, the server sends the client its
 initial state. Subsequently, clients subscribe to "events," which can
 (among other things) indicate that settings have changed.
 
-For the backend piece, we will need our action to make a call to `send_event_on_commit`
-to send the event to clients that are active. We will also need to
-modify `fetch_initial_state_data` so that the new field is passed to
-clients. See [our event system docs](../subsystems/events-system.md) for all the
-gory details.
+For the backend piece, we will need our action to make a call to
+`send_event_on_commit` to send the event to clients that are active
+(The event is only sent after the current database transaction
+commits, hence the name). We will also need to modify
+`fetch_initial_state_data` so that the new field is passed to
+clients. See [our event system docs](../subsystems/events-system.md)
+for all the gory details.
 
 Anyway, getting back to implementation details...
 

@@ -77,6 +77,11 @@ example, an event containing direct message content is sent to the
 entire organization. However, if an event isn't sent to enough clients,
 there will likely be user-visible real-time sync bugs.
 
+As indicated in the name, `send_event_on_commit` is intended to be
+called inside the database transaction that is changing the state
+itself; this design ensures that the event is only sent if the
+transaction successfully commits.
+
 Most of the hard work in event generation is about defining consistent
 event dictionaries that are clear, readable, will be useful to the
 wide range of possible clients, and make it easy for developers.

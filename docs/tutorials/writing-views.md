@@ -332,9 +332,9 @@ def update_realm(
 ```
 
 `realm.save()` actually saves the changes to the realm to the
-database, and `send_event_on_commit` sends the event to active clients belonging
-to the provided list of users (in this case, all active users in the
-Zulip realm).
+database, and `send_event_on_commit` sends the event to active clients
+belonging to the provided list of users (in this case, all active
+users in the Zulip realm), once the current transaction completes.
 
 ### Calling from the web application
 
