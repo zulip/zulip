@@ -128,6 +128,8 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.can_show_next_unread_topic_conversation_button());
+    assert.ok(!filter.can_show_next_unread_dm_conversation_button());
 
     assert.ok(filter.can_bucket_by("channel"));
     assert.ok(filter.can_bucket_by("channel", "topic"));
@@ -139,6 +141,8 @@ test("basics", () => {
     assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
     assert.ok(filter.includes_full_stream_history());
     assert.ok(filter.can_apply_locally());
+    assert.ok(filter.can_show_next_unread_topic_conversation_button());
+    assert.ok(!filter.can_show_next_unread_dm_conversation_button());
 
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
@@ -201,6 +205,8 @@ test("basics", () => {
     assert.ok(filter.can_bucket_by("channel", "topic"));
     assert.ok(!filter.is_conversation_view());
     assert.ok(filter.is_conversation_view_with_near());
+    assert.ok(filter.can_show_next_unread_topic_conversation_button());
+    assert.ok(!filter.can_show_next_unread_dm_conversation_button());
 
     // If our only channel operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a channel operator, because we don't
@@ -226,6 +232,8 @@ test("basics", () => {
     assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.can_show_next_unread_topic_conversation_button());
+    assert.ok(!filter.can_show_next_unread_dm_conversation_button());
 
     // Similar logic applies to negated "has" searches.
     terms = [{operator: "has", operand: "images", negated: true}];
@@ -278,12 +286,16 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.can_show_next_unread_topic_conversation_button());
+    assert.ok(filter.can_show_next_unread_dm_conversation_button());
 
     // "is:private" was renamed to "is:dm"
     terms = [{operator: "is", operand: "private"}];
     filter = new Filter(terms);
     assert.ok(filter.has_operand("is", "dm"));
     assert.ok(!filter.has_operand("is", "private"));
+    assert.ok(!filter.can_show_next_unread_topic_conversation_button());
+    assert.ok(filter.can_show_next_unread_dm_conversation_button());
 
     terms = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(terms);
@@ -294,6 +306,8 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.can_show_next_unread_topic_conversation_button());
+    assert.ok(!filter.can_show_next_unread_dm_conversation_button());
 
     terms = [{operator: "is", operand: "starred"}];
     filter = new Filter(terms);
