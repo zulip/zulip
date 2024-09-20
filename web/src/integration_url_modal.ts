@@ -1,7 +1,10 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import type * as tippy from "tippy.js";
+import {z} from "zod";
 
+import render_generate_integration_url_config_checkbox_modal from "../templates/settings/generate_integration_url_config_checkbox_modal.hbs";
+import render_generate_integration_url_config_text_modal from "../templates/settings/generate_integration_url_config_text_modal.hbs";
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 import render_integration_events from "../templates/settings/integration_events.hbs";
 
@@ -13,6 +16,20 @@ import {$t_html} from "./i18n";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
+
+type ConfigOption = {
+    key: string;
+    label: string;
+    validator: string;
+};
+
+const ConfigOptionSchema = z.object({
+    key: z.string(),
+    label: z.string(),
+    validator: z.string(),
+});
+
+const ConfigOptionsSchema = z.array(ConfigOptionSchema);
 
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
@@ -42,6 +59,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         const $integration_url = $("#generate-integration-url-modal .integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
         const $show_integration_events = $("#show-integration-events");
+        const $config_container = $("#integration-url-config-options-container");
 
         $dialog_submit_button.prop("disabled", true);
         $("#integration-url-stream_widget").prop("disabled", true);
@@ -56,6 +74,38 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 util.the($("#generate-integration-url-modal .dialog_submit_button")),
             );
         });
+
+        function render_config(config: ConfigOption[]): void {
+            const validatedConfig = ConfigOptionsSchema.parse(config);
+            const $configContainer = $("#integration-url-config-options-container");
+            $configContainer.empty();
+
+            for (const option of validatedConfig) {
+                let $configElement: JQuery;
+
+                if (option.validator === "check_bool") {
+                    const configHtml = render_generate_integration_url_config_checkbox_modal({
+                        key: option.key,
+                        label: option.label,
+                    });
+                    $configElement = $(configHtml);
+                } else if (option.validator === "check_string") {
+                    const configHtml = render_generate_integration_url_config_text_modal({
+                        key: option.key,
+                        label: option.label,
+                    });
+                    $configElement = $(configHtml);
+                } else {
+                    // Skip unknown validator types.
+                    // This block is reserved for future validators that might be added.
+                    continue;
+                }
+                $configContainer.append($configElement);
+                $configElement.find(`#integration-url-${option.key}`).on("change", () => {
+                    update_url();
+                });
+            }
+        }
 
         $override_topic.on("change", function () {
             const checked = this.checked;
@@ -109,6 +159,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 (bot) => bot.name === selected_integration,
             );
             const all_event_types = selected_integration_data?.all_event_types;
+            const config = selected_integration_data?.config;
 
             if (all_event_types !== null) {
                 $("#integration-events-parameter").removeClass("hide");
@@ -136,7 +187,29 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     params.set("topic", topic_name);
                 }
             }
+
+            if ($("#integration-url-ignore-private-repositories").prop("checked")) {
+                params.set("ignore_private_repositories", "true");
+            }
+
             const selected_events = set_events_param(params);
+
+            // Capture the config option values and append them to the URL
+            if (config) {
+                for (const option of config) {
+                    const $inputElement = $(`#integration-url-${option.key}`);
+                    if (option.validator === "check_bool") {
+                        if ($inputElement.prop("checked")) {
+                            params.set(option.key, "true");
+                        }
+                    } else if (option.validator === "check_string") {
+                        const value = $inputElement.val();
+                        if (value) {
+                            params.set(option.key, value.toString());
+                        }
+                    }
+                }
+            }
 
             const realm_url = realm.realm_url;
             const base_url = `${realm_url}/api/v1/external/`;
@@ -180,6 +253,18 @@ export function show_generate_integration_url_modal(api_key: string): void {
         ): void {
             integration_input_dropdown_widget.render();
             $(".integration-url-name-wrapper").trigger("input");
+
+            const selected_integration = integration_input_dropdown_widget.value();
+            const selected_integration_data = realm.realm_incoming_webhook_bots.find(
+                (bot) => bot.name === selected_integration,
+            );
+
+            if (selected_integration_data?.config) {
+                render_config(selected_integration_data.config);
+            }
+            $("#integration-url-ignore-private-repositories")
+                .closest(".input-group")
+                .toggle(selected_integration === "github");
 
             dropdown.hide();
             event.preventDefault();
@@ -265,6 +350,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $topic_input.parent().addClass("hide");
 
             stream_input_dropdown_widget.render(direct_messages_option.unique_id);
+            $config_container.empty();
         }
     }
 

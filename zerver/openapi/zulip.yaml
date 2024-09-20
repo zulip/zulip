@@ -14124,7 +14124,7 @@ paths:
 
                                 **Changes**: New in Zulip 8.0 (feature level 207).
                             config:
-                              $ref: "#/components/schemas/BotConfiguration"
+                              $ref: "#/components/schemas/IncomingBotConfiguration"
                       recent_private_conversations:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
@@ -21041,6 +21041,23 @@ components:
         description: |
           `{config_key}`: Description/value of the configuration data key.
         type: string
+    IncomingBotConfiguration:
+      type: array
+      description: |
+        A list of configuration options, where each option is an object with a key, label, and validator.
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          key:
+            type: string
+            description: The key name of the configuration option.
+          label:
+            type: string
+            description: The human-readable label or description of the configuration option.
+          validator:
+            type: string
+            description: The name of the validator function of the configuration option.
     CustomProfileField:
       type: object
       additionalProperties: false
