@@ -1378,6 +1378,7 @@ def do_convert_zipfile(
         os.makedirs(slack_data_dir, exist_ok=True)
 
         with zipfile.ZipFile(original_path) as zipObj:
+            total_size = 0
             for fileinfo in zipObj.infolist():
                 # Slack's export doesn't set the UTF-8 flag on each
                 # filename entry, despite encoding them as such, so
@@ -1397,6 +1398,15 @@ def do_convert_zipfile(
                 # files in channel directories.  We do not parse these currently.
                 if not re.match(r"[^/]+(\.json|/([^/]+\.json)?)$", fileinfo.filename):
                     raise Exception("This zip file does not look like a Slack archive")
+
+                # file_size is the uncompressed size of the file
+                total_size += fileinfo.file_size
+
+            # Based on historical Slack exports, anything that is more
+            # than a 10x size magnification is suspect, particularly
+            # if it results in over 1GB.
+            if total_size > 1024 * 1024 * 1024 and total_size > 10 * os.path.getsize(original_path):
+                raise Exception("This zip file is possibly malicious")
 
             zipObj.extractall(slack_data_dir)
 
