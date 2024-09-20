@@ -111,7 +111,15 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
         # which does not have historical content with old hashed
         # filenames).
         image_url = f"{settings.STATIC_URL}generated/emoji/images-{emojiset}-64/{emoji_code}.png"
-        img_elem = e.IMG(alt=alt_code, src=image_url, title=emoji_name, style="height: 20px;")
+        img_elem = e.IMG(
+            alt=alt_code,
+            src=image_url,
+            title=emoji_name,
+            # We specify dimensions with these attributes, rather than
+            # CSS, because Outlook doesn't support these CSS properties.
+            height="20",
+            width="20",
+        )
         img_elem.tail = emoji_span_elem.tail
         return img_elem
 
@@ -120,9 +128,11 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
         img_elem = make_emoji_img_elem(elem)
         parent.replace(elem, img_elem)
 
-    for realm_emoji in fragment.cssselect(".emoji"):
+    for realm_emoji in fragment.cssselect("img.emoji"):
         del realm_emoji.attrib["class"]
-        realm_emoji.set("style", "height: 20px;")
+        # See above note about Outlook.
+        realm_emoji.set("height", "20")
+        realm_emoji.set("width", "20")
 
 
 def fix_spoilers_in_html(fragment: lxml.html.HtmlElement, language: str) -> None:
