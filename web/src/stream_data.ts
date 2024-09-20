@@ -25,10 +25,7 @@ import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 // Type for the parameter of `create_sub_from_server_data` function.
-type ApiGenericStreamSubscription =
-    | NeverSubscribedStream
-    | ApiStreamSubscription
-    | (Stream & {stream_weekly_traffic: number | null; subscribers: number[]});
+type ApiGenericStreamSubscription = NeverSubscribedStream | ApiStreamSubscription;
 
 export type InviteStreamData = {
     name: string;
