@@ -409,8 +409,7 @@
         font-weight: bold;
     }
 
-    .twitter-image,
-    .message_inline_image {
+    .twitter-image {
         position: relative;
         margin-bottom: var(--markdown-interelement-space-px);
         margin-right: 5px;
@@ -466,8 +465,7 @@
         }
     }
 
-    &.rtl .twitter-image,
-    &.rtl .message_inline_image {
+    &.rtl .twitter-image {
         margin-left: unset;
         margin-right: 5px;
     }
@@ -571,7 +569,6 @@
     }
 
     .twitter-image img,
-    .message_inline_image img,
     .message_inline_ref img {
         /* We use `scale-down` so that images smaller than the container are
            neither scaled up nor cropped to fit. This preserves
@@ -609,15 +606,10 @@
     }
 
     &.rtl .twitter-image img,
-    &.rtl .message_inline_image img,
     &.rtl .message_inline_ref img {
         float: right;
         margin-right: unset;
         margin-left: 10px;
-    }
-
-    & li .message_inline_image img {
-        float: none;
     }
 
     .message_inline_video,
