@@ -30,7 +30,7 @@ run_test("postprocess_content", () => {
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
             '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image">' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image" class="media-link">upload</a> ' +
             '<a role="button">button</a> ' +
             "</div>" +
             "</div>",
@@ -139,7 +139,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image landscape-thumbnail" style="aspect-ratio: 1.3333333333333333">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png" class="media-link">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>" +
@@ -158,7 +158,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image landscape-thumbnail" style="aspect-ratio: 1.3333333333333333">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png" class="media-link">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>" +
@@ -177,7 +177,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image landscape-thumbnail message_inline_animated_image_still" style="aspect-ratio: 1.3333333333333333">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png" class="media-link">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>" +
@@ -195,7 +195,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image landscape-thumbnail message_inline_animated_image_still" style="aspect-ratio: 1.3333333333333333">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png" class="media-link">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>" +
