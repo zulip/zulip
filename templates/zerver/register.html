@@ -72,7 +72,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 {% if realm_name and not creating_new_realm %}
                 <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
                 <div class="info-box inline-block">
-                    <div class="organization-name">{{ realm_name }}</div>
+                    <div class="organization-name organization-name-delayed-tooltip">{{ realm_name }}</div>
                     <div class="organization-path">{{ realm_url }}</div>
                 </div>
                 {% endif %}
