@@ -119,7 +119,7 @@ You can share files from other apps on Zulip.
 Zulip does not generate thumbnails for messages with more than ten
 attachments.
 
-The maximum file size for attachments is 25MB in most Zulip installations.
+The maximum file size for attachments is 100MB in most Zulip installations.
 This limit can be changed by the server administrator.
 
 ## Related articles
