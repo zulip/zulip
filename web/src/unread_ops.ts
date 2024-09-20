@@ -89,6 +89,15 @@ function bulk_update_read_flags_for_narrow(
     caller_modal_id?: string,
 ): void {
     let response_html;
+    const terms_with_integer_channel_id = narrow.map((term) => {
+        if (term.operator === "channel") {
+            return {
+                ...term,
+                operand: Number.parseInt(term.operand, 10),
+            };
+        }
+        return term;
+    });
     const request = {
         anchor,
         // anchor="oldest" is an anchor ID lower than any valid
@@ -100,7 +109,7 @@ function bulk_update_read_flags_for_narrow(
         num_after,
         op,
         flag: "read",
-        narrow: JSON.stringify(narrow),
+        narrow: JSON.stringify(terms_with_integer_channel_id),
     };
     void channel.post({
         url: "/json/messages/flags/narrow",
