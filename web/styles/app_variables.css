@@ -756,6 +756,12 @@
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
+    --color-background-rendered-markdown-thumbnail: hsl(0deg 0% 0% / 3%);
+    --color-background-rendered-markdown-thumbnail-hover: hsl(0deg 0% 0% / 15%);
+
+    /* Markdown assets */
+    --icon-image-loading-placeholder: content:
+        url("../images/loading/loader-black.svg");
 
     /* Tab-switcher colors */
     --color-background-tab-switcher-ind-tab: hsl(0deg 0% 100%);
@@ -1264,6 +1270,14 @@
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 33%);
+    --color-background-rendered-markdown-thumbnail: hsl(0deg 0% 100% / 3%);
+    --color-background-rendered-markdown-thumbnail-hover: hsl(
+        0deg 0% 100% / 15%
+    );
+
+    /* Markdown assets */
+    --icon-image-loading-placeholder: content:
+        url("../images/loading/loader-white.svg");
 
     /* Tab-switcher colors */
     /* The non-selected colors here are shared with numerous other
