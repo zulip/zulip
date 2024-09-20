@@ -1628,12 +1628,12 @@ export class Filter {
     }
 
     is_conversation_view(): boolean {
-        const term_type = this.sorted_term_types();
+        const term_types = this.sorted_term_types();
         if (
-            _.isEqual(term_type, ["channel", "topic", "with"]) ||
-            _.isEqual(term_type, ["channel", "topic"]) ||
-            _.isEqual(term_type, ["dm", "with"]) ||
-            _.isEqual(term_type, ["dm"])
+            _.isEqual(term_types, ["channel", "topic", "with"]) ||
+            _.isEqual(term_types, ["channel", "topic"]) ||
+            _.isEqual(term_types, ["dm", "with"]) ||
+            _.isEqual(term_types, ["dm"])
         ) {
             return true;
         }
@@ -1641,10 +1641,10 @@ export class Filter {
     }
 
     is_conversation_view_with_near(): boolean {
-        const term_type = this.sorted_term_types();
+        const term_types = this.sorted_term_types();
         if (
-            _.isEqual(term_type, ["channel", "topic", "near"]) ||
-            _.isEqual(term_type, ["dm", "near"])
+            _.isEqual(term_types, ["channel", "topic", "near"]) ||
+            _.isEqual(term_types, ["dm", "near"])
         ) {
             return true;
         }
