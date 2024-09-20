@@ -407,7 +407,6 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
             // Add search box for topics list.
             $elt.children("div.bottom_left_row").append($(render_filter_topics()));
             $("#filter-topic-input").trigger("focus");
-            $("#clear_search_topic_button").hide();
         } else {
             $elt.hide();
         }

@@ -374,13 +374,6 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
         drafts.set_compose_draft_id(opts.draft_id);
     }
 
-    const $clear_topic_button = $("#recipient_box_clear_topic_button");
-    if (is_clear_topic_button_triggered || opts.topic.length === 0) {
-        $clear_topic_button.hide();
-    } else {
-        $clear_topic_button.show();
-    }
-
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
     // Show a warning if the user is in a search narrow when replying to a message
