@@ -85,14 +85,6 @@ function make_zjquery() {
     const zjquery = function (arg, arg2) {
         assert.ok(typeof arg !== "function", "zjquery does not support $(callback)");
 
-        // If somebody is passing us an element, we return
-        // the element itself if it's been created with
-        // zjquery.
-        // This may happen in cases like $(this).
-        if (arg.selector && elems.has(arg.selector)) {
-            return arg;
-        }
-
         // We occasionally create stub objects that know
         // they want to be wrapped by jQuery (so they can
         // in turn return stubs).  The convention is that

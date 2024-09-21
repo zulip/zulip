@@ -210,6 +210,10 @@ function FakeElement(selector, opts) {
             }
             return text;
         },
+        // Used by zjquery to support $($x) === $x
+        to_$() {
+            return this;
+        },
         toggle(show) {
             assert.ok([true, false].includes(show));
             shown = show;
