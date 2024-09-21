@@ -373,7 +373,7 @@ def get_invite_controlled_by_user(
     """
     invitee = prereg_user
     if invitee.include_realm_default_subscriptions:
-        stream_ids = list(get_default_stream_ids_for_realm(user_profile.realm))
+        stream_ids = list(get_default_stream_ids_for_realm(user_profile.realm.id))
     else:
         stream_ids = list(invitee.streams.values_list("id", flat=True))
 
@@ -408,14 +408,14 @@ def get_multiuse_invite_controlled_by_user(
     assert confirmation_obj is not None
 
     if invite.include_realm_default_subscriptions:
-        stream_ids = list(get_default_stream_ids_for_realm(user_profile.realm))
+        stream_ids = list(get_default_stream_ids_for_realm(user_profile.realm.id))
     else:
         stream_ids = list(invite.streams.values_list("id", flat=True))
 
     invite_confirmation_obj = confirmation_obj.content_object
     assert invite_confirmation_obj is not None
 
-    invite = dict(
+    invite_dict = dict(
         invited_by_user_id=invite_confirmation_obj.referred_by.id,
         invited=datetime_to_timestamp(confirmation_obj.date_sent),
         expiry_date=get_invitation_expiry_date(confirmation_obj),
@@ -425,7 +425,7 @@ def get_multiuse_invite_controlled_by_user(
         is_multiuse=True,
         stream_ids=stream_ids,
     )
-    return invite
+    return invite_dict
 
 
 @transaction.atomic

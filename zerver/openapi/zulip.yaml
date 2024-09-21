@@ -13574,8 +13574,8 @@ paths:
                             expiry_date: 1727203239,
                             id: 10,
                             invited_as: 400,
-                            is_multiuse: False,
-                            notify_referrer_on_join: True,
+                            is_multiuse: false,
+                            notify_referrer_on_join: true,
                             stream_ids: [14, 3, 13, 10, 2],
                           },
                       }
@@ -13680,7 +13680,7 @@ paths:
                             expiry_date: 1727203239,
                             id: 10,
                             invited_as: 400,
-                            is_multiuse: True,
+                            is_multiuse: true,
                             stream_ids: [1, 2, 3, 13, 14],
                           },
                       }

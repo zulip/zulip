@@ -1,4 +1,4 @@
-<div class="micromodal invite-modal-overlay" id="user-profile-modal" aria-hidden="true">
+<div class="micromodal invite-modal-overlay" id="user-profile-modal">
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container new-style" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <div class="modal__header">
@@ -35,9 +35,9 @@
                                     {{#if is_admin}}
                                     <div id="invite-id" class="default-field">
                                         <div class="name" data->{{t "Invited by" }}</div>
-                                                <span class="referred_by panel_user_list">
-            {{> ../user_display_only_pill display_value=referrer_name user_id=invited_by_user_id is_active=true}}
-        </span>
+                                        <span class="referred_by panel_user_list">
+                                            {{> ../user_display_only_pill display_value=referrer_name user_id=invited_by_user_id is_active=true}}
+                                        </span>
                                     </div>
                                     {{/if}}
                                     <div id="invited-at" class="default-field">
@@ -59,13 +59,14 @@
                                             {{/each}}
                                         </ul>
                                         {{else}}
-                                        <div class="value">{{t 'NOT invited to any of the channels.'}}</div> 
+                                        <div class="value">{{t 'NOT invited to any of the channels.'}}</div>
                                         {{/if}}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
             </main>
             <footer class="modal__footer">
                 <div class="actions">

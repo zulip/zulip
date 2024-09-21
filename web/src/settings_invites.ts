@@ -162,9 +162,11 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
 }
 
 function get_invite_details({
+    $row,
     invite_id,
     is_multiuse,
 }: {
+    $row: JQuery;
     invite_id: string;
     is_multiuse: string;
 }): void {
@@ -179,13 +181,13 @@ function get_invite_details({
         success(raw_data) {
             const data = z.object({invite: extended_invite_schema}).parse(raw_data);
             const invite = data.invite;
-            open_invite_details_modal(invite);
+            open_invite_details_modal({$row, invite});
         },
         error: failed_to_get_invite_details,
     });
 }
 
-function open_invite_details_modal(invite: Invite): void {
+function open_invite_details_modal({$row, invite}: {$row: JQuery; invite: Invite}): void {
     const streams = [];
     for (const stream_id of invite.stream_ids!) {
         streams.push(get_stream_name_from_id(stream_id));
@@ -211,8 +213,51 @@ function open_invite_details_modal(invite: Invite): void {
     const $modal = $(html_body);
     $("body").append($modal);
 
+    const invite_id = invite.id.toString();
+    const is_multiuse = invite.is_multiuse.toString();
+    const email = ctx.email;
+
     $modal.find(".modal__close").on("click", () => {
         $modal.remove();
+    });
+
+    $modal.find(".revoke").on("click", () => {
+        const ctx2 = {
+            is_multiuse: ctx.is_multiuse,
+            email: ctx.email,
+            referred_by: ctx.referrer_name,
+        };
+
+        const html_body2 = render_settings_revoke_invite_modal(ctx2);
+
+        confirm_dialog.launch({
+            html_heading: ctx.is_multiuse
+                ? $t_html({defaultMessage: "Revoke invitation link"})
+                : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
+            html_body: html_body2,
+            on_click() {
+                do_revoke_invite({$row, invite_id, is_multiuse});
+                $modal.remove();
+            },
+        });
+
+        $(".dialog_submit_button").attr("data-invite-id", invite_id);
+        $(".dialog_submit_button").attr("data-is-multiuse", is_multiuse);
+    });
+
+    $modal.find(".resend").on("click", () => {
+        const html_body2 = render_settings_resend_invite_modal({email});
+
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Resend invitation?"}),
+            html_body: html_body2,
+            on_click() {
+                do_resend_invite({$row, invite_id: invite.id.toString()});
+                $modal.remove();
+            },
+        });
+
+        $(".dialog_submit_button").attr("data-invite-id", invite_id);
     });
 
     $(document).on("click", (e) => {
@@ -373,10 +418,11 @@ export function on_load_success(
         e.preventDefault();
         e.stopPropagation();
 
+        const $row = $(this).closest(".invite_row");
         const invite_id = $(this).attr("data-invite-id")!;
         const is_multiuse = $(this).attr("data-is-multiuse")!;
 
-        get_invite_details({invite_id, is_multiuse});
+        get_invite_details({$row, invite_id, is_multiuse});
     });
 }
 
