@@ -759,6 +759,7 @@ ul {
 
         .appshot-1__img {
             width: auto;
+            max-width: 400px;
             height: auto;
         }
 
