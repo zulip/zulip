@@ -30,6 +30,7 @@ from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Client, Message, RealmDomain, UserProfile
 from zerver.models.users import get_user_including_cross_realm
+from zerver.worker.embed_links import get_url_embed_data
 
 
 class InvalidMirrorInputError(Exception):
@@ -284,6 +285,7 @@ def render_message_backend(
     user_profile: UserProfile,
     *,
     content: str,
+    render_link: Json[bool],
 ) -> HttpResponse:
     message = Message()
     message.sender = user_profile
@@ -294,4 +296,21 @@ def render_message_backend(
     message.sending_client = client
 
     rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
-    return json_success(request, data={"rendered": rendering_result.rendered_content})
+    links_for_embed: set[str] = set()
+    links_for_embed |= rendering_result.links_for_preview
+    if render_link is True:
+        rendering_result = render_message_markdown(
+            message,
+            content,
+            realm=user_profile.realm,
+            url_embed_data=get_url_embed_data(list(links_for_embed)),
+        )
+        links_for_embed.clear()
+
+    return json_success(
+        request,
+        data={
+            "rendered": rendering_result.rendered_content,
+            "rerender": bool(links_for_embed),
+        },
+    )
