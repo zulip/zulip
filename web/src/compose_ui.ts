@@ -1210,23 +1210,7 @@ export function render_and_show_preview(
         rendered_markdown.update_elements($preview_content_box);
     }
 
-    if (content.length === 0) {
-        show_preview($t_html({defaultMessage: "Nothing to preview"}));
-    } else {
-        if (markdown.contains_backend_only_syntax(content)) {
-            const $spinner = $preview_spinner.expectOne();
-            loading.make_indicator($spinner);
-        } else {
-            // For messages that don't appear to contain syntax that
-            // is only supported by our backend Markdown processor, we
-            // render using the frontend Markdown processor (but still
-            // render server-side to ensure the preview is accurate;
-            // if the `markdown.contains_backend_only_syntax` logic is
-            // wrong, users will see a brief flicker of the locally
-            // echoed frontend rendering before receiving the
-            // authoritative backend rendering from the server).
-            markdown.render(content);
-        }
+    function render_message(content: string): void {
         void channel.post({
             url: "/json/messages/render",
             data: {content},
@@ -1244,5 +1228,25 @@ export function render_and_show_preview(
                 show_preview($t_html({defaultMessage: "Failed to generate preview"}));
             },
         });
+    }
+
+    if (content.length === 0) {
+        show_preview($t_html({defaultMessage: "Nothing to preview"}));
+    } else {
+        if (markdown.contains_backend_only_syntax(content)) {
+            const $spinner = $preview_spinner.expectOne();
+            loading.make_indicator($spinner);
+        } else {
+            // For messages that don't appear to contain syntax that
+            // is only supported by our backend Markdown processor, we
+            // render using the frontend Markdown processor (but still
+            // render server-side to ensure the preview is accurate;
+            // if the `markdown.contains_backend_only_syntax` logic is
+            // wrong, users will see a brief flicker of the locally
+            // echoed frontend rendering before receiving the
+            // authoritative backend rendering from the server).
+            markdown.render(content);
+        }
+        render_message(content);
     }
 }
