@@ -371,17 +371,17 @@ def get_integrations_activity(request: HttpRequest) -> HttpResponse:
     """
     )
 
-    cols = [
-        "Client",
-        "Realm",
-        "Hits",
-        "Last time (UTC)",
-    ]
-
+    cols = ["Client", "Realm", "Hits", "Last time (UTC)", "Links"]
     rows = get_query_data(query)
+    for row in rows:
+        realm_str = row[1]
+        activity = realm_activity_link(realm_str)
+        stats = realm_stats_link(realm_str)
+        row.append(activity + " " + stats)
+
     for i, col in enumerate(cols):
         if col == "Realm":
-            fix_rows(rows, i, realm_activity_link)
+            fix_rows(rows, i, realm_support_link)
         elif col == "Last time (UTC)":
             fix_rows(rows, i, format_optional_datetime)
 
