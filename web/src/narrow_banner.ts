@@ -124,12 +124,25 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                   },
               ),
     };
+
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
     const current_filter = narrow_state.filter();
 
     if (current_filter === undefined || current_filter.is_in_home()) {
         return default_banner;
+    }
+
+    if (
+        narrow_state.has_message_in_muted_topic() !== undefined &&
+        narrow_state.has_message_in_muted_topic()
+    ) {
+        return {
+            title: $t({
+                defaultMessage:
+                    "This feed is empty, because you have muted all the topics in this channel.",
+            }),
+        };
     }
 
     const first_term = current_filter.terms()[0]!;

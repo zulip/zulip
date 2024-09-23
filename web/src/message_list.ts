@@ -436,6 +436,10 @@ export class MessageList {
         return this.data.selected_idx();
     }
 
+    show_muted_placeholder(): boolean {
+        return this.data.show_muted_placeholder();
+    }
+
     // Maintains a trailing bookend element explaining any changes in
     // your subscribed/unsubscribed status at the bottom of the
     // message list.
