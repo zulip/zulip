@@ -222,12 +222,6 @@ export class TopicListWidget {
         vdom.update(replace_content, find, new_dom, this.prior_dom);
 
         this.prior_dom = new_dom;
-
-        if ($("#filter-topic-input").val() !== "") {
-            $("#clear_search_topic_button").show();
-        } else {
-            $("#clear_search_topic_button").hide();
-        }
     }
 }
 

@@ -960,6 +960,10 @@ textarea.new_message_textarea {
         }
     }
 
+    #stream_message_recipient_topic:placeholder-shown
+        + #recipient_box_clear_topic_button {
+        display: none;
+    }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
     & input {
         margin-bottom: 0;

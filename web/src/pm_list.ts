@@ -62,11 +62,6 @@ export function _build_direct_messages_list(): vdom.Tag<PMNode> {
     }
     const dom_ast = pm_list_dom.pm_ul(pm_list_nodes);
 
-    if (search_term === "") {
-        $("#clear-direct-messages-search-button").hide();
-    } else {
-        $("#clear-direct-messages-search-button").show();
-    }
     return dom_ast;
 }
 

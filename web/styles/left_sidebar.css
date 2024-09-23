@@ -1000,6 +1000,10 @@ li.top_left_scheduled_messages {
     grid-area: row-content;
 }
 
+#filter-topic-input:placeholder-shown + #clear_search_topic_button {
+    display: none;
+}
+
 .searching-for-more-topics img {
     height: 16px;
     grid-area: row-content;
@@ -1438,6 +1442,11 @@ li.topic-list-item {
         /* Flexbox will pull the element open
            to make a generous clickable area. */
         padding: 0;
+    }
+
+    .direct-messages-list-filter:placeholder-shown
+        + #clear-direct-messages-search-button {
+        display: none;
     }
 }
 

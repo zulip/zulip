@@ -512,21 +512,8 @@ export function initialize() {
 
     $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
         const $input = $("input#stream_message_recipient_topic");
-        const $button = $("#recipient_box_clear_topic_button");
-
         $input.val("");
         $input.trigger("focus");
-        $button.hide();
-    });
-
-    $("#compose_recipient_box").on("input", "input#stream_message_recipient_topic", (e) => {
-        const $button = $("#recipient_box_clear_topic_button");
-        const value = $(e.target).val();
-        if (value.length === 0) {
-            $button.hide();
-        } else {
-            $button.show();
-        }
     });
 
     $("input#stream_message_recipient_topic").on("focus", () => {
