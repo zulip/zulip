@@ -15,6 +15,10 @@ We also support an `S3` backend, which uses the Python `boto` library
 to upload files to Amazon S3 (or an S3-compatible block storage
 provider supported by the `boto` library).
 
+Regardless of the backend you choose, you can configure the maximum
+size of individual uploaded files using the `MAX_FILE_UPLOAD_SIZE`
+[server setting](../production/settings.md).
+
 ## S3 backend configuration
 
 Here, we document the process for configuring Zulip's S3 file upload
