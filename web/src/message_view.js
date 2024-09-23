@@ -303,7 +303,7 @@ export function try_rendering_locally_for_same_narrow(filter, opts) {
     return true;
 }
 
-export function show(raw_terms, opts) {
+export function show(raw_terms, show_opts) {
     /* Main entry point for switching to a new view / message list.
 
        Supported parameters:
@@ -342,13 +342,17 @@ export function show(raw_terms, opts) {
     const filter = new Filter(raw_terms);
     filter.try_adjusting_for_moved_with_target();
 
-    if (!opts.force_rerender && try_rendering_locally_for_same_narrow(filter, opts)) {
+    if (!show_opts.force_rerender && try_rendering_locally_for_same_narrow(filter, show_opts)) {
         return;
     }
 
     const is_combined_feed_global_view = filter.is_in_home();
     const is_narrowed_to_combined_feed_view = narrow_state.filter()?.is_in_home();
-    if (!opts.force_rerender && is_narrowed_to_combined_feed_view && is_combined_feed_global_view) {
+    if (
+        !show_opts.force_rerender &&
+        is_narrowed_to_combined_feed_view &&
+        is_combined_feed_global_view
+    ) {
         // If we're already looking at the combined feed, exit without doing any work.
         return;
     }
@@ -361,7 +365,7 @@ export function show(raw_terms, opts) {
         // cause you to end up in the wrong place if you are actively scrolling
         // on an unnarrow. Wait a bit and try again once the scrolling is likely over.
         setTimeout(() => {
-            show(raw_terms, opts);
+            show(raw_terms, show_opts);
         }, 50);
         return;
     }
@@ -387,13 +391,13 @@ export function show(raw_terms, opts) {
     const coming_from_recent_view = recent_view_util.is_visible();
     const coming_from_inbox = inbox_util.is_visible();
 
-    opts = {
+    const opts = {
         then_select_id: -1,
         then_select_offset: undefined,
         change_hash: true,
         trigger: "unknown",
         show_more_topics: false,
-        ...opts,
+        ...show_opts,
     };
 
     const existing_span = Sentry.getCurrentHub().getScope().getSpan();
