@@ -31,6 +31,13 @@ format used by the Zulip server that they are interacting with.
   [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member),
   [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members):
   Deactivated users are not considered as members of a user group anymore.
+* [`GET /events`](/api/get-events): `realm/update_dict` and `user_group/update`
+  events are now also sent when deactivating or reactivating a user, for
+  settings which are set to anonymous groups having the user being deactivated
+  or reactivated as direct member.
+* [`POST /register`](/api/register-queue): Settings, represented as
+  [group-setting value](/api/group-setting-values), do not include deactivated
+  users in the `direct_members` list for settings set to anonymous groups.
 
 **Feature level 302**
 

@@ -80,6 +80,7 @@ from zerver.models import (
     Client,
     CustomProfileField,
     Draft,
+    NamedUserGroup,
     Realm,
     RealmUserDefault,
     Recipient,
@@ -1112,6 +1113,22 @@ def apply_event(
                             for user_id in user_group["members"]
                             if user_id != person_user_id
                         ]
+
+                    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                        if not isinstance(state["realm_" + setting_name], int):
+                            state["realm_" + setting_name].direct_members = [
+                                user_id
+                                for user_id in state["realm_" + setting_name].direct_members
+                                if user_id != person_user_id
+                            ]
+                    for group in state["realm_user_groups"]:
+                        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+                            if not isinstance(group[setting_name], int):
+                                group[setting_name].direct_members = [
+                                    user_id
+                                    for user_id in group[setting_name].direct_members
+                                    if user_id != person_user_id
+                                ]
         elif event["op"] == "remove":
             if person_user_id in state["raw_users"]:
                 if user_list_incomplete:

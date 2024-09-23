@@ -516,7 +516,9 @@ def get_group_setting_value_for_api(
         return setting_value_group.id
 
     return AnonymousSettingGroupDict(
-        direct_members=[member.id for member in setting_value_group.direct_members.all()],
+        direct_members=[
+            member.id for member in setting_value_group.direct_members.filter(is_active=True)
+        ],
         direct_subgroups=[subgroup.id for subgroup in setting_value_group.direct_subgroups.all()],
     )
 
@@ -565,7 +567,7 @@ def user_groups_in_realm_serialized(
 
     membership = (
         UserGroupMembership.objects.filter(user_group__realm=realm)
-        .exclude(user_profile__is_active=False, user_group__named_user_group__isnull=False)
+        .exclude(user_profile__is_active=False)
         .values_list("user_group_id", "user_profile_id")
     )
 
