@@ -800,7 +800,7 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
     return !other_human_recipients_exist;
 }
 
-function gravatar_url_for_email(email: string): string {
+export function gravatar_url_for_email(email: string): string {
     const hash = md5(email.toLowerCase());
     return "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
 }

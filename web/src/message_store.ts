@@ -173,6 +173,8 @@ export type Message = (
     status_emoji_info?: UserStatusEmojiInfo | undefined; // Used in `message_body.hbs`
 
     local_edit_timestamp?: number; // Used for edited messages
+
+    notification_sent?: boolean; // Used in message_notifications
 } & (
         | {
               type: "private";
