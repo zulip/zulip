@@ -129,6 +129,9 @@ IGNORED_PHRASES = [
     r"your-organization-url",
     # Used in invite modal
     r"or",
+    # Units
+    r"MB",
+    r"GB",
     # Used in GIPHY integration setting. GIFs Rating.
     r"rated Y",
     r"rated G",
