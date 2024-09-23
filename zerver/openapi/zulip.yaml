@@ -3182,9 +3182,16 @@ paths:
                                 if `include_deactivated_groups` client capability
                                 is set to `true`.
 
-                                **Changes**: Prior to Zulip 10.0 (feature level 294),
-                                this event was sent to all clients when a user group
-                                was deactivated.
+                                This event is also sent when deactivating or reactivating
+                                a user for settings set to anonymous user groups which the
+                                user is direct member of. When deactivating the user, event
+                                is only sent to users who cannot access the deactivated user.
+
+                                **Changes**: Starting with Zulip 10.0 (feature level 303), this
+                                event can also be sent when deactivating or reactivating a user.
+
+                                Prior to Zulip 10.0 (feature level 294), this event was sent to
+                                all clients when a user group was deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4231,7 +4238,15 @@ paths:
                                 event type supports multiple properties being changed in a
                                 single event.
 
-                                **Changes**: In Zulip 7.0 (feature level 163), the realm setting
+                                This event is also sent when deactivating or reactivating a user
+                                for settings set to anonymous user groups which the user is direct
+                                member of. When deactivating the user, event is only sent to users
+                                who cannot access the deactivated user.
+
+                                **Changes**: Starting with Zulip 10.0 (feature level 303), this
+                                event can also be sent when deactivating or reactivating a user.
+
+                                In Zulip 7.0 (feature level 163), the realm setting
                                 `email_address_visibility` was removed. It was replaced by a [user
                                 setting](/api/update-settings#parameter-email_address_visibility) with
                                 a [realm user default][user-defaults], with the encoding of different
@@ -22053,6 +22068,9 @@ components:
             direct_members:
               description: |
                 The list of IDs of individual users in the collection of users with this permission.
+
+                **Changes**: Prior to Zulip 10.0 (feature level 303), this list also included
+                deactivated users.
               type: array
               items:
                 type: integer
