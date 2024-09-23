@@ -8,6 +8,7 @@ from django.db.models import F, Func, JSONField, Q, QuerySet, Subquery, TextFiel
 from django.db.models.functions import Cast
 
 from zerver.lib.types import EditHistoryEvent
+from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
 
@@ -285,6 +286,39 @@ def get_topic_history_for_stream(
     return generate_topic_history_from_db_rows(rows)
 
 
+def get_topic_history_for_support_stream(
+    user_profile: UserProfile, recipient_id: int
+) -> list[dict[str, Any]]:
+    cursor = connection.cursor()
+    # Query to get topics where the first message in the topic was sent by the user
+    query = """
+    SELECT DISTINCT ON ("zerver_message"."subject")
+        "zerver_message"."subject" AS topic,
+        "zerver_message".id AS first_message_id
+    FROM "zerver_message"
+    WHERE
+        "zerver_message"."realm_id" = %s AND
+        "zerver_message"."recipient_id" = %s AND
+        "zerver_message".id = (
+            SELECT MIN(inner_message.id)
+            FROM "zerver_message" AS inner_message
+            WHERE
+                inner_message.subject = "zerver_message".subject AND
+                inner_message.realm_id = "zerver_message".realm_id AND
+                inner_message.recipient_id = "zerver_message".recipient_id
+        ) AND
+        "zerver_message"."sender_id" = %s
+    ORDER BY
+        "zerver_message"."subject",
+        "zerver_message".id ASC
+    """
+    cursor.execute(query, [user_profile.id, user_profile.realm_id, recipient_id])
+    rows = cursor.fetchall()
+    cursor.close()
+
+    return generate_topic_history_from_db_rows(rows)
+
+
 def get_topic_resolution_and_bare_name(stored_name: str) -> tuple[bool, str]:
     """
     Resolved topics are denoted only by a title change, not by a boolean toggle in a database column. This
@@ -321,3 +355,30 @@ def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) ->
         ).values_list("id", flat=True)
     )
     return participants
+
+
+def get_topic_creator_user_id(realm_id: int, recipient_id: int, topic_name: str) -> int | None:
+    """
+    User who created the topic.
+    """
+    first_message_in_topic = (
+        Message.objects.filter(
+            # Uses index: zerver_message_realm_recipient_upper_subject
+            realm_id=realm_id,
+            recipient_id=recipient_id,
+            subject__iexact=topic_name,
+        )
+        .order_by("id")
+        .first()
+    )
+
+    if first_message_in_topic is None:
+        return None
+
+    return first_message_in_topic.sender_id
+
+
+def check_access_based_on_can_access_stream_topics_group(user: UserProfile, stream: Stream) -> bool:
+    group_allowed_to_access_topics = stream.can_access_stream_topics_group
+    assert group_allowed_to_access_topics is not None
+    return is_user_in_group(group_allowed_to_access_topics, user)

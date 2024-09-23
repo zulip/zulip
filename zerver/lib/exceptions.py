@@ -54,6 +54,7 @@ class ErrorCode(Enum):
     PUSH_NOTIFICATIONS_DISALLOWED = auto()
     EXPECTATION_MISMATCH = auto()
     SYSTEM_GROUP_REQUIRED = auto()
+    UNAUTHORIZED_TOPIC_ACCESS = auto()
 
 
 class JsonableError(Exception):
@@ -715,3 +716,17 @@ class IncompatibleParameterValuesError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Incompatible values for '{first_parameter}' and '{second_parameter}'.")
+
+
+class UnauthorizedTopicAccessError(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_TOPIC_ACCESS
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "This topic already exists. You are only permitted to send messages in topics created by you."
+        )

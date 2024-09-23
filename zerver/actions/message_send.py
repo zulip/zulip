@@ -35,6 +35,7 @@ from zerver.lib.exceptions import (
     StreamWildcardMentionNotAllowedError,
     StreamWithIDDoesNotExistError,
     TopicWildcardMentionNotAllowedError,
+    UnauthorizedTopicAccessError,
     ZephyrMessageAlreadySentError,
 )
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
@@ -69,9 +70,13 @@ from zerver.lib.streams import access_stream_for_send_message, ensure_stream, su
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.topic import participants_for_topic
+from zerver.lib.topic import (
+    check_access_based_on_can_access_stream_topics_group,
+    get_topic_creator_user_id,
+    participants_for_topic,
+)
 from zerver.lib.url_preview.types import UrlEmbedData
-from zerver.lib.user_groups import is_any_user_in_group, is_user_in_group
+from zerver.lib.user_groups import get_user_group_member_ids, is_any_user_in_group, is_user_in_group
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.users import (
     check_can_access_user,
@@ -209,11 +214,14 @@ def get_recipient_info(
     *,
     realm_id: int,
     recipient: Recipient,
-    sender_id: int,
+    message_sender: UserProfile,
+    stream: Stream | None,
     stream_topic: StreamTopicTarget | None,
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
+    topic_creator_user_id: int | None = None,
+    is_support_stream: bool | None = None,
 ) -> RecipientInfoResult:
     stream_push_user_ids: set[int] = set()
     stream_email_user_ids: set[int] = set()
@@ -223,9 +231,11 @@ def get_recipient_info(
     followed_topic_email_user_ids: set[int] = set()
     topic_wildcard_mention_in_followed_topic_user_ids: set[int] = set()
     stream_wildcard_mention_in_followed_topic_user_ids: set[int] = set()
-    muted_sender_user_ids: set[int] = get_muting_users(sender_id)
+    muted_sender_user_ids: set[int] = get_muting_users(message_sender.id)
     topic_participant_user_ids: set[int] = set()
     sender_muted_stream: bool | None = None
+
+    sender_id = message_sender.id
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -440,6 +450,30 @@ def get_recipient_info(
         lambda r: not r["is_bot"] or r["bot_type"] not in UserProfile.SERVICE_BOT_TYPES,
     )
 
+    if stream and is_support_stream:
+        assert stream_topic is not None
+        can_access_stream_topics_group_member_ids = get_user_group_member_ids(
+            stream.can_access_stream_topics_group
+        )
+        authorized_user_ids = [
+            row["id"] for row in rows if row["id"] in can_access_stream_topics_group_member_ids
+        ]
+
+        possible_um_eligible_user_ids = set(authorized_user_ids)
+
+        if not message_sender.is_bot:
+            possible_um_eligible_user_ids.add(sender_id)
+
+        if topic_creator_user_id is not None:
+            possible_um_eligible_user_ids.add(topic_creator_user_id)
+
+        um_eligible_user_ids = {
+            user_id for user_id in um_eligible_user_ids if user_id in possible_um_eligible_user_ids
+        }
+        online_push_user_ids = {
+            user_id for user_id in online_push_user_ids if user_id in possible_um_eligible_user_ids
+        }
+
     long_term_idle_user_ids = get_ids_for(
         lambda r: r["long_term_idle"],
     )
@@ -571,6 +605,8 @@ def build_message_send_dict(
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
+    topic_creator_user_id: int | None = None,
+    is_support_stream: bool | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -599,11 +635,14 @@ def build_message_send_dict(
     info = get_recipient_info(
         realm_id=realm.id,
         recipient=message.recipient,
-        sender_id=message.sender_id,
+        message_sender=message.sender,
+        stream=stream,
         stream_topic=stream_topic,
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
+        topic_creator_user_id=topic_creator_user_id,
+        is_support_stream=is_support_stream,
     )
 
     # Render our message_dicts.
@@ -700,6 +739,7 @@ def build_message_send_dict(
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        is_support_stream=is_support_stream,
     )
 
     return message_send_dict
@@ -718,6 +758,7 @@ def create_user_messages(
     mark_as_read_user_ids: set[int],
     limit_unread_user_ids: set[int] | None,
     topic_participant_user_ids: set[int],
+    is_support_stream: bool | None = False,
 ) -> list[UserMessageLite]:
     # These properties on the Message are set via
     # render_message_markdown by code in the Markdown inline patterns
@@ -773,6 +814,7 @@ def create_user_messages(
             and user_profile_id not in followed_topic_push_user_ids
             and user_profile_id not in followed_topic_email_user_ids
             and is_stream_message
+            and not is_support_stream
             and int(flags) == 0
         ):
             continue
@@ -914,6 +956,7 @@ def do_send_messages(
             mark_as_read_user_ids=mark_as_read_user_ids,
             limit_unread_user_ids=send_request.limit_unread_user_ids,
             topic_participant_user_ids=send_request.topic_participant_user_ids,
+            is_support_stream=send_request.is_support_stream,
         )
 
         for um in user_messages:
@@ -1046,7 +1089,14 @@ def do_send_messages(
                but we may have coverage gaps, so we should be careful
                about changing the next line.
         """
-        user_ids = send_request.active_user_ids | set(user_flags.keys())
+        if (
+            send_request.message.is_stream_message()
+            and send_request.stream
+            and send_request.is_support_stream
+        ):
+            user_ids = send_request.um_eligible_user_ids | set(user_flags.keys())
+        else:
+            user_ids = send_request.active_user_ids | set(user_flags.keys())
         sender_id = send_request.message.sender_id
 
         # We make sure the sender is listed first in the `users` list;
@@ -1688,6 +1738,7 @@ def check_message(
     for high-level documentation on this subsystem.
     """
     stream = None
+    is_support_stream = False
 
     message_content = normalize_body(message_content_raw)
 
@@ -1695,6 +1746,7 @@ def check_message(
         realm = sender.realm
 
     recipients_for_user_creation_events = None
+    topic_creator_user_id = None
     if addressee.is_stream():
         topic_name = addressee.topic_name()
         topic_name = truncate_topic(topic_name)
@@ -1738,6 +1790,19 @@ def check_message(
 
         if realm.mandatory_topics and topic_name == "(no topic)":
             raise JsonableError(_("Topics are required in this organization"))
+
+        if stream.is_support_stream():
+            is_support_stream = True
+            user = sender
+            if sender.is_bot and sender.bot_owner is not None:
+                user = sender.bot_owner
+            topic_creator_user_id = get_topic_creator_user_id(realm.id, recipient.id, topic_name)
+            if (
+                not check_access_based_on_can_access_stream_topics_group(user, stream)
+                and topic_creator_user_id
+                and not (sender.id == topic_creator_user_id)
+            ):
+                raise UnauthorizedTopicAccessError
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
@@ -1822,6 +1887,8 @@ def check_message(
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        topic_creator_user_id=topic_creator_user_id,
+        is_support_stream=is_support_stream,
     )
 
     if (

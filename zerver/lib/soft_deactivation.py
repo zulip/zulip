@@ -39,7 +39,6 @@ class MissingMessageDict(TypedDict):
 
 
 def filter_by_subscription_history(
-    user_profile: UserProfile,
     all_stream_messages: defaultdict[int, list[MissingMessageDict]],
     all_stream_subscription_logs: defaultdict[int, list[RealmAuditLog]],
 ) -> list[int]:
@@ -202,6 +201,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
                 # We are going to short circuit this iteration as its no use
                 # iterating since user unsubscribed before soft-deactivation
                 continue
+
         recipient_ids.append(sub["recipient_id"])
 
     new_stream_msgs = (
@@ -235,7 +235,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # This function does not perform any SQL related task and gets all the data
     # required for its operation in its params.
     message_ids_to_insert = filter_by_subscription_history(
-        user_profile, stream_messages, all_stream_subscription_logs
+        stream_messages, all_stream_subscription_logs
     )
 
     # Doing a bulk create for all the UserMessage objects stored for creation.

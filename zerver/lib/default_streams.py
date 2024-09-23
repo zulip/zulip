@@ -13,7 +13,11 @@ def get_slim_realm_default_streams(realm_id: int) -> list[Stream]:
     #
     # Please be careful about modifying this code, as it has had a history
     # of performance problems.
-    return list(Stream.objects.filter(defaultstream__realm_id=realm_id))
+    return list(
+        Stream.objects.select_related("can_access_stream_topics_group__named_user_group").filter(
+            defaultstream__realm_id=realm_id
+        )
+    )
 
 
 def get_default_stream_ids_for_realm(realm_id: int) -> set[int]:

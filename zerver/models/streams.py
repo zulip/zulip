@@ -135,6 +135,11 @@ class Stream(models.Model):
     # We are not using PROTECT since we want to allow deletion of user groups
     # when realm itself is deleted.
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
+    can_access_stream_topics_group = models.ForeignKey(
+        UserGroup,
+        on_delete=models.RESTRICT,
+        related_name="+",
+    )
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -150,6 +155,15 @@ class Stream(models.Model):
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="can_remove_subscribers_group_id",
+        ),
+        "can_access_stream_topics_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="can_access_stream_topics_group_id",
         ),
     }
 
@@ -172,6 +186,9 @@ class Stream(models.Model):
     def is_history_public_to_subscribers(self) -> bool:
         return self.history_public_to_subscribers
 
+    def is_support_stream(self) -> bool:
+        return self.can_access_stream_topics_group.named_user_group.name != SystemGroups.EVERYONE
+
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
@@ -193,6 +210,7 @@ class Stream(models.Model):
         "rendered_description",
         "stream_post_policy",
         "can_remove_subscribers_group_id",
+        "can_access_stream_topics_group_id",
     ]
 
     def to_dict(self) -> DefaultStreamDict:
@@ -210,6 +228,7 @@ class Stream(models.Model):
             rendered_description=self.rendered_description,
             stream_id=self.id,
             stream_post_policy=self.stream_post_policy,
+            can_access_stream_topics_group=self.can_access_stream_topics_group_id,
             is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         )
 
@@ -219,7 +238,9 @@ post_delete.connect(flush_stream, sender=Stream)
 
 
 def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
-    return Stream.objects.get(name__iexact=stream_name.strip(), realm_id=realm_id)
+    return Stream.objects.select_related("can_access_stream_topics_group__named_user_group").get(
+        name__iexact=stream_name.strip(), realm_id=realm_id
+    )
 
 
 def get_active_streams(realm: Realm) -> QuerySet[Stream]:
@@ -249,7 +270,9 @@ def get_stream(stream_name: str, realm: Realm) -> Stream:
 
 
 def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
-    return Stream.objects.select_related("realm", "recipient").get(id=stream_id, realm=realm)
+    return Stream.objects.select_related(
+        "realm", "recipient", "can_access_stream_topics_group__named_user_group"
+    ).get(id=stream_id, realm=realm)
 
 
 def bulk_get_streams(realm: Realm, stream_names: set[str]) -> dict[str, Any]:

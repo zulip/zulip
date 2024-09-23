@@ -68,13 +68,19 @@ from zerver.lib.streams import (
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
+    check_access_based_on_can_access_stream_topics_group,
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
+    get_topic_history_for_support_stream,
     messages_for_topic,
 )
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_color, check_int_in_validator
-from zerver.lib.user_groups import access_user_group_for_setting
+from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
+    access_user_group_for_setting,
+    parse_group_setting_value,
+)
 from zerver.lib.users import bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import NamedUserGroup, Realm, Stream, UserProfile
@@ -561,6 +567,7 @@ def add_subscriptions_backend(
     can_remove_subscribers_group_id: Annotated[
         Json[int | None], ApiParamConfig("can_remove_subscribers_group")
     ] = None,
+    can_access_stream_topics_group: Json[int | AnonymousSettingGroupDict] | None = None,
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
@@ -592,6 +599,29 @@ def add_subscriptions_backend(
             is_system_group=True,
         )
 
+    if can_access_stream_topics_group is not None:
+        permission_configuration = Stream.stream_permission_group_settings[
+            "can_access_stream_topics_group"
+        ]
+        setting_value = parse_group_setting_value(
+            can_access_stream_topics_group, "can_access_stream_topics_group"
+        )
+        can_access_stream_topics_group_value = access_user_group_for_setting(
+            setting_value,
+            user_profile,
+            setting_name="can_access_stream_topics_group",
+            permission_configuration=permission_configuration,
+        )
+    else:
+        can_access_stream_topics_group_default_name = Stream.stream_permission_group_settings[
+            "can_access_stream_topics_group"
+        ].default_group_name
+        can_access_stream_topics_group_value = NamedUserGroup.objects.get(
+            name=can_access_stream_topics_group_default_name,
+            realm=user_profile.realm,
+            is_system_group=True,
+        )
+
     for stream_obj in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -613,6 +643,7 @@ def add_subscriptions_backend(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
         stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group
+        stream_dict_copy["can_access_stream_topics_group"] = can_access_stream_topics_group_value
 
         stream_dicts.append(stream_dict_copy)
 
@@ -905,11 +936,22 @@ def get_topics_backend(
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
         assert stream.recipient_id is not None
-        result = get_topic_history_for_stream(
-            user_profile=user_profile,
-            recipient_id=stream.recipient_id,
-            public_history=stream.is_history_public_to_subscribers(),
-        )
+
+        if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+            user_profile, stream
+        ):
+            result = get_topic_history_for_support_stream(
+                user_profile=user_profile,
+                recipient_id=stream.recipient_id,
+            )
+
+        else:
+            public_history = stream.is_history_public_to_subscribers()
+            result = get_topic_history_for_stream(
+                user_profile=user_profile,
+                recipient_id=stream.recipient_id,
+                public_history=public_history,
+            )
 
     return json_success(request, data=dict(topics=result))
 

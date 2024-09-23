@@ -1468,6 +1468,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 stream, setting_name, moderators_group, acting_user=None
             )
 
+            # Unarchive the stream again for further testing.
+            do_unarchive_stream(stream, "support", acting_user=None)
+
         leadership_group = self.create_user_group_for_test("leadership")
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             do_change_user_group_permission_setting(
