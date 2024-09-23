@@ -124,12 +124,31 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                   },
               ),
     };
+
+    const muted_banner = {
+        title: $t({
+            defaultMessage:
+                "This feed is empty, because you have muted all the topics in this channel.",
+        }),
+    };
+
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
+    // Retrieve the current filter from narrow_state
     const current_filter = narrow_state.filter();
 
-    if (current_filter === undefined || current_filter.is_in_home()) {
+    if (!current_filter || current_filter.is_in_home()) {
         return default_banner;
+    }
+
+    const stream_subscription = narrow_state.stream_sub(current_filter);
+
+    if (
+        stream_subscription &&
+        stream_subscription.first_message_id !== null &&
+        stream_subscription?.first_message_id !== undefined
+    ) {
+        return muted_banner;
     }
 
     const first_term = current_filter.terms()[0]!;
