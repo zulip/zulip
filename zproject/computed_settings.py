@@ -68,6 +68,7 @@ from .configured_settings import (
     STATIC_URL,
     SUBMIT_USAGE_STATISTICS,
     TORNADO_PORTS,
+    USING_PARADEDB,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
     ZULIP_SERVICE_PUSH_NOTIFICATIONS,
@@ -276,7 +277,11 @@ INSTALLED_APPS = [
     "two_factor",
     "two_factor.plugins.phonenumber",
 ]
+if USING_PARADEDB:
+    assert not USING_PGROONGA
+    INSTALLED_APPS += ["paradedb"]
 if USING_PGROONGA:
+    assert not USING_PARADEDB
     INSTALLED_APPS += ["pgroonga"]
 INSTALLED_APPS += EXTRA_INSTALLED_APPS
 
