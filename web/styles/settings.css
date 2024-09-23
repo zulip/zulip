@@ -1369,10 +1369,6 @@ $option_title_width: 180px;
                 hyphens: auto;
             }
 
-            .zulip-icon-smart-toy {
-                font-size: 1.6em;
-            }
-
             .locked {
                 font-size: 1em;
                 text-align: center;
