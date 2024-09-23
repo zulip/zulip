@@ -512,7 +512,7 @@ function edit_message($row: JQuery, raw_content: string): void {
     // typeahead to call stopPropagation if it can handle the event
     // and prevent the form from submitting.
     $form.on("keydown", (e) => {
-        if (keydown_util.is_enter_event(e)) {
+        if (e.target.classList.contains("message_edit_content") && keydown_util.is_enter_event(e)) {
             handle_message_edit_enter(e, $message_edit_content);
         }
     });
