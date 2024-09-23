@@ -26,7 +26,6 @@ import * as settings_org from "./settings_org";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
-import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
 import * as user_group_create from "./user_group_create";
 import * as user_group_edit_members from "./user_group_edit_members";
@@ -919,19 +918,13 @@ export function initialize() {
             return;
         }
         function deactivate_user_group() {
-            channel.post({
-                url: "/json/user_groups/" + group_id + "/deactivate",
-                success() {
+            const url = "/json/user_groups/" + group_id + "/deactivate";
+            const opts = {
+                success_continuation() {
                     active_group_data.$row.remove();
                 },
-                error(xhr) {
-                    ui_report.error(
-                        $t_html({defaultMessage: "Failed"}),
-                        xhr,
-                        $(".group_change_property_info"),
-                    );
-                },
-            });
+            };
+            dialog_widget.submit_api_request(channel.post, url, {}, opts);
         }
 
         const html_body = render_confirm_delete_user({
@@ -947,6 +940,8 @@ export function initialize() {
             ),
             html_body,
             on_click: deactivate_user_group,
+            close_on_submit: false,
+            loading_spinner: true,
         });
     });
 
