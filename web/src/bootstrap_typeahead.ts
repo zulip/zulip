@@ -845,8 +845,7 @@ export class Typeahead<ItemType extends string | object> {
         e.stopPropagation();
         // Refresh the typeahead menu to account for any changes in the
         // input position by asking popper to recompute your tooltip's position.
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.instance?.popperInstance?.update();
+        void this.instance?.popperInstance?.update();
     }
 }
 
