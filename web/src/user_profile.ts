@@ -1250,7 +1250,7 @@ export function initialize(): void {
     });
 
     $("body").on("input", "#user-profile-streams-tab .stream-search", () => {
-        const $input = $<HTMLInputElement>("input#user-profile-streams-tab .stream-search");
+        const $input = $<HTMLInputElement>("#user-profile-streams-tab input.stream-search");
         if ($input.val()!.trim().length > 0) {
             $("#user-profile-streams-tab #clear_stream_search").show();
             $input.css("margin-right", "-20px");
