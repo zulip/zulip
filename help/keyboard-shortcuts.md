@@ -108,6 +108,10 @@ in the Zulip app to add more to your repertoire as needed.
 * **Cycle between channel views**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 
+* **Go to inbox**: <kbd>Shift</kbd> + <kbd>I</kbd> — Shows conversations with unread messages.
+
+* **Go to recent conversations**: <kbd>T</kbd>
+
 * **Go to combined feed**: <kbd>A</kbd> — Shows all unmuted messages.
 
 * **Go to starred messages**: <kbd>*</kbd>
