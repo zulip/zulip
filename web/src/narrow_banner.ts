@@ -12,6 +12,7 @@ import * as people from "./people";
 import * as spectators from "./spectators";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import {get as get_stream_subscription} from "./sub_store";
 import * as util from "./util";
 
 const SPECTATOR_STREAM_NARROW_BANNER = {
@@ -109,7 +110,6 @@ function retrieve_search_query_data(): SearchData {
 export function pick_empty_narrow_banner(): NarrowBannerData {
     const default_banner = {
         title: $t({defaultMessage: "There are no messages here."}),
-        // Spectators cannot start a conversation.
         html: page_params.is_spectator
             ? ""
             : $t_html(
@@ -118,18 +118,39 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                   },
                   {
                       "z-link": (content_html) =>
-                          `<a href="#" class="empty_feed_compose_stream">${content_html.join(
-                              "",
-                          )}</a>`,
+                          `<a href="#" class="empty_feed_compose_stream">${content_html.join("")}</a>`,
                   },
               ),
     };
+
+    const muted_banner = {
+        title: $t({
+            defaultMessage:
+                "This feed is empty, because you have muted all the topics in this channel.",
+        }),
+    };
+
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
+    // Retrieve the current filter from narrow_state
     const current_filter = narrow_state.filter();
 
-    if (current_filter === undefined || current_filter.is_in_home()) {
+    if (!current_filter || current_filter.is_in_home()) {
         return default_banner;
+    }
+
+    const stream_id_str = current_filter.operands("channel")?.[0];
+
+    const stream_id = stream_id_str !== undefined ? Number.parseInt(stream_id_str, 10) : undefined;
+
+    const stream_subscription = get_stream_subscription(stream_id!);
+
+    if (
+        stream_subscription &&
+        stream_subscription.first_message_id !== null &&
+        stream_subscription?.first_message_id !== undefined
+    ) {
+        return muted_banner;
     }
 
     const first_term = current_filter.terms()[0]!;
