@@ -14,6 +14,7 @@ const {Filter} = zrequire("../src/filter");
 const all_messages_data = mock_esm("../src/all_messages_data");
 const browser_history = mock_esm("../src/browser_history", {
     state: {changing_hash: false},
+    get_current_state_show_more_topics: () => undefined,
 });
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_banner = mock_esm("../src/compose_banner");
