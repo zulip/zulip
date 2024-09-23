@@ -30,8 +30,8 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
     do_start_email_change_process,
 )
+from zerver.actions.users import generate_password_reset_url
 from zerver.decorator import human_users_only
-from zerver.forms import generate_password_reset_url
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_validation import (
     get_realm_email_validator,

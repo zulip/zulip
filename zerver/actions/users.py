@@ -4,8 +4,13 @@ from email.headerregistry import Address
 from typing import Any
 
 from django.conf import settings
+from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
 from django.db import transaction
+from django.http import HttpRequest
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import get_language
 
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
@@ -17,8 +22,9 @@ from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-from zerver.lib.send_email import clear_scheduled_emails
+from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.sessions import delete_user_sessions
+from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
@@ -693,3 +699,63 @@ def get_owned_bot_dicts(
         }
         for botdict in result
     ]
+
+
+def generate_password_reset_url(
+    user_profile: UserProfile, token_generator: PasswordResetTokenGenerator
+) -> str:
+    token = token_generator.make_token(user_profile)
+    uid = urlsafe_base64_encode(str(user_profile.id).encode())
+    endpoint = reverse("password_reset_confirm", kwargs=dict(uidb64=uid, token=token))
+    return f"{user_profile.realm.url}{endpoint}"
+
+
+def do_send_password_reset_email(
+    email: str,
+    realm: Realm,
+    user_profile: UserProfile | None,
+    *,
+    token_generator: PasswordResetTokenGenerator = default_token_generator,
+    request: HttpRequest | None = None,
+) -> None:
+    context: dict[str, object] = {
+        "email": email,
+        "realm_url": realm.url,
+        "realm_name": realm.name,
+    }
+    if user_profile is not None and not user_profile.is_active:
+        context["user_deactivated"] = True
+        user_profile = None
+
+    if user_profile is not None:
+        queue_soft_reactivation(user_profile.id)
+        context["active_account_in_realm"] = True
+        context["reset_url"] = generate_password_reset_url(user_profile, token_generator)
+        send_email(
+            "zerver/emails/password_reset",
+            to_user_ids=[user_profile.id],
+            from_name=FromAddress.security_email_from_name(user_profile=user_profile),
+            from_address=FromAddress.tokenized_no_reply_address(),
+            context=context,
+            realm=realm,
+            request=request,
+        )
+    else:
+        context["active_account_in_realm"] = False
+        active_accounts_in_other_realms = UserProfile.objects.filter(
+            delivery_email__iexact=email, is_active=True
+        )
+        if active_accounts_in_other_realms:
+            context["active_accounts_in_other_realms"] = active_accounts_in_other_realms
+        language = get_language()
+
+        send_email(
+            "zerver/emails/password_reset",
+            to_emails=[email],
+            from_name=FromAddress.security_email_from_name(language=language),
+            from_address=FromAddress.tokenized_no_reply_address(),
+            language=language,
+            context=context,
+            realm=realm,
+            request=request,
+        )

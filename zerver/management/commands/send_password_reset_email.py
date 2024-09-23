@@ -1,14 +1,12 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from django.contrib.auth.tokens import default_token_generator
 from django.core.management.base import CommandError
 from django.db.models import QuerySet
 from typing_extensions import override
 
-from zerver.forms import generate_password_reset_url
+from zerver.actions.users import do_send_password_reset_email
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.send_email import FromAddress, send_email
 from zerver.models import UserProfile
 
 
@@ -59,17 +57,6 @@ class Command(ZulipBaseCommand):
     def send(self, users: QuerySet[UserProfile]) -> None:
         """Sends one-use only links for resetting password to target users"""
         for user_profile in users:
-            context = {
-                "email": user_profile.delivery_email,
-                "reset_url": generate_password_reset_url(user_profile, default_token_generator),
-                "realm_url": user_profile.realm.url,
-                "realm_name": user_profile.realm.name,
-                "active_account_in_realm": True,
-            }
-            send_email(
-                "zerver/emails/password_reset",
-                to_user_ids=[user_profile.id],
-                from_address=FromAddress.tokenized_no_reply_address(),
-                from_name=FromAddress.security_email_from_name(user_profile=user_profile),
-                context=context,
+            do_send_password_reset_email(
+                user_profile.delivery_email, user_profile.realm, user_profile
             )
