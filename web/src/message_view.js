@@ -1230,7 +1230,7 @@ export function narrow_by_topic(target_id, opts) {
 }
 
 export function narrow_by_recipient(target_id, opts) {
-    opts = {then_select_id: target_id, ...opts};
+    const show_opts = {then_select_id: target_id, ...opts};
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
     const emails = message.reply_to.split(",");
@@ -1248,7 +1248,7 @@ export function narrow_by_recipient(target_id, opts) {
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            show([{operator: "dm", operand: reply_to.join(",")}], opts);
+            show([{operator: "dm", operand: reply_to.join(",")}], show_opts);
             break;
 
         case "stream":
@@ -1269,7 +1269,7 @@ export function narrow_by_recipient(target_id, opts) {
                         operand: message.stream_id.toString(),
                     },
                 ],
-                opts,
+                show_opts,
             );
             break;
     }
