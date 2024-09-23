@@ -22,6 +22,8 @@ const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const {all_visibility_policies} = zrequire("user_topics");
+const user_topics = zrequire("user_topics");
 
 set_current_user({});
 const realm = {};
@@ -237,6 +239,34 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     override(realm, "stop_words", []);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
+
+    const muted_stream_id = 103;
+    const muted_stream = {
+        name: "container stream",
+        stream_id: muted_stream_id,
+        first_message_id: 1,
+    };
+    stream_data.add_sub(muted_stream);
+    const muted_topics = ["topicA"];
+    for (const topic of muted_topics) {
+        user_topics.update_user_topics(
+            muted_stream.stream_id,
+            muted_stream.name,
+            topic,
+            all_visibility_policies.MUTED,
+        );
+    }
+
+    set_filter([["stream", muted_stream.stream_id.toString()]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.strictEqual(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This feed is empty, because you have muted all the topics in this channel.",
+            "",
+            null,
+        ),
+    );
 
     message_lists.set_current(undefined);
     narrow_banner.show_empty_narrow_message();
