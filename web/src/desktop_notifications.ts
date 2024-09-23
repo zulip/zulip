@@ -21,7 +21,7 @@ export function set_notification_api(n: typeof NotificationAPI): void {
     NotificationAPI = n;
 }
 
-class ElectronBridgeNotification extends EventTarget {
+export class ElectronBridgeNotification extends EventTarget {
     title: string;
     dir: NotificationDirection;
     lang: string;

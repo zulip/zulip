@@ -3,8 +3,10 @@ import $ from "jquery";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as desktop_notifications from "./desktop_notifications";
+import type {ElectronBridgeNotification} from "./desktop_notifications";
 import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
+import type {Message} from "./message_store";
 import * as message_view from "./message_view";
 import * as people from "./people";
 import * as spoilers from "./spoilers";
@@ -14,7 +16,27 @@ import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
-function get_notification_content(message) {
+type TestNotificationMessage = {
+    id: number;
+    type: "test-notification";
+    sender_email: string;
+    sender_full_name: string;
+    display_reply_to: string;
+    content: string;
+    unread: boolean;
+    notification_sent?: boolean;
+    // Needed for functions that handle Message
+    is_me_message?: undefined;
+    sent_by_me?: undefined;
+    mentioned_me_directly?: undefined;
+};
+
+function small_avatar_url_for_test_notification(message: TestNotificationMessage): string {
+    // this is a heavily simplified version of people.small_avatar_url
+    return people.gravatar_url_for_email(message.sender_email);
+}
+
+function get_notification_content(message: Message | TestNotificationMessage): string {
     let content;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
@@ -50,7 +72,7 @@ function get_notification_content(message) {
     return content;
 }
 
-function debug_notification_source_value(message) {
+function debug_notification_source_value(message: Message | TestNotificationMessage): void {
     let notification_source;
 
     if (message.type === "private" || message.type === "test-notification") {
@@ -66,7 +88,7 @@ function debug_notification_source_value(message) {
     blueslip.debug("Desktop notification from source " + notification_source);
 }
 
-function get_notification_key(message) {
+function get_notification_key(message: Message | TestNotificationMessage): string {
     let key;
 
     if (message.type === "private" || message.type === "test-notification") {
@@ -79,13 +101,16 @@ function get_notification_key(message) {
     return key;
 }
 
-function remove_sender_from_list_of_recipients(message) {
+function remove_sender_from_list_of_recipients(message: Message): string {
     return `, ${message.display_reply_to}, `
         .replace(`, ${message.sender_full_name}, `, ", ")
         .slice(", ".length, -", ".length);
 }
 
-function get_notification_title(message, msg_count) {
+function get_notification_title(
+    message: Message | TestNotificationMessage,
+    msg_count: number,
+): string {
     let title_prefix = message.sender_full_name;
     let title_suffix = "";
     let other_recipients;
@@ -139,29 +164,36 @@ function get_notification_title(message, msg_count) {
     return title_prefix + title_suffix;
 }
 
-export function process_notification(notification) {
+export function process_notification(notification: {
+    message: Message | TestNotificationMessage;
+    desktop_notify: boolean;
+}): void {
     const message = notification.message;
     const content = get_notification_content(message);
     const key = get_notification_key(message);
-    let notification_object;
+    let notification_object: ElectronBridgeNotification | Notification;
     let msg_count = 1;
 
     debug_notification_source_value(message);
 
-    if (desktop_notifications.notice_memory.has(key)) {
-        msg_count = desktop_notifications.notice_memory.get(key).msg_count + 1;
-        notification_object = desktop_notifications.notice_memory.get(key).obj;
+    const notice_memory = desktop_notifications.notice_memory.get(key);
+    if (notice_memory) {
+        msg_count = notice_memory.msg_count + 1;
+        notification_object = notice_memory.obj;
         notification_object.close();
     }
 
     const title = get_notification_title(message, msg_count);
 
     if (notification.desktop_notify && desktop_notifications.NotificationAPI !== undefined) {
-        const icon_url = people.small_avatar_url(message);
+        const icon_url =
+            message.type === "test-notification"
+                ? small_avatar_url_for_test_notification(message)
+                : people.small_avatar_url(message);
         notification_object = new desktop_notifications.NotificationAPI(title, {
             icon: icon_url,
             body: content,
-            tag: message.id,
+            tag: message.id.toString(),
         });
         desktop_notifications.notice_memory.set(key, {
             obj: notification_object,
@@ -188,7 +220,7 @@ export function process_notification(notification) {
     }
 }
 
-export function message_is_notifiable(message) {
+export function message_is_notifiable(message: Message | TestNotificationMessage): boolean {
     // Independent of the user's notification settings, are there
     // properties of the message that unconditionally mean we
     // shouldn't notify about it.
@@ -235,7 +267,9 @@ export function message_is_notifiable(message) {
     return true;
 }
 
-export function should_send_desktop_notification(message) {
+export function should_send_desktop_notification(
+    message: Message | TestNotificationMessage,
+): boolean {
     // Always notify for testing notifications.
     if (message.type === "test-notification") {
         return true;
@@ -304,7 +338,9 @@ export function should_send_desktop_notification(message) {
     return false;
 }
 
-export function should_send_audible_notification(message) {
+export function should_send_audible_notification(
+    message: Message | TestNotificationMessage,
+): boolean {
     // If `None` is selected as the notification sound, never send
     // audible notifications regardless of other configuration.
     if (user_settings.notification_sound === "none") {
@@ -374,7 +410,7 @@ export function should_send_audible_notification(message) {
     return false;
 }
 
-export function received_messages(messages) {
+export function received_messages(messages: (Message | TestNotificationMessage)[]): void {
     for (const message of messages) {
         if (!message_is_notifiable(message)) {
             continue;
@@ -393,12 +429,12 @@ export function received_messages(messages) {
             });
         }
         if (should_send_audible_notification(message)) {
-            ui_util.play_audio($("#user-notification-sound-audio")[0]);
+            void ui_util.play_audio(util.the($("#user-notification-sound-audio")));
         }
     }
 }
 
-export function send_test_notification(content) {
+export function send_test_notification(content: string): void {
     received_messages([
         {
             id: Math.random(),
