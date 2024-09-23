@@ -68,6 +68,7 @@ from .configured_settings import (
     STATIC_URL,
     SUBMIT_USAGE_STATISTICS,
     TORNADO_PORTS,
+    USING_PG_SEARCH,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
     ZULIP_SERVICE_PUSH_NOTIFICATIONS,
@@ -276,7 +277,11 @@ INSTALLED_APPS = [
     "two_factor",
     "two_factor.plugins.phonenumber",
 ]
+if USING_PG_SEARCH:
+    assert not USING_PGROONGA
+    INSTALLED_APPS += ["pg_search"]
 if USING_PGROONGA:
+    assert not USING_PG_SEARCH
     INSTALLED_APPS += ["pgroonga"]
 INSTALLED_APPS += EXTRA_INSTALLED_APPS
 
