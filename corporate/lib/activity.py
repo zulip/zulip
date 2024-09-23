@@ -132,7 +132,7 @@ def realm_activity_link(realm_str: str) -> Markup:
     from corporate.views.realm_activity import get_realm_activity
 
     url = reverse(get_realm_activity, kwargs=dict(realm_str=realm_str))
-    return Markup('<a href="{url}">{realm_str}</a>').format(url=url, realm_str=realm_str)
+    return Markup('<a href="{url}"><i class="fa fa-table"></i></a>').format(url=url)
 
 
 def realm_stats_link(realm_str: str) -> Markup:
@@ -153,7 +153,7 @@ def realm_support_link(realm_str: str) -> Markup:
     support_url = reverse("support")
     query = urlencode({"q": realm_str})
     url = append_url_query_string(support_url, query)
-    return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
+    return Markup('<a href="{url}">{realm}</i></a>').format(url=url, realm=realm_str)
 
 
 def realm_url_link(realm_str: str) -> Markup:
