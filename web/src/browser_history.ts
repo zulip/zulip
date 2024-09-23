@@ -1,4 +1,5 @@
 // TODO: Rewrite this module to use window.history.pushState.
+import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import * as hash_parser from "./hash_parser";
@@ -155,15 +156,16 @@ export function set_hash(hash: string): void {
     }
 }
 
-type StateData = {
-    narrow_pointer?: number;
-    narrow_offset?: number;
-    show_more_topics?: boolean;
-};
+export const state_data_schema = z.object({
+    narrow_pointer: z.number().optional(),
+    narrow_offset: z.number().optional(),
+    show_more_topics: z.boolean().optional(),
+});
+
+type StateData = z.infer<typeof state_data_schema>;
 
 export function update_current_history_state_data(new_data: StateData): void {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const current_state = window.history.state as StateData | null;
+    const current_state = state_data_schema.nullable().parse(window.history.state);
     const current_state_data = {
         narrow_pointer: current_state?.narrow_pointer,
         narrow_offset: current_state?.narrow_offset,
