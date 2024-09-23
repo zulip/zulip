@@ -175,6 +175,11 @@ export function update_current_history_state_data(new_data: StateData): void {
     window.history.replaceState(state_data, "", window.location.href);
 }
 
+export function get_current_state_show_more_topics(): boolean | undefined {
+    const current_state = state_data_schema.nullable().parse(window.history.state);
+    return current_state?.show_more_topics;
+}
+
 export function get_home_view_hash(): string {
     let home_view_hash = `#${user_settings.web_home_view}`;
     if (home_view_hash === "#recent_topics") {
