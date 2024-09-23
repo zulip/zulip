@@ -55,9 +55,9 @@ type DataByTime<T> = {
 const datum_schema: z.ZodType<Plotly.Datum> = z.any();
 
 // Define a schema factory function for the utility generic type
-// The inferred types from zod have to be used to type the return values
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-function instantiate_type_DataByEveryoneUser<T extends z.ZodTypeAny>(schema: T) {
+function instantiate_type_DataByEveryoneUser<T extends z.ZodTypeAny>(
+    schema: T,
+): z.ZodObject<{everyone: T; user: T}> {
     return z.object({
         everyone: schema,
         user: schema,
