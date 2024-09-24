@@ -48,9 +48,6 @@ from zerver.models.realms import (
 from zerver.models.users import get_system_bot
 from zproject.backends import all_default_backend_names
 
-if settings.CORPORATE_ENABLED:
-    from corporate.lib.support import get_realm_support_url
-
 
 def do_change_realm_subdomain(
     realm: Realm,
@@ -372,6 +369,8 @@ def do_create_realm(
 
     # Send a notification to the admin realm when a new organization registers.
     if settings.CORPORATE_ENABLED:
+        from corporate.lib.support import get_realm_support_url
+
         admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
         sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
 

@@ -2372,7 +2372,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         with (
             mock.patch(
-                "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=None
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_customer", return_value=None
             ) as m,
             mock.patch(
                 "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
@@ -2404,7 +2404,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
         dummy_customer = mock.MagicMock()
         with (
             mock.patch(
-                "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+                return_value=dummy_customer,
             ),
             mock.patch("corporate.lib.stripe.get_current_plan_by_customer", return_value=None) as m,
             mock.patch(
@@ -2425,7 +2426,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         with (
             mock.patch(
-                "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+                "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+                return_value=dummy_customer,
             ),
             mock.patch("corporate.lib.stripe.get_current_plan_by_customer", return_value=None),
             mock.patch(
@@ -2586,7 +2588,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 "corporate.lib.stripe.RemoteServerBillingSession.get_customer",
                 return_value=dummy_remote_server_customer,
             ),
-            mock.patch("zilencer.views.RemoteServerBillingSession.sync_license_ledger_if_needed"),
+            mock.patch(
+                "corporate.lib.stripe.RemoteServerBillingSession.sync_license_ledger_if_needed"
+            ),
             mock.patch(
                 "corporate.lib.stripe.get_current_plan_by_customer",
                 side_effect=get_current_plan_by_customer,
@@ -2702,7 +2706,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # of a deleted realm.
         with (
             self.assertLogs(logger, level="WARNING") as analytics_logger,
-            mock.patch("zilencer.views.RemoteRealmBillingSession.on_paid_plan", return_value=True),
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.on_paid_plan", return_value=True
+            ),
         ):
             # This time the logger shouldn't get triggered - because the bouncer doesn't
             # include .realm_locally_deleted realms in its response.

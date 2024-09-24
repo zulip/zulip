@@ -16,7 +16,6 @@ from corporate.lib.activity import (
     remote_installation_stats_link,
     remote_installation_support_link,
 )
-from corporate.lib.stripe import cents_to_dollar_string
 from zerver.decorator import require_server_admin
 from zerver.models.realms import get_org_type_display_name
 from zilencer.models import get_remote_customer_user_count
@@ -24,6 +23,8 @@ from zilencer.models import get_remote_customer_user_count
 
 @require_server_admin
 def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
+    from corporate.lib.stripe import cents_to_dollar_string
+
     title = "Remote servers"
 
     query = SQL(

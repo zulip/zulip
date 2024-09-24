@@ -53,9 +53,6 @@ from zerver.models.users import (
 )
 from zerver.tornado.django_api import send_event_on_commit
 
-if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import RealmBillingSession
-
 
 def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
     if user_profile.realm.is_zephyr_mirror_realm:
@@ -324,6 +321,9 @@ def do_deactivate_user(
     if not user_profile.is_active:
         return
 
+    if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import RealmBillingSession
+
     if _cascade:
         # We need to deactivate bots before the target user, to ensure
         # that a failure partway through this function cannot result
@@ -474,6 +474,8 @@ def do_change_user_role(
     )
     maybe_enqueue_audit_log_upload(user_profile.realm)
     if settings.BILLING_ENABLED and UserProfile.ROLE_GUEST in [old_value, value]:
+        from corporate.lib.stripe import RealmBillingSession
+
         billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
         billing_session.update_license_ledger_if_needed(timezone_now())
 

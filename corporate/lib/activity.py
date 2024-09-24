@@ -16,11 +16,6 @@ from django.utils.timezone import now as timezone_now
 from markupsafe import Markup
 from psycopg2.sql import Composable
 
-from corporate.lib.stripe import (
-    RealmBillingSession,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-)
 from corporate.models import CustomerPlan, LicenseLedger
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_encoding import append_url_query_string
@@ -196,6 +191,8 @@ def get_remote_activity_plan_data(
     remote_realm: RemoteRealm | None = None,
     remote_server: RemoteZulipServer | None = None,
 ) -> RemoteActivityPlanData:
+    from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
+
     if plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY or plan.status in (
         CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
         CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
@@ -226,6 +223,8 @@ def get_remote_activity_plan_data(
 
 
 def get_estimated_arr_and_rate_by_realm() -> tuple[dict[str, int], dict[str, str]]:  # nocoverage
+    from corporate.lib.stripe import RealmBillingSession
+
     # NOTE: Customers without a plan might still have a discount attached to them which
     # are not included in `plan_rate`.
     annual_revenue = {}

@@ -30,13 +30,6 @@ from analytics.lib.counts import (
     REMOTE_INSTALLATION_COUNT_STATS,
     do_increment_logging_stat,
 )
-from corporate.lib.stripe import (
-    BILLING_SUPPORT_EMAIL,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-    do_deactivate_remote_server,
-    get_push_status_for_remote_request,
-)
 from corporate.models import (
     CustomerPlan,
     get_current_plan_by_customer,
@@ -120,6 +113,8 @@ def deactivate_remote_server(
     request: HttpRequest,
     remote_server: RemoteZulipServer,
 ) -> HttpResponse:
+    from corporate.lib.stripe import RemoteServerBillingSession, do_deactivate_remote_server
+
     billing_session = RemoteServerBillingSession(remote_server)
     do_deactivate_remote_server(remote_server, billing_session)
     return json_success(request)
@@ -538,6 +533,8 @@ def remote_server_notify_push(
     *,
     payload: JsonBodyPayload[RemoteServerNotificationPayload],
 ) -> HttpResponse:
+    from corporate.lib.stripe import get_push_status_for_remote_request
+
     user_id = payload.user_id
     user_uuid = payload.user_uuid
     user_identity = UserPushIdentityCompat(user_id, user_uuid)
@@ -844,6 +841,8 @@ def ensure_devices_set_remote_realm(
 def update_remote_realm_data_for_server(
     server: RemoteZulipServer, server_realms_info: list[RealmDataForAnalytics]
 ) -> None:
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL, RemoteRealmBillingSession
+
     reported_uuids = [realm.uuid for realm in server_realms_info]
     all_registered_remote_realms_for_server = list(RemoteRealm.objects.filter(server=server))
     already_registered_remote_realms = [
@@ -1032,6 +1031,8 @@ def get_human_user_realm_uuids(
 def handle_customer_migration_from_server_to_realm(
     server: RemoteZulipServer,
 ) -> None:
+    from corporate.lib.stripe import RemoteServerBillingSession
+
     server_billing_session = RemoteServerBillingSession(server)
     server_customer = server_billing_session.get_customer()
     if server_customer is None:
@@ -1160,6 +1161,12 @@ def remote_server_post_analytics(
     merge_base: Json[str] | None = None,
     api_feature_level: Json[int] | None = None,
 ) -> HttpResponse:
+    from corporate.lib.stripe import (
+        RemoteRealmBillingSession,
+        RemoteServerBillingSession,
+        get_push_status_for_remote_request,
+    )
+
     # Lock the server, preventing this from racing with other
     # duplicate submissions of the data
     server = RemoteZulipServer.objects.select_for_update().get(id=server.id)

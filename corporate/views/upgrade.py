@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -10,20 +11,15 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from corporate.lib.stripe import (
-    BillingError,
-    InitialUpgradeRequest,
-    RealmBillingSession,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-    UpgradeRequest,
-)
 from corporate.models import CustomerPlan
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
 from zilencer.lib.remote_counts import MissingDataError
+
+if TYPE_CHECKING:
+    from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -42,6 +38,8 @@ def upgrade(
     licenses: Json[int] | None = None,
     tier: Json[int] = CustomerPlan.TIER_CLOUD_STANDARD,
 ) -> HttpResponse:
+    from corporate.lib.stripe import BillingError, RealmBillingSession, UpgradeRequest
+
     try:
         upgrade_request = UpgradeRequest(
             billing_modality=billing_modality,
@@ -77,11 +75,11 @@ def upgrade(
         raise BillingError(error_description, error_message)
 
 
-@authenticated_remote_realm_management_endpoint
 @typed_endpoint
+@authenticated_remote_realm_management_endpoint
 def remote_realm_upgrade(
     request: HttpRequest,
-    billing_session: RemoteRealmBillingSession,
+    billing_session: "RemoteRealmBillingSession",
     *,
     billing_modality: BillingModality,
     schedule: BillingSchedule,
@@ -92,6 +90,8 @@ def remote_realm_upgrade(
     remote_server_plan_start_date: str | None = None,
     tier: Json[int] = CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
 ) -> HttpResponse:
+    from corporate.lib.stripe import BillingError, UpgradeRequest
+
     try:
         upgrade_request = UpgradeRequest(
             billing_modality=billing_modality,
@@ -125,11 +125,11 @@ def remote_realm_upgrade(
         raise BillingError(error_description, error_message)
 
 
-@authenticated_remote_server_management_endpoint
 @typed_endpoint
+@authenticated_remote_server_management_endpoint
 def remote_server_upgrade(
     request: HttpRequest,
-    billing_session: RemoteServerBillingSession,
+    billing_session: "RemoteServerBillingSession",
     *,
     billing_modality: BillingModality,
     schedule: BillingSchedule,
@@ -140,6 +140,8 @@ def remote_server_upgrade(
     remote_server_plan_start_date: str | None = None,
     tier: Json[int] = CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
 ) -> HttpResponse:
+    from corporate.lib.stripe import BillingError, UpgradeRequest
+
     try:
         upgrade_request = UpgradeRequest(
             billing_modality=billing_modality,
@@ -182,6 +184,8 @@ def upgrade_page(
     tier: Json[int] = CustomerPlan.TIER_CLOUD_STANDARD,
     setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponse:
+    from corporate.lib.stripe import InitialUpgradeRequest, RealmBillingSession
+
     user = request.user
     assert user.is_authenticated
 
@@ -207,17 +211,19 @@ def upgrade_page(
     return response
 
 
-@authenticated_remote_realm_management_endpoint
 @typed_endpoint
+@authenticated_remote_realm_management_endpoint
 def remote_realm_upgrade_page(
     request: HttpRequest,
-    billing_session: RemoteRealmBillingSession,
+    billing_session: "RemoteRealmBillingSession",
     *,
     manual_license_management: Json[bool] = False,
     success_message: str = "",
     tier: str = str(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
     setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponse:
+    from corporate.lib.stripe import InitialUpgradeRequest
+
     billing_modality = "charge_automatically"
     if setup_payment_by_invoice:  # nocoverage
         billing_modality = "send_invoice"
@@ -240,17 +246,19 @@ def remote_realm_upgrade_page(
     return response
 
 
-@authenticated_remote_server_management_endpoint
 @typed_endpoint
+@authenticated_remote_server_management_endpoint
 def remote_server_upgrade_page(
     request: HttpRequest,
-    billing_session: RemoteServerBillingSession,
+    billing_session: "RemoteServerBillingSession",
     *,
     manual_license_management: Json[bool] = False,
     success_message: str = "",
     tier: str = str(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
     setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponse:
+    from corporate.lib.stripe import InitialUpgradeRequest
+
     billing_modality = "charge_automatically"
     if setup_payment_by_invoice:  # nocoverage
         billing_modality = "send_invoice"

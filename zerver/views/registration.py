@@ -120,10 +120,6 @@ from zproject.backends import (
     password_auth_enabled,
 )
 
-if settings.BILLING_ENABLED:
-    from corporate.lib.registration import check_spare_licenses_available_for_registering_new_user
-    from corporate.lib.stripe import LicenseLimitError
-
 
 @typed_endpoint
 def get_prereg_key_and_redirect(
@@ -332,6 +328,11 @@ def registration_helper(
             return redirect_to_email_login_url(email)
 
         if settings.BILLING_ENABLED:
+            from corporate.lib.registration import (
+                check_spare_licenses_available_for_registering_new_user,
+            )
+            from corporate.lib.stripe import LicenseLimitError
+
             try:
                 check_spare_licenses_available_for_registering_new_user(realm, email, role=role)
             except LicenseLimitError:

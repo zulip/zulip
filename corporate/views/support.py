@@ -24,26 +24,6 @@ from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
 from corporate.lib.activity import format_optional_datetime, remote_installation_stats_link
 from corporate.lib.billing_types import BillingModality
-from corporate.lib.stripe import (
-    BILLING_SUPPORT_EMAIL,
-    RealmBillingSession,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-    ServerDeactivateWithExistingPlanError,
-    SupportRequestError,
-    SupportType,
-    SupportViewRequest,
-    cents_to_dollar_string,
-    do_deactivate_remote_server,
-    do_reactivate_remote_server,
-)
-from corporate.lib.support import (
-    CloudSupportData,
-    RemoteSupportData,
-    get_data_for_cloud_support_view,
-    get_data_for_remote_support_view,
-    get_realm_support_url,
-)
 from corporate.models import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
@@ -118,6 +98,8 @@ class DemoRequestForm(forms.Form):
 @zulip_login_required
 @typed_endpoint_without_parameters
 def support_request(request: HttpRequest) -> HttpResponse:
+    from corporate.lib.support import get_realm_support_url
+
     user = request.user
     assert user.is_authenticated
 
@@ -161,6 +143,8 @@ def support_request(request: HttpRequest) -> HttpResponse:
 
 @typed_endpoint_without_parameters
 def demo_request(request: HttpRequest) -> HttpResponse:
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
+
     context = {
         "MAX_INPUT_LENGTH": DemoRequestForm.MAX_INPUT_LENGTH,
         "SORTED_ORG_TYPE_NAMES": DemoRequestForm.SORTED_ORG_TYPE_NAMES,
@@ -340,11 +324,15 @@ ModifyPlan = Literal[
 
 RemoteServerStatus = Literal["active", "deactivated"]
 
-SHARED_SUPPORT_CONTEXT = {
-    "get_org_type_display_name": get_org_type_display_name,
-    "get_plan_type_name": get_plan_type_string,
-    "dollar_amount": cents_to_dollar_string,
-}
+
+def shared_support_context() -> dict[str, object]:
+    from corporate.lib.stripe import cents_to_dollar_string
+
+    return {
+        "get_org_type_display_name": get_org_type_display_name,
+        "get_plan_type_name": get_plan_type_string,
+        "dollar_amount": cents_to_dollar_string,
+    }
 
 
 @require_server_admin
@@ -370,7 +358,15 @@ def support(
     org_type: Json[NonNegativeInt] | None = None,
     max_invites: Json[NonNegativeInt] | None = None,
 ) -> HttpResponse:
-    context: dict[str, Any] = {**SHARED_SUPPORT_CONTEXT}
+    from corporate.lib.stripe import (
+        RealmBillingSession,
+        SupportRequestError,
+        SupportType,
+        SupportViewRequest,
+    )
+    from corporate.lib.support import CloudSupportData, get_data_for_cloud_support_view
+
+    context = shared_support_context()
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
@@ -692,7 +688,19 @@ def remote_servers_support(
     ]
     | None = None,
 ) -> HttpResponse:
-    context: dict[str, Any] = {**SHARED_SUPPORT_CONTEXT}
+    from corporate.lib.stripe import (
+        RemoteRealmBillingSession,
+        RemoteServerBillingSession,
+        ServerDeactivateWithExistingPlanError,
+        SupportRequestError,
+        SupportType,
+        SupportViewRequest,
+        do_deactivate_remote_server,
+        do_reactivate_remote_server,
+    )
+    from corporate.lib.support import RemoteSupportData, get_data_for_remote_support_view
+
+    context = shared_support_context()
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]

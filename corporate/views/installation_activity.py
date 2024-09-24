@@ -25,7 +25,6 @@ from corporate.lib.activity import (
     realm_support_link,
     realm_url_link,
 )
-from corporate.lib.stripe import cents_to_dollar_string
 from corporate.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
 from zerver.lib.typed_endpoint import typed_endpoint
@@ -92,6 +91,8 @@ def get_realm_day_counts() -> dict[str, dict[str, Markup]]:
 
 
 def realm_summary_table(export: bool) -> str:
+    from corporate.lib.stripe import cents_to_dollar_string
+
     now = timezone_now()
 
     query = SQL(
