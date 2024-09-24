@@ -4,8 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import * as compose_tooltips from "./compose_tooltips";
-import type {Filter} from "./filter";
-import {MessageListData} from "./message_list_data";
+import type {MessageListData} from "./message_list_data";
 import * as message_list_tooltips from "./message_list_tooltips";
 import {MessageListView} from "./message_list_view";
 import type {Message} from "./message_store";
@@ -71,30 +70,14 @@ export class MessageList {
     last_message_historical?: boolean;
     should_trigger_message_selected_event?: boolean;
 
-    constructor(
-        opts: (
-            | {
-                  data: MessageListData;
-              }
-            | {
-                  data?: undefined;
-                  filter: Filter;
-              }
-        ) & {excludes_muted_topics?: boolean; is_node_test?: boolean},
-    ) {
+    constructor(opts: {
+        data: MessageListData;
+        excludes_muted_topics?: boolean;
+        is_node_test?: boolean;
+    }) {
         MessageList.id_counter += 1;
         this.id = MessageList.id_counter;
-        if (opts.data) {
-            this.data = opts.data;
-        } else {
-            const filter = opts.filter;
-
-            this.data = new MessageListData({
-                excludes_muted_topics: opts.excludes_muted_topics ?? false,
-                filter,
-            });
-        }
-
+        this.data = opts.data;
         this.data.set_rendered_message_list_id(this.id);
 
         // TODO: This property should likely just be inlined into

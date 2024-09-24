@@ -30,6 +30,7 @@ mock_esm("../src/people", {
 const {Filter} = zrequire("../src/filter");
 const {MessageListView} = zrequire("../src/message_list_view");
 const message_list = zrequire("message_list");
+const {MessageListData} = zrequire("message_list_data");
 const muted_users = zrequire("muted_users");
 
 let next_timestamp = 1500000000;
@@ -473,7 +474,10 @@ test("merge_message_groups", ({mock_template}) => {
         const filter = new Filter([{operator: "stream", operand: "foo"}]);
 
         const list = new message_list.MessageList({
-            filter,
+            data: new MessageListData({
+                excludes_muted_topics: false,
+                filter,
+            }),
             is_node_test: true,
         });
 
@@ -734,7 +738,10 @@ test("render_windows", ({mock_template}) => {
         const filter = new Filter([]);
 
         const list = new message_list.MessageList({
-            filter,
+            data: new MessageListData({
+                excludes_muted_topics: false,
+                filter,
+            }),
             is_node_test: true,
         });
 

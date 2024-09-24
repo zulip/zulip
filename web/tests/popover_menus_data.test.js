@@ -15,6 +15,7 @@ const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const user_groups = zrequire("user_groups");
+const {MessageListData} = zrequire("message_list_data");
 
 const noop = function () {};
 
@@ -104,7 +105,10 @@ function add_initialize_users() {
 function init_message_list() {
     const filter = new Filter([]);
     const list = new MessageList({
-        filter,
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter,
+        }),
     });
 
     assert.equal(list.empty(), true);
