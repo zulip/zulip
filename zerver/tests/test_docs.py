@@ -424,6 +424,32 @@ class HelpTest(ZulipTestCase):
         )
         self.assertNotIn("/stats", str(result.content))
 
+    def test_help_relative_gear_billing_links(self) -> None:
+        result = self.client_get("/help/zulip-cloud-billing")
+        self.assertIn(
+            '<a href="/plans/"><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</a>',
+            str(result.content),
+        )
+        self.assertEqual(result.status_code, 200)
+
+        with self.settings(CORPORATE_ENABLED=False):
+            result = self.client_get("/help/zulip-cloud-billing")
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(
+            '<strong><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</strong>',
+            str(result.content),
+        )
+        self.assertNotIn('<a href="/plans/">', str(result.content))
+
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.client_get("/help/zulip-cloud-billing", subdomain="")
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(
+            '<strong><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</strong>',
+            str(result.content),
+        )
+        self.assertNotIn('a href="/plans/">', str(result.content))
+
     def test_help_relative_links_for_stream(self) -> None:
         result = self.client_get("/help/message-a-channel-by-email")
         self.assertIn(
