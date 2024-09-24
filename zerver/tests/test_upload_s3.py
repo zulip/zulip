@@ -183,6 +183,15 @@ class S3Test(ZulipTestCase):
         found_paths = [r[0] for r in all_message_attachments()]
         self.assertEqual(sorted(found_paths), sorted(path_ids))
 
+        found_paths = [r[0] for r in all_message_attachments(prefix=str(user_profile.realm_id))]
+        self.assertEqual(sorted(found_paths), sorted(path_ids))
+
+        found_paths = [r[0] for r in all_message_attachments(prefix=os.path.dirname(path_ids[0]))]
+        self.assertEqual(found_paths, [path_ids[0]])
+
+        found_paths = [r[0] for r in all_message_attachments(prefix="missing")]
+        self.assertEqual(found_paths, [])
+
         found_paths = [r[0] for r in all_message_attachments(include_thumbnails=True)]
         for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS:
             if thumbnail_format.animated:

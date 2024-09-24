@@ -217,8 +217,10 @@ def delete_message_attachments(path_ids: list[str]) -> None:
     return upload_backend.delete_message_attachments(path_ids)
 
 
-def all_message_attachments(include_thumbnails: bool = False) -> Iterator[tuple[str, datetime]]:
-    return upload_backend.all_message_attachments(include_thumbnails)
+def all_message_attachments(
+    *, include_thumbnails: bool = False, prefix: str = ""
+) -> Iterator[tuple[str, datetime]]:
+    return upload_backend.all_message_attachments(include_thumbnails, prefix)
 
 
 # Avatar image uploads
