@@ -13,10 +13,14 @@ import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
 import * as user_pill from "./user_pill";
 
-function check_group_allowed_for_setting(group_item: UserGroupPill, setting_name: string): boolean {
+function check_group_allowed_for_setting(
+    group_item: UserGroupPill,
+    setting_name: string,
+    setting_type: "realm" | "stream" | "group",
+): boolean {
     const group_setting_config = group_permission_settings.get_group_permission_setting_config(
         setting_name,
-        "group",
+        setting_type,
     );
 
     assert(group_setting_config !== undefined);
@@ -46,7 +50,9 @@ export function create_item_from_text(
     if (group_item) {
         const setting_name = pill_config?.setting_name;
         assert(setting_name !== undefined);
-        if (check_group_allowed_for_setting(group_item, setting_name)) {
+        const setting_type = pill_config?.setting_type;
+        assert(setting_type !== undefined);
+        if (check_group_allowed_for_setting(group_item, setting_name, setting_type)) {
             return group_item;
         }
 
@@ -91,6 +97,7 @@ export function generate_pill_html(item: GroupSettingPill): string {
 export function create_pills(
     $pill_container: JQuery,
     setting_name: string,
+    setting_type: "realm" | "stream" | "group",
 ): GroupSettingPillContainer {
     const pill_widget = input_pill.create<GroupSettingPill>({
         $container: $pill_container,
@@ -100,6 +107,7 @@ export function create_pills(
         generate_pill_html,
         pill_config: {
             setting_name,
+            setting_type,
         },
     });
     return pill_widget;

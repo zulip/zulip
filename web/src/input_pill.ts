@@ -14,6 +14,7 @@ import * as util from "./util";
 export type InputPillConfig = {
     exclude_inaccessible_users?: boolean;
     setting_name?: string;
+    setting_type?: "realm" | "stream" | "group";
 };
 
 type InputPillCreateOptions<ItemType> = {

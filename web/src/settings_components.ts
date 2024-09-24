@@ -1452,7 +1452,11 @@ export function create_group_setting_widget({
     setting_type: "realm" | "stream" | "group";
     group?: UserGroup;
 }): void {
-    const pill_widget = group_setting_pill.create_pills($pill_container, setting_name);
+    const pill_widget = group_setting_pill.create_pills(
+        $pill_container,
+        setting_name,
+        setting_type,
+    );
     const opts = {
         setting_name,
         setting_type,
