@@ -103,6 +103,7 @@ class Database:
             "DJANGO_SETTINGS_MODULE=" + self.settings,
             "ZULIP_DB_NAME=" + self.database_name,
             "./manage.py",
+            "--skip-checks",
         ]
 
         run([*manage_py, "migrate", "--no-input"])
@@ -309,6 +310,7 @@ def get_migration_status(**options: Any) -> str:
         no_color=options.get("no_color", False),
         settings=options.get("settings", os.environ["DJANGO_SETTINGS_MODULE"]),
         stdout=out,
+        skip_checks=options.get("skip_checks", True),
         traceback=options.get("traceback", True),
         verbosity=verbosity,
     )

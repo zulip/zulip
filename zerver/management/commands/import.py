@@ -58,7 +58,7 @@ import a database dump from one or more JSON files."""
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def do_destroy_and_rebuild_database(self, db_name: str) -> None:
-        call_command("flush", verbosity=0, interactive=False)
+        call_command("flush", verbosity=0, skip_checks=True, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
 
     @override
