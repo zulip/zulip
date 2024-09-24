@@ -708,6 +708,7 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
 
     const opts = {
         setting_name: "can_manage_group",
+        setting_type: "group",
         group: testers,
     };
     pill_typeahead.set_up_group_setting_typeahead($fake_input, $pill_widget, opts);

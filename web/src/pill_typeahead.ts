@@ -134,6 +134,7 @@ export function set_up_group_setting_typeahead(
     pills: GroupSettingPillContainer,
     opts: {
         setting_name: string;
+        setting_type: "realm" | "stream" | "group";
         group: UserGroup | undefined;
     },
 ): void {
@@ -146,7 +147,7 @@ export function set_up_group_setting_typeahead(
         source(_query: string): GroupSettingTypeaheadItem[] {
             let source: GroupSettingTypeaheadItem[] = [];
 
-            source = user_group_pill.typeahead_source(pills, opts.setting_name);
+            source = user_group_pill.typeahead_source(pills, opts.setting_name, opts.setting_type);
             source = [...source, ...user_pill.typeahead_source(pills, true)];
 
             return source;

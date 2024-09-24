@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import {$t_html} from "./i18n";
 import type {InputPillContainer} from "./input_pill";
 import * as people from "./people";
@@ -110,10 +112,12 @@ export function filter_taken_groups(
 export function typeahead_source(
     pill_widget: CombinedPillContainer | GroupSettingPillContainer,
     setting_name?: string,
+    setting_type?: "realm" | "stream" | "group",
 ): UserGroupPillData[] {
     let groups;
     if (setting_name !== undefined) {
-        groups = user_groups.get_realm_user_groups_for_setting(setting_name, "group", true);
+        assert(setting_type !== undefined);
+        groups = user_groups.get_realm_user_groups_for_setting(setting_name, setting_type, true);
     } else {
         groups = user_groups.get_realm_user_groups();
     }

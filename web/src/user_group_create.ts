@@ -243,6 +243,7 @@ export function set_up_handlers(): void {
     settings_components.create_group_setting_widget({
         $pill_container,
         setting_name: "can_manage_group",
+        setting_type: "group",
     });
 
     user_group_components.setup_permissions_dropdown("can_mention_group", undefined, true);
