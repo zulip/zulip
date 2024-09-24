@@ -88,7 +88,7 @@ export function reset_ui_state(opts: {trigger?: string}): void {
     compose_banner.clear_message_sent_banners(true, skip_automatic_new_visibility_policy_banner);
 }
 
-export function changehash(newhash: string, trigger?: string): void {
+export function changehash(newhash: string, trigger: string): void {
     if (browser_history.state.changing_hash) {
         // If we retargeted the narrow operation because a message was moved,
         // we want to have the current narrow hash in the browser history.
@@ -113,7 +113,7 @@ export function changehash(newhash: string, trigger?: string): void {
     }
 }
 
-export function update_hash_to_match_filter(filter: Filter, trigger?: string): void {
+export function update_hash_to_match_filter(filter: Filter, trigger: string): void {
     if (browser_history.state.changing_hash && trigger !== "retarget message location") {
         return;
     }
@@ -231,7 +231,7 @@ function create_and_update_message_list(
     // the current message list as we are trying to emulate the `hashchange`
     // workflow we have which calls `message_view.show` after hash is updated.
     if (opts.change_hash) {
-        update_hash_to_match_filter(filter, opts.trigger);
+        update_hash_to_match_filter(filter, opts.trigger ?? "unknown");
         opts.show_more_topics = browser_history.get_current_state_show_more_topics() ?? false;
     }
 
