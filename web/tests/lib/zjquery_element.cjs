@@ -60,6 +60,9 @@ class FakeClassList extends RejectMissing {
 }
 
 class FakeElementState {
+    event_handlers = new Map();
+    delegated_event_handlers = new Map();
+    is_focused = false;
     jquery_data = new Map();
     selector = undefined;
     shown = false;
@@ -164,7 +167,6 @@ exports.FakeJQuery = function (selector, opts) {
     const find_results = new Map();
     let $my_parent;
     const parents_result = new Map();
-    const event_store = make_event_store(selector);
 
     const $self = {
         [Symbol.iterator]: Array.prototype.values,
@@ -279,8 +281,22 @@ exports.FakeJQuery = function (selector, opts) {
         get(index) {
             return index === undefined ? [...this] : this[index];
         },
-        get_on_handler(name, child_selector) {
-            return event_store.get_on_handler(name, child_selector);
+        get_on_handler(event_type, child_selector) {
+            assert.ok(0 in this);
+            const state = fake_element_state.get(this[0]);
+
+            if (child_selector === undefined) {
+                const handler = state.event_handlers.get(event_type);
+                assert.ok(handler !== undefined, `no ${event_type} handler for ${state.selector}`);
+                return handler;
+            }
+
+            const handler = state.delegated_event_handlers.get(child_selector)?.get(event_type);
+            assert.ok(
+                handler !== undefined,
+                `no ${event_type} handler for ${state.selector} ${child_selector}`,
+            );
+            return handler;
         },
         hasClass(class_name) {
             return [...this].some((element) => element.classList.contains(class_name));
@@ -322,20 +338,75 @@ exports.FakeJQuery = function (selector, opts) {
         is_focused() {
             // is_focused is not a jQuery thing; this is
             // for our testing
-            return event_store.is_focused();
+            assert.ok(0 in this);
+            return fake_element_state.get(this[0]).is_focused;
         },
-        off(...args) {
-            event_store.off(...args);
+        off(event_type, ...args) {
+            if (args.length === 0) {
+                for (const element of this) {
+                    const state = fake_element_state.get(element);
+                    state.event_handlers.delete(event_type);
+                }
+            } else {
+                // In the Zulip codebase we never use this form of
+                // .off in code that we test: $(...).off('click', child_sel);
+                //
+                // So we don't support this for now.
+                /* istanbul ignore next */
+                throw new Error("zjquery does not support this call sequence");
+            }
             return this;
         },
-        on(...args) {
-            event_store.on(...args);
+        on(event_type, ...args) {
+            // parameters will either be
+            //    (event_type, handler) or
+            //    (event_type, sel, handler)
+            if (args.length === 1) {
+                const [handler] = args;
+                for (const element of this) {
+                    const state = fake_element_state.get(element);
+                    /* istanbul ignore if */
+                    if (state.event_handlers.has(event_type)) {
+                        console.info("\nEither the app or the test can be at fault here..");
+                        console.info("(sometimes you just want to call $.clear_all_elements();)\n");
+                        throw new Error("dup " + event_type + " handler for " + state.selector);
+                    }
+
+                    state.event_handlers.set(event_type, handler);
+                }
+            } else {
+                assert.equal(args.length, 2, "wrong number of arguments passed in");
+
+                const [sel, handler] = args;
+                assert.equal(typeof sel, "string", "String selectors expected here.");
+                assert.equal(typeof handler, "function", "An handler function expected here.");
+
+                for (const element of this) {
+                    const state = fake_element_state.get(element);
+                    if (!state.delegated_event_handlers.has(sel)) {
+                        state.delegated_event_handlers.set(sel, new Map());
+                    }
+                    const child_on = state.delegated_event_handlers.get(sel);
+
+                    assert.ok(
+                        !child_on.has(event_type),
+                        `dup ${event_type} handler for ${state.selector} ${sel}`,
+                    );
+
+                    child_on.set(event_type, handler);
+                }
+            }
             return this;
         },
         /* istanbul ignore next */
-        one(...args) {
-            event_store.one(...args);
-            return this;
+        one(event_type, handler) {
+            return this.on(
+                event_type,
+                /* istanbul ignore next */ function (...args) {
+                    this.off(event_type);
+                    return handler.call(this, ...args);
+                },
+            );
         },
         parent() {
             return $my_parent;
@@ -457,8 +528,38 @@ exports.FakeJQuery = function (selector, opts) {
             }
             return this;
         },
-        trigger(ev) {
-            event_store.trigger(this, ev);
+        trigger(event_arg, extra_args) {
+            for (const element of this) {
+                const event = new FakeEvent(
+                    typeof event_arg === "string" ? event_arg : event_arg.type,
+                    {
+                        target: element,
+                        currentTarget: element,
+                        ...event_arg,
+                    },
+                );
+                const state = fake_element_state.get(element);
+                const func = state.event_handlers.get(event.type);
+
+                if (func) {
+                    // It's possible that test code will trigger events
+                    // that haven't been set up yet, but we are trying to
+                    // eventually deprecate trigger in our codebase, so for
+                    // now we just let calls to trigger silently do nothing.
+                    // (And I think actual jQuery would do the same thing.)
+                    func.call(
+                        element,
+                        event,
+                        ...(Array.isArray(extra_args) ? extra_args : [extra_args]),
+                    );
+                }
+
+                if (event.type === "focus" || event.type === "focusin") {
+                    state.is_focused = true;
+                } else if (event.type === "blur" || event.type === "focusout") {
+                    state.is_focused = false;
+                }
+            }
             return this;
         },
         val(...args) {
@@ -496,132 +597,3 @@ exports.FakeJQuery = function (selector, opts) {
 
     return $self;
 };
-
-function make_event_store(selector) {
-    /*
-
-       This function returns an event_store object that
-       simulates the behavior of .on and .off from jQuery.
-
-       It also has methods to retrieve handlers that have
-       been set via .on (or similar methods), which can
-       be useful for tests that want to test the actual
-       handlers.
-
-    */
-    const on_functions = new Map();
-    const child_on_functions = new Map();
-    let focused = false;
-
-    const self = {
-        get_on_handler(name, child_selector) {
-            let handler;
-
-            if (child_selector === undefined) {
-                handler = on_functions.get(name);
-                assert.ok(handler, `no ${name} handler for ${selector}`);
-                return handler;
-            }
-
-            const child_on = child_on_functions.get(child_selector);
-            if (child_on) {
-                handler = child_on.get(name);
-            }
-
-            assert.ok(handler, `no ${name} handler for ${selector} ${child_selector}`);
-
-            return handler;
-        },
-
-        off(event_name, ...args) {
-            if (args.length === 0) {
-                on_functions.delete(event_name);
-                return;
-            }
-
-            // In the Zulip codebase we never use this form of
-            // .off in code that we test: $(...).off('click', child_sel);
-            //
-            // So we don't support this for now.
-            /* istanbul ignore next */
-            throw new Error("zjquery does not support this call sequence");
-        },
-
-        on(event_name, ...args) {
-            // parameters will either be
-            //    (event_name, handler) or
-            //    (event_name, sel, handler)
-            if (args.length === 1) {
-                const [handler] = args;
-                /* istanbul ignore if */
-                if (on_functions.has(event_name)) {
-                    console.info("\nEither the app or the test can be at fault here..");
-                    console.info("(sometimes you just want to call $.clear_all_elements();)\n");
-                    throw new Error("dup " + event_name + " handler for " + selector);
-                }
-
-                on_functions.set(event_name, handler);
-                return;
-            }
-
-            assert.equal(args.length, 2, "wrong number of arguments passed in");
-
-            const [sel, handler] = args;
-            assert.equal(typeof sel, "string", "String selectors expected here.");
-            assert.equal(typeof handler, "function", "An handler function expected here.");
-
-            if (!child_on_functions.has(sel)) {
-                child_on_functions.set(sel, new Map());
-            }
-
-            const child_on = child_on_functions.get(sel);
-
-            assert.ok(
-                !child_on.has(event_name),
-                `dup ${event_name} handler for ${selector} ${sel}`,
-            );
-
-            child_on.set(event_name, handler);
-        },
-
-        /* istanbul ignore next */
-        one(event_name, handler) {
-            self.on(event_name, function (ev) {
-                self.off(event_name);
-                return handler.call(this, ev);
-            });
-        },
-
-        trigger($element, ev, data) {
-            if (typeof ev === "string") {
-                ev = new FakeEvent(ev);
-            }
-            if (!ev.target) {
-                // FIXME: event.target should not be a jQuery object
-                ev.target = $element; // eslint-disable-line no-jquery/variable-pattern
-            }
-            const func = on_functions.get(ev.type);
-
-            if (func) {
-                // It's possible that test code will trigger events
-                // that haven't been set up yet, but we are trying to
-                // eventually deprecate trigger in our codebase, so for
-                // now we just let calls to trigger silently do nothing.
-                // (And I think actual jQuery would do the same thing.)
-                func.call($element, ev, data);
-            }
-
-            if (ev.type === "focus" || ev.type === "focusin") {
-                focused = true;
-            } else if (ev.type === "blur" || ev.type === "focusout") {
-                focused = false;
-            }
-        },
-
-        is_focused() {
-            return focused;
-        },
-    };
-
-    return self;
-}
