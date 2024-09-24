@@ -115,17 +115,22 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def all_message_attachments(
-        self, include_thumbnails: bool = False
+        self,
+        include_thumbnails: bool = False,
+        prefix: str = "",
     ) -> Iterator[tuple[str, datetime]]:
         assert settings.LOCAL_UPLOADS_DIR is not None
         top = settings.LOCAL_UPLOADS_DIR + "/files"
-        for dirname, subdirnames, files in os.walk(top):
+        start = top
+        if prefix != "":
+            start += f"/{prefix}"
+        for dirname, subdirnames, files in os.walk(start):
             if not include_thumbnails and dirname == top and "thumbnail" in subdirnames:
                 subdirnames.remove("thumbnail")
             for f in files:
                 fullpath = os.path.join(dirname, f)
                 yield (
-                    os.path.relpath(fullpath, settings.LOCAL_UPLOADS_DIR + "/files"),
+                    os.path.relpath(fullpath, top),
                     timestamp_to_datetime(os.path.getmtime(fullpath)),
                 )
 

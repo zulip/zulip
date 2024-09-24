@@ -68,7 +68,9 @@ class ZulipUploadBackend:
             self.delete_message_attachment(path_id)
 
     def all_message_attachments(
-        self, include_thumbnails: bool = False
+        self,
+        include_thumbnails: bool = False,
+        prefix: str = "",
     ) -> Iterator[tuple[str, datetime]]:
         raise NotImplementedError
 

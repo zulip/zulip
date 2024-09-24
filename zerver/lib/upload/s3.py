@@ -290,11 +290,13 @@ class S3UploadBackend(ZulipUploadBackend):
 
     @override
     def all_message_attachments(
-        self, include_thumbnails: bool = False
+        self,
+        include_thumbnails: bool = False,
+        prefix: str = "",
     ) -> Iterator[tuple[str, datetime]]:
         client = self.uploads_bucket.meta.client
         paginator = client.get_paginator("list_objects_v2")
-        page_iterator = paginator.paginate(Bucket=self.uploads_bucket.name)
+        page_iterator = paginator.paginate(Bucket=self.uploads_bucket.name, Prefix=prefix)
 
         for page in page_iterator:
             if page["KeyCount"] > 0:
