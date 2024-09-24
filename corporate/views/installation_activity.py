@@ -195,64 +195,59 @@ def realm_summary_table() -> str:
     rows = dictfetchall(cursor)
     cursor.close()
 
+    realm_messages_per_day_counts = get_realm_day_counts()
+    total_arr = 0
+    num_active_sites = 0
+    total_dau_count = 0
+    total_user_profile_count = 0
+    total_bot_count = 0
+    total_wau_count = 0
+    if settings.BILLING_ENABLED:
+        estimated_arrs, plan_rates = get_estimated_arr_and_rate_by_realm()
+        total_arr = sum(estimated_arrs.values())
+
     for row in rows:
+        realm_string_id = row.pop("string_id")
+
+        # Format fields and add links.
         row["date_created_day"] = format_datetime_as_date(row["date_created"])
         row["age_days"] = int((now - row["date_created"]).total_seconds() / 86400)
         row["is_new"] = row["age_days"] < 12 * 7
-
-    # get messages sent per day
-    counts = get_realm_day_counts()
-    for row in rows:
-        try:
-            row["history"] = counts[row["string_id"]]["cnts"]
-        except Exception:
-            row["history"] = ""
-
-    # estimate annual subscription revenue
-    total_arr = 0
-    if settings.BILLING_ENABLED:
-        estimated_arrs, plan_rates = get_estimated_arr_and_rate_by_realm()
-
-        for row in rows:
-            row["plan_type_string"] = get_plan_type_string(row["plan_type"])
-
-            string_id = row["string_id"]
-
-            if string_id in estimated_arrs:
-                row["arr"] = f"${cents_to_dollar_string(estimated_arrs[string_id])}"
-
-            if row["plan_type"] in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
-                row["effective_rate"] = plan_rates.get(string_id, "")
-            elif row["plan_type"] == Realm.PLAN_TYPE_STANDARD_FREE:
-                row["effective_rate"] = 0
-            else:
-                row["effective_rate"] = ""
-
-        total_arr += sum(estimated_arrs.values())
-
-    for row in rows:
         row["org_type_string"] = get_org_type_display_name(row["org_type"])
-
-    # formatting
-    for row in rows:
-        row["realm_url"] = realm_url_link(row["string_id"])
-        row["stats_link"] = realm_stats_link(row["string_id"])
-        row["support_link"] = realm_support_link(row["string_id"])
-        row["string_id"] = realm_activity_link(row["string_id"])
+        row["realm_url"] = realm_url_link(realm_string_id)
+        row["stats_link"] = realm_stats_link(realm_string_id)
+        row["support_link"] = realm_support_link(realm_string_id)
+        row["activity_link"] = realm_activity_link(realm_string_id)
         if row["how_realm_creator_found_zulip"] == "Other":
             row["how_realm_creator_found_zulip"] = (
                 "Other: " + row["how_realm_creator_found_zulip_extra_context"]
             )
 
-    # Count active sites
-    num_active_sites = sum(row["dau_count"] >= 5 for row in rows)
+        # Get human messages sent per day.
+        try:
+            row["history"] = realm_messages_per_day_counts[realm_string_id]["cnts"]
+        except Exception:
+            row["history"] = ""
 
-    # create totals
-    total_dau_count = 0
-    total_user_profile_count = 0
-    total_bot_count = 0
-    total_wau_count = 0
-    for row in rows:
+        # Estimate annual recurring revenue.
+        if settings.BILLING_ENABLED:
+            row["plan_type_string"] = get_plan_type_string(row["plan_type"])
+
+            if realm_string_id in estimated_arrs:
+                row["arr"] = f"${cents_to_dollar_string(estimated_arrs[realm_string_id])}"
+
+            if row["plan_type"] in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
+                row["effective_rate"] = plan_rates.get(realm_string_id, "")
+            elif row["plan_type"] == Realm.PLAN_TYPE_STANDARD_FREE:
+                row["effective_rate"] = 0
+            else:
+                row["effective_rate"] = ""
+
+        # Count active realms.
+        if row["dau_count"] >= 5:
+            num_active_sites += 1
+
+        # Get total row counts.
         total_dau_count += int(row["dau_count"])
         total_user_profile_count += int(row["user_profile_count"])
         total_bot_count += int(row["bot_count"])
