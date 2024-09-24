@@ -11,8 +11,13 @@ from typing_extensions import override
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Message, Reaction, RealmAuditLog, UserProfile
+from zerver.models import RealmAuditLog
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realms import (
+    EXPORT_FULL_WITH_CONSENT,
+    EXPORT_FULL_WITHOUT_CONSENT,
+    EXPORT_PUBLIC,
+)
 
 
 class Command(ZulipBaseCommand):
@@ -99,9 +104,9 @@ class Command(ZulipBaseCommand):
             ),
         )
         parser.add_argument(
-            "--consent-message-id",
-            type=int,
-            help="ID of the message advertising users to react with thumbs up",
+            "--export-full-with-consent",
+            action="store_true",
+            help="Whether to export private data of users who consented",
         )
         parser.add_argument(
             "--upload",
@@ -117,7 +122,7 @@ class Command(ZulipBaseCommand):
 
         output_dir = options["output_dir"]
         public_only = options["public_only"]
-        consent_message_id = options["consent_message_id"]
+        export_full_with_consent = options["export_full_with_consent"]
 
         print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
@@ -125,60 +130,11 @@ class Command(ZulipBaseCommand):
         if num_threads < 1:
             raise CommandError("You must have at least one thread.")
 
-        if public_only and consent_message_id is not None:
-            raise CommandError("Please pass either --public-only or --consent-message-id")
+        if public_only and export_full_with_consent:
+            raise CommandError("Please pass either --public-only or --export-full-with-consennt")
 
         if options["deactivate_realm"] and realm.deactivated:
             raise CommandError(f"The realm {realm.string_id} is already deactivated.  Aborting...")
-
-        if consent_message_id is not None:
-            try:
-                message = Message.objects.get(id=consent_message_id)
-            except Message.DoesNotExist:
-                raise CommandError("Message with given ID does not exist. Aborting...")
-
-            if message.last_edit_time is not None:
-                raise CommandError("Message was edited. Aborting...")
-
-            # Since the message might have been sent by
-            # Notification Bot, we can't trivially check the realm of
-            # the message through message.sender.realm.  So instead we
-            # check the realm of the people who reacted to the message
-            # (who must all be in the message's realm).
-            reactions = Reaction.objects.filter(
-                message=message,
-                # outbox = 1f4e4
-                emoji_code="1f4e4",
-                reaction_type="unicode_emoji",
-            )
-            for reaction in reactions:
-                if reaction.user_profile.realm != realm:
-                    raise CommandError(
-                        "Users from a different realm reacted to message. Aborting..."
-                    )
-
-            print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
-
-            user_count = (
-                UserProfile.objects.filter(
-                    realm_id=realm.id,
-                    is_active=True,
-                    is_bot=False,
-                )
-                .exclude(
-                    # We exclude guests, because they're not a priority for
-                    # looking at whether most users are being exported.
-                    role=UserProfile.ROLE_GUEST,
-                )
-                .count()
-            )
-            print(
-                f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total non-guest users\n"
-            )
-
-            proceed = input("Continue? [y/N] ")
-            if proceed.lower() not in ("y", "yes"):
-                raise CommandError("Aborting!")
 
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
@@ -221,13 +177,18 @@ class Command(ZulipBaseCommand):
         )
 
         # Allows us to trigger exports separately from command line argument parsing
+        if public_only:
+            export_type = EXPORT_PUBLIC
+        elif export_full_with_consent:
+            export_type = EXPORT_FULL_WITH_CONSENT
+        else:
+            export_type = EXPORT_FULL_WITHOUT_CONSENT
         export_realm_wrapper(
             realm=realm,
             output_dir=output_dir,
             threads=num_threads,
             upload=options["upload"],
-            public_only=public_only,
+            export_type=export_type,
             percent_callback=percent_callback,
-            consent_message_id=consent_message_id,
             export_as_active=True if options["deactivate_realm"] else None,
         )

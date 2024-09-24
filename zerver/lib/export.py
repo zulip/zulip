@@ -74,7 +74,7 @@ from zerver.models import (
 )
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_realm
+from zerver.models.realms import EXPORT_FULL_WITH_CONSENT, EXPORT_PUBLIC, get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 # Custom mypy types follow:
@@ -1234,15 +1234,15 @@ def fetch_usermessages(
     message_ids: set[int],
     user_profile_ids: set[int],
     message_filename: Path,
-    consent_message_id: int | None = None,
+    export_full_with_consent: bool,
 ) -> list[Record]:
     # UserMessage export security rule: You can export UserMessages
     # for the messages you exported for the users in your realm.
     user_message_query = UserMessage.objects.filter(
         user_profile__realm=realm, message_id__in=message_ids
     )
-    if consent_message_id is not None:
-        consented_user_ids = get_consented_user_ids(consent_message_id)
+    if export_full_with_consent:
+        consented_user_ids = get_consented_user_ids(realm)
         user_profile_ids = consented_user_ids & user_profile_ids
     user_message_chunk = []
     for user_message in user_message_query:
@@ -1257,7 +1257,7 @@ def fetch_usermessages(
 
 
 def export_usermessages_batch(
-    input_path: Path, output_path: Path, consent_message_id: int | None = None
+    input_path: Path, output_path: Path, export_full_with_consent: bool
 ) -> None:
     """As part of the system for doing parallel exports, this runs on one
     batch of Message objects and adds the corresponding UserMessage
@@ -1275,7 +1275,7 @@ def export_usermessages_batch(
     user_profile_ids = set(input_data["zerver_userprofile_ids"])
     realm = Realm.objects.get(id=input_data["realm_id"])
     zerver_usermessage_data = fetch_usermessages(
-        realm, message_ids, user_profile_ids, output_path, consent_message_id
+        realm, message_ids, user_profile_ids, output_path, export_full_with_consent
     )
 
     output_data: TableData = dict(
@@ -1289,10 +1289,9 @@ def export_usermessages_batch(
 def export_partial_message_files(
     realm: Realm,
     response: TableData,
+    export_type: int,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
     output_dir: Path | None = None,
-    public_only: bool = False,
-    consent_message_id: int | None = None,
 ) -> set[int]:
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
@@ -1325,16 +1324,16 @@ def export_partial_message_files(
     )
 
     consented_user_ids: set[int] = set()
-    if consent_message_id is not None:
-        consented_user_ids = get_consented_user_ids(consent_message_id)
+    if export_type == EXPORT_FULL_WITH_CONSENT:
+        consented_user_ids = get_consented_user_ids(realm)
 
-    if public_only:
+    if export_type == EXPORT_PUBLIC:
         recipient_streams = Stream.objects.filter(realm=realm, invite_only=False)
         recipient_ids = Recipient.objects.filter(
             type=Recipient.STREAM, type_id__in=recipient_streams
         ).values_list("id", flat=True)
         recipient_ids_for_us = get_ids(response["zerver_recipient"]) & set(recipient_ids)
-    elif consent_message_id is not None:
+    elif export_type == EXPORT_FULL_WITH_CONSENT:
         public_streams = Stream.objects.filter(realm=realm, invite_only=False)
         public_stream_recipient_ids = Recipient.objects.filter(
             type=Recipient.STREAM, type_id__in=public_streams
@@ -1357,7 +1356,7 @@ def export_partial_message_files(
         # For a full export, we have implicit consent for all users in the export.
         consented_user_ids = user_ids_for_us
 
-    if public_only:
+    if export_type == EXPORT_PUBLIC:
         messages_we_received = Message.objects.filter(
             # Uses index: zerver_message_realm_sender_recipient
             realm_id=realm.id,
@@ -1383,7 +1382,7 @@ def export_partial_message_files(
         )
         message_queries.append(messages_we_received)
 
-        if consent_message_id is not None:
+        if export_type == EXPORT_FULL_WITH_CONSENT:
             # Export with member consent requires some careful handling to make sure
             # we only include messages that a consenting user can access.
             has_usermessage_expression = Exists(
@@ -1961,19 +1960,17 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             f.write("\n")
 
 
-def get_exportable_scheduled_message_ids(
-    realm: Realm, public_only: bool = False, consent_message_id: int | None = None
-) -> set[int]:
+def get_exportable_scheduled_message_ids(realm: Realm, export_type: int) -> set[int]:
     """
     Scheduled messages are private to the sender, so which ones we export depends on the
     public/consent/full export mode.
     """
 
-    if public_only:
+    if export_type == EXPORT_PUBLIC:
         return set()
 
-    if consent_message_id:
-        sender_ids = get_consented_user_ids(consent_message_id)
+    if export_type == EXPORT_FULL_WITH_CONSENT:
+        sender_ids = get_consented_user_ids(realm)
         return set(
             ScheduledMessage.objects.filter(sender_id__in=sender_ids, realm=realm).values_list(
                 "id", flat=True
@@ -1987,9 +1984,8 @@ def do_export_realm(
     realm: Realm,
     output_dir: Path,
     threads: int,
+    export_type: int,
     exportable_user_ids: set[int] | None = None,
-    public_only: bool = False,
-    consent_message_id: int | None = None,
     export_as_active: bool | None = None,
 ) -> str:
     response: TableData = {}
@@ -2004,9 +2000,7 @@ def do_export_realm(
 
     create_soft_link(source=output_dir, in_progress=True)
 
-    exportable_scheduled_message_ids = get_exportable_scheduled_message_ids(
-        realm, public_only, consent_message_id
-    )
+    exportable_scheduled_message_ids = get_exportable_scheduled_message_ids(realm, export_type)
 
     logging.info("Exporting data from get_realm_config()...")
     export_from_config(
@@ -2032,9 +2026,8 @@ def do_export_realm(
     message_ids = export_partial_message_files(
         realm,
         response,
+        export_type=export_type,
         output_dir=output_dir,
-        public_only=public_only,
-        consent_message_id=consent_message_id,
     )
     logging.info("%d messages were exported", len(message_ids))
 
@@ -2067,7 +2060,9 @@ def do_export_realm(
 
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(
-        threads=threads, output_dir=output_dir, consent_message_id=consent_message_id
+        threads=threads,
+        output_dir=output_dir,
+        export_full_with_consent=export_type == EXPORT_FULL_WITH_CONSENT,
     )
 
     logging.info("Finished exporting %s", realm.string_id)
@@ -2125,7 +2120,7 @@ def create_soft_link(source: Path, in_progress: bool = True) -> None:
 
 
 def launch_user_message_subprocesses(
-    threads: int, output_dir: Path, consent_message_id: int | None = None
+    threads: int, output_dir: Path, export_full_with_consent: bool
 ) -> None:
     logging.info("Launching %d PARALLEL subprocesses to export UserMessage rows", threads)
     pids = {}
@@ -2137,8 +2132,8 @@ def launch_user_message_subprocesses(
             f"--path={output_dir}",
             f"--thread={shard_id}",
         ]
-        if consent_message_id is not None:
-            arguments.append(f"--consent-message-id={consent_message_id}")
+        if export_full_with_consent:
+            arguments.append("--export-full-with-consent")
 
         process = subprocess.Popen(arguments)
         pids[process.pid] = shard_id
@@ -2434,14 +2429,11 @@ def get_analytics_config() -> Config:
     return analytics_config
 
 
-def get_consented_user_ids(consent_message_id: int) -> set[int]:
+def get_consented_user_ids(realm: Realm) -> set[int]:
     return set(
-        Reaction.objects.filter(
-            message_id=consent_message_id,
-            reaction_type="unicode_emoji",
-            # outbox = 1f4e4
-            emoji_code="1f4e4",
-        ).values_list("user_profile", flat=True)
+        UserProfile.objects.filter(
+            realm=realm, is_active=True, is_bot=False, allow_private_data_export=True
+        ).values_list("id", flat=True)
     )
 
 
@@ -2450,17 +2442,15 @@ def export_realm_wrapper(
     output_dir: str,
     threads: int,
     upload: bool,
-    public_only: bool,
+    export_type: int,
     percent_callback: Callable[[Any], None] | None = None,
-    consent_message_id: int | None = None,
     export_as_active: bool | None = None,
 ) -> str | None:
     tarball_path = do_export_realm(
         realm=realm,
         output_dir=output_dir,
         threads=threads,
-        public_only=public_only,
-        consent_message_id=consent_message_id,
+        export_type=export_type,
         export_as_active=export_as_active,
     )
     shutil.rmtree(output_dir)

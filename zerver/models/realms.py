@@ -1280,3 +1280,14 @@ def get_fake_email_domain(realm_host: str) -> str:
         )
 
     return settings.FAKE_EMAIL_DOMAIN
+
+
+# TODO: Move this into a new ReamExport model.
+EXPORT_PUBLIC = 1
+EXPORT_FULL_WITH_CONSENT = 2
+EXPORT_FULL_WITHOUT_CONSENT = 3
+EXPORT_TYPES = [
+    EXPORT_PUBLIC,
+    EXPORT_FULL_WITH_CONSENT,
+    EXPORT_FULL_WITHOUT_CONSENT,
+]

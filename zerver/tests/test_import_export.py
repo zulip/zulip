@@ -24,7 +24,7 @@ from zerver.actions.custom_profile_fields import (
 )
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.presence import do_update_user_presence
-from zerver.actions.reactions import check_add_reaction, do_add_reaction
+from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
@@ -34,6 +34,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.user_activity import do_update_user_activity_interval
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
@@ -93,7 +94,12 @@ from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_realm
+from zerver.models.realms import (
+    EXPORT_FULL_WITH_CONSENT,
+    EXPORT_FULL_WITHOUT_CONSENT,
+    EXPORT_PUBLIC,
+    get_realm,
+)
 from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.streams import get_active_streams, get_stream
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
@@ -336,9 +342,8 @@ class RealmImportExportTest(ExportFile):
     def export_realm(
         self,
         realm: Realm,
+        export_type: int,
         exportable_user_ids: set[int] | None = None,
-        consent_message_id: int | None = None,
-        public_only: bool = False,
     ) -> None:
         output_dir = make_export_output_dir()
         with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
@@ -346,9 +351,8 @@ class RealmImportExportTest(ExportFile):
                 realm=realm,
                 output_dir=output_dir,
                 threads=0,
+                export_type=export_type,
                 exportable_user_ids=exportable_user_ids,
-                consent_message_id=consent_message_id,
-                public_only=public_only,
             )
 
             # This is a unique field and thus the cycle of export->import
@@ -360,22 +364,21 @@ class RealmImportExportTest(ExportFile):
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, "messages-000001.json.partial"),
                 output_path=os.path.join(output_dir, "messages-000001.json"),
-                consent_message_id=consent_message_id,
+                export_full_with_consent=export_type == EXPORT_FULL_WITH_CONSENT,
             )
 
     def export_realm_and_create_auditlog(
         self,
         original_realm: Realm,
+        export_type: int = EXPORT_FULL_WITHOUT_CONSENT,
         exportable_user_ids: set[int] | None = None,
-        consent_message_id: int | None = None,
-        public_only: bool = False,
     ) -> None:
         RealmAuditLog.objects.create(
             realm=original_realm,
             event_type=AuditLogEventType.REALM_EXPORTED,
             event_time=timezone_now(),
         )
-        self.export_realm(original_realm, exportable_user_ids, consent_message_id, public_only)
+        self.export_realm(original_realm, export_type, exportable_user_ids)
 
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
@@ -410,7 +413,7 @@ class RealmImportExportTest(ExportFile):
             is_message_realm_public=True,
         )
 
-        self.export_realm_and_create_auditlog(realm, public_only=True)
+        self.export_realm_and_create_auditlog(realm, export_type=EXPORT_PUBLIC)
 
         # The attachment row shouldn't have been exported:
         self.assertEqual(read_json("attachment.json")["zerver_attachment"], [])
@@ -650,25 +653,16 @@ class RealmImportExportTest(ExportFile):
             self.example_user("iago"), self.example_user("hamlet")
         )
 
-        # Send message advertising export and make users react
-        self.send_stream_message(
-            self.example_user("othello"),
-            "Verona",
-            topic_name="Export",
-            content="Thumbs up for export",
-        )
-        message = Message.objects.last()
-        assert message is not None
+        # Iago and Hamlet consented to export their private data.
         consented_user_ids = [self.example_user(user).id for user in ["iago", "hamlet"]]
-        do_add_reaction(
-            self.example_user("iago"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
+        do_change_user_setting(
+            self.example_user("iago"), "allow_private_data_export", True, acting_user=None
         )
-        do_add_reaction(
-            self.example_user("hamlet"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
+        do_change_user_setting(
+            self.example_user("hamlet"), "allow_private_data_export", True, acting_user=None
         )
 
-        assert message is not None
-        self.export_realm_and_create_auditlog(realm, consent_message_id=message.id)
+        self.export_realm_and_create_auditlog(realm, export_type=EXPORT_FULL_WITH_CONSENT)
 
         data = read_json("realm.json")
 
@@ -1009,7 +1003,7 @@ class RealmImportExportTest(ExportFile):
         for f in getters:
             snapshots[f.__name__] = f(original_realm)
 
-        self.export_realm(original_realm)
+        self.export_realm(original_realm, export_type=EXPORT_FULL_WITHOUT_CONSENT)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(get_output_dir(), "test-zulip")
