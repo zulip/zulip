@@ -349,10 +349,12 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 const sub = stream_data.get_sub_by_id_string(term.operand);
                 server_terms.push({
                     ...term,
-                    // If the sub is undefined, we'll get an error which is handled
-                    // later by showing a "this channel does not exist or is private"
-                    // notice.
-                    operand: sub?.name,
+                    // If we can't find the sub, we shouldn't send `undefined`
+                    // because we want to preserve the NarrowTerm type, so we just
+                    // send the unknown stream id.
+                    // This should show a "this channel does not exist or is private"
+                    // notice (both logged in and logged out).
+                    operand: sub?.name ?? term.operand,
                 });
             } else {
                 server_terms.push({...term});
