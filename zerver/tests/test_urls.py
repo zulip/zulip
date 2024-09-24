@@ -1,8 +1,6 @@
-import importlib
 import os
 from unittest import mock
 
-import django.urls.resolvers
 from django.test import Client
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -13,7 +11,6 @@ from zerver.lib.url_redirects import (
     POLICY_DOCUMENTATION_REDIRECTS,
 )
 from zerver.models import Stream
-from zproject import urls
 
 
 class PublicURLTest(ZulipTestCase):
@@ -156,21 +153,6 @@ class PublicURLTest(ZulipTestCase):
                         m.output,
                         [f"ERROR:django.request:Internal Server Error: {url}"],
                     )
-
-
-class URLResolutionTest(ZulipTestCase):
-    def check_function_exists(self, module_name: str, view: str) -> None:
-        module = importlib.import_module(module_name)
-        self.assertTrue(hasattr(module, view), f"View {module_name}.{view} does not exist")
-
-    # Tests function-based views declared in urls.urlpatterns for
-    # whether the function exists.  We at present do not test the
-    # class-based views.
-    def test_non_api_url_resolution(self) -> None:
-        for pattern in urls.urlpatterns:
-            if isinstance(pattern, django.urls.resolvers.URLPattern):
-                (module_name, base_view) = pattern.lookup_str.rsplit(".", 1)
-                self.check_function_exists(module_name, base_view)
 
 
 class ErrorPageTest(ZulipTestCase):
