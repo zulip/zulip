@@ -278,6 +278,7 @@ export function set_up_toggler(): void {
     $markdown_help.find(".rendered_markdown").each(function () {
         rendered_markdown.update_elements($(this));
     });
+    process_message_formatting_layout($markdown_help);
     $(".informational-overlays .overlay-body").append($markdown_help);
 
     const $search_operators = $(
@@ -358,4 +359,10 @@ export function show(target: string | undefined): void {
     if (target) {
         toggler!.goto(target);
     }
+}
+
+function process_message_formatting_layout($rendered_html: JQuery): void {
+    $rendered_html
+        .find("p, ul, ol, pre, blockquote")
+        .addClass("preserve-message-formatting-layout");
 }
