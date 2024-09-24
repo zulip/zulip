@@ -1176,7 +1176,7 @@ class FetchQueriesTest(ZulipTestCase):
         realm = get_realm_with_settings(realm_id=user.realm_id)
 
         with (
-            self.assert_database_query_count(39),
+            self.assert_database_query_count(40),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=realm)
@@ -1205,6 +1205,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user_groups=3,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
+            saved_snippets=1,
             scheduled_messages=1,
             starred_messages=1,
             stream=3,

@@ -301,6 +301,32 @@ drafts_remove_event = event_dict_type(
 )
 check_draft_remove = make_checker(drafts_remove_event)
 
+saved_snippet_fields = DictType(
+    required_keys=[
+        ("id", int),
+        ("title", str),
+        ("content", str),
+        ("date_created", int),
+    ],
+)
+
+saved_snippet_add_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("saved_snippets")),
+        ("op", Equals("add")),
+        ("saved_snippet", saved_snippet_fields),
+    ]
+)
+check_saved_snippet_add = make_checker(saved_snippet_add_event)
+
+saved_snippet_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("saved_snippets")),
+        ("op", Equals("remove")),
+        ("saved_snippet_id", int),
+    ]
+)
+check_saved_snippet_remove = make_checker(saved_snippet_remove_event)
 
 has_zoom_token_event = event_dict_type(
     required_keys=[

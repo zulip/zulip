@@ -108,6 +108,8 @@ class AuditLogEventType(IntEnum):
     USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
     USER_GROUP_DEACTIVATED = 723
 
+    SAVED_SNIPPET_CREATED = 800
+
     # The following values are only for remote server/realm logs.
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in realm audit logs (e.g.,

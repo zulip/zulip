@@ -51,6 +51,7 @@ from zerver.models.realms import RealmAuthenticationMethod as RealmAuthenticatio
 from zerver.models.realms import RealmDomain as RealmDomain
 from zerver.models.recipients import DirectMessageGroup as DirectMessageGroup
 from zerver.models.recipients import Recipient as Recipient
+from zerver.models.saved_snippets import SavedSnippet as SavedSnippet
 from zerver.models.scheduled_jobs import AbstractScheduledJob as AbstractScheduledJob
 from zerver.models.scheduled_jobs import MissedMessageEmailAddress as MissedMessageEmailAddress
 from zerver.models.scheduled_jobs import ScheduledEmail as ScheduledEmail

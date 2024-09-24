@@ -1143,6 +1143,50 @@ def remove_attachment(client: Client, attachment_id: int) -> None:
     validate_against_openapi_schema(result, "/attachments/{attachment_id}", "delete", "200")
 
 
+@openapi_test_function("/saved_snippets:post")
+def create_saved_snippet(client: Client) -> None:
+    # {code_example|start}
+    # Create a saved snippet.
+    request = {"title": "Welcome message", "content": "**Welcome** to the organization."}
+    result = client.call_endpoint(
+        request=request,
+        url="/saved_snippets",
+        method="POST",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/saved_snippets", "post", "200")
+
+
+@openapi_test_function("/saved_snippets:get")
+def get_saved_snippets(client: Client) -> None:
+    # {code_example|start}
+    # Get all the saved snippets.
+    result = client.call_endpoint(
+        url="/saved_snippets",
+        method="GET",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/saved_snippets", "get", "200")
+
+
+@openapi_test_function("/saved_snippets/{saved_snippet_id}:delete")
+def delete_saved_snippet(client: Client) -> None:
+    saved_snippet_id = client.call_endpoint(url="/saved_snippets", method="GET")["saved_snippets"][
+        0
+    ]["id"]
+    # {code_example|start}
+    # Delete a saved snippet.
+    result = client.call_endpoint(
+        url=f"/saved_snippets/{saved_snippet_id}",
+        method="DELETE",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/saved_snippets/{saved_snippet_id}", "delete", "200")
+
+
 @openapi_test_function("/messages:post")
 def send_message(client: Client) -> int:
     request: dict[str, Any] = {}
@@ -1770,6 +1814,9 @@ def test_users(client: Client, owner_client: Client) -> None:
     remove_user_mute(client)
     get_alert_words(client)
     add_alert_words(client)
+    create_saved_snippet(client)
+    get_saved_snippets(client)
+    delete_saved_snippet(client)
     remove_alert_words(client)
     add_apns_token(client)
     remove_apns_token(client)

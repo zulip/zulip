@@ -148,6 +148,11 @@ from zerver.views.registration import (
     signup_send_confirm,
 )
 from zerver.views.report import report_csp_violations
+from zerver.views.saved_snippets import (
+    create_saved_snippet,
+    delete_saved_snippet,
+    get_saved_snippets,
+)
 from zerver.views.scheduled_messages import (
     create_scheduled_message_backend,
     delete_scheduled_messages,
@@ -335,6 +340,9 @@ v1_api_and_json_patterns = [
     # Endpoints for syncing drafts.
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
+    # saved_snippets -> zerver.views.saved_snippets
+    rest_path("saved_snippets", GET=get_saved_snippets, POST=create_saved_snippet),
+    rest_path("saved_snippets/<int:saved_snippet_id>", DELETE=delete_saved_snippet),
     # New scheduled messages are created via send_message_backend.
     rest_path(
         "scheduled_messages", GET=fetch_scheduled_messages, POST=create_scheduled_message_backend

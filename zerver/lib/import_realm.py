@@ -69,6 +69,7 @@ from zerver.models import (
     RealmPlayground,
     RealmUserDefault,
     Recipient,
+    SavedSnippet,
     ScheduledMessage,
     Service,
     Stream,
@@ -1424,6 +1425,14 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         re_map_foreign_keys(data, "zerver_alertword", "realm", related_table="realm")
         update_model_ids(AlertWord, data, "alertword")
         bulk_import_model(data, AlertWord)
+
+    if "zerver_savedsnippet" in data:
+        re_map_foreign_keys(
+            data, "zerver_savedsnippet", "user_profile", related_table="user_profile"
+        )
+        re_map_foreign_keys(data, "zerver_savedsnippet", "realm", related_table="realm")
+        update_model_ids(SavedSnippet, data, "savedsnippet")
+        bulk_import_model(data, SavedSnippet)
 
     if "zerver_onboardingstep" in data:
         fix_datetime_fields(data, "zerver_onboardingstep")

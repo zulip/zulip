@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 297**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  An event with `type: "saved_snippet"` is sent to the current user when a
+  saved snippet is created or deleted.
+* [`GET /saved_snippets`](/api/get-saved-snippets): Added a new endpoint for
+  fetching saved snippets of the user.
+* [`POST /saved_snippets`](/api/create-saved-snippet): Added a new endpoint for
+  creating a new saved snippet.
+* [`DELETE /saved_snippets/{saved_snippet_id}`](/api/delete-saved-snippet): Added
+  a new endpoint for deleting saved snippets.
+
 **Feature level 296**:
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

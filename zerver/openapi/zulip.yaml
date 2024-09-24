@@ -5013,6 +5013,68 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event containing details of a newly created saved snippet.
+
+                                **Changes**: New in Zulip 10.0 (feature level 297).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - saved_snippets
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                saved_snippet:
+                                  $ref: "#/components/schemas/SavedSnippet"
+                              example:
+                                {
+                                  "type": "saved_snippets",
+                                  "op": "add",
+                                  "saved_snippet":
+                                    {
+                                      "id": 1,
+                                      "title": "Example",
+                                      "content": "Welcome to the organization.",
+                                      "date_created": 1681662420,
+                                    },
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing the ID of a deleted saved snippet.
+
+                                **Changes**: New in Zulip 10.0 (feature level 297).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - saved_snippets
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                saved_snippet_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the saved snippet that was just deleted.
+
+                                    **Changes**: New in Zulip 10.0 (feature level 297).
+                              example:
+                                {
+                                  "type": "saved_snippets",
+                                  "op": "remove",
+                                  "saved_snippet_id": 17,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to a user's clients when scheduled messages
                                 are created.
 
@@ -5753,6 +5815,152 @@ paths:
                         "code": "BAD_REQUEST",
                         "result": "error",
                         "msg": "Draft does not exist",
+                      }
+  /saved_snippets:
+    get:
+      operationId: get-saved-snippets
+      tags: ["drafts"]
+      summary: Get all saved snippets
+      description: |
+        Fetch all the saved snippets for the current user.
+
+        **Changes**: New in Zulip 10.0 (feature level 297).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      saved_snippets:
+                        type: array
+                        description: |
+                          An array of dictionaries containing data on all of the current user's
+                          saved snippets.
+                        items:
+                          $ref: "#/components/schemas/SavedSnippet"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "saved_snippets":
+                          [
+                            {
+                              "id": 1,
+                              "title": "Example",
+                              "content": "Welcome to the organization.",
+                              "date_created": 1681662420,
+                            },
+                          ],
+                      }
+    post:
+      operationId: create-saved-snippet
+      tags: ["drafts"]
+      summary: Create a saved snippet
+      description: |
+        Create a new saved snippet for the current user.
+
+        **Changes**: New in Zulip 10.0 (feature level 297).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: |
+                    The title of the saved snippet.
+                  example: Example title
+                content:
+                  type: string
+                  description: |
+                    The content of the saved snippet in text/markdown format.
+
+                    Clients should insert this content into a message when using
+                    a saved snippet.
+                  example: Welcome to the organization.
+              required:
+                - title
+                - content
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      saved_snippet_id:
+                        type: integer
+                        description: |
+                          The unique ID of the saved snippet created.
+                    example:
+                      {"result": "success", "msg": "", "saved_snippet_id": 1}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Title cannot be empty.",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response for when either title or content is
+                      empty:
+  /saved_snippets/{saved_snippet_id}:
+    delete:
+      operationId: delete-saved-snippet
+      tags: ["drafts"]
+      summary: Delete a saved snippet
+      description: |
+        Delete a saved snippet.
+
+        **Changes**: New in Zulip 10.0 (feature level 297).
+      parameters:
+        - name: saved_snippet_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the saved snippet to delete.
+          required: true
+          example: 2
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no saved snippet exists
+                      with the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Saved snippet does not exist.",
                       }
   /scheduled_messages:
     get:
@@ -14246,6 +14454,17 @@ paths:
                                 The list of users other than the current user in the direct message
                                 conversation. This will be an empty list for direct messages sent to
                                 oneself.
+                      saved_snippets:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/SavedSnippet"
+                        description: |
+                          Present if `saved_snippets` is present in `fetch_event_types`.
+
+                          An array of dictionaries containing data on all of the current user's
+                          saved snippets.
+
+                          **Changes**: New in Zulip 10.0 (feature level 297).
                       subscriptions:
                         type: array
                         items:
@@ -22573,6 +22792,32 @@ components:
         - to
         - topic
         - content
+    SavedSnippet:
+      type: object
+      description: |
+        Object containing the details of the saved snippet.
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+          description: |
+            The unique ID of the saved snippet.
+        title:
+          type: string
+          description: |
+            The title of the saved snippet.
+        content:
+          type: string
+          description: |
+            The content of the saved snippet in text/markdown format.
+
+            Clients should insert this content into a message when using
+            a saved snippet.
+        date_created:
+          type: integer
+          description: |
+            The UNIX timestamp for when the saved snippet was created, in
+            UTC seconds.
     ScheduledMessage:
       type: object
       description: |

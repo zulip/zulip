@@ -13,6 +13,7 @@ from typing_extensions import NotRequired, TypedDict
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
 from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
+from zerver.actions.saved_snippets import do_get_saved_snippets
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
@@ -204,6 +205,12 @@ def fetch_initial_state_data(
         # values that are higher than this.  We likely can eventually
         # remove this parameter from the API.
         state["max_message_id"] = max_message_id_for_user(user_profile)
+
+    if want("saved_snippets"):
+        if user_profile is None:
+            state["saved_snippets"] = []
+        else:
+            state["saved_snippets"] = do_get_saved_snippets(user_profile)
 
     if want("drafts"):
         if user_profile is None:
@@ -870,6 +877,15 @@ def apply_event(
         # It may be impossible for a heartbeat event to actually reach
         # this code path. But in any case, they're noops.
         pass
+
+    elif event["type"] == "saved_snippets":
+        if event["op"] == "add":
+            state["saved_snippets"].append(event["saved_snippet"])
+        elif event["op"] == "remove":
+            for idx, saved_snippet in enumerate(state["saved_snippets"]):
+                if saved_snippet["id"] == event["saved_snippet_id"]:
+                    del state["saved_snippets"][idx]
+                    break
 
     elif event["type"] == "drafts":
         if event["op"] == "add":
