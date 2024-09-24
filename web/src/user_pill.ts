@@ -1,7 +1,10 @@
+import assert from "minimalistic-assert";
+
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
+import * as group_permission_settings from "./group_permission_settings";
 import type {InputPillConfig, InputPillContainer} from "./input_pill";
 import * as input_pill from "./input_pill";
 import type {User} from "./people";
@@ -146,8 +149,21 @@ export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
 export function typeahead_source(
     pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
     exclude_bots?: boolean,
+    setting_name?: string,
+    setting_type?: "realm" | "stream" | "group",
 ): UserPillData[] {
-    const users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
+    let users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
+    if (setting_name !== undefined) {
+        assert(setting_type !== undefined);
+        const group_setting_config = group_permission_settings.get_group_permission_setting_config(
+            setting_name,
+            setting_type,
+        );
+        assert(group_setting_config !== undefined);
+        if (!group_setting_config.allow_everyone_group) {
+            users = users.filter((user) => !user.is_guest);
+        }
+    }
     return filter_taken_users(users, pill_widget).map((user) => ({type: "user", user}));
 }
 
