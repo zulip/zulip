@@ -125,7 +125,7 @@ export function update_hash_to_match_filter(filter: Filter, trigger: string): vo
     }
 }
 
-type IdInfo = {
+type TargetMessageIdInfo = {
     target_id: number | undefined;
     final_select_id: number | undefined;
     local_select_id: number | undefined;
@@ -133,7 +133,7 @@ type IdInfo = {
 
 function create_and_update_message_list(
     filter: Filter,
-    id_info: IdInfo,
+    id_info: TargetMessageIdInfo,
     opts: ShowMessageViewOpts & {
         then_select_id: number;
     },
@@ -245,7 +245,7 @@ function create_and_update_message_list(
 }
 
 function handle_post_message_list_change(
-    id_info: IdInfo,
+    id_info: TargetMessageIdInfo,
     msg_list: MessageList,
     opts: {
         change_hash: boolean;
@@ -458,7 +458,7 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
         const scope = Sentry.getCurrentHub().pushScope();
         scope.setSpan(span);
 
-        const id_info: IdInfo = {
+        const id_info: TargetMessageIdInfo = {
             target_id: undefined,
             local_select_id: undefined,
             final_select_id: undefined,
@@ -933,7 +933,7 @@ function load_local_messages(msg_data: MessageListData, superset_data: MessageLi
 }
 
 export function maybe_add_local_messages(opts: {
-    id_info: IdInfo;
+    id_info: TargetMessageIdInfo;
     msg_data: MessageListData;
     superset_data: MessageListData;
 }): void {
@@ -1098,7 +1098,7 @@ export function maybe_add_local_messages(opts: {
 
 export function render_message_list_with_selected_message(opts: {
     msg_list: MessageList | undefined;
-    id_info: IdInfo;
+    id_info: TargetMessageIdInfo;
     select_offset: number | undefined;
     select_opts: SelectIdOpts;
 }): void {
