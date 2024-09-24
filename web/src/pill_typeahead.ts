@@ -148,7 +148,10 @@ export function set_up_group_setting_typeahead(
             let source: GroupSettingTypeaheadItem[] = [];
 
             source = user_group_pill.typeahead_source(pills, opts.setting_name, opts.setting_type);
-            source = [...source, ...user_pill.typeahead_source(pills, true)];
+            source = [
+                ...source,
+                ...user_pill.typeahead_source(pills, true, opts.setting_name, opts.setting_type),
+            ];
 
             return source;
         },
