@@ -413,7 +413,7 @@ input.settings_text_input {
    space around its viewbox in SVG. */
 .clear_search_button {
     &:hover {
-        color: hsl(0deg 0% 0%);
+        color: var(--color-text-clear-search-button-hover);
     }
 
     &:disabled {
@@ -431,7 +431,7 @@ input.settings_text_input {
         text-align: center;
         padding-top: 8px;
         padding-left: 4px;
-        color: hsl(0deg 0% 80%);
+        color: var(--color-text-clear-search-button);
         text-shadow: none;
         outline: none !important;
         box-shadow: none;
@@ -552,8 +552,8 @@ input.settings_text_input {
 .invite-stream-notice {
     position: relative;
     display: block;
-    background-color: hsl(46deg 63% 95%);
-    border: 1px solid hsl(49deg 20% 84%);
+    background-color: var(--color-background-tip);
+    border: 1px solid var(--color-border-tip);
     border-radius: 4px;
     padding: 10px;
     font-size: 1rem;
@@ -702,7 +702,8 @@ input.settings_text_input {
 
     &:focus {
         background-color: hsl(240deg 41% 50%);
-        box-shadow: 0 1px 4px 0 hsl(235deg 18% 7%);
+        box-shadow: 0 1px 4px 0
+            var(--color-box-shadow-animated-purple-button-focus);
         outline: none;
     }
 
@@ -715,17 +716,17 @@ input.settings_text_input {
 .color_animated_button {
     display: flex;
     justify-content: center;
-    background-color: hsl(0deg 0% 90%);
+    background-color: var(--color-background-animated-button);
     color: hsl(0deg 0% 0%);
     border-radius: 4px;
 
     .color-animated-button-text {
-        color: hsl(0deg 0% 0%);
+        color: var(--color-animated-button-text);
     }
 
     &:hover {
         cursor: pointer;
-        background-color: hsl(240deg 96% 68%);
+        background-color: var(--color-background-animated-button-hover);
         color: hsl(0deg 0% 100%);
 
         .color-animated-button-text {
@@ -1144,9 +1145,9 @@ input.settings_text_input {
 }
 
 .dropdown-widget-button {
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-dropdown-widget-button);
     padding: 4px 6px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: 1px solid var(--color-border-dropdown-widget-button);
     border-radius: 4px;
     display: flex;
     align-items: center;
