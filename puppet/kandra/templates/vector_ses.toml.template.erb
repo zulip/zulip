@@ -1,0 +1,25 @@
+# SES writes all of its logs to a single SQS queue; we consume them,
+# batch them, and write them to files in S3 for later analysis.
+[sources.ses_logs_sqs]
+  type = "aws_sqs"
+  queue_url = "<%= @ses_logs_sqs_url %>"
+
+[transforms.extract_ses_message]
+  type = "remap"
+  inputs = ["ses_logs_sqs"]
+  # SES puts its JSON into the text .Message field of the SQS JSON
+  # event, which itself is serialized before we get it
+  source = '''
+  . = parse_json!(string!(.message)).Message
+  '''
+
+[sinks.ses_logs_s3]
+  type = "aws_s3"
+  inputs = ["extract_ses_message"]
+  bucket = "<%= @ses_logs_s3_bucket %>"
+  compression = "gzip"
+  batch.max_bytes = 10000000  # 100k, before compression
+  batch.timeout_secs = 300    # ..or 5min, whichever is first
+  encoding.codec = "text"
+  key_prefix = "%F/"
+  storage_class = "STANDARD_IA"

@@ -12,6 +12,9 @@ class kandra::profile::prometheus_server inherits kandra::profile::base {
   # Ditto the Akamai logs
   include kandra::prometheus::akamai
 
+  # The SES log ETL (writing to S3) runs on vector
+  include kandra::ses_logs
+
   # Export prometheus stats to status.zulip.com
   include kandra::statuspage
 
