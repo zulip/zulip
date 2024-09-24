@@ -80,7 +80,7 @@ type ListInfoNodeOptions =
           type: "spinner";
       };
 
-type ListInfoNode = vdom.Node<ListInfoNodeOptions>;
+export type ListInfoNode = vdom.Node<ListInfoNodeOptions>;
 
 export function keyed_topic_li(conversation: TopicInfo): ListInfoNode {
     const render = (): string => render_topic_list_item(conversation);
@@ -150,10 +150,14 @@ export class TopicListWidget {
         this.my_stream_id = my_stream_id;
     }
 
-    build_list(spinner: boolean): vdom.Tag<ListInfoNodeOptions> {
+    build_list(spinner: boolean, formatter?: (conversation: TopicInfo) => ListInfoNode): vdom.Tag<ListInfoNodeOptions> {
+        if (formatter === undefined) {
+            formatter = keyed_topic_li;
+        }
+
         const list_info = topic_list_data.get_list_info(
             this.my_stream_id,
-            zoomed,
+            true,
             get_topic_search_term(),
         );
 
@@ -174,7 +178,8 @@ export class TopicListWidget {
 
         const attrs: [string, string][] = [["class", topic_list_classes.join(" ")]];
 
-        const nodes = list_info.items.map((conversation) => keyed_topic_li(conversation));
+        const nodes = list_info.items.map((conversation) => formatter(conversation));
+        console.log(nodes)
 
         if (spinner) {
             nodes.push(spinner_li());
@@ -209,8 +214,8 @@ export class TopicListWidget {
         this.prior_dom = undefined;
     }
 
-    build(spinner = false): void {
-        const new_dom = this.build_list(spinner);
+    build(spinner = false, formatter?: (conversation: TopicInfo) => ListInfoNode): void {
+        const new_dom = this.build_list(spinner, formatter);
 
         const replace_content = (html: string): void => {
             this.remove();
