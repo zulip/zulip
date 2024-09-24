@@ -15,7 +15,6 @@ import type {BuddyUserInfo} from "./buddy_data";
 import {media_breakpoints_num} from "./css_variables";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as padded_widget from "./padded_widget";
@@ -90,17 +89,7 @@ function get_render_data(): BuddyListRenderData {
     const total_human_users = people.get_active_human_count();
     const other_users_count = total_human_users - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
-    const participant_ids_set = new Set<number>();
-    if (current_sub && narrow_state.topic() && message_lists.current) {
-        for (const message of message_lists.current.all_messages()) {
-            if (
-                !people.is_valid_bot_user(message.sender_id) &&
-                people.is_person_active(message.sender_id)
-            ) {
-                participant_ids_set.add(message.sender_id);
-            }
-        }
-    }
+    const participant_ids_set = buddy_data.get_conversation_participants();
 
     return {
         current_sub,

@@ -22,6 +22,8 @@ const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
+const {Filter} = zrequire("filter");
+const message_lists = zrequire("message_lists");
 
 // The buddy_data module is mostly tested indirectly through
 // activity.test.js, but we should feel free to add direct tests
@@ -109,6 +111,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
+        message_lists.set_current(undefined);
 
         f(helpers);
 
@@ -374,6 +377,39 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
     // Make the max channel size lower, so that we hide the offline users
     override_rewire(buddy_data, "max_channel_size_to_show_all_subscribers", 2);
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
+});
+
+test("get_conversation_participants", ({override_rewire}) => {
+    people.add_active_user(selma);
+
+    const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
+    stream_data.add_sub(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id]);
+
+    const filter = new Filter([
+        {operator: "channel", operand: rome_sub.channel_id},
+        {operator: "topic", operand: "Foo"},
+    ]);
+    message_lists.set_current({
+        data: {
+            filter,
+        },
+        all_messages() {
+            return [
+                {
+                    sender_id: selma.user_id,
+                    id: rome_sub.stream_id,
+                    content: "example content",
+                    topic: "Foo",
+                    type: "stream",
+                },
+            ];
+        },
+    });
+    override_rewire(narrow_state, "stream_id", () => rome_sub.stream_id);
+    override_rewire(narrow_state, "topic", () => "Foo");
+
+    assert.deepEqual(buddy_data.get_conversation_participants(), new Set([selma.user_id]));
 });
 
 test("level", () => {
