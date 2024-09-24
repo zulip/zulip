@@ -46,6 +46,11 @@ export class MessageList {
     static id_counter = 0;
 
     id: number;
+    // The MessageListData keeps track of the actual sequence of
+    // messages displayed by this MessageList. Most
+    // configuration/logic questions in this module will be
+    // answered by calling a function from the MessageListData,
+    // its Filter, or its FetchStatus object.
     data: MessageListData;
     // The MessageListView object that is responsible for
     // maintaining this message feed's HTML representation in the
@@ -79,11 +84,6 @@ export class MessageList {
     ) {
         MessageList.id_counter += 1;
         this.id = MessageList.id_counter;
-        // The MessageListData keeps track of the actual sequence of
-        // messages displayed by this MessageList. Most
-        // configuration/logic questions in this module will be
-        // answered by calling a function from the MessageListData,
-        // its Filter, or its FetchStatus object.
         if (opts.data) {
             this.data = opts.data;
         } else {
