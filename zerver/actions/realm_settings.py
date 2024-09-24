@@ -51,9 +51,6 @@ from zerver.models.realms import get_default_max_invites_for_realm_plan_type, ge
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
-if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import RealmBillingSession
-
 
 @transaction.atomic(savepoint=False)
 def do_set_realm_property(
@@ -516,6 +513,9 @@ def do_deactivate_realm(
     if realm.deactivated:
         return
 
+    if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import RealmBillingSession
+
     with transaction.atomic():
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
@@ -623,6 +623,8 @@ def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> 
 
 def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
     if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import RealmBillingSession
+
         billing_session = RealmBillingSession(user=acting_user, realm=realm)
         billing_session.downgrade_now_without_creating_additional_invoices()
 

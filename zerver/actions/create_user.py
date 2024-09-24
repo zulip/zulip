@@ -62,10 +62,6 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
-if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import RealmBillingSession
-
-
 MAX_NUM_RECENT_MESSAGES = 1000
 MAX_NUM_RECENT_UNREAD_MESSAGES = 20
 
@@ -512,6 +508,9 @@ def do_create_user(
     email_address_visibility: int | None = None,
     add_initial_stream_subscriptions: bool = True,
 ) -> UserProfile:
+    if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import RealmBillingSession
+
     with transaction.atomic():
         user_profile = create_user(
             email=email,
@@ -643,6 +642,9 @@ def do_activate_mirror_dummy_user(
     parallel code path to do_create_user; e.g. it likely does not
     handle preferences or default streams properly.
     """
+    if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import RealmBillingSession
+
     with transaction.atomic():
         change_user_is_active(user_profile, True)
         user_profile.is_mirror_dummy = False
@@ -714,6 +716,8 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         bot_owner_changed = True
 
     if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import RealmBillingSession
+
         billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
         billing_session.update_license_ledger_if_needed(event_time)
 

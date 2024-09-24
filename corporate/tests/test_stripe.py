@@ -4976,7 +4976,9 @@ class StripeWebhookEndpointTest(ZulipTestCase):
             "type": "checkout.session.completed",
             "data": {"object": {"object": "checkout.session", "id": "stripe_session_id"}},
         }
-        with patch("corporate.views.webhook.handle_checkout_session_completed_event") as m:
+        with patch(
+            "corporate.lib.stripe_event_handler.handle_checkout_session_completed_event"
+        ) as m:
             result = self.client_post(
                 "/stripe/webhook/",
                 valid_session_event_data,
@@ -4998,7 +5000,7 @@ class StripeWebhookEndpointTest(ZulipTestCase):
             "data": {"object": {"object": "invoice", "id": stripe_invoice_id}},
         }
 
-        with patch("corporate.views.webhook.handle_invoice_paid_event") as m:
+        with patch("corporate.lib.stripe_event_handler.handle_invoice_paid_event") as m:
             result = self.client_post(
                 "/stripe/webhook/",
                 valid_session_event_data,
@@ -5015,7 +5017,7 @@ class StripeWebhookEndpointTest(ZulipTestCase):
         )
 
         self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 0)
-        with patch("corporate.views.webhook.handle_invoice_paid_event") as m:
+        with patch("corporate.lib.stripe_event_handler.handle_invoice_paid_event") as m:
             result = self.client_post(
                 "/stripe/webhook/",
                 valid_session_event_data,
@@ -5026,7 +5028,7 @@ class StripeWebhookEndpointTest(ZulipTestCase):
         strip_event = stripe.Event.construct_from(valid_session_event_data, stripe.api_key)
         m.assert_called_once_with(strip_event.data.object, event)
 
-        with patch("corporate.views.webhook.handle_invoice_paid_event") as m:
+        with patch("corporate.lib.stripe_event_handler.handle_invoice_paid_event") as m:
             result = self.client_post(
                 "/stripe/webhook/",
                 valid_session_event_data,
@@ -5048,7 +5050,7 @@ class StripeWebhookEndpointTest(ZulipTestCase):
             "data": {"object": {"object": "invoice", "id": stripe_invoice_id}},
         }
 
-        with patch("corporate.views.webhook.handle_invoice_paid_event") as m:
+        with patch("corporate.lib.stripe_event_handler.handle_invoice_paid_event") as m:
             result = self.client_post(
                 "/stripe/webhook/",
                 valid_invoice_paid_event_data,
@@ -5065,7 +5067,7 @@ class StripeWebhookEndpointTest(ZulipTestCase):
         )
 
         self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 0)
-        with patch("corporate.views.webhook.handle_invoice_paid_event") as m:
+        with patch("corporate.lib.stripe_event_handler.handle_invoice_paid_event") as m:
             result = self.client_post(
                 "/stripe/webhook/",
                 valid_invoice_paid_event_data,
@@ -5076,7 +5078,7 @@ class StripeWebhookEndpointTest(ZulipTestCase):
         strip_event = stripe.Event.construct_from(valid_invoice_paid_event_data, stripe.api_key)
         m.assert_called_once_with(strip_event.data.object, event)
 
-        with patch("corporate.views.webhook.handle_invoice_paid_event") as m:
+        with patch("corporate.lib.stripe_event_handler.handle_invoice_paid_event") as m:
             result = self.client_post(
                 "/stripe/webhook/",
                 valid_invoice_paid_event_data,

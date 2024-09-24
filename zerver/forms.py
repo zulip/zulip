@@ -46,10 +46,6 @@ from zerver.models.realms import (
 from zerver.models.users import get_user_by_delivery_email, is_cross_realm_bot_email
 from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
 
-if settings.BILLING_ENABLED:
-    from corporate.lib.registration import check_spare_licenses_available_for_registering_new_user
-    from corporate.lib.stripe import LicenseLimitError
-
 # We don't mark this error for translation, because it's displayed
 # only to MIT users.
 MIT_VALIDATION_ERROR = Markup(
@@ -302,6 +298,11 @@ class HomepageForm(forms.Form):
             email_is_not_mit_mailing_list(email)
 
         if settings.BILLING_ENABLED:
+            from corporate.lib.registration import (
+                check_spare_licenses_available_for_registering_new_user,
+            )
+            from corporate.lib.stripe import LicenseLimitError
+
             role = self.invited_as if self.invited_as is not None else UserProfile.ROLE_MEMBER
             try:
                 check_spare_licenses_available_for_registering_new_user(realm, email, role=role)

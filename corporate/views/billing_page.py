@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated, Any, Literal
+from typing import TYPE_CHECKING, Annotated, Any, Literal
 
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
@@ -11,14 +11,6 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from corporate.lib.stripe import (
-    RealmBillingSession,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-    ServerDeactivateWithExistingPlanError,
-    UpdatePlanRequest,
-    do_deactivate_remote_server,
-)
 from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.decorator import process_as_post, require_billing_access, zulip_login_required
 from zerver.lib.exceptions import JsonableError
@@ -28,6 +20,10 @@ from zerver.lib.typed_endpoint_validators import check_int_in
 from zerver.models import UserProfile
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import RemoteRealm, RemoteZulipServer
+
+if TYPE_CHECKING:
+    from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
+
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -49,6 +45,8 @@ def billing_page(
     *,
     success_message: str = "",
 ) -> HttpResponse:
+    from corporate.lib.stripe import RealmBillingSession
+
     user = request.user
     assert user.is_authenticated
 
@@ -91,11 +89,11 @@ def billing_page(
     return render(request, "corporate/billing/billing.html", context=context)
 
 
-@authenticated_remote_realm_management_endpoint
 @typed_endpoint
+@authenticated_remote_realm_management_endpoint
 def remote_realm_billing_page(
     request: HttpRequest,
-    billing_session: RemoteRealmBillingSession,
+    billing_session: "RemoteRealmBillingSession",
     *,
     success_message: str = "",
 ) -> HttpResponse:
@@ -152,11 +150,11 @@ def remote_realm_billing_page(
     return render(request, "corporate/billing/billing.html", context=context)
 
 
-@authenticated_remote_server_management_endpoint
 @typed_endpoint
+@authenticated_remote_server_management_endpoint
 def remote_server_billing_page(
     request: HttpRequest,
-    billing_session: RemoteServerBillingSession,
+    billing_session: "RemoteServerBillingSession",
     *,
     success_message: str = "",
 ) -> HttpResponse:
@@ -246,6 +244,8 @@ def update_plan(
     licenses_at_next_renewal: Json[int] | None = None,
     schedule: Json[int] | None = None,
 ) -> HttpResponse:
+    from corporate.lib.stripe import RealmBillingSession, UpdatePlanRequest
+
     update_plan_request = UpdatePlanRequest(
         status=status,
         licenses=licenses,
@@ -257,12 +257,12 @@ def update_plan(
     return json_success(request)
 
 
-@authenticated_remote_realm_management_endpoint
 @process_as_post
 @typed_endpoint
+@authenticated_remote_realm_management_endpoint
 def update_plan_for_remote_realm(
     request: HttpRequest,
-    billing_session: RemoteRealmBillingSession,
+    billing_session: "RemoteRealmBillingSession",
     *,
     status: Annotated[
         Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
@@ -272,6 +272,8 @@ def update_plan_for_remote_realm(
     licenses_at_next_renewal: Json[int] | None = None,
     schedule: Json[int] | None = None,
 ) -> HttpResponse:
+    from corporate.lib.stripe import UpdatePlanRequest
+
     update_plan_request = UpdatePlanRequest(
         status=status,
         licenses=licenses,
@@ -282,12 +284,12 @@ def update_plan_for_remote_realm(
     return json_success(request)
 
 
-@authenticated_remote_server_management_endpoint
 @process_as_post
 @typed_endpoint
+@authenticated_remote_server_management_endpoint
 def update_plan_for_remote_server(
     request: HttpRequest,
-    billing_session: RemoteServerBillingSession,
+    billing_session: "RemoteServerBillingSession",
     *,
     status: Annotated[
         Json[int], AfterValidator(lambda x: check_int_in(x, ALLOWED_PLANS_API_STATUS_VALUES))
@@ -297,6 +299,8 @@ def update_plan_for_remote_server(
     licenses_at_next_renewal: Json[int] | None = None,
     schedule: Json[int] | None = None,
 ) -> HttpResponse:
+    from corporate.lib.stripe import UpdatePlanRequest
+
     update_plan_request = UpdatePlanRequest(
         status=status,
         licenses=licenses,
@@ -307,14 +311,19 @@ def update_plan_for_remote_server(
     return json_success(request)
 
 
-@authenticated_remote_server_management_endpoint
 @typed_endpoint
+@authenticated_remote_server_management_endpoint
 def remote_server_deactivate_page(
     request: HttpRequest,
-    billing_session: RemoteServerBillingSession,
+    billing_session: "RemoteServerBillingSession",
     *,
     confirmed: Literal[None, "true"] = None,
 ) -> HttpResponse:
+    from corporate.lib.stripe import (
+        ServerDeactivateWithExistingPlanError,
+        do_deactivate_remote_server,
+    )
+
     if request.method not in ["GET", "POST"]:  # nocoverage
         return HttpResponseNotAllowed(["GET", "POST"])
 

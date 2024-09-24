@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 import orjson
@@ -13,13 +14,6 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from corporate.lib.stripe import (
-    RealmBillingSession,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-    get_configured_fixed_price_plan_offer,
-    get_free_trial_days,
-)
 from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics, zulip_login_required
@@ -32,6 +26,9 @@ from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.subdomains import is_subdomain_root_or_alias
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import Realm
+
+if TYPE_CHECKING:
+    from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 
 
 @add_google_analytics
@@ -95,6 +92,8 @@ class PlansPageContext:
 
 @add_google_analytics
 def plans_view(request: HttpRequest) -> HttpResponse:
+    from corporate.lib.stripe import get_free_trial_days
+
     realm = get_realm_from_request(request)
     context = PlansPageContext(
         is_cloud_realm=True,
@@ -138,8 +137,10 @@ def plans_view(request: HttpRequest) -> HttpResponse:
 @add_google_analytics
 @authenticated_remote_realm_management_endpoint
 def remote_realm_plans_page(
-    request: HttpRequest, billing_session: RemoteRealmBillingSession
+    request: HttpRequest, billing_session: "RemoteRealmBillingSession"
 ) -> HttpResponse:
+    from corporate.lib.stripe import get_configured_fixed_price_plan_offer, get_free_trial_days
+
     customer = billing_session.get_customer()
     context = PlansPageContext(
         is_self_hosted_realm=True,
@@ -205,8 +206,10 @@ def remote_realm_plans_page(
 @add_google_analytics
 @authenticated_remote_server_management_endpoint
 def remote_server_plans_page(
-    request: HttpRequest, billing_session: RemoteServerBillingSession
+    request: HttpRequest, billing_session: "RemoteServerBillingSession"
 ) -> HttpResponse:
+    from corporate.lib.stripe import get_configured_fixed_price_plan_offer, get_free_trial_days
+
     customer = billing_session.get_customer()
     context = PlansPageContext(
         is_self_hosted_realm=True,
@@ -377,6 +380,8 @@ def communities_view(request: HttpRequest) -> HttpResponse:
 
 @zulip_login_required
 def invoices_page(request: HttpRequest) -> HttpResponseRedirect:
+    from corporate.lib.stripe import RealmBillingSession
+
     user = request.user
     assert user.is_authenticated
 
@@ -390,7 +395,7 @@ def invoices_page(request: HttpRequest) -> HttpResponseRedirect:
 
 @authenticated_remote_realm_management_endpoint
 def remote_realm_invoices_page(
-    request: HttpRequest, billing_session: RemoteRealmBillingSession
+    request: HttpRequest, billing_session: "RemoteRealmBillingSession"
 ) -> HttpResponseRedirect:
     list_invoices_session_url = billing_session.get_past_invoices_session_url()
     return HttpResponseRedirect(list_invoices_session_url)
@@ -398,7 +403,7 @@ def remote_realm_invoices_page(
 
 @authenticated_remote_server_management_endpoint
 def remote_server_invoices_page(
-    request: HttpRequest, billing_session: RemoteServerBillingSession
+    request: HttpRequest, billing_session: "RemoteServerBillingSession"
 ) -> HttpResponseRedirect:
     list_invoices_session_url = billing_session.get_past_invoices_session_url()
     return HttpResponseRedirect(list_invoices_session_url)
@@ -414,6 +419,8 @@ def customer_portal(
     tier: Json[int] | None = None,
     setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
+    from corporate.lib.stripe import RealmBillingSession
+
     user = request.user
     assert user.is_authenticated
 
@@ -427,11 +434,11 @@ def customer_portal(
     return HttpResponseRedirect(review_billing_information_url)
 
 
-@authenticated_remote_realm_management_endpoint
 @typed_endpoint
+@authenticated_remote_realm_management_endpoint
 def remote_realm_customer_portal(
     request: HttpRequest,
-    billing_session: RemoteRealmBillingSession,
+    billing_session: "RemoteRealmBillingSession",
     *,
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
@@ -444,11 +451,11 @@ def remote_realm_customer_portal(
     return HttpResponseRedirect(review_billing_information_url)
 
 
-@authenticated_remote_server_management_endpoint
 @typed_endpoint
+@authenticated_remote_server_management_endpoint
 def remote_server_customer_portal(
     request: HttpRequest,
-    billing_session: RemoteServerBillingSession,
+    billing_session: "RemoteServerBillingSession",
     *,
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
