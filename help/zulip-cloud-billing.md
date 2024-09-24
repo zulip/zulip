@@ -10,7 +10,7 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {tab|by-card}
 
-{relative|gear|plans}
+{relative|gear-billing|plans}
 
 1. On the page listing Zulip Cloud plans, click the button at the bottom
    of the plan you would like to purchase.
@@ -21,7 +21,7 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {!pay-by-invoice-warning.md!}
 
-{relative|gear|plans}
+{relative|gear-billing|plans}
 
 1. On the page listing Zulip Cloud plans, click the button at the bottom
    of the plan you would like to purchase.
@@ -38,7 +38,7 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {tab|desktop-web}
 
-{relative|gear|billing}
+{relative|gear-billing|billing}
 
 {end_tabs}
 
@@ -51,7 +51,7 @@ Free** at the end of the current billing period.
 
 {tab|desktop-web}
 
-{relative|gear|billing}
+{relative|gear-billing|billing}
 
 1. At the bottom of the page, click **Cancel plan**.
 
@@ -190,7 +190,7 @@ tool.
 
 {tab|desktop-web}
 
-{relative|gear|billing}
+{relative|gear-billing|billing}
 
 {!manual-add-license-instructions.md!}
 

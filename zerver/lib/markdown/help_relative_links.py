@@ -38,8 +38,6 @@ gear_info = {
     ],
     "stats": ['<i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics', "/stats"],
     "integrations": ['<i class="zulip-icon-git-pull-request"></i> Integrations', "/integrations/"],
-    "plans": ['<i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing', "/plans/"],
-    "billing": ['<i class="zulip-icon zulip-icon-credit-card"></i> Billing', "/billing/"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
@@ -56,6 +54,25 @@ def gear_handle_match(key: str) -> str:
         item = f"[{gear_info[key][0]}]({gear_info[key][1]})"
     else:
         item = f"**{gear_info[key][0]}**"
+    return gear_instructions.format(item=item)
+
+
+billing_info = {
+    # The pattern is key: [name, link]
+    # key is from REGEXP: `{relative|gear-billing|key}`
+    # name is what the item is called in the help menu: `Select **name**.`
+    # link is used for relative links: `Select [name](link).`
+    # Note that links are only used when billing is enabled.
+    "plans": ['<i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing', "/plans/"],
+    "billing": ['<i class="zulip-icon zulip-icon-credit-card"></i> Billing', "/billing/"],
+}
+
+
+def billing_handle_match(key: str) -> str:
+    if relative_help_links and billing_help_links:
+        item = f"[{billing_info[key][0]}]({billing_info[key][1]})"
+    else:
+        item = f"**{billing_info[key][0]}**"
     return gear_instructions.format(item=item)
 
 
@@ -190,6 +207,7 @@ def message_handle_match(key: str) -> str:
 
 LINK_TYPE_HANDLERS = {
     "gear": gear_handle_match,
+    "gear-billing": billing_handle_match,
     "channel": channel_handle_match,
     "message": message_handle_match,
     "help": help_handle_match,
@@ -208,11 +226,14 @@ class RelativeLinksHelpExtension(Extension):
 
 
 relative_help_links: bool = False
+billing_help_links: bool = False
 
 
-def set_relative_help_links(value: bool) -> None:
+def set_relative_help_links(relative_links: bool, billing_links: bool) -> None:
     global relative_help_links
-    relative_help_links = value
+    global billing_help_links
+    relative_help_links = relative_links
+    billing_help_links = billing_links
 
 
 class RelativeLinks(Preprocessor):
