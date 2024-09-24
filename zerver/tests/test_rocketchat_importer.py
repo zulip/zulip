@@ -912,6 +912,7 @@ class RocketChatImporter(ZulipTestCase):
                 "INFO:root:Done processing emoji",
                 "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
                 "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
+                "INFO:root:Exporting migration status",
             ],
         )
 
@@ -919,6 +920,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(os.path.exists(os.path.join(output_dir, "emoji")), True)
         self.assertEqual(os.path.exists(os.path.join(output_dir, "uploads")), True)
         self.assertEqual(os.path.exists(os.path.join(output_dir, "attachment.json")), True)
+        self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
 
         realm = self.read_file(output_dir, "realm.json")
 
