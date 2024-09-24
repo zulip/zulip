@@ -20,6 +20,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.models import Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realms import EXPORT_PUBLIC
 from zerver.views.realm_export import export_realm
 
 
@@ -60,7 +61,7 @@ class RealmExportTest(ZulipTestCase):
         self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
-        self.assertEqual(args["public_only"], True)
+        self.assertEqual(args["export_type"], EXPORT_PUBLIC)
         self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
         self.assertEqual(args["threads"], 6)
 
@@ -123,13 +124,12 @@ class RealmExportTest(ZulipTestCase):
             realm: Realm,
             output_dir: str,
             threads: int,
+            export_type: int,
             exportable_user_ids: set[int] | None = None,
-            public_only: bool = False,
-            consent_message_id: int | None = None,
             export_as_active: bool | None = None,
         ) -> str:
             self.assertEqual(realm, admin.realm)
-            self.assertEqual(public_only, True)
+            self.assertEqual(export_type, EXPORT_PUBLIC)
             self.assertTrue(os.path.basename(output_dir).startswith("zulip-export-"))
             self.assertEqual(threads, 6)
 

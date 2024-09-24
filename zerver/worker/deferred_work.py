@@ -26,6 +26,7 @@ from zerver.lib.remote_server import (
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import handle_reupload_emojis_event
 from zerver.models import Message, Realm, RealmAuditLog, Stream, UserMessage
+from zerver.models.realms import EXPORT_PUBLIC
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
@@ -158,7 +159,7 @@ class DeferredWorker(QueueProcessingWorker):
                     output_dir=output_dir,
                     threads=1 if self.threaded else 6,
                     upload=True,
-                    public_only=True,
+                    export_type=EXPORT_PUBLIC,
                 )
             except Exception:
                 extra_data["failed_timestamp"] = timezone_now().timestamp()

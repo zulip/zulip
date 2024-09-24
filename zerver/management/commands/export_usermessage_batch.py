@@ -18,9 +18,9 @@ class Command(ZulipBaseCommand):
         parser.add_argument("--path", help="Path to find messages.json archives")
         parser.add_argument("--thread", help="Thread ID")
         parser.add_argument(
-            "--consent-message-id",
-            type=int,
-            help="ID of the message advertising users to react with thumbs up",
+            "--export-full-with-consent",
+            action="store_true",
+            help="Whether to export private data of users who consented",
         )
 
     @override
@@ -37,7 +37,9 @@ class Command(ZulipBaseCommand):
                 continue
             logging.info("Thread %s processing %s", options["thread"], output_path)
             try:
-                export_usermessages_batch(locked_path, output_path, options["consent_message_id"])
+                export_usermessages_batch(
+                    locked_path, output_path, options["export_full_with_consent"]
+                )
             except BaseException:
                 # Put the item back in the free pool when we fail
                 os.rename(locked_path, partial_path)
