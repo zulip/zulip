@@ -16,7 +16,7 @@ from collections.abc import Callable, Iterable, Mapping
 from contextlib import suppress
 from datetime import datetime
 from functools import cache
-from typing import Any, Optional, TypeAlias, TypedDict
+from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypedDict
 
 import orjson
 from django.apps import apps
@@ -24,7 +24,6 @@ from django.conf import settings
 from django.db.models import Exists, OuterRef, Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
-from mypy_boto3_s3.service_resource import Object
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
@@ -76,6 +75,9 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import EXPORT_FULL_WITH_CONSENT, EXPORT_PUBLIC, get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
+
+if TYPE_CHECKING:
+    from mypy_boto3_s3.service_resource import Object
 
 # Custom mypy types follow:
 Record: TypeAlias = dict[str, Any]
@@ -1624,7 +1626,7 @@ def export_uploads_and_avatars(
 
 
 def _get_exported_s3_record(
-    bucket_name: str, key: Object, processing_emoji: bool
+    bucket_name: str, key: "Object", processing_emoji: bool
 ) -> dict[str, Any]:
     # Helper function for export_files_from_s3
     record: dict[str, Any] = dict(
@@ -1673,7 +1675,7 @@ def _get_exported_s3_record(
 
 
 def _save_s3_object_to_file(
-    key: Object,
+    key: "Object",
     output_dir: str,
     processing_uploads: bool,
 ) -> None:
