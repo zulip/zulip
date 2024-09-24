@@ -10,9 +10,7 @@ from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.data_import.mattermost import do_convert_data
-from zerver.lib.import_realm import do_import_realm
 from zerver.lib.message import remove_single_newlines
-from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.zulip_update_announcements import (
     ZulipUpdateAnnouncement,
     send_zulip_update_announcements,
@@ -22,9 +20,10 @@ from zerver.models.realms import get_realm
 from zerver.models.recipients import Recipient, get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
+from zerver.tests.test_import_export import ImportExportFile
 
 
-class ZulipUpdateAnnouncementsTest(ZulipTestCase):
+class ZulipUpdateAnnouncementsTest(ImportExportFile):
     @override
     def setUp(self) -> None:
         super().setUp()
@@ -39,6 +38,23 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
                 message="Announcement message 2.",
             ),
         ]
+
+    def convert_mattermost_data(
+        self,
+        mattermost_data_dir: str,
+        output_dir: str,
+        masking_content: bool,
+        migration_file_fixture: str = "with_complete_migrations.txt",
+    ) -> None:
+        with self.assertLogs(level="WARNING"), patch("zerver.lib.export.get_migration_status") as m:
+            m.return_value = self.fixture_data(
+                migration_file_fixture, "import_fixtures/get_migration_status_fixtures"
+            )
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=masking_content,
+            )
 
     def test_send_zulip_update_announcements(self) -> None:
         with mock.patch(
@@ -340,8 +356,8 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
 
-            with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING"):
-                do_convert_data(
+            with patch("builtins.print") as mock_print:
+                self.convert_mattermost_data(
                     mattermost_data_dir=mattermost_data_dir,
                     output_dir=output_dir,
                     masking_content=True,
@@ -357,7 +373,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             gryffindor_output_dir = os.path.join(output_dir, "gryffindor")
 
             with self.assertLogs(level="INFO"):
-                do_import_realm(
+                self.import_realm(
                     import_dir=gryffindor_output_dir,
                     subdomain="gryffindor",
                 )

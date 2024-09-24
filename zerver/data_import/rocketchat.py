@@ -31,6 +31,7 @@ from zerver.data_import.import_util import (
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.export import do_common_export_processes
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
@@ -1255,3 +1256,5 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     attachment: dict[str, list[Any]] = {"zerver_attachment": zerver_attachment}
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")
+
+    do_common_export_processes(output_dir)

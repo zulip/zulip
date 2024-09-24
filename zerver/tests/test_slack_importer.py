@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from io import BytesIO
 from typing import Any
 from unittest import mock
-from unittest.mock import ANY
+from unittest.mock import ANY, patch
 from urllib.parse import parse_qs, urlsplit
 
 import orjson
@@ -45,13 +45,12 @@ from zerver.data_import.slack import (
     slack_workspace_to_realm,
     users_to_zerver_userprofile,
 )
-from zerver.lib.import_realm import do_import_realm
-from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
+from zerver.tests.test_import_export import ImportExportFile
 
 
 def remove_folder(path: str) -> None:
@@ -118,7 +117,27 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
     return (200, {}, orjson.dumps({"ok": True, "team": {"id": team_id, "domain": team_domain}}))
 
 
-class SlackImporter(ZulipTestCase):
+class SlackImporter(ImportExportFile):
+    def convert_slack_data(
+        self,
+        original_path: str,
+        output_dir: str,
+        token: str,
+        migration_file_fixture: str = "with_complete_migrations.txt",
+    ) -> None:
+        with (
+            self.assertLogs(level="INFO"),
+            self.settings(EXTERNAL_HOST="zulip.example.com"),
+            patch("zerver.lib.export.get_migration_status") as m,
+        ):
+            # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
+            # uses it to generate email addresses for users without an email specified.
+
+            m.return_value = self.fixture_data(
+                migration_file_fixture, "import_fixtures/get_migration_status_fixtures"
+            )
+            do_convert_zipfile(original_path=original_path, output_dir=output_dir, token=token)
+
     @responses.activate
     def test_get_slack_api_data(self) -> None:
         token = "xoxb-valid-token"
@@ -1321,14 +1340,11 @@ class SlackImporter(ZulipTestCase):
         mock_requests_get.return_value.raw = BytesIO(read_test_image_file("img.png"))
         mock_requests_get.return_value.headers = {"Content-Type": "image/png"}
 
-        with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
-            # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
-            # uses it to generate email addresses for users without an email specified.
-            do_convert_zipfile(test_slack_zip_file, output_dir, token)
+        self.convert_slack_data(test_slack_zip_file, output_dir, token)
 
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + "/realm.json"))
-
+        self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
         realm_icons_path = os.path.join(output_dir, "realm_icons")
         realm_icon_records_path = os.path.join(realm_icons_path, "records.json")
 
@@ -1344,7 +1360,7 @@ class SlackImporter(ZulipTestCase):
 
         # test import of the converted slack data into an existing database
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(output_dir, test_realm_subdomain)
+            self.import_realm(output_dir, test_realm_subdomain)
         realm = get_realm(test_realm_subdomain)
         self.assertTrue(realm.name, test_realm_subdomain)
         self.assertEqual(realm.icon_source, Realm.ICON_UPLOADED)
@@ -1529,7 +1545,4 @@ class SlackImporter(ZulipTestCase):
         ]
         mock_requests_get.return_value.raw = BytesIO(read_test_image_file("img.png"))
 
-        with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
-            # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
-            # uses it to generate email addresses for users without an email specified.
-            do_convert_zipfile(test_slack_zip_file, output_dir, token)
+        self.convert_slack_data(test_slack_zip_file, output_dir, token)
