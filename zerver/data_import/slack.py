@@ -12,7 +12,7 @@ from collections.abc import Iterator
 from datetime import datetime, timezone
 from email.headerregistry import Address
 from typing import Any, TypeAlias, TypeVar
-from urllib.parse import urlsplit
+from urllib.parse import SplitResult, urlsplit
 
 import orjson
 import requests
@@ -1442,7 +1442,8 @@ def do_convert_directory(
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
     realm_id = 0
-    domain_name = settings.EXTERNAL_HOST
+    domain_name = SplitResult("", settings.EXTERNAL_HOST, "", "", "").hostname
+    assert isinstance(domain_name, str)
 
     (
         realm,
