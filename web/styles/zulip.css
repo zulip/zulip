@@ -818,7 +818,7 @@ strong {
     }
 }
 
-.selected_message {
+.message-list:not(.message-list-navigation-bar-focused) .selected_message {
     .messagebox-content {
         /* We add an outline and shift it inside the message so that without
            any vertical padding changes, we can have the outline surrounding
@@ -2074,5 +2074,61 @@ body:not(.hide-left-sidebar) {
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
         border: 1px solid var(--color-border-personal-menu-avatar);
+    }
+}
+
+#message-list-navigation-buttons-wrapper {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 0.33fr;
+    justify-content: space-between;
+    padding: 4px;
+    border-radius: 4px;
+    margin: 7px;
+
+    &.message-list-navigation-bar-focused {
+        outline: 1px solid var(--color-outline-focus);
+    }
+}
+
+.message-list-navigation-button {
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(
+        --color-message-list-navigation-medium-attention-background
+    );
+    box-shadow: 0 0 1px 1px
+        var(--color-message-list-navigation-medium-attention-box-shadow) inset;
+    color: var(--color-message-list-navigation-medium-attention-text);
+
+    &:hover {
+        background: var(
+            --color-message-list-navigation-medium-attention-background-hover
+        );
+        box-shadow: 0 0 1px 1px
+            var(
+                --color-message-list-navigation-medium-attention-box-shadow-hover
+            )
+            inset;
+    }
+
+    &:active {
+        background: var(
+            --color-message-list-navigation-medium-attention-background-active
+        );
+        box-shadow: 0 0 1px 1px
+            var(
+                --color-message-list-navigation-medium-attention-box-shadow-hover
+            )
+            inset;
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus);
     }
 }

@@ -25,6 +25,7 @@ import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as linkifiers from "./linkifiers";
 import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
+import * as message_list_navigation from "./message_list_navigation";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as muted_users_ui from "./muted_users_ui";
@@ -80,7 +81,6 @@ import * as submessage from "./submessage";
 import * as theme from "./theme";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
-import * as unread_ui from "./unread_ui";
 import * as user_events from "./user_events";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
@@ -828,7 +828,7 @@ export function dispatch_normal_event(event) {
                 information_density.calculate_timestamp_widths();
             }
             if (event.property === "web_mark_read_on_scroll_policy") {
-                unread_ui.update_unread_banner();
+                message_list_navigation.update();
             }
             if (event.property === "color_scheme") {
                 requestAnimationFrame(() => {

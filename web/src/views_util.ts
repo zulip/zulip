@@ -19,7 +19,6 @@ import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as sidebar_ui from "./sidebar_ui";
 import * as stream_list from "./stream_list";
-import * as unread_ui from "./unread_ui";
 
 export const FILTERS = {
     ALL_TOPICS: "all_topics",
@@ -97,7 +96,6 @@ export function show(opts: {
     stream_list.handle_message_view_deactivated();
     pm_list.handle_message_view_deactivated();
 
-    unread_ui.hide_unread_banner();
     opts.update_compose();
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();

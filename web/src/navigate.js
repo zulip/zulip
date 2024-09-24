@@ -10,9 +10,24 @@ function go_to_row(msg_id) {
     message_lists.current.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }
 
+function unfocus_navigation_bar_if_focused() {
+    if (
+        message_lists.current.is_navigation_bar_focused() &&
+        !message_lists.current.visibly_empty()
+    ) {
+        message_lists.current.unfocus_navigation_bar();
+        return true;
+    }
+    return false;
+}
+
 export function up() {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(-1);
+    if (unfocus_navigation_bar_if_focused()) {
+        return;
+    }
+
     const msg_id = message_lists.current.prev();
     if (msg_id === undefined) {
         return;
@@ -35,6 +50,7 @@ export function down(with_centering = false) {
             unread_ops.process_visible();
         }
 
+        message_lists.current.focus_navigation_bar();
         return;
     }
 
@@ -117,6 +133,7 @@ export function page_up() {
     } else {
         page_up_the_right_amount();
     }
+    unfocus_navigation_bar_if_focused();
 }
 
 export function page_down() {
@@ -133,6 +150,7 @@ export function page_down() {
                 then_scroll: false,
             });
         }
+        message_lists.current.focus_navigation_bar();
         unread_ops.process_visible();
     } else {
         page_down_the_right_amount();

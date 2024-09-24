@@ -16,6 +16,7 @@ function MessageListView() {
         append: noop,
         prepend: noop,
         is_current_message_list: () => true,
+        unfocus_navigation_bar: noop,
     };
 }
 mock_esm("../src/message_list_view", {

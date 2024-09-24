@@ -115,6 +115,7 @@ message_lists.current = {
     get_row() {
         return 101;
     },
+    is_navigation_bar_focused: () => false,
 };
 
 const emoji = zrequire("emoji");
