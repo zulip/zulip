@@ -27,6 +27,7 @@ const narrow_state = mock_esm("../src/narrow_state");
 const stream_data = mock_esm("../src/stream_data");
 
 const {MessageList} = zrequire("message_list");
+const {MessageListData} = zrequire("message_list_data");
 function MessageListView() {
     return {
         maybe_rerender: noop,
@@ -45,7 +46,10 @@ run_test("basics", ({override}) => {
     const filter = new Filter([]);
 
     const list = new MessageList({
-        filter,
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter,
+        }),
     });
 
     const messages = [
@@ -137,7 +141,10 @@ run_test("basics", ({override}) => {
 
 run_test("prev_next", () => {
     const list = new MessageList({
-        filter: new Filter([]),
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
     });
 
     assert.equal(list.prev(), undefined);
@@ -178,7 +185,10 @@ run_test("prev_next", () => {
 
 run_test("message_range", () => {
     const list = new MessageList({
-        filter: new Filter([]),
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
     });
 
     const messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
@@ -194,7 +204,10 @@ run_test("message_range", () => {
 
 run_test("change_message_id", () => {
     const list = new MessageList({
-        filter: new Filter([]),
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
     });
     list.data._add_to_hash([
         {id: 10.5, content: "good job"},
@@ -217,7 +230,10 @@ run_test("change_message_id", () => {
 
 run_test("last_sent_by_me", () => {
     const list = new MessageList({
-        filter: new Filter([]),
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
     });
     const items = [
         {
@@ -242,7 +258,10 @@ run_test("last_sent_by_me", () => {
 
 run_test("local_echo", () => {
     let list = new MessageList({
-        filter: new Filter([]),
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
     });
     list.append([
         {id: 10},
@@ -274,7 +293,10 @@ run_test("local_echo", () => {
     assert.equal(list.closest_id(58), 60);
 
     list = new MessageList({
-        filter: new Filter([]),
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
     });
     list.append([
         {id: 10},
@@ -316,7 +338,10 @@ run_test("local_echo", () => {
 
 run_test("bookend", ({override}) => {
     const list = new MessageList({
-        filter: new Filter([]),
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
     });
 
     list.view.clear_trailing_bookend = noop;
@@ -411,7 +436,10 @@ run_test("bookend", ({override}) => {
 run_test("add_remove_rerender", () => {
     const filter = new Filter([]);
     const list = new MessageList({
-        filter,
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter,
+        }),
     });
 
     const messages = [{id: 1}, {id: 2}, {id: 3}];

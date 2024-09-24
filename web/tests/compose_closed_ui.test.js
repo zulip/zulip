@@ -26,6 +26,7 @@ const stream_data = zrequire("stream_data");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
+const {MessageListData} = zrequire("message_list_data");
 
 // Helper test function
 function test_reply_label(expected_label) {
@@ -43,7 +44,10 @@ run_test("reply_label", () => {
     // Mocking up a test message list
     const filter = new Filter([]);
     const list = new MessageList({
-        filter,
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter,
+        }),
     });
     message_lists.current = list;
     const stream_one = {
