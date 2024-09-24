@@ -103,12 +103,18 @@ class Database:
             "DJANGO_SETTINGS_MODULE=" + self.settings,
             "ZULIP_DB_NAME=" + self.database_name,
             "./manage.py",
-            "--skip-checks",
         ]
 
-        run([*manage_py, "migrate", "--no-input"])
+        run([*manage_py, "migrate", "--skip-checks", "--no-input"])
 
-        run([*manage_py, "get_migration_status", "--output=" + self.migration_status_file])
+        run(
+            [
+                *manage_py,
+                "get_migration_status",
+                "--skip-checks",
+                "--output=" + self.migration_status_file,
+            ]
+        )
 
     def what_to_do_with_migrations(self) -> str:
         status_fn = self.migration_status_path
