@@ -4,9 +4,11 @@ from dataclasses import dataclass, field
 from typing import Any, TypeAlias
 
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.urls import URLResolver, path
+from django.http import HttpRequest, HttpResponseBase
+from django.urls import URLPattern, path
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
+from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
@@ -215,14 +217,7 @@ class WebhookIntegration(Integration):
 
         if function is None:
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
-
-        if isinstance(function, str):
-            # We rename the imported function as view_function here to appease
-            # mypy, since it does not allow redefinition of variables with
-            # different types.
-            view_function = import_string(function)
-
-        self.function = view_function
+        self.function_name = function
 
         if url is None:
             url = self.DEFAULT_URL.format(name=name)
@@ -236,10 +231,19 @@ class WebhookIntegration(Integration):
             dir_name = self.name
         self.dir_name = dir_name
 
+    def get_function(self) -> Callable[[HttpRequest], HttpResponseBase]:
+        return import_string(self.function_name)
+
+    @csrf_exempt
+    def view(self, request: HttpRequest) -> HttpResponseBase:
+        # Lazily load the real view function to improve startup performance.
+        function = self.get_function()
+        assert function.csrf_exempt  # type: ignore[attr-defined] # ensure the above @csrf_exempt is justified
+        return function(request)
+
     @property
-    def url_object(self) -> URLResolver:
-        assert self.function is not None
-        return path(self.url, self.function)
+    def url_object(self) -> URLPattern:
+        return path(self.url, self.view)
 
 
 def split_fixture_path(path: str) -> tuple[str, str]:
@@ -842,6 +846,7 @@ def get_all_event_types_for_integration(integration: Integration) -> list[str] |
     if isinstance(integration, WebhookIntegration):
         if integration.name == "githubsponsors":
             return import_string("zerver.webhooks.github.view.SPONSORS_EVENT_TYPES")
-        if hasattr(integration.function, "_all_event_types"):
-            return integration.function._all_event_types
+        function = integration.get_function()
+        if hasattr(function, "_all_event_types"):
+            return function._all_event_types
     return None
