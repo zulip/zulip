@@ -724,14 +724,17 @@ export class Filter {
                 Filter.canonicalize_operator(term.operator) === expected && !term.negated;
 
             if (is(terms[0], "channel") && is(terms[1], "topic")) {
-                const channel = stream_data.get_valid_sub_by_id_string(terms[0].operand).name;
-                const topic = terms[1].operand;
-                parts.push({
-                    type: "channel_topic",
-                    channel,
-                    topic,
-                });
-                terms = terms.slice(2);
+                // `channel` might be undefined if it's coming from a text query
+                const channel = stream_data.get_sub_by_id_string(terms[0].operand)?.name;
+                if (channel) {
+                    const topic = terms[1].operand;
+                    parts.push({
+                        type: "channel_topic",
+                        channel,
+                        topic,
+                    });
+                    terms = terms.slice(2);
+                }
             }
         }
 
