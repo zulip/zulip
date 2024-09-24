@@ -474,10 +474,6 @@
         border-color: hsl(0deg 0% 0% / 40%);
     }
 
-    .top-navbar-border {
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
     & div.overlay,
     #subscription_overlay
         #stream-creation
