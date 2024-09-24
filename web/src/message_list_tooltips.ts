@@ -364,15 +364,16 @@ export function initialize(): void {
         },
         onShow(instance) {
             const $elem = $(instance.reference);
-            assert(message_lists.current !== undefined);
             const message_id = Number($elem.closest(".message_row").attr("data-message-id"));
+
+            assert(message_lists.current !== undefined);
             const message_container = message_lists.current.view.message_containers.get(message_id);
             assert(message_container !== undefined);
             const last_edit_timestr = get_last_edit_timestr(message_container.msg);
             instance.setContent(
                 parse_html(
                     render_message_edit_notice_tooltip({
-                        message_container,
+                        moved: message_container.moved,
                         last_edit_timestr,
                         realm_allow_edit_history: realm.realm_allow_edit_history,
                     }),
