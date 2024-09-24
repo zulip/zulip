@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
@@ -11,19 +13,27 @@ import * as message_notifications from "./message_notifications";
 import {page_params} from "./page_params";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
+import type {SettingsPanel} from "./settings_preferences";
 import * as settings_ui from "./settings_ui";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_data from "./stream_settings_data";
+import {stream_specific_notification_settings_schema} from "./stream_types";
 import * as sub_store from "./sub_store";
+import type {StreamSubscription} from "./sub_store";
 import * as ui_util from "./ui_util";
 import * as unread_ui from "./unread_ui";
-import {user_settings} from "./user_settings";
+import {
+    pm_notification_settings_schema,
+    user_settings,
+    user_settings_schema,
+} from "./user_settings";
+import * as util from "./util";
 
-export let user_settings_panel;
+export let user_settings_panel: SettingsPanel | undefined;
 
-function rerender_ui() {
+function rerender_ui(): void {
     const $unmatched_streams_table = $("#stream-specific-notify-table");
     if ($unmatched_streams_table.length === 0) {
         // If we haven't rendered "notification settings" yet, do nothing.
@@ -60,13 +70,18 @@ function rerender_ui() {
     }
 }
 
-function change_notification_setting(setting, value, $status_element) {
-    const data = {};
-    data[setting] = value;
+function change_notification_setting(
+    setting: string,
+    value: number | string | boolean,
+    $status_element: JQuery,
+): void {
+    const data = {
+        [setting]: value,
+    };
     settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_element);
 }
 
-function update_desktop_icon_count_display(settings_panel) {
+function update_desktop_icon_count_display(settings_panel: SettingsPanel): void {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     $container
@@ -77,7 +92,11 @@ function update_desktop_icon_count_display(settings_panel) {
     }
 }
 
-export function set_notification_batching_ui($container, setting_seconds, force_custom) {
+export function set_notification_batching_ui(
+    $container: JQuery,
+    setting_seconds: number,
+    force_custom = false,
+): void {
     const $edit_elem = $container.find(".email_notification_batching_period_edit_minutes");
     const valid_period_values = settings_config.email_notifications_batching_period_values.map(
         (x) => x.value,
@@ -92,12 +111,15 @@ export function set_notification_batching_ui($container, setting_seconds, force_
     $container.find(".setting_email_notifications_batching_period_seconds").val(select_elem_val);
     $edit_elem.val(setting_seconds / 60);
     settings_components.change_element_block_display_property(
-        $edit_elem.attr("id"),
+        $edit_elem.attr("id")!,
         show_edit_elem,
     );
 }
 
-export function set_enable_digest_emails_visibility($container, for_realm_settings) {
+export function set_enable_digest_emails_visibility(
+    $container: JQuery,
+    for_realm_settings: boolean,
+): void {
     if (realm.realm_digest_emails_enabled) {
         if (for_realm_settings) {
             $container.find(".other_email_notifications").show();
@@ -113,7 +135,7 @@ export function set_enable_digest_emails_visibility($container, for_realm_settin
     }
 }
 
-export function set_enable_marketing_emails_visibility() {
+export function set_enable_marketing_emails_visibility(): void {
     const $container = $("#user-notification-settings");
     if (page_params.corporate_enabled) {
         $container.find(".enable_marketing_emails_label").parent().show();
@@ -122,9 +144,9 @@ export function set_enable_marketing_emails_visibility() {
     }
 }
 
-function stream_notification_setting_changed(target) {
+function stream_notification_setting_changed(target: HTMLInputElement): void {
     const $row = $(target).closest(".stream-notifications-row");
-    const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
+    const stream_id = Number.parseInt($row.attr("data-stream-id")!, 10);
     if (!stream_id) {
         blueslip.error("Cannot find stream id for target");
         return;
@@ -137,7 +159,7 @@ function stream_notification_setting_changed(target) {
     }
 
     const $status_element = $(target).closest(".subsection-parent").find(".alert-notification");
-    const setting = target.name;
+    const setting = stream_specific_notification_settings_schema.keyof().parse(target.name);
     if (sub[setting] === null) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
@@ -149,16 +171,19 @@ function stream_notification_setting_changed(target) {
     );
 }
 
-export function set_up(settings_panel) {
+export function set_up(settings_panel: SettingsPanel): void {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    const $notification_sound_elem = $(settings_panel.notification_sound_elem);
+    assert(settings_panel.notification_sound_elem !== null);
+    const $notification_sound_elem = $<HTMLAudioElement>(settings_panel.notification_sound_elem);
     const for_realm_settings = settings_panel.for_realm_settings;
-    const $notification_sound_dropdown = $container.find(".setting_notification_sound");
+    const $notification_sound_dropdown = $container.find<HTMLSelectElement & {type: "select-one"}>(
+        ".setting_notification_sound",
+    );
 
     $container.find(".play_notification_sound").on("click", () => {
-        if ($notification_sound_dropdown.val().toLowerCase() !== "none") {
-            ui_util.play_audio($notification_sound_elem[0]);
+        if ($notification_sound_dropdown.val()!.toLowerCase() !== "none") {
+            void ui_util.play_audio(util.the($notification_sound_elem));
         }
     });
 
@@ -215,23 +240,26 @@ export function set_up(settings_panel) {
 
     // Common handler for sending requests to the server when an input
     // element is changed.
-    $container.find(".notification-settings-form").on("change", "input, select", function (e) {
+    const $notification_settings_form = $container.find(".notification-settings-form");
+    $notification_settings_form.on("change", "input, select", function (this: HTMLElement, e) {
         e.preventDefault();
         e.stopPropagation();
         const $input_elem = $(e.currentTarget);
         if ($input_elem.parents("#stream-specific-notify-table").length) {
+            assert(e.currentTarget instanceof HTMLInputElement);
             stream_notification_setting_changed(e.currentTarget);
             return;
         }
-        const setting_name = $input_elem.attr("name");
+        const setting_name = user_settings_schema.keyof().parse($input_elem.attr("name"));
 
         if ($input_elem.attr("data-setting-widget-type") === "time-limit") {
             // For time-limit settings we should always pass the select element
             // to get_input_element_value and not the custom input element.
-            const select_elem = $input_elem
-                .closest(".time-limit-setting")
-                .find("select.settings_select")[0];
+            const select_elem = util.the(
+                $input_elem.closest(".time-limit-setting").find("select.settings_select"),
+            );
             const setting_value = settings_components.get_input_element_value(select_elem);
+            assert(typeof setting_value === "number");
 
             // Currently only notification batching setting is the time-limit
             // settings on this page.
@@ -255,10 +283,13 @@ export function set_up(settings_panel) {
             return;
         }
 
-        const setting_value = settings_components.get_input_element_value(this);
+        // This filters out the GroupSettingType
+        const setting_value = z
+            .union([z.string(), z.number(), z.boolean()])
+            .parse(settings_components.get_input_element_value(this));
 
         if (
-            settings_config.pm_mention_notification_settings.includes(setting_name) &&
+            pm_notification_settings_schema.keyof().safeParse(setting_name).success &&
             !setting_value
         ) {
             let enabled_pm_mention_notifications_count = 0;
@@ -280,12 +311,13 @@ export function set_up(settings_panel) {
                 confirm_dialog.launch({
                     html_heading: $t_html({defaultMessage: "Disable notifications?"}),
                     html_body,
-                    on_click: () =>
+                    on_click() {
                         change_notification_setting(
                             setting_name,
                             setting_value,
                             $input_elem.closest(".subsection-parent").find(".alert-notification"),
-                        ),
+                        );
+                    },
                 });
                 return;
             }
@@ -311,10 +343,13 @@ export function set_up(settings_panel) {
     rerender_ui();
 }
 
-export function update_page(settings_panel) {
+export function update_page(settings_panel: SettingsPanel): void {
+    assert(!settings_panel.for_realm_settings);
+
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    for (const setting of settings_config.all_notification_settings) {
+    for (const untyped_setting of settings_config.all_notification_settings) {
+        const setting = user_settings_schema.keyof().parse(untyped_setting);
         switch (setting) {
             case "enable_offline_push_notifications": {
                 if (!realm.realm_push_notifications_enabled) {
@@ -353,10 +388,10 @@ export function update_page(settings_panel) {
     rerender_ui();
 }
 
-export function update_muted_stream_state(sub) {
+export function update_muted_stream_state(sub: StreamSubscription): void {
     const $row = $(
         `#stream-specific-notify-table .stream-notifications-row[data-stream-id='${CSS.escape(
-            sub.stream_id,
+            sub.stream_id.toString(),
         )}']`,
     );
 
@@ -371,7 +406,7 @@ export function update_muted_stream_state(sub) {
     );
 }
 
-export function initialize() {
+export function initialize(): void {
     user_settings_panel = {
         container: "#user-notification-settings",
         settings_object: user_settings,
@@ -384,8 +419,9 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
         const $row = $(e.currentTarget).closest(".stream-notifications-row");
-        const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($row.attr("data-stream-id")!, 10);
         const sub = sub_store.get(stream_id);
+        assert(sub !== undefined);
 
         stream_settings_api.set_stream_property(
             sub,

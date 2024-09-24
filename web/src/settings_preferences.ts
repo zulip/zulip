@@ -20,7 +20,6 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import * as settings_components from "./settings_components";
-import type {GenericUserSettings} from "./settings_config";
 import type {RequestOpts} from "./settings_ui";
 import * as settings_ui from "./settings_ui";
 import {realm} from "./state_data";
@@ -28,12 +27,19 @@ import * as ui_report from "./ui_report";
 import {user_settings} from "./user_settings";
 import type {UserSettings} from "./user_settings";
 
-type SettingsPanel = {
+export type SettingsPanel = {
     container: string;
-    settings_object: GenericUserSettings;
-    for_realm_settings: boolean;
     notification_sound_elem: string | null;
-};
+} & (
+    | {
+          settings_object: UserSettings;
+          for_realm_settings: false;
+      }
+    | {
+          settings_object: RealmDefaultSettings;
+          for_realm_settings: true;
+      }
+);
 
 type UserSettingsProperty = Exclude<
     keyof UserSettings,
