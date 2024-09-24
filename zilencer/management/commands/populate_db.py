@@ -1116,7 +1116,7 @@ class Command(ZulipBaseCommand):
             if not options["test_suite"]:
                 # We populate the analytics database here for
                 # development purpose only
-                call_command("populate_analytics_db")
+                call_command("populate_analytics_db", skip_checks=True)
 
         threads = options["threads"]
         jobs: list[tuple[int, list[list[int]], dict[str, Any], int]] = []
