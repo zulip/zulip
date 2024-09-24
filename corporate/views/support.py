@@ -23,6 +23,7 @@ from pydantic import AfterValidator, Json, NonNegativeInt
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
 from corporate.lib.activity import format_optional_datetime, remote_installation_stats_link
+from corporate.lib.billing_types import BillingModality
 from corporate.lib.stripe import (
     BILLING_SUPPORT_EMAIL,
     RealmBillingSession,
@@ -330,19 +331,14 @@ def check_update_max_invites(realm: Realm, new_max: int, default_max: int) -> bo
     return new_max > default_max
 
 
-VALID_MODIFY_PLAN_METHODS = Literal[
+ModifyPlan = Literal[
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
     "downgrade_now_void_open_invoices",
     "upgrade_plan_tier",
 ]
 
-VALID_STATUS_VALUES = Literal["active", "deactivated"]
-
-VALID_BILLING_MODALITY_VALUES = Literal[
-    "send_invoice",
-    "charge_automatically",
-]
+RemoteServerStatus = Literal["active", "deactivated"]
 
 SHARED_SUPPORT_CONTEXT = {
     "get_org_type_display_name": get_org_type_display_name,
@@ -363,11 +359,11 @@ def support(
     minimum_licenses: Json[NonNegativeInt] | None = None,
     required_plan_tier: Json[NonNegativeInt] | None = None,
     new_subdomain: str | None = None,
-    status: VALID_STATUS_VALUES | None = None,
-    billing_modality: VALID_BILLING_MODALITY_VALUES | None = None,
+    status: RemoteServerStatus | None = None,
+    billing_modality: BillingModality | None = None,
     sponsorship_pending: Json[bool] | None = None,
     approve_sponsorship: Json[bool] = False,
-    modify_plan: VALID_MODIFY_PLAN_METHODS | None = None,
+    modify_plan: ModifyPlan | None = None,
     scrub_realm: Json[bool] = False,
     delete_user_by_id: Json[NonNegativeInt] | None = None,
     query: Annotated[str | None, ApiParamConfig("q")] = None,
@@ -685,12 +681,12 @@ def remote_servers_support(
     sent_invoice_id: str | None = None,
     sponsorship_pending: Json[bool] | None = None,
     approve_sponsorship: Json[bool] = False,
-    billing_modality: VALID_BILLING_MODALITY_VALUES | None = None,
+    billing_modality: BillingModality | None = None,
     plan_end_date: Annotated[str, AfterValidator(lambda x: check_date("plan_end_date", x))]
     | None = None,
-    modify_plan: VALID_MODIFY_PLAN_METHODS | None = None,
+    modify_plan: ModifyPlan | None = None,
     delete_fixed_price_next_plan: Json[bool] = False,
-    remote_server_status: VALID_STATUS_VALUES | None = None,
+    remote_server_status: RemoteServerStatus | None = None,
     temporary_courtesy_plan: Annotated[
         str, AfterValidator(lambda x: check_date("temporary_courtesy_plan", x))
     ]

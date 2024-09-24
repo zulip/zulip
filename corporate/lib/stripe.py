@@ -27,6 +27,7 @@ from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 from typing_extensions import ParamSpec, override
 
+from corporate.lib.billing_types import BillingModality, BillingSchedule, LicenseManagement
 from corporate.models import (
     Customer,
     CustomerPlan,
@@ -89,10 +90,6 @@ BILLING_SUPPORT_EMAIL = "sales@zulip.com"
 MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 15
-
-VALID_BILLING_MODALITY_VALUES = ["send_invoice", "charge_automatically"]
-VALID_BILLING_SCHEDULE_VALUES = ["annual", "monthly"]
-VALID_LICENSE_MANAGEMENT_VALUES = ["automatic", "manual"]
 
 CARD_CAPITALIZATION = {
     "amex": "American Express",
@@ -232,19 +229,15 @@ def validate_licenses(
 
 
 def check_upgrade_parameters(
-    billing_modality: str,
-    schedule: str,
-    license_management: str | None,
+    billing_modality: BillingModality,
+    schedule: BillingSchedule,
+    license_management: LicenseManagement | None,
     licenses: int | None,
     seat_count: int,
     exempt_from_license_number_check: bool,
     min_licenses_for_plan: int,
 ) -> None:
-    if billing_modality not in VALID_BILLING_MODALITY_VALUES:  # nocoverage
-        raise BillingError("unknown billing_modality", "")
-    if schedule not in VALID_BILLING_SCHEDULE_VALUES:  # nocoverage
-        raise BillingError("unknown schedule")
-    if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:  # nocoverage
+    if license_management is None:  # nocoverage
         raise BillingError("unknown license_management")
     validate_licenses(
         billing_modality == "charge_automatically",
@@ -541,11 +534,11 @@ class StripeCustomerData:
 
 @dataclass
 class UpgradeRequest:
-    billing_modality: str
-    schedule: str
+    billing_modality: BillingModality
+    schedule: BillingSchedule
     signed_seat_count: str
     salt: str
-    license_management: str | None
+    license_management: LicenseManagement | None
     licenses: int | None
     tier: int
     remote_server_plan_start_date: str | None
@@ -592,7 +585,7 @@ class SupportViewRequest(TypedDict, total=False):
     sponsorship_status: bool | None
     monthly_discounted_price: int | None
     annual_discounted_price: int | None
-    billing_modality: str | None
+    billing_modality: BillingModality | None
     plan_modification: str | None
     new_plan_tier: int | None
     minimum_licenses: int | None
@@ -3497,7 +3490,6 @@ class BillingSession(ABC):
             success_message = self.configure_temporary_courtesy_plan(temporary_plan_end_date)
         elif support_type == SupportType.update_billing_modality:
             assert support_request["billing_modality"] is not None
-            assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES
             charge_automatically = support_request["billing_modality"] == "charge_automatically"
             success_message = self.update_billing_modality_of_current_plan(charge_automatically)
         elif support_type == SupportType.update_plan_end_date:

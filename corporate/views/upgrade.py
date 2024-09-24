@@ -1,19 +1,16 @@
 import logging
-from typing import Annotated
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from pydantic import Json
 
+from corporate.lib.billing_types import BillingModality, BillingSchedule, LicenseManagement
 from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
 from corporate.lib.stripe import (
-    VALID_BILLING_MODALITY_VALUES,
-    VALID_BILLING_SCHEDULE_VALUES,
-    VALID_LICENSE_MANAGEMENT_VALUES,
     BillingError,
     InitialUpgradeRequest,
     RealmBillingSession,
@@ -25,7 +22,6 @@ from corporate.models import CustomerPlan
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
-from zerver.lib.typed_endpoint_validators import check_string_in_validator
 from zerver.models import UserProfile
 from zilencer.lib.remote_counts import MissingDataError
 
@@ -38,12 +34,11 @@ def upgrade(
     request: HttpRequest,
     user: UserProfile,
     *,
-    billing_modality: Annotated[str, check_string_in_validator(VALID_BILLING_MODALITY_VALUES)],
-    schedule: Annotated[str, check_string_in_validator(VALID_BILLING_SCHEDULE_VALUES)],
+    billing_modality: BillingModality,
+    schedule: BillingSchedule,
     signed_seat_count: str,
     salt: str,
-    license_management: Annotated[str, check_string_in_validator(VALID_LICENSE_MANAGEMENT_VALUES)]
-    | None = None,
+    license_management: LicenseManagement | None = None,
     licenses: Json[int] | None = None,
     tier: Json[int] = CustomerPlan.TIER_CLOUD_STANDARD,
 ) -> HttpResponse:
@@ -88,12 +83,11 @@ def remote_realm_upgrade(
     request: HttpRequest,
     billing_session: RemoteRealmBillingSession,
     *,
-    billing_modality: Annotated[str, check_string_in_validator(VALID_BILLING_MODALITY_VALUES)],
-    schedule: Annotated[str, check_string_in_validator(VALID_BILLING_SCHEDULE_VALUES)],
+    billing_modality: BillingModality,
+    schedule: BillingSchedule,
     signed_seat_count: str,
     salt: str,
-    license_management: Annotated[str, check_string_in_validator(VALID_LICENSE_MANAGEMENT_VALUES)]
-    | None = None,
+    license_management: LicenseManagement | None = None,
     licenses: Json[int] | None = None,
     remote_server_plan_start_date: str | None = None,
     tier: Json[int] = CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
@@ -137,12 +131,11 @@ def remote_server_upgrade(
     request: HttpRequest,
     billing_session: RemoteServerBillingSession,
     *,
-    billing_modality: Annotated[str, check_string_in_validator(VALID_BILLING_MODALITY_VALUES)],
-    schedule: Annotated[str, check_string_in_validator(VALID_BILLING_SCHEDULE_VALUES)],
+    billing_modality: BillingModality,
+    schedule: BillingSchedule,
     signed_seat_count: str,
     salt: str,
-    license_management: Annotated[str, check_string_in_validator(VALID_LICENSE_MANAGEMENT_VALUES)]
-    | None = None,
+    license_management: LicenseManagement | None = None,
     licenses: Json[int] | None = None,
     remote_server_plan_start_date: str | None = None,
     tier: Json[int] = CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
