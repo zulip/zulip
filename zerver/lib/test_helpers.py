@@ -540,7 +540,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "docs/",
             "docs/(?P<path>.+)",
             "casper/(?P<path>.+)",
-            "static/(?P<path>.+)",
+            "static/(?P<path>.*)",
             "flush_caches",
             "external_content/(?P<digest>[^/]+)/(?P<received_url>[^/]+)",
             # Such endpoints are only used in certain test cases that can be skipped
