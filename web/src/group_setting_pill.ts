@@ -114,6 +114,7 @@ export function set_up_pill_typeahead({
     $pill_container: JQuery;
     opts: {
         setting_name: string;
+        setting_type: "realm" | "stream" | "group";
         group: UserGroup | undefined;
     };
 }): void {

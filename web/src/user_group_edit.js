@@ -172,6 +172,7 @@ function show_general_settings(group) {
     settings_components.create_group_setting_widget({
         $pill_container,
         setting_name: "can_manage_group",
+        setting_type: "group",
         group,
     });
     update_general_panel_ui(group);
