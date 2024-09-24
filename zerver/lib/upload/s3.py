@@ -3,24 +3,25 @@ import os
 import secrets
 from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Literal
+from typing import IO, TYPE_CHECKING, Any, BinaryIO, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
-import boto3
 import botocore
 import pyvips
 from botocore.client import Config
 from botocore.response import StreamingBody
 from django.conf import settings
 from django.utils.http import content_disposition_header
-from mypy_boto3_s3.client import S3Client
-from mypy_boto3_s3.service_resource import Bucket, Object
 from typing_extensions import override
 
 from zerver.lib.partial import partial
 from zerver.lib.thumbnail import resize_avatar, resize_logo
 from zerver.lib.upload.base import INLINE_MIME_TYPES, StreamingSourceWithSize, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile
+
+if TYPE_CHECKING:
+    from mypy_boto3_s3.client import S3Client
+    from mypy_boto3_s3.service_resource import Bucket, Object
 
 # Duration that the signed upload URLs that we redirect to when
 # accessing uploaded files are available for clients to fetch before
@@ -51,7 +52,9 @@ if settings.S3_SKIP_PROXY is True:  # nocoverage
     botocore.utils.should_bypass_proxies = lambda url: True
 
 
-def get_bucket(bucket_name: str, authed: bool = True) -> Bucket:
+def get_bucket(bucket_name: str, authed: bool = True) -> "Bucket":
+    import boto3
+
     return boto3.resource(
         "s3",
         aws_access_key_id=settings.S3_KEY if authed else None,
@@ -66,7 +69,7 @@ def get_bucket(bucket_name: str, authed: bool = True) -> Bucket:
 
 
 def upload_content_to_s3(
-    bucket: Bucket,
+    bucket: "Bucket",
     path: str,
     content_type: str | None,
     user_profile: UserProfile | None,
@@ -112,10 +115,10 @@ def upload_content_to_s3(
     )
 
 
-BOTO_CLIENT: S3Client | None = None
+BOTO_CLIENT: "S3Client | None" = None
 
 
-def get_boto_client() -> S3Client:
+def get_boto_client() -> "S3Client":
     """
     Creating the client takes a long time so we need to cache it.
     """
@@ -143,6 +146,8 @@ def get_signed_upload_url(path: str, force_download: bool = False) -> str:
 
 class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
+        from mypy_boto3_s3.service_resource import Bucket
+
         self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET)
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
         self.export_bucket: Bucket | None = None
@@ -151,7 +156,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
         self.public_upload_url_base = self.construct_public_upload_url_base()
 
-    def delete_file_from_s3(self, path_id: str, bucket: Bucket) -> bool:
+    def delete_file_from_s3(self, path_id: str, bucket: "Bucket") -> bool:
         key = bucket.Object(path_id)
 
         try:
@@ -461,7 +466,7 @@ class S3UploadBackend(ZulipUploadBackend):
             # Strip off the signing query parameters, since this URL is public
             return urlsplit(signed_url)._replace(query="").geturl()
 
-    def export_object(self, tarball_path: str) -> Object:
+    def export_object(self, tarball_path: str) -> "Object":
         if self.export_bucket:
             return self.export_bucket.Object(
                 os.path.join(secrets.token_hex(16), os.path.basename(tarball_path))
