@@ -182,7 +182,7 @@ class TusdPreCreateTest(ZulipTestCase):
     def test_sanitize_filename(self) -> None:
         self.login("hamlet")
         request = self.request()
-        request.event.upload.meta_data["filename"] = "some thing! ... like this?"
+        request.event.upload.meta_data["filename"] = "some 例 thing! ... like this?"
         result = self.client_post(
             "/api/internal/tusd",
             request.model_dump(),
