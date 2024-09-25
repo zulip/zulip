@@ -553,7 +553,9 @@
     --color-background-widget-input: hsl(0deg 0% 100%);
     --color-background-widget-button: hsl(0deg 0% 100%);
     --color-background-navbar: hsl(0deg 0% 97%);
-    --color-background-active-narrow-filter: hsl(202deg 56% 91%);
+    --color-text-sidebar-row: hsl(0deg 0% 20%);
+    --color-text-active-narrow-filter: hsl(0deg 0% 15%);
+    --color-background-active-narrow-filter: hsl(0deg 0% 100%);
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
     /* We mix an opaque version with the background for
        replicating the color on .sidebar-topic-check, which
@@ -1011,7 +1013,13 @@
     --color-background-widget-input: hsl(225deg 6% 10%);
     --color-background-widget-button: hsl(0deg 0% 0% / 20%);
     --color-background-navbar: hsl(0deg 0% 13%);
-    --color-background-active-narrow-filter: hsl(200deg 17% 18%);
+    --color-text-sidebar-row: hsl(0deg 0% 100% / 75%);
+    --color-text-active-narrow-filter: hsl(0deg 0% 90%);
+    --color-background-active-narrow-filter: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 8%,
+        hsl(0deg 0% 11%)
+    );
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
     /* We mix an opaque version with the background for
        replicating the color on .sidebar-topic-check, which
