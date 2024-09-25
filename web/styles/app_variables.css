@@ -566,6 +566,7 @@
         --color-background-hover-narrow-filter
     );
     --color-shadow-sidebar-row-hover: hsl(0deg 0% 0% / 30%);
+    --color-background-sidebar-action-hover: hsl(240deg 100% 93%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 80%);
@@ -756,13 +757,10 @@
     --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 0%);
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
-    --color-left-sidebar-navigation-icon: hsl(0deg 0% 20% / 70%);
-    --color-vdots-hint: hsl(0deg 0% 0% / 30%);
-    --color-vdots-visible: hsl(0deg 0% 0% / 53%);
-    --color-vdots-hover: hsl(0deg 0% 0%);
-    --color-left-sidebar-header-vdots-visible: var(
-        --color-left-sidebar-navigation-icon
-    );
+    --color-left-sidebar-navigation-icon: hsl(240deg 30% 40%);
+    --color-vdots-hint: hsl(240deg 30% 20%);
+    --color-vdots-visible: hsl(240deg 30% 40%);
+    --color-vdots-hover: hsl(240deg 100% 15%);
     --color-tab-picker-icon: hsl(200deg 100% 40%);
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
@@ -1039,6 +1037,7 @@
         hsl(0deg 0% 11%)
     );
     --color-shadow-sidebar-row-hover: hsl(0deg 0% 100% / 30%);
+    --color-background-sidebar-action-hover: hsl(240deg 25% 35%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
@@ -1236,10 +1235,10 @@
     --color-message-action-visible: hsl(217deg 41% 90% / 50%);
     --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
     --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 100%);
-    --color-left-sidebar-navigation-icon: hsl(0deg 0% 100% / 56%);
-    --color-vdots-hint: hsl(0deg 0% 100% / 30%);
-    --color-vdots-visible: hsl(236deg 33% 80%);
-    --color-vdots-hover: hsl(0deg 0% 100%);
+    --color-left-sidebar-navigation-icon: hsl(240deg 35% 68%);
+    --color-vdots-hint: hsl(240deg 35% 48%);
+    --color-vdots-visible: hsl(240deg 35% 68%);
+    --color-vdots-hover: hsl(240deg 100% 90%);
     --color-left-sidebar-header-vdots-visible: var(
         --color-left-sidebar-navigation-icon
     );
