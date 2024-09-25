@@ -711,7 +711,7 @@ function get_default_emoji_popover_options(): Partial<tippy.Props> {
 
 export function toggle_emoji_popover(
     target: tippy.ReferenceElement,
-    id?: number | undefined,
+    id?: number,
     additional_popover_options?: Partial<tippy.Props>,
 ): void {
     if (id) {

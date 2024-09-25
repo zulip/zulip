@@ -25,7 +25,7 @@ type InputPillCreateOptions<ItemType> = {
     create_item_from_text: (
         text: string,
         existing_items: ItemType[],
-        pill_config?: InputPillConfig | undefined,
+        pill_config?: InputPillConfig,
     ) => ItemType | undefined;
     get_text_from_item: (item: ItemType) => string;
     get_display_value_from_item: (item: ItemType) => string;
