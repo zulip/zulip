@@ -149,11 +149,6 @@ $user_status_emoji_width: 24px;
             color: var(--color-text-url-hover);
         }
     }
-
-    & a {
-        color: inherit;
-        margin-left: 0;
-    }
 }
 
 .buddy-list-subsection-header {
@@ -182,6 +177,7 @@ $user_status_emoji_width: 24px;
 .user-presence-link,
 .user_sidebar_entry .selectable_sidebar_block {
     overflow: hidden;
+    color: var(--color-text-sidebar-row);
 
     .user-name {
         overflow: hidden;
@@ -203,6 +199,12 @@ $user_status_emoji_width: 24px;
 
 .user-presence-link {
     grid-area: row-content;
+
+    &:hover,
+    &:focus {
+        color: var(--color-text-sidebar-row);
+        text-decoration: none;
+    }
 }
 
 .my_user_status {

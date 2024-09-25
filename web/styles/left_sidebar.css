@@ -372,13 +372,12 @@
 ul.filters {
     list-style-type: none;
     margin-left: 0;
-    color: hsl(0deg 0% 20% / 100%);
     /* Streams take a standard row height. */
     line-height: var(--line-height-sidebar-row);
 
     .sidebar-topic-name,
     .left-sidebar-navigation-label-container {
-        color: inherit;
+        color: var(--color-text-sidebar-row);
 
         &:hover {
             /* Push back against a:hover color in dark_theme.css */
@@ -489,10 +488,15 @@ li.active-sub-filter {
     font-weight: 600 !important;
     position: relative;
     border-radius: 4px;
+    color: var(--color-text-active-narrow-filter);
     background-color: var(--color-background-active-narrow-filter);
 
     .sidebar-topic-check {
         background-color: var(--color-background-active-narrow-filter);
+    }
+
+    .sidebar-topic-name-inner {
+        color: var(--color-text-active-narrow-filter);
     }
 }
 
