@@ -87,6 +87,10 @@ def upload_content_to_s3(
     extra_metadata: dict[str, str] | None = None,
     filename: str | None = None,
 ) -> None:
+    # Note that these steps are also replicated in
+    # handle_upload_pre_finish_hook in zerver.views.tus, to update
+    # properties for files uploaded via TUS.
+
     key = bucket.Object(path)
     metadata: dict[str, str] = {}
     if user_profile:

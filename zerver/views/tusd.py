@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.utils.http import content_disposition_header
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import BaseModel, ConfigDict, Field
@@ -24,6 +25,7 @@ from zerver.lib.upload import (
     sanitize_name,
     upload_backend,
 )
+from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import UserProfile
 
 
@@ -119,24 +121,51 @@ def handle_upload_pre_create_hook(
 def handle_upload_pre_finish_hook(
     request: HttpRequest, user_profile: UserProfile, data: TusUpload
 ) -> HttpResponse:
-    metadata = data.meta_data
-    filename = metadata.get("filename", "")
-    # We want to store as the filename a version that clients are
-    # likely to be able to accept via "Save as..."
-    if filename in {"", ".", ".."}:
-        filename = "uploaded-file"
-
-    content_type = metadata.get("filetype")
-    if not content_type:
-        content_type = guess_type(filename)[0]
-        if content_type is None:
-            content_type = "application/octet-stream"
-
     # With an S3 backend, the filename we passed in pre_create's
     # data.id has a randomly-generated "mutlipart-id" appended with a
     # `+`.  Our path_ids cannot contain `+`, so we strip any suffix
     # starting with `+`.
     path_id = data.id.partition("+")[0]
+
+    tus_metadata = data.meta_data
+    filename = tus_metadata.get("filename", "")
+
+    # We want to store as the filename a version that clients are
+    # likely to be able to accept via "Save as..."
+    if filename in {"", ".", ".."}:
+        filename = "uploaded-file"
+
+    content_type = tus_metadata.get("filetype")
+    if not content_type:
+        content_type = guess_type(filename)[0]
+        if content_type is None:
+            content_type = "application/octet-stream"
+
+    if settings.LOCAL_UPLOADS_DIR is None:
+        # We "copy" the file to itself to update the Content-Type,
+        # Content-Disposition, and storage class of the data.  This
+        # parallels the work from upload_content_to_s3 in
+        # zerver.lib.uploads.s3
+        s3_metadata = {
+            "user_profile_id": str(user_profile.id),
+            "realm_id": str(user_profile.realm_id),
+        }
+
+        is_attachment = content_type not in INLINE_MIME_TYPES
+        content_disposition = content_disposition_header(is_attachment, filename) or "inline"
+
+        from zerver.lib.upload.s3 import S3UploadBackend
+
+        assert isinstance(upload_backend, S3UploadBackend)
+        key = upload_backend.uploads_bucket.Object(path_id)
+        key.copy_from(
+            ContentType=content_type,
+            ContentDisposition=content_disposition,
+            CopySource={"Bucket": settings.S3_AUTH_UPLOADS_BUCKET, "Key": path_id},
+            Metadata=s3_metadata,
+            MetadataDirective="REPLACE",
+            StorageClass=settings.S3_UPLOADS_STORAGE_CLASS,
+        )
 
     # https://tus.github.io/tusd/storage-backends/overview/#storage-format
     # tusd creates a .info file next to the upload, which we do not
