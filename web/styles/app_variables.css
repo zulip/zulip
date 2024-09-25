@@ -338,6 +338,8 @@
     --text-transform-sidebar-action-heading: uppercase;
     --letter-spacing-sidebar-heading: 0.0469em;
     --opacity-sidebar-heading: 0.7;
+    --opacity-sidebar-heading-icon: 0.5;
+    --opacity-sidebar-heading-hover: 0.9;
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
 
