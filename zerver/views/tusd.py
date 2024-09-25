@@ -111,7 +111,7 @@ def handle_upload_pre_create_hook(
         return reject_upload(str(e), 413)
 
     # Determine the path_id to store it at
-    file_name = sanitize_name(data.meta_data.get("filename", ""))
+    file_name = sanitize_name(data.meta_data.get("filename", ""), strict=True)
     path_id = upload_backend.generate_message_upload_path(str(user_profile.realm_id), file_name)
     return tusd_json_response({"ChangeFileInfo": {"ID": path_id}})
 

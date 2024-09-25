@@ -114,20 +114,27 @@ def get_public_upload_root_url() -> str:
     return upload_backend.get_public_upload_root_url()
 
 
-def sanitize_name(value: str) -> str:
-    """
-    Sanitizes a value to be safe to store in a Linux filesystem, in
+def sanitize_name(value: str, *, strict: bool = False) -> str:
+    """Sanitizes a value to be safe to store in a Linux filesystem, in
     S3, and in a URL.  So Unicode is allowed, but not special
     characters other than ".", "-", and "_".
+
+    In "strict" mode, it does not allow Unicode, allowing only ASCII
+    [A-Za-z0-9_] as word characters.  This is for the benefit of tusd,
+    which is not Unicode-aware.
 
     This implementation is based on django.utils.text.slugify; it is
     modified by:
     * adding '.' to the list of allowed characters.
     * preserving the case of the value.
     * not stripping trailing dashes and underscores.
+
     """
-    value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[^\w\s.-]", "", value).strip()
+    if strict:
+        value = re.sub(r"[^A-Za-z0-9_ .-]", "", value).strip()
+    else:
+        value = unicodedata.normalize("NFKC", value)
+        value = re.sub(r"[^\w\s.-]", "", value).strip()
     value = re.sub(r"[-\s]+", "-", value)
 
     # Django's MultiPartParser never returns files named this, but we
