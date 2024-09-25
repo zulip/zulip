@@ -446,23 +446,11 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
         ...show_opts,
     };
 
-    const existing_span = Sentry.getCurrentHub().getScope().getSpan();
     const span_data = {
         op: "function",
-        description: "narrow",
         data: {raw_terms, trigger: opts.trigger},
     };
-    let span;
-    if (!existing_span) {
-        span = Sentry.startTransaction({...span_data, name: "narrow"});
-    } else {
-        span = existing_span.startChild(span_data);
-    }
-    let do_close_span = true;
-    try {
-        const scope = Sentry.getCurrentHub().pushScope();
-        scope.setSpan(span);
-
+    void Sentry.startSpan({...span_data, name: "narrow"}, async (span) => {
         const id_info: TargetMessageIdInfo = {
             target_id: undefined,
             local_select_id: undefined,
@@ -779,26 +767,16 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
             then_select_offset,
         );
 
-        const post_span = span.startChild({
+        const post_span_context = {
+            name: "post-narrow busy time",
             op: "function",
-            description: "post-narrow busy time",
-        });
-        do_close_span = false;
-        span.setStatus("ok");
-        setTimeout(() => {
+        };
+        await Sentry.startSpan(post_span_context, async () => {
+            span?.setStatus("ok");
+            await new Promise((resolve) => setTimeout(resolve, 0));
             resize.resize_stream_filters_container();
-            post_span.finish();
-            span.finish();
-        }, 0);
-    } catch (error) {
-        span.setStatus("unknown_error");
-        throw error;
-    } finally {
-        if (do_close_span) {
-            span.finish();
-        }
-        Sentry.getCurrentHub().popScope();
-    }
+        });
+    });
 }
 
 function navigate_to_anchor_message(opts: {

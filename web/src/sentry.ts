@@ -61,9 +61,9 @@ if (sentry_params !== undefined) {
 
         release: "zulip-server@" + ZULIP_VERSION,
         integrations: [
-            new Sentry.BrowserTracing({
-                startTransactionOnLocationChange: false,
-                beforeNavigate(context) {
+            Sentry.browserTracingIntegration({
+                instrumentNavigation: false,
+                beforeStartSpan(context) {
                     return {
                         ...context,
                         metadata: {source: "custom"},
@@ -101,8 +101,5 @@ if (sentry_params !== undefined) {
         },
     });
 } else {
-    // Always add the tracing extensions, so Sentry doesn't throw runtime errors if one calls
-    // startTransaction without having created the Sentry.BrowserTracing object.
-    Sentry.addTracingExtensions();
     Sentry.init({});
 }

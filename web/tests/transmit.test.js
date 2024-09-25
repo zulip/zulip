@@ -14,9 +14,12 @@ const sent_messages = mock_esm("../src/sent_messages", {
     start_tracking_message: noop,
     get_message_state: () => ({
         report_server_ack: noop,
+        report_error: noop,
         saw_event: true,
     }),
-    start_send: noop,
+    wrap_send(_local_id, callback) {
+        callback();
+    },
 });
 const server_events = mock_esm("../src/server_events");
 
