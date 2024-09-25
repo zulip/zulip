@@ -100,7 +100,7 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
             allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=False,
-            default_group_name=SystemGroups.NOBODY,
+            default_group_name="group_creator",
             default_for_system_groups=SystemGroups.NOBODY,
             id_field_name="can_manage_group_id",
         ),

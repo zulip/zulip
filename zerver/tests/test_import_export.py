@@ -503,7 +503,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
         exported_usergroups = data["zerver_usergroup"]
-        self.assert_length(exported_usergroups, 9)
+        self.assert_length(exported_usergroups, 10)
         self.assertFalse("direct_members" in exported_usergroups[2])
         self.assertFalse("direct_subgroups" in exported_usergroups[2])
 
@@ -1406,7 +1406,12 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_user_group_names(r: Realm) -> set[str]:
-            return {group.named_user_group.name for group in UserGroup.objects.filter(realm=r)}
+            result = set()
+            for group in UserGroup.objects.filter(realm=r):
+                if hasattr(group, "named_user_group"):
+                    result.add(group.named_user_group.name)
+
+            return result
 
         @getter
         def get_named_user_group_names(r: Realm) -> set[str]:

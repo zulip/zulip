@@ -139,13 +139,6 @@ def check_permission_for_managing_all_groups(
     permission, which is a permission that requires either certain roles
     or membership in the group itself to be used.
     """
-    # This is a temporary exception and this should be removed as soon
-    # as `group_creator` is set as a default for `can_manage_group`
-    # property of user groups. See this topic for more details:
-    # https://chat.zulip.org/#narrow/stream/3-backend/topic/Group.20creation.20-.20who.20can.20change.20the.20setting.2E/near/1943861
-    if user_group.creator and user_group.creator.id == user_profile.id:
-        return True
-
     can_manage_all_groups = user_profile.can_manage_all_groups()
     if can_manage_all_groups:
         if user_profile.is_realm_admin or user_profile.is_moderator:
@@ -789,7 +782,19 @@ def set_defaults_for_group_settings(
         else:
             default_group_name = permission_config.default_group_name
 
-        default_group = system_groups_name_dict[default_group_name].usergroup_ptr
+        if default_group_name == "group_creator":
+            if user_group.creator:
+                default_group = UserGroup(
+                    realm=user_group.realm,
+                )
+                default_group.save()
+                UserGroupMembership.objects.create(
+                    user_profile=user_group.creator, user_group=default_group
+                )
+            else:
+                raise AssertionError("Group creator should not be None.")
+        else:
+            default_group = system_groups_name_dict[default_group_name].usergroup_ptr
         setattr(user_group, setting_name, default_group)
 
     return user_group

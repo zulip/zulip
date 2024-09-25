@@ -1414,10 +1414,11 @@ def choose_date_sent(
 
 def create_user_groups() -> None:
     zulip = get_realm("zulip")
+    cordelia = get_user_by_delivery_email("cordelia@zulip.com", zulip)
     members = [
         get_user_by_delivery_email("cordelia@zulip.com", zulip),
         get_user_by_delivery_email("hamlet@zulip.com", zulip),
     ]
     create_user_group_in_database(
-        "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=None
+        "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=cordelia
     )

@@ -2694,7 +2694,7 @@ class MarkdownMentionTest(ZulipTestCase):
     def create_user_group_for_test(self, user_group_name: str) -> NamedUserGroup:
         othello = self.example_user("othello")
         return check_add_user_group(
-            get_realm("zulip"), user_group_name, [othello], acting_user=None
+            get_realm("zulip"), user_group_name, [othello], acting_user=othello
         )
 
     def test_user_group_mention_single(self) -> None:
