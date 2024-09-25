@@ -7,8 +7,8 @@ server {
     location /api/internal/ {
         # If coming from localhost, we do allow access to internal
         # APIs over HTTP, without an HTTPS redirect.  Adding TLS does
-        # not appreciable security to connections from localhost, and
-        # the certificate will never validate.
+        # not add appreciable security to connections from localhost,
+        # and the certificate will never validate.
         allow 127.0.0.1;
         allow ::1;
         deny all;
