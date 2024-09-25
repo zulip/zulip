@@ -223,7 +223,7 @@
         font-weight: 400;
         margin-left: 0;
         margin-bottom: 0;
-        line-height: var(--line-height-sidebar-row);
+        line-height: var(--line-height-sidebar-row-prominent);
 
         & li.dm-list-item {
             & a {
@@ -303,10 +303,16 @@
     }
 }
 
-:not(.active-sub-filter) {
-    &.top_left_row:hover,
-    &.bottom_left_row:hover {
+.top_left_row,
+.bottom_left_row {
+    /* Ensure a border radius on any interactive
+       state that might show a highlight. */
+    border-radius: 4px;
+
+    &:hover,
+    &:has(.left_sidebar_menu_icon_visible) {
         background-color: var(--color-background-hover-narrow-filter);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
 
         .sidebar-topic-check {
             background-color: var(
@@ -314,13 +320,13 @@
             );
         }
     }
-}
 
-.top_left_row,
-.bottom_left_row {
-    /* Ensure a border radius on any interactive
-       state that might show a highlight. */
-    border-radius: 4px;
+    &.active-filter,
+    &.active-sub-filter {
+        &:has(.left_sidebar_menu_icon_visible) {
+            background-color: var(--color-background-active-narrow-filter);
+        }
+    }
 }
 
 #stream_filters .narrow-filter.highlighted_stream {
@@ -381,7 +387,7 @@ ul.filters {
 
         &:hover {
             /* Push back against a:hover color in dark_theme.css */
-            color: inherit !important;
+            color: var(--color-text-sidebar-row) !important;
         }
 
         &:focus {
@@ -491,6 +497,17 @@ li.active-sub-filter {
     color: var(--color-text-active-narrow-filter);
     background-color: var(--color-background-active-narrow-filter);
 
+    &:hover {
+        background-color: var(--color-background-active-narrow-filter);
+
+        .sidebar-topic-check {
+            /* This variable is only set and used in dark mode. */
+            background-color: var(
+                --color-background-opaque-hover-active-narrow-filter
+            );
+        }
+    }
+
     .sidebar-topic-check {
         background-color: var(--color-background-active-narrow-filter);
     }
@@ -505,6 +522,10 @@ li.active-sub-filter {
     > .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
         border-radius: 4px;
+
+        &:hover {
+            background-color: var(--color-background-hover-narrow-filter);
+        }
     }
 }
 
@@ -1065,7 +1086,6 @@ li.top_left_scheduled_messages {
        bracket's bottom line. Its value must less than
        the z-index set on the #streams_header selector. */
     z-index: 1;
-    background-color: var(--color-background);
 }
 
 .stream-markers-and-controls,

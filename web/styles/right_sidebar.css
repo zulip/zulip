@@ -106,6 +106,7 @@ $user_status_emoji_width: 24px;
         &:hover,
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
+            box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
         }
     }
 
@@ -135,6 +136,8 @@ $user_status_emoji_width: 24px;
         text-align: left;
 
         &:hover {
+            /* Prevent hover styles set on other rows. */
+            box-shadow: none;
             background-color: inherit;
         }
     }
@@ -146,6 +149,11 @@ $user_status_emoji_width: 24px;
         color: var(--color-text-url);
 
         &:hover {
+            /* Prevent hover styles set on other rows until
+               the right sidebar matches the action-heading typography
+               of the left sidebar. */
+            box-shadow: none;
+            background-color: inherit;
             color: var(--color-text-url-hover);
         }
     }

@@ -556,15 +556,14 @@
     --color-text-sidebar-row: hsl(0deg 0% 20%);
     --color-text-active-narrow-filter: hsl(0deg 0% 15%);
     --color-background-active-narrow-filter: hsl(0deg 0% 100%);
-    --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
+    --color-background-hover-narrow-filter: hsl(0deg 0% 97%);
     /* We mix an opaque version with the background for
        replicating the color on .sidebar-topic-check, which
        will mask a portion of the topic-grouping bracket. */
-    --color-background-opaque-hover-narrow-filter: color-mix(
-        in srgb,
-        hsl(120deg 12.3% 71.4%) 38%,
-        hsl(0deg 0% 94%)
+    --color-background-opaque-hover-narrow-filter: var(
+        --color-background-hover-narrow-filter
     );
+    --color-shadow-sidebar-row-hover: hsl(0deg 0% 0% / 30%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 80%);
@@ -611,7 +610,9 @@
     --color-background-tab-picker-tab-option-active: hsl(0deg 0% 100% / 35%);
     --color-background-popover: hsl(0deg 0% 100%);
     --color-background-alert-word: hsl(18deg 100% 84%);
-    --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
+    --color-buddy-list-highlighted-user: var(
+        --color-background-hover-narrow-filter
+    );
     --color-border-sidebar: hsl(0deg 0% 87%);
     --color-text-sidebar-base: hsl(0deg 0% 0%);
     --color-border-sidebar-subheader: hsl(0deg 0% 0% / 15%);
@@ -1020,15 +1021,22 @@
         hsl(0deg 0% 100%) 8%,
         hsl(0deg 0% 11%)
     );
-    --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
+    --color-background-hover-narrow-filter: hsl(0deg 0% 97% / 8%);
     /* We mix an opaque version with the background for
        replicating the color on .sidebar-topic-check, which
        will mask a portion of the topic-grouping bracket. */
     --color-background-opaque-hover-narrow-filter: color-mix(
         in srgb,
-        hsl(136deg 25% 73%) 20%,
+        hsl(0deg 0% 97%) 8%,
         hsl(0deg 0% 11%)
     );
+    --color-background-opaque-hover-active-narrow-filter: color-mix(
+        in srgb,
+        hsl(0deg 0% 97%) 8%,
+        hsl(0deg 0% 97%) 8%,
+        hsl(0deg 0% 11%)
+    );
+    --color-shadow-sidebar-row-hover: hsl(0deg 0% 100% / 30%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
@@ -1076,7 +1084,9 @@
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
     --color-background-tab-picker-tab-option-active: hsl(0deg 0% 100% / 3%);
     --color-background-alert-word: hsl(22deg 70% 35%);
-    --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
+    --color-buddy-list-highlighted-user: var(
+        --color-background-hover-narrow-filter
+    );
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
     --color-text-sidebar-base: hsl(0deg 0% 100%);
     --color-border-sidebar-subheader: hsl(0deg 0% 100% / 15%);
