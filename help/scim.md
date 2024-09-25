@@ -161,4 +161,4 @@ Zulip's SCIM integration has the following limitations:
 ## Related articles
 
 * [SAML authentication](/help/saml-authentication)
-* [Getting your organization started with Zulip](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)

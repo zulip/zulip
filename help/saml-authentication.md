@@ -217,6 +217,6 @@ providers.
 
 * [SAML configuration for self-hosting][saml-readthedocs]
 * [SCIM provisioning](/help/scim)
-* [Getting your organization started with Zulip](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 
 [saml-readthedocs]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#saml

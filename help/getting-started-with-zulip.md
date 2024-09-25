@@ -2,8 +2,7 @@
 
 Welcome to Zulip! This page guides you through getting started using
 Zulip. If you are setting up a new organization, you may also want to
-check out our [guide for setting up a new Zulip
-organization](/help/getting-your-organization-started-with-zulip).
+check out our [guide for moving to Zulip](/help/moving-to-zulip).
 
 Mastering Zulip can take a bit of time, but once you get the hang of
 it, you'll never want to use a different team chat app!
@@ -66,4 +65,4 @@ it, you'll never want to use a different team chat app!
 
 ## Related articles
 
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)

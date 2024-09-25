@@ -57,5 +57,5 @@ You can also:
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Create user groups](/help/create-user-groups)
 * [Manage user groups](/help/manage-user-groups)
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Roles and permissions](/help/roles-and-permissions)

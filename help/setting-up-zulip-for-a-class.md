@@ -1,16 +1,13 @@
 # Setting up Zulip for a class
 
 Welcome to Zulip! This page will guide you through setting everything
-up for [teaching with Zulip](https://zulip.com/for/education/). If you are using Zulip
-for a different purpose, we recommend checking out the [Setting up
-your organization][setting-up] guide instead.
+up for [teaching with Zulip](https://zulip.com/for/education/). If you
+are using Zulip for a different purpose, we recommend checking out the
+[moving to Zulip](/help/moving-to-zulip) guide instead.
 
 If you are a student, or if your Zulip organization is already set up,
 you can proceed to the [Using Zulip for a
 class](/help/using-zulip-for-a-class) guide.
-
-[getting-started]: /help/getting-started-with-zulip
-[setting-up]: /help/getting-your-organization-started-with-zulip
 
 If you encounter any problems as you're getting started, please drop
 by our [friendly development community](/development-community/) and let
@@ -360,3 +357,4 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 [make-private]: /help/change-the-privacy-of-a-channel
 [add-to-channel]: /help/add-or-remove-users-from-a-channel
 [deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user
+[getting-started]: /help/getting-started-with-zulip

@@ -143,5 +143,5 @@ they belong. Guests cannot modify or create user groups.
 * [User groups](/help/user-groups)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Create user groups](/help/create-user-groups)
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Roles and permissions](/help/roles-and-permissions)

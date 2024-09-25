@@ -182,6 +182,6 @@ token from being used to access your Slack workspace in the future.
 ## Related articles
 
 * [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Slack-compatible incoming webhook](/integrations/doc/slack_incoming)
 * [Getting started with Zulip](/help/getting-started-with-zulip)
