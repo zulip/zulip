@@ -8,7 +8,7 @@ You can choose from several convenient options for hosting Zulip:
   [DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip?refcode=3ee45da8ee26)
 - Use Zulip's [experimental Docker image](deployment.md#zulip-in-docker).
 - Use [Zulip Cloud](https://zulip.com/plans/) hosting. Read our [guide to choosing between Zulip Cloud and
-  self-hosting](https://zulip.com/help/getting-your-organization-started-with-zulip#choosing-between-zulip-cloud-and-self-hosting).
+  self-hosting](https://zulip.com/help/zulip-cloud-or-self-hosting).
 
 To **import data** from [Slack][slack-import], [Mattermost][mattermost-import], [Rocket.Chat][rocketchat-import], [Zulip Cloud][zulip-cloud-import], or [another Zulip
 server][zulip-server-import], follow the linked instructions.
