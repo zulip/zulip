@@ -126,6 +126,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
         "/help/introduction-to-channels#browse-and-subscribe-to-channels",
     ),
     URLRedirect("/help/allow-image-link-previews", "/help/image-video-and-website-previews"),
+    URLRedirect("/help/getting-your-organization-started-with-zulip", "/help/moving-to-zulip"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

@@ -24,7 +24,9 @@ export default defineConfig({
 					label: 'Guides',
 					items: [
 						'getting-started-with-zulip',
-						'getting-your-organization-started-with-zulip',
+						'trying-out-zulip',
+						'zulip-cloud-or-self-hosting',
+						'moving-to-zulip',
 						'moderating-open-organizations',
 						'setting-up-zulip-for-a-class',
 						'using-zulip-for-a-class',
@@ -52,8 +54,6 @@ export default defineConfig({
 				{
 					label: 'Setting up your organization',
 					items: [
-						'trying-out-zulip',
-						'zulip-cloud-or-self-hosting',
 						'migrating-from-other-chat-tools',
 						'create-your-organization-profile',
 						'customize-organization-settings',
