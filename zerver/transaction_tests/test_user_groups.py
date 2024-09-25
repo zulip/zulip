@@ -11,7 +11,7 @@ from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_us
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTransactionTestCase
 from zerver.lib.test_helpers import HostRequestMock
-from zerver.lib.user_groups import access_user_group_by_id
+from zerver.lib.user_groups import access_user_group_for_update
 from zerver.models import NamedUserGroup, Realm, UserGroup, UserProfile
 from zerver.models.realms import get_realm
 from zerver.views.user_groups import update_subgroups_of_user_group
@@ -29,14 +29,14 @@ def dev_update_subgroups(
     try:
         with (
             transaction.atomic(),
-            mock.patch("zerver.lib.user_groups.access_user_group_by_id") as m,
+            mock.patch("zerver.lib.user_groups.access_user_group_for_update") as m,
         ):
 
             def wait_after_recursive_query(*args: Any, **kwargs: Any) -> UserGroup:
                 # When updating the subgroups, we access the supergroup group
                 # only after finishing the recursive query.
                 BARRIER.wait()
-                return access_user_group_by_id(*args, **kwargs)
+                return access_user_group_for_update(*args, **kwargs)
 
             m.side_effect = wait_after_recursive_query
 

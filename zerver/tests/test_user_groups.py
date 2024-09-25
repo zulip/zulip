@@ -406,11 +406,9 @@ class UserGroupTestCase(ZulipTestCase):
         lear_realm = get_realm("lear")
         lear_group = check_add_user_group(lear_realm, "test", [], acting_user=None)
 
-        self.assertFalse(has_user_group_access(lear_group, iago, for_read=False, as_subgroup=True))
-        self.assertTrue(has_user_group_access(zulip_group, iago, for_read=False, as_subgroup=True))
-        self.assertTrue(
-            has_user_group_access(moderators_group, iago, for_read=False, as_subgroup=True)
-        )
+        self.assertFalse(has_user_group_access(lear_group, iago))
+        self.assertTrue(has_user_group_access(zulip_group, iago))
+        self.assertTrue(has_user_group_access(moderators_group, iago))
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
