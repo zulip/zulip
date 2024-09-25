@@ -102,9 +102,9 @@ it out.
 
 {!admin-only.md!}
 
-You can configure whether users in your organization can modify their
-own custom profile fields. For example, you may want to restrict editing
-if syncing profile fields from an employee directory.
+You can configure whether users in your organization can edit custom profile
+fields for their own account. For example, you may want to restrict editing if
+syncing profile fields from an employee directory.
 
 {start_tabs}
 
@@ -113,7 +113,7 @@ if syncing profile fields from an employee directory.
 1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
    icon for the profile field you want to configure.
 
-1. Toggle **Users can edit this field**.
+1. Toggle **Users can edit this field for their own account**.
 
 4. Click **Save changes**.
 
