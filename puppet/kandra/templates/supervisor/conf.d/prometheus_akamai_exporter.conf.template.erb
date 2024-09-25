@@ -1,8 +1,0 @@
-[program:prometheus_akamai_exporter]
-command=<%= @bin %> --config <%= @conf %>
-priority=10
-autostart=true
-autorestart=true
-user=zulip
-redirect_stderr=true
-stdout_logfile=/var/log/zulip/akamai_exporter.log
