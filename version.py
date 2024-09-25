@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 278  # Last bumped for backporting original-dimensions on sp
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (289, 0)  # bumped 2024-08-24 to upgrade python requirements
+PROVISION_VERSION = (290, 0)  # bumped 2024-09-24 to upgrade Python requirements
