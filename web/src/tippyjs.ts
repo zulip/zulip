@@ -311,7 +311,7 @@ export function initialize(): void {
     $("body").on(
         "blur",
         ".message_control_button, .delete-selected-drafts-button-container",
-        function (this: tippy.ReferenceElement) {
+        function (this: tippy.ReferenceElement, _event: JQuery.Event) {
             // Remove tooltip when user is trying to tab through all the icons.
             // If user tabs slowly, tooltips are displayed otherwise they are
             // destroyed before they can be displayed.

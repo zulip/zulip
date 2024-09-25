@@ -263,7 +263,7 @@ $(document).on("click", ".pricing-tab", function () {
     window.history.pushState(null, "", `#${id}`);
 });
 
-$(document).on("click", ".comparison-tab", function (this: HTMLElement) {
+$(document).on("click", ".comparison-tab", function (this: HTMLElement, _event: JQuery.Event) {
     const plans_columns_counts = {
         "tab-cloud": 3,
         "tab-hosted": 4,

@@ -599,7 +599,10 @@ function update_profile_fields_checkboxes(): void {
     );
 }
 
-function toggle_display_in_profile_summary_profile_field(this: HTMLInputElement): void {
+function toggle_display_in_profile_summary_profile_field(
+    this: HTMLInputElement,
+    _event: JQuery.Event,
+): void {
     const field_id = Number.parseInt($(this).attr("data-profile-field-id")!, 10);
 
     const data = {
@@ -615,7 +618,7 @@ function toggle_display_in_profile_summary_profile_field(this: HTMLInputElement)
     );
 }
 
-function toggle_required(this: HTMLInputElement): void {
+function toggle_required(this: HTMLInputElement, _event: JQuery.Event): void {
     const field_id = Number.parseInt($(this).attr("data-profile-field-id")!, 10);
 
     const data = {
