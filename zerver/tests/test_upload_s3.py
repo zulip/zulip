@@ -199,7 +199,7 @@ class S3Test(ZulipTestCase):
 
         self.login("hamlet")
         fp = StringIO("zulip!")
-        fp.name = "zulip.txt"
+        fp.name = "zulip with excitement!.txt"
 
         result = self.client_post("/json/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
@@ -233,6 +233,10 @@ class S3Test(ZulipTestCase):
             response = self.client_get(download_url)
         redirect_url = response["X-Accel-Redirect"]
         path = urlsplit(redirect_url).path
+        content_disposition = parse_qs(urlsplit(redirect_url).query)["response-content-disposition"]
+        self.assertEqual(
+            content_disposition[0], 'attachment; filename="zulip with excitement!.txt"'
+        )
         assert path.startswith(prefix)
         key = path.removeprefix(prefix)
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
@@ -245,7 +249,7 @@ class S3Test(ZulipTestCase):
 
         self.assertNotEqual(url_only_url, url)
         self.assertIn("user_uploads/temporary/", url_only_url)
-        self.assertTrue(url_only_url.endswith("zulip.txt"))
+        self.assertTrue(url_only_url.endswith("zulip-with-excitement.txt"))
         # The generated URL has a token authorizing the requester to access the file
         # without being logged in.
         self.logout()

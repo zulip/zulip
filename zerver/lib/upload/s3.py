@@ -128,13 +128,15 @@ def get_boto_client() -> "S3Client":
     return BOTO_CLIENT
 
 
-def get_signed_upload_url(path: str, force_download: bool = False) -> str:
+def get_signed_upload_url(path: str, filename: str, force_download: bool = False) -> str:
     params = {
         "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
         "Key": path,
     }
     if force_download:
-        params["ResponseContentDisposition"] = "attachment"
+        params["ResponseContentDisposition"] = (
+            content_disposition_header(True, filename) or "attachment"
+        )
 
     return get_boto_client().generate_presigned_url(
         ClientMethod="get_object",
