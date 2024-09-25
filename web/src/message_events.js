@@ -532,10 +532,10 @@ export function update_messages(events) {
             // If a message was moved to the current narrow and we don't have
             // the message cached, we need to refresh the narrow to display the message.
             if (!changed_narrow && local_cache_missing_messages && current_filter) {
-                let moved_message_stream_id = old_stream_id;
+                let moved_message_stream_id_str = old_stream_id.toString();
                 let moved_message_topic = orig_topic;
                 if (stream_changed) {
-                    moved_message_stream_id = sub_store.get(new_stream_id).stream_id.toString();
+                    moved_message_stream_id_str = sub_store.get(new_stream_id).stream_id.toString();
                 }
 
                 if (topic_edited) {
@@ -544,7 +544,7 @@ export function update_messages(events) {
 
                 if (
                     current_filter.can_newly_match_moved_messages(
-                        moved_message_stream_id,
+                        moved_message_stream_id_str,
                         moved_message_topic,
                     )
                 ) {
