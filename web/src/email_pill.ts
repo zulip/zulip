@@ -45,7 +45,7 @@ export function get_current_email(
 
 export function create_pills(
     $pill_container: JQuery,
-    pill_config?: InputPillConfig | undefined,
+    pill_config?: InputPillConfig,
 ): input_pill.InputPillContainer<EmailPill> {
     const pill_container = input_pill.create({
         $container: $pill_container,

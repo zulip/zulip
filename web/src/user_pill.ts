@@ -38,7 +38,7 @@ export type UserPillData = {type: "user"; user: User};
 export function create_item_from_email(
     email: string,
     current_items: CombinedPill[],
-    pill_config?: InputPillConfig | undefined,
+    pill_config?: InputPillConfig,
 ): UserPill | undefined {
     // For normal Zulip use, we need to validate the email for our realm.
     const user = people.get_by_email(email);
@@ -217,7 +217,7 @@ export function generate_pill_html(item: UserPill, show_user_status_emoji = fals
 
 export function create_pills(
     $pill_container: JQuery,
-    pill_config?: InputPillConfig | undefined,
+    pill_config?: InputPillConfig,
 ): input_pill.InputPillContainer<UserPill> {
     const pills = input_pill.create({
         $container: $pill_container,
