@@ -25,13 +25,14 @@ from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
-    access_user_group_by_id,
     access_user_group_for_deactivation,
     access_user_group_for_setting,
+    access_user_group_for_update,
     check_user_group_name,
     get_direct_memberships_of_users,
     get_group_setting_value_for_api,
     get_subgroup_ids,
+    get_user_group_by_id_in_realm,
     get_user_group_direct_member_ids,
     get_user_group_member_ids,
     is_user_in_group,
@@ -126,8 +127,8 @@ def edit_user_group(
     ):
         raise JsonableError(_("No new data supplied"))
 
-    user_group = access_user_group_by_id(
-        user_group_id, user_profile, for_read=False, allow_deactivated=True
+    user_group = access_user_group_for_update(
+        user_group_id, user_profile, permission_setting="can_manage_group", allow_deactivated=True
     )
 
     if user_group.deactivated and (
@@ -283,7 +284,9 @@ def add_members_to_group_backend(
     user_group_id: int,
     members: list[int],
 ) -> HttpResponse:
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
+    user_group = access_user_group_for_update(
+        user_group_id, user_profile, permission_setting="can_manage_group"
+    )
     member_users = user_ids_to_users(members, user_profile.realm)
     existing_member_ids = set(
         get_direct_memberships_of_users(user_group.usergroup_ptr, member_users)
@@ -316,7 +319,9 @@ def remove_members_from_group_backend(
     members: list[int],
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
+    user_group = access_user_group_for_update(
+        user_group_id, user_profile, permission_setting="can_manage_group"
+    )
     group_member_ids = get_user_group_direct_member_ids(user_group)
     for member in members:
         if member not in group_member_ids:
@@ -443,7 +448,7 @@ def get_is_user_group_member(
     user_id: PathOnly[Json[int]],
     direct_member_only: Json[bool] = False,
 ) -> HttpResponse:
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
+    user_group = get_user_group_by_id_in_realm(user_group_id, user_profile.realm, for_read=True)
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
 
     return json_success(
@@ -465,7 +470,7 @@ def get_user_group_members(
     user_group_id: PathOnly[Json[int]],
     direct_member_only: Json[bool] = False,
 ) -> HttpResponse:
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
+    user_group = get_user_group_by_id_in_realm(user_group_id, user_profile.realm, for_read=True)
 
     return json_success(
         request,
@@ -484,7 +489,7 @@ def get_subgroups_of_user_group(
     user_group_id: PathOnly[Json[int]],
     direct_subgroup_only: Json[bool] = False,
 ) -> HttpResponse:
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
+    user_group = get_user_group_by_id_in_realm(user_group_id, user_profile.realm, for_read=True)
 
     return json_success(
         request,
