@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 297  # Last bumped for saved_snippets
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (293, 0)  # bumped 2024-09-24 to upgrade Python requirements
+PROVISION_VERSION = (293, 1)  # bumped 2024-09-24 to upgrade Transifex CLI
