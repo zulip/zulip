@@ -17,7 +17,8 @@ case $arch in
 esac
 
 check_version() {
-    out="$(tusd --version)" && [[ "$out" = *"Version: v$version"* ]]
+    out="$(tusd --version)" && [[ "$out" = "Version: v$version
+"* ]]
 }
 
 if ! check_version 2>/dev/null; then
