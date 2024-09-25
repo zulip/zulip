@@ -2268,10 +2268,6 @@ button {
             width: 100px;
         }
     }
-
-    .topics-image {
-        border: solid 2px hsl(0deg 0% 60%);
-    }
 }
 
 .discounts-section {
