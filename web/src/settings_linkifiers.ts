@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
-import z from "zod";
+import {z} from "zod";
 
 import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.hbs";
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
