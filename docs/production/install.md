@@ -151,4 +151,4 @@ Learning more:
   and [upgrading](upgrade.md) a production Zulip
   server.
 
-[realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip
+[realm-admin-docs]: https://zulip.com/help/moving-to-zulip

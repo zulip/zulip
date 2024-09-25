@@ -24,7 +24,7 @@ all be changed later.
 
 ## Related articles
 
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [User groups](/help/user-groups)
 * [Manage user groups](/help/manage-user-groups)
 * [Invite users to join](/help/invite-users-to-join)

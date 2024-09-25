@@ -68,7 +68,7 @@ API](/api/create-user).
 
 ## Related articles
 
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Invite users to join](/help/invite-users-to-join)

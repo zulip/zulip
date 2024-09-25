@@ -14,7 +14,7 @@ For more details about channel settings, see [Create a channel](/help/create-a-c
 
 ## Related articles
 
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Create a channel](/help/create-a-channel#channel-options)
 * [Channel permissions](/help/channel-permissions)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)

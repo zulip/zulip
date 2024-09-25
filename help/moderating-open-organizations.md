@@ -94,6 +94,6 @@ directory](/help/communities-directory).
 
 ## Related articles
 
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Public access option](/help/public-access-option)
 * [Communities directory](/help/communities-directory)

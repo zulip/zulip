@@ -162,5 +162,5 @@ any problems using this tool.
 ## Related articles
 
 * [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Getting started with Zulip](/help/getting-started-with-zulip)
