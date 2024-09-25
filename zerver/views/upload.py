@@ -79,8 +79,10 @@ def internal_nginx_redirect(internal_path: str, content_type: str | None = None)
     return response
 
 
-def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -> HttpResponse:
-    url = get_signed_upload_url(path_id, force_download=force_download)
+def serve_s3(
+    request: HttpRequest, path_id: str, filename: str, force_download: bool = False
+) -> HttpResponse:
+    url = get_signed_upload_url(path_id, filename, force_download=force_download)
     assert url.startswith("https://")
 
     if settings.DEVELOPMENT:
@@ -356,7 +358,7 @@ def serve_file(
             mimetype=mimetype,
         )
     else:
-        return serve_s3(request, path_id, force_download=force_download)
+        return serve_s3(request, path_id, served_filename, force_download=force_download)
 
 
 USER_UPLOADS_ACCESS_TOKEN_SALT = "user_uploads_"
@@ -404,7 +406,7 @@ def serve_file_unauthed_from_token(
             mimetype=attachment.content_type,
         )
     else:
-        return serve_s3(request, path_id)
+        return serve_s3(request, path_id, attachment.file_name)
 
 
 def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponseBase:
