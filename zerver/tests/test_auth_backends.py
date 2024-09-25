@@ -7804,7 +7804,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
             )
 
             create_user_group_in_database(
-                "cool_test_group", [], realm, acting_user=None, description="Created by LDAP sync"
+                "cool_test_group", [], realm, acting_user=hamlet, description="Created by LDAP sync"
             )
 
             self.assertTrue(

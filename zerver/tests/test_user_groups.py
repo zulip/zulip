@@ -75,7 +75,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertSetEqual(set(subgroup_ids), {member.id for member in members})
 
     def create_user_group_for_test(
-        self, group_name: str, acting_user: UserProfile | None = None
+        self, group_name: str, acting_user: UserProfile
     ) -> NamedUserGroup:
         members = [self.example_user("othello")]
         return check_add_user_group(
@@ -145,7 +145,10 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[9]["name"], "newgroup")
         self.assertEqual(user_groups[9]["description"], "")
         self.assertEqual(user_groups[9]["members"], [])
-        self.assertEqual(user_groups[9]["can_manage_group"], user_group.id)
+        self.assertEqual(
+            user_groups[9]["can_manage_group"],
+            AnonymousSettingGroupDict(direct_members=[11], direct_subgroups=[]),
+        )
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
         self.assertFalse(user_groups[0]["deactivated"])
 
@@ -162,7 +165,7 @@ class UserGroupTestCase(ZulipTestCase):
                 "can_manage_group": setting_group,
                 "can_mention_group": setting_group,
             },
-            acting_user=None,
+            acting_user=self.example_user("desdemona"),
         )
         user_groups = user_groups_in_realm_serialized(realm, include_deactivated_groups=False)
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
@@ -190,9 +193,8 @@ class UserGroupTestCase(ZulipTestCase):
         )
         self.assertFalse(user_groups[0]["deactivated"])
 
-        another_new_group = check_add_user_group(
-            realm, "newgroup3", [self.example_user("hamlet")], acting_user=None
-        )
+        hamlet = self.example_user("hamlet")
+        another_new_group = check_add_user_group(realm, "newgroup3", [hamlet], acting_user=hamlet)
         add_subgroups_to_user_group(
             new_user_group, [another_new_group, owners_system_group], acting_user=None
         )
@@ -220,7 +222,7 @@ class UserGroupTestCase(ZulipTestCase):
 
     def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
-        self.create_user_group_for_test("support")
+        self.create_user_group_for_test("support", acting_user=self.example_user("desdemona"))
         user_groups = get_direct_user_groups(othello)
         self.assert_length(user_groups, 3)
         # othello is a direct member of two role-based system groups also.
@@ -236,12 +238,14 @@ class UserGroupTestCase(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         shiva = self.example_user("shiva")
 
-        leadership_group = check_add_user_group(realm, "Leadership", [desdemona], acting_user=None)
+        leadership_group = check_add_user_group(
+            realm, "Leadership", [desdemona], acting_user=desdemona
+        )
 
-        staff_group = check_add_user_group(realm, "Staff", [iago], acting_user=None)
+        staff_group = check_add_user_group(realm, "Staff", [iago], acting_user=iago)
         GroupGroupMembership.objects.create(supergroup=staff_group, subgroup=leadership_group)
 
-        everyone_group = check_add_user_group(realm, "Everyone", [shiva], acting_user=None)
+        everyone_group = check_add_user_group(realm, "Everyone", [shiva], acting_user=shiva)
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
 
         self.assertCountEqual(
@@ -402,13 +406,13 @@ class UserGroupTestCase(ZulipTestCase):
     def test_has_user_group_access_for_subgroup(self) -> None:
         iago = self.example_user("iago")
         zulip_realm = get_realm("zulip")
-        zulip_group = check_add_user_group(zulip_realm, "zulip", [], acting_user=None)
+        zulip_group = check_add_user_group(zulip_realm, "zulip", [], acting_user=iago)
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=zulip_realm, is_system_group=True
         )
 
         lear_realm = get_realm("lear")
-        lear_group = check_add_user_group(lear_realm, "test", [], acting_user=None)
+        lear_group = check_add_user_group(lear_realm, "test", [], acting_user=iago)
 
         self.assertFalse(has_user_group_access_for_subgroup(lear_group, iago))
         self.assertTrue(has_user_group_access_for_subgroup(zulip_group, iago))
@@ -434,11 +438,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         everyone_system_group = NamedUserGroup.objects.get(
             name="role:everyone", realm=hamlet.realm, is_system_group=True
         )
-        nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=hamlet.realm, is_system_group=True
-        )
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_manage_group, nobody_system_group.usergroup_ptr)
+        self.assertCountEqual(support_group.can_manage_group.direct_members.all(), [hamlet])
         self.assertEqual(support_group.can_mention_group, everyone_system_group.usergroup_ptr)
 
         # Test invalid member error
@@ -521,7 +522,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         permission_configuration = NamedUserGroup.GROUP_PERMISSION_SETTINGS[setting_name]
         leadership_group = check_add_user_group(
-            hamlet.realm, "leadership", [hamlet], acting_user=None
+            hamlet.realm, "leadership", [hamlet], acting_user=hamlet
         )
         moderators_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=hamlet.realm, is_system_group=True
@@ -802,8 +803,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "Invalid user group")
 
         lear_realm = get_realm("lear")
+        lear_cordelia = self.lear_user("cordelia")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [self.lear_user("cordelia")], acting_user=None
+            lear_realm, "test", [lear_cordelia], acting_user=lear_cordelia
         )
         result = self.client_patch(f"/json/user_groups/{lear_test_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group")
@@ -860,7 +862,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             name="role:moderators", realm=hamlet.realm, is_system_group=True
         )
 
-        self.login("hamlet")
+        self.login("desdemona")
         params = {}
         params[setting_name] = orjson.dumps(
             {
@@ -1064,7 +1066,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
     def test_update_user_group_permission_settings(self) -> None:
         hamlet = self.example_user("hamlet")
         check_add_user_group(hamlet.realm, "support", [hamlet], acting_user=hamlet)
-        check_add_user_group(hamlet.realm, "marketing", [hamlet], acting_user=None)
+        check_add_user_group(hamlet.realm, "marketing", [hamlet], acting_user=hamlet)
         check_add_user_group(hamlet.realm, "leadership", [hamlet], acting_user=hamlet)
 
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
@@ -1089,7 +1091,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         hamlet = self.example_user("hamlet")
         support_group = check_add_user_group(hamlet.realm, "support", [hamlet], acting_user=hamlet)
         marketing_group = check_add_user_group(
-            hamlet.realm, "marketing", [hamlet], acting_user=None
+            hamlet.realm, "marketing", [hamlet], acting_user=hamlet
         )
         everyone_group = NamedUserGroup.objects.get(
             name="role:everyone", realm=hamlet.realm, is_system_group=True
@@ -1248,8 +1250,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "Invalid user group")
 
     def test_user_group_deactivation(self) -> None:
-        support_group = self.create_user_group_for_test("support")
-        leadership_group = self.create_user_group_for_test("leadership")
+        support_group = self.create_user_group_for_test(
+            "support", acting_user=self.example_user("desdemona")
+        )
+        leadership_group = self.create_user_group_for_test(
+            "leadership", acting_user=self.example_user("othello")
+        )
         add_subgroups_to_user_group(support_group, [leadership_group], acting_user=None)
         realm = get_realm("zulip")
 
@@ -1402,10 +1408,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
     def test_user_group_deactivation_with_group_used_for_settings(self) -> None:
         realm = get_realm("zulip")
 
-        othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
 
-        support_group = self.create_user_group_for_test("support", acting_user=othello)
+        support_group = self.create_user_group_for_test(
+            "support", acting_user=self.example_user("othello")
+        )
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
@@ -1500,7 +1507,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 stream, setting_name, moderators_group, acting_user=None
             )
 
-        leadership_group = self.create_user_group_for_test("leadership")
+        leadership_group = self.create_user_group_for_test(
+            "leadership", acting_user=self.example_user("othello")
+        )
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             do_change_user_group_permission_setting(
                 leadership_group, setting_name, support_group, acting_user=None
@@ -1592,7 +1601,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             for i in range(50)
         ]
 
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(7):
             user_group = create_user_group_in_database(
                 name="support",
                 members=[hamlet, cordelia, *original_users],
@@ -1619,7 +1628,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         with (
             mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"),
-            self.assert_database_query_count(11),
+            self.assert_database_query_count(14),
         ):
             result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
@@ -1760,7 +1769,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             self.subscribe(user, stream_name)
 
         check_add_user_group(
-            name=group_name, initial_members=list(support_team), realm=realm, acting_user=None
+            name=group_name, initial_members=list(support_team), realm=realm, acting_user=hamlet
         )
 
         payload = dict(
@@ -2070,7 +2079,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_update_user_group("help", "Troubleshooting team", "desdemona")
 
     def test_realm_level_setting_for_updating_members(self) -> None:
-        user_group = self.create_user_group_for_test("support")
+        user_group = self.create_user_group_for_test(
+            "support", acting_user=self.example_user("desdemona")
+        )
         aaron = self.example_user("aaron")
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
@@ -2194,11 +2205,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
     def test_group_level_setting_for_updating_members(self) -> None:
         othello = self.example_user("othello")
         user_group = check_add_user_group(
-            get_realm("zulip"), "support", [othello], acting_user=None
+            get_realm("zulip"), "support", [othello], acting_user=self.example_user("desdemona")
         )
         hamlet = self.example_user("hamlet")
         leadership_group = check_add_user_group(
-            get_realm("zulip"), "leadership", [hamlet], acting_user=None
+            get_realm("zulip"), "leadership", [hamlet], acting_user=hamlet
         )
         aaron = self.example_user("aaron")
 
@@ -2383,12 +2394,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
 
         leadership_group = check_add_user_group(
-            realm, "leadership", [desdemona, iago, hamlet], acting_user=None
+            realm, "leadership", [desdemona, iago, hamlet], acting_user=desdemona
         )
         support_group = check_add_user_group(
             realm, "support", [hamlet, othello], acting_user=hamlet
         )
-        test_group = check_add_user_group(realm, "test", [hamlet], acting_user=None)
+        test_group = check_add_user_group(realm, "test", [hamlet], acting_user=hamlet)
 
         self.login("cordelia")
         # Non-admin and non-moderators who are not a member of group cannot add or remove subgroups.
@@ -2470,8 +2481,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_subgroup_membership(test_group, [support_group])
 
         lear_realm = get_realm("lear")
+        lear_cordelia = self.lear_user("cordelia")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [self.lear_user("cordelia")], acting_user=None
+            lear_realm, "test", [lear_cordelia], acting_user=lear_cordelia
         )
         result = self.client_post(f"/json/user_groups/{lear_test_group.id}/subgroups", info=params)
         self.assert_json_error(result, "Invalid user group")
@@ -2534,7 +2546,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         lear_realm = get_realm("lear")
         lear_cordelia = self.lear_user("cordelia")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [lear_cordelia], acting_user=None
+            lear_realm, "test", [lear_cordelia], acting_user=lear_cordelia
         )
         result = self.client_get(
             f"/json/user_groups/{lear_test_group.id}/members/{lear_cordelia.id}"
@@ -2595,8 +2607,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "Invalid user group")
 
         lear_realm = get_realm("lear")
+        lear_cordelia = self.lear_user("cordelia")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [self.lear_user("cordelia")], acting_user=None
+            lear_realm, "test", [lear_cordelia], acting_user=lear_cordelia
         )
         result = self.client_get(f"/json/user_groups/{lear_test_group.id}/members")
         self.assert_json_error(result, "Invalid user group")
@@ -2643,8 +2656,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "Invalid user group")
 
         lear_realm = get_realm("lear")
+        lear_cordelia = self.lear_user("cordelia")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [self.lear_user("cordelia")], acting_user=None
+            lear_realm, "test", [lear_cordelia], acting_user=lear_cordelia
         )
         result = self.client_get(f"/json/user_groups/{lear_test_group.id}/subgroups")
         self.assert_json_error(result, "Invalid user group")
@@ -2678,9 +2692,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
 
     def test_add_subgroup_from_wrong_realm(self) -> None:
-        other_realm = do_create_realm("other", "Other Realm")
-        other_user_group = check_add_user_group(other_realm, "user_group", [], acting_user=None)
         iago = self.example_user("iago")
+        other_realm = do_create_realm("other", "Other Realm")
+        other_user_group = check_add_user_group(other_realm, "user_group", [], acting_user=iago)
         realm = get_realm("zulip")
         zulip_group = check_add_user_group(realm, "zulip_test", [], acting_user=iago)
 

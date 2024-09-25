@@ -23,7 +23,7 @@ import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import type {CustomProfileField, group_setting_type_schema} from "./state_data";
-import {realm} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import type {GroupSettingPillContainer} from "./typeahead_helper";
@@ -1489,7 +1489,14 @@ export function create_group_setting_widget({
             setting_name,
             "group",
         )!.default_group_name;
-        const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
-        set_group_setting_widget_value("new_group_" + setting_name, default_group_id);
+        if (default_group_name === "group_creator") {
+            set_group_setting_widget_value("new_group_" + setting_name, {
+                direct_members: [current_user.user_id],
+                direct_subgroups: [],
+            });
+        } else {
+            const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
+            set_group_setting_widget_value("new_group_" + setting_name, default_group_id);
+        }
     }
 }

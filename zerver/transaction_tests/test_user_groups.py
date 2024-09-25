@@ -64,7 +64,7 @@ def dev_update_subgroups(
 
 
 class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
-    created_user_groups: list[UserGroup] = []
+    created_user_groups: list[NamedUserGroup] = []
     counter = 0
     CHAIN_LENGTH = 3
 
@@ -73,7 +73,13 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
         # Clean up the user groups created to minimize leakage
         with transaction.atomic():
             for group in self.created_user_groups:
+                # can_manage_group can be deleted as long as it's the
+                # default group_creator. If we start using non-default
+                # can_manage_group in this test, deleting that group
+                # should be reconsidered.
+                can_manage_group = group.can_manage_group
                 group.delete()
+                can_manage_group.delete()
             transaction.on_commit(self.created_user_groups.clear)
 
         super().tearDown()

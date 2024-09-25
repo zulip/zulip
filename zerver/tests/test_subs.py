@@ -2832,15 +2832,15 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_can_remove_subscribers_group(self) -> None:
         realm = get_realm("zulip")
+        iago = self.example_user("iago")
         leadership_group = check_add_user_group(
             realm,
             "leadership",
-            [self.example_user("iago"), self.example_user("shiva")],
-            acting_user=None,
+            [iago, self.example_user("shiva")],
+            acting_user=iago,
         )
-        managers_group = check_add_user_group(
-            realm, "managers", [self.example_user("hamlet")], acting_user=None
-        )
+        hamlet = self.example_user("hamlet")
+        managers_group = check_add_user_group(realm, "managers", [hamlet], acting_user=hamlet)
         add_subgroups_to_user_group(managers_group, [leadership_group], acting_user=None)
         cordelia = self.example_user("cordelia")
 
@@ -4469,7 +4469,9 @@ class SubscriptionAPITest(ZulipTestCase):
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
         self.common_subscribe_to_streams(cordelia, ["new_stream2"], invite_only=invite_only)
 
-        leadership_group = check_add_user_group(realm, "Leadership", [desdemona], acting_user=None)
+        leadership_group = check_add_user_group(
+            realm, "Leadership", [desdemona], acting_user=desdemona
+        )
         do_change_realm_permission_group_setting(
             realm, stream_policy, leadership_group, acting_user=None
         )
@@ -4484,7 +4486,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         self.common_subscribe_to_streams(desdemona, ["new_stream3"], invite_only=invite_only)
 
-        staff_group = check_add_user_group(realm, "Staff", [iago], acting_user=None)
+        staff_group = check_add_user_group(realm, "Staff", [iago], acting_user=iago)
         setting_group = self.create_or_update_anonymous_group_for_setting([cordelia], [staff_group])
         do_change_realm_permission_group_setting(
             realm, stream_policy, setting_group, acting_user=None

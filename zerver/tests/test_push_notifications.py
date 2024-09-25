@@ -3753,14 +3753,14 @@ class HandlePushNotificationTest(PushNotificationTest):
             zulip_realm,
             "small_user_group",
             [self.user_profile, othello],
-            acting_user=None,
+            acting_user=othello,
         )
 
         large_user_group = check_add_user_group(
-            zulip_realm, "large_user_group", [self.user_profile], acting_user=None
+            zulip_realm, "large_user_group", [self.user_profile], acting_user=othello
         )
         subgroup = check_add_user_group(
-            zulip_realm, "subgroup", [othello, cordelia], acting_user=None
+            zulip_realm, "subgroup", [othello, cordelia], acting_user=othello
         )
         add_subgroups_to_user_group(large_user_group, [subgroup], acting_user=None)
 
@@ -4266,7 +4266,7 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_user_group_mention(self) -> None:
         user_profile = self.example_user("othello")
         user_group = check_add_user_group(
-            get_realm("zulip"), "test_user_group", [user_profile], acting_user=None
+            get_realm("zulip"), "test_user_group", [user_profile], acting_user=user_profile
         )
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)

@@ -387,7 +387,10 @@ run_test("can_manage_user_group", () => {
         members: new Set([1, 2]),
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5]),
-        can_manage_group: 4,
+        can_manage_group: {
+            direct_members: [4],
+            direct_subgroups: [],
+        },
         can_mention_group: 3,
         creator_id: 4,
     };

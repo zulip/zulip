@@ -208,14 +208,6 @@ export function can_manage_user_group(group_id: number): boolean {
 
     const group = user_groups.get_user_group_from_id(group_id);
 
-    // This is a temporary exception and this should be removed as soon
-    // as `group_creator` is set as a default for `can_manage_group`
-    // property of user groups. See this topic for more details:
-    // https://chat.zulip.org/#narrow/stream/3-backend/topic/Group.20creation.20-.20who.20can.20change.20the.20setting.2E/near/1943861
-    if (group.creator_id && group.creator_id === current_user.user_id) {
-        return true;
-    }
-
     if (
         !current_user.is_admin &&
         !current_user.is_moderator &&
