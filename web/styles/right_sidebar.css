@@ -65,7 +65,18 @@ $user_status_emoji_width: 24px;
 
         .user-list-sidebar-menu-icon {
             visibility: hidden;
-            justify-self: center;
+            justify-self: stretch;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px 2px 2px 1px;
+            /* This helps horizontally align the vdots,
+               given the reduced margin-left above.
+               Vertical centering looks better with an
+               extra pixel of top padding in this area,
+               too. */
+            padding: 1px 0 0 1px;
+            border-radius: 3px;
 
             & i {
                 font-size: 17px;
@@ -99,6 +110,9 @@ $user_status_emoji_width: 24px;
 
                 &:hover {
                     color: var(--color-vdots-hover);
+                    background-color: var(
+                        --color-background-sidebar-action-hover
+                    );
                 }
             }
         }

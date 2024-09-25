@@ -938,7 +938,7 @@ li.top_left_scheduled_messages {
     .left-sidebar-navigation-menu-icon {
         grid-area: ending-anchor-element;
         /* Horizontally center vdots. */
-        justify-self: center;
+        justify-self: stretch;
         /* Properly size vdots. */
         font-size: 17px;
         /* Occupy same clickable height as
@@ -948,10 +948,14 @@ li.top_left_scheduled_messages {
            flexbox. */
         display: flex;
         align-items: center;
-        color: var(--color-left-sidebar-header-vdots-visible);
+        justify-content: center;
+        margin-right: 2px;
+        border-radius: 3px;
+        color: var(--color-vdots-visible);
 
         &:hover {
             color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
         }
     }
 }
@@ -1150,19 +1154,24 @@ li.top_left_scheduled_messages {
 .bottom_left_row .sidebar-menu-icon,
 .top_left_row .sidebar-menu-icon {
     display: none;
-    width: 100%;
     cursor: pointer;
     /* Use a flex container to handle
        icon centering within the grid area.
        :hover actually sets the `display: flex`,
        so it remains hidden otherwise. */
     justify-content: center;
+    align-items: center;
     text-align: center;
     /* Ensure icons are vertically aligned, in
        case they appear in a grid definition,
        like the nav rows, that use a different
        centering regime for the row. */
-    align-self: center;
+    align-self: stretch;
+    border-radius: 3px;
+    margin: 2px 2px 2px 1px;
+    /* This helps horizontally align the vdots,
+       given the reduced margin-left above. */
+    padding-left: 1px;
     /* Set the icon size, which will be inherited
        by .zulip-icon */
     font-size: 17px;
@@ -1211,12 +1220,9 @@ li.top_left_scheduled_messages {
     display: flex;
     color: var(--color-vdots-visible);
 
-    /*
-        If you hover directly over the vdots icon,
-        show it in black.
-    */
     &:hover {
         color: var(--color-vdots-hover);
+        background-color: var(--color-background-sidebar-action-hover);
     }
 }
 
