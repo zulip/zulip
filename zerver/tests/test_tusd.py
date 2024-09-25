@@ -1,12 +1,15 @@
 import os
 
+import botocore
 import orjson
 from django.conf import settings
 from django.test import override_settings
 
 from zerver.lib.cache import cache_delete, get_realm_used_upload_space_cache_key
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import create_s3_buckets, use_s3_backend
 from zerver.lib.upload import sanitize_name, upload_backend, upload_message_attachment
+from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment
 from zerver.views.tusd import TusEvent, TusHook, TusHTTPRequest, TusUpload
@@ -392,3 +395,77 @@ class TusdPreFinishTest(ZulipTestCase):
         assert settings.LOCAL_FILES_DIR is not None
         self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
         self.assertFalse(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
+
+    @use_s3_backend
+    @override_settings(S3_UPLOADS_STORAGE_CLASS="STANDARD_IA")
+    def test_s3_upload(self) -> None:
+        hamlet = self.example_user("hamlet")
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        upload_backend = S3UploadBackend()
+        filename = "some 例 example.png"
+        path_id = upload_backend.generate_message_upload_path(
+            str(hamlet.realm.id), sanitize_name(filename, strict=True)
+        )
+        self.assertTrue(path_id.endswith("/some-example.png"))
+        info = TusUpload(
+            id=path_id,
+            size=len("zulip!"),
+            offset=0,
+            size_is_deferred=False,
+            meta_data={
+                "filename": filename,
+                "filetype": "image/png",
+                "name": filename,
+                "type": "image/png",
+            },
+            is_final=False,
+            is_partial=False,
+            partial_uploads=None,
+            storage=None,
+        )
+        bucket.Object(path_id).put(
+            Body=b"zulip!",
+            ContentType="application/octet-stream",
+            Metadata={k: v.encode("ascii", "replace").decode() for k, v in info.meta_data.items()},
+        )
+        bucket.Object(f"{path_id}.info").put(
+            Body=info.model_dump_json().encode(),
+        )
+
+        # Post the hook saying the file is in place
+        self.login("hamlet")
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(info).model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        result_json = result.json()
+        self.assertEqual(result_json["HttpResponse"]["StatusCode"], 200)
+        self.assertEqual(
+            orjson.loads(result_json["HttpResponse"]["Body"]),
+            {"url": f"/user_uploads/{path_id}", "filename": filename},
+        )
+        self.assertEqual(
+            result_json["HttpResponse"]["Header"], {"Content-Type": "application/json"}
+        )
+
+        attachment = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(attachment.size, len("zulip!"))
+        self.assertEqual(attachment.content_type, "image/png")
+
+        assert settings.LOCAL_FILES_DIR is None
+        response = bucket.Object(path_id).get()
+        self.assertEqual(response["ContentType"], "image/png")
+        self.assertEqual(
+            response["ContentDisposition"],
+            "inline; filename*=utf-8''some%20%E4%BE%8B%20example.png",
+        )
+        self.assertEqual(response["StorageClass"], "STANDARD_IA")
+        self.assertEqual(
+            response["Metadata"],
+            {"realm_id": str(hamlet.realm_id), "user_profile_id": str(hamlet.id)},
+        )
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(f"{path_id}.info").get()
