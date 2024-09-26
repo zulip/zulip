@@ -1,5 +1,16 @@
 # Zulip overview
 
+## Table of Contents
+- [Zulip Overview](#zulip-overview)
+- [Getting Started](#getting-started)
+  - [Contributing Code](#contributing-code)
+  - [Contributing Non-Code](#contributing-non-code)
+  - [Running a Zulip Server](#running-a-zulip-server)
+  - [Using Zulip Without a Server](#using-zulip-without-setting-up-a-server)
+- [Third-Party Integrations](#third-party-integrations)
+- [Troubleshooting Installation](#troubleshooting-installation)
+
+
 [Zulip](https://zulip.com) is an open-source team collaboration tool with unique
 [topic-based threading][why-zulip] that combines the best of email and chat to
 make remote work productive and delightful. Fortune 500 companies, [leading open
@@ -39,6 +50,23 @@ Come find us on the [development community chat](https://zulip.com/development-c
   have written an extraordinary 150K words of documentation for Zulip
   contributors.
 
+  ### Testing Changes Locally
+Before submitting a pull request, it's essential to test your changes thoroughly. Follow these steps to set up a local testing environment:
+
+1. Run the backend test suite using the following command:
+   ```bash
+   ./tools/test-backend
+   ```
+   This will run Zulip's backend tests to ensure nothing is broken in the server-side logic.
+2. To run frontend tests, use:
+   ```bash
+   ./tools/test-frontend
+   ```
+   This command ensures that your changes to the frontend do not break any of Zulip’s user interface or client-side functionality.
+3. If you're adding new functionality, write corresponding unit tests in the appropriate directories (e.g., `zerver/tests` for backend tests).
+4. Make sure all tests pass before submitting your pull request. You can find more details in the [testing guide](https://zulip.readthedocs.io/en/latest/testing/testing.html).
+
+
 - **Contributing non-code**. [Report an
   issue](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#reporting-issues),
   [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
@@ -57,6 +85,31 @@ Come find us on the [development community chat](https://zulip.com/development-c
   images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
   [Render](https://render.com/docs/deploy-zulip).
   Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
+  
+  ### Troubleshooting Installation
+If you're running into issues while setting up a Zulip server on non-standard environments like Windows or ARM-based devices, here are some tips:
+- **ARM-Based Devices**: You may need to manually compile certain dependencies that aren't available by default. Ensure you're using the correct architecture-specific libraries.
+- **Windows**: We recommend using Windows Subsystem for Linux (WSL) to run Zulip smoothly. Running directly on Windows may cause issues due to missing dependencies or unsupported system packages.
+- **General Tips**:
+  - Ensure you're using the correct version of Python and other system dependencies.
+  - If you're using Docker, make sure that Docker is set up with appropriate permissions and resource allocations.
+  - Check Zulip’s [installation guide](https://zulip.readthedocs.io/en/latest/production/install.html) for more detailed troubleshooting instructions.
+ 
+  ### Third-Party Integrations
+
+Zulip integrates with a wide range of third-party services. Here are steps for integrating Zulip with some popular platforms:
+
+- **Google Drive**:
+  1. Enable the Google Drive API from your Google Cloud Console.
+  2. Generate OAuth2 credentials for your Zulip instance and update your Zulip configuration file with these credentials.
+  3. Once set up, users can easily attach files directly from Google Drive into their Zulip messages.
+
+- **JIRA**:
+  1. Set up a webhook in JIRA that points to your Zulip server's webhook handler.
+  2. In your JIRA admin settings, configure the Zulip API key and select which events (e.g., new issues, status updates) should trigger notifications in Zulip streams.
+  3. Zulip will automatically post updates from JIRA to the relevant stream.
+
+For more integrations, see Zulip’s [full integration guide](https://zulip.com/integrations/).
 
 - **Using Zulip without setting up a server**. Learn about [Zulip
   Cloud](https://zulip.com/plans/) hosting options. Zulip sponsors free [Zulip
