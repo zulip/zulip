@@ -560,7 +560,7 @@ li.active-sub-filter {
            element within receives focus. */
         &:hover,
         &:focus-within {
-            background: var(--color-background-hover-narrow-filter);
+            background: var(--color-background-navigation-item-hover);
 
             .unread_count {
                 /* 6px at 12px/1em */

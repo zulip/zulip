@@ -567,6 +567,7 @@
     );
     --color-shadow-sidebar-row-hover: hsl(0deg 0% 0% / 30%);
     --color-background-sidebar-action-hover: hsl(240deg 100% 93%);
+    --color-background-navigation-item-hover: hsl(240deg 100% 50% / 7%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 80%);
@@ -1038,6 +1039,7 @@
     );
     --color-shadow-sidebar-row-hover: hsl(0deg 0% 100% / 30%);
     --color-background-sidebar-action-hover: hsl(240deg 25% 35%);
+    --color-background-navigation-item-hover: hsl(240deg 100% 75% / 20%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
