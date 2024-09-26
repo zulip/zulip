@@ -32,16 +32,26 @@
         <span>{{invited_as_text}}</span>
     </td>
     <td class="actions">
-        {{#unless is_multiuse}}
-        <button
-          class="button rounded small resend-invite tippy-zulip-delayed-tooltip btn-warning"
-          {{#if disable_buttons}}disabled="disabled"{{/if}}
-          data-invite-id="{{id}}"
-          data-tippy-content="{{t 'Resend'}}"
-          >
-            <i class="fa fa-paper-plane"></i>
-        </button>
-        {{/unless}}
+        {{#if is_multiuse}}
+            <button
+              class="button rounded small tippy-zulip-delayed-tooltip edit-invite btn-warning"
+              {{#if disable_buttons}}disabled="disabled"{{/if}}
+              data-invite-id="{{id}}"
+              data-is-multiuse="{{is_multiuse}}"
+              data-tippy-content="{{t 'Edit'}}"
+              >
+                <i class="fa fa-pencil"></i>
+            </button>
+        {{else}}
+            <button
+              class="button rounded small resend-invite tippy-zulip-delayed-tooltip btn-warning"
+              {{#if disable_buttons}}disabled="disabled"{{/if}}
+              data-invite-id="{{id}}"
+              data-tippy-content="{{t 'Resend'}}"
+              >
+                <i class="fa fa-paper-plane"></i>
+            </button>
+        {{/if}}
         <button
           class="button rounded small revoke-invite tippy-zulip-delayed-tooltip btn-danger"
           {{#if disable_buttons}}disabled="disabled"{{/if}}
