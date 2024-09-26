@@ -2,9 +2,9 @@ from collections.abc import Iterable
 from typing import TypedDict
 
 from zerver.lib import retention
+from zerver.lib.message import event_recipient_ids_for_action_on_messages
 from zerver.lib.retention import move_messages_to_archive
-from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
-from zerver.models import Message, Realm, Stream, UserMessage, UserProfile
+from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -67,21 +67,20 @@ def do_delete_messages(
     if not sample_message.is_stream_message():
         assert len(messages) == 1
         message_type = "private"
-        ums = UserMessage.objects.filter(message_id__in=message_ids)
-        users_to_notify = set(ums.values_list("user_profile_id", flat=True))
         archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
 
     if message_type == "stream":
         stream_id = sample_message.recipient.type_id
         event["stream_id"] = stream_id
         event["topic"] = sample_message.topic_name()
-        subscriptions = get_active_subscriptions_for_stream_id(
-            stream_id, include_deactivated_users=False
-        )
-        # We exclude long-term idle users, since they by definition have no active clients.
-        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-        users_to_notify = set(subscriptions.values_list("user_profile_id", flat=True))
+        stream = Stream.objects.get(id=stream_id)
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
+
+    # We exclude long-term idle users, since they by definition have no active clients.
+    users_to_notify = event_recipient_ids_for_action_on_messages(
+        messages,
+        channel=stream if message_type == "stream" else None,
+    )
 
     if acting_user is not None:
         # Always send event to the user who deleted the message.
@@ -89,7 +88,6 @@ def do_delete_messages(
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
     if message_type == "stream":
-        stream = Stream.objects.get(id=sample_message.recipient.type_id)
         check_update_first_message_id(realm, stream, message_ids, users_to_notify)
 
     event["message_type"] = message_type
