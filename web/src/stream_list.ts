@@ -227,7 +227,8 @@ export function create_initial_sidebar_rows(): void {
     // This code is slightly opaque, but it ends up building
     // up list items and attaching them to the "sub" data
     // structures that are kept in stream_data.js.
-    const subs = stream_data.subscribed_subs();
+    let subs = stream_data.subscribed_subs();
+    subs = subs.filter((sub) => !sub.is_archived);
 
     for (const sub of subs) {
         create_sidebar_row(sub);
@@ -689,7 +690,7 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
         return result;
     }
 
-    if (!stream_data.is_subscribed(stream_id)) {
+    if (!stream_data.is_subscribed(stream_id) || stream_data.is_stream_archived(stream_id)) {
         return result;
     }
 
