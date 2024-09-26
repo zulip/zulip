@@ -22,6 +22,7 @@ from zerver.lib.message_cache import MessageDict, extract_message_dict, stringif
 from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.stream_subscription import (
+    get_active_subscriptions_for_stream_id,
     get_stream_subscriptions_for_user,
     get_subscribed_stream_recipient_ids_for_user,
     num_subscribers_for_stream_id,
@@ -405,6 +406,86 @@ def has_message_access(
 
     # is_history_public_to_subscribers, so check if you're subscribed
     return is_subscribed_helper()
+
+
+def event_recipient_ids_for_action_on_messages(
+    messages: list[Message],
+    *,
+    channel: Stream | None = None,
+    exclude_long_term_idle_users: bool = True,
+) -> set[int]:
+    """Returns IDs of users who should receive events when an action
+    (delete, react, etc) is performed on given set of messages, which
+    are expected to all be in a single conversation.
+
+    This function aligns with the 'has_message_access' above to ensure
+    that events reach only those users who have access to the messages.
+
+    Notably, for performance reasons, we do not send live-update
+    events to everyone who could potentially have a cached copy of a
+    message because they fetched messages in a public channel to which
+    they are not subscribed. Such events are limited to those messages
+    where the user has a UserMessage row (including `historical` rows).
+    """
+    assert len(messages) > 0
+    message_ids = [message.id for message in messages]
+
+    def get_user_ids_having_usermessage_row_for_messages(message_ids: list[int]) -> set[int]:
+        """Returns the IDs of users who actually received the messages."""
+        usermessages = UserMessage.objects.filter(message_id__in=message_ids)
+        if exclude_long_term_idle_users:
+            usermessages = usermessages.exclude(user_profile__long_term_idle=True)
+        return set(usermessages.values_list("user_profile_id", flat=True))
+
+    sample_message = messages[0]
+    if not sample_message.is_stream_message():
+        # For DM, event is sent to users who actually received the message.
+        return get_user_ids_having_usermessage_row_for_messages(message_ids)
+
+    channel_id = sample_message.recipient.type_id
+    if channel is None:
+        channel = Stream.objects.get(id=channel_id)
+
+    subscriptions = get_active_subscriptions_for_stream_id(
+        channel_id, include_deactivated_users=False
+    )
+    if exclude_long_term_idle_users:
+        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
+    subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
+
+    if not channel.is_history_public_to_subscribers():
+        # For protected history, only users who are subscribed and
+        # received the original message are notified.
+        assert not channel.is_public()
+        user_ids_with_usermessage_row = get_user_ids_having_usermessage_row_for_messages(
+            message_ids
+        )
+        return user_ids_with_usermessage_row & subscriber_ids
+
+    if not channel.is_public():
+        # For private channel with shared history, the set of
+        # users with access is exactly the subscribers.
+        return subscriber_ids
+
+    # The remaining case is public channels with public history. Events are sent to:
+    # 1. Current channel subscribers
+    # 2. Unsubscribed users having usermessage row & channel access.
+    #    * Users who never subscribed but starred or reacted on messages
+    #      (usermessages with historical flag exists for such cases).
+    #    * Users who were initially subscribed and later unsubscribed
+    #      (usermessages exist for messages they received while subscribed).
+    usermessage_rows = UserMessage.objects.filter(message_id__in=message_ids).exclude(
+        # Excluding guests here implements can_access_public_channels,
+        # since we already know realm.is_zephyr_mirror_realm is false,
+        # based on the value of is_history_public_to_subscribers.
+        user_profile__role=UserProfile.ROLE_GUEST
+    )
+    if exclude_long_term_idle_users:
+        usermessage_rows = usermessage_rows.exclude(user_profile__long_term_idle=True)
+    user_ids_with_usermessage_row_and_channel_access = set(
+        usermessage_rows.values_list("user_profile_id", flat=True)
+    )
+    return user_ids_with_usermessage_row_and_channel_access | subscriber_ids
 
 
 def bulk_access_messages(
