@@ -378,7 +378,7 @@ export function get_invite_stream_data(): StreamSubscription[] {
     const streams = [];
     const all_subs = get_unsorted_subs();
     for (const sub of all_subs) {
-        if (can_subscribe_others(sub)) {
+        if (!sub.is_archived && can_subscribe_others(sub)) {
             streams.push(sub);
         }
     }
