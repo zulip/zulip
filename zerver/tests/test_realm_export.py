@@ -18,9 +18,7 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
     use_s3_backend,
 )
-from zerver.models import Realm, RealmAuditLog, UserProfile
-from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import EXPORT_PUBLIC
+from zerver.models import Realm, RealmExport, UserProfile
 from zerver.views.realm_export import export_realm
 
 
@@ -48,7 +46,9 @@ class RealmExportTest(ZulipTestCase):
         tarball_path = create_dummy_file("test-export.tar.gz")
 
         # Test the export logic.
-        with patch("zerver.lib.export.do_export_realm", return_value=tarball_path) as mock_export:
+        with patch(
+            "zerver.lib.export.do_export_realm", return_value=(tarball_path, dict())
+        ) as mock_export:
             with (
                 self.settings(LOCAL_UPLOADS_DIR=None),
                 stdout_suppressed(),
@@ -61,19 +61,19 @@ class RealmExportTest(ZulipTestCase):
         self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
-        self.assertEqual(args["export_type"], EXPORT_PUBLIC)
+        self.assertEqual(args["export_type"], RealmExport.EXPORT_PUBLIC)
         self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
         self.assertEqual(args["threads"], 6)
 
         # Get the entry and test that iago initiated it.
-        audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.REALM_EXPORTED
-        ).first()
-        assert audit_log_entry is not None
-        self.assertEqual(audit_log_entry.acting_user_id, admin.id)
+        export_row = RealmExport.objects.first()
+        assert export_row is not None
+        self.assertEqual(export_row.acting_user_id, admin.id)
+        self.assertEqual(export_row.status, RealmExport.SUCCEEDED)
 
         # Test that the file is hosted, and the contents are as expected.
-        export_path = audit_log_entry.extra_data["export_path"]
+        export_path = export_row.export_path
+        assert export_path is not None
         assert export_path.startswith("/")
         path_id = export_path.removeprefix("/")
         self.assertEqual(bucket.Object(path_id).get()["Body"].read(), b"zulip!")
@@ -83,7 +83,7 @@ class RealmExportTest(ZulipTestCase):
 
         # Test that the export we have is the export we created.
         export_dict = response_dict["exports"]
-        self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
+        self.assertEqual(export_dict[0]["id"], export_row.id)
         parsed_url = urlsplit(export_dict[0]["export_url"])
         self.assertEqual(
             parsed_url._replace(query="").geturl(),
@@ -92,22 +92,20 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
         self.assert_length(
             export_dict,
-            RealmAuditLog.objects.filter(
-                realm=admin.realm, event_type=AuditLogEventType.REALM_EXPORTED
-            ).count(),
+            RealmExport.objects.filter(realm=admin.realm).count(),
         )
 
         # Finally, delete the file.
-        result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+        result = self.client_delete(f"/json/export/realm/{export_row.id}")
         self.assert_json_success(result)
         with self.assertRaises(botocore.exceptions.ClientError):
             bucket.Object(path_id).load()
 
-        # Try to delete an export with a `deleted_timestamp` key.
-        audit_log_entry.refresh_from_db()
-        export_data = audit_log_entry.extra_data
-        self.assertIn("deleted_timestamp", export_data)
-        result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+        # Try to delete an export with a `DELETED` status.
+        export_row.refresh_from_db()
+        self.assertEqual(export_row.status, RealmExport.DELETED)
+        self.assertIsNotNone(export_row.date_deleted)
+        result = self.client_delete(f"/json/export/realm/{export_row.id}")
         self.assert_json_error(result, "Export already deleted")
 
         # Now try to delete a non-existent export.
@@ -127,9 +125,9 @@ class RealmExportTest(ZulipTestCase):
             export_type: int,
             exportable_user_ids: set[int] | None = None,
             export_as_active: bool | None = None,
-        ) -> str:
+        ) -> tuple[str, dict[str, int | dict[str, int]]]:
             self.assertEqual(realm, admin.realm)
-            self.assertEqual(export_type, EXPORT_PUBLIC)
+            self.assertEqual(export_type, RealmExport.EXPORT_PUBLIC)
             self.assertTrue(os.path.basename(output_dir).startswith("zulip-export-"))
             self.assertEqual(threads, 6)
 
@@ -149,7 +147,7 @@ class RealmExportTest(ZulipTestCase):
             result = self.client_delete(f"/json/export/realm/{id}")
             self.assert_json_error(result, "Export still in progress")
 
-            return tarball_path
+            return tarball_path, dict()
 
         with patch(
             "zerver.lib.export.do_export_realm", side_effect=fake_export_realm
@@ -166,15 +164,15 @@ class RealmExportTest(ZulipTestCase):
         self.assertFalse(os.path.exists(tarball_path))
 
         # Get the entry and test that iago initiated it.
-        audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.REALM_EXPORTED
-        ).first()
-        assert audit_log_entry is not None
-        self.assertEqual(audit_log_entry.id, data["id"])
-        self.assertEqual(audit_log_entry.acting_user_id, admin.id)
+        export_row = RealmExport.objects.first()
+        assert export_row is not None
+        self.assertEqual(export_row.id, data["id"])
+        self.assertEqual(export_row.acting_user_id, admin.id)
+        self.assertEqual(export_row.status, RealmExport.SUCCEEDED)
 
         # Test that the file is hosted, and the contents are as expected.
-        export_path = audit_log_entry.extra_data.get("export_path")
+        export_path = export_row.export_path
+        assert export_path is not None
         response = self.client_get(export_path)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.getvalue(), b"zulip!")
@@ -184,27 +182,22 @@ class RealmExportTest(ZulipTestCase):
 
         # Test that the export we have is the export we created.
         export_dict = response_dict["exports"]
-        self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
+        self.assertEqual(export_dict[0]["id"], export_row.id)
         self.assertEqual(export_dict[0]["export_url"], admin.realm.url + export_path)
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
-        self.assert_length(
-            export_dict,
-            RealmAuditLog.objects.filter(
-                realm=admin.realm, event_type=AuditLogEventType.REALM_EXPORTED
-            ).count(),
-        )
+        self.assert_length(export_dict, RealmExport.objects.filter(realm=admin.realm).count())
 
         # Finally, delete the file.
-        result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+        result = self.client_delete(f"/json/export/realm/{export_row.id}")
         self.assert_json_success(result)
         response = self.client_get(export_path)
         self.assertEqual(response.status_code, 404)
 
-        # Try to delete an export with a `deleted_timestamp` key.
-        audit_log_entry.refresh_from_db()
-        export_data = audit_log_entry.extra_data
-        self.assertIn("deleted_timestamp", export_data)
-        result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+        # Try to delete an export with a `DELETED` status.
+        export_row.refresh_from_db()
+        self.assertEqual(export_row.status, RealmExport.DELETED)
+        self.assertIsNotNone(export_row.date_deleted)
+        result = self.client_delete(f"/json/export/realm/{export_row.id}")
         self.assert_json_error(result, "Export already deleted")
 
         # Now try to delete a non-existent export.
@@ -244,6 +237,9 @@ class RealmExportTest(ZulipTestCase):
         self.assertIsNotNone(export_dict[0]["failed_timestamp"])
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
 
+        export_row = RealmExport.objects.get(id=export_id)
+        self.assertEqual(export_row.status, RealmExport.FAILED)
+
         # Check that we can't delete it
         result = self.client_delete(f"/json/export/realm/{export_id}")
         self.assert_json_error(result, "Export failed, nothing to delete")
@@ -258,10 +254,8 @@ class RealmExportTest(ZulipTestCase):
                 "deferred_work",
                 {
                     "type": "realm_export",
-                    "time": 42,
-                    "realm_id": admin.realm.id,
                     "user_profile_id": admin.id,
-                    "id": export_id,
+                    "realm_export_id": export_id,
                 },
             )
         mock_export.assert_not_called()
@@ -279,18 +273,19 @@ class RealmExportTest(ZulipTestCase):
         admin = self.example_user("iago")
         self.login_user(admin)
 
-        current_log = RealmAuditLog.objects.filter(event_type=AuditLogEventType.REALM_EXPORTED)
-        self.assert_length(current_log, 0)
+        export_rows = RealmExport.objects.all()
+        self.assert_length(export_rows, 0)
 
         exports = [
-            RealmAuditLog(
+            RealmExport(
                 realm=admin.realm,
-                event_type=AuditLogEventType.REALM_EXPORTED,
-                event_time=timezone_now(),
+                type=RealmExport.EXPORT_PUBLIC,
+                date_requested=timezone_now(),
+                acting_user=admin,
             )
             for i in range(5)
         ]
-        RealmAuditLog.objects.bulk_create(exports)
+        RealmExport.objects.bulk_create(exports)
 
         with self.assertRaises(JsonableError) as error:
             export_realm(HostRequestMock(), admin)

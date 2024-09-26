@@ -238,6 +238,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmDomain,
+    RealmExport,
     RealmFilter,
     RealmPlayground,
     RealmUserDefault,
@@ -3378,7 +3379,7 @@ class NormalActionsTest(BaseAction):
 
         with mock.patch(
             "zerver.lib.export.do_export_realm",
-            return_value=create_dummy_file("test-export.tar.gz"),
+            return_value=(create_dummy_file("test-export.tar.gz"), dict()),
         ):
             with (
                 stdout_suppressed(),
@@ -3407,13 +3408,11 @@ class NormalActionsTest(BaseAction):
         )
 
         # Now we check the deletion of the export.
-        audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.REALM_EXPORTED
-        ).first()
-        assert audit_log_entry is not None
-        audit_log_entry_id = audit_log_entry.id
+        export_row = RealmExport.objects.first()
+        assert export_row is not None
+        export_row_id = export_row.id
         with self.verify_action(state_change_expected=False, num_events=1) as events:
-            self.client_delete(f"/json/export/realm/{audit_log_entry_id}")
+            self.client_delete(f"/json/export/realm/{export_row_id}")
 
         check_realm_export(
             "events[0]",

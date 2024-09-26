@@ -1313,12 +1313,36 @@ def get_fake_email_domain(realm_host: str) -> str:
     return settings.FAKE_EMAIL_DOMAIN
 
 
-# TODO: Move this into a new ReamExport model.
-EXPORT_PUBLIC = 1
-EXPORT_FULL_WITH_CONSENT = 2
-EXPORT_FULL_WITHOUT_CONSENT = 3
-EXPORT_TYPES = [
-    EXPORT_PUBLIC,
-    EXPORT_FULL_WITH_CONSENT,
-    EXPORT_FULL_WITHOUT_CONSENT,
-]
+class RealmExport(models.Model):
+    """Every data export is recorded in this table."""
+
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+
+    EXPORT_PUBLIC = 1
+    EXPORT_FULL_WITH_CONSENT = 2
+    EXPORT_FULL_WITHOUT_CONSENT = 3
+    EXPORT_TYPES = [
+        EXPORT_PUBLIC,
+        EXPORT_FULL_WITH_CONSENT,
+        EXPORT_FULL_WITHOUT_CONSENT,
+    ]
+    type = models.PositiveSmallIntegerField(default=EXPORT_PUBLIC)
+
+    REQUESTED = 1
+    STARTED = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    DELETED = 5
+    status = models.PositiveSmallIntegerField(default=REQUESTED)
+
+    date_requested = models.DateTimeField()
+    date_started = models.DateTimeField(default=None, null=True)
+    date_succeeded = models.DateTimeField(default=None, null=True)
+    date_failed = models.DateTimeField(default=None, null=True)
+    date_deleted = models.DateTimeField(default=None, null=True)
+
+    acting_user = models.ForeignKey("UserProfile", null=True, on_delete=models.SET_NULL)
+    export_path = models.TextField(default=None, null=True)
+    sha256sum_hex = models.CharField(default=None, null=True, max_length=64)
+    tarball_size_bytes = models.PositiveIntegerField(default=None, null=True)
+    stats = models.JSONField(default=None, null=True)
