@@ -26,9 +26,9 @@
 {% endif %}
 
 
-{% trans %}If you are new to Zulip, check out our Getting started guide ({{ getting_user_started_link }})!{% endtrans %}
+{% trans %}If you are new to Zulip, check out our getting started guide ({{ getting_user_started_link }})!{% endtrans %}
 {% if is_realm_admin %}
-{% trans %} We also have a guide for Setting up your organization ({{ getting_organization_started_link }}).{% endtrans %}
+{% trans %} We also have a guide for moving your organization to Zulip ({{ getting_organization_started_link }}).{% endtrans %}
 {% endif %}
 
 

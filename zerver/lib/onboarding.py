@@ -51,11 +51,11 @@ def send_initial_direct_message(user: UserProfile) -> int:
     with override_language(user.default_language):
         if education_organization:
             getting_started_string = _("""
-To learn more, check out our [Using Zulip for a class guide]({getting_started_url})!
+To learn more, check out our [using Zulip for a class guide]({getting_started_url})!
 """).format(getting_started_url="/help/using-zulip-for-a-class")
         else:
             getting_started_string = _("""
-To learn more, check out our [Getting started guide]({getting_started_url})!
+To learn more, check out our [getting started guide]({getting_started_url})!
 """).format(getting_started_url="/help/getting-started-with-zulip")
 
         organization_setup_string = ""
@@ -63,12 +63,12 @@ To learn more, check out our [Getting started guide]({getting_started_url})!
         if user.is_realm_admin:
             if education_organization:
                 organization_setup_string = _("""
-We also have a guide for [Setting up Zulip for a class]({organization_setup_url}).
+We also have a guide for [setting up Zulip for a class]({organization_setup_url}).
 """).format(organization_setup_url="/help/setting-up-zulip-for-a-class")
             else:
                 organization_setup_string = _("""
-We also have a guide for [Setting up your organization]({organization_setup_url}).
-""").format(organization_setup_url="/help/getting-your-organization-started-with-zulip")
+We also have a guide for [moving your organization to Zulip]({organization_setup_url}).
+""").format(organization_setup_url="/help/moving-to-zulip")
 
         demo_organization_warning_string = ""
         # Add extra content about automatic deletion for demo organization owners.
