@@ -2,7 +2,7 @@ from collections import defaultdict
 from collections.abc import Collection, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -13,6 +13,7 @@ from django_cte import With
 from psycopg2.sql import SQL, Literal
 
 from zerver.lib.exceptions import (
+    CannotDeactivateGroupInUseError,
     JsonableError,
     PreviousSettingValueMismatchedError,
     SystemGroupRequiredError,
@@ -198,14 +199,14 @@ def access_user_group_for_deactivation(
         user_group_id, user_profile, permission_setting="can_manage_group"
     )
 
-    if (
+    objections: list[dict[str, Any]] = []
+    supergroup_ids = (
         user_group.direct_supergroups.exclude(named_user_group=None)
         .filter(named_user_group__deactivated=False)
-        .exists()
-    ):
-        raise JsonableError(
-            _("You cannot deactivate a user group that is subgroup of any user group.")
-        )
+        .values_list("id", flat=True)
+    )
+    if supergroup_ids:
+        objections.append(dict(type="subgroup", supergroup_ids=list(supergroup_ids)))
 
     anonymous_supergroup_ids = user_group.direct_supergroups.filter(
         named_user_group=None
@@ -214,10 +215,10 @@ def access_user_group_for_deactivation(
     # We check both the cases - whether the group is being directly used
     # as the value of a setting or as a subgroup of an anonymous group
     # used for a setting.
-    setting_group_ids_using_deactivating_user_group = [
-        *list(anonymous_supergroup_ids),
+    setting_group_ids_using_deactivating_user_group = {
+        *set(anonymous_supergroup_ids),
         user_group.id,
-    ]
+    }
 
     stream_setting_query = Q()
     for setting_name in Stream.stream_permission_group_settings:
@@ -225,12 +226,19 @@ def access_user_group_for_deactivation(
             **{f"{setting_name}__in": setting_group_ids_using_deactivating_user_group}
         )
 
-    if (
-        Stream.objects.filter(realm_id=user_group.realm_id, deactivated=False)
-        .filter(stream_setting_query)
-        .exists()
+    for stream in Stream.objects.filter(realm_id=user_group.realm_id, deactivated=False).filter(
+        stream_setting_query
     ):
-        raise JsonableError(_("You cannot deactivate a user group which is used for setting."))
+        objection_settings = [
+            setting_name
+            for setting_name in Stream.stream_permission_group_settings
+            if getattr(stream, setting_name + "_id")
+            in setting_group_ids_using_deactivating_user_group
+        ]
+        if len(objection_settings) > 0:
+            objections.append(
+                dict(type="channel", channel_id=stream.id, settings=objection_settings)
+            )
 
     group_setting_query = Q()
     for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
@@ -238,22 +246,33 @@ def access_user_group_for_deactivation(
             **{f"{setting_name}__in": setting_group_ids_using_deactivating_user_group}
         )
 
-    if (
-        NamedUserGroup.objects.filter(realm_id=user_group.realm_id, deactivated=False)
-        .filter(group_setting_query)
-        .exists()
-    ):
-        raise JsonableError(_("You cannot deactivate a user group which is used for setting."))
+    for group in NamedUserGroup.objects.filter(
+        realm_id=user_group.realm_id, deactivated=False
+    ).filter(group_setting_query):
+        objection_settings = []
+        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+            if (
+                getattr(group, setting_name + "_id")
+                in setting_group_ids_using_deactivating_user_group
+            ):
+                objection_settings.append(setting_name)
 
-    realm_setting_query = Q()
+        if len(objection_settings) > 0:
+            objections.append(
+                dict(type="user_group", group_id=group.id, settings=objection_settings)
+            )
+
+    objection_settings = []
+    realm = user_group.realm
     for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-        realm_setting_query |= Q(
-            **{f"{setting_name}__in": setting_group_ids_using_deactivating_user_group}
-        )
+        if getattr(realm, setting_name + "_id") in setting_group_ids_using_deactivating_user_group:
+            objection_settings.append(setting_name)
 
-    if Realm.objects.filter(id=user_group.realm_id).filter(realm_setting_query).exists():
-        raise JsonableError(_("You cannot deactivate a user group which is used for setting."))
+    if objection_settings:
+        objections.append(dict(type="realm", settings=objection_settings))
 
+    if len(objections) > 0:
+        raise CannotDeactivateGroupInUseError(objections)
     return user_group
 
 

@@ -20651,6 +20651,44 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid user group",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response when the user group ID is invalid.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "CANNOT_DEACTIVATE_GROUP_IN_USE",
+                            "msg": "Cannot deactivate user group in use.",
+                            "objections":
+                              [
+                                {
+                                  "type": "realm",
+                                  "settings":
+                                    ["can_create_public_channel_group"],
+                                },
+                              ],
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response when the user group being deactivated
+                          is used for a setting or as a subgroup.
+
+                          **Changes**: New in Zulip 10.0 (feature level 298). Previously,
+                          this error returned the `"BAD_REQUEST"` code.
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.

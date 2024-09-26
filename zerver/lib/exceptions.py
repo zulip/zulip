@@ -54,6 +54,7 @@ class ErrorCode(Enum):
     PUSH_NOTIFICATIONS_DISALLOWED = auto()
     EXPECTATION_MISMATCH = auto()
     SYSTEM_GROUP_REQUIRED = auto()
+    CANNOT_DEACTIVATE_GROUP_IN_USE = auto()
 
 
 class JsonableError(Exception):
@@ -715,3 +716,19 @@ class IncompatibleParameterValuesError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Incompatible values for '{first_parameter}' and '{second_parameter}'.")
+
+
+class CannotDeactivateGroupInUseError(JsonableError):
+    code = ErrorCode.CANNOT_DEACTIVATE_GROUP_IN_USE
+    data_fields = ["objections"]
+
+    def __init__(
+        self,
+        objections: list[dict[str, Any]],
+    ) -> None:
+        self.objections = objections
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Cannot deactivate user group in use.")

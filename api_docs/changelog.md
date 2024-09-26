@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 298**
+
+* [`POST /user_groups/{user_group_id}/deactivate`](/api/deactivate-user-group):
+  Server now returns a specific error response (`"code": CANNOT_DEACTIVATE_GROUP_IN_USE`)
+  when a user group cannot be deactivated because it is in use. The
+  error response contains details about where the user group is being used.
+
 **Feature level 297**
 
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):

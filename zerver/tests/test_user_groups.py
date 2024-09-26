@@ -1355,8 +1355,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         # Check that group that is subgroup of another group cannot be deactivated.
         result = self.client_post(f"/json/user_groups/{leadership_group.id}/deactivate")
-        self.assert_json_error(
-            result, "You cannot deactivate a user group that is subgroup of any user group."
+        self.assert_json_error(result, "Cannot deactivate user group in use.")
+        data = orjson.loads(result.content)
+        self.assertEqual(
+            data["objections"], [{"type": "subgroup", "supergroup_ids": [support_group.id]}]
         )
 
         # If the supergroup is itself deactivated, then subgroup can be deactivated.
@@ -1393,18 +1395,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
             )
 
             result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
-            self.assert_json_error(
-                result, "You cannot deactivate a user group which is used for setting."
-            )
+            self.assert_json_error(result, "Cannot deactivate user group in use.")
+            data = orjson.loads(result.content)
+            self.assertEqual(data["objections"], [{"type": "realm", "settings": [setting_name]}])
 
             do_change_realm_permission_group_setting(
                 realm, setting_name, support_group, acting_user=None
             )
 
             result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
-            self.assert_json_error(
-                result, "You cannot deactivate a user group which is used for setting."
-            )
+            self.assert_json_error(result, "Cannot deactivate user group in use.")
+            data = orjson.loads(result.content)
+            self.assertEqual(data["objections"], [{"type": "realm", "settings": [setting_name]}])
 
             # Reset the realm setting to one of the system group so this setting
             # does not interfere when testing for another setting.
@@ -1419,8 +1421,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
             )
 
             result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
-            self.assert_json_error(
-                result, "You cannot deactivate a user group which is used for setting."
+            self.assert_json_error(result, "Cannot deactivate user group in use.")
+            data = orjson.loads(result.content)
+            self.assertEqual(
+                data["objections"],
+                [{"type": "channel", "channel_id": stream.id, "settings": [setting_name]}],
             )
 
             # Test the group can be deactivated, if the stream which uses
@@ -1444,8 +1449,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
             )
 
             result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
-            self.assert_json_error(
-                result, "You cannot deactivate a user group which is used for setting."
+            self.assert_json_error(result, "Cannot deactivate user group in use.")
+            data = orjson.loads(result.content)
+            self.assertEqual(
+                data["objections"],
+                [{"type": "channel", "channel_id": stream.id, "settings": [setting_name]}],
             )
 
             # Test the group can be deactivated, if the stream which uses
@@ -1473,8 +1481,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
             )
 
             result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
-            self.assert_json_error(
-                result, "You cannot deactivate a user group which is used for setting."
+            self.assert_json_error(result, "Cannot deactivate user group in use.")
+            data = orjson.loads(result.content)
+            self.assertEqual(
+                data["objections"],
+                [
+                    {
+                        "type": "user_group",
+                        "group_id": leadership_group.id,
+                        "settings": [setting_name],
+                    }
+                ],
             )
 
             # Test the group can be deactivated, if the user group which uses
@@ -1499,8 +1516,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
             )
 
             result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
-            self.assert_json_error(
-                result, "You cannot deactivate a user group which is used for setting."
+            self.assert_json_error(result, "Cannot deactivate user group in use.")
+            data = orjson.loads(result.content)
+            self.assertEqual(
+                data["objections"],
+                [
+                    {
+                        "type": "user_group",
+                        "group_id": leadership_group.id,
+                        "settings": [setting_name],
+                    }
+                ],
             )
 
             # Test the group can be deactivated, if the user group which uses
