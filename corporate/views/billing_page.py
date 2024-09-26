@@ -243,6 +243,7 @@ def update_plan(
     licenses: Json[int] | None = None,
     licenses_at_next_renewal: Json[int] | None = None,
     schedule: Json[int] | None = None,
+    toggle_license_management: Json[bool] = False,
 ) -> HttpResponse:
     from corporate.lib.stripe import RealmBillingSession, UpdatePlanRequest
 
@@ -251,6 +252,7 @@ def update_plan(
         licenses=licenses,
         licenses_at_next_renewal=licenses_at_next_renewal,
         schedule=schedule,
+        toggle_license_management=toggle_license_management,
     )
     billing_session = RealmBillingSession(user=user)
     billing_session.do_update_plan(update_plan_request)
@@ -271,6 +273,7 @@ def update_plan_for_remote_realm(
     licenses: Json[int] | None = None,
     licenses_at_next_renewal: Json[int] | None = None,
     schedule: Json[int] | None = None,
+    toggle_license_management: Json[bool] = False,
 ) -> HttpResponse:
     from corporate.lib.stripe import UpdatePlanRequest
 
@@ -279,6 +282,7 @@ def update_plan_for_remote_realm(
         licenses=licenses,
         licenses_at_next_renewal=licenses_at_next_renewal,
         schedule=schedule,
+        toggle_license_management=toggle_license_management,
     )
     billing_session.do_update_plan(update_plan_request)
     return json_success(request)
@@ -298,6 +302,7 @@ def update_plan_for_remote_server(
     licenses: Json[int] | None = None,
     licenses_at_next_renewal: Json[int] | None = None,
     schedule: Json[int] | None = None,
+    toggle_license_management: Json[bool] = False,
 ) -> HttpResponse:
     from corporate.lib.stripe import UpdatePlanRequest
 
@@ -306,6 +311,7 @@ def update_plan_for_remote_server(
         licenses=licenses,
         licenses_at_next_renewal=licenses_at_next_renewal,
         schedule=schedule,
+        toggle_license_management=toggle_license_management,
     )
     billing_session.do_update_plan(update_plan_request)
     return json_success(request)

@@ -558,6 +558,7 @@ class UpdatePlanRequest:
     licenses: int | None
     licenses_at_next_renewal: int | None
     schedule: int | None
+    toggle_license_management: bool
 
 
 @dataclass
@@ -2895,6 +2896,16 @@ class BillingSession(ABC):
 
         if last_ledger_entry is None:
             raise JsonableError(_("Unable to update the plan. The plan has ended."))
+
+        if update_plan_request.toggle_license_management:
+            assert update_plan_request.status is None
+            assert update_plan_request.licenses is None
+            assert update_plan_request.licenses_at_next_renewal is None
+            assert update_plan_request.schedule is None
+
+            plan.automanage_licenses = not plan.automanage_licenses
+            plan.save(update_fields=["automanage_licenses"])
+            return
 
         status = update_plan_request.status
         if status is not None:

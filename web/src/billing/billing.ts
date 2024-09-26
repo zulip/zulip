@@ -460,6 +460,24 @@ export function initialize(): void {
             },
         });
     });
+
+    $(".toggle-license-management").on("click", (e) => {
+        e.preventDefault();
+        portico_modals.open("confirm-toggle-license-management-modal");
+    });
+
+    $("#confirm-toggle-license-management-modal").on("click", ".dialog_submit_button", (e) => {
+        helpers.create_ajax_request(
+            `/json${billing_base_url}/billing/plan`,
+            "toggle-license-management",
+            [],
+            "PATCH",
+            () => {
+                window.location.replace(`${billing_base_url}/billing/`);
+            },
+        );
+        e.preventDefault();
+    });
 }
 
 $(() => {

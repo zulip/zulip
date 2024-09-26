@@ -748,3 +748,11 @@ input[name="licenses"] {
 .flat-discount-separator {
     border-bottom: 1px solid hsl(0deg 0% 0%);
 }
+
+.toggle-license-management {
+    cursor: pointer;
+}
+
+#billing-page-details .billing-page-license-management-description {
+    padding-top: 5px;
+}
