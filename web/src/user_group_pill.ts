@@ -81,6 +81,16 @@ function get_group_members(user_group: UserGroup): number[] {
     return user_ids.filter((user_id) => people.is_person_active(user_id));
 }
 
+export function are_all_members_deactivated(user_group: UserGroup): boolean {
+    const user_ids = [...user_groups.get_recursive_group_members(user_group)];
+    for (const user_id of user_ids) {
+        if (people.is_person_active(user_id)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function append_user_group(
     group: UserGroup,
     pill_widget: CombinedPillContainer | GroupSettingPillContainer,

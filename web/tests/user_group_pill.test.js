@@ -44,6 +44,13 @@ const user5 = {
 };
 people.add_active_user(user5);
 
+const user6 = {
+    user_id: 60,
+    email: "user6@example.com",
+    full_name: "User Five",
+};
+people.add_active_user(user6);
+
 const admins = {
     name: "Admins",
     description: "foo",
@@ -64,6 +71,15 @@ const everyone = {
     direct_subgroup_ids: [101, 102],
 };
 
+// We're testing a case where user_group_pill.all_members_are_deactivated returns true, as user6 has been deactivated.
+const testers2 = {
+    name: "Testers2",
+    description: "test for all deactivated members",
+    id: 104,
+    members: [60],
+};
+people.deactivate(user6);
+
 const admins_pill = {
     group_id: admins.id,
     group_name: admins.name,
@@ -83,7 +99,7 @@ const everyone_pill = {
     // here, reducing the usefulness of the test.
 };
 
-const groups = [admins, testers, everyone];
+const groups = [admins, testers, everyone, testers2];
 for (const group of groups) {
     user_groups.add(group);
 }
@@ -146,6 +162,13 @@ run_test("get_group_ids", () => {
     // Subgroups should not be part of the results, we use `everyone_pill` to test that.
     const group_ids = user_group_pill.get_group_ids(widget);
     assert.deepEqual(group_ids, [101, 103]);
+});
+
+run_test("are_all_members_deactivated", () => {
+    assert.equal(user_group_pill.are_all_members_deactivated(everyone), false);
+    assert.equal(user_group_pill.are_all_members_deactivated(admins), false);
+    assert.equal(user_group_pill.are_all_members_deactivated(testers), false);
+    assert.equal(user_group_pill.are_all_members_deactivated(testers2), true);
 });
 
 run_test("append_user_group", () => {
