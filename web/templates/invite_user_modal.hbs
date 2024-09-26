@@ -52,44 +52,5 @@
             <p id="custom_expires_on"></p>
         </div>
     </div>
-    <div class="input-group">
-        <label for="invite_as" class="modal-field-label">{{t "Users join as" }}
-            {{> help_link_widget link="/help/roles-and-permissions" }}
-        </label>
-        <select id="invite_as" class="invite-user-select modal_select bootstrap-focus-style">
-            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
-            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
-            {{#if is_admin}}
-            <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
-            <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Administrators" }}</option>
-            {{/if}}
-            {{#if is_owner}}
-            <option name="invite_as" value="{{ invite_as_options.owner.code }}">{{t "Owners" }}</option>
-            {{/if}}
-        </select>
-    </div>
-    {{#if can_subscribe_other_users}}
-    <div>
-        <label>{{t "Channels they should join" }}</label>
-        <div id="streams_to_add">
-            {{#if show_select_default_streams_option}}
-            <div class="select_default_streams">
-                <label class="checkbox display-block modal-field-label">
-                    <input type="checkbox" id="invite_select_default_streams" checked="checked" />
-                    <span class="rendered-checkbox"></span>
-                    {{t 'Default channels for this organization'}}
-                </label>
-            </div>
-            {{/if}}
-            <div id="invite_streams_container" class="add_streams_container">
-                <div class="pill-container stream_picker">
-                    <div class="input" contenteditable="true"
-                      data-placeholder="{{t 'Channels' }}">
-                        {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {{/if}}
+    {{>invite_role_and_streams_form}}
 </form>
