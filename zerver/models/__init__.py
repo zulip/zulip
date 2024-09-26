@@ -49,6 +49,7 @@ from zerver.models.realm_playgrounds import RealmPlayground as RealmPlayground
 from zerver.models.realms import Realm as Realm
 from zerver.models.realms import RealmAuthenticationMethod as RealmAuthenticationMethod
 from zerver.models.realms import RealmDomain as RealmDomain
+from zerver.models.realms import RealmExport as RealmExport
 from zerver.models.recipients import DirectMessageGroup as DirectMessageGroup
 from zerver.models.recipients import Recipient as Recipient
 from zerver.models.saved_snippets import SavedSnippet as SavedSnippet

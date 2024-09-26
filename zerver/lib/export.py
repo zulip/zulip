@@ -7,6 +7,7 @@
 # (2) if it doesn't belong in EXCLUDED_TABLES, add a Config object for
 # it to get_realm_config.
 import glob
+import hashlib
 import logging
 import os
 import shutil
@@ -17,6 +18,7 @@ from contextlib import suppress
 from datetime import datetime
 from functools import cache
 from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypedDict
+from urllib.parse import urlsplit
 
 import orjson
 from django.apps import apps
@@ -24,12 +26,14 @@ from django.conf import settings
 from django.db.models import Exists, OuterRef, Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
+from django.utils.timezone import now as timezone_now
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload.s3 import get_bucket
 from zerver.models import (
     AlertWord,
@@ -53,6 +57,7 @@ from zerver.models import (
     RealmAuthenticationMethod,
     RealmDomain,
     RealmEmoji,
+    RealmExport,
     RealmFilter,
     RealmPlayground,
     RealmUserDefault,
@@ -73,7 +78,7 @@ from zerver.models import (
 )
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import EXPORT_FULL_WITH_CONSENT, EXPORT_PUBLIC, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 if TYPE_CHECKING:
@@ -158,6 +163,7 @@ ALL_ZULIP_TABLES = {
     "zerver_realmauthenticationmethod",
     "zerver_realmdomain",
     "zerver_realmemoji",
+    "zerver_realmexport",
     "zerver_realmfilter",
     "zerver_realmplayground",
     "zerver_realmreactivationstatus",
@@ -302,6 +308,13 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
     "zerver_muteduser": ["date_muted"],
     "zerver_realmauditlog": ["event_time"],
     "zerver_realm": ["date_created"],
+    "zerver_realmexport": [
+        "date_requested",
+        "date_started",
+        "date_succeeded",
+        "date_failed",
+        "date_deleted",
+    ],
     "zerver_scheduledmessage": ["scheduled_timestamp"],
     "zerver_stream": ["date_created"],
     "zerver_namedusergroup": ["date_created"],
@@ -744,6 +757,13 @@ def get_realm_config() -> Config:
     Config(
         table="zerver_realmdomain",
         model=RealmDomain,
+        normal_parent=realm_config,
+        include_rows="realm_id__in",
+    )
+
+    Config(
+        table="zerver_realmexport",
+        model=RealmExport,
         normal_parent=realm_config,
         include_rows="realm_id__in",
     )
@@ -1327,16 +1347,16 @@ def export_partial_message_files(
     )
 
     consented_user_ids: set[int] = set()
-    if export_type == EXPORT_FULL_WITH_CONSENT:
+    if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
         consented_user_ids = get_consented_user_ids(realm)
 
-    if export_type == EXPORT_PUBLIC:
+    if export_type == RealmExport.EXPORT_PUBLIC:
         recipient_streams = Stream.objects.filter(realm=realm, invite_only=False)
         recipient_ids = Recipient.objects.filter(
             type=Recipient.STREAM, type_id__in=recipient_streams
         ).values_list("id", flat=True)
         recipient_ids_for_us = get_ids(response["zerver_recipient"]) & set(recipient_ids)
-    elif export_type == EXPORT_FULL_WITH_CONSENT:
+    elif export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
         public_streams = Stream.objects.filter(realm=realm, invite_only=False)
         public_stream_recipient_ids = Recipient.objects.filter(
             type=Recipient.STREAM, type_id__in=public_streams
@@ -1359,7 +1379,7 @@ def export_partial_message_files(
         # For a full export, we have implicit consent for all users in the export.
         consented_user_ids = user_ids_for_us
 
-    if export_type == EXPORT_PUBLIC:
+    if export_type == RealmExport.EXPORT_PUBLIC:
         messages_we_received = Message.objects.filter(
             # Uses index: zerver_message_realm_sender_recipient
             realm_id=realm.id,
@@ -1385,7 +1405,7 @@ def export_partial_message_files(
         )
         message_queries.append(messages_we_received)
 
-        if export_type == EXPORT_FULL_WITH_CONSENT:
+        if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
             # Export with member consent requires some careful handling to make sure
             # we only include messages that a consenting user can access.
             has_usermessage_expression = Exists(
@@ -1936,7 +1956,7 @@ def export_emoji_from_local(
     write_records_json_file(output_dir, records)
 
 
-def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
+def do_write_stats_file_for_realm_export(output_dir: Path) -> dict[str, int | dict[str, int]]:
     stats_file = os.path.join(output_dir, "stats.json")
     realm_file = os.path.join(output_dir, "realm.json")
     attachment_file = os.path.join(output_dir, "attachment.json")
@@ -1962,6 +1982,8 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     with open(stats_file, "wb") as f:
         f.write(orjson.dumps(stats, option=orjson.OPT_INDENT_2))
 
+    return stats
+
 
 def get_exportable_scheduled_message_ids(realm: Realm, export_type: int) -> set[int]:
     """
@@ -1969,10 +1991,10 @@ def get_exportable_scheduled_message_ids(realm: Realm, export_type: int) -> set[
     public/consent/full export mode.
     """
 
-    if export_type == EXPORT_PUBLIC:
+    if export_type == RealmExport.EXPORT_PUBLIC:
         return set()
 
-    if export_type == EXPORT_FULL_WITH_CONSENT:
+    if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
         sender_ids = get_consented_user_ids(realm)
         return set(
             ScheduledMessage.objects.filter(sender_id__in=sender_ids, realm=realm).values_list(
@@ -1990,7 +2012,7 @@ def do_export_realm(
     export_type: int,
     exportable_user_ids: set[int] | None = None,
     export_as_active: bool | None = None,
-) -> str:
+) -> tuple[str, dict[str, int | dict[str, int]]]:
     response: TableData = {}
 
     # We need at least one thread running to export
@@ -2065,13 +2087,13 @@ def do_export_realm(
     launch_user_message_subprocesses(
         threads=threads,
         output_dir=output_dir,
-        export_full_with_consent=export_type == EXPORT_FULL_WITH_CONSENT,
+        export_full_with_consent=export_type == RealmExport.EXPORT_FULL_WITH_CONSENT,
     )
 
     logging.info("Finished exporting %s", realm.string_id)
     create_soft_link(source=output_dir, in_progress=False)
 
-    do_write_stats_file_for_realm_export(output_dir)
+    stats = do_write_stats_file_for_realm_export(output_dir)
 
     logging.info("Compressing tarball...")
     tarball_path = output_dir.rstrip("/") + ".tar.gz"
@@ -2083,7 +2105,7 @@ def do_export_realm(
             os.path.basename(output_dir),
         ]
     )
-    return tarball_path
+    return tarball_path, stats
 
 
 def export_attachment_table(
@@ -2441,35 +2463,97 @@ def get_consented_user_ids(realm: Realm) -> set[int]:
 
 
 def export_realm_wrapper(
-    realm: Realm,
+    export_row: RealmExport,
     output_dir: str,
     threads: int,
     upload: bool,
-    export_type: int,
     percent_callback: Callable[[Any], None] | None = None,
     export_as_active: bool | None = None,
 ) -> str | None:
-    tarball_path = do_export_realm(
-        realm=realm,
-        output_dir=output_dir,
-        threads=threads,
-        export_type=export_type,
-        export_as_active=export_as_active,
-    )
-    shutil.rmtree(output_dir)
-    print(f"Tarball written to {tarball_path}")
-    if not upload:
-        return None
+    try:
+        export_row.status = RealmExport.STARTED
+        export_row.date_started = timezone_now()
+        export_row.save(update_fields=["status", "date_started"])
 
-    print("Uploading export tarball...")
-    public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
-        realm, tarball_path, percent_callback=percent_callback
-    )
-    print(f"\nUploaded to {public_url}")
+        tarball_path, stats = do_export_realm(
+            realm=export_row.realm,
+            output_dir=output_dir,
+            threads=threads,
+            export_type=export_row.type,
+            export_as_active=export_as_active,
+        )
 
-    os.remove(tarball_path)
-    print(f"Successfully deleted the tarball at {tarball_path}")
-    return public_url
+        RealmAuditLog.objects.create(
+            acting_user=export_row.acting_user,
+            realm=export_row.realm,
+            event_type=AuditLogEventType.REALM_EXPORTED,
+            event_time=timezone_now(),
+            extra_data={"realm_export_id": export_row.id},
+        )
+
+        shutil.rmtree(output_dir)
+        print(f"Tarball written to {tarball_path}")
+
+        print("Calculating SHA-256 checksum of tarball...")
+
+        # TODO: We can directly use 'hashlib.file_digest'. (New in Python 3.11)
+        sha256_hash = hashlib.sha256()
+        with open(tarball_path, "rb") as f:
+            buf = bytearray(2**18)
+            view = memoryview(buf)
+            while True:
+                size = f.readinto(buf)
+                if size == 0:
+                    break
+                sha256_hash.update(view[:size])
+
+        export_row.sha256sum_hex = sha256_hash.hexdigest()
+        export_row.tarball_size_bytes = os.path.getsize(tarball_path)
+        export_row.status = RealmExport.SUCCEEDED
+        export_row.date_succeeded = timezone_now()
+        export_row.stats = stats
+
+        print(f"SHA-256 checksum is {export_row.sha256sum_hex}")
+
+        if not upload:
+            export_row.save(
+                update_fields=[
+                    "sha256sum_hex",
+                    "tarball_size_bytes",
+                    "status",
+                    "date_succeeded",
+                    "stats",
+                ]
+            )
+            return None
+
+        print("Uploading export tarball...")
+        public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
+            export_row.realm, tarball_path, percent_callback=percent_callback
+        )
+        print(f"\nUploaded to {public_url}")
+
+        # Update the export_path field now that the export is complete.
+        export_row.export_path = urlsplit(public_url).path
+        export_row.save(
+            update_fields=[
+                "sha256sum_hex",
+                "tarball_size_bytes",
+                "status",
+                "date_succeeded",
+                "stats",
+                "export_path",
+            ]
+        )
+
+        os.remove(tarball_path)
+        print(f"Successfully deleted the tarball at {tarball_path}")
+        return public_url
+    except Exception:
+        export_row.status = RealmExport.FAILED
+        export_row.date_failed = timezone_now()
+        export_row.save(update_fields=["status", "date_failed"])
+        raise
 
 
 def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
@@ -2479,31 +2563,26 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
     # TODO: We should return those via the API as well, with an
     # appropriate way to express for who issued them; this requires an
     # API change.
-    all_exports = RealmAuditLog.objects.filter(
-        realm=realm, event_type=AuditLogEventType.REALM_EXPORTED
-    ).exclude(acting_user=None)
+    all_exports = RealmExport.objects.filter(realm=realm).exclude(acting_user=None)
     exports_dict = {}
     for export in all_exports:
         export_url = None
-        deleted_timestamp = None
-        failed_timestamp = None
-        acting_user = export.acting_user
+        export_path = export.export_path
+        pending = export.status in [RealmExport.REQUESTED, RealmExport.STARTED]
 
-        export_data = export.extra_data
-
-        deleted_timestamp = export_data.get("deleted_timestamp")
-        failed_timestamp = export_data.get("failed_timestamp")
-        export_path = export_data.get("export_path")
-
-        pending = deleted_timestamp is None and failed_timestamp is None and export_path is None
-
-        if export_path is not None and not deleted_timestamp:
+        if export.status == RealmExport.SUCCEEDED:
+            assert export_path is not None
             export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(realm, export_path)
 
+        deleted_timestamp = (
+            datetime_to_timestamp(export.date_deleted) if export.date_deleted else None
+        )
+        failed_timestamp = datetime_to_timestamp(export.date_failed) if export.date_failed else None
+        acting_user = export.acting_user
         assert acting_user is not None
         exports_dict[export.id] = dict(
             id=export.id,
-            export_time=export.event_time.timestamp(),
+            export_time=datetime_to_timestamp(export.date_requested),
             acting_user_id=acting_user.id,
             export_url=export_url,
             deleted_timestamp=deleted_timestamp,

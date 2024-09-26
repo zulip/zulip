@@ -76,6 +76,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmEmoji,
+    RealmExport,
     RealmUserDefault,
     Recipient,
     ScheduledMessage,
@@ -94,12 +95,7 @@ from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import (
-    EXPORT_FULL_WITH_CONSENT,
-    EXPORT_FULL_WITHOUT_CONSENT,
-    EXPORT_PUBLIC,
-    get_realm,
-)
+from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.streams import get_active_streams, get_stream
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
@@ -364,13 +360,13 @@ class RealmImportExportTest(ExportFile):
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, "messages-000001.json.partial"),
                 output_path=os.path.join(output_dir, "messages-000001.json"),
-                export_full_with_consent=export_type == EXPORT_FULL_WITH_CONSENT,
+                export_full_with_consent=export_type == RealmExport.EXPORT_FULL_WITH_CONSENT,
             )
 
     def export_realm_and_create_auditlog(
         self,
         original_realm: Realm,
-        export_type: int = EXPORT_FULL_WITHOUT_CONSENT,
+        export_type: int = RealmExport.EXPORT_FULL_WITHOUT_CONSENT,
         exportable_user_ids: set[int] | None = None,
     ) -> None:
         RealmAuditLog.objects.create(
@@ -413,7 +409,7 @@ class RealmImportExportTest(ExportFile):
             is_message_realm_public=True,
         )
 
-        self.export_realm_and_create_auditlog(realm, export_type=EXPORT_PUBLIC)
+        self.export_realm_and_create_auditlog(realm, export_type=RealmExport.EXPORT_PUBLIC)
 
         # The attachment row shouldn't have been exported:
         self.assertEqual(read_json("attachment.json")["zerver_attachment"], [])
@@ -662,7 +658,9 @@ class RealmImportExportTest(ExportFile):
             self.example_user("hamlet"), "allow_private_data_export", True, acting_user=None
         )
 
-        self.export_realm_and_create_auditlog(realm, export_type=EXPORT_FULL_WITH_CONSENT)
+        self.export_realm_and_create_auditlog(
+            realm, export_type=RealmExport.EXPORT_FULL_WITH_CONSENT
+        )
 
         data = read_json("realm.json")
 
@@ -1003,7 +1001,7 @@ class RealmImportExportTest(ExportFile):
         for f in getters:
             snapshots[f.__name__] = f(original_realm)
 
-        self.export_realm(original_realm, export_type=EXPORT_FULL_WITHOUT_CONSENT)
+        self.export_realm(original_realm, export_type=RealmExport.EXPORT_FULL_WITHOUT_CONSENT)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(get_output_dir(), "test-zulip")
