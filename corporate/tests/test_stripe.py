@@ -44,6 +44,7 @@ from corporate.lib.stripe import (
     SupportRequestError,
     SupportType,
     SupportViewRequest,
+    UpdatePlanRequest,
     add_months,
     catch_stripe_errors,
     compute_plan_parameters,
@@ -1000,7 +1001,7 @@ class StripeTest(StripeTestCase):
             "Zulip Cloud Plus",
             str(self.seat_count),
             "Number of licenses",
-            f"{ self.seat_count } (managed automatically)",
+            f"{ self.seat_count }",
             "Your plan will automatically renew on",
             "January 2, 2013",
             f"${120 * self.seat_count}.00",
@@ -1270,7 +1271,7 @@ class StripeTest(StripeTestCase):
             "Zulip Cloud Standard",
             str(self.seat_count),
             "Number of licenses",
-            f"{ self.seat_count } (managed automatically)",
+            f"{ self.seat_count }",
             "Your plan will automatically renew on",
             "January 2, 2013",
             f"${80 * self.seat_count}.00",
@@ -1526,7 +1527,7 @@ class StripeTest(StripeTestCase):
                 "Zulip Cloud Standard <i>(free trial)</i>",
                 str(self.seat_count),
                 "Number of licenses",
-                f"{self.seat_count} (managed automatically)",
+                f"{self.seat_count}",
                 "Your plan will automatically renew on",
                 "March 2, 2012",
                 f"${80 * self.seat_count}.00",
@@ -5877,6 +5878,29 @@ class LicenseLedgerTest(StripeTestCase):
             ],
         )
 
+    def test_toggle_license_management(self) -> None:
+        self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
+        plan = get_current_plan_by_realm(get_realm("zulip"))
+        assert plan is not None
+        self.assertEqual(plan.automanage_licenses, True)
+        self.assertEqual(plan.licenses(), self.seat_count)
+        self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
+        billing_session = RealmBillingSession(user=None, realm=get_realm("zulip"))
+        update_plan_request = UpdatePlanRequest(
+            status=None,
+            licenses=None,
+            licenses_at_next_renewal=None,
+            schedule=None,
+            toggle_license_management=True,
+        )
+        billing_session.do_update_plan(update_plan_request)
+        plan.refresh_from_db()
+        self.assertEqual(plan.automanage_licenses, False)
+
+        billing_session.do_update_plan(update_plan_request)
+        plan.refresh_from_db()
+        self.assertEqual(plan.automanage_licenses, True)
+
 
 class InvoiceTest(StripeTestCase):
     def test_invoicing_status_is_started(self) -> None:
@@ -6952,7 +6976,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         for substring in [
             "Zulip Business",
             "Number of licenses",
-            f"{min_licenses} (managed automatically)",
+            f"{min_licenses}",
             "January 2, 2013",
             "Your plan will automatically renew on",
             f"${80 * min_licenses:,.2f}",
@@ -6996,7 +7020,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         for substring in [
             "Zulip Business",
             "Number of licenses",
-            f"{latest_ledger.licenses} (managed automatically)",
+            f"{latest_ledger.licenses}",
             "January 2, 2013",
             "Your plan will automatically renew on",
             f"${80 * latest_ledger.licenses:,.2f}",
@@ -7179,7 +7203,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
                 "Zulip Basic",
                 "(free trial)",
                 "Number of licenses",
-                f"{realm_user_count} (managed automatically)",
+                f"{realm_user_count}",
                 "February 1, 2012",
                 "Your plan will automatically renew on",
                 f"${3.5 * realm_user_count - flat_discount // 100 * 1:,.2f}",
@@ -7223,7 +7247,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             for substring in [
                 "Zulip Basic",
                 "Number of licenses",
-                f"{latest_ledger.licenses} (managed automatically)",
+                f"{latest_ledger.licenses}",
                 "February 1, 2012",
                 "Your plan will automatically renew on",
                 f"${3.5 * latest_ledger.licenses - flat_discount // 100 * 1:,.2f}",
@@ -7387,7 +7411,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         for substring in [
             "Zulip Basic",
             "Number of licenses",
-            f"{realm_user_count} (managed automatically)",
+            f"{realm_user_count}",
             "February 2, 2012",
             "Your plan will automatically renew on",
             f"${3.5 * realm_user_count - flat_discount // 100 * 1:,.2f}",
@@ -7431,7 +7455,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         for substring in [
             "Zulip Basic",
             "Number of licenses",
-            f"{latest_ledger.licenses} (managed automatically)",
+            f"{latest_ledger.licenses}",
             "February 2, 2012",
             "Your plan will automatically renew on",
             f"${3.5 * latest_ledger.licenses - flat_discount // 100 * 1:,.2f}",
@@ -8290,7 +8314,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         for substring in [
             "Zulip Business",
             "Number of licenses",
-            f"{licenses} (managed automatically)",
+            f"{licenses}",
             "Your plan will automatically renew on",
             "January 2, 2013",
             f"${80 * licenses:,.2f}",
@@ -8639,7 +8663,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         for substring in [
             "Zulip Business",
             "Number of licenses",
-            f"{25} (managed automatically)",
+            f"{25}",
             "Your plan will automatically renew on",
             "January 2, 2013",
             f"${80 * 25:,.2f}",
@@ -9073,7 +9097,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
                 "Zulip Basic",
                 "(free trial)",
                 "Number of licenses",
-                f"{realm_user_count} (managed automatically)",
+                f"{realm_user_count}",
                 "February 1, 2012",
                 "Your plan will automatically renew on",
                 f"${3.5 * realm_user_count - flat_discount // 100 * 1:,.2f}",
@@ -9117,7 +9141,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             for substring in [
                 "Zulip Basic",
                 "Number of licenses",
-                f"{latest_ledger.licenses} (managed automatically)",
+                f"{latest_ledger.licenses}",
                 "February 1, 2012",
                 "Your plan will automatically renew on",
                 f"${3.5 * latest_ledger.licenses - flat_discount // 100 * 1:,.2f}",
@@ -9283,7 +9307,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         for substring in [
             "Zulip Basic",
             "Number of licenses",
-            f"{server_user_count} (managed automatically)",
+            f"{server_user_count}",
             "February 2, 2012",
             "Your plan will automatically renew on",
             f"${3.5 * server_user_count - flat_discount // 100 * 1:,.2f}",
@@ -9327,7 +9351,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         for substring in [
             "Zulip Basic",
             "Number of licenses",
-            f"{latest_ledger.licenses} (managed automatically)",
+            f"{latest_ledger.licenses}",
             "February 2, 2012",
             "Your plan will automatically renew on",
             f"${3.5 * latest_ledger.licenses - flat_discount // 100 * 1:,.2f}",

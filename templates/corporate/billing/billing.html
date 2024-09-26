@@ -123,7 +123,13 @@
 
                     </label>
                     <div id="automatic-license-count" class="not-editable-realm-field">
-                        {{ licenses }} (managed automatically)
+                        {{ licenses }}
+                        <br />
+                        Licenses are managed
+                        <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-license-management-work">automatically</a>.
+                        You can
+                        <a class="toggle-license-management" type="button">switch</a>
+                        to manual license management.
                     </div>
                 </div>
                 {% else %}
@@ -152,6 +158,13 @@
                         </button>
                     </div>
                     <div id="current-license-change-error" class="alert alert-danger billing-page-error"></div>
+                    <div class="not-editable-realm-field billing-page-license-management-description">
+                        Licenses are managed
+                        <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work">manually</a>.
+                        You can
+                        <a class="toggle-license-management" type="button">switch</a>
+                        to automatic license management.
+                    </div>
                 </div>
                 {% endif %}
                 {% if not (downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial) %}
@@ -182,6 +195,10 @@
                 </div>
                 {% endif %}
                 {% endif %}
+                <form id="toggle-license-management-form">
+                    <input name="toggle_license_management" type="hidden" value="true" />
+                </form>
+                <div id="toggle-license-management-error" class="alert alert-danger"></div>
                 <div class="input-box no-validation billing-page-field">
                     <label for="billing-contact" class="inline-block label-title">Billing contact</label>
                     <div id="billing-contact" class="not-editable-realm-field">
@@ -566,6 +583,43 @@
                 <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
                 <button class="modal__btn dialog_submit_button">
                     <span>{{ _('Cancel upgrade') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+<div id="confirm-toggle-license-management-modal" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    Confirm switching to
+                    {% if automanage_licenses %}
+                    manual
+                    {% else %}
+                    automatic
+                    {% endif %}
+                    license management
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    Are you sure you want to switch to
+                    <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-license-management-work">
+                        {% if automanage_licenses %}
+                            manual
+                        {% else %}
+                            automatic
+                        {% endif %}
+                        license management
+                    </a>?
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Confirm') }}</span>
                 </button>
             </footer>
         </div>
