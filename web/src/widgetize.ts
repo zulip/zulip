@@ -33,7 +33,7 @@ type WidgetOptions = {
     }) => void;
 };
 
-type WidgetValue = Record<string, unknown> & {
+export type WidgetValue = Record<string, unknown> & {
     activate: (data: {
         $elem: JQuery;
         callback: (data: string | PollWidgetOutboundData | TodoWidgetOutboundData) => void;

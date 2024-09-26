@@ -613,7 +613,7 @@ html_rules: list["Rule"] = [
         "description": "Don't directly load dependencies from CDNs.  See docs/subsystems/html-css.md",
         "bad_lines": [
             '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>',
-            '<script async src="https://platform.twitter.com/widgets.js"></script>',
+            '<script async src="https://platform.twitter.com/widgets.ts"></script>',
         ],
     },
     {
