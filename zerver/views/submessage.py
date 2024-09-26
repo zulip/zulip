@@ -16,7 +16,7 @@ from zerver.models import UserProfile
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message.
-@transaction.atomic
+@transaction.atomic(durable=True)
 @typed_endpoint
 def process_submessage(
     request: HttpRequest,
