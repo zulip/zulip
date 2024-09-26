@@ -1750,8 +1750,8 @@ class RealmCreationTest(ZulipTestCase):
 
         # Organization type is not education or education_nonprofit,
         # and organization is not a demo organization.
-        self.assertIn("Getting started guide", welcome_msg.content)
-        self.assertNotIn("Using Zulip for a class guide", welcome_msg.content)
+        self.assertIn("getting started guide", welcome_msg.content)
+        self.assertNotIn("using Zulip for a class guide", welcome_msg.content)
         self.assertNotIn("demo organization", welcome_msg.content)
 
         # Organization has tracked onboarding messages.
@@ -1818,8 +1818,8 @@ class RealmCreationTest(ZulipTestCase):
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 
         # Organization type is education, and organization is a demo organization.
-        self.assertNotIn("Getting started guide", welcome_msg.content)
-        self.assertIn("Using Zulip for a class guide", welcome_msg.content)
+        self.assertNotIn("getting started guide", welcome_msg.content)
+        self.assertIn("using Zulip for a class guide", welcome_msg.content)
         self.assertIn("demo organization", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)

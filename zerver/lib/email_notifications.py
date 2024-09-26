@@ -805,7 +805,7 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
     )
 
     account_registered_context["getting_organization_started_link"] = (
-        realm_url + "/help/getting-your-organization-started-with-zulip"
+        realm_url + "/help/moving-to-zulip"
     )
 
     account_registered_context["getting_user_started_link"] = (
@@ -918,8 +918,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         onboarding_team_to_zulip_context = common_context(user)
         onboarding_team_to_zulip_context.update(
             unsubscribe_link=unsubscribe_link,
-            get_organization_started=realm_url
-            + "/help/getting-your-organization-started-with-zulip",
+            get_organization_started=realm_url + "/help/moving-to-zulip",
             invite_users=realm_url + "/help/invite-users-to-join",
             trying_out_zulip=realm_url + "/help/trying-out-zulip",
             why_zulip="https://zulip.com/why-zulip/",
