@@ -33,12 +33,23 @@
     </td>
     <td class="actions">
         {{#unless is_multiuse}}
-        <button class="button rounded small resend btn-warning" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}">
-            {{t "Resend" }}
+        <button
+          class="button rounded small resend-invite tippy-zulip-delayed-tooltip btn-warning"
+          {{#if disable_buttons}}disabled="disabled"{{/if}}
+          data-invite-id="{{id}}"
+          data-tippy-content="{{t 'Resend'}}"
+          >
+            <i class="fa fa-paper-plane"></i>
         </button>
         {{/unless}}
-        <button class="button rounded small revoke btn-danger" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}" data-is-multiuse="{{is_multiuse}}">
-            {{t "Revoke" }}
+        <button
+          class="button rounded small revoke-invite tippy-zulip-delayed-tooltip btn-danger"
+          {{#if disable_buttons}}disabled="disabled"{{/if}}
+          data-invite-id="{{id}}"
+          data-is-multiuse="{{is_multiuse}}"
+          data-tippy-content="{{t 'Revoke'}}"
+          >
+            <i class="fa fa-trash"></i>
         </button>
     </td>
 </tr>
