@@ -262,6 +262,16 @@
                count, when one appears there. */
             align-items: baseline;
 
+            &:hover {
+                background-color: var(
+                    --color-background-sidebar-action-heading-hover
+                );
+
+                .dm-name {
+                    color: var(--color-text-sidebar-action-heading-hover);
+                }
+            }
+
             .unread_count {
                 margin-top: 2px;
             }
@@ -328,6 +338,10 @@
                 --color-background-opaque-hover-narrow-filter
             );
         }
+    }
+
+    &:has(.sidebar-topic-action-heading):hover {
+        background-color: var(--color-background-sidebar-action-heading-hover);
     }
 
     &.active-filter,
@@ -1076,9 +1090,8 @@ li.top_left_scheduled_messages {
 
     &:hover {
         text-decoration: none;
-        /* Push back against a:hover color in dark_theme.css
-           Eventually this will take redesigned hover colors. */
-        color: var(--color-text-sidebar-action-heading) !important;
+        /* Push back against a:hover color in dark_theme.css. */
+        color: var(--color-text-sidebar-action-heading-hover) !important;
     }
 }
 
@@ -1373,21 +1386,33 @@ li.topic-list-item {
     top: 0;
     z-index: 2;
     grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr)
-        max-content 0 42px;
-    grid-template-rows: var(--line-height-sidebar-row-prominent);
+        [topics-content-area-start] var(--left-sidebar-toggle-width-offset)
+        0 0 minmax(0, 1fr)
+        max-content 0 42px [topics-content-area-end];
+    grid-template-rows:
+        [topics-content-area-start] var(--line-height-sidebar-row-prominent)
+        [topics-content-area-end];
     padding-top: var(--left-sidebar-sections-vertical-gutter);
     color: hsl(0deg 0% 43%);
     background-color: var(--color-background);
 
     .show-all-streams {
-        grid-area: row-content;
+        grid-area: topics-content-area;
+        padding-left: var(--left-sidebar-toggle-width-offset);
         font-size: var(--font-size-sidebar-action-heading);
         font-weight: var(--font-weight-sidebar-action-heading);
         font-variant: var(--font-variant-sidebar-action-heading);
         text-transform: var(--text-transform-sidebar-action-heading);
         color: var(--color-text-sidebar-action-heading);
         text-decoration: none;
+
+        &:hover {
+            background-color: var(
+                --color-background-sidebar-action-heading-hover
+            );
+            box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+            border-radius: 4px;
+        }
     }
 
     .unread_count {
@@ -1682,7 +1707,10 @@ li.topic-list-item {
         }
 
         &:hover {
-            background-color: hsl(120deg 12.3% 71.4% / 38%);
+            background-color: var(
+                --color-background-sidebar-action-heading-hover
+            );
+            box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
             border-radius: 4px;
         }
     }

@@ -568,6 +568,9 @@
     --color-shadow-sidebar-row-hover: hsl(0deg 0% 0% / 30%);
     --color-background-sidebar-action-hover: hsl(240deg 100% 93%);
     --color-background-navigation-item-hover: hsl(240deg 100% 50% / 7%);
+    --color-background-sidebar-action-heading-hover: var(
+        --color-background-navigation-item-hover
+    );
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 80%);
@@ -713,6 +716,7 @@
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(216deg 65% 20%);
     --color-text-sidebar-action-heading: hsl(240deg 30% 40%);
+    --color-text-sidebar-action-heading-hover: hsl(240deg 100% 15%);
     --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
     --color-text-user-card-secondary: var(--grey-550);
     --color-text-url: hsl(200deg 100% 40%);
@@ -1040,6 +1044,9 @@
     --color-shadow-sidebar-row-hover: hsl(0deg 0% 100% / 30%);
     --color-background-sidebar-action-hover: hsl(240deg 25% 35%);
     --color-background-navigation-item-hover: hsl(240deg 100% 75% / 20%);
+    --color-background-sidebar-action-heading-hover: var(
+        --color-background-navigation-item-hover
+    );
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
@@ -1193,6 +1200,7 @@
     --color-text-user-card-secondary: var(--grey-400);
     --color-text-sidebar-heading: hsl(216deg 50% 75%);
     --color-text-sidebar-action-heading: hsl(240deg 35% 68%);
+    --color-text-sidebar-action-heading-hover: hsl(240deg 100% 90%);
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
 
