@@ -512,6 +512,7 @@ function hashchanged(from_reload, e) {
 
     if (hash_parser.is_overlay_hash(current_hash)) {
         browser_history.state.changing_hash = true;
+        modals.close_active_if_any();
         do_hashchange_overlay(old_hash);
         browser_history.state.changing_hash = false;
         return undefined;

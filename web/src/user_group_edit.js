@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
+import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
 import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
@@ -26,6 +27,7 @@ import * as settings_org from "./settings_org";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
+import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
 import * as user_group_create from "./user_group_create";
 import * as user_group_edit_members from "./user_group_edit_members";
@@ -874,6 +876,36 @@ export function setup_page(callback) {
     populate_and_fill();
 }
 
+function parse_args_for_deactivation_banner(objections) {
+    const args = {
+        streams_using_group_for_setting: [],
+        groups_using_group_for_setting: [],
+        realm_using_group_for_setting: false,
+    };
+    for (const objection of objections) {
+        if (objection.type === "channel") {
+            const stream_id = objection.channel_id;
+            const sub = stream_data.get_sub_by_id(stream_id);
+            const setting_url = hash_util.channels_settings_edit_url(sub, "general");
+            args.streams_using_group_for_setting.push({stream_name: sub.name, setting_url});
+            continue;
+        }
+
+        if (objection.type === "user_group") {
+            const group_id = objection.group_id;
+            const group = user_groups.get_user_group_from_id(group_id);
+            const setting_url = hash_util.group_edit_url(group, "general");
+            args.groups_using_group_for_setting.push({group_name: group.name, setting_url});
+            continue;
+        }
+
+        if (objection.type === "realm") {
+            args.realm_using_group_for_setting = true;
+        }
+    }
+    return args;
+}
+
 export function initialize() {
     $("#groups_overlay_container").on("click", ".group-row", function (e) {
         if ($(e.target).closest(".check, .user_group_settings_wrapper").length === 0) {
@@ -919,13 +951,33 @@ export function initialize() {
             return;
         }
         function deactivate_user_group() {
-            const url = "/json/user_groups/" + group_id + "/deactivate";
-            const opts = {
-                success_continuation() {
+            channel.post({
+                url: "/json/user_groups/" + group_id + "/deactivate",
+                data: {},
+                success() {
+                    dialog_widget.close();
                     active_group_data.$row.remove();
                 },
-            };
-            dialog_widget.submit_api_request(channel.post, url, {}, opts);
+                error(xhr) {
+                    dialog_widget.hide_dialog_spinner();
+                    if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_GROUP_IN_USE") {
+                        $("#deactivation-confirm-modal .dialog_submit_button").prop(
+                            "disabled",
+                            true,
+                        );
+                        const objections = xhr.responseJSON.objections;
+                        const template_args = parse_args_for_deactivation_banner(objections);
+                        const rendered_error_banner =
+                            render_cannot_deactivate_group_banner(template_args);
+                        $("#dialog_error")
+                            .html(rendered_error_banner)
+                            .addClass("alert-error")
+                            .show();
+                    } else {
+                        ui_report.error($t({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    }
+                },
+            });
         }
 
         const html_body = render_confirm_delete_user({
@@ -943,6 +995,7 @@ export function initialize() {
             on_click: deactivate_user_group,
             close_on_submit: false,
             loading_spinner: true,
+            id: "deactivation-confirm-modal",
         });
     });
 
