@@ -102,6 +102,10 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
         return false;
     }
 
+    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+        return false;
+    }
+
     if (!settings_data.user_can_move_messages_to_another_topic()) {
         return false;
     }
@@ -206,6 +210,10 @@ export function is_message_sent_by_my_bot(message: Message): boolean {
 }
 
 export function get_deletability(message: Message): boolean {
+    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+        return false;
+    }
+
     if (settings_data.user_can_delete_any_message()) {
         return true;
     }
@@ -240,6 +248,10 @@ export function is_stream_editable(message: Message, edit_limit_seconds_buffer =
     }
 
     if (message.type !== "stream") {
+        return false;
+    }
+
+    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
         return false;
     }
 

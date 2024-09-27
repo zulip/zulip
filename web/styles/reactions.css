@@ -6,6 +6,12 @@
         margin-bottom: var(--message-box-markdown-aligned-vertical-space);
     }
 
+    .message_reaction_container {
+        &.disabled {
+            cursor: not-allowed;
+        }
+    }
+
     .message_reaction {
         display: flex;
         /* Set a pixel and half padding to maintain
@@ -37,6 +43,10 @@
             padding: 1px 4px 1px 3px;
             font-weight: var(--font-weight-message-reaction);
             box-shadow: none;
+        }
+
+        &.disabled {
+            pointer-events: none;
         }
 
         &:hover {
