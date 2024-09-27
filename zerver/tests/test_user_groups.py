@@ -43,7 +43,7 @@ from zerver.lib.user_groups import (
     get_role_based_system_groups_dict,
     get_subgroup_ids,
     get_user_group_member_ids,
-    has_user_group_access,
+    has_user_group_access_for_subgroup,
     is_any_user_in_group,
     is_user_in_group,
     user_groups_in_realm_serialized,
@@ -395,7 +395,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertFalse(is_any_user_in_group(moderators_group, [hamlet, polonius]))
         self.assertFalse(is_any_user_in_group(moderators_group, [hamlet], direct_member_only=True))
 
-    def test_has_user_group_access_to_subgroup(self) -> None:
+    def test_has_user_group_access_for_subgroup(self) -> None:
         iago = self.example_user("iago")
         zulip_realm = get_realm("zulip")
         zulip_group = check_add_user_group(zulip_realm, "zulip", [], acting_user=None)
@@ -406,9 +406,9 @@ class UserGroupTestCase(ZulipTestCase):
         lear_realm = get_realm("lear")
         lear_group = check_add_user_group(lear_realm, "test", [], acting_user=None)
 
-        self.assertFalse(has_user_group_access(lear_group, iago))
-        self.assertTrue(has_user_group_access(zulip_group, iago))
-        self.assertTrue(has_user_group_access(moderators_group, iago))
+        self.assertFalse(has_user_group_access_for_subgroup(lear_group, iago))
+        self.assertTrue(has_user_group_access_for_subgroup(zulip_group, iago))
+        self.assertTrue(has_user_group_access_for_subgroup(moderators_group, iago))
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
