@@ -5,6 +5,11 @@
             <span class="dropdown-list-item-name">
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-bold-selected">{{name}}</span>
+                    {{#if has_delete_icon}}
+                        <span class="dropdown-list-delete">
+                            <i class="fa fa-trash-o dropdown-list-delete-icon"></i>
+                        </span>
+                    {{/if}}
                 {{else}}
                     {{name}}
                 {{/if}}

@@ -183,6 +183,13 @@ export const presence_schema = z.object({
     idle_timestamp: z.number().optional(),
 });
 
+export const saved_snippet_schema = z.object({
+    id: z.number(),
+    title: z.string(),
+    content: z.string(),
+    date_created: z.number(),
+});
+
 const one_time_notice_schema = z.object({
     name: z.string(),
     type: z.literal("one_time_notice"),
@@ -444,6 +451,11 @@ export const state_data_schema = z
                 presence_last_update_id: z.number().optional(),
             })
             .transform((presence) => ({presence})),
+    )
+    .and(
+        z
+            .object({saved_snippets: z.array(saved_snippet_schema)})
+            .transform((saved_snippets) => ({saved_snippets})),
     )
     .and(
         z

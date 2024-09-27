@@ -788,4 +788,14 @@ export function initialize(): void {
             return false;
         },
     });
+
+    tippy.delegate("body", {
+        target: ".saved_snippets-dropdown-list-container .dropdown-list-delete",
+        content: $t({defaultMessage: "Delete snippet"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }

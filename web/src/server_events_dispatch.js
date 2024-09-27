@@ -43,6 +43,8 @@ import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as reload from "./reload";
+import * as saved_snippets from "./saved_snippets";
+import * as saved_snippets_ui from "./saved_snippets_ui";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
@@ -503,6 +505,18 @@ export function dispatch_normal_event(event) {
             }
             break;
 
+        case "saved_snippets":
+            switch (event.op) {
+                case "add":
+                    saved_snippets.add_saved_snippet(event.saved_snippet);
+                    saved_snippets_ui.rerender_dropdown_widget();
+                    break;
+                case "remove":
+                    saved_snippets.remove_saved_snippet(event.saved_snippet_id);
+                    saved_snippets_ui.rerender_dropdown_widget();
+                    break;
+            }
+            break;
         case "scheduled_messages":
             switch (event.op) {
                 case "add": {

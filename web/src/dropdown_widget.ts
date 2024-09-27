@@ -145,7 +145,7 @@ export class DropdownWidget {
             `${this.widget_selector}, ${this.widget_wrapper_id}`,
             (e) => {
                 if (e.key === "Enter") {
-                    $(this.widget_selector).trigger("click");
+                    $(this.widget_selector)[0]?.click();
                     e.stopPropagation();
                     e.preventDefault();
                 }

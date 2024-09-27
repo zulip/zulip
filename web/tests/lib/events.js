@@ -596,6 +596,23 @@ exports.fixtures = {
         server_generation: 1707511515,
     },
 
+    saved_snippets__add: {
+        type: "saved_snippets",
+        op: "add",
+        saved_snippet: {
+            id: 1,
+            title: "Example",
+            content: "Welcome to the organization.",
+            date_created: 1681662420,
+        },
+    },
+
+    saved_snippets__remove: {
+        type: "saved_snippets",
+        op: "remove",
+        saved_snippet_id: 1,
+    },
+
     scheduled_messages__add: {
         type: "scheduled_messages",
         op: "add",

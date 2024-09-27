@@ -1973,12 +1973,29 @@ body:not(.hide-left-sidebar) {
         margin-top: 2px;
     }
 
+    .dropdown-list-delete {
+        visibility: hidden;
+        float: right;
+        margin-right: 5px;
+        cursor: pointer;
+        /* hsl(359deg 93% 39%) corresponds to var(--red-550) */
+        color: color-mix(in oklch, hsl(359deg 93% 39%) 70%, transparent);
+
+        &:hover {
+            color: hsl(359deg 93% 39%);
+        }
+    }
+
     &:focus,
     &:hover {
         color: var(--color-dropdown-item);
         text-decoration: none;
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
+
+        .dropdown-list-delete {
+            visibility: visible;
+        }
     }
 }
 
