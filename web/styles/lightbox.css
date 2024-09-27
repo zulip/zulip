@@ -167,7 +167,7 @@
 
     .center {
         display: flex;
-        justify-items: center;
+        justify-content: center;
 
         .arrow {
             display: inline-block;
