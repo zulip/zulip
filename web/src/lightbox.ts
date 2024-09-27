@@ -671,7 +671,14 @@ export function initialize(): void {
             return;
         }
 
-        open_image($original_media_element);
+        // Because a user could conceivably copy and paste a media reference
+        // from another message, and because we are selecting the original
+        // element above based on a data-url value that is therefore not
+        // guaranteed to be unique, we pass the first (possibly only) media
+        // element returned. The logic below for removing and adding the
+        // "selected" class ensures that the correct thumbnail will
+        // still be highlighted.
+        open_image($original_media_element.first());
 
         if (!$(".image-list .image.selected").hasClass("lightbox_video") || !is_video) {
             pan_zoom_control.reset();
