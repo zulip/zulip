@@ -74,7 +74,7 @@ class LockedUserGroupContext:
     recursive_subgroups: list[NamedUserGroup]
 
 
-def has_user_group_access(
+def has_user_group_access_for_subgroup(
     user_group: NamedUserGroup,
     user_profile: UserProfile,
     *,
@@ -282,8 +282,8 @@ def lock_subgroups_with_respect_to_supergroup(
             # At this time, we only do a check on the realm ID of the subgroup and
             # whether the group is deactivated or not. Realm ID error would be caught
             # above and in case the user group is deactivated the error will be raised
-            # in has_user_group_access itself, so there is no coverage here.
-            if not has_user_group_access(subgroup, acting_user):
+            # in has_user_group_access_for_subgroup itself, so there is no coverage here.
+            if not has_user_group_access_for_subgroup(subgroup, acting_user):
                 raise JsonableError(_("Insufficient permission"))  # nocoverage
 
         yield LockedUserGroupContext(
@@ -393,8 +393,8 @@ def update_or_create_user_group_for_setting(
         # At this time, we only do a check on the realm ID of the subgroup and
         # whether the group is deactivated or not. Realm ID error would be caught
         # above and in case the user group is deactivated the error will be raised
-        # in has_user_group_access itself, so there is no coverage here.
-        if not has_user_group_access(subgroup, user_profile):
+        # in has_user_group_access_for_subgroup itself, so there is no coverage here.
+        if not has_user_group_access_for_subgroup(subgroup, user_profile):
             raise JsonableError(_("Insufficient permission"))  # nocoverage
 
     user_group.direct_subgroups.set(group_ids_found)
