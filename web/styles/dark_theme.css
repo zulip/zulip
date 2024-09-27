@@ -155,6 +155,19 @@
             0 2px 4px hsl(0deg 0% 0% / 20%);
     }
 
+    .dropdown-list-delete {
+        /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
+        color: color-mix(
+            in oklch,
+            hsl(7deg 100% 74%) 70%,
+            transparent
+        ) !important;
+
+        &:hover {
+            color: hsl(7deg 100% 74%) !important;
+        }
+    }
+
     #navbar-middle .column-middle-inner,
     .header,
     #message_view_header {

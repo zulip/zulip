@@ -1588,6 +1588,51 @@ textarea.new_message_textarea {
     }
 }
 
+.saved_snippets-dropdown-list-container {
+    width: 250px;
+
+    .dropdown-list .dropdown-list-item-common-styles {
+        padding: 5px 10px;
+        display: flex;
+        flex-direction: column;
+
+        .dropdown-list-item-name {
+            line-height: 15px;
+        }
+
+        .dropdown-list-item-description {
+            white-space: nowrap;
+            font-weight: 400;
+            font-size: 13px;
+            opacity: 0.8;
+            padding: 0;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .dropdown-list-bold-selected {
+            font-weight: 500;
+            max-width: 210px;
+            display: inline-block;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    }
+}
+
+#add-new-saved-snippet-modal {
+    & .saved-snippet-title {
+        width: 97%;
+        margin-bottom: 20px;
+    }
+
+    & .saved-snippet-content {
+        width: 97%;
+        resize: vertical;
+    }
+}
+
 #compose.compose-fullscreen,
 #compose.compose-intermediate {
     z-index: 99;

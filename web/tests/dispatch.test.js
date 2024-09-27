@@ -54,6 +54,8 @@ const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
 const reload = mock_esm("../src/reload");
+const saved_snippets = mock_esm("../src/saved_snippets");
+const saved_snippets_ui = mock_esm("../src/saved_snippets_ui");
 const scheduled_messages = mock_esm("../src/scheduled_messages");
 const scheduled_messages_feed_ui = mock_esm("../src/scheduled_messages_feed_ui");
 const scheduled_messages_overlay_ui = mock_esm("../src/scheduled_messages_overlay_ui");
@@ -178,6 +180,29 @@ run_test("alert_words", ({override}) => {
     assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
+});
+
+run_test("saved_snippets", ({override}) => {
+    const add_event = event_fixtures.saved_snippets__add;
+    override(saved_snippets_ui, "rerender_dropdown_widget", noop);
+    {
+        const stub = make_stub();
+        override(saved_snippets, "add_saved_snippet", stub.f);
+
+        dispatch(add_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, add_event.saved_snippet);
+    }
+
+    const remove_event = event_fixtures.saved_snippets__remove;
+    {
+        const stub = make_stub();
+        override(saved_snippets, "remove_saved_snippet", stub.f);
+
+        dispatch(remove_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, remove_event.saved_snippet_id);
+    }
 });
 
 run_test("attachments", ({override}) => {
