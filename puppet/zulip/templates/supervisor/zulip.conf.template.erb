@@ -25,7 +25,7 @@ killasgroup=true              ; Without this, we leak processes every restart
 directory=/home/zulip/deployments/current/
 
 [program:zulip-tus]
-command=nice -n5 /home/zulip/deployments/current/manage.py runtusd 9900
+command=nice -n5 /home/zulip/deployments/current/manage.py runtusd <%= @tusd_server_listen %>:9900
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=100                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
