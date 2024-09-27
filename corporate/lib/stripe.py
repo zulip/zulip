@@ -3722,25 +3722,22 @@ class BillingSession(ABC):
         end_date: datetime,
     ) -> None:
         assert not isinstance(self, RealmBillingSession)
-        # Set stripe_customer_id to None to avoid customer being charged without a payment method.
-        customer = self.update_or_create_customer(
-            stripe_customer_id=None, defaults={"stripe_customer_id": None}
-        )
+        customer = self.update_or_create_customer()
 
-        # Servers on legacy plan which are scheduled to be upgraded have 2 plans.
-        # This plan will be used to track the current status of SWITCH_PLAN_TIER_AT_PLAN_END
-        # and will not charge the customer. The other plan will be used to track the new plan
-        # customer will move to the end of this plan.
+        # Customers on a legacy plan that is scheduled to be upgraded have 2 plans.
+        # This plan is used to track the current status of SWITCH_PLAN_TIER_AT_PLAN_END
+        # and will not charge the customer. The other plan is used to track the new plan
+        # the customer will move to the end of this plan.
         legacy_plan_anchor = renewal_date
         legacy_plan_params = {
             "billing_cycle_anchor": legacy_plan_anchor,
             "status": CustomerPlan.ACTIVE,
             "tier": CustomerPlan.TIER_SELF_HOSTED_LEGACY,
-            # End when the new plan starts.
+            # end_date and next_invoice_date should always be the same for these plans.
             "end_date": end_date,
             "next_invoice_date": end_date,
             # The primary mechanism for preventing charges under this
-            # plan is setting 'invoiced_through' to last ledger_entry below,
+            # plan is setting 'invoiced_through' to the ledger_entry below,
             # but setting a 0 price is useful defense in depth here.
             "price_per_license": 0,
             "billing_schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
