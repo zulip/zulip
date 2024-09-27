@@ -12,7 +12,6 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
-import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user} from "./state_data";
@@ -160,7 +159,7 @@ export function ajaxSubscribe(stream, color, $stream_row) {
             const res = xhr.responseJSON;
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
-                true_stream_name = res.already_subscribed[people.my_current_email()][0];
+                true_stream_name = res.already_subscribed[current_user.user_id][0];
                 ui_report.success(
                     $t_html(
                         {defaultMessage: "Already subscribed to {channel}"},
