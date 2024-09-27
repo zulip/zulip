@@ -664,13 +664,6 @@ export function clear_and_populate_unread_mention_topics(): void {
     }
 }
 
-export function message_unread(message: Message): boolean {
-    if (message === undefined) {
-        return false;
-    }
-    return message.unread;
-}
-
 export function get_read_message_ids(message_ids: number[]): number[] {
     return message_ids.filter((message_id) => !unread_messages.has(message_id));
 }

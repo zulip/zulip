@@ -6,7 +6,6 @@ import type {Filter} from "./filter";
 import type {Message} from "./message_store";
 import * as muted_users from "./muted_users";
 import {current_user} from "./state_data";
-import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
@@ -268,7 +267,7 @@ export class MessageListData {
         // See https://github.com/zulip/zulip/pull/30008#discussion_r1597279862 for how
         // ideas on how to possibly improve this.
         // before `first_unread` calculated below that we haven't fetched yet.
-        const first_unread = this._items.find((message) => unread.message_unread(message));
+        const first_unread = this._items.find((message) => message.unread);
 
         if (first_unread) {
             return first_unread.id;
@@ -281,7 +280,7 @@ export class MessageListData {
     }
 
     has_unread_messages(): boolean {
-        return this._items.some((message) => unread.message_unread(message));
+        return this._items.some((message) => message.unread);
     }
 
     add_messages(messages: Message[]): {

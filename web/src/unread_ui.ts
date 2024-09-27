@@ -143,7 +143,7 @@ export function initialize({
         // every message matching the current search as read.
         const unread_messages = message_lists.current.data
             .all_messages()
-            .filter((message) => unread.message_unread(message));
+            .filter((message) => message.unread);
         notify_server_messages_read(unread_messages);
         // New messages received may be marked as read based on narrow type.
         message_lists.current.resume_reading();

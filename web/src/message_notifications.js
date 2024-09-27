@@ -10,7 +10,6 @@ import * as people from "./people";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
-import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
@@ -380,7 +379,7 @@ export function received_messages(messages) {
         if (!message_is_notifiable(message)) {
             continue;
         }
-        if (!unread.message_unread(message)) {
+        if (!message.unread) {
             // The message is already read; Zulip is currently in focus.
             continue;
         }
