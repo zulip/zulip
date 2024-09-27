@@ -469,7 +469,10 @@ export function show_from_selected_message(): void {
 
     if ($media.length !== 0) {
         const open_media = build_open_media_function(undefined);
-        open_media($media);
+        // Since this function is only called from the "show_lightbox"
+        // hotkey, we don't have a selected image to load. Therefore,
+        // we show the first one returned from the traversal above.
+        open_media($media.first());
     }
 }
 
