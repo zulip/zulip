@@ -112,7 +112,7 @@
                     <label for="automatic-license-count" class="inline-block label-title">
                         Number of licenses
                         {% if is_self_hosted_billing %}
-                        <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">
+                        <a href="/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% else %}
@@ -126,7 +126,7 @@
                         {{ licenses }}
                         <br />
                         Licenses are managed
-                        <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-license-management-work">automatically</a>.
+                        <a href="/help/self-hosted-billing#how-does-automatic-license-management-work">automatically</a>.
                         You can
                         <a class="toggle-license-management" type="button">switch</a>
                         to manual license management.
@@ -138,7 +138,7 @@
                     <label for="current-manual-license-count" class="inline-block label-title">
                         Number of licenses for current billing period
                         {% if is_self_hosted_billing %}
-                        <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
+                        <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% else %}
@@ -160,7 +160,7 @@
                     <div id="current-license-change-error" class="alert alert-danger billing-page-error"></div>
                     <div class="not-editable-realm-field billing-page-license-management-description">
                         Licenses are managed
-                        <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work">manually</a>.
+                        <a href="/help/self-hosted-billing#how-does-manual-license-management-work">manually</a>.
                         You can
                         <a class="toggle-license-management" type="button">switch</a>
                         to automatic license management.
@@ -172,7 +172,7 @@
                     <label for="next-manual-license-count" class="inline-block label-title">
                         Number of licenses for next billing period
                         {% if is_self_hosted_billing %}
-                        <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
+                        <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% else %}
@@ -606,7 +606,7 @@
             <main class="modal__content">
                 <p>
                     Are you sure you want to switch to
-                    <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-license-management-work">
+                    <a href="/help/self-hosted-billing#how-does-automatic-license-management-work">
                         {% if automanage_licenses %}
                             manual
                         {% else %}
