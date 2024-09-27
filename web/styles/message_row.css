@@ -655,13 +655,16 @@
 }
 
 .edit-content-container {
-    position: relative;
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
     transition: border 0.2s ease;
 
     &:has(.message_edit_content:focus) {
         border-color: var(--color-message-content-container-border-focus);
+    }
+
+    .message-edit-textbox {
+        position: relative;
     }
 }
 
