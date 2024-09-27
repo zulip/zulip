@@ -742,13 +742,6 @@ test("declare_bankruptcy", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-test("message_unread", () => {
-    // Test some code that might be overly defensive, for line coverage sake.
-    assert.ok(!unread.message_unread(undefined));
-    assert.ok(unread.message_unread({unread: true}));
-    assert.ok(!unread.message_unread({unread: false}));
-});
-
 test("server_counts", () => {
     // note that user_id 30 is "me"
 

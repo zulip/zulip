@@ -18,7 +18,6 @@ import type {UserPillItem} from "./search_suggestion";
 import {current_user, realm} from "./state_data";
 import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
-import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
@@ -177,7 +176,7 @@ function message_matches_search_term(message: Message, operator: string, operand
                 case "alerted":
                     return message.alerted;
                 case "unread":
-                    return unread.message_unread(message);
+                    return message.unread;
                 case "resolved":
                     return message.type === "stream" && resolved_topic.is_resolved(message.topic);
                 case "followed":
