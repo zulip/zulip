@@ -206,6 +206,9 @@ class RegistrationForm(RealmDetailsForm):
         self.fields["how_realm_creator_found_zulip_which_organization"] = forms.CharField(
             max_length=100, required=False
         )
+        self.fields["how_realm_creator_found_zulip_review_site"] = forms.CharField(
+            max_length=100, required=False
+        )
 
     def clean_full_name(self) -> str:
         try:

@@ -312,6 +312,7 @@ $(() => {
             ["other", "how-realm-creator-found-zulip-other"],
             ["ad", "how-realm-creator-found-zulip-where-ad"],
             ["existing_user", "how-realm-creator-found-zulip-which-organization"],
+            ["review_site", "how-realm-creator-found-zulip-review-site"],
         ]);
 
         const hideElement = (element: string): void => {

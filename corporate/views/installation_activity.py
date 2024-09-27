@@ -254,6 +254,7 @@ def realm_summary_table(export: bool) -> str:
         if how_found in (
             RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["other"],
             RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["ad"],
+            RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["review_site"],
         ):
             row["how_realm_creator_found_zulip"] += f": {extra_context}"
         elif how_found == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["existing_user"]:
