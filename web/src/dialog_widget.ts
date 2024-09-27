@@ -96,24 +96,7 @@ export function hide_dialog_spinner(): void {
     loading.destroy_indicator($spinner);
 }
 
-export function show_dialog_spinner(): void {
-    const dialog_widget_selector = current_dialog_widget_selector();
-    // Disable both the buttons.
-    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", true);
 
-    const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
-    const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
-
-    // Hide the submit button after computing its height, since submit
-    // buttons with long text might affect the size of the button.
-    $(".dialog_submit_button span").hide();
-
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
-}
 
 // Supports a callback to be called once the modal finishes closing.
 export function close(on_hidden_callback?: () => void): void {
@@ -232,7 +215,8 @@ export function launch(conf: DialogWidgetConfig): string {
             return;
         }
         if (conf.loading_spinner) {
-            show_dialog_spinner();
+            const $button = $("#dialog_widget_modal .modal__btn");
+            loading.show_modal_spinner($button);
         } else if (conf.close_on_submit) {
             close();
         }
@@ -267,7 +251,8 @@ export function submit_api_request(
         error_continuation,
     }: RequestOpts = {},
 ): void {
-    show_dialog_spinner();
+    const $button = $("#dialog_widget_modal .modal__btn");
+    loading.show_modal_spinner($button);
     void request_method({
         url,
         data,

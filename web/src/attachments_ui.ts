@@ -222,7 +222,8 @@ export function suggest_delete_detached_attachments(attachments_list: ServerAtta
     }
 
     function do_delete_attachments(): void {
-        dialog_widget.show_dialog_spinner();
+        const $button = $("#dialog_widget_modal .modal__btn");
+        loading.show_modal_spinner($button);
         for (const [key, attachment] of attachments_map.entries()) {
             const id = Number(key);
             void channel.del({
