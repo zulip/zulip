@@ -173,6 +173,7 @@ class AbstractRealmAuditLog(models.Model):
         "review_site": "Review site",
         "personal_recommendation": "Personal recommendation",
         "hacker_news": "Hacker News",
+        "reddit": "Reddit",
         "ad": "Advertisement",
         "other": "Other",
         "forgot": "Don't remember",
