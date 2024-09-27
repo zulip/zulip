@@ -388,36 +388,56 @@ export class Filter {
         };
     }
 
-    static ensure_channel_topic_terms(orig_terms: NarrowTerm[]): NarrowTerm[] {
+    static ensure_channel_topic_terms(
+        orig_terms: NarrowTerm[],
+        message: Message,
+    ): NarrowTerm[] | undefined {
         // In presence of `with` term without channel or topic terms in the narrow, the
         // narrow is populated with the channel and toipic terms through this operation,
         // so that `with` can be used as a standalone operator to target conversation.
-        const with_term = orig_terms.find((term: NarrowTerm) => term.operator === "with");
+        const contains_with_operator = orig_terms.some((term) => term.operator === "with");
 
-        if (!with_term) {
-            return orig_terms;
+        if (!contains_with_operator) {
+            return undefined;
         }
 
-        const updated_terms = orig_terms.filter((term: NarrowTerm) => term.operator !== "dm");
+        let contains_channel_term = false;
+        let contains_topic_term = false;
+        let contains_dm_term = false;
 
-        let channel_term = updated_terms.find(
-            (term: NarrowTerm) => Filter.canonicalize_operator(term.operator) === "channel",
-        );
-        let topic_term = updated_terms.find(
-            (term: NarrowTerm) => Filter.canonicalize_operator(term.operator) === "topic",
-        );
-
-        if (!topic_term) {
-            topic_term = {operator: "topic", operand: ""};
-            const with_index = updated_terms.indexOf(with_term);
-            updated_terms.splice(with_index, 0, topic_term);
+        for (const term of orig_terms) {
+            switch (Filter.canonicalize_operator(term.operator)) {
+                case "channel":
+                    contains_channel_term = true;
+                    break;
+                case "topic":
+                    contains_topic_term = true;
+                    break;
+                case "dm":
+                    contains_dm_term = true;
+            }
         }
 
-        if (!channel_term) {
-            channel_term = {operator: "channel", operand: ""};
-            const topic_index = updated_terms.indexOf(topic_term);
-            updated_terms.splice(topic_index, 0, channel_term);
+        // If the narrow is already a channel-topic narrow containing
+        // channel and topic terms, we will return undefined now so that
+        // it can be adjusted further if needed later.
+        if (!contains_dm_term && contains_channel_term && contains_topic_term) {
+            return undefined;
         }
+
+        const conversation_terms = new Set(["channel", "topic", "dm"]);
+
+        const non_conversation_terms = orig_terms.filter((term) => {
+            const operator = Filter.canonicalize_operator(term.operator);
+            return !conversation_terms.has(operator);
+        });
+
+        assert(message.type === "stream");
+
+        const channel_term = {operator: "channel", operand: message.stream_id.toString()};
+        const topic_term = {operator: "topic", operand: message.topic};
+
+        const updated_terms = [channel_term, topic_term, ...non_conversation_terms];
         return updated_terms;
     }
 
@@ -880,7 +900,14 @@ export class Filter {
         const adjusted_terms = [];
         let terms_changed = false;
 
-        raw_terms = Filter.ensure_channel_topic_terms(raw_terms);
+        const adjusted_narrow_containing_with = Filter.ensure_channel_topic_terms(
+            raw_terms,
+            message,
+        );
+
+        if (adjusted_narrow_containing_with !== undefined) {
+            return adjusted_narrow_containing_with;
+        }
 
         for (const term of raw_terms) {
             const adjusted_term = {...term};
