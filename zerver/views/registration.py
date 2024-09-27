@@ -506,6 +506,13 @@ def registration_helper(
                 how_realm_creator_found_zulip_extra_context = form.cleaned_data[
                     "how_realm_creator_found_zulip_which_organization"
                 ]
+            elif (
+                how_realm_creator_found_zulip
+                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["review_site"]
+            ):  # nocoverage
+                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
+                    "how_realm_creator_found_zulip_review_site"
+                ]
 
             realm = do_create_realm(
                 string_id,

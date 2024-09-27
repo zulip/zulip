@@ -1464,9 +1464,7 @@ button#register_auth_button_gitlab {
     top: -5px;
 }
 
-#how-realm-creator-found-zulip-where-ad,
-#how-realm-creator-found-zulip-other,
-#how-realm-creator-found-zulip-which-organization {
+#how-realm-creator-found-zulip .how-found-zulip-extra-data-input {
     margin-top: 5px;
     display: none;
 }
