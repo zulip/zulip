@@ -647,6 +647,9 @@ export function initialize(): void {
     });
 
     $("#lightbox_overlay").on("click", ".image-list .image", function (this: HTMLElement) {
+        // Remove any video players so sound does not continue when
+        // navigating away from a video that might be playing
+        remove_video_players();
         const $media_list = $(this).parent();
         let $original_media_element;
         const is_video = $(this).hasClass("lightbox_video");
