@@ -29,7 +29,7 @@ from corporate.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import Realm
-from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import get_org_type_display_name
 from zerver.models.users import UserProfile
 
@@ -248,10 +248,16 @@ def realm_summary_table(export: bool) -> str:
         row["stats_link"] = realm_stats_link(realm_string_id)
         row["support_link"] = realm_support_link(realm_string_id)
         row["activity_link"] = realm_activity_link(realm_string_id)
-        if row["how_realm_creator_found_zulip"] == "Other":
-            row["how_realm_creator_found_zulip"] = (
-                "Other: " + row["how_realm_creator_found_zulip_extra_context"]
-            )
+
+        how_found = row["how_realm_creator_found_zulip"]
+        extra_context = row["how_realm_creator_found_zulip_extra_context"]
+        if how_found in (
+            RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["other"],
+            RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["ad"],
+        ):
+            row["how_realm_creator_found_zulip"] += f": {extra_context}"
+        elif how_found == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["existing_user"]:
+            row["how_realm_creator_found_zulip"] = f"Organization: {extra_context}"
 
         # Get human messages sent per day.
         try:
