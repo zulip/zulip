@@ -656,17 +656,19 @@ export function initialize(): void {
         const $media_list = $(this).parent();
         let $original_media_element;
         const is_video = $(this).hasClass("lightbox_video");
+        // Because multiple media elements may match on the same data-url,
+        // we capture the first of these
         if (is_video) {
             $original_media_element = $<HTMLMediaElement>(
                 `.message_row a[href='${CSS.escape($(this).attr("data-url")!)}'] video`,
-            );
+            )?.first();
         } else {
             $original_media_element = $<HTMLImageElement>(
                 `.message_row a[href='${CSS.escape($(this).attr("data-url")!)}'] img`,
-            );
+            )?.first();
         }
 
-        // If $original_media_element comes back empty, that means that
+        // If $original_media_element comes with a 0 length, that means that
         // something in the message list has changed (e.g., a moved or
         // deleted message, or the deletion of a media element that was
         // available when the lightbox opened). In that event, we continue
@@ -684,7 +686,7 @@ export function initialize(): void {
         // element returned. The logic below for removing and adding the
         // "selected" class ensures that the correct thumbnail will
         // still be highlighted.
-        open_image($original_media_element.first());
+        open_image($original_media_element);
 
         if (!$(".image-list .image.selected").hasClass("lightbox_video") || !is_video) {
             pan_zoom_control.reset();
