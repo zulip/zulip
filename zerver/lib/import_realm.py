@@ -346,6 +346,11 @@ def fix_message_rendered_content(
     This function sets the rendered_content of the messages we're importing.
     """
     for message in messages:
+        if content_key not in message:
+            # Message-edit entries include topic moves, which don't
+            # have any content changes to process.
+            continue
+
         if message[rendered_content_key] is not None:
             # For Zulip->Zulip imports, we use the original rendered
             # Markdown; this avoids issues where e.g. a mention can no
