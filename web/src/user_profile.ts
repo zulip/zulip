@@ -86,7 +86,6 @@ const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
 
-
 export function hide_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", false);

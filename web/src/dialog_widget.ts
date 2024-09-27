@@ -87,17 +87,6 @@ type RequestOpts = {
     error_continuation?: Parameters<AjaxRequestHandler>[0]["error"];
 };
 
-export function hide_dialog_spinner(): void {
-    $(".dialog_submit_button span").show();
-    const dialog_widget_selector = current_dialog_widget_selector();
-    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", false);
-
-    const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    loading.destroy_indicator($spinner);
-}
-
-
-
 // Supports a callback to be called once the modal finishes closing.
 export function close(on_hidden_callback?: () => void): void {
     modals.close(current_dialog_widget_id(), {on_hidden: on_hidden_callback});
@@ -264,7 +253,7 @@ export function submit_api_request(
         },
         error(xhr, error_type, xhn) {
             ui_report.error(failure_msg_html, xhr, $("#dialog_error"));
-            hide_dialog_spinner();
+            loading.hide_modal_spinner($button);
             if (error_continuation !== undefined) {
                 error_continuation(xhr, error_type, xhn);
             }

@@ -9,7 +9,6 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as desktop_notifications from "./desktop_notifications";
-import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
@@ -233,7 +232,8 @@ function bulk_update_read_flags_for_narrow(
                     body: xhr.responseText,
                 });
                 if (caller_modal_id && modals.is_active(caller_modal_id)) {
-                    dialog_widget.hide_dialog_spinner();
+                    const $button = $("#dialog_widget_modal .modal__btn");
+                    loading.hide_modal_spinner($button);
                 }
             }
         },

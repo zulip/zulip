@@ -112,3 +112,17 @@ export function show_modal_spinner($button: JQuery): void {
         height: submit_button_span_height,
     });
 }
+
+export function hide_modal_spinner($button: JQuery): void {
+    // Ensure we're only affecting the submit button
+    if (!$button.hasClass("dialog_submit_button")) {
+        return;
+    }
+
+    const $spinner = $button.find(".modal__spinner");
+    $button.prop("disabled", false);
+    $button.find("span").show();
+
+    // Hide the spinner
+    destroy_indicator($spinner);
+}

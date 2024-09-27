@@ -504,8 +504,7 @@ export async function build_move_topic_to_stream_popover(
         }
 
         const $button = $("#dialog_widget_modal .modal__btn");
-        loading.show_modal_spinner
-        ($button);
+        loading.show_modal_spinner($button);
         message_edit.with_first_message_id(
             current_stream_id,
             old_topic_name,
@@ -520,7 +519,8 @@ export async function build_move_topic_to_stream_popover(
                 );
             },
             (xhr) => {
-                dialog_widget.hide_dialog_spinner();
+                const $button = $("#dialog_widget_modal .modal__btn");
+                loading.hide_modal_spinner($button);
                 ui_report.error(
                     $t_html({defaultMessage: "Error moving topic"}),
                     xhr,
