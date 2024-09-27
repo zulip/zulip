@@ -157,7 +157,7 @@ export function process_notification(notification) {
 
     const title = get_notification_title(message, msg_count);
 
-    if (notification.desktop_notify) {
+    if (notification.desktop_notify && desktop_notifications.NotificationAPI !== undefined) {
         const icon_url = people.small_avatar_url(message);
         notification_object = new desktop_notifications.NotificationAPI(title, {
             icon: icon_url,
