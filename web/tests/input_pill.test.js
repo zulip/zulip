@@ -405,9 +405,18 @@ run_test("insert_remove", ({mock_template}) => {
         };
     }
 
+    let color_focused;
+    function handle_event(color) {
+        return (event) => {
+            assert.equal(event, "focus");
+            color_focused = color;
+        };
+    }
+
     const pills = widget._get_pills_for_testing();
     for (const pill of pills) {
         pill.$element.remove = set_colored_removed_func(pill.item.color_name);
+        pill.$element.trigger = handle_event(pill.item.color_name);
     }
 
     let key_handler = $container.get_on_handler("keydown", ".input");
@@ -422,13 +431,13 @@ run_test("insert_remove", ({mock_template}) => {
         },
     );
 
-    assert.ok(removed);
-    assert.equal(color_removed, "YELLOW");
-
-    assert.deepEqual(widget.items(), [items.blue, items.red]);
+    // The first backspace focuses the pill, the second removes it.
+    assert.ok(!removed);
+    assert.equal(color_focused, "YELLOW");
+    const yellow_pill = pills.find((pill) => pill.item.color_name === "YELLOW");
+    $container.set_find_results(".pill:focus", yellow_pill.$element);
 
     let next_pill_focused = false;
-
     const $next_pill_stub = {
         trigger(type) {
             if (type === "focus") {
@@ -436,6 +445,22 @@ run_test("insert_remove", ({mock_template}) => {
             }
         },
     };
+    yellow_pill.$element.next = () => $next_pill_stub;
+
+    key_handler = $container.get_on_handler("keydown", ".pill");
+    key_handler.call(
+        {},
+        {
+            key: "Backspace",
+            preventDefault: noop,
+        },
+    );
+    assert.ok(removed);
+    assert.equal(color_removed, "YELLOW");
+    assert.ok(next_pill_focused);
+
+    next_pill_focused = false;
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
 
     const $focus_pill_stub = {
         next: () => $next_pill_stub,

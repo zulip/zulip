@@ -214,8 +214,7 @@ export function create<ItemType extends {type: string}>(
             return undefined;
         },
 
-        // this will remove the last pill in the container -- by default tied
-        // to the "Backspace" key when the value of the input is empty.
+        // This will remove the last pill in the container.
         // If quiet is a truthy value, the event handler associated with the
         // pill will not be evaluated. This is useful when using clear to reset
         // the pills.
@@ -317,16 +316,21 @@ export function create<ItemType extends {type: string}>(
             const selection = window.getSelection();
             // If no text is selected, and the cursor is just to the
             // right of the last pill (with or without text in the
-            // input), then backspace deletes the last pill.
+            // input), then backspace highlights or deletes the last pill.
             if (
                 e.key === "Backspace" &&
                 (funcs.value(this).length === 0 ||
                     (selection?.anchorOffset === 0 && selection?.toString()?.length === 0))
             ) {
                 e.preventDefault();
-                funcs.removeLastPill("backspace");
-
-                return;
+                const pill = store.pills.at(-1);
+                // We focus the pill first first, as a signal that the pill
+                // is about to be deleted. The deletion will then happen through
+                // `removePill` from the event handler on the pill.
+                if (pill) {
+                    assert(!pill.$element.is(":focus"));
+                    pill.$element.trigger("focus");
+                }
             }
 
             // if one is on the ".input" element and back/left arrows, then it
