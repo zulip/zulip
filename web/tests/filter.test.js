@@ -861,16 +861,42 @@ test("canonicalization", () => {
 });
 
 test("ensure_channel_topic_terms", () => {
-    const channel_term = {operator: "channel", operand: ""};
-    const topic_term = {operator: "topic", operand: ""};
+    const channel_term = {operator: "channel", operand: `${general_sub.stream_id}`};
+    const topic_term = {operator: "topic", operand: "discussion"};
 
-    const term_1 = Filter.ensure_channel_topic_terms([{operator: "with", operand: 12}]);
-    const term_2 = Filter.ensure_channel_topic_terms([topic_term, {operator: "with", operand: 12}]);
-    const term_3 = Filter.ensure_channel_topic_terms([
-        channel_term,
-        {operator: "with", operand: 12},
-    ]);
-    const terms = [term_1, term_2, term_3];
+    const message = {
+        type: "stream",
+        id: 12,
+        stream_id: general_sub.stream_id,
+        display_recipient: "general",
+        topic: "discussion",
+    };
+
+    const term_1 = Filter.ensure_channel_topic_terms(
+        [{operator: "with", operand: message.id}],
+        message,
+    );
+    const term_2 = Filter.ensure_channel_topic_terms(
+        [topic_term, {operator: "with", operand: message.id}],
+        message,
+    );
+    const term_3 = Filter.ensure_channel_topic_terms(
+        [channel_term, {operator: "with", operand: message.id}],
+        message,
+    );
+    const term_4 = Filter.ensure_channel_topic_terms(
+        [
+            {operator: "dm", operand: "foo@example.com"},
+            {operator: "with", operand: message.id},
+        ],
+        message,
+    );
+    const term_5 = Filter.ensure_channel_topic_terms(
+        [{operator: "with", operand: message.id}],
+        message,
+    );
+
+    const terms = [term_1, term_2, term_3, term_4, term_5];
 
     for (const term of terms) {
         assert.deepEqual(term, [channel_term, topic_term, {operator: "with", operand: 12}]);
