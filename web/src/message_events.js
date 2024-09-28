@@ -133,7 +133,11 @@ export function update_views_filtered_on_message_property(
                 url: "/json/messages/" + messages_to_fetch[0],
                 success(data) {
                     message_helper.process_new_message(data.message);
-                    update_views_filtered_on_message_property(message_ids, property_term_type);
+                    update_views_filtered_on_message_property(
+                        message_ids,
+                        property_term_type,
+                        property_value,
+                    );
                 },
             });
         } else {
