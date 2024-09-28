@@ -37,7 +37,7 @@ function common_click_handlers(): void {
     });
 }
 // This callback is called from the popovers on all home views
-function register_mark_all_read_handler(
+function register_mark_messages_as_read_handler(
     event: JQuery.ClickEvent<
         tippy.PopperElement,
         {
@@ -46,7 +46,7 @@ function register_mark_all_read_handler(
     >,
 ): void {
     const {instance} = event.data;
-    unread_ops.confirm_mark_all_as_read();
+    unread_ops.confirm_mark_messages_as_read();
     popover_menus.hide_current_popover_if_visible(instance);
 }
 
@@ -136,7 +136,7 @@ export function initialize(): void {
                 "click",
                 "#mark_all_messages_as_read",
                 {instance},
-                register_mark_all_read_handler,
+                register_mark_messages_as_read_handler,
             );
         },
         onShow(instance) {
@@ -167,7 +167,7 @@ export function initialize(): void {
                 "click",
                 "#mark_all_messages_as_read",
                 {instance},
-                register_mark_all_read_handler,
+                register_mark_messages_as_read_handler,
             );
         },
         onShow(instance) {
@@ -201,7 +201,7 @@ export function initialize(): void {
                 "click",
                 "#mark_all_messages_as_read",
                 {instance},
-                register_mark_all_read_handler,
+                register_mark_messages_as_read_handler,
             );
         },
         onShow(instance) {

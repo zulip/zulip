@@ -1,0 +1,15 @@
+<p>
+    {{t "Which messages do you want to mark as read? This action cannot be undone." }}
+</p>
+<div class="new-style settings-section show">
+    <div class="input-group message-dropdown">
+        <select id="mark_as_read_option" class="form-control modal_select">
+            <option value="muted_topics">{{t "Muted topics" }}</option>
+            <option value="topics_not_followed" selected>{{t "Topics I don't follow" }}</option>
+            <option value="all_messages">{{t "All messages" }}</option>
+        </select>
+    </div>
+    <div id="message_count" class="message-count">
+        <span class="counter">{{t "0"}}</span> messages will be marked as read.
+    </div>
+</div>
