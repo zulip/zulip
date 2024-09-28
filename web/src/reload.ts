@@ -58,9 +58,8 @@ function preserve_state(send_after_reload: boolean, save_compose: boolean): void
         const msg_type = compose_state.get_message_type();
         if (msg_type === "stream") {
             const stream_id = compose_state.stream_id();
-            assert(stream_id !== undefined);
             url += "+msg_type=stream";
-            url += "+stream_id=" + encodeURIComponent(stream_id);
+            url += "+stream_id=" + (stream_id ? encodeURIComponent(stream_id) : undefined);
             url += "+topic=" + encodeURIComponent(compose_state.topic());
         } else if (msg_type === "private") {
             url += "+msg_type=private";
