@@ -375,9 +375,14 @@ export function create<ItemType extends {type: string}>(
                     $pill.next().trigger("focus");
                     break;
                 case "Backspace": {
+                    const $prev = $pill.prev();
                     const $next = $pill.next();
                     funcs.removePill(util.the($pill), "backspace");
-                    $next.trigger("focus");
+                    if ($prev.length) {
+                        $prev.trigger("focus");
+                    } else {
+                        $next.trigger("focus");
+                    }
                     // the "Backspace" key in Firefox will go back a page if you do
                     // not prevent it.
                     e.preventDefault();
