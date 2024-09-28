@@ -113,26 +113,47 @@ export function update_views_filtered_on_message_property(
             }
         }
 
-        // In most cases, we will only have one message to fetch which
-        // can happen without rerendering the view.
-        // In case of multiple messages, we just rerender the view
-        // since it is likely to use similar amount of resources to
-        // fetching the messages and rerendering the view.
-        if (messages_to_fetch.length > 1 || !filter.can_apply_locally()) {
-            // TODO: Might be better to check if `/messages/matches_narrow`
-            // rather than doing a full rerender.
-            message_view.show(filter.terms(), {
-                then_select_id: msg_list.selected_id(),
-                then_select_offset: msg_list.selected_row().get_offset_to_window().top,
-                trigger: "message property update",
-                force_rerender: true,
+        if (!filter.can_apply_locally()) {
+            channel.get({
+                url: "/json/messages",
+                data: {
+                    message_ids: JSON.stringify(message_ids),
+                    narrow: JSON.stringify(filter.terms()),
+                },
+                success(data) {
+                    const messages_to_add = [];
+                    const messages_to_remove = new Set(message_ids);
+                    for (const raw_message of data.messages) {
+                        messages_to_remove.delete(raw_message.id);
+                        let message = message_store.get(raw_message.id);
+                        if (!message) {
+                            message = message_helper.process_new_message(raw_message);
+                        }
+                        messages_to_add.push(message);
+                    }
+                    msg_list.data.remove([...messages_to_remove]);
+                    msg_list.data.add_messages(messages_to_add);
+                    msg_list.rerender();
+                },
             });
-        } else if (messages_to_fetch.length === 1) {
+        } else if (messages_to_fetch.length > 0) {
             // Fetch the message and update the view.
             channel.get({
-                url: "/json/messages/" + messages_to_fetch[0],
+                url: "/json/messages",
+                data: {
+                    message_ids: JSON.stringify(messages_to_fetch),
+                    // We don't filter by narrow here since we can
+                    // apply the filter locally and the fetched message
+                    // can be used to update other message lists and
+                    // cached message data structures as well.
+                },
                 success(data) {
-                    message_helper.process_new_message(data.message);
+                    // `messages_to_fetch` might already be cached locally when
+                    // we reach here but `message_helper.process_new_message`
+                    // already handles that case.
+                    for (const raw_message of data.messages) {
+                        message_helper.process_new_message(raw_message);
+                    }
                     update_views_filtered_on_message_property(
                         message_ids,
                         property_term_type,
