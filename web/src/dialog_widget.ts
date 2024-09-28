@@ -20,9 +20,7 @@ function current_dialog_widget_id(): string {
     return `dialog_widget_modal_${widget_id_counter}`;
 }
 
-function current_dialog_widget_selector(): string {
-    return `#${CSS.escape(current_dialog_widget_id())}`;
-}
+
 
 /*
  *  Look for confirm_dialog in settings_user_groups
