@@ -510,20 +510,10 @@ def can_access_delivery_email(
     if target_user_id == user_profile.id:
         return True
 
-    # Bots always have email_address_visibility as EMAIL_ADDRESS_VISIBILITY_EVERYONE.
-    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-        return True
-
-    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS:
-        return user_profile.is_realm_admin
-
-    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
-        return user_profile.is_realm_admin or user_profile.is_moderator
-
-    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS:
-        return not user_profile.is_guest
-
-    return False
+    return (
+        email_address_visibility
+        in UserProfile.ROLE_TO_ACCESSIBLE_EMAIL_ADDRESS_VISIBILITY_IDS[user_profile.role]
+    )
 
 
 class APIUserDict(TypedDict):

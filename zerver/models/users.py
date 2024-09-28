@@ -523,6 +523,35 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         ROLE_GUEST,
     ]
 
+    # Maps: user_profile.role -> which email_address_visibility values
+    # allow user_profile to see their email address.
+    ROLE_TO_ACCESSIBLE_EMAIL_ADDRESS_VISIBILITY_IDS = {
+        ROLE_REALM_OWNER: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+        ROLE_REALM_ADMINISTRATOR: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+        ROLE_MODERATOR: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+        ROLE_MEMBER: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+        ROLE_GUEST: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+    }
+
     # Whether the user has been "soft-deactivated" due to weeks of inactivity.
     # For these users we avoid doing UserMessage table work, as an optimization
     # for large Zulip organizations with lots of single-visit users.
