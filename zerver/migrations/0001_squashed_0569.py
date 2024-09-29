@@ -3312,6 +3312,23 @@ class Migration(migrations.Migration):
                 name="zerver_userpresence_realm_last_update_id_idx",
             ),
         ),
+        # Ensure users have unique email addresses, case-insensitive, within their realm.
+        migrations.AddConstraint(
+            model_name="userprofile",
+            constraint=models.UniqueConstraint(
+                models.F("realm"),
+                django.db.models.functions.text.Upper(models.F("email")),
+                name="zerver_userprofile_realm_id_email_uniq",
+            ),
+        ),
+        migrations.AddConstraint(
+            model_name="userprofile",
+            constraint=models.UniqueConstraint(
+                models.F("realm"),
+                django.db.models.functions.text.Upper(models.F("delivery_email")),
+                name="zerver_userprofile_realm_id_delivery_email_uniq",
+            ),
+        ),
         migrations.AddIndex(
             model_name="usertopic",
             index=models.Index(
@@ -3401,13 +3418,6 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             """
             CREATE UNIQUE INDEX zerver_stream_realm_id_name_uniq ON zerver_stream (realm_id, upper(name::text));
-        """
-        ),
-        # Ensure users have unique email addresses, case-insensitive, within their realm.
-        migrations.RunSQL(
-            """
-            CREATE UNIQUE INDEX zerver_userprofile_realm_id_email_uniq ON zerver_userprofile (realm_id, upper(email::text));
-            CREATE UNIQUE INDEX zerver_userprofile_realm_id_delivery_email_uniq ON zerver_userprofile (realm_id, upper(delivery_email::text));
         """
         ),
         # Set up full-text search indexes.

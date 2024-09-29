@@ -5,7 +5,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.db import models
-from django.db.models import CASCADE, Q, QuerySet
+from django.db.models import CASCADE, F, Q, QuerySet
 from django.db.models.functions import Upper
 from django.db.models.signals import post_save
 from django.utils.timezone import now as timezone_now
@@ -617,6 +617,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     ROLE_API_NAME_TO_ID = {v: k for k, v in ROLE_ID_TO_API_NAME.items()}
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                "realm",
+                Upper(F("email")),
+                name="zerver_userprofile_realm_id_email_uniq",
+            ),
+            models.UniqueConstraint(
+                "realm",
+                Upper(F("delivery_email")),
+                name="zerver_userprofile_realm_id_delivery_email_uniq",
+            ),
+        ]
         indexes = [
             models.Index(Upper("email"), name="upper_userprofile_email_idx"),
         ]
