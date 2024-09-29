@@ -1487,12 +1487,6 @@ class StreamAdminTest(ZulipTestCase):
         do_deactivate_stream(stream, acting_user=None)
         self.assertEqual(set(deactivated_streams_by_old_name(realm, "new_stream")), {stream})
 
-        second_stream = self.make_stream("new_stream")
-        do_deactivate_stream(second_stream, acting_user=None)
-        self.assertEqual(
-            set(deactivated_streams_by_old_name(realm, "new_stream")), {stream, second_stream}
-        )
-
         self.make_stream("!DEACTIVATED:old_style")  # This is left active
         old_style = self.make_stream("old_style")
         do_deactivate_stream(old_style, acting_user=None)
@@ -2479,11 +2473,6 @@ class StreamAdminTest(ZulipTestCase):
         realm = stream.realm
         stream_id = stream.id
 
-        # Simulate that a stream by the same name has already been
-        # deactivated, just to exercise our renaming logic:
-        # Since we do not know the id of these simulated stream we prepend the name with a random hashed_stream_id
-        ensure_stream(realm, "DB32B77!DEACTIVATED:" + active_name, acting_user=None)
-
         with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_delete("/json/streams/" + str(stream_id))
         self.assert_json_success(result)
@@ -2498,16 +2487,18 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(event["op"], "delete")
         self.assertEqual(event["streams"][0]["stream_id"], stream.id)
 
-        with self.assertRaises(Stream.DoesNotExist):
-            Stream.objects.get(realm=get_realm("zulip"), name=active_name)
-
-        # A deleted stream's name is changed, is deactivated, is invite-only,
-        # and has no subscribers.
         hashed_stream_id = hashlib.sha512(str(stream_id).encode()).hexdigest()[0:7]
-        deactivated_stream_name = hashed_stream_id + "!DEACTIVATED:" + active_name
+        old_deactivated_stream_name = hashed_stream_id + "!DEACTIVATED:" + active_name
+
+        with self.assertRaises(Stream.DoesNotExist):
+            Stream.objects.get(realm=get_realm("zulip"), name=old_deactivated_stream_name)
+
+        # An archived stream is deactivated, is invite-only,
+        # and has no subscribers.
+        deactivated_stream_name = active_name
         deactivated_stream = get_stream(deactivated_stream_name, realm)
         self.assertTrue(deactivated_stream.deactivated)
-        self.assertTrue(deactivated_stream.invite_only)
+        self.assertEqual(deactivated_stream.invite_only, True)
         self.assertEqual(deactivated_stream.name, deactivated_stream_name)
         subscribers = self.users_subscribed_to_stream(deactivated_stream_name, realm)
         self.assertEqual(subscribers, [])
@@ -2515,10 +2506,9 @@ class StreamAdminTest(ZulipTestCase):
         # It doesn't show up in the list of public streams anymore.
         result = self.client_get("/json/streams", {"include_subscribed": "false"})
         public_streams = [s["name"] for s in self.assert_json_success(result)["streams"]]
-        self.assertNotIn(active_name, public_streams)
         self.assertNotIn(deactivated_stream_name, public_streams)
 
-        # Even if you could guess the new name, you can't subscribe to it.
+        # You can't subscribe to archived stream.
         result = self.common_subscribe_to_streams(
             self.example_user("hamlet"), [deactivated_stream_name], allow_fail=True
         )
