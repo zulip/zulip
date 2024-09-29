@@ -656,8 +656,7 @@ class RealmTest(ZulipTestCase):
         stats = merge_streams(realm, denmark, atlantis)
         self.assertEqual(stats, (1, 1, 1))
 
-        with self.assertRaises(Stream.DoesNotExist):
-            get_stream("Atlantis", realm)
+        self.assertEqual(get_stream("Atlantis", realm).deactivated, True)
 
         stats = merge_streams(realm, denmark, new_stream_announcements_stream)
         self.assertEqual(stats, (2, new_stream_announcements_stream_messages_count, 10))
