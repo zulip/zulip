@@ -1,4 +1,3 @@
-import hashlib
 from collections import defaultdict
 from collections.abc import Collection, Iterable, Mapping
 from typing import Any, TypeAlias
@@ -146,20 +145,8 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     # the code to unset is_web_public field on attachments below.
     stream.deactivated = True
     stream.invite_only = True
-    # Preserve as much as possible the original stream name while giving it a
-    # special prefix that both indicates that the stream is deactivated and
-    # frees up the original name for reuse.
-    old_name = stream.name
 
-    # Prepend a substring of the hashed stream ID to the new stream name
-    streamID = str(stream.id)
-    stream_id_hash_object = hashlib.sha512(streamID.encode())
-    hashed_stream_id = stream_id_hash_object.hexdigest()[0:7]
-
-    new_name = (hashed_stream_id + "!DEACTIVATED:" + old_name)[: Stream.MAX_NAME_LENGTH]
-
-    stream.name = new_name[: Stream.MAX_NAME_LENGTH]
-    stream.save(update_fields=["name", "deactivated", "invite_only"])
+    stream.save(update_fields=["deactivated", "invite_only"])
 
     assert stream.recipient_id is not None
     if was_web_public:
@@ -191,7 +178,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
 
     stream_dict = stream_to_dict(stream)
-    stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
+    stream_dict.update(dict(invite_only=was_invite_only))
     event = dict(type="stream", op="delete", streams=[stream_dict])
     send_event_on_commit(stream.realm, event, affected_user_ids)
 
@@ -222,7 +209,8 @@ def deactivated_streams_by_old_name(realm: Realm, stream_name: str) -> QuerySet[
         # characters, followed by `!DEACTIVATED:`, followed by at
         # most MAX_NAME_LENGTH-(length of the prefix) of the name
         # they provided:
-        Q(name__regex=rf"^{fixed_length_prefix}{truncated_name}")
+        Q(name=stream_name)
+        | Q(name__regex=rf"^{fixed_length_prefix}{truncated_name}")
         # Finally, we go looking for the pre-1b6f68bb59dc version,
         # which is any number of `!` followed by `DEACTIVATED:`
         # and a prefix of the old stream name
@@ -237,7 +225,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
     realm = stream.realm
     if not stream.deactivated:
         raise JsonableError(_("Channel is not currently deactivated"))
-    if Stream.objects.filter(realm=realm, name=new_name).exists():
+    if stream.name != new_name and Stream.objects.filter(realm=realm, name=new_name).exists():
         raise JsonableError(
             _("Channel named {channel_name} already exists").format(channel_name=new_name)
         )
