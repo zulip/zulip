@@ -192,7 +192,9 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
         # is cleaner by using the same re-assignment approach for them together with Messages.
         random_token = secrets.token_hex(16)
         temp_replacement_user = create_user(
-            email=f"temp_deleteduser{random_token}@{get_fake_email_domain(realm.host)}",
+            email=Address(
+                username=f"temp_deleteduser{random_token}", domain=get_fake_email_domain(realm.host)
+            ).addr_spec,
             password=None,
             realm=realm,
             full_name=f"Deleted User {user_id} (temp)",
@@ -212,7 +214,9 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
 
         replacement_user = create_user(
             force_id=user_id,
-            email=f"deleteduser{user_id}@{get_fake_email_domain(realm.host)}",
+            email=Address(
+                username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm.host)
+            ).addr_spec,
             password=None,
             realm=realm,
             full_name=f"Deleted User {user_id}",
