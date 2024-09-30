@@ -17,13 +17,6 @@ function get_new_heights(): {
 } {
     const viewport_height = message_viewport.height();
 
-    // If invite user link is not displayed, `.right-sidebar-shortcuts` is displayed with just
-    // margin which we don't want to consider in height calculation of buddy list.
-    let right_sidebar_shortcuts_height = 0;
-    if ($("#right-sidebar .invite-user-link").css("display") !== "none") {
-        right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").outerHeight(true) ?? 0;
-    }
-
     let stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
@@ -41,8 +34,7 @@ function get_new_heights(): {
         viewport_height -
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
         ($("#userlist-header").outerHeight(true) ?? 0) -
-        ($("#user_search_section:not(.notdisplayed)").outerHeight(true) ?? 0) -
-        right_sidebar_shortcuts_height;
+        ($("#user_search_section:not(.notdisplayed)").outerHeight(true) ?? 0);
 
     const buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
