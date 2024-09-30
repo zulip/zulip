@@ -1118,7 +1118,7 @@
     --color-date: hsl(0deg 0% 100% / 75%);
     --color-background-private-message-header: hsl(46deg 15% 20%);
     --color-background-private-message-content: hsl(46deg 7% 16%);
-    --color-background-stream-message-content: hsl(0deg 0% 15%);
+    --color-background-stream-message-content: hsl(0deg 0% 13.5%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 60%);
@@ -1311,12 +1311,12 @@
     --color-compose-focus-ring: hsl(0deg 0% 67%);
 
     /* Text colors */
-    --color-text-default: hsl(0deg 0% 85%);
+    --color-text-default: hsl(0deg 0% 87%);
     /* Unlike the light theme, the dark theme renders message
        text in the default color. */
     --color-text-message-default: var(--color-text-default);
-    --color-text-message-view-header: hsl(0deg 0% 100% / 80%);
-    --color-text-message-header: hsl(0deg 0% 100% / 80%);
+    --color-text-message-view-header: hsl(0deg 0% 100% / 85%);
+    --color-text-message-header: hsl(0deg 0% 100% / 85%);
     --color-text-sender-name: hsl(0deg 0% 100% / 85%);
     --color-text-dropdown-input: hsl(0deg 0% 95%);
     --color-text-other-mention: hsl(0deg 0% 100% / 80%);
@@ -1505,8 +1505,8 @@
     --color-message-edit-history-background-deleted: hsl(7deg 54% 62% / 38%);
 
     /* Mention pill colors */
-    --color-background-direct-mention: hsl(240deg 13% 20%);
-    --color-background-group-mention: hsl(180deg 13% 15%);
+    --color-background-direct-mention: hsl(240deg 13% 16%);
+    --color-background-group-mention: hsl(180deg 13% 14%);
     --color-background-text-direct-mention: hsl(240deg 52% 60% / 25%);
     --color-background-text-hover-direct-mention: hsl(240deg 52% 60% / 45%);
     --color-background-text-group-mention: hsl(183deg 52% 40% / 20%);
