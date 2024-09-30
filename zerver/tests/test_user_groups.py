@@ -1794,6 +1794,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
     def test_can_create_groups_for_creating_user_group(self) -> None:
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
+        aaron = self.example_user("aaron")
+        aaron_group = check_add_user_group(
+            get_realm("zulip"), "aaron_group", [aaron], acting_user=aaron
+        )
 
         def check_create_user_group(acting_user: str, error_msg: str | None = None) -> None:
             params = {
@@ -1806,8 +1810,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
             )
             if error_msg is None:
                 self.assert_json_success(result)
-                # One group already exists in the test database.
-                self.assert_length(NamedUserGroup.objects.filter(realm=realm), 10)
+                # One group already exists in the test database and we've created one
+                # more for testing just before running this function.
+                self.assert_length(NamedUserGroup.objects.filter(realm=realm), 11)
             else:
                 self.assert_json_error(result, error_msg)
 
@@ -1835,6 +1840,36 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         check_create_user_group("hamlet", "Insufficient permission")
         check_create_user_group("shiva")
+        NamedUserGroup.objects.get(name="support", realm=realm).delete()
+
+        # Check if members of a NamedUserGroup are allowed to create user groups.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_groups",
+            aaron_group,
+            acting_user=None,
+        )
+        check_create_user_group("shiva", "Insufficient permission")
+        check_create_user_group("aaron")
+        NamedUserGroup.objects.get(name="support", realm=realm).delete()
+
+        # Check if members of an anonymous group are allowed to create user groups.
+        cordelia = self.example_user("cordelia")
+        anonymous_group = self.create_or_update_anonymous_group_for_setting(
+            [cordelia], [admins_group, moderators_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_groups",
+            anonymous_group,
+            acting_user=None,
+        )
+        check_create_user_group("aaron", "Insufficient permission")
+        check_create_user_group("cordelia")
+        NamedUserGroup.objects.get(name="support", realm=realm).delete()
+        check_create_user_group("shiva")
+        NamedUserGroup.objects.get(name="support", realm=realm).delete()
+        check_create_user_group("iago")
         NamedUserGroup.objects.get(name="support", realm=realm).delete()
 
         # Check only members are allowed to create the user group.
@@ -2146,6 +2181,44 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         check_removing_members_from_group("hamlet", "Insufficient permission")
         check_removing_members_from_group("shiva")
+
+        # Check if members of a NamedUserGroup are allowed to add/remove members.
+        othello_group = check_add_user_group(
+            get_realm("zulip"), "othello_group", [othello], acting_user=othello
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            othello_group,
+            acting_user=None,
+        )
+        check_adding_members_to_group("shiva", "Insufficient permission")
+        check_adding_members_to_group("othello")
+
+        check_removing_members_from_group("shiva", "Insufficient permission")
+        check_removing_members_from_group("othello")
+
+        # Check if members of an anonymous group are allowed to add/remove members.
+        anonymous_group = self.create_or_update_anonymous_group_for_setting(
+            [othello], [admins_group, moderators_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            anonymous_group,
+            acting_user=None,
+        )
+
+        check_adding_members_to_group("cordelia", "Insufficient permission")
+        check_adding_members_to_group("shiva")
+        check_removing_members_from_group("hamlet", "Insufficient permission")
+        check_removing_members_from_group("shiva")
+
+        check_adding_members_to_group("iago")
+        check_removing_members_from_group("iago")
+
+        check_adding_members_to_group("othello")
+        check_removing_members_from_group("othello")
 
         # Check only members are allowed to add/remove users in the group and only if belong to the
         # user group.
