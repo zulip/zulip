@@ -26,8 +26,21 @@ $user_status_emoji_width: 24px;
     overflow: auto;
 }
 
-.buddy-list-section-toggle {
+.buddy-list-section-toggle.fa-caret-right {
     width: 7px;
+    transition: rotate 140ms linear;
+    /* The triangle icon has asymmetrical padding on it, so
+       when it rotates down it would be too high without
+       this padding. */
+    padding-left: 2px;
+
+    &.rotate-icon-down {
+        rotate: 90deg;
+    }
+
+    &.rotate-icon-right {
+        rotate: 0deg;
+    }
 }
 
 .buddy-list-section-container {
