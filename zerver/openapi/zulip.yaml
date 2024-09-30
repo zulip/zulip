@@ -12369,9 +12369,17 @@ paths:
         Fetching by user ID is generally recommended when possible,
         as a user might [change their email address](/help/change-your-email-address)
         or change their [email address visibility](/help/configure-email-visibility),
-        either of which could change the value of their Zulip API email address.
+        either of which could change the client's ability to look them up by that
+        email address.
 
-        **Changes**: New in Zulip Server 4.0 (feature level 39).
+        **Changes**: Starting with Zulip 10.0 (feature level 302), the real email
+        address can be used in the `email` parameter and will fetch the target user's
+        data if and only if the target's email visibility setting permits the requester
+        to see the email address.
+        The dummy email addresses of the form `user{id}@{realm.host}` still work, and
+        will now work for **all** users, via identifying them by the embedded user ID.
+
+        New in Zulip Server 4.0 (feature level 39).
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -12388,7 +12396,24 @@ paths:
         - name: email
           in: path
           description: |
-            The Zulip API email address of the user whose details you want to fetch.
+            The email address of the user to fetch. Two forms are supported:
+
+            - The real email address of the user (`delivery_email`). The lookup will
+              succeed if and only if the user exists and their email address visibility
+              setting permits the client to see the email address.
+
+            - The dummy Zulip API email address of the form `user{user_id}@{realm_host}`. This
+              is identical to simply [getting user by ID](/api/get-user). If the server or
+              realm change domains, the dummy email address used has to be adjustment to
+              match the new realm domain. This is legacy behavior for
+              backwards-compatibility, and will be removed in a future release.
+
+            **Changes**: Starting with Zulip 10.0 (feature level 302), lookups by real email
+            address match the semantics of the target's email visibility setting and dummy
+            email addresses work for all users, independently of their email visibility
+            setting.
+
+            Previously, lookups were done only using the Zulip API email addresses.
           schema:
             type: string
           example: iago@zulip.com
