@@ -44,4 +44,5 @@ exports.stub_buddy_list_elements = () => {
     $("#buddy-list-other-users-container .view-all-users-link").length = 0;
     $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove = noop;
     $("#buddy-list-other-users-container .view-all-users-link").remove = noop;
+    $(".buddy-list-subsection-header").children = () => [];
 };
