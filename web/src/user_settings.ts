@@ -64,6 +64,7 @@ export const user_settings_schema = stream_notification_settings_schema
         presence_enabled: z.boolean(),
         realm_name_in_email_notifications_policy: z.number(),
         receives_typing_notifications: z.boolean(),
+        web_left_sidebar_unreads_count_summary: z.boolean(),
         send_private_typing_notifications: z.boolean(),
         send_read_receipts: z.boolean(),
         send_stream_typing_notifications: z.boolean(),

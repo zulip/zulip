@@ -607,6 +607,38 @@ li.active-sub-filter {
             white-space: nowrap;
         }
     }
+
+    .selected-home-view {
+        &.hide-unread-count-summary {
+            .unread_count,
+            .masked_unread_count {
+                display: none;
+            }
+
+            /* When an empty unread count is hidden,
+                    hide the masked unread count, too. */
+            .unread_count:empty + .masked_unread_count {
+                display: none;
+            }
+
+            .masked_unread_count {
+                display: block;
+                /* Hold space enough so single-digit
+                        unreads don't shift on hover. */
+                margin: 0 3px;
+            }
+
+            &:hover {
+                .unread_count {
+                    display: block;
+                }
+
+                .masked_unread_count {
+                    display: none;
+                }
+            }
+        }
+    }
 }
 
 .selected-home-view {
@@ -640,8 +672,14 @@ li.active-sub-filter {
         visibility: hidden;
     }
     /* ...unless it's the selected home view. */
-    &.selected-home-view .unread_count {
-        visibility: visible;
+    &.selected-home-view {
+        .unread_count {
+            visibility: visible;
+        }
+
+        .unread_count:empty {
+            visibility: hidden;
+        }
     }
 }
 
@@ -682,6 +720,10 @@ li.top_left_scheduled_messages {
     }
 
     .unread_count {
+        grid-area: markers-and-controls;
+    }
+
+    .masked_unread_count {
         grid-area: markers-and-controls;
     }
 }
@@ -819,6 +861,42 @@ li.top_left_scheduled_messages {
     grid-template-areas:
         "starting-offset starting-anchor-element icon-content-gap row-content markers-and-controls ending-anchor-element ending-offset"
         ".               .                       filter-box       filter-box  filter-box           filter-box            .            ";
+
+    .masked_unread_count {
+        grid-area: markers-and-controls;
+    }
+
+    &.hide-unread-count-summary {
+        .unread_count,
+        .unread_count.hide,
+        .masked_unread_count {
+            display: none;
+        }
+
+        /* When an empty unread count is hidden,
+                    hide the masked unread count, too. */
+        .unread_count.hide + .masked_unread_count {
+            display: none;
+        }
+
+        .masked_unread_count {
+            display: block;
+            /* Hold space enough so single-digit
+                        unreads don't shift on hover. */
+            margin: 0 3px;
+        }
+
+        &:hover {
+            .unread_count {
+                display: block;
+            }
+
+            .hide,
+            .masked_unread_count {
+                display: none;
+            }
+        }
+    }
 }
 
 #views-label-container {
@@ -1399,38 +1477,6 @@ li.topic-list-item {
            vertical centering. */
         line-height: 20px;
         white-space: nowrap;
-    }
-
-    &.hide_unread_counts {
-        .unread_count,
-        .unread_count.hide,
-        .masked_unread_count {
-            display: none;
-        }
-
-        /* When an empty unread count is hidden,
-           hide the masked unread count, too. */
-        .unread_count.hide + .masked_unread_count {
-            display: none;
-        }
-
-        .masked_unread_count {
-            display: block;
-            /* Hold space enough so single-digit
-               unreads don't shift on hover. */
-            margin: 0 3px;
-        }
-
-        &:hover {
-            .unread_count {
-                display: block;
-            }
-
-            .hide,
-            .masked_unread_count {
-                display: none;
-            }
-        }
     }
 }
 

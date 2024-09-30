@@ -614,12 +614,6 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
 }
 
 export function update_dom_unread_counts_visibility(): void {
-    const $streams_header = $("#streams_header");
-    if (settings_data.should_mask_unread_count(false)) {
-        $streams_header.addClass("hide_unread_counts");
-    } else {
-        $streams_header.removeClass("hide_unread_counts");
-    }
     for (const stream of stream_sidebar.rows.values()) {
         const $subscription_block = stream.get_li().find(".subscription_block");
 

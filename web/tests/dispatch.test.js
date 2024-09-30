@@ -1085,6 +1085,16 @@ run_test("user_settings", ({override}) => {
 
     {
         const stub = make_stub();
+        event = event_fixtures.user_settings__web_left_sidebar_unreads_count_summary;
+        override(sidebar_ui, "update_left_sidebar_unread_counts_visibility", stub.f);
+        user_settings.web_left_sidebar_unreads_count_summary = 1;
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(user_settings.web_left_sidebar_unreads_count_summary, true);
+    }
+
+    {
+        const stub = make_stub();
         event = event_fixtures.user_settings__user_list_style;
         override(settings_preferences, "report_user_list_style_change", stub.f);
         user_settings.user_list_style = 1;

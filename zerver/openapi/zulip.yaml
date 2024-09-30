@@ -11803,6 +11803,13 @@ paths:
                     - 2
                     - 3
                   example: 2
+                web_left_sidebar_unreads_count_summary:
+                  description: |
+                    Determines whether the web/desktop application's left sidebar displays the unread message count summary.
+
+                    **Changes**: New in Zulip 10.0 (feature level 298).
+                  type: boolean
+                  example: true
                 enable_stream_desktop_notifications:
                   description: |
                     Enable visual desktop notifications for channel messages.
@@ -12111,6 +12118,8 @@ paths:
               user_list_style:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
+                contentType: application/json
+              web_left_sidebar_unreads_count_summary:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
@@ -14968,6 +14977,12 @@ paths:
                               - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          web_left_sidebar_unreads_count_summary:
+                            type: boolean
+                            description: |
+                              Determines whether the web/desktop application's left sidebar displays the unread message count summary.
+
+                              **Changes**: New in Zulip 10.0 (feature level 298).
                           timezone:
                             type: string
                             description: |
@@ -17480,6 +17495,12 @@ paths:
                               - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          web_left_sidebar_unreads_count_summary:
+                            type: boolean
+                            description: |
+                              Determines whether the web/desktop application's left sidebar displays the unread message count summary.
+
+                              **Changes**: New in Zulip 10.0 (feature level 298).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -18708,6 +18729,13 @@ paths:
                     - 2
                     - 3
                   example: 2
+                web_left_sidebar_unreads_count_summary:
+                  description: |
+                    Determines whether the web/desktop application's left sidebar displays the unread message count summary.
+
+                    **Changes**: New in Zulip 10.0 (feature level 298).
+                  type: boolean
+                  example: true
                 timezone:
                   description: |
                     The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
@@ -19102,6 +19130,8 @@ paths:
               user_list_style:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
+                contentType: application/json
+              web_left_sidebar_unreads_count_summary:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json

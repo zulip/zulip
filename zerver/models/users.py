@@ -171,6 +171,7 @@ class UserBaseSettings(models.Model):
     web_stream_unreads_count_display_policy = models.PositiveSmallIntegerField(
         default=WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS
     )
+    web_left_sidebar_unreads_count_summary = models.BooleanField(default=False)
 
     # Setting to control whether to automatically go to the
     # conversation where message was sent.
@@ -357,6 +358,7 @@ class UserBaseSettings(models.Model):
         web_font_size_px=int,
         web_line_height_percent=int,
         web_navigate_to_sent_message=bool,
+        web_left_sidebar_unreads_count_summary=bool,
     )
 
     modern_notification_settings: dict[str, Any] = dict(

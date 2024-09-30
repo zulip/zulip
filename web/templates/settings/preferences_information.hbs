@@ -49,7 +49,13 @@
         </select>
     </div>
 
-    {{#each information_section_checkbox_group.settings.user_preferences}}
+    {{> settings_checkbox
+      setting_name="web_left_sidebar_unreads_count_summary"
+      is_checked=settings_object.web_left_sidebar_unreads_count_summary
+      label=settings_label.web_left_sidebar_unreads_count_summary
+      prefix=prefix}}
+
+    {{#each information_section_checkbox_group.settings.user_display_settings}}
         {{> settings_checkbox
           setting_name=this
           is_checked=(lookup ../settings_object this)
