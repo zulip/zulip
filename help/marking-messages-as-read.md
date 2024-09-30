@@ -69,7 +69,8 @@ channel or topic as read**.
 
 {tab|via-left-sidebar}
 
-1. Hover over a channel, topic, or **Combined feed** in the left sidebar.
+1. Hover over a channel, topic, or your [home view](/help/configure-home-view)
+   in the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
