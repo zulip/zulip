@@ -62,9 +62,9 @@ $user_status_emoji_width: 24px;
     }
 }
 
-.buddy-list-section li {
+.buddy-list-section li,
+#userlist-header {
     .user-list-sidebar-menu-icon {
-        visibility: hidden;
         justify-self: stretch;
         display: flex;
         align-items: center;
@@ -104,7 +104,6 @@ $user_status_emoji_width: 24px;
 
     &:hover {
         .user-list-sidebar-menu-icon {
-            visibility: visible;
             cursor: pointer;
             color: var(--color-vdots-visible);
 
@@ -121,6 +120,16 @@ $user_status_emoji_width: 24px;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
     line-height: var(--line-height-sidebar-row);
+
+    .user-list-sidebar-menu-icon {
+        visibility: hidden;
+    }
+
+    li:hover {
+        .user-list-sidebar-menu-icon {
+            visibility: visible;
+        }
+    }
 
     & li {
         overflow: hidden;
@@ -352,7 +361,7 @@ $user_status_emoji_width: 24px;
     cursor: pointer;
     display: grid;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     margin-right: var(--width-simplebar-scroll-hover);
 
@@ -381,6 +390,11 @@ $user_status_emoji_width: 24px;
     &:hover > #user_filter_icon {
         opacity: 1;
         cursor: pointer;
+    }
+
+    #buddy-list-menu-icon {
+        justify-content: center;
+        display: grid;
     }
 }
 

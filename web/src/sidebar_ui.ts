@@ -1,6 +1,8 @@
 import $ from "jquery";
+import type * as tippy from "tippy.js";
 
 import render_left_sidebar from "../templates/left_sidebar.hbs";
+import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list";
@@ -9,13 +11,17 @@ import {localstorage} from "./localstorage";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
+import * as popover_menus from "./popover_menus";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
+import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
+
+let buddy_list_popover_instance: tippy.Instance | undefined;
 
 function save_sidebar_toggle_status(): void {
     const ls = localstorage();
@@ -81,8 +87,10 @@ export function update_invite_user_option(): void {
         !settings_data.user_can_create_multiuse_invite()
     ) {
         $("#right-sidebar .invite-user-link").hide();
+        $("#buddy-list-menu-icon").hide();
     } else {
         $("#right-sidebar .invite-user-link").show();
+        $("#buddy-list-menu-icon").show();
     }
 }
 
@@ -276,5 +284,30 @@ export function initialize_right_sidebar(): void {
     $("#buddy-list-other-users-container").on("click", ".buddy-list-subsection-header", (e) => {
         e.stopPropagation();
         buddy_list.toggle_other_users_section();
+    });
+
+    $("#user-list").on("click", "#buddy-list-menu-icon", (e) => {
+        e.stopPropagation();
+        popover_menus.toggle_popover_menu(
+            $("#buddy-list-menu-icon")[0]!,
+            {
+                theme: "popover-menu",
+                placement: "right",
+                onCreate(instance) {
+                    buddy_list_popover_instance = instance;
+                    instance.setContent(ui_util.parse_html(render_buddy_list_popover()));
+                },
+                onHidden() {
+                    if (buddy_list_popover_instance !== undefined) {
+                        buddy_list_popover_instance.destroy();
+                        buddy_list_popover_instance = undefined;
+                    }
+                },
+            },
+            {
+                show_as_overlay_on_mobile: true,
+                show_as_overlay_always: false,
+            },
+        );
     });
 }
