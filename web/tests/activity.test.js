@@ -365,7 +365,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
     (function test_click_header_filter() {
         init();
         const e = {};
-        const handler = $("#userlist-header").get_on_handler("click");
+        const handler = $("#userlist-header-search").get_on_handler("click");
 
         simulate_right_column_buddy_list();
 

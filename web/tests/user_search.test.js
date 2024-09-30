@@ -239,7 +239,7 @@ test("click on user header to toggle display", ({override}) => {
 
     $user_filter.val("bla");
 
-    $("#userlist-header").trigger("click");
+    $("#userlist-header-search").trigger("click");
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
     assert.equal($user_filter.val(), "");
 
@@ -248,7 +248,7 @@ test("click on user header to toggle display", ({override}) => {
         return $.create("sidebar").addClass("column-right");
     };
 
-    $("#userlist-header").trigger("click");
+    $("#userlist-header-search").trigger("click");
     assert.equal($("#user_search_section").hasClass("notdisplayed"), false);
 });
 

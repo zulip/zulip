@@ -25,7 +25,7 @@ export class UserSearch {
         $("#clear_search_people_button").on("click", () => {
             this.clear_search();
         });
-        $("#userlist-header").on("click", () => {
+        $("#userlist-header-search").on("click", () => {
             this.toggle_filter_displayed();
         });
 
