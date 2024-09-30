@@ -354,22 +354,59 @@ export class BuddyList extends BuddyListConf {
         }
     }
 
-    render_section_headers(): void {
-        const {
-            current_sub,
-            total_human_subscribers_count,
+    update_section_header_counts(): void {
+        const {total_human_subscribers_count, other_users_count, participant_ids_set} =
+            this.render_data;
+        const subscriber_section_user_count =
+            total_human_subscribers_count - this.participant_user_ids.length;
+
+        const formatted_participants_count = get_formatted_sub_count(participant_ids_set.size);
+        const formatted_sub_users_count = get_formatted_sub_count(subscriber_section_user_count);
+        const formatted_other_users_count = get_formatted_sub_count(other_users_count);
+
+        $("#buddy-list-participants-container .buddy-list-heading-user-count").text(
+            formatted_participants_count,
+        );
+        $("#buddy-list-users-matching-view-container .buddy-list-heading-user-count").text(
+            formatted_sub_users_count,
+        );
+        $("#buddy-list-other-users-container .buddy-list-heading-user-count").text(
+            formatted_other_users_count,
+        );
+
+        $("#buddy-list-participants-section-heading").attr(
+            "data-user-count",
+            participant_ids_set.size,
+        );
+        $("#buddy-list-users-matching-view-section-heading").attr(
+            "data-user-count",
+            subscriber_section_user_count,
+        );
+        $("#buddy-list-users-other-users-section-heading").attr(
+            "data-user-count",
             other_users_count,
-            total_human_users,
-            hide_headers,
-            participant_ids_set,
-        } = this.render_data;
+        );
+    }
+
+    render_section_headers(): void {
+        const {hide_headers, participant_ids_set} = this.render_data;
+        // We only show the participants list if it has members, so updating even if we're updating
+        // the count, that can affect if we show/hide this section.
+        const show_participants_list = !hide_headers && participant_ids_set.size;
+        $("#buddy-list-participants-container").toggleClass("no-display", !show_participants_list);
+        if ($(".buddy-list-subsection-header").children().length) {
+            this.update_section_header_counts();
+            return;
+        }
+
+        const {current_sub, total_human_subscribers_count, other_users_count, total_human_users} =
+            this.render_data;
         $(".buddy-list-subsection-header").empty();
 
         // If we're in the mode of hiding headers, that means we're only showing the "other users"
         // section, so hide the other two sections.
         $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
-        const show_participants_list = !hide_headers && participant_ids_set.size;
-        $("#buddy-list-participants-container").toggleClass("no-display", !show_participants_list);
+
         // This is the case where every subscriber is in the participants list. In this case, we
         // hide the "others in this channel" section.
         if (
