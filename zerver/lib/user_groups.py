@@ -120,9 +120,7 @@ def check_permission_for_managing_all_groups(
         if user_profile.is_realm_admin or user_profile.is_moderator:
             return True
 
-        group_members = get_user_group_direct_member_ids(user_group)
-        if user_profile.id in group_members:
-            return True
+        return is_user_in_group(user_group, user_profile)
     return False
 
 

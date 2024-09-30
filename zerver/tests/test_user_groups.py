@@ -1883,6 +1883,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         check_update_user_group("help", "Troubleshooting team", "othello")
 
+        # Check user who is member of a subgroup of the group being updated
+        # can also update the group.
+        cordelia = self.example_user("cordelia")
+        subgroup = check_add_user_group(realm, "leadership", [cordelia], acting_user=cordelia)
+        add_subgroups_to_user_group(user_group, [subgroup], acting_user=None)
+        check_update_user_group(
+            "support",
+            "Support team",
+            "cordelia",
+        )
+
         # Check only full members are allowed to update the user group and only if belong to the
         # user group.
         do_set_realm_property(
@@ -1897,10 +1908,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
         check_update_user_group(
-            "support",
-            "Support team",
+            "help",
+            "Troubleshooting team",
             "cordelia",
-            "Insufficient permission",
         )
         check_update_user_group("support", "Support team", "othello", "Insufficient permission")
 
