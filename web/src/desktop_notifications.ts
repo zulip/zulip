@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import {electron_bridge} from "./electron_bridge";
 import type {Message} from "./message_store";
 
 type NoticeMemory = Map<
@@ -33,8 +34,8 @@ class ElectronBridgeNotification extends EventTarget {
 
     constructor(title: string, options: NotificationOptions) {
         super();
-        assert(window.electron_bridge?.new_notification !== undefined);
-        const notification_data = window.electron_bridge.new_notification(
+        assert(electron_bridge?.new_notification !== undefined);
+        const notification_data = electron_bridge.new_notification(
             title,
             options,
             (type, eventInit) => this.dispatchEvent(new Event(type, eventInit)),
@@ -63,7 +64,7 @@ class ElectronBridgeNotification extends EventTarget {
     }
 }
 
-if (window.electron_bridge?.new_notification) {
+if (electron_bridge?.new_notification) {
     NotificationAPI = ElectronBridgeNotification;
 } else if (window.Notification) {
     NotificationAPI = window.Notification;
