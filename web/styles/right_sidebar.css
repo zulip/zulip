@@ -352,9 +352,16 @@ $user_status_emoji_width: 24px;
     cursor: pointer;
     display: grid;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
-    grid-template-columns: minmax(0, 1fr) 20px;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
     margin-right: var(--width-simplebar-scroll-hover);
+
+    #userlist-header-search {
+        display: grid;
+        grid-template-rows: var(--line-height-sidebar-row-prominent);
+        grid-template-columns: minmax(0, 1fr) 20px;
+        align-items: center;
+    }
 
     #userlist-title {
         margin: 0;

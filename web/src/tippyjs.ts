@@ -679,7 +679,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#userlist-header",
+        target: "#userlist-header-search",
         placement: "top",
         appendTo: () => document.body,
         onShow(instance) {
