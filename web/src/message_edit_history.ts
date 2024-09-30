@@ -63,7 +63,7 @@ const server_message_history_schema = z.object({
 const keyboard_handling_context: messages_overlay_ui.Context = {
     items_container_selector: "message-edit-history-container",
     items_list_selector: "message-edit-history-list",
-    row_item_selector: "overlay-message-row",
+    row_item_selector: "message-edit-message-row",
     box_item_selector: "message-edit-message-info-box",
     id_attribute_name: "data-message-edit-history-id",
     get_items_ids(): number[] {

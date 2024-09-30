@@ -111,7 +111,7 @@ const keyboard_handling_context = {
     },
     items_container_selector: "drafts-container",
     items_list_selector: "drafts-list",
-    row_item_selector: "overlay-message-row",
+    row_item_selector: "draft-message-row",
     box_item_selector: "draft-message-info-box",
     id_attribute_name: "data-draft-id",
 };
