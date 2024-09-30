@@ -202,6 +202,16 @@ class MatterMostImporter(ZulipTestCase):
         convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
         self.assert_length(user_handler.get_all_users(), 3)
 
+        # Importer should raise error when user emails are malformed
+        team_name = "gryffindor"
+        bad_email1 = username_to_user["harry"]["email"] = "harry.ceramicist@zuL1[p.c0m"
+        bad_email2 = username_to_user["ron"]["email"] = "ron.ferret@zulup...com"
+        with self.assertRaises(Exception) as e:
+            convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+        error_message = str(e.exception)
+        expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email2}, {bad_email1}']"
+        self.assertEqual(error_message, expected_error_message)
+
     def test_convert_channel_data(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
