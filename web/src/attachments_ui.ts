@@ -184,7 +184,7 @@ export function set_up_attachments(): void {
     });
 
     $("#uploaded_files_table").on("click", ".remove-attachment", (e) => {
-        const file_name = $(e.target).closest(".uploaded_file_row").attr("id");
+        const file_name = $(e.target).closest(".uploaded_file_row").attr("data-attachment-name");
         delete_attachments(
             $(e.target).closest(".uploaded_file_row").attr("data-attachment-id")!,
             file_name!,
