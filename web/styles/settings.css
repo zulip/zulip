@@ -526,7 +526,7 @@ input[type="checkbox"] {
     margin-left: 5px;
 }
 
-.edit-attachment-buttons #download_attachment {
+.edit-attachment-buttons .download-attachment {
     display: block;
     padding: 6px 9px;
     text-decoration: none;
