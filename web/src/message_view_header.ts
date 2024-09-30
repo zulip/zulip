@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
 
+import * as blueslip from "./blueslip";
 import type {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -133,7 +134,13 @@ export function colorize_message_view_header(): void {
     const filter = narrow_state.filter();
     let current_sub;
     if (filter?.has_operator("channel")) {
-        current_sub = stream_data.get_valid_sub_by_id_string(filter.operands("channel")[0]!);
+        current_sub = stream_data.get_sub_by_id_string(filter.operands("channel")[0]!);
+        if (current_sub === undefined) {
+            blueslip.error("Unexpected undefined sub", {
+                stream_id: filter.operands("channel")[0],
+                filter,
+            });
+        }
     }
     if (!current_sub) {
         return;
