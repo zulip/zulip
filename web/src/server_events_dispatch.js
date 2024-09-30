@@ -16,6 +16,7 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
+import {electron_bridge} from "./electron_bridge";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as gear_menu from "./gear_menu";
@@ -261,8 +262,8 @@ export function dispatch_normal_event(event) {
                         realm_settings[event.property]();
                         settings_org.sync_realm_settings(event.property);
 
-                        if (event.property === "name" && window.electron_bridge !== undefined) {
-                            window.electron_bridge.send_event("realm_name", event.value);
+                        if (event.property === "name") {
+                            electron_bridge?.send_event("realm_name", event.value);
                         }
 
                         if (event.property === "invite_to_realm_policy") {
@@ -326,15 +327,7 @@ export function dispatch_normal_event(event) {
                             realm.realm_icon_url = event.data.icon_url;
                             realm.realm_icon_source = event.data.icon_source;
                             realm_icon.rerender();
-                            {
-                                const electron_bridge = window.electron_bridge;
-                                if (electron_bridge !== undefined) {
-                                    electron_bridge.send_event(
-                                        "realm_icon_url",
-                                        event.data.icon_url,
-                                    );
-                                }
-                            }
+                            electron_bridge?.send_event("realm_icon_url", event.data.icon_url);
                             break;
                         case "logo":
                             realm.realm_logo_url = event.data.logo_url;

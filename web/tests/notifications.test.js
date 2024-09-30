@@ -7,6 +7,7 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
+mock_esm("../src/electron_bridge");
 mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
 
 const user_topics = zrequire("user_topics");
