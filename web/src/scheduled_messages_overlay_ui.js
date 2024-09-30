@@ -43,7 +43,7 @@ export const keyboard_handling_context = {
         scheduled_messages.delete_scheduled_message(focused_element_id);
     },
     items_container_selector: "scheduled-messages-container",
-    items_list_selector: "overlay-messages-list",
+    items_list_selector: "scheduled-messages-list",
     row_item_selector: "scheduled-message-row",
     box_item_selector: "overlay-message-info-box",
     id_attribute_name: "data-scheduled-message-id",
