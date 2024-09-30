@@ -23,7 +23,10 @@ from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_use
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     change_user_is_active,
+    do_change_can_change_user_emails,
     do_change_can_create_users,
+    do_change_can_forge_sender,
+    do_change_is_billing_admin,
     do_change_user_role,
     do_deactivate_user,
     do_delete_user,
@@ -929,6 +932,56 @@ class PermissionTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Insufficient permission")
 
+    def test_do_change_user_special_permissions(self) -> None:
+        desdemona = self.example_user("desdemona")
+        do_change_can_forge_sender(desdemona, True)
+
+        last_realm_audit_log = RealmAuditLog.objects.last()
+        assert last_realm_audit_log is not None
+
+        self.assertEqual(
+            last_realm_audit_log.event_type, RealmAuditLog.USER_SPECIAL_PERMISSION_CHANGED
+        )
+        self.assertEqual(last_realm_audit_log.modified_user, desdemona)
+        expected_extra_data = {
+            "property": "can_forge_sender",
+            RealmAuditLog.OLD_VALUE: False,
+            RealmAuditLog.NEW_VALUE: True,
+        }
+        self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
+
+        do_change_can_create_users(desdemona, True)
+
+        last_realm_audit_log = RealmAuditLog.objects.last()
+        assert last_realm_audit_log is not None
+
+        self.assertEqual(
+            last_realm_audit_log.event_type, RealmAuditLog.USER_SPECIAL_PERMISSION_CHANGED
+        )
+        self.assertEqual(last_realm_audit_log.modified_user, desdemona)
+        expected_extra_data = {
+            "property": "can_create_users",
+            RealmAuditLog.OLD_VALUE: False,
+            RealmAuditLog.NEW_VALUE: True,
+        }
+        self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
+
+        do_change_is_billing_admin(desdemona, True)
+
+        last_realm_audit_log = RealmAuditLog.objects.last()
+        assert last_realm_audit_log is not None
+
+        self.assertEqual(
+            last_realm_audit_log.event_type, RealmAuditLog.USER_SPECIAL_PERMISSION_CHANGED
+        )
+        self.assertEqual(last_realm_audit_log.modified_user, desdemona)
+        expected_extra_data = {
+            "property": "is_billing_admin",
+            RealmAuditLog.OLD_VALUE: False,
+            RealmAuditLog.NEW_VALUE: True,
+        }
+        self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
+
 
 class QueryCountTest(ZulipTestCase):
     def test_create_user_with_multiple_streams(self) -> None:
@@ -1066,6 +1119,103 @@ class BulkCreateUserTest(ZulipTestCase):
             user_group_names,
             expected_user_group_names,
         )
+
+
+class UpdateUserByDeliveryEmailEndpointTest(ZulipTestCase):
+    def test_update_user_by_delivery_email(self) -> None:
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        do_change_user_setting(
+            self.example_user("hamlet"),
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+
+        result = self.client_patch(
+            f"/json/users/{hamlet.delivery_email}",
+            dict(full_name="Newname"),
+        )
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Newname")
+
+        do_change_user_setting(
+            self.example_user("hamlet"),
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            acting_user=None,
+        )
+        result = self.client_patch(
+            f"/json/users/{hamlet.delivery_email}",
+            dict(full_name="Newname2"),
+        )
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Newname2")
+
+        do_change_user_setting(
+            self.example_user("hamlet"),
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
+        )
+        result = self.client_patch(
+            f"/json/users/{hamlet.delivery_email}",
+            dict(full_name="Newname2"),
+        )
+        self.assert_json_error(result, "No such user")
+
+
+class AdminChangeUserEmailTest(ZulipTestCase):
+    def test_change_user_email_backend(self) -> None:
+        cordelia = self.example_user("cordelia")
+        realm_owner = self.example_user("hamlet")
+        self.login_user(realm_owner)
+        do_change_user_role(realm_owner, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+
+        valid_params = dict(new_email="cordelia_new@zulip.com")
+
+        self.assertEqual(realm_owner.can_create_users, False)
+        result = self.client_patch(f"/json/users/{cordelia.id}", valid_params)
+        self.assert_json_error(result, "User not authorized to change user emails")
+
+        do_change_can_change_user_emails(realm_owner, True)
+        # can_create_users is insufficient without being a realm administrator:
+        do_change_user_role(realm_owner, UserProfile.ROLE_MEMBER, acting_user=None)
+        result = self.client_patch(f"/json/users/{cordelia.id}", valid_params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_change_user_role(realm_owner, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        result = self.client_patch(
+            f"/json/users/{cordelia.id}",
+            dict(new_email="invalid"),
+        )
+        self.assert_json_error(result, "Invalid new email address.")
+
+        result = self.client_patch(
+            f"/json/users/{UserProfile.objects.latest('id').id + 1}",
+            dict(new_email="new@zulip.com"),
+        )
+        self.assert_json_error(result, "No such user")
+
+        result = self.client_patch(
+            f"/json/users/{cordelia.id}",
+            dict(new_email=realm_owner.delivery_email),
+        )
+        self.assert_json_error(result, "New email value error: Already has an account.")
+
+        result = self.client_patch(f"/json/users/{cordelia.id}", valid_params)
+        self.assert_json_success(result)
+
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.delivery_email, "cordelia_new@zulip.com")
+
+        last_realm_audit_log = RealmAuditLog.objects.last()
+        assert last_realm_audit_log is not None
+        self.assertEqual(last_realm_audit_log.event_type, RealmAuditLog.USER_EMAIL_CHANGED)
+        self.assertEqual(last_realm_audit_log.modified_user, cordelia)
+        self.assertEqual(last_realm_audit_log.acting_user, realm_owner)
 
 
 class AdminCreateUserTest(ZulipTestCase):

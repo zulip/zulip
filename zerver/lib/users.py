@@ -46,6 +46,7 @@ from zerver.models.users import (
     active_user_ids,
     get_realm_user_dicts,
     get_user,
+    get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id_in_realm,
     is_cross_realm_bot_email,
@@ -347,6 +348,34 @@ def access_user_by_email(
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
 
+    return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
+
+
+def access_user_by_delivery_email(
+    user_profile: UserProfile,
+    email: str,
+    *,
+    allow_deactivated: bool = False,
+    allow_bots: bool = False,
+    for_admin: bool,
+) -> UserProfile:
+    """
+    Checks if user_profile can access the target user by .delivery_email address. Therefore, only
+    returns the fetched UserProfile if the requester is allowed to see the target's email address
+    (on top of passing the other access_user_common checks).
+
+    The purpose of this is to be used at API endpoints that allow selecting the target user by
+    delivery_email, while preventing the endpoint from leaking information about user emails.
+
+    TODO: **Warning**: This function is vulnerable to timing attacks, as it doesn't do the
+    user fetch + can_access_delivery_email check in constant time.
+    """
+    try:
+        target = get_user_by_delivery_email(email, user_profile.realm)
+        if not can_access_delivery_email(user_profile, target.id, target.email_address_visibility):
+            raise UserProfile.DoesNotExist
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("No such user"))
     return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
 
 
