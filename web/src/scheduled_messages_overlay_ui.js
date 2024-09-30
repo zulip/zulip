@@ -45,7 +45,7 @@ export const keyboard_handling_context = {
     items_container_selector: "scheduled-messages-container",
     items_list_selector: "scheduled-messages-list",
     row_item_selector: "scheduled-message-row",
-    box_item_selector: "overlay-message-info-box",
+    box_item_selector: "scheduled-message-info-box",
     id_attribute_name: "data-scheduled-message-id",
 };
 
@@ -148,7 +148,7 @@ export function initialize() {
         e.preventDefault();
     });
 
-    $("body").on("focus", ".overlay-message-info-box", (e) => {
+    $("body").on("focus", ".scheduled-message-info-box", (e) => {
         messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
     });
 }
