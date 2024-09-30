@@ -130,6 +130,7 @@ def process_users(
         )
         user_handler.add_user(user)
 
+    user_handler.validate_user_emails()
     # Set the first realm_owner as the owner of
     # all the bots.
     if realm_owners:
