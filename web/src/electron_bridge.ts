@@ -40,6 +40,10 @@ export type ElectronBridge = {
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
     interface Window {
-        electron_bridge?: ElectronBridge;
+        electron_bridge?: ElectronBridge | Element;
     }
 }
+
+// Check for Element for extra defense against DOM clobbering attacks
+export const electron_bridge: ElectronBridge | undefined =
+    window.electron_bridge instanceof Element ? undefined : window.electron_bridge;

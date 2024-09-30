@@ -30,6 +30,9 @@ const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
 const compose_banner = mock_esm("../src/compose_banner");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+const {electron_bridge} = mock_esm("../src/electron_bridge", {
+    electron_bridge: {},
+});
 const theme = mock_esm("../src/theme");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
@@ -98,8 +101,6 @@ const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
 mock_esm("../src/giphy");
 const {Filter} = zrequire("filter");
-
-const electron_bridge = set_global("electron_bridge", {});
 
 message_lists.update_recipient_bar_background_color = noop;
 message_lists.current = {

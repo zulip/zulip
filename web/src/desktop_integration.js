@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
+import {electron_bridge} from "./electron_bridge";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
@@ -9,19 +10,19 @@ import * as message_view from "./message_view";
 import * as stream_data from "./stream_data";
 
 export function initialize() {
-    if (window.electron_bridge === undefined) {
+    if (electron_bridge === undefined) {
         return;
     }
 
-    window.electron_bridge.on_event("logout", () => {
+    electron_bridge.on_event("logout", () => {
         $("#logout_form").trigger("submit");
     });
 
-    window.electron_bridge.on_event("show-keyboard-shortcuts", () => {
+    electron_bridge.on_event("show-keyboard-shortcuts", () => {
         browser_history.go_to_location("keyboard-shortcuts");
     });
 
-    window.electron_bridge.on_event("show-notification-settings", () => {
+    electron_bridge.on_event("show-notification-settings", () => {
         browser_history.go_to_location("settings/notifications");
     });
 
@@ -29,10 +30,8 @@ export function initialize() {
     // is often referred to as inline reply feature. This is done so desktop app doesn't
     // have to depend on channel.post for setting crsf_token and message_view.narrow_by_topic
     // to narrow to the message being sent.
-    if (window.electron_bridge.set_send_notification_reply_message_supported !== undefined) {
-        window.electron_bridge.set_send_notification_reply_message_supported(true);
-    }
-    window.electron_bridge.on_event("send_notification_reply_message", (message_id, reply) => {
+    electron_bridge.set_send_notification_reply_message_supported?.(true);
+    electron_bridge.on_event("send_notification_reply_message", (message_id, reply) => {
         const message = message_store.get(message_id);
         const data = {
             type: message.type,
@@ -56,7 +55,7 @@ export function initialize() {
         }
 
         function error(error) {
-            window.electron_bridge.send_event("send_notification_reply_message_failed", {
+            electron_bridge.send_event("send_notification_reply_message_failed", {
                 data,
                 message_id,
                 error,

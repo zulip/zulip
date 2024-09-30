@@ -1,6 +1,7 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import {electron_bridge} from "./electron_bridge";
 import * as favicon from "./favicon";
 import type {Filter} from "./filter";
 import {$t} from "./i18n";
@@ -115,11 +116,9 @@ export function update_unread_counts(counts: FullUnreadCountsData): void {
     favicon.update_favicon(unread_count, pm_count);
 
     // Notify the current desktop app's UI about the new unread count.
-    if (window.electron_bridge !== undefined) {
-        window.electron_bridge.send_event("total_unread_count", unread_count);
-    }
+    electron_bridge?.send_event("total_unread_count", unread_count);
 
-    // TODO: Add a `window.electron_bridge.updateDirectMessageCount(new_pm_count);` call?
+    // TODO: Add a `electron_bridge.updateDirectMessageCount(new_pm_count);` call?
     redraw_title();
 }
 
