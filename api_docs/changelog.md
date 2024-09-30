@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 302**
+
+* [`GET /users/{email}`](/api/get-user-by-email): Changed the `email`
+  values by which users can successfully be looked up to match the
+  user email visibility setting's semantics better.
+
 **Feature level 301**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

@@ -18,6 +18,7 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
+from zerver.lib.create_user import get_dummy_email_address_for_display_regex
 from zerver.lib.exceptions import (
     JsonableError,
     OrganizationAdministratorRequiredError,
@@ -45,7 +46,6 @@ from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
     get_realm_user_dicts,
-    get_user,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id_in_realm,
     is_cross_realm_bot_email,
@@ -342,8 +342,76 @@ def access_user_by_email(
     allow_bots: bool = False,
     for_admin: bool,
 ) -> UserProfile:
+    """Fetch a user by email address. Endpoints using this function can be queried either with:
+
+    1) The real email address of the intended user, if the requester
+       believes that user exists and allows their email address to be
+       visible to the requester via their `email_address_visibility` setting.
+
+    2) The dummy email address (of the approximate shape
+       'user{user_id}@{realm_dummy_email_domain}') of the intended user. We
+       detect when the format of the provided email address matches
+       the format of our dummy email addresses and extract the user id
+       from it for a regular id-based lookup.
+
+       In particular, this mode is kept around for backwards
+       compatibility with the old behavior of the `GET /users/{email}`
+       endpoint, which required use of the dummy email address for
+       lookups of any user which didn't have
+       EMAIL_ADDRESS_VISIBILITY_EVERYONE set, regardless of how the
+       actual email_address_visibility setting related to the role of
+       the requester.
+
+       Note: If the realm.host value changes (e.g. due to the server moving to a new
+       domain), the required dummy email values passed here will need to be updated
+       accordingly to match the new value. This deviates from the original API behavior,
+       where the lookups were supposed to match the UserProfile.email value, which was
+       **not** updated for existing users even if the server moved domains. See
+       get_fake_email_domain for details of how the email domain for dummy email addresses
+       is determined.
+
+    The purpose of this is to be used at API endpoints that allow selecting the target user by
+    delivery_email, while preventing the endpoint from leaking information about user emails.
+    """
+
+    # First, check if the email is just the dummy email address format. In that case,
+    # we don't need to deal with email lookups or email address visibility restrictions
+    # and we simply get the user by id, extracted from the dummy address.
+    dummy_email_regex = get_dummy_email_address_for_display_regex(user_profile.realm)
+    match = re.match(dummy_email_regex, email)
+    if match:
+        target_id = int(match.group(1))
+        return access_user_by_id(
+            user_profile,
+            target_id,
+            allow_deactivated=allow_deactivated,
+            allow_bots=allow_bots,
+            for_admin=for_admin,
+        )
+
+    # Since the format doesn't match, we should treat it as a lookup
+    # for a real email address.
+    allowed_email_address_visibility_values = (
+        UserProfile.ROLE_TO_ACCESSIBLE_EMAIL_ADDRESS_VISIBILITY_IDS[user_profile.role]
+    )
+
     try:
-        target = get_user(email, user_profile.realm)
+        # Fetch the user from the subset of users which allow the
+        # requester to see their email address. We carefully do this
+        # with a single query to hopefully make timing attacks
+        # ineffective.
+        #
+        # Notably, we use the same select_related as access_user_by_id.
+        target = UserProfile.objects.select_related(
+            "realm",
+            "realm__can_access_all_users_group",
+            "realm__can_access_all_users_group__named_user_group",
+            "bot_owner",
+        ).get(
+            delivery_email__iexact=email.strip(),
+            realm=user_profile.realm,
+            email_address_visibility__in=allowed_email_address_visibility_values,
+        )
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
 

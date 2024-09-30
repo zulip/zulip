@@ -2591,31 +2591,82 @@ class GetProfileTest(ZulipTestCase):
     def test_get_user_by_email(self) -> None:
         user = self.example_user("hamlet")
         self.login("hamlet")
-        result = orjson.loads(self.client_get(f"/json/users/{user.email}").content)
+        result = self.client_get(f"/json/users/{user.email}")
+        data = result.json()
 
-        self.assertEqual(result["user"]["email"], user.email)
+        self.assertEqual(data["user"]["email"], user.email)
 
-        self.assertEqual(result["user"]["full_name"], user.full_name)
-        self.assertIn("user_id", result["user"])
-        self.assertNotIn("profile_data", result["user"])
-        self.assertFalse(result["user"]["is_bot"])
-        self.assertFalse(result["user"]["is_admin"])
-        self.assertFalse(result["user"]["is_owner"])
+        self.assertEqual(data["user"]["full_name"], user.full_name)
+        self.assertIn("user_id", data["user"])
+        self.assertNotIn("profile_data", data["user"])
+        self.assertFalse(data["user"]["is_bot"])
+        self.assertFalse(data["user"]["is_admin"])
+        self.assertFalse(data["user"]["is_owner"])
 
-        result = orjson.loads(
-            self.client_get(
-                f"/json/users/{user.email}", {"include_custom_profile_fields": "true"}
-            ).content
+        result = self.client_get(
+            f"/json/users/{user.email}", {"include_custom_profile_fields": "true"}
         )
-        self.assertIn("profile_data", result["user"])
+        data = result.json()
+        self.assertIn("profile_data", data["user"])
 
         result = self.client_get("/json/users/invalid")
         self.assert_json_error(result, "No such user")
 
         bot = self.example_user("default_bot")
-        result = orjson.loads(self.client_get(f"/json/users/{bot.email}").content)
-        self.assertEqual(result["user"]["email"], bot.email)
-        self.assertTrue(result["user"]["is_bot"])
+        result = self.client_get(f"/json/users/{bot.email}")
+        data = result.json()
+        self.assertEqual(data["user"]["email"], bot.email)
+        self.assertTrue(data["user"]["is_bot"])
+
+        iago = self.example_user("iago")
+        # Change iago's email address visibility so that hamlet can't see it.
+        do_change_user_setting(
+            iago,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
+        )
+        # Lookup by delivery email should fail, since hamlet can't access it.
+        result = self.client_get(f"/json/users/{iago.delivery_email}")
+        self.assert_json_error(result, "No such user")
+
+        # Lookup by the externally visible .email succeeds.
+        result = self.client_get(f"/json/users/{iago.email}")
+        data = result.json()
+        self.assertEqual(data["user"]["email"], iago.email)
+        self.assertEqual(data["user"]["delivery_email"], None)
+
+        # Allow members to see iago's email address, thus giving hamlet access.
+        do_change_user_setting(
+            iago,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            acting_user=None,
+        )
+        result = self.client_get(f"/json/users/{iago.delivery_email}")
+        data = result.json()
+        self.assertEqual(data["user"]["email"], iago.email)
+        self.assertEqual(data["user"]["delivery_email"], iago.delivery_email)
+
+        # Test the following edge case - when a user has EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        # enabled, both their .email and .delivery_email will be set to the same, real
+        # email address.
+        # Querying for the user by the dummy email address should still work however,
+        # as the API understands the dummy email as a user ID. This is a nicer interface,
+        # as it allow clients not to worry about the implementation details of .email.
+        do_change_user_setting(
+            iago,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+
+        dummy_email = f"user{iago.id}@{get_fake_email_domain(iago.realm.host)}"
+
+        result = self.client_get(f"/json/users/{dummy_email}")
+        data = result.json()
+        self.assertEqual(data["user"]["email"], iago.email)
+        self.assertEqual(data["user"]["delivery_email"], iago.delivery_email)
 
     def test_get_all_profiles_avatar_urls(self) -> None:
         hamlet = self.example_user("hamlet")
