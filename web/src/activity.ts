@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import * as channel from "./channel";
+import {electron_bridge} from "./electron_bridge";
 import {page_params} from "./page_params";
 import * as presence from "./presence";
 import * as watchdog from "./watchdog";
@@ -84,8 +85,8 @@ export function compute_active_status(): ActivityState {
     //
     // The check for `get_idle_on_system === undefined` is feature
     // detection; older desktop app releases never set that property.
-    if (window.electron_bridge?.get_idle_on_system !== undefined) {
-        if (window.electron_bridge.get_idle_on_system()) {
+    if (electron_bridge?.get_idle_on_system !== undefined) {
+        if (electron_bridge.get_idle_on_system()) {
             return ActivityState.IDLE;
         }
         return ActivityState.ACTIVE;

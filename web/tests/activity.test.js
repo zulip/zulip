@@ -26,6 +26,7 @@ const _document = {
 };
 
 const channel = mock_esm("../src/channel");
+const electron_bridge = mock_esm("../src/electron_bridge");
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
 const popovers = mock_esm("../src/popovers");
@@ -878,7 +879,7 @@ test("electron_bridge", ({override_rewire}) => {
 
     function with_bridge_idle(bridge_idle, f) {
         with_overrides(({override}) => {
-            override(window, "electron_bridge", {
+            override(electron_bridge, "electron_bridge", {
                 get_idle_on_system: () => bridge_idle,
             });
             return f();
@@ -893,7 +894,7 @@ test("electron_bridge", ({override_rewire}) => {
     });
 
     with_overrides(({override}) => {
-        override(window, "electron_bridge", undefined);
+        override(electron_bridge, "electron_bridge", undefined);
         activity.mark_client_idle();
         assert.equal(activity.compute_active_status(), "idle");
         activity.mark_client_active();
