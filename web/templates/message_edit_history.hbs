@@ -1,7 +1,7 @@
 {{! Client-side Handlebars template for viewing message edit history. }}
 
 {{#each edited_messages}}
-    <div class="overlay-message-row" data-message-edit-history-id="{{timestamp}}">
+    <div class="message-edit-message-row overlay-message-row" data-message-edit-history-id="{{timestamp}}">
         <div class="message-edit-message-info-box overlay-message-info-box" tabindex="0">
             {{#if is_stream }}
             <div class="message_header message_header_stream">
