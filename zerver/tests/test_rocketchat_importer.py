@@ -180,6 +180,22 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["is_mirror_dummy"], True)
         self.assertEqual(user["is_bot"], False)
 
+        # Importer should raise error when user emails are malformed
+        bad_email1 = rocketchat_data["user"][0]["emails"][0]["address"] = "test1@hotmai,l.om"
+        bad_email2 = rocketchat_data["user"][1]["emails"][0]["address"] = "test2@gmail.c"
+        user_id_to_user_map = map_user_id_to_user(rocketchat_data["user"])
+        with self.assertRaises(Exception) as e:
+            process_users(
+                user_id_to_user_map=user_id_to_user_map,
+                realm_id=realm_id,
+                domain_name=domain_name,
+                user_handler=user_handler,
+                user_id_mapper=user_id_mapper,
+            )
+        error_message = str(e.exception)
+        expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
+        self.assertEqual(error_message, expected_error_message)
+
     def test_categorize_channels_and_map_with_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)

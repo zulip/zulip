@@ -39,6 +39,7 @@ from zerver.data_import.import_util import (
     process_avatars,
     process_emojis,
     process_uploads,
+    validate_user_emails_for_import,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
@@ -358,6 +359,7 @@ def users_to_zerver_userprofile(
 
         logging.info("%s: %s -> %s", slack_user_id, user["name"], userprofile_dict["email"])
 
+    validate_user_emails_for_import(list(found_emails))
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
     logging.info("######### IMPORTING USERS FINISHED #########\n")
     return (

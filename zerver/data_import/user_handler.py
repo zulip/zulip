@@ -1,5 +1,7 @@
 from typing import Any
 
+from zerver.data_import.import_util import validate_user_emails_for_import
+
 
 class UserHandler:
     """
@@ -25,3 +27,7 @@ class UserHandler:
     def get_all_users(self) -> list[dict[str, Any]]:
         users = list(self.id_to_user_map.values())
         return users
+
+    def validate_user_emails(self) -> None:
+        all_users = self.get_all_users()
+        validate_user_emails_for_import([user["delivery_email"] for user in all_users])
