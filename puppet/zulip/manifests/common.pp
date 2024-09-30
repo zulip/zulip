@@ -106,10 +106,10 @@ class zulip::common {
 
     # https://release-registry.services.sentry.io/apps/sentry-cli/latest
     'sentry-cli' => {
-      'version' => '2.33.0',
+      'version' => '2.36.4',
       'sha256'  => {
-        'amd64'   => '652fe25aef94870b7a266a97e9c1cab3b6f09b1b9629e9729ffc18358c1fc0e7',
-        'aarch64' => '10b142d6aa67e0f678a15bee4e7b8699b0305f3c813f9cfbf67ec112b7a01a90',
+        'amd64'   => '22ba24c7019fc7f2ffc72307fa6a0ff5981f4254184f1e99777abc81aa4f8dde',
+        'aarch64' => 'a638db3d6d7356c4ad5556d288d8a13d57530a05bc73bc5f1b3e0edc46284967',
       },
     },
 
