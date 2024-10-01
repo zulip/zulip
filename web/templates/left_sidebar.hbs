@@ -149,7 +149,7 @@
         <h4 class="left-sidebar-title"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
         <div class="heading-markers-and-controls">
             <a id="show-all-direct-messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-direct-messages-template">
-                <i class="fa fa-align-right" aria-label="{{t 'Direct message feed' }}"></i>
+                <i class="zulip-icon zulip-icon-all-messages" aria-label="{{t 'Direct message feed' }}"></i>
             </a>
             <span class="unread_count"></span>
         </div>
@@ -173,9 +173,9 @@
             <div id="streams_header" class="zoom-in-hide {{#if hide_unread_counts}}hide_unread_counts{{/if}}">
                 <h4 class="left-sidebar-title"><span class="streams-tooltip-target" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'CHANNELS' }}</span></h4>
                 <div class="heading-markers-and-controls">
-                    <i id="filter_streams_tooltip" class="streams_filter_icon fa fa-filter" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
+                    <i id="filter_streams_tooltip" class="streams_filter_icon zulip-icon zulip-icon-search" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
                     <span id="add_streams_tooltip" class="hidden-for-spectators" data-tippy-content="{{t 'Add channels' }}">
-                        <i id="streams_inline_icon" class='fa fa-plus' aria-hidden="true" ></i>
+                        <i id="streams_inline_icon" class="zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
                     </span>
                     <span class="unread_count"></span>
                     <span class="masked_unread_count"></span>
