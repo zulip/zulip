@@ -126,35 +126,6 @@
         }
     }
 
-    .tippy-box:not([data-theme]) {
-        background: hsl(0deg 0% 0%);
-
-        &[data-placement^="top"] > .tippy-arrow::before {
-            border-top-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="bottom"] > .tippy-arrow::before {
-            border-bottom-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="left"] > .tippy-arrow::before {
-            border-left-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="right"] > .tippy-arrow::before {
-            border-right-color: hsl(0deg 0% 0%);
-        }
-    }
-
-    .tippy-box[data-theme="dropdown-widget"] {
-        background-color: hsl(240deg 5% 16%);
-        border: 1px solid hsl(0deg 0% 0%);
-        box-shadow:
-            0 7px 13px hsl(0deg 0% 0% / 35%),
-            0 5px 8px hsl(0deg 0% 0% / 32%),
-            0 2px 4px hsl(0deg 0% 0% / 20%);
-    }
-
     #navbar-middle .column-middle-inner,
     .header,
     #message_view_header {
@@ -320,16 +291,6 @@
 
     #stream-actions-menu-popover .sp-container {
         background-color: transparent;
-
-        & button {
-            background-color: hsl(208deg 35% 11%);
-            border: 1px solid hsl(210deg 36% 4%);
-            color: hsl(236deg 31% 90%);
-        }
-
-        .sp-picker-container {
-            border-left: solid 1px hsl(210deg 36% 4%);
-        }
     }
 
     .stream_header_colorblock.disabled {
@@ -758,27 +719,6 @@
                 .name {
                     color: hsl(236deg 33% 90%);
                 }
-            }
-        }
-
-        #content {
-            .field-section {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
-            }
-        }
-
-        .subscription-group-list,
-        .subscription-stream-list,
-        .subscription-stream-list .user-stream-list tr,
-        .subscription-group-list .user-group-list tr {
-            border-color: hsl(0deg 0% 0% / 40%);
-        }
-
-        .manage-profile-tab-footer {
-            &.modal__footer_wrapper {
-                border-top: 1px solid hsl(0deg 0% 100% / 20%);
             }
         }
     }

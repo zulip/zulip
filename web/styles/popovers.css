@@ -61,12 +61,9 @@
 
 .tippy-box[data-theme="dropdown-widget"] {
     border-radius: 6px;
-    background-color: hsl(240deg 20% 98%);
-    border: 1px solid hsl(0deg 0% 0% / 40%);
-    box-shadow:
-        0 7px 13px hsl(0deg 0% 0% / 15%),
-        0 5px 8px hsl(0deg 0% 0% / 12%),
-        0 2px 4px hsl(0deg 0% 0% / 10%);
+    background-color: var(--color-tippy-dropdown-background);
+    border: 1px solid var(--color-tippy-dropdown-border);
+    box-shadow: var(--box-shadow-tippy-dropdown);
     /* Tippy dropdown widgets scale with the base font-size. */
     font-size: var(--base-font-size-px);
 
@@ -274,11 +271,14 @@
             }
 
             & button {
-                background-color: hsl(0deg 0% 100%);
+                background-color: var(
+                    --color-stream-actions-menu-popover-button-background
+                );
                 background-image: none;
-                border: 1px solid hsl(0deg 0% 80%);
+                border: 1px solid
+                    var(--color-stream-actions-menu-popover-button-border);
                 border-radius: 4px;
-                color: hsl(0deg 0% 25%);
+                color: var(--color-stream-actions-menu-popover-button-text);
                 /* 12px at 12px/1em */
                 font-size: 1em;
                 padding: 6px;
@@ -288,7 +288,8 @@
             }
 
             .sp-picker-container {
-                border-left: solid 1px hsl(0deg 0% 88%);
+                border-left: solid 1px
+                    var(--color-stream-actions-menu-popover-picker-border-left);
             }
         }
     }
@@ -536,7 +537,7 @@ ul.popover-group-menu-member-list {
             margin-bottom: 10px;
 
             .name {
-                color: hsl(0deg 0% 20%);
+                color: var(--color-user-profile-name-text);
                 font-weight: 600;
             }
 
@@ -619,7 +620,7 @@ ul.popover-group-menu-member-list {
     .subscription-group-list,
     .subscription-stream-list {
         position: relative;
-        border: 1px solid hsl(0deg 0% 83%);
+        border: 1px solid var(--color-user-profile-list-border);
         border-radius: 4px;
         overflow: auto;
         text-align: left;
@@ -639,7 +640,8 @@ ul.popover-group-menu-member-list {
             border-collapse: collapse;
 
             & tr {
-                border-bottom: 1px solid hsl(0deg 0% 87%);
+                border-bottom: 1px solid
+                    var(--color-user-profile-list-tr-border);
                 /* Ensure equal height for rows with a remove-subscription-button and
                    those without one. */
                 height: 34px;
@@ -671,7 +673,7 @@ ul.popover-group-menu-member-list {
         height: 0;
 
         &.modal__footer_wrapper {
-            border-top: 1px solid hsl(0deg 0% 87%);
+            border-top: 1px solid var(--color-user-profile-footer-border-top);
             display: flex;
             justify-content: flex-end;
             align-items: center;
