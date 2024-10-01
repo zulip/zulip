@@ -21,7 +21,7 @@ import * as ui_util from "./ui_util";
 import * as unread_ui from "./unread_ui";
 import {user_settings} from "./user_settings";
 
-export const user_settings_panel = {};
+export let user_settings_panel;
 
 function rerender_ui() {
     const $unmatched_streams_table = $("#stream-specific-notify-table");
@@ -372,10 +372,12 @@ export function update_muted_stream_state(sub) {
 }
 
 export function initialize() {
-    user_settings_panel.container = "#user-notification-settings";
-    user_settings_panel.settings_object = user_settings;
-    user_settings_panel.notification_sound_elem = "#user-notification-sound-audio";
-    user_settings_panel.for_realm_settings = false;
+    user_settings_panel = {
+        container: "#user-notification-settings",
+        settings_object: user_settings,
+        notification_sound_elem: "#user-notification-sound-audio",
+        for_realm_settings: false,
+    };
 
     // Set up click handler for unmuting streams via this UI.
     $("body").on("click", "#stream-specific-notify-table .unmute_stream", (e) => {
