@@ -886,8 +886,17 @@ function parse_args_for_deactivation_banner(objections) {
         if (objection.type === "channel") {
             const stream_id = objection.channel_id;
             const sub = stream_data.get_sub_by_id(stream_id);
-            const setting_url = hash_util.channels_settings_edit_url(sub, "general");
-            args.streams_using_group_for_setting.push({stream_name: sub.name, setting_url});
+            if (sub !== undefined) {
+                args.streams_using_group_for_setting.push({
+                    stream_name: sub.name,
+                    setting_url: hash_util.channels_settings_edit_url(sub, "general"),
+                });
+            } else {
+                args.streams_using_group_for_setting.push({
+                    stream_name: $t({defaultMessage: "Unknown stream"}),
+                    setting_url: undefined,
+                });
+            }
             continue;
         }
 
