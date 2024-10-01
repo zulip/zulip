@@ -18,6 +18,21 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 django.setup()
 
 
+def replace_emoticon_translation_table(markdown_string: str) -> str:
+    """
+    We will replace emoticon_translations custom syntax in Python with
+    <EmoticonTranslations> astro component.
+    """
+    return markdown_string.replace(
+        "\\{emoticon_translations\\}",
+        """
+import EmoticonTranslations from '../../components/EmoticonTranslations.astro';
+
+<EmoticonTranslations />
+""",
+    )
+
+
 def replace_image_path(markdown_string: str) -> str:
     """
     We will point to the existing image folder till
@@ -69,6 +84,7 @@ def insert_frontmatter(markdown_string: str) -> str:
 def convert_string_to_mdx(markdown_string: str) -> str:
     result = escape_curly_braces(markdown_string)
     result = fix_relative_path(result)
+    result = replace_emoticon_translation_table(result)
     result = replace_image_path(result)
     return insert_frontmatter(result)
 
