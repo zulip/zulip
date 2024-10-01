@@ -117,6 +117,7 @@ def help_handle_match(key: str) -> str:
 
 channel_info = {
     "all": ["All channels", "/#channels/all"],
+    "not-subscribed": ["Not subscribed", "/#channels/notsubscribed"],
 }
 
 channel_all_instructions = """
