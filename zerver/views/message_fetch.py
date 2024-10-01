@@ -226,25 +226,25 @@ def get_messages_backend(
         # rendered message dict before returning it.  We attempt to
         # bulk-fetch rendered message dicts from remote cache using the
         # 'messages' list.
-        message_ids: list[int] = []
+        result_message_ids: list[int] = []
         user_message_flags: dict[int, list[str]] = {}
         if is_web_public_query:
             # For spectators, we treat all historical messages as read.
             for row in rows:
                 message_id = row[0]
-                message_ids.append(message_id)
+                result_message_ids.append(message_id)
                 user_message_flags[message_id] = ["read"]
         elif include_history:
             assert user_profile is not None
-            message_ids = [row[0] for row in rows]
+            result_message_ids = [row[0] for row in rows]
 
             # TODO: This could be done with an outer join instead of two queries
             um_rows = UserMessage.objects.filter(
-                user_profile=user_profile, message_id__in=message_ids
+                user_profile=user_profile, message_id__in=result_message_ids
             )
             user_message_flags = {um.message_id: um.flags_list() for um in um_rows}
 
-            for message_id in message_ids:
+            for message_id in result_message_ids:
                 if message_id not in user_message_flags:
                     user_message_flags[message_id] = ["read", "historical"]
         else:
@@ -252,7 +252,7 @@ def get_messages_backend(
                 message_id = row[0]
                 flags = row[1]
                 user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
-                message_ids.append(message_id)
+                result_message_ids.append(message_id)
 
         search_fields: dict[int, dict[str, str]] = {}
         if is_search:
@@ -264,7 +264,7 @@ def get_messages_backend(
                 )
 
         message_list = messages_for_ids(
-            message_ids=message_ids,
+            message_ids=result_message_ids,
             user_message_flags=user_message_flags,
             search_fields=search_fields,
             apply_markdown=apply_markdown,
