@@ -10,6 +10,7 @@ from pydantic import Json
 from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
+    do_edit_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
     do_revoke_multi_use_invite,
@@ -197,6 +198,58 @@ def resend_user_invite_email(
         check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
 
     do_send_user_invite_email(prereg_user, event_time=timezone_now())
+    return json_success(request)
+
+
+@require_member_or_admin
+@typed_endpoint
+def edit_multiuse_invite(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    invite_id: PathOnly[int],
+    stream_ids: Json[list[int]],
+    invite_as: Annotated[
+        Json[int],
+        check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
+    ],
+    include_realm_default_subscriptions: Json[bool] = False,
+) -> HttpResponse:
+    try:
+        invite = MultiuseInvite.objects.get(id=invite_id)
+    except MultiuseInvite.DoesNotExist:
+        raise JsonableError(
+            _("Invite does not exist with id: {invite_id}.").format(invite_id=invite_id)
+        )
+
+    if not user_profile.can_create_multiuse_invite_to_realm():
+        # Guest users case will not be handled here as it will
+        # be handled by the decorator above.
+        raise JsonableError(_("Insufficient permission"))
+
+    require_admin = invite_as in [
+        # Owners can only be invited by owners, checked by separate
+        # logic in check_role_based_permissions.
+        PreregistrationUser.INVITE_AS["REALM_OWNER"],
+        PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        PreregistrationUser.INVITE_AS["MODERATOR"],
+    ]
+    check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
+
+    streams: list[Stream] = []
+    for stream_id in stream_ids:
+        try:
+            (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        except JsonableError:
+            raise JsonableError(
+                _("Stream does not exist with id: {stream_id}.").format(stream_id=stream_id)
+            )
+        streams.append(stream)
+
+    if len(streams) and not user_profile.can_subscribe_other_users():
+        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
+
+    do_edit_multiuse_invite_link(invite, invite_as, streams, include_realm_default_subscriptions)
     return json_success(request)
 
 
