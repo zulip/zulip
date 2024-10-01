@@ -8,7 +8,7 @@
 
 {tab|desktop-web}
 
-{relative|channel|all}
+{relative|channel|not-subscribed}
 
 1. Scroll through the list of channels. You can use the **search box** near the
    top of the menu to filter the list by channel name or description.
