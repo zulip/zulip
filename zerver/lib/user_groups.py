@@ -80,6 +80,12 @@ def has_user_group_access_for_subgroup(
     *,
     allow_deactivated: bool = False,
 ) -> bool:
+    """Minimal access control checks for whether the given group
+    is visible to the given user for use as a subgroup.
+
+    In the future, if groups whose existence is not visible to the
+    entire organization are added, this may grow more complex.
+    """
     if user_group.realm_id != user_profile.realm_id:
         return False
 
@@ -97,6 +103,13 @@ def get_user_group_by_id_in_realm(
     for_setting: bool = False,
     allow_deactivated: bool = False,
 ) -> NamedUserGroup:
+    """
+    Internal function for accessing a single user group from client
+    code. Locks the group if for_read is False.
+
+    Notably does not do any access control checks, beyond only fetching
+    groups from the provided realm.
+    """
     try:
         if for_read:
             user_group = NamedUserGroup.objects.get(id=user_group_id, realm=realm)
@@ -115,6 +128,12 @@ def get_user_group_by_id_in_realm(
 def check_permission_for_managing_all_groups(
     user_group: UserGroup, user_profile: UserProfile
 ) -> bool:
+    """
+    Given a user and a group in the same realm, checks if the user
+    can manage the group through the legacy can_edit_all_user_groups
+    permission, which is a permission that requires either certain roles
+    or membership in the group itself to be used.
+    """
     can_edit_all_user_groups = user_profile.can_edit_all_user_groups()
     if can_edit_all_user_groups:
         if user_profile.is_realm_admin or user_profile.is_moderator:
@@ -131,6 +150,14 @@ def access_user_group_for_update(
     permission_setting: str,
     allow_deactivated: bool = False,
 ) -> NamedUserGroup:
+    """
+    Main entry point that views code should call when planning to modify
+    a given user group on behalf of a given user.
+
+    The permission_setting parameter indicates what permission to check;
+    different features will be used when editing the membership vs.
+    security-sensitive settings on a group.
+    """
     user_group = get_user_group_by_id_in_realm(
         user_group_id, user_profile.realm, for_read=False, allow_deactivated=allow_deactivated
     )
@@ -159,6 +186,10 @@ def access_user_group_for_update(
 def access_user_group_for_deactivation(
     user_group_id: int, user_profile: UserProfile
 ) -> NamedUserGroup:
+    """
+    Main security check / access function for whether the acting
+    user has permission to deactivate a given user group.
+    """
     user_group = access_user_group_for_update(
         user_group_id, user_profile, permission_setting="can_manage_group"
     )
@@ -408,6 +439,10 @@ def access_user_group_for_setting(
     permission_configuration: GroupPermissionSetting,
     current_setting_value: UserGroup | None = None,
 ) -> UserGroup:
+    """Given a permission setting and specification of what value it
+    should have (setting_user_group), returns either a Named or
+    anonymous `UserGroup` with the requested membership.
+    """
     if isinstance(setting_user_group, int):
         named_user_group = get_user_group_by_id_in_realm(
             setting_user_group, user_profile.realm, for_read=False, for_setting=True
