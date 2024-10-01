@@ -893,7 +893,7 @@ function parse_args_for_deactivation_banner(objections) {
                 });
             } else {
                 args.streams_using_group_for_setting.push({
-                    stream_name: $t({defaultMessage: "Unknown stream"}),
+                    stream_name: $t({defaultMessage: "Unknown channel"}),
                     setting_url: undefined,
                 });
             }
