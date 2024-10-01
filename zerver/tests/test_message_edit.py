@@ -976,6 +976,33 @@ class EditMessageTest(ZulipTestCase):
         set_message_editing_params(False, "unlimited", EditTopicPolicyEnum.ADMINS_ONLY)
         do_edit_message_assert_success(id_, "G", True)
 
+    def test_edit_message_in_archived_stream(self) -> None:
+        user = self.example_user("hamlet")
+        self.login("hamlet")
+        stream_name = "archived stream"
+        archived_stream = self.make_stream(stream_name)
+        self.subscribe(user, stream_name)
+        msg_id = self.send_stream_message(
+            user, "archived stream", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "content after edit",
+            },
+        )
+        self.assert_json_success(result)
+
+        do_deactivate_stream(archived_stream, acting_user=None)
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "editing second time",
+            },
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+
     def test_edit_topic_policy(self) -> None:
         def set_message_editing_params(
             allow_message_editing: bool,
