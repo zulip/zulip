@@ -32,18 +32,22 @@ export function initialize() {
             const topic_name = $elt.attr("data-topic-name");
             $elt.addClass("visibility-policy-popover-visible");
 
-            instance.context =
-                popover_menus_data.get_change_visibility_policy_popover_content_context(
-                    Number.parseInt(stream_id, 10),
-                    topic_name,
-                );
             instance.setContent(
-                parse_html(render_change_visibility_policy_popover(instance.context)),
+                parse_html(
+                    render_change_visibility_policy_popover(
+                        popover_menus_data.get_change_visibility_policy_popover_content_context(
+                            Number.parseInt(stream_id, 10),
+                            topic_name,
+                        ),
+                    ),
+                ),
             );
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-            const {stream_id, topic_name} = instance.context;
+            const $elt = $(instance.reference).closest(".change_visibility_policy").expectOne();
+            const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+            const topic_name = $elt.attr("data-topic-name");
 
             if (!stream_id) {
                 popover_menus.hide_current_popover_if_visible(instance);
