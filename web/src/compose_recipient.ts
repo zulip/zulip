@@ -328,8 +328,9 @@ export function initialize(): void {
 }
 
 export function update_placeholder_text(): void {
+    const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
-    if (!$("textarea#compose-textarea").is(":visible")) {
+    if (!$textarea.is(":visible")) {
         return;
     }
     const message_type = compose_state.get_message_type();
@@ -349,5 +350,6 @@ export function update_placeholder_text(): void {
         });
     }
 
-    $("textarea#compose-textarea").attr("placeholder", placeholder);
+    $textarea.attr("placeholder", placeholder);
+    compose_ui.autosize_textarea($textarea);
 }
