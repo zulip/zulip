@@ -195,7 +195,7 @@ const HEADER_ELEMENT_HTML =
     '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>';
 const CONTAINER_HTML = '<div class="typeahead dropdown-menu"></div>';
 const MENU_HTML = '<ul class="typeahead-menu" data-simplebar></ul>';
-const ITEM_HTML = "<li><a></a></li>";
+const ITEM_HTML = '<li class="typeahead-item"><a class="typeahead-item-link"></a></li>';
 const MIN_LENGTH = 1;
 
 export type TypeaheadInputElement =
