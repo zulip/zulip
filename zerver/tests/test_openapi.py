@@ -789,7 +789,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             self.curl_example("/endpoint", "BREW")  # see: HTCPCP
 
     def test_generate_and_render_curl_with_array_example(self) -> None:
-        generated_curl_example = self.curl_example("/messages", "GET")
+        generated_curl_example = self.curl_example("/messages", "GET", exclude=["use_first_unread_anchor"])
         expected_curl_example = [
             "```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
@@ -800,8 +800,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "channel"}]\' \\',
             "    --data-urlencode client_gravatar=false \\",
-            "    --data-urlencode apply_markdown=false \\",
-            "    --data-urlencode use_first_unread_anchor=true",
+            "    --data-urlencode apply_markdown=false",
             "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
@@ -863,7 +862,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
     def test_generate_and_render_curl_example_with_excludes(self) -> None:
         generated_curl_example = self.curl_example(
-            "/messages", "GET", exclude=["client_gravatar", "apply_markdown"]
+            "/messages", "GET", exclude=["client_gravatar", "apply_markdown", "use_first_unread_anchor"]
         )
         expected_curl_example = [
             "```curl",
@@ -873,8 +872,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
-            '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "channel"}]\' \\',
-            "    --data-urlencode use_first_unread_anchor=true",
+            '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "channel"}]\'',
             "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
