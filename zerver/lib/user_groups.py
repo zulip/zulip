@@ -125,6 +125,10 @@ def get_user_group_by_id_in_realm(
         raise JsonableError(_("Invalid user group"))
 
 
+def access_user_group_to_read_membership(user_group_id: int, realm: Realm) -> NamedUserGroup:
+    return get_user_group_by_id_in_realm(user_group_id, realm, for_read=True)
+
+
 def check_permission_for_managing_all_groups(
     user_group: UserGroup, user_profile: UserProfile
 ) -> bool:

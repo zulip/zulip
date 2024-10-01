@@ -28,11 +28,11 @@ from zerver.lib.user_groups import (
     access_user_group_for_deactivation,
     access_user_group_for_setting,
     access_user_group_for_update,
+    access_user_group_to_read_membership,
     check_user_group_name,
     get_direct_memberships_of_users,
     get_group_setting_value_for_api,
     get_subgroup_ids,
-    get_user_group_by_id_in_realm,
     get_user_group_direct_member_ids,
     get_user_group_member_ids,
     is_user_in_group,
@@ -448,7 +448,7 @@ def get_is_user_group_member(
     user_id: PathOnly[Json[int]],
     direct_member_only: Json[bool] = False,
 ) -> HttpResponse:
-    user_group = get_user_group_by_id_in_realm(user_group_id, user_profile.realm, for_read=True)
+    user_group = access_user_group_to_read_membership(user_group_id, user_profile.realm)
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
 
     return json_success(
@@ -470,7 +470,7 @@ def get_user_group_members(
     user_group_id: PathOnly[Json[int]],
     direct_member_only: Json[bool] = False,
 ) -> HttpResponse:
-    user_group = get_user_group_by_id_in_realm(user_group_id, user_profile.realm, for_read=True)
+    user_group = access_user_group_to_read_membership(user_group_id, user_profile.realm)
 
     return json_success(
         request,
@@ -489,7 +489,7 @@ def get_subgroups_of_user_group(
     user_group_id: PathOnly[Json[int]],
     direct_subgroup_only: Json[bool] = False,
 ) -> HttpResponse:
-    user_group = get_user_group_by_id_in_realm(user_group_id, user_profile.realm, for_read=True)
+    user_group = access_user_group_to_read_membership(user_group_id, user_profile.realm)
 
     return json_success(
         request,
