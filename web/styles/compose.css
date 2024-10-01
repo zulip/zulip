@@ -931,9 +931,17 @@ textarea.new_message_textarea {
         box-shadow: none;
         outline: none;
 
-        padding: 4px 6px;
+        /* Top and bottom padding needs to be a dynamic value to
+           fit emojis in both compact (14px) and regular mode (16px)
+           on all monitors. 0.15em is 2.4px at 16px/1em and
+           0.15em is 2.1px at 14px/1em. */
+        padding: 0.15em 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
+        /* Line-height needed to stop text from sagging on low-resolution
+           monitors on Safari and Chrome. 1.6em is 25.6px at 16px.
+           1.6em is 22.4px at 14px. */
+        line-height: 1.6em;
     }
 
     /* Styles for new conversation button in the recipient_box */
