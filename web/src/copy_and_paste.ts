@@ -362,7 +362,7 @@ function image_to_zulip_markdown(
     const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
     const title = deduplicate_newlines(node.getAttribute("title") ?? "");
     // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
+    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") ?? "";
 }
 
 function within_single_element(html_fragment: HTMLElement): boolean {
@@ -434,6 +434,36 @@ export function paste_handler_converter(paste_html: string): string {
         filter: ["del", "s", "strike"],
         replacement(content) {
             return "~~" + content + "~~";
+        },
+    });
+    turndownService.addRule("latexMath", {
+        filter(node: Node) {
+            if (!(node instanceof Element)) {
+                return false;
+            }
+            const closest_display = node.closest(".katex-display");
+            const has_mathml = node.querySelector(".katex-mathml") !== null;
+            return closest_display !== null && has_mathml;
+        },
+        replacement(content: string, node: Node) {
+            if (!(node instanceof Element)) {
+                return content;
+            }
+            const display_element = node.closest(".katex-display") ?? node;
+            const mathml_element = display_element.querySelector(".katex-mathml");
+
+            assert(mathml_element, "Expected .katex-mathml element not found.");
+
+            const annotation = mathml_element.querySelector(
+                'annotation[encoding="application/x-tex"]',
+            );
+
+            assert(annotation?.textContent, "Expected LaTeX annotation not found.");
+
+            const latex_content = annotation.textContent.trim();
+            return latex_content.includes("\n")
+                ? `\`\`\`math\n${latex_content}\n\`\`\`\n`
+                : `$$${latex_content}$$`;
         },
     });
     turndownService.addRule("links", {
@@ -570,7 +600,7 @@ export function paste_handler_converter(paste_html: string): string {
 
             const className = codeElement.getAttribute("class") ?? "";
             const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
+                ? node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? ""
                 : (/language-(\S+)/.exec(className) ?? [null, ""])[1];
 
             assert(options.fence !== undefined);
