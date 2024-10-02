@@ -6,8 +6,36 @@ import * as common from "./lib/common";
 
 async function navigate_using_left_sidebar(page: Page, stream_name: string): Promise<void> {
     console.log("Visiting #" + stream_name);
-    await page.click(`.stream-name[title="${stream_name}"]`);
-    await page.waitForSelector(`#message_feed_container`, {visible: true});
+    await page.waitForSelector(".subscription_block", {visible: true, timeout: 20000});
+    try {
+        const streamSelector = `.subscription_block .stream-name`;
+        await page.waitForSelector(streamSelector, {visible: true, timeout: 10000});
+
+        const streamElements = await page.$$(streamSelector);
+        let streamFound = false;
+
+        for (const element of streamElements) {
+            const text = await element.evaluate((el) => el.textContent);
+            if (text && text.trim() === stream_name) {
+                await element.click();
+                streamFound = true;
+                break;
+            }
+        }
+
+        if (!streamFound) {
+            throw new Error(`Stream "${stream_name}" not found in the sidebar`);
+        }
+
+        await page.waitForSelector("#message_feed_container", {visible: true, timeout: 10000});
+    } catch (error) {
+        console.error(`Error navigating to stream "${stream_name}":`, error);
+
+        const pageContent = await page.content();
+        console.log("Current page content:", pageContent);
+
+        throw error;
+    }
 }
 
 async function open_menu(page: Page): Promise<void> {
@@ -91,7 +119,7 @@ async function navigation_tests(page: Page): Promise<void> {
     await common.log_in(page);
 
     await navigate_to_settings(page);
-
+    await page.waitForSelector("#left-sidebar-navigation-list", {visible: true});
     await navigate_using_left_sidebar(page, "Verona");
 
     await page.click("#left-sidebar-navigation-list .home-link");
