@@ -1129,6 +1129,7 @@ export function render_message_list_with_selected_message(opts: {
         // narrowing
         message_lists.current.view.set_message_offset(select_offset);
     }
+    message_lists.current.view.update_sticky_recipient_headers();
     unread_ops.process_visible();
     narrow_history.save_narrow_state_and_flush();
 }
