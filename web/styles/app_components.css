@@ -1157,7 +1157,9 @@ input.settings_text_input {
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(
+            --color-background-disabled-dropdown-widget-button
+        );
         opacity: 0.7;
     }
 }

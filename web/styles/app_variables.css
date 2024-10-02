@@ -742,6 +742,7 @@
     /* Widgets colors */
     --color-border-dropdown-widget-button: hsl(0deg 0% 80%);
     --color-background-dropdown-widget-button: hsl(0deg 0% 100%);
+    --color-background-disabled-dropdown-widget-button: hsl(0deg 0% 93%);
 
     /* KBD colors */
     --color-kbd-background: hsl(0deg 0% 98%);
@@ -1249,6 +1250,7 @@
     /* Widgets colors */
     --color-border-dropdown-widget-button: hsl(0deg 0% 0% / 60%);
     --color-background-dropdown-widget-button: hsl(0deg 0% 0% / 20%);
+    --color-background-disabled-dropdown-widget-button: hsl(0deg 0% 0% / 20%);
 
     /* KBD colors */
     --color-kbd-background: hsl(211deg 29% 14%);
