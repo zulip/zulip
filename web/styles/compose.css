@@ -1071,6 +1071,13 @@ textarea.new_message_textarea {
             background: var(--color-background-active-popover-menu);
         }
 
+        &:focus-visible {
+            background: var(--color-background-hover-popover-menu);
+            border-radius: 4px;
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -1px;
+        }
+
         & .enter_sends_choice_radio {
             width: auto;
             cursor: pointer;
