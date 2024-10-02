@@ -1,11 +1,11 @@
 <div class="language_selection_widget input-group prop-element" id="id_{{section_name}}" data-setting-widget-type="language-setting">
-    <label class="settings-field-label">
+    <label class="settings-field-label" for="id_language_selection_button">
         {{section_title}}
         {{#if help_link_widget_link}}
         {{> ../help_link_widget link=help_link_widget_link }}
         {{/if}}
     </label>
-    <button type="button" class="language_selection_button button rounded tippy-zulip-delayed-tooltip" data-section="{{section_name}}" data-tippy-content="{{t 'Change language' }}">
+    <button type="button" id="id_language_selection_button" class="language_selection_button button rounded tippy-zulip-delayed-tooltip" data-section="{{section_name}}" data-tippy-content="{{t 'Change language' }}">
         <span class="{{section_name}}" data-language-code="{{language_code}}">{{setting_value}}</span>
     </button>
 </div>

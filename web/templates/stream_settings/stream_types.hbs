@@ -28,7 +28,7 @@
 
     {{#if ask_to_announce_stream}}
         <div id="announce-new-stream">
-            {{>announce_stream_checkbox }}
+            {{>announce_stream_checkbox prefix="id_" setting_name="should_announce_new_stream" }}
         </div>
     {{/if}}
 
@@ -54,7 +54,7 @@
     <div class="advanced-configurations-collapase-view hide">
 
         <div class="input-group">
-            <label class="dropdown-title">{{t 'Who can post to the channel?'}}
+            <label class="dropdown-title" for="id_stream_post_policy">{{t 'Who can post to the channel?'}}
                 {{> ../help_link_widget link="/help/stream-sending-policy" }}
             </label>
             <select name="stream-post-policy" class="stream_post_policy_setting prop-element settings_select bootstrap-focus-style" id="id_stream_post_policy" data-setting-widget-type="number">
@@ -74,7 +74,7 @@
         {{#if (or is_owner is_stream_edit)}}
             <div>
                 <div class="input-group inline-block message-retention-setting-group time-limit-setting">
-                    <label class="dropdown-title">{{t "Message retention period" }}
+                    <label class="dropdown-title" for="id_message_retention_days">{{t "Message retention period" }}
                         {{> ../help_link_widget link="/help/message-retention-policy" }}
                     </label>
 
