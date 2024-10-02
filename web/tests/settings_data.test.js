@@ -442,6 +442,124 @@ run_test("can_manage_user_group", () => {
     assert.ok(settings_data.can_manage_user_group(students.id));
 });
 
+run_test("can_join_user_group", () => {
+    const admins = {
+        description: "Administrators",
+        name: "role:administrators",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+        can_join_group: 4,
+        can_manage_group: 4,
+        can_mention_group: 1,
+    };
+    const moderators = {
+        description: "Moderators",
+        name: "role:moderators",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+        can_join_group: 4,
+        can_manage_group: 4,
+        can_mention_group: 1,
+    };
+    const members = {
+        description: "Members",
+        name: "role:members",
+        id: 3,
+        members: new Set([3, 4]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1, 2]),
+        can_join_group: 4,
+        can_manage_group: 4,
+        can_mention_group: 4,
+    };
+    const nobody = {
+        description: "Nobody",
+        name: "role:nobody",
+        id: 4,
+        members: new Set([]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+        can_join_group: 4,
+        can_manage_group: 4,
+        can_mention_group: 2,
+    };
+    const students = {
+        description: "Students group",
+        name: "Students",
+        id: 5,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4, 5]),
+        can_join_group: 1,
+        can_manage_group: {
+            direct_members: [4],
+            direct_subgroups: [],
+        },
+        can_mention_group: 3,
+        creator_id: 4,
+    };
+    user_groups.initialize({
+        realm_user_groups: [admins, moderators, members, nobody, students],
+    });
+    realm.realm_can_manage_all_groups = nobody.id;
+
+    page_params.is_spectator = true;
+    assert.ok(!settings_data.can_join_user_group(students.id));
+
+    page_params.is_spectator = false;
+    // admin user
+    current_user.user_id = 1;
+    assert.ok(settings_data.can_join_user_group(students.id));
+
+    // moderator user
+    current_user.user_id = 2;
+    assert.ok(!settings_data.can_join_user_group(students.id));
+
+    let event = {
+        group_id: students.id,
+        data: {
+            can_join_group: moderators.id,
+        },
+    };
+    user_groups.update(event);
+    assert.ok(settings_data.can_join_user_group(students.id));
+
+    current_user.user_id = 1;
+    assert.ok(settings_data.can_join_user_group(students.id));
+
+    // Some other user.
+    current_user.user_id = 5;
+    assert.ok(!settings_data.can_join_user_group(students.id));
+
+    event = {
+        group_id: students.id,
+        data: {
+            can_join_group: {
+                direct_members: [5],
+                direct_subgroups: [admins.id],
+            },
+        },
+    };
+    user_groups.update(event);
+    assert.ok(settings_data.can_join_user_group(students.id));
+
+    current_user.user_id = 2;
+    assert.ok(!settings_data.can_join_user_group(students.id));
+
+    // User can join the group if they can add anyone in the group which
+    // depends on can_manage_group and realm.can_manage_all_groups settings.
+    current_user.user_id = 4;
+    assert.ok(settings_data.can_join_user_group(students.id));
+
+    realm.realm_can_manage_all_groups = moderators.id;
+    current_user.user_id = 2;
+    assert.ok(settings_data.can_join_user_group(students.id));
+});
+
 run_test("type_id_to_string", () => {
     page_params.bot_types = [
         {

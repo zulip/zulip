@@ -16,6 +16,7 @@ export type UserGroupUpdateEvent = {
     data: {
         name?: string;
         description?: string;
+        can_join_group?: number;
         can_manage_group?: number;
         can_mention_group?: number;
         deactivated?: boolean;
