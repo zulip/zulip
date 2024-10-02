@@ -21,7 +21,6 @@ from zerver.lib.upload import (
     attachment_vips_source,
     check_upload_within_quota,
     create_attachment,
-    delete_message_attachment,
     sanitize_name,
     upload_backend,
 )
@@ -167,10 +166,19 @@ def handle_upload_pre_finish_hook(
             StorageClass=settings.S3_UPLOADS_STORAGE_CLASS,
         )
 
-    # https://tus.github.io/tusd/storage-backends/overview/#storage-format
-    # tusd creates a .info file next to the upload, which we do not
-    # need to keep.  Clean it up.
-    delete_message_attachment(f"{path_id}.info")
+        # https://tus.github.io/tusd/storage-backends/overview/#storage-format
+        # tusd also creates a .info file next to the upload, which
+        # must be preserved for HEAD requests (to check for upload
+        # state) to work.  These files are inaccessible via Zulip, and
+        # small enough to not pose any notable storage use; but we
+        # should store them with the right StorageClass.
+        if settings.S3_UPLOADS_STORAGE_CLASS != "STANDARD":
+            info_key = upload_backend.uploads_bucket.Object(path_id + ".info")
+            info_key.copy_from(
+                CopySource={"Bucket": settings.S3_AUTH_UPLOADS_BUCKET, "Key": path_id + ".info"},
+                MetadataDirective="COPY",
+                StorageClass=settings.S3_UPLOADS_STORAGE_CLASS,
+            )
 
     with transaction.atomic():
         create_attachment(
