@@ -346,10 +346,12 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
         mobile_pushes = RemoteInstallationCount.objects.filter(
             server=remote_entity,
             property="mobile_pushes_forwarded::day",
+            subgroup=None,
             end_time__gte=timezone_now() - timedelta(days=7),
         ).aggregate(total_forwarded=Sum("value", default=0))
         latest_remote_server_push_forwarded_count = RemoteInstallationCount.objects.filter(
             server=remote_entity,
+            subgroup=None,
             property="mobile_pushes_forwarded::day",
         ).last()
         if latest_remote_server_push_forwarded_count is not None:  # nocoverage
@@ -380,10 +382,12 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
         mobile_pushes = RemoteRealmCount.objects.filter(
             remote_realm=remote_entity,
             property="mobile_pushes_forwarded::day",
+            subgroup=None,
             end_time__gte=timezone_now() - timedelta(days=7),
         ).aggregate(total_forwarded=Sum("value", default=0))
         latest_remote_realm_push_forwarded_count = RemoteRealmCount.objects.filter(
             remote_realm=remote_entity,
+            subgroup=None,
             property="mobile_pushes_forwarded::day",
         ).last()
         if latest_remote_realm_push_forwarded_count is not None:  # nocoverage
