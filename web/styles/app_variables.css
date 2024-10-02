@@ -801,7 +801,7 @@
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 50% / 7%
     );
-    --color-vdots-hint: hsl(240deg 30% 20%);
+    --color-vdots-hint: hsl(240deg 30% 80%);
     --color-vdots-visible: hsl(240deg 30% 40%);
     --color-vdots-hover: hsl(240deg 100% 15%);
     --color-tab-picker-icon: hsl(200deg 100% 40%);
@@ -1322,7 +1322,7 @@
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 75% / 20%
     );
-    --color-vdots-hint: hsl(240deg 35% 48%);
+    --color-vdots-hint: hsl(240deg 35% 38%);
     --color-vdots-visible: hsl(240deg 35% 68%);
     --color-vdots-hover: hsl(240deg 100% 90%);
     --color-left-sidebar-header-vdots-visible: var(
