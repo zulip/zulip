@@ -789,7 +789,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
             self.curl_example("/endpoint", "BREW")  # see: HTCPCP
 
     def test_generate_and_render_curl_with_array_example(self) -> None:
-        generated_curl_example = self.curl_example("/messages", "GET", exclude=["use_first_unread_anchor"])
+        generated_curl_example = self.curl_example(
+            "/messages", "GET", exclude=["use_first_unread_anchor", "message_ids"]
+        )
         expected_curl_example = [
             "```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
@@ -862,7 +864,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
     def test_generate_and_render_curl_example_with_excludes(self) -> None:
         generated_curl_example = self.curl_example(
-            "/messages", "GET", exclude=["client_gravatar", "apply_markdown", "use_first_unread_anchor"]
+            "/messages",
+            "GET",
+            exclude=["client_gravatar", "apply_markdown", "use_first_unread_anchor", "message_ids"],
         )
         expected_curl_example = [
             "```curl",

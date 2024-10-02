@@ -12,7 +12,11 @@ from sqlalchemy.sql import and_, column, join, literal, literal_column, select, 
 from sqlalchemy.types import Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
+from zerver.lib.exceptions import (
+    IncompatibleParametersError,
+    JsonableError,
+    MissingAuthenticationError,
+)
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
     NarrowParameter,
@@ -106,19 +110,47 @@ def get_messages_backend(
     *,
     anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
     include_anchor: Json[bool] = True,
-    num_before: Json[NonNegativeInt],
-    num_after: Json[NonNegativeInt],
+    num_before: Json[NonNegativeInt] = 0,
+    num_after: Json[NonNegativeInt] = 0,
     narrow: Json[list[NarrowParameter] | None] = None,
     use_first_unread_anchor_val: Annotated[
         Json[bool], ApiParamConfig("use_first_unread_anchor")
     ] = False,
     client_gravatar: Json[bool] = True,
     apply_markdown: Json[bool] = True,
+    client_requested_message_ids: Annotated[
+        Json[list[NonNegativeInt] | None], ApiParamConfig("message_ids")
+    ] = None,
 ) -> HttpResponse:
+    # User has to either provide message_ids or both num_before and num_after.
+    if (
+        num_before or num_after or anchor_val is not None or use_first_unread_anchor_val
+    ) and client_requested_message_ids is not None:
+        raise IncompatibleParametersError(
+            [
+                "num_before",
+                "num_after",
+                "anchor",
+                "message_ids",
+                "include_anchor",
+                "use_first_unread_anchor",
+            ]
+        )
+    elif client_requested_message_ids is not None:
+        include_anchor = False
+
+    anchor = None
+    if client_requested_message_ids is None:
+        anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
+
     realm = get_valid_realm_from_request(request)
-    anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     narrow = update_narrow_terms_containing_with_operator(realm, maybe_user_profile, narrow)
-    if num_before + num_after > MAX_MESSAGES_PER_FETCH:
+
+    num_of_messages_requested = num_before + num_after
+    if client_requested_message_ids is not None:
+        num_of_messages_requested = len(client_requested_message_ids)
+
+    if num_of_messages_requested > MAX_MESSAGES_PER_FETCH:
         raise JsonableError(
             _("Too many messages requested (maximum {max_messages}).").format(
                 max_messages=MAX_MESSAGES_PER_FETCH,
@@ -212,6 +244,7 @@ def get_messages_backend(
             include_anchor=include_anchor,
             num_before=num_before,
             num_after=num_after,
+            client_requested_message_ids=client_requested_message_ids,
         )
 
         anchor = query_info.anchor
@@ -274,16 +307,28 @@ def get_messages_backend(
             realm=realm,
         )
 
-    ret = dict(
-        messages=message_list,
-        result="success",
-        msg="",
-        found_anchor=query_info.found_anchor,
-        found_oldest=query_info.found_oldest,
-        found_newest=query_info.found_newest,
-        history_limited=query_info.history_limited,
-        anchor=anchor,
-    )
+    if client_requested_message_ids is not None:
+        ret = dict(
+            messages=message_list,
+            result="success",
+            msg="",
+            history_limited=query_info.history_limited,
+            found_anchor=False,
+            found_oldest=False,
+            found_newest=False,
+        )
+    else:
+        ret = dict(
+            messages=message_list,
+            result="success",
+            msg="",
+            found_anchor=query_info.found_anchor,
+            found_oldest=query_info.found_oldest,
+            found_newest=query_info.found_newest,
+            history_limited=query_info.history_limited,
+            anchor=anchor,
+        )
+
     return json_success(request, data=ret)
 
 
