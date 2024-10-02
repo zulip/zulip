@@ -42,10 +42,6 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
-        ["Home", "←"],
-        ["End", "→"],
-        ["PgUp", "↑"],
-        ["PgDn", "↓"],
         ["Ctrl", "⌘"],
         ["Alt", "⌥"],
         ["#stream_name", "#stream_name"],
@@ -54,8 +50,6 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         ["X", "X"],
         ["data-mac-following-key", "data-mac-following-key"],
     ]);
-
-    const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
 
     override(navigator, "platform", "MacIntel");
     $("<span>").contents = () => $("<contents-stub>");
@@ -67,12 +61,6 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         const test_item = {};
         const $stub = $.create("hotkey_" + key_no);
         $stub.text(old_key);
-        assert.equal($stub.hasClass("arrow-key"), false);
-        if (fn_shortcuts.has(old_key)) {
-            $stub.before = ($elem) => {
-                assert.equal($elem.selector, "<kbd>");
-            };
-        }
         if (old_key === "data-mac-following-key") {
             $stub.attr("data-mac-following-key", "⌥");
             $stub.after = ($plus, $elem) => {
@@ -83,7 +71,6 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         }
         test_item.$stub = $stub;
         test_item.mac_key = mac_key;
-        test_item.adds_arrow_key = fn_shortcuts.has(old_key);
         test_items.push(test_item);
         key_no += 1;
     }
@@ -96,7 +83,6 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
 
     for (const test_item of test_items) {
         assert.equal(test_item.$stub.text(), test_item.mac_key);
-        assert.equal(test_item.$stub.hasClass("arrow-key"), test_item.adds_arrow_key);
     }
 });
 
@@ -115,10 +101,6 @@ run_test("adjust_mac_hotkey_hints mac expected", ({override}) => {
     const keys_to_test_mac = new Map([
         [["Backspace"], ["Delete"]],
         [["Enter"], ["Return"]],
-        [["Home"], ["Fn", "←"]],
-        [["End"], ["Fn", "→"]],
-        [["PgUp"], ["Fn", "↑"]],
-        [["PgDn"], ["Fn", "↓"]],
         [["Ctrl"], ["⌘"]],
     ]);
 

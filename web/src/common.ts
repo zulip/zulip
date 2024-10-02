@@ -14,15 +14,9 @@ export function phrase_match(query: string, phrase: string): boolean {
 const keys_map = new Map([
     ["Backspace", "Delete"],
     ["Enter", "Return"],
-    ["Home", "←"],
-    ["End", "→"],
-    ["PgUp", "↑"],
-    ["PgDn", "↓"],
     ["Ctrl", "⌘"],
     ["Alt", "⌥"],
 ]);
-
-const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
 
 export function has_mac_keyboard(): boolean {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -38,11 +32,6 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
 
     $(kbd_elem_class).each(function () {
         let key_text = $(this).text();
-
-        if (fn_shortcuts.has(key_text)) {
-            $(this).before($("<kbd>").text("Fn"), $("<span>").text(" + ").contents());
-            $(this).addClass("arrow-key");
-        }
 
         // We use data-mac-key attribute to override the default key in case
         // of exceptions. Currently, there are 2 shortcuts (for navigating back
@@ -80,10 +69,6 @@ export function adjust_mac_hotkey_hints(hotkeys: string[]): void {
 
         if (replace_key !== undefined) {
             hotkeys[index] = replace_key;
-        }
-
-        if (fn_shortcuts.has(hotkey)) {
-            hotkeys.unshift("Fn");
         }
     }
 }
