@@ -1461,6 +1461,14 @@ test("unparse", () => {
     ];
     string = `channel:${foo_stream_id} topic:Bar`;
     assert.deepEqual(Filter.unparse(terms), string);
+
+    terms = [
+        {operator: "dm", operand: '\t "%+.\u00A0'},
+        {operator: "topic", operand: '\t "%+.\u00A0'},
+    ];
+    string = "dm:%09%20%22%25+.%C2%A0 topic:%09+%22%25%2B.%C2%A0";
+    assert.equal(Filter.unparse(terms), string);
+    assert_same_terms(Filter.parse(string), terms);
 });
 
 test("describe", ({mock_template}) => {

@@ -448,20 +448,19 @@ export class Filter {
        This is just for the search bar, not for saving the
        narrow in the URL fragment.  There we do use full
        URI encoding to avoid problematic characters. */
-    static encodeOperand(operand: string): string {
-        return operand
-            .replaceAll("%", "%25")
-            .replaceAll("+", "%2B")
-            .replaceAll(" ", "+")
-            .replaceAll('"', "%22");
+    static encodeOperand(operand: string, operator: string): string {
+        if (USER_OPERATORS.has(operator)) {
+            return operand.replaceAll(/[\s"%]/g, (c) => encodeURIComponent(c));
+        }
+        return operand.replaceAll(/[\s"%+]/g, (c) => (c === " " ? "+" : encodeURIComponent(c)));
     }
 
     static decodeOperand(encoded: string, operator: string): string {
-        encoded = encoded.replaceAll('"', "");
+        encoded = encoded.trim().replaceAll('"', "");
         if (!USER_OPERATORS.has(operator)) {
             encoded = encoded.replaceAll("+", " ");
         }
-        return util.robust_url_decode(encoded).trim();
+        return util.robust_url_decode(encoded);
     }
 
     // Parse a string into a list of terms (see below).
@@ -618,7 +617,9 @@ export class Filter {
                 return term.operand;
             }
             const operator = Filter.canonicalize_operator(term.operator);
-            return sign + operator + ":" + Filter.encodeOperand(term.operand.toString());
+            return (
+                sign + operator + ":" + Filter.encodeOperand(term.operand.toString(), term.operator)
+            );
         });
         return term_strings.join(" ");
     }
