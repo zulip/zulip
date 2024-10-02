@@ -1022,7 +1022,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
         try:
             latest_count_stat = RealmCount.objects.filter(
-                realm=realm, property="upload_quota_used_bytes::day"
+                realm=realm,
+                property="upload_quota_used_bytes::day",
+                subgroup=None,
             ).latest("end_time")
             last_recorded_used_space = latest_count_stat.value
             last_recorded_date = latest_count_stat.end_time

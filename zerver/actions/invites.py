@@ -41,6 +41,9 @@ def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days
     recent_invites = RealmCount.objects.filter(
         realm__in=realms,
         property="invites_sent::day",
+        # It's important to filter on this even though the count
+        # doesn't use subgroup, so that we use the index.
+        subgroup=None,
         end_time__gte=timezone_now() - timedelta(days=days),
     ).aggregate(Sum("value"))["value__sum"]
     if recent_invites is None:
