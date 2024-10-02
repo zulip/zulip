@@ -178,7 +178,7 @@ export function set_up(settings_panel: SettingsPanel): void {
     const $notification_sound_elem = $<HTMLAudioElement>(settings_panel.notification_sound_elem);
     const for_realm_settings = settings_panel.for_realm_settings;
     const $notification_sound_dropdown = $container.find<HTMLSelectElement & {type: "select-one"}>(
-        ".setting_notification_sound",
+        "select:not([multiple]).setting_notification_sound",
     );
 
     $container.find(".play_notification_sound").on("click", () => {
