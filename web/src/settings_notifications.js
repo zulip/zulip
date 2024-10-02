@@ -375,7 +375,7 @@ export function initialize() {
     user_settings_panel = {
         container: "#user-notification-settings",
         settings_object: user_settings,
-        notification_sound_elem: "#user-notification-sound-audio",
+        notification_sound_elem: "audio#user-notification-sound-audio",
         for_realm_settings: false,
     };
 
