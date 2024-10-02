@@ -103,6 +103,6 @@ export function initialize() {
     realm_default_settings_panel.container = "#realm-user-default-settings";
     realm_default_settings_panel.settings_object = realm_user_settings_defaults;
     realm_default_settings_panel.notification_sound_elem =
-        "#realm-default-notification-sound-audio";
+        "audio#realm-default-notification-sound-audio";
     realm_default_settings_panel.for_realm_settings = true;
 }
