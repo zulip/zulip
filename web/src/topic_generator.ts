@@ -136,9 +136,13 @@ export function get_next_topic(
     );
 }
 
-export function get_next_unread_pm_string(curr_pm: string): string | undefined {
+export function get_next_unread_pm_string(curr_pm: string | undefined): string | undefined {
     const my_pm_strings = pm_conversations.recent.get_strings();
-    const curr_pm_index = my_pm_strings.indexOf(curr_pm); // -1 if not found
+    // undefined translates to "not found".
+    let curr_pm_index = -1;
+    if (curr_pm !== undefined) {
+        curr_pm_index = my_pm_strings.indexOf(curr_pm);
+    }
 
     for (let i = curr_pm_index + 1; i < my_pm_strings.length; i += 1) {
         if (unread.num_unread_for_user_ids_string(my_pm_strings[i]!) > 0) {
