@@ -121,15 +121,6 @@
             color: var(--color-message-reaction-button-text-hover);
         }
 
-        /* Configure the reaction button to appear if and only if there's an
-           existing reaction to the message. We reference first-child
-           rather than only-child because tooltips may be appended to
-           the DOM after this element, whereas actual reactions are
-           appended before it. */
-        &:first-child {
-            display: none;
-        }
-
         &:hover {
             color: var(--color-message-reaction-button-text-hover);
             background-color: var(
