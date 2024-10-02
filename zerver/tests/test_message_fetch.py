@@ -2085,6 +2085,121 @@ class GetOldMessagesTest(ZulipTestCase):
             result, "Invalid narrow operator: unknown web-public channel Scotland", status_code=400
         )
 
+    def test_get_message_ids(self) -> None:
+        self.login("iago")
+        self.subscribe(self.example_user("iago"), "Verona")
+        msg1 = self.send_stream_message(self.example_user("iago"), "Verona")
+        msg2 = self.send_stream_message(self.example_user("iago"), "Verona")
+        result = self.client_get(
+            "/json/messages",
+            {
+                "message_ids": orjson.dumps([msg1, msg2]).decode(),
+            },
+        )
+
+        self.assert_json_success(result)
+        messages = orjson.loads(result.content)["messages"]
+        self.assert_length(messages, 2)
+        fetched_message_ids = [message["id"] for message in messages]
+        self.assertEqual(fetched_message_ids.sort(), [msg1, msg2].sort())
+
+    def test_get_message_ids_web_public(self) -> None:
+        self.login("iago")
+        self.subscribe(self.example_user("iago"), "Rome")
+        self.logout()
+        msg1 = self.send_stream_message(self.example_user("iago"), "Rome")
+        msg2 = self.send_stream_message(self.example_user("iago"), "Rome")
+        result = self.client_get(
+            "/json/messages",
+            {
+                "message_ids": orjson.dumps([msg1, msg2]).decode(),
+                "narrow": orjson.dumps([dict(operator="channels", operand="web-public")]).decode(),
+            },
+        )
+
+        self.assert_json_success(result)
+        messages = orjson.loads(result.content)["messages"]
+        self.assert_length(messages, 2)
+        fetched_message_ids = [message["id"] for message in messages]
+        self.assertEqual(fetched_message_ids.sort(), [msg1, msg2].sort())
+
+    def test_message_fetch_with_mutually_exclusive_parameters(self) -> None:
+        mutually_exclusive_params_with_message_ids = ["num_before", "num_after", "anchor"]
+        for param in mutually_exclusive_params_with_message_ids:
+            result = self.client_get(
+                "/json/messages",
+                {
+                    "message_ids": orjson.dumps([1, 2]).decode(),
+                    param: 1,
+                },
+            )
+            error_msg = "Unsupported parameter combination: num_before, num_after, anchor, message_ids, include_anchor, use_first_unread_anchor"
+            self.assert_json_error(result, error_msg)
+
+    def test_message_fetch_for_inaccessible_message_ids(self) -> None:
+        # Add new channels
+        realm = get_realm("zulip")
+        channel_dicts: list[StreamDict] = [
+            {
+                "name": "private-channel",
+                "description": "Private channel with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private-channel-with-history",
+                "description": "Private channel with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+            },
+        ]
+        create_streams_if_needed(realm, channel_dicts)
+
+        iago = self.example_user("iago")
+        self.login("iago")
+        message_ids = []
+        for stream_name in ["private-channel", "private-channel-with-history"]:
+            self.subscribe(iago, stream_name)
+            message_ids.append(self.send_stream_message(iago, stream_name))
+        self.logout()
+
+        self.login("hamlet")
+        result = self.client_get(
+            "/json/messages",
+            {
+                "message_ids": orjson.dumps(message_ids).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        messages = orjson.loads(result.content)["messages"]
+        self.assert_length(messages, 0)
+
+        self.logout()
+        self.login("iago")
+        result = self.client_get(
+            "/json/messages",
+            {
+                "message_ids": orjson.dumps(message_ids).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        messages = orjson.loads(result.content)["messages"]
+        self.assert_length(messages, 2)
+
+        # These messages are not accessible if they are after first_visible_message_id.
+        realm = get_realm("zulip")
+        realm.first_visible_message_id = max(message_ids) + 1
+        realm.save(update_fields=["first_visible_message_id"])
+
+        result = self.client_get(
+            "/json/messages",
+            {
+                "message_ids": orjson.dumps(message_ids).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        messages = orjson.loads(result.content)["messages"]
+        self.assert_length(messages, 0)
+
     def setup_web_public_test(self, num_web_public_message: int = 1) -> None:
         """
         Send N+2 messages, N in a web-public channel, then one in a non-web-public channel
@@ -3681,20 +3796,6 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
         messages_matches_ids(messages, message_ids[6:9])
-
-    def test_missing_params(self) -> None:
-        """
-        anchor, num_before, and num_after are all required
-        POST parameters for get_messages.
-        """
-        self.login("hamlet")
-
-        required_args: tuple[tuple[str, int], ...] = (("num_before", 1), ("num_after", 1))
-
-        for i in range(len(required_args)):
-            post_params = dict(required_args[:i] + required_args[i + 1 :])
-            result = self.client_get("/json/messages", post_params)
-            self.assert_json_error(result, f"Missing '{required_args[i][0]}' argument")
 
     def test_get_messages_limits(self) -> None:
         """

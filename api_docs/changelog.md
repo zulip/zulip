@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 300**
+
+* [`GET /messages`](/api/get-message): Added a new message_ids parameter,
+  as an alternative method of specifying which messages to fetch.
+
 **Feature level 299**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
