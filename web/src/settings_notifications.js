@@ -122,8 +122,8 @@ export function set_enable_marketing_emails_visibility() {
     }
 }
 
-function stream_notification_setting_changed(e) {
-    const $row = $(e.target).closest(".stream-notifications-row");
+function stream_notification_setting_changed(target) {
+    const $row = $(target).closest(".stream-notifications-row");
     const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
     if (!stream_id) {
         blueslip.error("Cannot find stream id for target");
@@ -136,15 +136,15 @@ function stream_notification_setting_changed(e) {
         return;
     }
 
-    const $status_element = $(e.target).closest(".subsection-parent").find(".alert-notification");
-    const setting = e.target.name;
+    const $status_element = $(target).closest(".subsection-parent").find(".alert-notification");
+    const setting = target.name;
     if (sub[setting] === null) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
     stream_settings_api.set_stream_property(
         sub,
-        {property: setting, value: e.target.checked},
+        {property: setting, value: target.checked},
         $status_element,
     );
 }
@@ -220,7 +220,7 @@ export function set_up(settings_panel) {
         e.stopPropagation();
         const $input_elem = $(e.currentTarget);
         if ($input_elem.parents("#stream-specific-notify-table").length) {
-            stream_notification_setting_changed(e);
+            stream_notification_setting_changed(e.currentTarget);
             return;
         }
         const setting_name = $input_elem.attr("name");
