@@ -776,7 +776,13 @@ export class BuddyList extends BuddyListConf {
 
         const i = user_id_list.findIndex(
             (list_user_id) =>
-                this.compare_function(user_id, list_user_id, current_sub, pm_ids_set) < 0,
+                this.compare_function(
+                    user_id,
+                    list_user_id,
+                    current_sub,
+                    pm_ids_set,
+                    this.render_data.participant_ids_set,
+                ) < 0,
         );
         return i === -1 ? user_id_list.length : i;
     }

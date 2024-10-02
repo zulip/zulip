@@ -90,7 +90,17 @@ export function compare_function(
     b: number,
     current_sub: StreamSubscription | undefined,
     pm_ids: Set<number>,
+    conversation_participants: Set<number>,
 ): number {
+    const a_is_participant = conversation_participants.has(a);
+    const b_is_participant = conversation_participants.has(b);
+    if (a_is_participant && !b_is_participant) {
+        return -1;
+    }
+    if (!a_is_participant && b_is_participant) {
+        return 1;
+    }
+
     const a_would_receive_message = user_matches_narrow(a, pm_ids, current_sub?.stream_id);
     const b_would_receive_message = user_matches_narrow(b, pm_ids, current_sub?.stream_id);
     if (a_would_receive_message && !b_would_receive_message) {
@@ -117,11 +127,13 @@ export function compare_function(
     return util.strcmp(full_name_a, full_name_b);
 }
 
-export function sort_users(user_ids: number[]): number[] {
+export function sort_users(user_ids: number[], conversation_participants: Set<number>): number[] {
     // TODO sort by unread count first, once we support that
     const current_sub = narrow_state.stream_sub();
     const pm_ids_set = narrow_state.pm_ids_set();
-    user_ids.sort((a, b) => compare_function(a, b, current_sub, pm_ids_set));
+    user_ids.sort((a, b) =>
+        compare_function(a, b, current_sub, pm_ids_set, conversation_participants),
+    );
     return user_ids;
 }
 
@@ -430,7 +442,7 @@ export function get_filtered_and_sorted_user_ids(user_filter_text: string): numb
     const conversation_participants = get_conversation_participants();
     user_ids = get_filtered_user_id_list(user_filter_text, conversation_participants);
     user_ids = maybe_shrink_list(user_ids, user_filter_text, conversation_participants);
-    return sort_users(user_ids);
+    return sort_users(user_ids, conversation_participants);
 }
 
 export function matches_filter(user_filter_text: string, user_id: number): boolean {
