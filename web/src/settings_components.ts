@@ -1414,11 +1414,9 @@ export function get_group_setting_widget(setting_name: string): GroupSettingPill
 }
 
 export function set_group_setting_widget_value(
-    property_name: string,
+    pill_widget: GroupSettingPillContainer,
     property_value: GroupSettingType,
 ): void {
-    const pill_widget = get_group_setting_widget(property_name);
-    assert(pill_widget !== null);
     pill_widget.clear();
 
     if (typeof property_value === "number") {
@@ -1476,7 +1474,7 @@ export function create_group_setting_widget({
     }
 
     if (group !== undefined) {
-        set_group_setting_widget_value(setting_name, group[setting_name]);
+        set_group_setting_widget_value(pill_widget, group[setting_name]);
 
         pill_widget.onPillCreate(() => {
             save_discard_group_widget_status_handler($("#group_permission_settings"), group);
@@ -1490,13 +1488,13 @@ export function create_group_setting_widget({
             "group",
         )!.default_group_name;
         if (default_group_name === "group_creator") {
-            set_group_setting_widget_value("new_group_" + setting_name, {
+            set_group_setting_widget_value(pill_widget, {
                 direct_members: [current_user.user_id],
                 direct_subgroups: [],
             });
         } else {
             const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
-            set_group_setting_widget_value("new_group_" + setting_name, default_group_id);
+            set_group_setting_widget_value(pill_widget, default_group_id);
         }
     }
 }

@@ -617,7 +617,8 @@ export function discard_group_property_element_changes(elem, group) {
     if (property_name === "can_mention_group") {
         settings_components.set_dropdown_list_widget_setting_value(property_name, property_value);
     } else if (property_name === "can_manage_group") {
-        settings_components.set_group_setting_widget_value(property_name, property_value);
+        const pill_widget = settings_components.get_group_setting_widget(property_name);
+        settings_components.set_group_setting_widget_value(pill_widget, property_value);
     } else if (property_value !== undefined) {
         settings_components.set_input_element_value($elem, property_value);
     } else {
