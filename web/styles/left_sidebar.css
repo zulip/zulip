@@ -220,7 +220,7 @@
 
     #show-all-direct-messages {
         color: var(--color-left-sidebar-heads-up-icon);
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
         text-decoration: none;
@@ -233,6 +233,14 @@
                 --background-color-left-sidebar-heads-up-icon-hover
             );
         }
+
+        @media (hover: none) {
+            display: flex;
+        }
+    }
+
+    &:hover #show-all-direct-messages {
+        display: flex;
     }
 }
 
@@ -1510,11 +1518,19 @@ li.topic-list-item {
     }
 
     #filter_streams_tooltip {
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
         grid-row: 1 / 1;
         margin: 2px 0;
+
+        @media (hover: none) {
+            display: flex;
+        }
+    }
+
+    &:hover #filter_streams_tooltip {
+        display: flex;
     }
 
     #add_streams_tooltip {
@@ -1523,12 +1539,21 @@ li.topic-list-item {
     }
 
     #streams_inline_icon {
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
         /* Ensure the clickable area grows to
            the height of the controls grid. */
         height: 100%;
+
+
+        @media (hover: none) {
+            display: flex;
+        }
+    }
+
+    &:hover #streams_inline_icon {
+        display: flex;
     }
 
     .stream_search_section {
