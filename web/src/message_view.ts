@@ -534,11 +534,9 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
                 // topic and then moved back to the current topic. In this
                 // situation, narrow_exists_in_edit_history will be true,
                 // but we don't need to redirect the narrow.
-                assert(target_message.type === "stream");
-                const narrow_matches_target_message = util.same_stream_and_topic(
-                    target_message,
-                    narrow_dict,
-                );
+                const narrow_matches_target_message =
+                    target_message.type === "stream" &&
+                    util.same_stream_and_topic(target_message, narrow_dict);
 
                 if (
                     !narrow_matches_target_message &&
