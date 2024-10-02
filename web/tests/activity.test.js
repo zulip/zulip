@@ -184,7 +184,7 @@ test("sort_users", () => {
 
     presence.presence_info.delete(alice.user_id);
 
-    buddy_data.sort_users(user_ids);
+    buddy_data.sort_users(user_ids, new Set());
 
     assert.deepEqual(user_ids, [fred.user_id, jill.user_id, alice.user_id]);
 });

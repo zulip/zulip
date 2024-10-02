@@ -455,18 +455,18 @@ test("compare_function", () => {
     peer_data.set_subscribers(stream_id, []);
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set(), new Set()),
     );
 
     // Fred is higher because they're in the narrow and Alice isn't.
     peer_data.set_subscribers(stream_id, [fred.user_id]);
     assert.equal(
         first_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set(), new Set()),
     );
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(alice.user_id, fred.user_id, sub, new Set()),
+        buddy_data.compare_function(alice.user_id, fred.user_id, sub, new Set(), new Set()),
     );
 
     // Fred is higher because they're in the DM conversation and Alice isn't.
@@ -477,19 +477,49 @@ test("compare_function", () => {
             alice.user_id,
             undefined,
             new Set([fred.user_id]),
+            new Set(),
+        ),
+    );
+
+    // Fred is higher because they're in the conversation and Alice isn't.
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(
+            fred.user_id,
+            alice.user_id,
+            undefined,
+            new Set(),
+            new Set([fred.user_id]),
+        ),
+    );
+
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(
+            alice.user_id,
+            fred.user_id,
+            undefined,
+            new Set(),
+            new Set([fred.user_id]),
         ),
     );
 
     // Alice is higher because of alphabetical sorting.
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
     );
 
     // The user is part of a DM conversation, though that's not explicitly in the DM list.
     assert.equal(
         first_user_shown_higher,
-        buddy_data.compare_function(me.user_id, alice.user_id, undefined, new Set([fred.user_id])),
+        buddy_data.compare_function(
+            me.user_id,
+            alice.user_id,
+            undefined,
+            new Set([fred.user_id]),
+            new Set(),
+        ),
     );
 });
 
