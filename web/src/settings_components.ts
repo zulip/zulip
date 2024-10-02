@@ -698,8 +698,12 @@ export function get_input_element_value(
             return $input_elem.find(".language_selection_button span").attr("data-language-code");
         case "auth-methods":
             return JSON.stringify(get_auth_method_list_data());
-        case "group-setting-type":
-            return get_group_setting_widget_value($input_elem);
+        case "group-setting-type": {
+            const setting_name = extract_property_name($input_elem);
+            const pill_widget = get_group_setting_widget(setting_name);
+            assert(pill_widget !== null);
+            return get_group_setting_widget_value(pill_widget);
+        }
         default:
             return undefined;
     }
@@ -875,11 +879,9 @@ export function check_stream_settings_property_changed(
     return current_val !== proposed_val;
 }
 
-export function get_group_setting_widget_value($input_elem: JQuery): GroupSettingType {
-    const setting_name = extract_property_name($input_elem);
-    const pill_widget = get_group_setting_widget(setting_name);
-    assert(pill_widget !== null);
-
+export function get_group_setting_widget_value(
+    pill_widget: GroupSettingPillContainer,
+): GroupSettingType {
     const setting_pills = pill_widget.items();
     const direct_subgroups: number[] = [];
     const direct_members: number[] = [];
@@ -915,9 +917,12 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
     const current_val = get_group_property_value(property_name, group);
     let proposed_val;
     switch (property_name) {
-        case "can_manage_group":
-            proposed_val = get_group_setting_widget_value($elem);
+        case "can_manage_group": {
+            const pill_widget = get_group_setting_widget(property_name);
+            assert(pill_widget !== null);
+            proposed_val = get_group_setting_widget_value(pill_widget);
             break;
+        }
         case "can_mention_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;

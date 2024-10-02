@@ -150,9 +150,9 @@ function create_user_group(): void {
     }
     const user_ids = user_group_create_members.get_principals();
 
-    const can_manage_group = settings_components.get_group_setting_widget_value(
-        $("#id_new_group_can_manage_group"),
-    );
+    const pill_widget = settings_components.get_group_setting_widget("new_group_can_manage_group");
+    assert(pill_widget !== null);
+    const can_manage_group = settings_components.get_group_setting_widget_value(pill_widget);
 
     assert(settings_components.new_group_can_mention_group_widget !== null);
     const can_mention_group_value = settings_components.new_group_can_mention_group_widget.value();
