@@ -31,6 +31,7 @@ const message_lists = mock_esm("../src/message_lists", {
                 removeClass: noop,
                 addClass: noop,
             },
+            update_sticky_recipient_headers: noop,
         },
         data: {
             filter: new Filter([{operator: "in", operand: "all"}]),
@@ -141,6 +142,7 @@ function stub_message_list() {
                 removeClass: noop,
                 addClass: noop,
             },
+            update_sticky_recipient_headers: noop,
         };
 
         get(msg_id) {
