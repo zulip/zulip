@@ -92,7 +92,6 @@ async function navigation_tests(page: Page): Promise<void> {
     await common.log_in(page);
 
     await navigate_to_settings(page);
-
     await navigate_using_left_sidebar(page, "Verona");
 
     await page.click("#left-sidebar-navigation-list .home-link");

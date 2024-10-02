@@ -185,6 +185,25 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".subscription_block",
+        trigger: "mouseenter",
+        delay: LONG_HOVER_DELAY,
+        placement: "right",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const stream_name = instance.reference.querySelector(".stream-name");
+            assert(stream_name instanceof HTMLElement);
+            if (stream_name.offsetWidth < stream_name.scrollWidth) {
+                const truncated_stream_name = stream_name.textContent ?? "";
+                instance.setContent(truncated_stream_name);
+            } else {
+                return false;
+            }
+            return false;
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".tippy-left-sidebar-tooltip",
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
