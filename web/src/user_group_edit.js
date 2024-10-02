@@ -258,7 +258,17 @@ function update_group_membership_button(group_id) {
         $group_settings_button.text($t({defaultMessage: "Join group"}));
     }
 
-    if (settings_data.can_manage_user_group(group_id)) {
+    const can_join_group = settings_data.can_join_user_group(group_id);
+    const can_leave_group = settings_data.can_manage_user_group(group_id);
+
+    let can_update_membership = true;
+    if (!is_member && !can_join_group) {
+        can_update_membership = false;
+    } else if (is_member && !can_leave_group) {
+        can_update_membership = false;
+    }
+
+    if (can_update_membership) {
         $group_settings_button.prop("disabled", false);
         $group_settings_button.css("pointer-events", "");
         const $group_settings_button_wrapper = $group_settings_button.closest(
@@ -298,7 +308,7 @@ export function handle_member_edit_event(group_id, user_ids) {
             // is added to it. The whole list is redrawed to
             // maintain the sorted order of groups.
             redraw_user_group_list();
-        } else if (!settings_data.can_manage_user_group(group_id)) {
+        } else if (!settings_data.can_join_user_group(group_id)) {
             // We remove the group row immediately only if the
             // user cannot join the group again themselves.
             const group_row = row_for_group_id(group_id);
@@ -315,7 +325,8 @@ export function handle_member_edit_event(group_id, user_ids) {
 
         const item = group;
         item.is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
-        item.can_edit = settings_data.can_manage_user_group(item.id);
+        item.can_join = settings_data.can_join_user_group(item.id);
+        item.can_leave = settings_data.can_manage_user_group(item.id);
         const html = render_browse_user_groups_list_item(item);
         const $new_row = $(html);
 
@@ -634,6 +645,9 @@ export function update_group(event) {
         if (event.data.can_manage_group !== undefined) {
             update_group_management_ui();
         }
+        if (event.data.can_join_group !== undefined) {
+            update_group_membership_button(group.id);
+        }
     }
 }
 
@@ -831,7 +845,8 @@ export function setup_page(callback) {
                     people.my_current_user_id(),
                     item.id,
                 );
-                item.can_edit = settings_data.can_manage_user_group(item.id);
+                item.can_join = settings_data.can_join_user_group(item.id);
+                item.can_leave = settings_data.can_manage_user_group(item.id);
                 return render_browse_user_groups_list_item(item);
             },
             filter: {
