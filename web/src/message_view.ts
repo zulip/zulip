@@ -296,6 +296,11 @@ export function try_rendering_locally_for_same_narrow(
         target_scroll_offset = opts.then_select_offset;
     } else if (filter.has_operator("near")) {
         target_id = Number.parseInt(filter.operands("near")[0]!, 10);
+    } else if (filter.equals(current_filter)) {
+        // The caller doesn't want to force rerender and the filter is the same.
+        // Also, we don't have a specific message id we want to select, so we
+        // just keep the same message id selected.
+        return true;
     } else {
         return false;
     }
