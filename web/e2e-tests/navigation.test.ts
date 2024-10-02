@@ -6,7 +6,7 @@ import * as common from "./lib/common";
 
 async function navigate_using_left_sidebar(page: Page, stream_name: string): Promise<void> {
     console.log("Visiting #" + stream_name);
-    await page.click(`.stream-name[title="${stream_name}"]`);
+    await page.click(`a[href="#narrow/channel/3-Verona"]`);
     await page.waitForSelector(`#message_feed_container`, {visible: true});
 }
 
@@ -91,7 +91,6 @@ async function navigation_tests(page: Page): Promise<void> {
     await common.log_in(page);
 
     await navigate_to_settings(page);
-
     await navigate_using_left_sidebar(page, "Verona");
 
     await page.click("#left-sidebar-navigation-list .home-link");
