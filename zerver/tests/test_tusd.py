@@ -1,6 +1,5 @@
 import os
 
-import botocore
 import orjson
 from django.conf import settings
 from django.test import override_settings
@@ -338,9 +337,11 @@ class TusdPreFinishTest(ZulipTestCase):
         self.assertEqual(attachment.size, len("zulip!"))
         self.assertEqual(attachment.content_type, "text/plain")
 
+        # Assert that the .info file is still there -- tusd needs it
+        # to verify that the upload completed successfully
         assert settings.LOCAL_FILES_DIR is not None
         self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
-        self.assertFalse(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
+        self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
 
     def test_no_metadata(self) -> None:
         self.login("hamlet")
@@ -394,7 +395,7 @@ class TusdPreFinishTest(ZulipTestCase):
 
         assert settings.LOCAL_FILES_DIR is not None
         self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
-        self.assertFalse(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
+        self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
 
     @use_s3_backend
     @override_settings(S3_UPLOADS_STORAGE_CLASS="STANDARD_IA")
@@ -467,5 +468,6 @@ class TusdPreFinishTest(ZulipTestCase):
             response["Metadata"],
             {"realm_id": str(hamlet.realm_id), "user_profile_id": str(hamlet.id)},
         )
-        with self.assertRaises(botocore.exceptions.ClientError):
-            bucket.Object(f"{path_id}.info").get()
+
+        response = bucket.Object(f"{path_id}.info").get()
+        self.assertEqual(response["ContentType"], "binary/octet-stream")
