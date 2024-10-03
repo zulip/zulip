@@ -404,3 +404,41 @@ test("get_list_info unreads", ({override}) => {
         ],
     );
 });
+
+test("get_list_info with specific topics and searches", () => {
+    let list_info;
+
+    function add_topic_message(topic_name, message_id) {
+        stream_topic_history.add_message({
+            stream_id: general.stream_id,
+            topic_name,
+            message_id,
+        });
+    }
+
+    add_topic_message("BF-2924 zulip", 1001);
+    add_topic_message("tech_support/escalation", 1002);
+
+    list_info = get_list_info(true, "2924");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "BF-2924 zulip");
+
+    list_info = get_list_info(true, "support/escalation");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
+
+    list_info = get_list_info(true, "support");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
+
+    list_info = get_list_info(true, "zulip");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "BF-2924 zulip");
+
+    list_info = get_list_info(true, "SUPPORT");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
+
+    list_info = get_list_info(true, "nonexistent");
+    assert.equal(list_info.items.length, 0);
+});
