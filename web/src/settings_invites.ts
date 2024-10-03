@@ -260,6 +260,10 @@ function open_invite_details_modal({$row, invite}: {$row: JQuery; invite: Invite
         $(".dialog_submit_button").attr("data-invite-id", invite_id);
     });
 
+    $("body").on("click", ".popover-menu-link", () => {
+        $modal.remove();
+    });
+
     $(document).on("click", (e) => {
         if ($(e.target).hasClass("modal__overlay")) {
             $modal.remove();
