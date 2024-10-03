@@ -234,7 +234,7 @@ export function set_up(settings_panel: SettingsPanel): void {
 
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
-        // settings_org.js handlers, so we can return early here.
+        // settings_org.ts handlers, so we can return early here.
         return;
     }
 

@@ -46,7 +46,7 @@ type SettingOptionValue = {
     description: string;
 };
 
-type SettingOptionValueWithKey = SettingOptionValue & {key: string};
+export type SettingOptionValueWithKey = SettingOptionValue & {key: string};
 
 export function get_sorted_options_list(
     option_values_object: Record<string, SettingOptionValue>,
@@ -79,7 +79,7 @@ export function get_sorted_options_list(
     return options_list;
 }
 
-type MessageTimeLimitSetting =
+export type MessageTimeLimitSetting =
     | "realm_message_content_edit_limit_seconds"
     | "realm_move_messages_between_streams_limit_seconds"
     | "realm_move_messages_within_stream_limit_seconds"
@@ -241,7 +241,7 @@ export const simple_dropdown_realm_settings_schema = realm_schema.pick({
     realm_edit_topic_policy: true,
     realm_org_type: true,
 });
-type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
+export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
 
 export function set_property_dropdown_value(
     property_name: keyof SimpleDropdownRealmSettings,
@@ -655,7 +655,7 @@ export function change_save_button_state($element: JQuery, state: string): void 
     });
 }
 
-function get_input_type($input_elem: JQuery, input_type?: string): string {
+export function get_input_type($input_elem: JQuery, input_type?: string): string {
     if (input_type !== undefined && ["boolean", "string", "number"].includes(input_type)) {
         return input_type;
     }
