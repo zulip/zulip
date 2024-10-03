@@ -187,7 +187,7 @@ export function toggle(opts: {
 
             const idx = opts.values.indexOf(value);
 
-            if (idx >= 0) {
+            if (idx !== -1) {
                 select_tab(idx);
             }
         },

@@ -163,7 +163,7 @@ export function get_next_stream(curr_stream_id: number): number | undefined {
     const my_streams = stream_list_sort.get_stream_ids();
     const curr_stream_index = my_streams.indexOf(curr_stream_id);
     return my_streams[
-        curr_stream_index < 0 || curr_stream_index === my_streams.length - 1
+        curr_stream_index === -1 || curr_stream_index === my_streams.length - 1
             ? 0
             : curr_stream_index + 1
     ];
