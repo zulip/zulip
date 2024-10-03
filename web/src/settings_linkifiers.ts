@@ -50,7 +50,7 @@ function open_linkifier_edit_form(linkifier_id: number): void {
     });
 
     function submit_linkifier_form(dialog_widget_id: string): void {
-        const $modal = $(`#${dialog_widget_id}`);
+        const $modal = $(`#${CSS.escape(dialog_widget_id)}`);
         const $change_linkifier_button = $modal.find(".dialog_submit_button");
         $change_linkifier_button.prop("disabled", true);
 

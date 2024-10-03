@@ -100,7 +100,7 @@ export const show_user_group_settings_pane = {
             );
         }
         update_footer_buttons(container_name);
-        $(`.${container_name}`).show();
+        $(`.${CSS.escape(container_name)}`).show();
         $("#groups_overlay .nothing-selected, #groups_overlay .settings").hide();
         reset_active_group_id();
         $("#user-group-creation").show();

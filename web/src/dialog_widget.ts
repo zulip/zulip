@@ -21,7 +21,7 @@ function current_dialog_widget_id(): string {
 }
 
 function current_dialog_widget_selector(): string {
-    return `#${current_dialog_widget_id()}`;
+    return `#${CSS.escape(current_dialog_widget_id())}`;
 }
 
 /*

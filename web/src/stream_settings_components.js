@@ -54,7 +54,7 @@ export const show_subs_pane = {
             $("#subscription_overlay .stream-info-title").html(render_selected_stream_title({sub}));
         }
         update_footer_buttons(container_name);
-        $(`.${container_name}`).show();
+        $(`.${CSS.escape(container_name)}`).show();
         $(".nothing-selected, .settings, #stream-creation").hide();
         $("#stream-creation").show();
     },
