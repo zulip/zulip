@@ -4034,6 +4034,12 @@ paths:
                                         Note: Only present if changed property is `plan_type`.
 
                                         The new upload quota for the Zulip organization.
+                                    max_file_upload_size_mib:
+                                      type: integer
+                                      description: |
+                                        Note: Only present if changed property is `plan_type`.
+
+                                        The new maximum file size that can be uploaded to this Zulip organization.
                               example:
                                 {
                                   "type": "realm",
@@ -17137,7 +17143,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum file size that can be uploaded to this Zulip server.
+                          The maximum file size that can be uploaded to this Zulip organization.
                       max_avatar_file_size_mib:
                         type: integer
                         description: |

@@ -448,10 +448,11 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     assert isinstance(user_file, UploadedFile)
     file_size = user_file.size
     assert file_size is not None
-    if file_size > settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024:
+    max_file_upload_size_mebibytes = user_profile.realm.get_max_file_upload_size_mebibytes()
+    if file_size > max_file_upload_size_mebibytes * 1024 * 1024:
         raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
-                max_size=settings.MAX_FILE_UPLOAD_SIZE,
+                max_size=max_file_upload_size_mebibytes,
             )
         )
     check_upload_within_quota(user_profile.realm, file_size)

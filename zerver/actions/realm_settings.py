@@ -791,7 +791,10 @@ def do_change_realm_plan_type(
         "op": "update",
         "property": "plan_type",
         "value": plan_type,
-        "extra_data": {"upload_quota": realm.upload_quota_bytes()},
+        "extra_data": {
+            "upload_quota": realm.upload_quota_bytes(),
+            "max_file_upload_size_mib": realm.get_max_file_upload_size_mebibytes(),
+        },
     }
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 

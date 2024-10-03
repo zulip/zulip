@@ -891,6 +891,7 @@ check_realm_linkifiers = make_checker(realm_linkifiers_event)
 plan_type_extra_data_type = DictType(
     required_keys=[
         ("upload_quota", int),
+        ("max_file_upload_size_mib", int),
     ]
 )
 
