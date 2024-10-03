@@ -79,7 +79,7 @@ if (sentry_params !== undefined) {
         sampleRate: sentry_params.sample_rate,
         tracesSampler(samplingContext) {
             const base_rate = sentry_params.trace_rate;
-            const name = samplingContext.transactionContext.name;
+            const name = samplingContext.name;
             return base_rate * (sample_rates.get(name) ?? 1);
         },
         initialScope(scope) {

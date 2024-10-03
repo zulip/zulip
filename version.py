@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 299  # Last bumped for org level group create/manage permiss
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (293, 1)  # bumped 2024-09-24 to upgrade Transifex CLI
+PROVISION_VERSION = (294, 0)  # bumped 2024-10-03 to upgrade JavaScript dependencies

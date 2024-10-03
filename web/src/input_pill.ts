@@ -407,6 +407,7 @@ export function create<ItemType extends {type: string}>(
             const text = e.originalEvent.clipboardData?.getData("text/plain").replaceAll("\n", ",");
 
             // insert text manually
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             document.execCommand("insertText", false, text);
 
             if (funcs.createPillonPaste()) {

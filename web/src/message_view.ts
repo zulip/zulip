@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/browser";
+import {SPAN_STATUS_OK} from "@sentry/core";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -772,7 +773,7 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
             op: "function",
         };
         await Sentry.startSpan(post_span_context, async () => {
-            span?.setStatus("ok");
+            span?.setStatus({code: SPAN_STATUS_OK});
             await new Promise((resolve) => setTimeout(resolve, 0));
             resize.resize_stream_filters_container();
         });

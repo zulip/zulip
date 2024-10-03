@@ -25,6 +25,7 @@ const keys_map = new Map([
 const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
 
 export function has_mac_keyboard(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return /mac/i.test(navigator.platform);
 }
 

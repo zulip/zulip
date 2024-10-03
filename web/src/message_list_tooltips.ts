@@ -266,8 +266,7 @@ export function initialize(): void {
     message_list_tooltip(".message-list .message-time", {
         onShow(instance) {
             const $time_elem = $(instance.reference);
-            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-            const $row = $time_elem.closest(".message_row") as JQuery;
+            const $row = $time_elem.closest(".message_row");
             assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row))!;
             // Don't show time tooltip for locally echoed message.
