@@ -784,13 +784,7 @@ def do_change_realm_plan_type(
 
     update_first_visible_message_id(realm)
 
-    realm.save(
-        update_fields=[
-            "_max_invites",
-            "enable_spectator_access",
-            "message_visibility_limit",
-        ]
-    )
+    realm.save(update_fields=["_max_invites", "message_visibility_limit"])
 
     event = {
         "type": "realm",
