@@ -123,6 +123,10 @@
     }
 
     .stream-expanded {
+        .channel-new-topic-button {
+            display: flex;
+        }
+
         .stream-with-count.hide_unread_counts {
             .masked_unread_count {
                 display: none;
@@ -1188,6 +1192,30 @@ li.top_left_scheduled_messages {
     }
 }
 
+.channel-new-topic-button {
+    /* display: flex; is set on visible channels and
+       channel-row hovers. */
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-left-sidebar-heads-up-icon);
+    margin: 2px 0;
+    border-radius: 3px;
+
+    &:hover {
+        color: var(--color-left-sidebar-heads-up-icon-hover);
+        background-color: var(
+            --background-color-left-sidebar-heads-up-icon-hover
+        );
+    }
+}
+
+.narrow-filter:hover {
+    .channel-new-topic-button {
+        display: flex;
+    }
+}
+
 .bottom_left_row .sidebar-menu-icon {
     grid-area: ending-anchor-element;
 }
@@ -1545,7 +1573,6 @@ li.topic-list-item {
         /* Ensure the clickable area grows to
            the height of the controls grid. */
         height: 100%;
-
 
         @media (hover: none) {
             display: flex;
