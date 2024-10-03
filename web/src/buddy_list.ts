@@ -746,7 +746,7 @@ export class BuddyList extends BuddyListConf {
             this.other_user_ids,
         ]) {
             const pos = user_id_list.indexOf(opts.user_id);
-            if (pos >= 0) {
+            if (pos !== -1) {
                 user_id_list.splice(pos, 1);
                 was_removed = true;
                 break;
@@ -829,7 +829,7 @@ export class BuddyList extends BuddyListConf {
         // it yet.
         const pos = this.all_user_ids.indexOf(user_id);
 
-        if (pos < 0) {
+        if (pos === -1) {
             return undefined;
         }
 
