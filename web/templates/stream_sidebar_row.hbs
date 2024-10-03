@@ -10,6 +10,12 @@
 
             <a href="{{url}}" title="{{name}}" class="stream-name">{{name}}</a>
 
+            <div class="left-sidebar-controls">
+                <div class="channel-new-topic-button tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{t 'New topic'}}" data-stream-id="{{id}}">
+                    <i class="channel-new-topic-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
+                </div>
+            </div>
+
             <div class="stream-markers-and-unreads">
                 <span class="unread_mention_info"></span>
                 <span class="unread_count"></span>
