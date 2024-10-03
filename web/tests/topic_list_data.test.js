@@ -416,33 +416,29 @@ test("get_list_info with specific topics and searches", () => {
         });
     }
 
-    // Add sample messages
-    add_topic_message("Outreachy-2024", 1001);
-    add_topic_message("Test topic", 1002);
+    add_topic_message("BF-2924 zulip", 1001);
+    add_topic_message("tech_support/escalation", 1002);
 
-    // Test search for "Outreachy-2024"
     list_info = get_list_info(true, "2924");
     assert.equal(list_info.items.length, 1);
-    assert.equal(list_info.items[0].topic_name, "Outreachy-2024");
+    assert.equal(list_info.items[0].topic_name, "BF-2924 zulip");
 
-    list_info = get_list_info(true, "Test topic");
+    list_info = get_list_info(true, "support/escalation");
     assert.equal(list_info.items.length, 1);
-    assert.equal(list_info.items[0].topic_name, "Test topic");
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
 
     list_info = get_list_info(true, "support");
     assert.equal(list_info.items.length, 1);
-    assert.equal(list_info.items[0].topic_name, "Test topic");
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
 
     list_info = get_list_info(true, "zulip");
     assert.equal(list_info.items.length, 1);
-    assert.equal(list_info.items[0].topic_name, "Outreachy-2024");
+    assert.equal(list_info.items[0].topic_name, "BF-2924 zulip");
 
-    // Test search for case-insensitive "SUPPORT"
     list_info = get_list_info(true, "SUPPORT");
     assert.equal(list_info.items.length, 1);
-    assert.equal(list_info.items[0].topic_name, "Test topic");
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
 
-    // Test non-existent search term
     list_info = get_list_info(true, "nonexistent");
     assert.equal(list_info.items.length, 0);
 });
