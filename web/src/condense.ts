@@ -112,6 +112,10 @@ export function collapse(message: Message): void {
 }
 
 export function toggle_collapse(message: Message): void {
+    // NOTE: We assume this function can only be called by two means:
+    // 1. User clicking on the expand / collapse button in the message.
+    // 2. User using the keyboard shortcut to expand / collapse a message.
+
     if (message.is_me_message) {
         // Disabled temporarily because /me messages don't have a
         // styling for collapsing /me messages (they only recently
@@ -152,6 +156,9 @@ export function toggle_collapse(message: Message): void {
             collapse(message);
         }
     }
+
+    // Select and scroll to the message so that it is in the view.
+    message_lists.current.select_id(message.id, {then_scroll: true});
 }
 
 function get_message_height(elem: HTMLElement): number {
@@ -249,8 +256,6 @@ export function initialize(): void {
         const message = message_lists.current.get(id);
         assert(message !== undefined);
         toggle_collapse(message);
-        // Focus on the expanded message.
-        message_lists.current.select_id(id);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -262,8 +267,6 @@ export function initialize(): void {
         const message = message_lists.current.get(id);
         assert(message !== undefined);
         toggle_collapse(message);
-        // Focus on the condensed message.
-        message_lists.current.select_id(id);
         e.stopPropagation();
         e.preventDefault();
     });
