@@ -537,13 +537,6 @@
         }
     }
 
-    #topics_header {
-        .show-all-streams {
-            color: hsl(0deg 0% 100% / 75%);
-            opacity: 0.75;
-        }
-    }
-
     .group-row.active,
     .stream-row.active {
         background-color: hsl(0deg 0% 0% / 20%);
