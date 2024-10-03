@@ -898,7 +898,7 @@ function min_defined(a: number | undefined, b: number | undefined): number | und
     if (b === undefined) {
         return a;
     }
-    return a < b ? a : b;
+    return Math.min(a, b);
 }
 
 function load_local_messages(msg_data: MessageListData, superset_data: MessageListData): boolean {
