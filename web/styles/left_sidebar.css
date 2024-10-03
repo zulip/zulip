@@ -41,10 +41,14 @@
 
 #streams_inline_icon,
 .streams_filter_icon {
-    opacity: 0.5;
+    color: var(--color-left-sidebar-heads-up-icon);
+    border-radius: 3px;
 
     &:hover {
-        opacity: 1;
+        color: var(--color-left-sidebar-heads-up-icon-hover);
+        background-color: var(
+            --background-color-left-sidebar-heads-up-icon-hover
+        );
         cursor: pointer;
     }
 }
@@ -215,16 +219,19 @@
     }
 
     #show-all-direct-messages {
-        width: var(--left-sidebar-header-icon-width);
+        color: var(--color-left-sidebar-heads-up-icon);
         display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0.7;
         text-decoration: none;
-        color: inherit;
+        margin: 2px 0;
+        border-radius: 3px;
 
         &:hover {
-            opacity: 1;
+            color: var(--color-left-sidebar-heads-up-icon-hover);
+            background-color: var(
+                --background-color-left-sidebar-heads-up-icon-hover
+            );
         }
     }
 }
@@ -1140,6 +1147,18 @@ li.top_left_scheduled_messages {
     z-index: 1;
 }
 
+.left-sidebar-controls {
+    grid-area: controls;
+    display: grid;
+    /* We won't know in advance how many controls a given
+       row has, but this allows grid to generate as many
+       as needed, sized to a shared icon width. */
+    grid-auto-columns: var(--left-sidebar-header-icon-width);
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
+    place-content: stretch stretch;
+    margin-right: 1px;
+}
+
 .stream-markers-and-unreads,
 .topic-markers-and-unreads {
     grid-area: markers-and-unreads;
@@ -1494,14 +1513,22 @@ li.topic-list-item {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: var(--left-sidebar-header-icon-width);
+        grid-row: 1 / 1;
+        margin: 2px 0;
     }
 
     #add_streams_tooltip {
+        grid-row: 1 / 1;
+        margin: 2px 0;
+    }
+
+    #streams_inline_icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: var(--left-sidebar-header-icon-width);
+        /* Ensure the clickable area grows to
+           the height of the controls grid. */
+        height: 100%;
     }
 
     .stream_search_section {
