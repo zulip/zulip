@@ -7,6 +7,7 @@ import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as settings_components from "./settings_components";
+import type {GroupSettingPillContainer} from "./typeahead_helper";
 import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
 import * as user_group_create_members from "./user_group_create_members";
@@ -26,6 +27,8 @@ export function set_name(group_name: string): void {
 export function get_name(): string | undefined {
     return created_group_name;
 }
+
+let can_manage_group_widget: GroupSettingPillContainer | undefined;
 
 class UserGroupMembershipError {
     report_no_members_to_user_group(): void {
@@ -150,9 +153,9 @@ function create_user_group(): void {
     }
     const user_ids = user_group_create_members.get_principals();
 
-    const pill_widget = settings_components.get_group_setting_widget("new_group_can_manage_group");
-    assert(pill_widget !== null);
-    const can_manage_group = settings_components.get_group_setting_widget_value(pill_widget);
+    assert(can_manage_group_widget !== undefined);
+    const can_manage_group =
+        settings_components.get_group_setting_widget_value(can_manage_group_widget);
 
     assert(settings_components.new_group_can_mention_group_widget !== null);
     const can_mention_group_value = settings_components.new_group_can_mention_group_widget.value();
@@ -240,7 +243,7 @@ export function set_up_handlers(): void {
     });
 
     const $pill_container = $container.find(".can-manage-group-container .pill-container");
-    settings_components.create_group_setting_widget({
+    can_manage_group_widget = settings_components.create_group_setting_widget({
         $pill_container,
         setting_name: "can_manage_group",
         setting_type: "group",
