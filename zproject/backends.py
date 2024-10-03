@@ -72,6 +72,7 @@ from zerver.actions.custom_profile_fields import do_update_user_custom_profile_d
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
+    do_update_user_group_description,
 )
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.actions.users import do_change_user_role, do_deactivate_user
@@ -957,6 +958,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             to the LDAP groups ldap_user belongs to.
         (2) Makes sure the user doesn't have membership in the Zulip UserGroups corresponding
             to the LDAP groups ldap_user doesn't belong to.
+        (3) Makes sure the group descriptions of the Zulip UserGroups corresponds to the descriptions
+            in LDAP.
         """
 
         if user_profile.realm.string_id not in settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM:
