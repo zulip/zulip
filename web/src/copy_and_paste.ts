@@ -194,6 +194,7 @@ export function copy_handler(): void {
         // TODO: Add a reference for this statement, I just tested
         // it in console for various selection directions and found this
         // to be the case not sure why there is no online reference for it.
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         document.execCommand("copy");
         return;
     }
@@ -201,6 +202,7 @@ export function copy_handler(): void {
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message.  If so, Let the browser handle this.
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         document.execCommand("copy");
         return;
     }
@@ -219,6 +221,7 @@ export function copy_handler(): void {
     // Select div so that the browser will copy it
     // instead of copying the original selection
     select_div($div, selection);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     document.execCommand("copy");
     remove_div($div, ranges);
 }

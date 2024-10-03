@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@9.8.0+sha512.8e4c3550fb500e808dbc30bb0ce4dd1eb614e30b1c55245f211591ec2cdf9c611cabd34e1364b42f564bd54b3945ed0f49d61d1bbf2ec9bd74b866fcdc723276",
+  "packageManager": "pnpm@9.12.0+sha512.4abf725084d7bcbafbd728bfc7bee61f2f791f977fd87542b3579dcb23504d170d46337945e4c66485cd12d588a0c0e570ed9c477e7ccdd8507cf05f3f92eaca",
   "dependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
@@ -12,7 +12,8 @@
     "@giphy/js-components": "^5.13.0",
     "@giphy/js-fetch-api": "^5.6.0",
     "@koa/bodyparser": "^5.0.0",
-    "@sentry/browser": "^7.51.2",
+    "@sentry/browser": "^8.33.1",
+    "@sentry/core": "^8.33.1",
     "@uppy/core": "^4.2.0",
     "@uppy/drag-drop": "^4.0.2",
     "@uppy/progress-bar": "^4.0.0",
@@ -31,7 +32,7 @@
     "core-js": "^3.37.0",
     "css-loader": "^7.1.1",
     "css-minimizer-webpack-plugin": "^7.0.0",
-    "date-fns": "^3.3.1",
+    "date-fns": "^4.1.0",
     "email-addresses": "^5.0.0",
     "emoji-datasource-google": "^15.0.1",
     "emoji-datasource-google-blob": "npm:emoji-datasource-google@^3.0.0",
@@ -124,17 +125,17 @@
     "commander": "^12.0.0",
     "confusing-browser-globals": "^1.0.11",
     "css.escape": "^1.5.1",
-    "diff": "^5.0.0",
+    "diff": "^7.0.0",
     "difflib": "^0.2.4",
     "enhanced-resolve": "^5.8.2",
     "es-check": "^7.0.0",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-webpack": "^0.13.4",
-    "eslint-plugin-formatjs": "^4.0.2",
+    "eslint-plugin-formatjs": "^5.0.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-no-jquery": "^3.0.2",
-    "eslint-plugin-unicorn": "^55.0.0",
+    "eslint-plugin-unicorn": "^56.0.0",
     "jsdom": "^25.0.0",
     "minimist": "^1.2.6",
     "mkdirp": "^3.0.1",
@@ -142,8 +143,8 @@
     "nyc": "^17.0.0",
     "openapi-examples-validator": "^5.0.0",
     "prettier": "^3.0.0",
-    "puppeteer": "^22.2.0",
-    "source-map": "npm:source-map-js@1.0.1",
+    "puppeteer": "^23.5.0",
+    "source-map": "npm:source-map-js@^1.2.1",
     "stylelint": "^16.2.0",
     "stylelint-config-standard": "^36.0.0",
     "svgo": "^3.0.0",
@@ -159,9 +160,10 @@
   },
   "pnpm": {
     "overrides": {
-      "source-map@^0.6": "npm:source-map-js@1.0.1"
+      "source-map@^0.6": "npm:source-map-js@^1.2.1"
     },
     "patchedDependencies": {
+      "puppeteer-core": "patches/puppeteer-core.patch",
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
       "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
     }

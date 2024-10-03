@@ -191,6 +191,7 @@ export function listener_for_preferred_color_scheme_change(callback: () => void)
     if (media_query_list.addEventListener) {
         media_query_list.addEventListener("change", listener);
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         media_query_list.addListener(listener);
     }
 }

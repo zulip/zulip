@@ -3,7 +3,11 @@
 
 import type {MessageDescriptor} from "@formatjs/intl";
 import {DEFAULT_INTL_CONFIG, IntlErrorCode, createIntl, createIntlCache} from "@formatjs/intl";
-import type {FormatXMLElementFn, PrimitiveType} from "intl-messageformat";
+import type {
+    FormatXMLElementFn,
+    Options as IntlMessageFormatOptions,
+    PrimitiveType,
+} from "intl-messageformat";
 import _ from "lodash";
 
 import {page_params} from "./base_page_params";
@@ -26,7 +30,13 @@ export const intl = createIntl(
     cache,
 );
 
-export const $t = intl.formatMessage.bind(intl);
+export function $t(
+    descriptor: MessageDescriptor,
+    values?: Record<string, PrimitiveType | FormatXMLElementFn<string, string>>,
+    opts?: IntlMessageFormatOptions,
+): string {
+    return intl.formatMessage(descriptor, values, opts);
+}
 
 export const default_html_elements = Object.fromEntries(
     ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
