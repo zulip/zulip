@@ -416,9 +416,11 @@ test("get_list_info with specific topics and searches", () => {
         });
     }
 
+    // Add sample messages
     add_topic_message("Outreachy-2024", 1001);
     add_topic_message("Test topic", 1002);
 
+    // Test search for "Outreachy-2024"
     list_info = get_list_info(true, "2924");
     assert.equal(list_info.items.length, 1);
     assert.equal(list_info.items[0].topic_name, "Outreachy-2024");
@@ -430,15 +432,17 @@ test("get_list_info with specific topics and searches", () => {
     list_info = get_list_info(true, "support");
     assert.equal(list_info.items.length, 1);
     assert.equal(list_info.items[0].topic_name, "Test topic");
-    list_info = get_list_info(true, "zulip");
 
+    list_info = get_list_info(true, "zulip");
     assert.equal(list_info.items.length, 1);
     assert.equal(list_info.items[0].topic_name, "Outreachy-2024");
 
+    // Test search for case-insensitive "SUPPORT"
     list_info = get_list_info(true, "SUPPORT");
     assert.equal(list_info.items.length, 1);
-    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
+    assert.equal(list_info.items[0].topic_name, "Test topic");
 
+    // Test non-existent search term
     list_info = get_list_info(true, "nonexistent");
     assert.equal(list_info.items.length, 0);
 });
