@@ -386,11 +386,10 @@ function reset_searchbox(clear = false): void {
     search_pill_widget.clear(true);
     search_input_has_changed = false;
     if (!clear) {
-        search_pill.set_search_bar_contents(
-            narrow_state.search_terms(),
-            search_pill_widget,
-            set_search_bar_text,
-        );
+        // We try to ignore `with` terms in the searchbox, since
+        // it is not a search operator.
+        const search_terms = narrow_state.search_terms().filter((term) => term.operator !== "with");
+        search_pill.set_search_bar_contents(search_terms, search_pill_widget, set_search_bar_text);
     }
 }
 
