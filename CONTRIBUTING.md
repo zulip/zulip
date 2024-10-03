@@ -219,8 +219,14 @@ issue you're interested in.
 There is no bot for other Zulip repositories
 ([`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/), etc.). If
 you are interested in claiming an issue in one of these repositories, simply
-post a comment on the issue thread saying that you'd like to work on it. There
-is no need to @-mention the issue creator in your comment.
+post a comment on the issue thread saying that you've started work on the
+issue and would like to claim it. In your comment, describe what part of the
+code you're modifying and how you plan to approach the problem, based on
+what you learned in steps 1–4 [above](#picking-an-issue-to-work-on).
+
+There is no need to @-mention the issue creator in your comment. There is
+also no need to post the same information in multiple places, for example in
+a chat thread in addition to the GitHub issue.
 
 Please follow the same guidelines as described above: find an issue labeled
 "help wanted", and only pick up one issue at a time to start with.
