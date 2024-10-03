@@ -253,7 +253,10 @@
     /* 40px (toggle icon) + 5px (gap) + 20px logo + 10px right margin */
     --left-sidebar-width-with-realm-icon-logo: 75px;
     --right-sidebar-width: 250px;
-    --left-sidebar-header-icon-width: 15px;
+    /* The width of the icon is reduced by 2px, to account for 2px
+       of top and bottom margin needed for hover backgrounds to
+       not touch the row outline. */
+    --left-sidebar-header-icon-width: calc(1.7142em - 2px); /* 24px / 14px em */
     /* Space between section in the left sidebar. */
     --left-sidebar-sections-vertical-gutter: 8px;
     /* The legacy value here is 25px; that's the unitless legacy line-height
@@ -793,6 +796,11 @@
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
     --color-left-sidebar-navigation-icon: hsl(240deg 30% 40%);
+    --color-left-sidebar-heads-up-icon: hsl(240deg 30% 40%);
+    --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 15%);
+    --background-color-left-sidebar-heads-up-icon-hover: hsl(
+        240deg 100% 50% / 7%
+    );
     --color-vdots-hint: hsl(240deg 30% 20%);
     --color-vdots-visible: hsl(240deg 30% 40%);
     --color-vdots-hover: hsl(240deg 100% 15%);
@@ -1309,6 +1317,11 @@
     --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
     --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 100%);
     --color-left-sidebar-navigation-icon: hsl(240deg 35% 68%);
+    --color-left-sidebar-heads-up-icon: hsl(240deg 35% 68%);
+    --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 90%);
+    --background-color-left-sidebar-heads-up-icon-hover: hsl(
+        240deg 100% 75% / 20%
+    );
     --color-vdots-hint: hsl(240deg 35% 48%);
     --color-vdots-visible: hsl(240deg 35% 68%);
     --color-vdots-hover: hsl(240deg 100% 90%);
