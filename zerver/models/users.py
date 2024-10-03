@@ -788,12 +788,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         if policy_name not in [
             "add_custom_emoji_policy",
             "can_create_groups",
-            "can_manage_all_groups",
             "can_create_private_channel_group",
             "can_create_public_channel_group",
             "can_create_web_public_channel_group",
             "can_delete_any_message_group",
             "can_delete_own_message_group",
+            "can_manage_all_groups",
             "create_multiuse_invite_group",
             "direct_message_initiator_group",
             "direct_message_permission_group",
