@@ -6,14 +6,11 @@ translated into emoji equivalents like
     src="/static/generated/emoji/images-google-64/1f642.png"
     alt="smile"
     class="emoji-small"
-/>
-or
-<img
+/> or <img
     src="/static/generated/emoji/images-google-64/1f641.png"
     alt="slight_frown"
     class="emoji-small"
-/>
-by Zulip.
+/> by Zulip.
 
 ## Configure emoticon translations
 
