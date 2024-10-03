@@ -47,7 +47,7 @@ organization in Zulip). The following files are involved in the process:
 - `web/templates/settings/organization_permissions_admin.hbs`: defines
   the structure of the admin permissions page (checkboxes for each organization
   permission setting).
-- `web/src/settings_org.js`: handles organization setting form submission.
+- `web/src/settings_org.ts`: handles organization setting form submission.
 - `web/src/server_events_dispatch.js`: handles events coming from the server
   (ex: pushing an organization change to other open browsers and updating
   the application's state).
@@ -556,7 +556,7 @@ Then add the new form control in `web/src/admin.js`.
 ```
 
 The JavaScript code for organization settings and permissions can be found in
-`web/src/settings_org.js`.
+`web/src/settings_org.ts`.
 
 In frontend, we have split the `property_types` into three objects:
 
@@ -667,7 +667,7 @@ frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
 [Puppeteer end-to-end tests](../testing/testing-with-puppeteer.md).
 
 At the minimum, if you created a new function to update UI in
-`settings_org.js`, you will need to mock that function in
+`settings_org.ts`, you will need to mock that function in
 `web/tests/dispatch.test.js`. Add the name of the UI
 function you created to the following object with `noop` as the value:
 

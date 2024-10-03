@@ -88,7 +88,7 @@ export function disable_sub_setting_onchange(
     is_checked: boolean,
     sub_setting_id: string,
     disable_on_uncheck: boolean,
-    include_label: boolean,
+    include_label = false,
 ): void {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
         $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", false);
