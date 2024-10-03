@@ -730,7 +730,7 @@ def aggregate_streams(*, input_dict: dict[int, RawUnreadStreamDict]) -> list[Unr
     for message_id, attribute_dict in input_dict.items():
         stream_id = attribute_dict["stream_id"]
         topic_name = attribute_dict["topic"]
-        lookup_key = (stream_id, topic_name)
+        lookup_key = (stream_id, topic_name.lower())
         if lookup_key not in lookup_dict:
             obj = UnreadStreamInfo(
                 stream_id=stream_id,
