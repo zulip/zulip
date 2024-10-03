@@ -477,7 +477,7 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
     );
     await page.click(".subscriptions-header .exit-sign");
     await page.waitForSelector("#subscription_overlay", {hidden: true});
-    await page.goto(`http://zulip.zulipdev.com:9981/#narrow/stream/${stream_id}-Denmark`);
+    await page.goto(`http://zulip.zulipdev.com:9981/#narrow/channel/${stream_id}-Denmark`);
     let message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
         `.message-list[data-message-list-id='${message_list_id}'] .recipient_row ~ .recipient_row ~ .recipient_row`,
@@ -488,7 +488,7 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
         )) !== null,
     );
 
-    await page.goto("http://zulip.zulipdev.com:9981/#narrow/streams/public");
+    await page.goto("http://zulip.zulipdev.com:9981/#narrow/channels/public");
     message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
         `.message-list[data-message-list-id='${message_list_id}'] .recipient_row ~ .recipient_row ~ .recipient_row`,

@@ -109,7 +109,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         is_followed: false,
         is_unmuted_or_followed: false,
         is_active_topic: true,
-        url: "#narrow/stream/556-general/topic/topic.2011",
+        url: "#narrow/channel/556-general/topic/topic.2011",
         contains_unread_mention: false,
     });
 
@@ -133,7 +133,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_name: "✔ topic 9",
         topic_resolved_prefix: "✔ ",
         unread: 0,
-        url: "#narrow/stream/556-general/topic/.E2.9C.94.20topic.209",
+        url: "#narrow/channel/556-general/topic/.E2.9C.94.20topic.209",
     });
 
     assert.deepEqual(list_info.items[1], {
@@ -148,7 +148,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_name: "topic 8",
         topic_resolved_prefix: "",
         unread: 0,
-        url: "#narrow/stream/556-general/topic/topic.208",
+        url: "#narrow/channel/556-general/topic/topic.208",
     });
 
     // If we zoom in, our results are based on topic filter.

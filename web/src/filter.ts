@@ -67,12 +67,6 @@ type ValidOrInvalidUser =
     | {valid_user: true; user_pill_context: UserPillItem}
     | {valid_user: false; operand: string};
 
-// TODO: When "stream" is renamed to "channel", these placeholders
-// should be removed, or replaced with helper functions similar
-// to util.is_topic_synonym.
-const CHANNEL_SYNONYM = "stream";
-const CHANNELS_SYNONYM = "streams";
-
 function zephyr_stream_name_match(
     message: Message & {type: "stream"},
     stream_name: string,
@@ -143,7 +137,7 @@ function message_in_home(message: Message): boolean {
     }
 
     return (
-        // If stream is muted, we show the message if topic is unmuted or followed.
+        // If channel is muted, we show the message if topic is unmuted or followed.
         !stream_data.is_muted(message.stream_id) ||
         user_topics.is_topic_unmuted_or_followed(message.stream_id, message.topic)
     );
@@ -324,11 +318,11 @@ export class Filter {
             return "topic";
         }
 
-        if (operator === CHANNEL_SYNONYM) {
+        if (util.is_channel_synonym(operator)) {
             return "channel";
         }
 
-        if (operator === CHANNELS_SYNONYM) {
+        if (util.is_channels_synonym(operator)) {
             return "channels";
         }
         return operator;
@@ -513,7 +507,7 @@ export class Filter {
                 // Check for user-entered channel name. If the name is valid,
                 // convert it to id.
                 if (
-                    (operator === "stream" || operator === "channel") &&
+                    (operator === "channel" || util.is_channel_synonym(operator)) &&
                     Number.isNaN(Number.parseInt(operand, 10))
                 ) {
                     const sub = stream_data.get_sub(operand);
@@ -825,7 +819,7 @@ export class Filter {
                         };
                     }
                     // Assume the operand is a partially formed name and return
-                    // the operator as the stream name in the next block.
+                    // the operator as the channel name in the next block.
                 }
                 return {
                     type: "prefix_for_operator",
@@ -860,7 +854,7 @@ export class Filter {
     }
 
     static adjusted_terms_if_moved(raw_terms: NarrowTerm[], message: Message): NarrowTerm[] | null {
-        // In case of narrow containing non-stream messages, we replace the
+        // In case of narrow containing non-channel messages, we replace the
         // channel/topic/dm operators with singular dm operator corresponding
         // to the message if it contains `with` operator.
         if (message.type !== "stream") {
@@ -1224,9 +1218,7 @@ export class Filter {
                 return "#";
             }
             return (
-                "/#narrow/" +
-                CHANNEL_SYNONYM +
-                "/" +
+                "/#narrow/channel/" +
                 stream_data.id_to_slug(sub.stream_id) +
                 "/topic/" +
                 this.operands("topic")[0]
@@ -1246,9 +1238,7 @@ export class Filter {
                     if (!sub) {
                         return "#";
                     }
-                    return (
-                        "/#narrow/" + CHANNEL_SYNONYM + "/" + stream_data.id_to_slug(sub.stream_id)
-                    );
+                    return "/#narrow/channel/" + stream_data.id_to_slug(sub.stream_id);
                 }
                 case "is-dm":
                     return "/#narrow/is/dm";
@@ -1257,7 +1247,7 @@ export class Filter {
                 case "is-mentioned":
                     return "/#narrow/is/mentioned";
                 case "channels-public":
-                    return "/#narrow/" + CHANNELS_SYNONYM + "/public";
+                    return "/#narrow/channels/public";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
