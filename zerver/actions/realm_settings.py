@@ -794,6 +794,7 @@ def do_change_realm_plan_type(
         data={
             "plan_type": plan_type,
             "upload_quota_mib": optional_bytes_to_mib(realm.upload_quota_bytes()),
+            "max_file_upload_size_mib": realm.get_max_file_upload_size_mebibytes(),
         },
     )
     send_event_on_commit(realm, event, active_user_ids(realm.id))

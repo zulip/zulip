@@ -372,6 +372,7 @@ exports.fixtures = {
             direct_message_permission_group: 3,
             plan_type: 3,
             upload_quota_mib: 50000,
+            max_file_upload_size_mib: 1024,
         },
     },
 

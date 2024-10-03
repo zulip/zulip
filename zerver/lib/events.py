@@ -350,7 +350,7 @@ def fetch_initial_state_data(
 
         # Important: Encode units in the client-facing API name.
         state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
-        state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
+        state["max_file_upload_size_mib"] = realm.get_max_file_upload_size_mebibytes()
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
         upload_quota_bytes = realm.upload_quota_bytes()
         state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
@@ -1308,6 +1308,10 @@ def apply_event(
                 )
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
+                if key == "max_file_upload_size_mib":
+                    state["max_file_upload_size_mib"] = value
+                    continue
+
                 state["realm_" + key] = value
                 # It's a bit messy, but this is where we need to
                 # update the state for whether password authentication

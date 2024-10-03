@@ -99,10 +99,11 @@ def handle_upload_pre_create_hook(
     if data.size_is_deferred or data.size is None:
         return reject_upload("SizeIsDeferred is not supported", 411)
 
-    if data.size > settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024:
+    max_file_upload_size_mebibytes = user_profile.realm.get_max_file_upload_size_mebibytes()
+    if data.size > max_file_upload_size_mebibytes * 1024 * 1024:
         return reject_upload(
             _("Uploaded file is larger than the allowed limit of {max_file_size} MiB").format(
-                max_file_size=settings.MAX_FILE_UPLOAD_SIZE
+                max_file_size=max_file_upload_size_mebibytes
             ),
             413,
         )

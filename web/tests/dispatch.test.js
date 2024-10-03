@@ -586,6 +586,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_direct_message_permission_group", 1);
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
+    override(realm, "max_file_upload_size_mib", 10);
     override(settings_org, "populate_auth_methods", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
@@ -599,6 +600,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_direct_message_permission_group, 3);
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
+    assert_same(realm.max_file_upload_size_mib, 1024);
     assert_same(update_stream_privacy_choices_called, true);
 
     event = event_fixtures.realm__update_dict__icon;

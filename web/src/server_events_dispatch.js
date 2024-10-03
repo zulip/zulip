@@ -284,7 +284,12 @@ export function dispatch_normal_event(event) {
                     switch (event.property) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
-                                realm["realm_" + key] = value;
+                                if (key === "max_file_upload_size_mib") {
+                                    realm[key] = value;
+                                } else {
+                                    realm["realm_" + key] = value;
+                                }
+
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }
