@@ -147,7 +147,7 @@
     <div id="direct-messages-section-header" class="direct-messages-container hidden-for-spectators zoom-out zoom-in-sticky">
         <i id="toggle-direct-messages-section-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down dm-tooltip-target zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
         <h4 class="left-sidebar-title"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
-        <div class="heading-markers-and-controls">
+        <div class="heading-markers-and-unreads">
             <a id="show-all-direct-messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-direct-messages-template">
                 <i class="zulip-icon zulip-icon-all-messages" aria-label="{{t 'Direct message feed' }}"></i>
             </a>
@@ -172,7 +172,7 @@
         <div id="streams_list" class="zoom-out">
             <div id="streams_header" class="zoom-in-hide {{#if hide_unread_counts}}hide_unread_counts{{/if}}">
                 <h4 class="left-sidebar-title"><span class="streams-tooltip-target" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'CHANNELS' }}</span></h4>
-                <div class="heading-markers-and-controls">
+                <div class="heading-markers-and-unreads">
                     <i id="filter_streams_tooltip" class="streams_filter_icon zulip-icon zulip-icon-search" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
                     <span id="add_streams_tooltip" class="hidden-for-spectators" data-tippy-content="{{t 'Add channels' }}">
                         <i id="streams_inline_icon" class="zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
