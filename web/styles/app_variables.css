@@ -227,6 +227,7 @@
     --left-sidebar-icon-content-gap: 0.4375em;
     /* The space allotted in gridded rows for the toggle icon. */
     --left-sidebar-header-icon-toggle-width: 20px;
+    --left-sidebar-vdots-width: 26px;
     /* Other rows need an offset to preserve a column the
        entire height of the left sidebar for where toggles sit. */
     --left-sidebar-toggle-width-offset: var(
