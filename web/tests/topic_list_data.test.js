@@ -405,7 +405,9 @@ test("get_list_info unreads", ({override}) => {
     );
 });
 
-test("get_list_info with specific topics and searches", ({override}) => {
+test("get_list_info with specific topics and searches", () => {
+    let list_info;
+
     function add_topic_message(topic_name, message_id) {
         stream_topic_history.add_message({
             stream_id: general.stream_id,
@@ -414,26 +416,29 @@ test("get_list_info with specific topics and searches", ({override}) => {
         });
     }
 
-    // Add sample messages to the topic history
     add_topic_message("Outreachy-2024", 1001);
     add_topic_message("Test topic", 1002);
 
-    // Helper function to test different search inputs
-    function assertSearchResult(searchTerm, expectedLength, expectedTopicName) {
-        const result = get_list_info(true, searchTerm);
-        assert.equal(result.items.length, expectedLength);
-        if (expectedLength > 0) {
-            assert.equal(result.items[0].topic_name, expectedTopicName);
-        }
-    }
+    list_info = get_list_info(true, "2924");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "Outreachy-2024");
 
-    // Testing various search terms and expecting results
-    assertSearchResult("Outreachy", 1, "Outreachy-2024");
-    assertSearchResult("Test topic", 1, "Test topic");
-    assertSearchResult("Test", 1, "Test topic");
-    assertSearchResult("2024", 1, "Outreachy-2024");
-    assertSearchResult("TEST", 1, "Test topic");
+    list_info = get_list_info(true, "Test topic");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "Test topic");
 
-    // Testing non-existent search term
-    assertSearchResult("nonexistent", 0);
+    list_info = get_list_info(true, "support");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "Test topic");
+    list_info = get_list_info(true, "zulip");
+
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "Outreachy-2024");
+
+    list_info = get_list_info(true, "SUPPORT");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
+
+    list_info = get_list_info(true, "nonexistent");
+    assert.equal(list_info.items.length, 0);
 });
