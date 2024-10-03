@@ -127,6 +127,11 @@
             display: flex;
         }
 
+        .subscription_block .sidebar-menu-icon {
+            display: flex;
+            color: var(--color-vdots-visible);
+        }
+
         .stream-with-count.hide_unread_counts {
             .masked_unread_count {
                 display: none;
