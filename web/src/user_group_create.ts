@@ -129,7 +129,7 @@ export function show_new_user_group_modal(): void {
     clear_error_display();
 
     if (!page_params.development_environment) {
-        $("#new_group_can_manage_group_widget_container").hide();
+        $(".can-manage-group-container").hide();
     }
 }
 
