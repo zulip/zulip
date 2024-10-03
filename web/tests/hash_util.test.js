@@ -213,7 +213,7 @@ run_test("test_by_conversation_and_time_url", () => {
 
     assert.equal(
         hash_util.by_conversation_and_time_url(message),
-        "http://zulip.zulipdev.com/#narrow/stream/99-frontend/topic/testing/near/42",
+        "http://zulip.zulipdev.com/#narrow/channel/99-frontend/topic/testing/near/42",
     );
 
     message = {
@@ -239,19 +239,19 @@ run_test("test_search_public_streams_notice_url", () => {
 
     assert.equal(
         hash_util.search_public_streams_notice_url(get_terms("#narrow/search/abc")),
-        "#narrow/streams/public/search/abc",
+        "#narrow/channels/public/search/abc",
     );
 
     assert.equal(
         hash_util.search_public_streams_notice_url(
             get_terms("#narrow/has/link/has/image/has/attachment"),
         ),
-        "#narrow/streams/public/has/link/has/image/has/attachment",
+        "#narrow/channels/public/has/link/has/image/has/attachment",
     );
 
     assert.equal(
         hash_util.search_public_streams_notice_url(get_terms("#narrow/sender/15")),
-        "#narrow/streams/public/sender/15-Hamlet",
+        "#narrow/channels/public/sender/15-Hamlet",
     );
 });
 

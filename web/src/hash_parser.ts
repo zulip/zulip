@@ -36,11 +36,11 @@ export function get_current_hash_section(): string {
 
 export function is_same_server_message_link(url: string): boolean {
     // A same server message link always has category `narrow`,
-    // section `stream` or `dm`, and ends with `/near/<message_id>`,
+    // section `channel` or `dm`, and ends with `/near/<message_id>`,
     // where <message_id> is a sequence of digits.
     return (
         get_hash_category(url) === "narrow" &&
-        (get_hash_section(url) === "stream" || get_hash_section(url) === "dm") &&
+        (get_hash_section(url) === "channel" || get_hash_section(url) === "dm") &&
         get_nth_hash_section(url, -2) === "near" &&
         /^\d+$/.test(get_nth_hash_section(url, -1))
     );

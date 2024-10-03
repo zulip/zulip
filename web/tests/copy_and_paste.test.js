@@ -16,36 +16,36 @@ stream_data.add_sub({
 run_test("try_stream_topic_syntax_text", () => {
     const test_cases = [
         [
-            "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/old.20FAILED.20EXPORT",
+            "http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT",
             "#**Rome>old FAILED EXPORT**",
         ],
         [
-            "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20profits",
+            "http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/100.25.20profits",
             "#**Rome>100% profits**",
         ],
         [
-            "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/old.20API.20wasn't.20compiling.20erratically",
+            "http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/old.20API.20wasn't.20compiling.20erratically",
             "#**Rome>old API wasn't compiling erratically**",
         ],
 
-        ["http://different.origin.com/#narrow/stream/4-Rome/topic/old.20FAILED.20EXPORT"],
+        ["http://different.origin.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT"],
 
         // malformed urls
-        ["http://zulip.zulipdev.com/narrow/stream/4-Rome/topic/old.20FAILED.20EXPORT"],
-        ["http://zulip.zulipdev.com/#not_narrow/stream/4-Rome/topic/old.20FAILED.20EXPORT"],
+        ["http://zulip.zulipdev.com/narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT"],
+        ["http://zulip.zulipdev.com/#not_narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT"],
         ["http://zulip.zulipdev.com/#narrow/not_stream/4-Rome/topic/old.20FAILED.20EXPORT"],
-        ["http://zulip.zulipdev.com/#narrow/stream/4-Rome/not_topic/old.20FAILED.20EXPORT"],
-        ["http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/old.20FAILED.20EXPORT/near/100"],
-        ["http://zulip.zulipdev.com/#narrow/stream/4-Rome/", "#**Rome**"],
-        ["http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic"],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/not_topic/old.20FAILED.20EXPORT"],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT/near/100"],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/", "#**Rome**"],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic"],
         ["http://zulip.zulipdev.com/#narrow/topic/cheese"],
         ["http://zulip.zulipdev.com/#narrow/topic/pizza/stream/Rome"],
 
         // characters which are known to produce broken #**stream>topic** urls.
-        ["http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20profits.60"],
-        ["http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20*profits"],
-        ["http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/.24.24 100.25.20profits"],
-        ["http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/>100.25.20profits"],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/100.25.20profits.60"],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/100.25.20*profits"],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/.24.24 100.25.20profits"],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/>100.25.20profits"],
     ];
 
     for (const test_case of test_cases) {

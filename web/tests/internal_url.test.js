@@ -42,11 +42,11 @@ run_test("test encode_stream_id", () => {
 run_test("test by_stream_url", () => {
     const maybe_get_stream_name = () => "a test stream";
     const result = internal_url.by_stream_url(123, maybe_get_stream_name);
-    assert.equal(result, "#narrow/stream/123-a-test-stream");
+    assert.equal(result, "#narrow/channel/123-a-test-stream");
 });
 
 run_test("test by_stream_topic_url", () => {
     const maybe_get_stream_name = () => "a test stream";
     const result = internal_url.by_stream_topic_url(123, "test topic", maybe_get_stream_name);
-    assert.equal(result, "#narrow/stream/123-a-test-stream/topic/test.20topic");
+    assert.equal(result, "#narrow/channel/123-a-test-stream/topic/test.20topic");
 });
