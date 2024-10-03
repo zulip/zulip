@@ -23,6 +23,19 @@ function save_sidebar_toggle_status(): void {
     ls.set("right-sidebar", $("body").hasClass("hide-right-sidebar"));
 }
 
+// In which order should (Inbox, Recent conversations and Combined feed) appear.
+function get_navigation_list_order(): string[] {
+    if (user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code) {
+        return ["feed", "inbox", "recent"];
+    } else if (
+        user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code
+    ) {
+        return ["recent", "inbox", "feed"];
+    }
+    // default home view
+    return ["inbox", "recent", "feed"];
+}
+
 export function restore_sidebar_toggle_status(): void {
     const ls = localstorage();
     if (ls.get("left-sidebar")) {
@@ -212,6 +225,7 @@ export function initialize_left_sidebar(): void {
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         development_environment: page_params.development_environment,
+        navigation_list_order: get_navigation_list_order(),
         is_inbox_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.inbox.code,
         is_all_messages_home_view:

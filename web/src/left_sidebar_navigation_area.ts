@@ -207,11 +207,31 @@ export function highlight_all_messages_view(): void {
     }, 0);
 }
 
+// Reorder the first 3 views in navigation list (Inbox, Recent conversations and Combined feed), based on current home view.
+function reorder_left_sidebar_navigation_list(
+    $first_view: JQuery,
+    $second_view: JQuery,
+    $third_view: JQuery,
+    $first_view_condensed: JQuery,
+    $second_view_condensed: JQuery,
+    $third_view_condensed: JQuery,
+): void {
+    const $left_sidebar = $("#left-sidebar-navigation-list");
+    const $left_sidebar_condensed = $("#left-sidebar-navigation-list-condensed");
+
+    $left_sidebar.children().eq(0).replaceWith($first_view);
+    $left_sidebar.children().eq(1).replaceWith($second_view);
+    $left_sidebar.children().eq(2).replaceWith($third_view);
+
+    $left_sidebar_condensed.children().eq(0).replaceWith($first_view_condensed);
+    $left_sidebar_condensed.children().eq(1).replaceWith($second_view_condensed);
+    $left_sidebar_condensed.children().eq(2).replaceWith($third_view_condensed);
+}
+
 function handle_home_view_order(home_view: string): void {
-    // Remove class and tabindex from current home view
+    // Remove class from current home view
     const $current_home_view = $(".selected-home-view");
     $current_home_view.removeClass("selected-home-view");
-    $current_home_view.find("a").removeAttr("tabindex");
 
     const $all_messages_rows = $(".top_left_all_messages");
     const $recent_views_rows = $(".top_left_recent_view");
@@ -219,17 +239,51 @@ function handle_home_view_order(home_view: string): void {
 
     const res = unread.get_counts();
 
-    // Add the class and tabindex to the matching home view
+    // Since replaceWith() removes the replacing element
+    // from its original position (which can disrubt the original navigation list elements),
+    // we use clone() to create a copy.
+    const $inbox_condensed = $inbox_rows.eq(0).clone();
+    const $recent_condensed = $recent_views_rows.eq(0).clone();
+    const $feed_condensed = $all_messages_rows.eq(0).clone();
+
+    const $inbox = $inbox_rows.eq(1).clone();
+    const $recent = $recent_views_rows.eq(1).clone();
+    const $feed = $all_messages_rows.eq(1).clone();
+
+    // Reorder navigation list and Add class to matching home view.
     if (home_view === settings_config.web_home_view_values.all_messages.code) {
+        // Combined feed is home view.
         $all_messages_rows.addClass("selected-home-view");
-        $all_messages_rows.find("a").attr("tabindex", 0);
+        reorder_left_sidebar_navigation_list(
+            $feed,
+            $inbox,
+            $recent,
+            $feed_condensed,
+            $inbox_condensed,
+            $recent_condensed,
+        );
     } else if (home_view === settings_config.web_home_view_values.recent_topics.code) {
+        // Recent conversations is home view.
         $recent_views_rows.addClass("selected-home-view");
-        $recent_views_rows.find("a").attr("tabindex", 0);
+        reorder_left_sidebar_navigation_list(
+            $recent,
+            $inbox,
+            $feed,
+            $recent_condensed,
+            $inbox_condensed,
+            $feed_condensed,
+        );
     } else {
         // Inbox is home view.
         $inbox_rows.addClass("selected-home-view");
-        $inbox_rows.find("a").attr("tabindex", 0);
+        reorder_left_sidebar_navigation_list(
+            $inbox,
+            $recent,
+            $feed,
+            $inbox_condensed,
+            $recent_condensed,
+            $feed_condensed,
+        );
     }
     update_dom_with_unread_counts(res, true);
 }
