@@ -17,7 +17,7 @@ from zerver.actions.presence import do_update_user_presence
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
-from zerver.lib.events import fetch_initial_state_data
+from zerver.lib.events import fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
@@ -827,6 +827,22 @@ class FetchInitialStateDataTest(ZulipTestCase):
         custom_profile_fields = result["custom_profile_fields"]
         [pronouns_field] = (field for field in custom_profile_fields if field["name"] == "Pronouns")
         self.assertEqual(pronouns_field["type"], CustomProfileField.PRONOUNS)
+
+    def test_unreads_case_insensitive_topics(self) -> None:
+        sender = self.example_user("hamlet")
+        self.login_user(sender)
+        self.send_stream_message(sender, "Denmark", "**hello**", topic_name="case DOES not MATTER")
+        self.send_stream_message(sender, "Denmark", "**bye**", topic_name="CASE does NOT matter")
+
+        reader = self.example_user("othello")
+        result = fetch_initial_state_data(
+            user_profile=reader,
+            realm=reader.realm,
+        )
+        post_process_state(reader, result, False)
+        self.assert_length(result["unread_msgs"]["streams"], 1)
+        self.assertEqual(result["unread_msgs"]["streams"][0]["topic"], "case DOES not MATTER")
+        self.assert_length(result["unread_msgs"]["streams"][0]["unread_message_ids"], 2)
 
 
 class ClientDescriptorsTest(ZulipTestCase):
