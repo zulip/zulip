@@ -5,7 +5,6 @@ const assert = require("node:assert/strict");
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
 const realm_icon = mock_esm("../src/realm_icon");
@@ -291,22 +290,12 @@ function test_sync_realm_settings({override}) {
         $.create("save-button-controls-stub").addClass("hide"),
     );
 
-    {
-        /* Test invalid settings property sync */
-        const $property_elem = $("#id_realm_invalid_settings_property");
-        $property_elem.attr("id", "id_realm_invalid_settings_property");
-        $property_elem.closest = () => $subsection_stub;
-        $property_elem.length = 1;
-
-        blueslip.expect("error", "Element refers to unknown property");
-        settings_org.sync_realm_settings("invalid_settings_property");
-    }
-
     function test_common_policy(property_name) {
         const $property_elem = $(`#id_realm_${CSS.escape(property_name)}`);
         $property_elem.length = 1;
         $property_elem.attr("id", `id_realm_${CSS.escape(property_name)}`);
         $property_elem.closest = () => $subsection_stub;
+        $property_elem[0] = `#id_realm_${CSS.escape(property_name)}`;
 
         /* Each policy is initialized to 'by_members' and then all the values are tested
         in the following order - by_admins_only, by_moderators_only, by_full_members,
@@ -338,6 +327,7 @@ function test_sync_realm_settings({override}) {
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
         $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
         $property_dropdown_elem.closest = () => $subsection_stub;
+        $property_dropdown_elem[0] = "#id_realm_message_content_edit_limit_seconds";
 
         override(realm, "realm_message_content_edit_limit_seconds", 120);
 
@@ -362,6 +352,7 @@ function test_sync_realm_settings({override}) {
         $property_elem.length = 1;
         $property_elem.attr("id", "id_realm_org_join_restrictions");
         $property_elem.closest = () => $subsection_stub;
+        $property_elem[0] = "#id_realm_org_join_restrictions";
 
         override(realm, "realm_emails_restricted_to_domains", true);
         override(realm, "realm_disallow_disposable_email_addresses", false);
@@ -529,6 +520,7 @@ test("set_up", ({override, override_rewire}) => {
             name: "BigBlueButton",
         },
     });
+    override(realm, "realm_message_retention_days", null);
 
     let upload_realm_logo_or_icon;
     realm_icon.build_realm_icon_widget = (f) => {

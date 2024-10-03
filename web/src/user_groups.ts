@@ -22,7 +22,7 @@ export const user_group_schema = raw_user_group_schema.extend({
 });
 export type UserGroup = z.infer<typeof user_group_schema>;
 
-type UserGroupForDropdownListWidget = {
+export type UserGroupForDropdownListWidget = {
     name: string;
     unique_id: number;
 };
