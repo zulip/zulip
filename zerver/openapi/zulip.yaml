@@ -4679,6 +4679,14 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether [topics are required](/help/require-topics) for messages in this organization.
+                                    max_file_upload_size_mib:
+                                      type: integer
+                                      description: |
+                                        The new maximum file size that can be uploaded to this Zulip organization.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 306). Previously, this field of
+                                        the core state did not support being updated via the events system, as it was
+                                        typically hardcoded for a given Zulip installation.
                                     message_content_allowed_in_email_notifications:
                                       type: boolean
                                       description: |
@@ -17320,7 +17328,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum file size that can be uploaded to this Zulip server.
+                          The maximum file size that can be uploaded to this Zulip organization.
                       max_avatar_file_size_mib:
                         type: integer
                         description: |

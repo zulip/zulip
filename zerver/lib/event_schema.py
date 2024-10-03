@@ -1075,6 +1075,7 @@ plan_type_data = DictType(
     required_keys=[
         ("plan_type", int),
         ("upload_quota_mib", OptionalType(int)),
+        ("max_file_upload_size_mib", int),
     ],
 )
 

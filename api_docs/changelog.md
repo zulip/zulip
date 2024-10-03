@@ -28,6 +28,11 @@ format used by the Zulip server that they are interacting with.
   a standard `realm/update_dict` event to notify clients about changes
   in `plan_type` and other fields that atomically change with a given
   change in plan.
+* [`GET /events`](/api/get-events): Added `max_file_upload_size_mib`
+  field to the `data` object in `realm/update_dict` event format;
+  previously, this was a constant. Note that the field does not have a
+  `realm_` prefix in the [`POST /register`](/api/register-queue)
+  response.
 
 **Feature level 305**
 

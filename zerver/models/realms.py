@@ -1011,6 +1011,21 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         # it as gibibytes (GiB) to be a bit more generous in case of confusion.
         return self.upload_quota_gb << 30
 
+    def get_max_file_upload_size_mebibytes(self) -> int:
+        plan_type = self.plan_type
+        if plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
+            return settings.MAX_FILE_UPLOAD_SIZE
+        elif plan_type == Realm.PLAN_TYPE_LIMITED:
+            return 10
+        elif plan_type in [
+            Realm.PLAN_TYPE_STANDARD,
+            Realm.PLAN_TYPE_STANDARD_FREE,
+            Realm.PLAN_TYPE_PLUS,
+        ]:
+            return 1024
+        else:
+            raise AssertionError("Invalid plan type")
+
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
     @cache_with_key(
