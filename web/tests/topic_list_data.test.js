@@ -404,3 +404,36 @@ test("get_list_info unreads", ({override}) => {
         ],
     );
 });
+
+test("get_list_info with specific topics and searches", ({override}) => {
+    function add_topic_message(topic_name, message_id) {
+        stream_topic_history.add_message({
+            stream_id: general.stream_id,
+            topic_name,
+            message_id,
+        });
+    }
+
+    // Add sample messages to the topic history
+    add_topic_message("Outreachy-2024", 1001);
+    add_topic_message("Test topic", 1002);
+
+    // Helper function to test different search inputs
+    function assertSearchResult(searchTerm, expectedLength, expectedTopicName) {
+        const result = get_list_info(true, searchTerm);
+        assert.equal(result.items.length, expectedLength);
+        if (expectedLength > 0) {
+            assert.equal(result.items[0].topic_name, expectedTopicName);
+        }
+    }
+
+    // Testing various search terms and expecting results
+    assertSearchResult("Outreachy", 1, "Outreachy-2024");
+    assertSearchResult("Test topic", 1, "Test topic");
+    assertSearchResult("Test", 1, "Test topic");
+    assertSearchResult("2024", 1, "Outreachy-2024");
+    assertSearchResult("TEST", 1, "Test topic");
+
+    // Testing non-existent search term
+    assertSearchResult("nonexistent", 0);
+});

@@ -187,7 +187,15 @@ export function get_list_info(
     }
 
     if (zoomed) {
-        topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
+        const extended_word_separator_regex = /[\s/_-]/;
+        const filtered_topic_names = util.filter_by_word_prefix_match(
+            topic_names,
+            search_term,
+            (topic) => topic,
+            extended_word_separator_regex,
+        );
+
+        topic_names = filtered_topic_names;
     }
 
     if (stream_muted && !zoomed) {
