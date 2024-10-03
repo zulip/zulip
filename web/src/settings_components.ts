@@ -1404,7 +1404,6 @@ export function initialize_disable_btn_hint_popover(
 
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_manage_group", null],
-    ["new_group_can_manage_group", null],
 ]);
 
 export function get_group_setting_widget(setting_name: string): GroupSettingPillContainer | null {
@@ -1459,7 +1458,7 @@ export function create_group_setting_widget({
     setting_name: group_setting_name;
     setting_type: "realm" | "stream" | "group";
     group?: UserGroup;
-}): void {
+}): GroupSettingPillContainer {
     const pill_widget = group_setting_pill.create_pills(
         $pill_container,
         setting_name,
@@ -1472,9 +1471,7 @@ export function create_group_setting_widget({
     };
     group_setting_pill.set_up_pill_typeahead({pill_widget, $pill_container, opts});
 
-    if (group === undefined) {
-        group_setting_widget_map.set("new_group_" + setting_name, pill_widget);
-    } else {
+    if (group !== undefined) {
         group_setting_widget_map.set(setting_name, pill_widget);
     }
 
@@ -1502,4 +1499,6 @@ export function create_group_setting_widget({
             set_group_setting_widget_value(pill_widget, default_group_id);
         }
     }
+
+    return pill_widget;
 }
