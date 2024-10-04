@@ -163,7 +163,7 @@ def update_message_rendered_content(
             message_class.objects.filter(  # type: ignore[attr-defined]  # TODO: ?
                 realm_id=realm_id, attachment__path_id=path_id
             )
-            .select_for_update()
+            .select_for_update(of=("self",))
             .order_by("id")
         )
         for message in messages_with_image:
