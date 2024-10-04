@@ -11,17 +11,17 @@
     },
     {
         "name": "stream_message_link",
-        "message_link": "#narrow/stream/8-design/topic/desktop/near/82",
+        "message_link": "#narrow/channel/8-design/topic/desktop/near/82",
         "expected_output": true
     },
     {
         "name": "stream_link",
-        "message_link": "#narrow/stream/8-design",
+        "message_link": "#narrow/channel/8-design",
         "expected_output": false
     },
     {
         "name": "topic_link",
-        "message_link": "#narrow/stream/8-design/topic/desktop",
+        "message_link": "#narrow/channel/8-design/topic/desktop",
         "expected_output": false
     },
     {

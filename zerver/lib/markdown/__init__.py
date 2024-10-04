@@ -2008,7 +2008,7 @@ class StreamPattern(CompiledInlineProcessor):
         # provide more clarity to API clients.
         # Also do the same for StreamTopicPattern.
         stream_url = encode_stream(stream_id, name)
-        el.set("href", f"/#narrow/stream/{stream_url}")
+        el.set("href", f"/#narrow/channel/{stream_url}")
         text = f"#{name}"
         el.text = markdown.util.AtomicString(text)
         return el, m.start(), m.end()
@@ -2037,7 +2037,7 @@ class StreamTopicPattern(CompiledInlineProcessor):
         el.set("data-stream-id", str(stream_id))
         stream_url = encode_stream(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
-        link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
+        link = f"/#narrow/channel/{stream_url}/topic/{topic_url}"
         el.set("href", link)
         text = f"#{stream_name} > {topic_name}"
         el.text = markdown.util.AtomicString(text)

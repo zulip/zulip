@@ -488,9 +488,9 @@
     },
     {
       "name": "fragment_link",
-      "input": "[foo](http://zulip.testserver/#narrow/stream/1-Denmark)",
-      "expected_output": "<p><a href=\"#narrow/stream/1-Denmark\">foo</a></p>",
-      "marked_expected_output": "<p><a href=\"http://zulip.testserver/#narrow/stream/1-Denmark\">foo</a></p>"
+      "input": "[foo](http://zulip.testserver/#narrow/channel/1-Denmark)",
+      "expected_output": "<p><a href=\"#narrow/channel/1-Denmark\">foo</a></p>",
+      "marked_expected_output": "<p><a href=\"http://zulip.testserver/#narrow/channel/1-Denmark\">foo</a></p>"
     },
     {
       "name": "not_fragment_link",
@@ -1050,9 +1050,9 @@
     },
     {
       "name": "normal_quote_and_reply",
-      "input": "@_**Zoe|7** [said](http://zulip.testserver/#narrow/stream/13-social/topic/party/near/103):\n```quote\nHow are you?\n```\n\nGreat",
-      "expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"#narrow/stream/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
-      "marked_expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"http://zulip.testserver/#narrow/stream/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
+      "input": "@_**Zoe|7** [said](http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103):\n```quote\nHow are you?\n```\n\nGreat",
+      "expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
+      "marked_expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
       "text_content": "[…]\nGreat"
     },
     {
@@ -1316,8 +1316,8 @@
       ""
     ],
     [
-      "http://zulip.testserver/#narrow/stream/1-Denmark",
-      "<p><a href=\"#narrow/stream/1-Denmark\">http://zulip.testserver/#narrow/stream/1-Denmark</a></p>",
+      "http://zulip.testserver/#narrow/channel/1-Denmark",
+      "<p><a href=\"#narrow/channel/1-Denmark\">http://zulip.testserver/#narrow/channel/1-Denmark</a></p>",
       ""
     ],
     [
