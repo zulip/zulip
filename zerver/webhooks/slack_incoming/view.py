@@ -78,7 +78,7 @@ def api_slack_incoming_webhook(
     if body != "":
         body = replace_formatting(replace_links(body).strip())
         check_send_webhook_message(request, user_profile, user_specified_topic, body)
-    return json_success(request)
+    return json_success(request, data={"ok": True})
 
 
 def render_block(block: WildValue) -> str:
