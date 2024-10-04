@@ -70,6 +70,9 @@ export function uncollapse(message: Message): void {
             uncondense_row($row);
         } else if ($content.hasClass("could-be-condensed")) {
             // By default, condense a long message.
+            // Note this is the first time `condensed` property
+            // is being set for this message.
+            message.condensed = true;
             condense_row($row);
         } else {
             // This was a short message, no more need for a [More] link.
@@ -126,10 +129,15 @@ export function toggle_collapse(message: Message): void {
     // This function implements a multi-way toggle, to try to do what
     // the user wants for messages:
     //
-    // * If the message is currently showing any "Show more" button, either
-    //   because it was previously condensed or collapsed, fully display it.
-    // * If the message is fully visible, either because it's too short to
-    //   condense or because it's already uncondensed, collapse it
+    // * If the message is collapsed:
+    //   * if the message can be condensed and `condensed` property is not
+    //     set to `false`, condense it.
+    //   * else uncollapse it.
+    // * If the message is condensed, uncollapse it. Note that the message
+    //   cannot be condensed again without a reload now.
+    // * If the message is fully visible (uncollapsed), either because
+    //   it's too short to condense or because it's already uncondensed,
+    //   collapse it.
 
     assert(message_lists.current !== undefined);
     const $row = message_lists.current.get_row(message.id);
@@ -137,24 +145,13 @@ export function toggle_collapse(message: Message): void {
         return;
     }
 
-    const $content = $row.find(".message_content");
-    const is_condensable = $content.hasClass("could-be-condensed");
-    const is_condensed = $content.hasClass("condensed");
     if (message.collapsed) {
-        if (is_condensable) {
-            message.condensed = true;
-            $content.addClass("condensed");
-            show_message_expander($row);
-        }
         uncollapse(message);
+    } else if (message.condensed === true) {
+        message.condensed = false;
+        uncondense_row($row);
     } else {
-        if (is_condensed) {
-            message.condensed = false;
-            $content.removeClass("condensed");
-            show_message_condenser($row);
-        } else {
-            collapse(message);
-        }
+        collapse(message);
     }
 
     // Select and scroll to the message so that it is in the view.
