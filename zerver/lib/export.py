@@ -1937,7 +1937,7 @@ def export_emoji_from_local(
 
 
 def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
-    stats_file = os.path.join(output_dir, "stats.txt")
+    stats_file = os.path.join(output_dir, "stats.json")
     realm_file = os.path.join(output_dir, "realm.json")
     attachment_file = os.path.join(output_dir, "attachment.json")
     analytics_file = os.path.join(output_dir, "analytics.json")
@@ -1945,22 +1945,22 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     filenames = sorted([analytics_file, attachment_file, *message_files, realm_file])
 
     logging.info("Writing stats file: %s\n", stats_file)
-    with open(stats_file, "w") as f:
-        for filename in filenames:
-            f.write(os.path.basename(filename) + "\n")
-            with open(filename, "rb") as json_file:
-                data = orjson.loads(json_file.read())
-            for k in sorted(data):
-                f.write(f"{len(data[k]):5} {k}\n")
-            f.write("\n")
 
-        for category in ["avatars", "uploads", "emoji", "realm_icons"]:
-            filename = os.path.join(output_dir, category, "records.json")
-            f.write(f"{category}/records.json\n")
-            with open(filename, "rb") as json_file:
-                data = orjson.loads(json_file.read())
-            f.write(f"{len(data):5} records\n")
-            f.write("\n")
+    stats: dict[str, int | dict[str, int]] = {}
+    for filename in filenames:
+        name = os.path.splitext(os.path.basename(filename))[0]
+        with open(filename, "rb") as json_file:
+            data = orjson.loads(json_file.read())
+        stats[name] = {k: len(data[k]) for k in sorted(data)}
+
+    for category in ["avatars", "uploads", "emoji", "realm_icons"]:
+        filename = os.path.join(output_dir, category, "records.json")
+        with open(filename, "rb") as json_file:
+            data = orjson.loads(json_file.read())
+        stats[f"{category}_records"] = len(data)
+
+    with open(stats_file, "wb") as f:
+        f.write(orjson.dumps(stats, option=orjson.OPT_INDENT_2))
 
 
 def get_exportable_scheduled_message_ids(realm: Realm, export_type: int) -> set[int]:
