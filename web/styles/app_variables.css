@@ -239,6 +239,9 @@
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
+    /* 15px is the approximate width of a single-digit
+       unread marker. */
+    --left-sidebar-single-digit-unread-width: 15px;
     --left-sidebar-right-margin: 12px;
     /* 289px at 14px/1em */
     --left-sidebar-max-width: calc(
@@ -396,7 +399,6 @@
     it doesn't leak through message header.
     */
     --unread-marker-left: -1px;
-    --masked-unread-count-margin-right: 3px;
 
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
