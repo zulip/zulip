@@ -23,6 +23,7 @@ const realm_export_schema = z.object({
     deleted_timestamp: z.number().nullable(),
     failed_timestamp: z.number().nullable(),
     pending: z.boolean(),
+    export_type: z.number(),
 });
 type RealmExport = z.output<typeof realm_export_schema>;
 

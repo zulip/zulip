@@ -833,6 +833,7 @@ export_type = DictType(
         ("deleted_timestamp", OptionalType(NumberType())),
         ("failed_timestamp", OptionalType(NumberType())),
         ("pending", bool),
+        ("export_type", int),
     ]
 )
 

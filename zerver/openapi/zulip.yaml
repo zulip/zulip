@@ -3816,7 +3816,7 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to the user who requested a public
+                                Event sent to the user who requested a
                                 [data export](/help/export-your-organization)
                                 when the status of the data export changes.
                               properties:
@@ -3831,7 +3831,10 @@ paths:
                                   type: array
                                   description: |
                                     An array of dictionaries where each dictionary contains
-                                    details about a public data export of the organization.
+                                    details about a data export of the organization.
+
+                                    **Changes**: Prior to Zulip 10.0 (feature level 304), `export_type`
+                                    parameter was not present as only public data export was supported via API.
                                   items:
                                     $ref: "#/components/schemas/RealmExport"
                               example:
@@ -3847,6 +3850,7 @@ paths:
                                         "deleted_timestamp": null,
                                         "failed_timestamp": 1594825444.4363360405,
                                         "pending": false,
+                                        "export_type": 1,
                                       },
                                     ],
                                   "id": 1,
@@ -13063,14 +13067,20 @@ paths:
   /export/realm:
     get:
       operationId: get-realm-exports
-      summary: Get all public data exports
+      summary: Get all data exports
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Fetch all public [data exports](/help/export-your-organization)
-        of the organization.
+        Fetch all [public data exports][public-data-export] and
+        [full data exports with member consent][full-data-export] of the organization.
 
-        **Changes**: New in Zulip 2.1.
+        **Changes**: Prior to Zulip 10.0 (feature level 304), only
+        public data exports could be fetched using this endpoint.
+
+        New in Zulip 2.1.
+
+        [public-data-export]: /help/export-your-organization#export-of-public-data
+        [full-data-export]: /help/export-your-organization#full-export-with-member-consent
       responses:
         "200":
           description: Success.
@@ -13088,7 +13098,7 @@ paths:
                         type: array
                         description: |
                           An array of dictionaries where each dictionary contains
-                          details about a public data export of the organization.
+                          details about a data export of the organization.
                         items:
                           $ref: "#/components/schemas/RealmExport"
                     example:
@@ -13098,6 +13108,7 @@ paths:
                             {
                               "acting_user_id": 11,
                               "deleted_timestamp": null,
+                              "export_type": 1,
                               "export_time": 1722243168.134179,
                               "export_url": "http://example.zulipchat.com/user_avatars/exports/2/FprbwiF0c_sCN0O-rf-ryFtc/zulip-export-p6yuxc45.tar.gz",
                               "id": 323,
@@ -13110,12 +13121,12 @@ paths:
                       }
     post:
       operationId: export-realm
-      summary: Create a public data export
+      summary: Create a data export
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Create a public [data export](/help/export-your-organization)
-        of the organization.
+        Create a [public data export][public-data-export] or a
+        [full data export with member consent][full-data-export] of the organization.
 
         !!! warn ""
 
@@ -13123,10 +13134,39 @@ paths:
             you may be looking for the documentation on [server data export and
             import][data-export] or [server backups][backups].
 
-        **Changes**: New in Zulip 2.1.
+        **Changes**: Prior to Zulip 10.0 (feature level 304), only
+        public data exports could be created using this endpoint.
 
+        New in Zulip 2.1.
+
+        [public-data-export]: /help/export-your-organization#export-of-public-data
+        [full-data-export]: /help/export-your-organization#full-export-with-member-consent
         [data-export]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
         [backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                export_type:
+                  description: |
+                    Whether to create a public export or a full export with member consent.
+
+                    - 1 = Public data export.
+                    - 2 = Full data export with member consent.
+
+                    If not specified, defaults to 1.
+
+                    **Changes**: New in Zulip 10.0 (feature level 304). Previously,
+                    all export requests were public data exports.
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  default: 1
+                  example: 2
       responses:
         "200":
           description: Success
@@ -13143,7 +13183,7 @@ paths:
                       id:
                         type: integer
                         description: |
-                          The ID of the public data export created.
+                          The ID of the data export created.
 
                           **Changes**: New in Zulip 7.0 (feature level 182).
                     example: {"id": 1, "result": "success", "msg": ""}
@@ -13161,7 +13201,7 @@ paths:
                         "result": "error",
                       }
                     description: |
-                      An example JSON error response for when the public data export
+                      An example JSON error response for when the data export
                       exceeds the maximum allowed data export size.
   /export/realm/consents:
     get:
@@ -21945,6 +21985,18 @@ components:
             Depending on the size of the organization, it can take
             anywhere from seconds to an hour to generate the data
             export.
+        export_type:
+          type: integer
+          description: |
+            Whether the data export is a public data export or a
+            full data export with member consent.
+
+            - 1 = Public data export.
+            - 2 = Full data export with member consent.
+
+            **Changes**: New in Zulip 10.0 (feature level 304). Previously,
+            the export type was not included in these objects because only
+            public data exports could be created or listed via the API or UI.
     UserGroup:
       type: object
       additionalProperties: false
