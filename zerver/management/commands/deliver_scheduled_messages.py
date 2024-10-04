@@ -1,21 +1,15 @@
-import logging
 import time
 from datetime import timedelta
 from typing import Any
 
-from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.scheduled_messages import try_deliver_one_scheduled_message
-from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import ZulipBaseCommand
 
+
 ## Setup ##
-logger = logging.getLogger(__name__)
-log_to_file(logger, settings.DELIVER_SCHEDULED_MESSAGES_LOG_PATH)
-
-
 class Command(ZulipBaseCommand):
     help = """Deliver scheduled messages from the ScheduledMessage table.
 Run this command under supervisor.
@@ -29,7 +23,7 @@ Usage: ./manage.py deliver_scheduled_messages
     def handle(self, *args: Any, **options: Any) -> None:
         try:
             while True:
-                if try_deliver_one_scheduled_message(logger):
+                if try_deliver_one_scheduled_message():
                     continue
 
                 # If there's no overdue scheduled messages, go to sleep until the next minute.
