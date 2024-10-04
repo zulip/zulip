@@ -6,18 +6,22 @@ compose box.
 ![Compose box information and actions](/static/images/help/compose-actions.png)
 
 ## Compose Box Navigation Shortcuts
+
 {start_tabs}
 You can use the following keyboard shortcuts to navigate the compose box:
 
-- <kbd>Tab</kbd>: Move forward through compose box icons (e.g from preview to link).
+- **`Tab`**: Move forward through compose box icons (e.g from preview to link).
 
-- <kbd>Shift</kbd> + <kbd>Tab</kbd>: Move backward through fields (e.g from previously chosen channel to channel dropdown or from selected user to Direct Message ).
+- **`Shift`** + **`Tab`**: Move backward through fields (e.g from
+previously chosen channel to channel dropdown or from selected user to
+Direct Message ).
 
-- Toggle between <kbd>Ctrl</kbd> + <kbd>Return</kbd> and <kbd>Return</kbd> key adds a new line to your message, and <kbd>Ctrl</kbd> + <kbd> Return</kbd> sends your message.
+- Toggle between **`Ctrl`** + **`Return`** and **`Return`** key adds a
+new line to your message, and **`Ctrl`** + **`Return`** sends your message.
 
-This is convenient for typing multi-line messages, which is common in Zulip chat products.
+This is convenient for typing multi-line messages,which is common in
+Zulip chat products.
 {end_tabs}
-
 
 ## Composing to a different conversation
 
@@ -59,7 +63,6 @@ will be sent.
 
 {end_tabs}
 
-
 ### Go to conversation
 
 Zulip lets you jump to the [conversation](/help/reading-conversations) you're
@@ -69,18 +72,16 @@ currently composing to.
 
 1. [Open the compose box](/help/open-the-compose-box).
 
-1. Click the highlighted **Go to conversation** (<i class="zulip-icon
-   zulip-icon-chevron-right"></i>) button at the top of the compose box. It will
-   be clickable only if you're viewing a different conversation from the one you
-   are composing to.
+1. Click the highlighted **Go to conversation** button at the top of
+   the compose box. It will be clickable only if you're viewing
+   a different conversation from the one you are composing to.
 
 !!! keyboard_tip ""
 
-    Use <kbd>Ctrl</kbd> + <kbd>.</kbd> to go to the conversation you're
-    composing to.
+    Use <kbd>Ctrl</kbd> + <kbd>.</kbd> to go to the conversation
+    you're composing to.
 
 {end_tabs}
-
 
 ### Forward a message
 
@@ -88,7 +89,8 @@ To forward a message, use the **Quote and reply** feature:
 
 {start_tabs}
 
-1. Hover on the message you want to forward and click the three vertical dots (⋮) to open the menu. 
+1. Hover on the message you want to forward and click the three vertical dots (⋮)
+to open the menu.
 
 2. Select the **Quote and reply** option from the menu.
 
@@ -99,7 +101,6 @@ To forward a message, use the **Quote and reply** feature:
 5. Edit or add any additional text, and then send the message.
 
 {end_tabs}
-
 
 ### Automatically go to conversation where you sent a message
 
@@ -112,52 +113,51 @@ where you sent a message**, as desired.
 
 {end_tabs}
 
-## Toggle between <kbd>Ctrl</kbd> + <kbd>Enter</kbd> and <kbd>Enter</kbd> to send a message
+## Toggle between **`Ctrl`** + **`Enter`** and **`Enter`** to send a message
 
-By default, the <kbd>Enter</kbd> key adds a new line to your message,
-and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> sends your message.
+By default, the **`Enter`** key adds a new line to your message,
+and **`Ctrl`** + **`Enter`** sends your message.
 
 This is convenient for typing multi-line messages, which are more common in
 Zulip than in most other chat products. However, you can also configure
-Zulip so that the <kbd>Enter</kbd> key sends your message.
+Zulip so that the **`Enter`** key sends your message.
 
 !!! tip ""
 
     <kbd>Shift</kbd> + <kbd>Enter</kbd> always adds a new line, regardless
     of whether **<kbd>Enter</kbd> to send** is enabled.
 
-
-### Enable <kbd>Enter</kbd> to send
+### Enable **`Enter`** to send
 
 {start_tabs}
 
 {!start-composing.md!}
 
-1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
+1. Click on the **ellipsis**
    in the bottom right corner of the compose box, next to the **Send**
-   (<i class="zulip-icon zulip-icon-send"></i>) button.
+   button.
 
-1. Select **<kbd>Enter</kbd> to send**.
+1. Select **`Enter` to send**.
 
 {end_tabs}
 
-### Enable **<kbd>Ctrl</kbd> + <kbd>Enter</kbd> to send**
+### Enable **`Ctrl` + `Enter` to send**
 
 {start_tabs}
 
 {!start-composing.md!}
 
-1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
+1. Click on the **ellipsis**
    in the bottom right corner of the compose box, next to the **Send**
-   (<i class="zulip-icon zulip-icon-send"></i>) button.
+   button.
 
-1. Select **<kbd>Ctrl</kbd> + <kbd>Enter</kbd> to send**.
+1. Select **`Ctrl`+ `Enter` to send**.
 
 {end_tabs}
 
 ## Related articles
 
-* [Resize the compose box](/help/resize-the-compose-box)
-* [Message formatting](/help/format-your-message-using-markdown)
-* [Preview messages before sending](/help/preview-your-message-before-sending)
-* [Messaging tips and tricks](/help/messaging-tips)
+- [Resize the compose box](/help/resize-the-compose-box)
+- [Message formatting](/help/format-your-message-using-markdown)
+- [Preview messages before sending](/help/preview-your-message-before-sending)
+- [Messaging tips and tricks](/help/messaging-tips)
