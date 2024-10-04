@@ -106,7 +106,7 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
         raise JsonableError(_("Export failed, nothing to delete"))
     if export_row.status in [RealmExport.REQUESTED, RealmExport.STARTED]:
         raise JsonableError(_("Export still in progress"))
-    do_delete_realm_export(export_row)
+    do_delete_realm_export(export_row, user)
     return json_success(request)
 
 

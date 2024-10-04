@@ -3422,6 +3422,12 @@ class NormalActionsTest(BaseAction):
             has_failed_timestamp=False,
         )
 
+        audit_log = RealmAuditLog.objects.last()
+        assert audit_log is not None
+        self.assertEqual(audit_log.event_type, AuditLogEventType.REALM_EXPORT_DELETED)
+        self.assertEqual(audit_log.acting_user, self.user_profile)
+        self.assertEqual(audit_log.extra_data["realm_export_id"], export_row_id)
+
     def test_notify_realm_export_on_failure(self) -> None:
         do_change_user_role(
             self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
