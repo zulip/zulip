@@ -451,19 +451,29 @@ ul.filters {
 
     .has-only-muted-unreads {
         .unread_count {
-            opacity: 0.5;
+            opacity: var(--opacity-left-sidebar-muted);
+        }
+
+        &:hover .unread_count {
+            opacity: var(--opacity-left-sidebar-muted-hover);
         }
     }
 
-    .has-only-muted-mentions .unread_mention_info {
-        opacity: 0.5;
+    .has-only-muted-mentions {
+        .unread_mention_info {
+            opacity: var(--opacity-left-sidebar-muted);
+        }
+
+        &:hover .unread_mention_info {
+            opacity: var(--opacity-left-sidebar-muted-hover);
+        }
     }
 
     /* This is a noop in the current design, because unread counts for
        muted streams have the same opacity, but the logic is here to
        be explicit and because the design may change in the future. */
     .more_topic_unreads_muted_only .unread_count {
-        opacity: 0.5;
+        opacity: var(--opacity-left-sidebar-muted);
     }
 
     .zulip-icon-follow {
@@ -475,24 +485,41 @@ ul.filters {
         }
     }
 
-    & li.muted_topic,
-    li.out_of_home_view {
-        color: hsl(0deg 0% 20% / 50%);
-
-        .has-unmuted-mentions .unread_mention_info {
-            color: hsl(0deg 0% 20%);
+    & li.muted_topic {
+        .sidebar-topic-check,
+        .sidebar-topic-name,
+        .unread_count {
+            opacity: var(--opacity-left-sidebar-muted);
         }
 
-        .stream-privacy {
-            opacity: 0.5;
+        &:hover {
+            .sidebar-topic-check,
+            .sidebar-topic-name,
+            .unread_count {
+                opacity: var(--opacity-left-sidebar-muted-hover);
+            }
+        }
+    }
+
+    & li.out_of_home_view {
+        .stream-privacy,
+        .stream-name,
+        .channel-new-topic-button,
+        .unread_count,
+        .masked_unread_counter,
+        .sidebar-menu-icon {
+            opacity: var(--opacity-left-sidebar-muted);
         }
 
-        & .unread_count {
-            opacity: 0.5;
-        }
-
-        & .masked_unread_count {
-            opacity: 0.5;
+        &:hover {
+            .stream-privacy,
+            .stream-name,
+            .channel-new-topic-button,
+            .unread_count,
+            .masked_unread_counter,
+            .sidebar-menu-icon {
+                opacity: var(--opacity-left-sidebar-muted-hover);
+            }
         }
 
         .has-unmuted-unreads {
@@ -507,33 +534,6 @@ ul.filters {
             .unread_count {
                 opacity: 1;
             }
-        }
-    }
-
-    & li.out_of_home_view {
-        &:hover {
-            color: hsla(0deg 0% 20% / 75%);
-
-            .stream-privacy {
-                opacity: 0.75;
-            }
-
-            .unread_count {
-                opacity: 0.75;
-            }
-
-            .has-unmuted-unreads {
-                .unread_count {
-                    opacity: 1;
-                }
-            }
-        }
-
-        & li.muted_topic {
-            /* If stream is muted, this resets opacity of muted topics in muted
-            stream to 1; since opacity is multiplied down through child
-            elements, this avoids an unreadably low opacity. */
-            opacity: 1;
         }
     }
 }
