@@ -2588,5 +2588,6 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
             deleted_timestamp=deleted_timestamp,
             failed_timestamp=failed_timestamp,
             pending=pending,
+            export_type=export.type,
         )
     return sorted(exports_dict.values(), key=lambda export_dict: export_dict["id"])
