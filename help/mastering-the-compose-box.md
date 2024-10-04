@@ -5,6 +5,20 @@ compose box.
 
 ![Compose box information and actions](/static/images/help/compose-actions.png)
 
+## Compose Box Navigation Shortcuts
+{start_tabs}
+You can use the following keyboard shortcuts to navigate the compose box:
+
+- <kbd>Tab</kbd>: Move forward through compose box icons (e.g from preview to link).
+
+- <kbd>Shift</kbd> + <kbd>Tab</kbd>: Move backward through fields (e.g from previously chosen channel to channel dropdown or from selected user to Direct Message ).
+
+- Toggle between <kbd>Ctrl</kbd> + <kbd>Return</kbd> and <kbd>Return</kbd> key adds a new line to your message, and <kbd>Ctrl</kbd> + <kbd> Return</kbd> sends your message.
+
+This is convenient for typing multi-line messages, which is common in Zulip chat products.
+{end_tabs}
+
+
 ## Composing to a different conversation
 
 When composing a message, Zulip lets you view a different
@@ -67,6 +81,26 @@ currently composing to.
 
 {end_tabs}
 
+
+### Forward a message
+
+To forward a message, use the **Quote and reply** feature:
+
+{start_tabs}
+
+1. Hover on the message you want to forward and click the three vertical dots (⋮) to open the menu. 
+
+2. Select the **Quote and reply** option from the menu.
+
+3. The message will appear quoted in the compose box.
+
+4. Change the recipient in the compose box (either channel or direct message).
+
+5. Edit or add any additional text, and then send the message.
+
+{end_tabs}
+
+
 ### Automatically go to conversation where you sent a message
 
 {start_tabs}
@@ -91,6 +125,7 @@ Zulip so that the <kbd>Enter</kbd> key sends your message.
 
     <kbd>Shift</kbd> + <kbd>Enter</kbd> always adds a new line, regardless
     of whether **<kbd>Enter</kbd> to send** is enabled.
+
 
 ### Enable <kbd>Enter</kbd> to send
 
