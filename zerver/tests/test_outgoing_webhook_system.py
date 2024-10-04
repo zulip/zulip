@@ -132,13 +132,13 @@ class DoRestCallTests(ZulipTestCase):
             self.assertEqual(
                 m.output,
                 [
-                    f'WARNING:root:Message http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code 500.\n Content of response (in quotes): "{final_response.text}"'
+                    f'WARNING:root:Message http://zulip.testserver/#narrow/channel/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code 500.\n Content of response (in quotes): "{final_response.text}"'
                 ],
             )
         bot_owner_notification = self.get_last_message()
         self.assertEqual(
             bot_owner_notification.content,
-            """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
+            """[A message](http://zulip.testserver/#narrow/channel/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The webhook got a response with status code *500*.""",
         )
 
@@ -196,7 +196,7 @@ The webhook got a response with status code *500*.""",
             self.assertEqual(
                 m.output,
                 [
-                    f'WARNING:root:Message http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code 400.\n Content of response (in quotes): "{final_response.text}"'
+                    f'WARNING:root:Message http://zulip.testserver/#narrow/channel/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code 400.\n Content of response (in quotes): "{final_response.text}"'
                 ],
             )
 
@@ -205,7 +205,7 @@ The webhook got a response with status code *500*.""",
         bot_owner_notification = self.get_last_message()
         self.assertEqual(
             bot_owner_notification.content,
-            """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
+            """[A message](http://zulip.testserver/#narrow/channel/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The webhook got a response with status code *400*.""",
         )
 
@@ -291,7 +291,7 @@ The webhook got a response with status code *400*.""",
         bot_owner_notification = self.get_last_message()
         self.assertEqual(
             bot_owner_notification.content,
-            """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
+            """[A message](http://zulip.testserver/#narrow/channel/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 When trying to send a request to the webhook service, an exception of type RequestException occurred:
 ```
 I'm a generic exception :(
@@ -322,7 +322,7 @@ I'm a generic exception :(
             bot_owner_notification = self.get_last_message()
             self.assertEqual(
                 bot_owner_notification.content,
-                """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
+                """[A message](http://zulip.testserver/#narrow/channel/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:
 > Widgets: API programmer sent invalid JSON content\nThe response contains the following payload:\n```\n'{"content": "whatever", "widget_content": "test"}'\n```""",
             )
@@ -349,7 +349,7 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
             bot_owner_notification = self.get_last_message()
             self.assertEqual(
                 bot_owner_notification.content,
-                """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
+                """[A message](http://zulip.testserver/#narrow/channel/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:
 > Invalid response format\nThe response contains the following payload:\n```\n'true'\n```""",
             )
@@ -378,7 +378,7 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
             bot_owner_notification = self.get_last_message()
             self.assertEqual(
                 bot_owner_notification.content,
-                """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
+                """[A message](http://zulip.testserver/#narrow/channel/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:
 > Invalid JSON in response\nThe response contains the following payload:\n```\n"this isn't valid json"\n```""",
             )

@@ -588,10 +588,10 @@ class MarkdownLinkTest(ZulipTestCase):
         sender_user_profile = self.example_user("othello")
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
-        msg = "http://zulip.testserver/#narrow/stream/999-hello"
+        msg = "http://zulip.testserver/#narrow/channel/999-hello"
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>',
+            '<p><a href="#narrow/channel/999-hello">http://zulip.testserver/#narrow/channel/999-hello</a></p>',
         )
 
         msg = f"http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt"
@@ -622,10 +622,10 @@ class MarkdownLinkTest(ZulipTestCase):
         sender_user_profile = self.example_user("othello")
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
-        msg = "[hello](http://zulip.testserver/#narrow/stream/999-hello)"
+        msg = "[hello](http://zulip.testserver/#narrow/channel/999-hello)"
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#narrow/stream/999-hello">hello</a></p>',
+            '<p><a href="#narrow/channel/999-hello">hello</a></p>',
         )
 
         msg = f"[hello](http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt)"
@@ -2984,7 +2984,7 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         content = "#**Denmark**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            f'<p><a class="stream" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a></p>',
+            f'<p><a class="stream" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark">#{denmark.name}</a></p>',
         )
 
     def test_invalid_stream_followed_by_valid_mention(self) -> None:
@@ -2998,7 +2998,7 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         content = "#**Invalid** and #**Denmark**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            f'<p>#<strong>Invalid</strong> and <a class="stream" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a></p>',
+            f'<p>#<strong>Invalid</strong> and <a class="stream" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark">#{denmark.name}</a></p>',
         )
 
     def test_stream_multiple(self) -> None:
@@ -3017,10 +3017,10 @@ class MarkdownStreamMentionTests(ZulipTestCase):
             "<p>Look to "
             '<a class="stream" '
             f'data-stream-id="{denmark.id}" '
-            f'href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a> and '
+            f'href="/#narrow/channel/{denmark.id}-Denmark">#{denmark.name}</a> and '
             '<a class="stream" '
             f'data-stream-id="{scotland.id}" '
-            f'href="/#narrow/stream/{scotland.id}-Scotland">#{scotland.name}</a>, '
+            f'href="/#narrow/channel/{scotland.id}-Scotland">#{scotland.name}</a>, '
             "there something</p>",
         )
 
@@ -3032,7 +3032,7 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         content = "#**CaseSens**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            f'<p><a class="stream" data-stream-id="{case_sens.id}" href="/#narrow/stream/{case_sens.id}-{case_sens.name}">#{case_sens.name}</a></p>',
+            f'<p><a class="stream" data-stream-id="{case_sens.id}" href="/#narrow/channel/{case_sens.id}-{case_sens.name}">#{case_sens.name}</a></p>',
         )
 
     def test_stream_case_sensitivity_nonmatching(self) -> None:
@@ -3060,7 +3060,7 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         content = "#**Denmark>some topic**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/some.20topic">#{denmark.name} &gt; some topic</a></p>',
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic">#{denmark.name} &gt; some topic</a></p>',
         )
 
     def test_topic_atomic_string(self) -> None:
@@ -3082,7 +3082,7 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         content = "#**Denmark>#1234**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/.231234">#{denmark.name} &gt; #1234</a></p>',
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/.231234">#{denmark.name} &gt; #1234</a></p>',
         )
 
     def test_topic_multiple(self) -> None:
@@ -3099,11 +3099,11 @@ class MarkdownStreamMentionTests(ZulipTestCase):
             render_message_markdown(msg, content).rendered_content,
             "<p>This has two links: "
             f'<a class="stream-topic" data-stream-id="{denmark.id}" '
-            f'href="/#narrow/stream/{denmark.id}-{denmark.name}/topic/some.20topic">'
+            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/some.20topic">'
             f"#{denmark.name} &gt; some topic</a>"
             " and "
             f'<a class="stream-topic" data-stream-id="{scotland.id}" '
-            f'href="/#narrow/stream/{scotland.id}-{scotland.name}/topic/other.20topic">'
+            f'href="/#narrow/channel/{scotland.id}-{scotland.name}/topic/other.20topic">'
             f"#{scotland.name} &gt; other topic</a>"
             ".</p>",
         )
@@ -3125,7 +3125,7 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         content = "#**привет**"
         quoted_name = ".D0.BF.D1.80.D0.B8.D0.B2.D0.B5.D1.82"
-        href = f"/#narrow/stream/{uni.id}-{quoted_name}"
+        href = f"/#narrow/channel/{uni.id}-{quoted_name}"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
             f'<p><a class="stream" data-stream-id="{uni.id}" href="{href}">#{uni.name}</a></p>',
@@ -3148,7 +3148,7 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         stream = self.make_stream(stream_name="Stream #1234", realm=realm)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         content = "#**Stream #1234**"
-        href = f"/#narrow/stream/{stream.id}-Stream-.231234"
+        href = f"/#narrow/channel/{stream.id}-Stream-.231234"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
             f'<p><a class="stream" data-stream-id="{stream.id}" href="{href}">#{stream.name}</a></p>',
@@ -3290,7 +3290,7 @@ class MarkdownApiTests(ZulipTestCase):
         stream_id = get_stream("Denmark", get_realm("zulip")).id
         self.assertEqual(
             response_dict["rendered"],
-            f'<p>This mentions <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-Denmark">#Denmark</a> and <span class="user-mention" data-user-id="{user_id}">@King Hamlet</span>.</p>',
+            f'<p>This mentions <a class="stream" data-stream-id="{stream_id}" href="/#narrow/channel/{stream_id}-Denmark">#Denmark</a> and <span class="user-mention" data-user-id="{user_id}">@King Hamlet</span>.</p>',
         )
 
 
