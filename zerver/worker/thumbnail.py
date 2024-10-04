@@ -19,7 +19,7 @@ from zerver.lib.thumbnail import (
     rewrite_thumbnailed_images,
 )
 from zerver.lib.upload import save_attachment_contents, upload_backend
-from zerver.models import ArchivedMessage, ImageAttachment, Message
+from zerver.models import AbstractMessage, ArchivedMessage, ImageAttachment, Message
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -158,15 +158,17 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
 def update_message_rendered_content(
     realm_id: int, path_id: str, image_data: MarkdownImageMetadata | None
 ) -> None:
-    for message_class in [Message, ArchivedMessage]:
+    message_classes: list[type[AbstractMessage]] = [Message, ArchivedMessage]
+    for message_class in message_classes:
         messages_with_image = (
-            message_class.objects.filter(  # type: ignore[attr-defined]  # TODO: ?
+            message_class._default_manager.filter(  # type: ignore[misc]  # Both Message and ArchivedMessage have an "attachment" many-to-many, but this is not guaranteed by the type system
                 realm_id=realm_id, attachment__path_id=path_id
             )
             .select_for_update(of=("self",))
             .order_by("id")
         )
         for message in messages_with_image:
+            assert message.rendered_content is not None
             rendered_content = rewrite_thumbnailed_images(
                 message.rendered_content,
                 {} if image_data is None else {path_id: image_data},
