@@ -13,24 +13,6 @@
         @extend .placeholder;
     }
 
-    & ul.dm-list,
-    & ul.filters {
-        .has-unmuted-mentions .unread_mention_info {
-            color: hsl(236deg 33% 90%);
-        }
-
-        & li.muted_topic,
-        li.out_of_home_view {
-            color: hsl(236deg 33% 90%/50%);
-        }
-
-        & li.out_of_home_view {
-            &:hover {
-                color: hsl(236deg 33% 90%/ 75%);
-            }
-        }
-    }
-
     kbd {
         text-shadow: none;
     }
