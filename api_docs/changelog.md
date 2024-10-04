@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 303**
+
+* [`GET /export/realm`](/api/get-realm-exports),
+  [`GET /events`](/api/get-events): Added `export_type` field
+  to the dictionaries in `exports` array. It indicates whether
+  the export is of public data or full data with user consent.
+
+* [`POST /export/realm`](/api/get-realm-exports): Added `export_type`
+  parameter to add support for admins to decide whether to create a
+  public data export or a full data export with member consent.
+
 **Feature level 302**
 
 * [`GET /users/{email}`](/api/get-user-by-email): Changed the `email`
