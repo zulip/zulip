@@ -5,6 +5,7 @@ from typing import Annotated
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
+from zerver.lib.integrations import get_severity_emoji
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApiParamConfig, JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
@@ -32,10 +33,14 @@ def api_alertmanager_webhook(
         desc = labels.get(
             desc_field, annotations.get(desc_field, f"<missing field: {desc_field}>")
         ).tame(check_string)
+        severity = labels.get(
+            "severity", payload.get("commonLabels", {}).get("severity", "unknown")
+        ).tame(check_string)
+        emoji = get_severity_emoji("alertmanager", severity)
 
         url = alert["generatorURL"].tame(check_string).replace("tab=1", "tab=0")
 
-        body = f"{desc} ([source]({url}))"
+        body = f"{emoji} {desc} ([source]({url}))"
         if name not in topics:
             topics[name] = {"firing": [], "resolved": []}
         topics[name][alert["status"].tame(check_string)].append(body)
