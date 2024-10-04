@@ -344,6 +344,8 @@
     --opacity-sidebar-heading: 0.7;
     --opacity-sidebar-heading-icon: 0.5;
     --opacity-sidebar-heading-hover: 0.9;
+    --opacity-left-sidebar-muted: 0.55;
+    --opacity-left-sidebar-muted-hover: 0.75;
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
 
