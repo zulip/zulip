@@ -61,6 +61,16 @@
     max-width: 18em;
 }
 
+.masked_unread_count {
+    font-size: 8px;
+    display: none;
+    /* Masked unreads display as flex when revealed. */
+    align-items: center;
+    justify-content: center;
+    color: var(--color-masked-unread-marker);
+    width: var(--left-sidebar-single-digit-unread-width);
+}
+
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;
@@ -95,14 +105,7 @@
 
     .stream-with-count.hide_unread_counts {
         .masked_unread_count {
-            display: block;
-            /* Shift masked dot to align with
-               the least-significant digit on
-               unreads in other rows.
-               We have to do this with margin,
-               because width or padding will
-               distort the CSS-created dot. */
-            margin-right: var(--masked-unread-count-margin-right);
+            display: flex;
         }
 
         .unread_count {
@@ -767,10 +770,8 @@ li.top_left_scheduled_messages {
 .top_left_starred_messages {
     &.hide_starred_message_count {
         .masked_unread_count {
-            display: block;
+            display: flex;
             grid-area: markers-and-unreads;
-            /* Adding margin-right aligns the .masked_unread_count with the rest of the masked unread counts in the channel list. */
-            margin-right: var(--masked-unread-count-margin-right);
         }
 
         .unread_count {
@@ -1183,6 +1184,7 @@ li.top_left_scheduled_messages {
     /* Present a uniform space between icons */
     gap: 5px;
     align-items: center;
+    justify-content: center;
 
     .unread_mention_info {
         /* Unset margin in favor of flex gap. */
@@ -1501,7 +1503,10 @@ li.topic-list-item {
             0,
             max-content
         )
-        minmax(17px, max-content) var(--left-sidebar-vdots-width) 0;
+        minmax(var(--left-sidebar-single-digit-unread-width), max-content) var(
+            --left-sidebar-vdots-width
+        )
+        0;
     /* Keep the stream-search area rows collapsed. */
     grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
     cursor: pointer;
@@ -1612,10 +1617,7 @@ li.topic-list-item {
         }
 
         .masked_unread_count {
-            display: block;
-            /* Hold space enough so single-digit
-               unreads don't shift on hover. */
-            margin: 0 3px;
+            display: flex;
         }
 
         &:hover {
