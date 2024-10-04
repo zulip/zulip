@@ -70,8 +70,16 @@ function set_upload_space_stats(): void {
     }
     const args = {
         show_upgrade_message: realm.realm_plan_type === 2,
-        percent_used: percentage_used_space(upload_space_used),
-        upload_quota: bytes_to_size(mib_to_bytes(realm.realm_upload_quota_mib), true),
+        upload_quota_string: $t(
+            {
+                defaultMessage:
+                    "Your organization is using {percent_used}% of your {upload_quota} file storage quota.",
+            },
+            {
+                percent_used: percentage_used_space(upload_space_used),
+                upload_quota: bytes_to_size(mib_to_bytes(realm.realm_upload_quota_mib), true),
+            },
+        ),
     };
     const rendered_upload_stats_html = render_settings_upload_space_stats(args);
     $("#attachment-stats-holder").html(rendered_upload_stats_html);
