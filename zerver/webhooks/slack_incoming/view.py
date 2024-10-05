@@ -79,6 +79,8 @@ def api_slack_incoming_webhook(
         body = replace_formatting(replace_links(body).strip())
         check_send_webhook_message(request, user_profile, user_specified_topic, body)
     return json_success(request, data={"ok": True})
+
+
 def json_error_response(error_message: str) -> HttpResponse:
     return JsonResponse({"ok": False, "error": error_message}, status=400)
 
