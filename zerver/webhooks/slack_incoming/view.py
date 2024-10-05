@@ -3,9 +3,8 @@ import re
 from itertools import zip_longest
 from typing import Literal, TypedDict, cast
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.translation import gettext as _
-from django.http import JsonResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
