@@ -153,7 +153,7 @@ function show_home_view() {
 }
 
 // Returns true if this function performed a narrow
-function do_hashchange_normal(from_reload) {
+function do_hashchange_normal(from_reload, restore_selected_id) {
     message_viewport.stop_auto_scrolling();
 
     // NB: In Firefox, window.location.hash is URI-decoded.
@@ -198,7 +198,7 @@ function do_hashchange_normal(from_reload) {
             }
 
             const data_for_hash = window.history.state;
-            if (data_for_hash) {
+            if (restore_selected_id && data_for_hash) {
                 narrow_opts.then_select_id = data_for_hash.narrow_pointer;
                 narrow_opts.then_select_offset = data_for_hash.narrow_offset;
                 narrow_opts.show_more_topics = data_for_hash.show_more_topics ?? false;
@@ -486,7 +486,7 @@ function do_hashchange_overlay(old_hash) {
     }
 }
 
-function hashchanged(from_reload, e) {
+function hashchanged(from_reload, e, restore_selected_id = true) {
     const current_hash = window.location.hash;
     const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : browser_history.old_hash());
     const is_hash_web_public_compatible = browser_history.update_web_public_hash(current_hash);
@@ -523,7 +523,7 @@ function hashchanged(from_reload, e) {
     sidebar_ui.hide_all();
     modals.close_active_if_any();
     browser_history.state.changing_hash = true;
-    const ret = do_hashchange_normal(from_reload);
+    const ret = do_hashchange_normal(from_reload, restore_selected_id);
     browser_history.state.changing_hash = false;
     return ret;
 }
@@ -537,4 +537,15 @@ export function initialize() {
         hashchanged(false, e.originalEvent);
     });
     hashchanged(true);
+
+    $("body").on("click", "a", (e) => {
+        const href = e.currentTarget.getAttribute("href");
+        if (href === window.location.hash && href.includes("/near/")) {
+            // The clicked on a link, perhaps a "said" reference, that
+            // matches the current view. Such a click doesn't trigger
+            // a hashchange event, so we manually trigger one in order
+            // to ensure the app scrolls to the correct message.
+            hashchanged(false, e, false);
+        }
+    });
 }
