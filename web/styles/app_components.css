@@ -626,6 +626,12 @@ input.settings_text_input {
     margin-right: 5px;
     margin-left: 2px;
     opacity: 0.7;
+
+    .zulip-icon {
+        font-size: 1em;
+        position: relative;
+        top: 0.22em;
+    }
 }
 
 /* Implement the web app's default-hidden convention for alert
