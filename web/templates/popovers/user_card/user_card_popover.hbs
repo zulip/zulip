@@ -172,7 +172,7 @@
                             <span class="popover-menu-label">{{t "Reply mentioning user" }}</span>
                         {{/if}}
                         {{#if is_sender_popover}}
-                            {{popover_hotkey_hints "@"}}
+                            {{popover_hotkey_hints '<i class="zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>'}}
                         {{/if}}
                     </a>
                 {{else}}
@@ -180,7 +180,7 @@
                         <i class="popover-menu-icon fa zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Copy mention syntax" }}</span>
                         {{#if is_sender_popover}}
-                            {{popover_hotkey_hints "@"}}
+                            {{popover_hotkey_hints '<i class="zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>'}}
                         {{/if}}
                     </a>
                 {{/if}}
