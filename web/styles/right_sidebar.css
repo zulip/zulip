@@ -62,6 +62,60 @@ $user_status_emoji_width: 24px;
     }
 }
 
+.buddy-list-section li {
+    .user-list-sidebar-menu-icon {
+        visibility: hidden;
+        justify-self: stretch;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 2px 2px 2px 1px;
+        /* This helps horizontally align the vdots,
+           given the reduced margin-left above.
+           Vertical centering looks better with an
+           extra pixel of top padding in this area,
+           too. */
+        padding: 1px 0 0 1px;
+        border-radius: 3px;
+
+        & i {
+            font-size: 17px;
+            /* Ensure the icon takes the same baseline
+               as the rest of the row, for perfect
+               vertical alignment with the username and
+               status circle. */
+            line-height: inherit;
+        }
+
+        /*
+        Hover does not work for touch-based devices like mobile phones.
+        Hence the icons does not appear, making the user unaware of its
+        presence on such devices. The following media property displays the
+        icon by default for such behaviour.
+        */
+
+        @media (hover: none) {
+            visibility: visible;
+            /* Show dots on touchscreens in a less distracting,
+               lighter shade. */
+            color: var(--color-vdots-hint);
+        }
+    }
+
+    &:hover {
+        .user-list-sidebar-menu-icon {
+            visibility: visible;
+            cursor: pointer;
+            color: var(--color-vdots-visible);
+
+            &:hover {
+                color: var(--color-vdots-hover);
+                background-color: var(--color-background-sidebar-action-hover);
+            }
+        }
+    }
+}
+
 .buddy-list-section {
     margin-bottom: 0;
     overflow-x: hidden;
@@ -75,60 +129,6 @@ $user_status_emoji_width: 24px;
         list-style-type: none;
         border-radius: 4px;
         padding: 0;
-
-        .user-list-sidebar-menu-icon {
-            visibility: hidden;
-            justify-self: stretch;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 2px 2px 2px 1px;
-            /* This helps horizontally align the vdots,
-               given the reduced margin-left above.
-               Vertical centering looks better with an
-               extra pixel of top padding in this area,
-               too. */
-            padding: 1px 0 0 1px;
-            border-radius: 3px;
-
-            & i {
-                font-size: 17px;
-                /* Ensure the icon takes the same baseline
-                   as the rest of the row, for perfect
-                   vertical alignment with the username and
-                   status circle. */
-                line-height: inherit;
-            }
-
-            /*
-            Hover does not work for touch-based devices like mobile phones.
-            Hence the icons does not appear, making the user unaware of its
-            presence on such devices. The following media property displays the
-            icon by default for such behaviour.
-            */
-
-            @media (hover: none) {
-                visibility: visible;
-                /* Show dots on touchscreens in a less distracting,
-                   lighter shade. */
-                color: var(--color-vdots-hint);
-            }
-        }
-
-        &:hover {
-            .user-list-sidebar-menu-icon {
-                visibility: visible;
-                cursor: pointer;
-                color: var(--color-vdots-visible);
-
-                &:hover {
-                    color: var(--color-vdots-hover);
-                    background-color: var(
-                        --color-background-sidebar-action-hover
-                    );
-                }
-            }
-        }
 
         &:hover,
         &.highlighted_user {
