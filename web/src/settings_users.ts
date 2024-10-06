@@ -4,6 +4,7 @@ import type * as tippy from "tippy.js";
 
 import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
 
+import {compute_active_status, post_presence_response_schema} from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
@@ -13,6 +14,7 @@ import {$t} from "./i18n.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as presence from "./presence.ts";
@@ -33,6 +35,7 @@ export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list
 
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
+let presence_data_fetched = false;
 
 type UserSettingsSection = {
     dropdown_widget_name: string;
@@ -250,8 +253,23 @@ function populate_users(): void {
 
     if (active_user_ids.length === 0 && deactivated_user_ids.length === 0) {
         failed_listing_users();
+        return;
     }
 
+    if (!presence_data_fetched) {
+        fetch_presence_user_setting({
+            render_table() {
+                presence_data_fetched = true;
+                active_section.create_table(active_user_ids);
+                deactivated_section.create_table(deactivated_user_ids);
+                create_role_filter_dropdown($("#admin-user-list"), active_section);
+                create_role_filter_dropdown(
+                    $("#admin-deactivated-users-list"),
+                    deactivated_section,
+                );
+            },
+        });
+    }
     active_section.create_table(active_user_ids);
     create_role_filter_dropdown($("#admin-user-list"), active_section, active_user_ids);
 
@@ -352,7 +370,7 @@ function get_last_active(user: User): string {
     const last_active_date = presence.last_active_date(user.user_id);
 
     if (!last_active_date) {
-        return $t({defaultMessage: "Unknown"});
+        return $t({defaultMessage: "Loading…"});
     }
     return timerender.render_now(last_active_date).time_str;
 }
@@ -464,9 +482,8 @@ function active_create_table(active_users: number[]): void {
         },
         $simplebar_container: $("#admin-active-users-list .progressive-table-wrapper"),
     });
-
-    set_text_search_value($users_table, active_section.filters.text_search);
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
+    set_text_search_value($users_table, active_section.filters.text_search);
     $("#admin_users_table").show();
 }
 
@@ -504,9 +521,8 @@ function deactivated_create_table(deactivated_users: number[]): void {
             $simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
         },
     );
-
-    set_text_search_value($deactivated_users_table, deactivated_section.filters.text_search);
     loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
+    set_text_search_value($deactivated_users_table, deactivated_section.filters.text_search);
     $("#admin_deactivated_users_table").show();
 }
 
@@ -737,5 +753,52 @@ export function set_up_bots(): void {
         e.preventDefault();
         e.stopPropagation();
         settings_bots.add_a_new_bot();
+    });
+}
+
+type FetchPresenceUserSettingParams = {
+    render_table: () => void;
+};
+
+export function fetch_presence_user_setting({render_table}: FetchPresenceUserSettingParams): void {
+    if (page_params.is_spectator) {
+        render_table();
+        return;
+    }
+
+    channel.post({
+        url: "/json/users/me/presence",
+        data: {
+            status: compute_active_status(),
+            ping_only: false,
+            last_update_id: -1,
+            history_limit_days: 365 * 1000,
+        },
+        success(response) {
+            const data = post_presence_response_schema.parse(response);
+
+            if (data.presences) {
+                assert(
+                    data.presences !== undefined,
+                    "Presences should be present if not a ping only presence request",
+                );
+                assert(
+                    data.server_timestamp !== undefined,
+                    "Server timestamp should be present if not a ping only presence request",
+                );
+                assert(
+                    data.presence_last_update_id !== undefined,
+                    "Presence last update id should be present if not a ping only presence request",
+                );
+
+                // the next regular default presence check in with the server should naturally pick up from here.
+                presence.set_info(
+                    data.presences,
+                    data.server_timestamp,
+                    data.presence_last_update_id,
+                );
+            }
+            render_table();
+        },
     });
 }
