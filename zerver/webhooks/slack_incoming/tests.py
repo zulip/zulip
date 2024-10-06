@@ -64,9 +64,11 @@ Hello, world.
         )
 
     def test_message_without_payload(self) -> None:
+        # Updated test to explicitly check for the error message and status code
         self.url = self.build_webhook_url()
         result = self.client_post(self.url)
-        self.assert_json_error(result, "Missing 'payload' argument")
+        self.assert_json_error(result, "Missing required variable: payload")
+        self.assertEqual(result.status_code, 400)  # Check status code
 
     def test_message_with_actions(self) -> None:
         expected_topic_name = "C1H9RESGL"
