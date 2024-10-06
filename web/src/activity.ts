@@ -8,7 +8,7 @@ import {page_params} from "./page_params.ts";
 import * as presence from "./presence.ts";
 import * as watchdog from "./watchdog.ts";
 
-const post_presence_response_schema = z.object({
+export const post_presence_response_schema = z.object({
     msg: z.string(),
     result: z.string(),
     // A bunch of these fields below are .optional() due to the fact
