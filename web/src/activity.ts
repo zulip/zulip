@@ -128,6 +128,7 @@ export function send_presence_to_server(redraw?: () => void): void {
             ping_only: !redraw,
             new_user_input,
             last_update_id: presence.presence_last_update_id,
+            history_limit_days: 3650, // Default to 10 years of history
         },
         success(response) {
             const data = post_presence_response_schema.parse(response);
