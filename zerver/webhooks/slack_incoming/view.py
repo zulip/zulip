@@ -3,7 +3,7 @@ import re
 from itertools import zip_longest
 from typing import Literal, TypedDict, cast
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
@@ -79,6 +79,10 @@ def api_slack_incoming_webhook(
         body = replace_formatting(replace_links(body).strip())
         check_send_webhook_message(request, user_profile, user_specified_topic, body)
     return json_success(request, data={"ok": True})
+
+
+def json_error_response(error_message: str) -> HttpResponse:
+    return JsonResponse({"ok": False, "error": error_message}, status=400)
 
 
 def render_block(block: WildValue) -> str:
