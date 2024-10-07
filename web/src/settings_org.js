@@ -1204,7 +1204,7 @@ export function build_page() {
 
     check_disable_message_delete_limit_setting_dropdown();
 
-    realm_icon.build_realm_icon_widget(upload_realm_logo_or_icon, null, true);
+    realm_icon.build_realm_icon_widget(upload_realm_logo_or_icon);
     if (realm.zulip_plan_is_not_limited) {
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, false);
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, true);
