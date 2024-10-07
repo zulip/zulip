@@ -1027,7 +1027,7 @@ export function build_page() {
     set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
     set_msg_move_limit_setting("realm_move_messages_between_streams_limit_seconds");
     set_msg_delete_limit_dropdown();
-    set_message_retention_setting_dropdown();
+    set_message_retention_setting_dropdown(undefined);
     set_org_join_restrictions_dropdown();
     set_message_content_in_email_notifications_visibility();
     set_digest_emails_weekday_visibility();
