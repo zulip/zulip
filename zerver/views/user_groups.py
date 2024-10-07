@@ -57,6 +57,7 @@ def add_user_group(
     name: str,
     members: Json[list[int]],
     description: str,
+    can_add_members_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_join_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_manage_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
@@ -117,6 +118,7 @@ def edit_user_group(
     user_group_id: PathOnly[int],
     name: str | None = None,
     description: str | None = None,
+    can_add_members_group: Json[GroupSettingChangeRequest] | None = None,
     can_join_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_group: Json[GroupSettingChangeRequest] | None = None,
@@ -124,6 +126,7 @@ def edit_user_group(
     if (
         name is None
         and description is None
+        and can_add_members_group is None
         and can_join_group is None
         and can_manage_group is None
         and can_mention_group is None
@@ -136,6 +139,7 @@ def edit_user_group(
 
     if user_group.deactivated and (
         description is not None
+        or can_add_members_group is not None
         or can_join_group is not None
         or can_mention_group is not None
         or can_manage_group is not None
