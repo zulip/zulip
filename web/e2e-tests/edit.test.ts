@@ -55,6 +55,7 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
             topic: "edits",
             content: "/me test editing a message with me",
         },
+        // We already narrow in test_stream_message_edit.
         false,
     );
     await page.waitForSelector(
