@@ -134,11 +134,15 @@ async function test_narrow_to_private_messages_with_cordelia(page: Page): Promis
 async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): Promise<void> {
     const recipients = ["cordelia@zulip.com", "othello@zulip.com"];
     const multiple_recipients_pm = "A direct message group to check spaces";
-    await common.send_message(page, "private", {
-        recipient: recipients.join(", "),
-        outside_view: true,
-        content: multiple_recipients_pm,
-    });
+    await common.send_message(
+        page,
+        "private",
+        {
+            recipient: recipients.join(", "),
+            content: multiple_recipients_pm,
+        },
+        false,
+    );
 
     // Go back to the combined feed view and make sure all messages are loaded.
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");

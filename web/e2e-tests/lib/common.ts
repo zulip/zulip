@@ -411,12 +411,8 @@ export async function send_message(
     page: Page,
     type: "stream" | "private",
     params: Message,
+    wait_for_narrow_change = true,
 ): Promise<void> {
-    // If a message is outside the view, we do not need
-    // to wait for it to be processed later.
-    const outside_view = params.outside_view;
-    delete params.outside_view;
-
     // Compose box content should be empty before sending the message.
     await assert_compose_box_content(page, "");
 
@@ -449,12 +445,15 @@ export async function send_message(
     await page.waitForSelector("#compose-send-button", {visible: true});
     await page.click("#compose-send-button");
 
+    if (wait_for_narrow_change) {
+        // After the message is sent, wait for the narrow
+        // to change to the message recipient.
+        await get_current_msg_list_id(page, true);
+    }
+
     // Sending should clear compose box content.
     await assert_compose_box_content(page, "");
-
-    if (!outside_view) {
-        await wait_for_fully_processed_message(page, params.content);
-    }
+    await wait_for_fully_processed_message(page, params.content);
 
     // Close the compose box after sending the message.
     await page.evaluate(() => {
@@ -465,8 +464,24 @@ export async function send_message(
 }
 
 export async function send_multiple_messages(page: Page, msgs: Message[]): Promise<void> {
+    let last_msg_stream;
+    let last_msg_topic;
+    let last_msg_recipient;
     for (const msg of msgs) {
-        await send_message(page, msg.stream_name !== undefined ? "stream" : "private", msg);
+        const msg_type = msg.stream_name !== undefined ? "stream" : "private";
+        // Check if `msg` and `last_msg` are in the same narrow.
+        let wait_for_narrow_change = true;
+        if (
+            msg.stream_name === last_msg_stream &&
+            msg.topic === last_msg_topic &&
+            msg.recipient === last_msg_recipient
+        ) {
+            wait_for_narrow_change = false;
+        }
+        last_msg_stream = msg.stream_name;
+        last_msg_topic = msg.topic;
+        last_msg_recipient = msg.recipient;
+        await send_message(page, msg_type, msg, wait_for_narrow_change);
     }
 }
 

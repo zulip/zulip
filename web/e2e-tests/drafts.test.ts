@@ -306,7 +306,6 @@ async function drafts_test(page: Page): Promise<void> {
     await common.send_message(page, "private", {
         recipient: "cordelia@zulip.com, hamlet@zulip.com",
         content: "howdy doo",
-        outside_view: true,
     });
     await create_private_message_draft(page);
     // Close and try restoring it by opening the composebox again.
