@@ -255,13 +255,13 @@ things you need to be careful about when configuring it:
    browsers. This [nginx code snippet][nginx-proxy-longpolling-config]
    does this.
 
-   The key configuration options are, for the `/json/events` and
-   `/api/1/events` endpoints:
+   The key configuration options are:
 
-   - `proxy_read_timeout 1200;`. It's critical that this be
-     significantly above 60s, but the precise value isn't important.
-   - `proxy_buffering off`. If you don't do this, your `nginx` proxy may
-     return occasional 502 errors to clients using Zulip's events API.
+   - `proxy_read_timeout 1200;`. It's critical that this be significantly above
+     60s, but the precise value isn't important. This is most important for the
+     events API, but must be applied to all endpoints.
+   - `proxy_buffering off`. If you don't do this, your `nginx` proxy may return
+     occasional 502 errors to clients using Zulip's events API.
 
 1. The other tricky failure mode we've seen with `nginx` reverse
    proxies is that they can load-balance between the IPv4 and IPv6
