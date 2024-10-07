@@ -264,6 +264,7 @@ def get_temp_user_group_id() -> dict[str, object]:
     user_group, _ = NamedUserGroup.objects.get_or_create(
         name="temp",
         realm=get_realm("zulip"),
+        can_add_members_group_id=11,
         can_join_group_id=11,
         can_manage_group_id=11,
         can_mention_group_id=11,
@@ -279,6 +280,7 @@ def get_temp_user_group_id_for_deactivation() -> dict[str, object]:
     user_group, _ = NamedUserGroup.objects.get_or_create(
         name="temp-deactivation",
         realm=get_realm("zulip"),
+        can_add_members_group_id=11,
         can_join_group_id=11,
         can_manage_group_id=11,
         can_mention_group_id=11,
