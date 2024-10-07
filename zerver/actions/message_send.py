@@ -1158,6 +1158,7 @@ def do_send_messages(
 
             # assert needed because stubs for django are missing
             assert send_request.stream is not None
+            stream_update_fields = []
             if send_request.stream.is_public():
                 event["realm_id"] = send_request.stream.realm_id
                 event["stream_name"] = send_request.stream.name
@@ -1165,7 +1166,12 @@ def do_send_messages(
                 event["invite_only"] = True
             if send_request.stream.first_message_id is None:
                 send_request.stream.first_message_id = send_request.message.id
-                send_request.stream.save(update_fields=["first_message_id"])
+                stream_update_fields.append("first_message_id")
+            if not send_request.stream.is_recently_active:
+                send_request.stream.is_recently_active = True
+                stream_update_fields.append("is_recently_active")
+            if len(stream_update_fields) > 0:
+                send_request.stream.save(update_fields=stream_update_fields)
 
             # Performance note: This check can theoretically do
             # database queries in a loop if many messages are being
