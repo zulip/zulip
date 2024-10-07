@@ -72,3 +72,6 @@ codespell
 
 # For mocking time
 time-machine
+
+# Needed for tools/summarize-topic
+litellm

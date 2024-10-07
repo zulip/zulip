@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import sys
+import urllib.parse
+
+import zulip
+from litellm import completion
+
+tools_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.abspath(os.path.join(tools_dir, ".."))
+tools_test_dir = os.path.join(tools_dir, "tests")
+
+sys.path.insert(0, root_dir)
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+os.environ["HUGGINGFACE_API_KEY"] = "YOUR_API_KEY"
+client = zulip.Client(config_file="~/zuliprc")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--url",
+        type=str,
+        help="The URL to fetch content from",
+        default="https://chat.zulip.org/#narrow/stream/101-design/topic/more.20user.20indicators",
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        help="The model name to use for summarization",
+        default="huggingface/meta-llama/Meta-Llama-3-8B-Instruct",
+    )
+    args = parser.parse_args()
+
+    url = args.url
+    model = args.model
+
+    base_url, narrow_hash = url.split("#")
+    narrow_hash_terms = narrow_hash.split("/")
+    channel = narrow_hash_terms[2].split("-")[1]
+    topic = narrow_hash_terms[4]
+    channel = urllib.parse.unquote(channel.replace(".", "%"))
+    topic = urllib.parse.unquote(topic.replace(".", "%"))
+
+    narrow = [
+        {"operator": "channel", "operand": channel},
+        {"operator": "topic", "operand": topic},
+    ]
+
+    request = {
+        "anchor": "newest",
+        "num_before": 100,
+        "num_after": 0,
+        "narrow": narrow,
+        "apply_markdown": False,
+    }
+    result = client.get_messages(request)
+    messages = result["messages"]
+
+    formatted_messages = [
+        {"content": f"{message['sender_full_name']}: {message['content']}", "role": "user"}
+        for message in messages
+    ]
+
+    # Provide a instruction if using an `Instruct` model.
+    # There is a 100 token output limit by hugging face.
+    if "Instruct" in model:
+        formatted_messages.append(
+            {"content": "Summarize the above content within 90 words.", "role": "user"}
+        )
+
+    # Send formatted messages to the LLM model for summarization
+    response = completion(
+        model=model,
+        messages=formatted_messages,
+    )
+
+    print("Server response:\n", response)
+    print("\n\nSummary:\n", response["choices"][0]["message"]["content"])
