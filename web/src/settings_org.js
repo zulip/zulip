@@ -920,7 +920,7 @@ export function register_save_discard_widget_handlers(
     patch_url,
     for_realm_default_settings,
 ) {
-    $container.on("change input", "input, select, textarea", (e) => {
+    $container.on("change input", "input, select, textarea", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -931,22 +931,22 @@ export function register_save_discard_widget_handlers(
         // save/discard widget; otherwise, we hide that widget (the
         // "discarded" state).
 
-        if ($(e.target).hasClass("no-input-change-detection")) {
+        if ($(this).hasClass("no-input-change-detection")) {
             // This is to prevent input changes detection in elements
             // within a subsection whose changes should not affect the
             // visibility of the discard button
             return false;
         }
 
-        if ($(e.target).hasClass("setting_email_notifications_batching_period_seconds")) {
-            const show_elem = $(e.target).val() === "custom_period";
+        if ($(this).hasClass("setting_email_notifications_batching_period_seconds")) {
+            const show_elem = $(this).val() === "custom_period";
             settings_components.change_element_block_display_property(
                 "realm_email_notification_batching_period_edit_minutes",
                 show_elem,
             );
         }
 
-        const $subsection = $(e.target).closest(".settings-subsection-parent");
+        const $subsection = $(this).closest(".settings-subsection-parent");
         if (for_realm_default_settings) {
             settings_components.save_discard_default_realm_settings_widget_status_handler(
                 $subsection,
@@ -958,10 +958,10 @@ export function register_save_discard_widget_handlers(
         return undefined;
     });
 
-    $container.on("click", ".subsection-header .subsection-changes-discard button", (e) => {
+    $container.on("click", ".subsection-header .subsection-changes-discard button", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const $subsection = $(e.target).closest(".settings-subsection-parent");
+        const $subsection = $(this).closest(".settings-subsection-parent");
         if (for_realm_default_settings) {
             discard_realm_default_settings_subsection_changes($subsection);
         } else {
@@ -969,10 +969,10 @@ export function register_save_discard_widget_handlers(
         }
     });
 
-    $container.on("click", ".subsection-header .subsection-changes-save button", (e) => {
+    $container.on("click", ".subsection-header .subsection-changes-save button", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const $save_button = $(e.currentTarget);
+        const $save_button = $(this);
         const $subsection_elem = $save_button.closest(".settings-subsection-parent");
         let data;
         let success_continuation;
@@ -1070,13 +1070,13 @@ export function build_page() {
         set_jitsi_server_url_dropdown();
     });
 
-    $("#id_realm_jitsi_server_url").on("change", (e) => {
-        const dropdown_val = e.target.value;
+    $("#id_realm_jitsi_server_url").on("change", function () {
+        const dropdown_val = this.value;
         update_jitsi_server_url_custom_input(dropdown_val);
     });
 
-    $("#id_realm_message_retention_days").on("change", (e) => {
-        const message_retention_setting_dropdown_value = e.target.value;
+    $("#id_realm_message_retention_days").on("change", function () {
+        const message_retention_setting_dropdown_value = this.value;
         settings_components.change_element_block_display_property(
             "id_realm_message_retention_custom_input",
             message_retention_setting_dropdown_value === "custom_period",
@@ -1091,16 +1091,16 @@ export function build_page() {
         );
     });
 
-    $("#id_realm_digest_emails_enabled").on("change", (e) => {
-        const digest_emails_enabled = $(e.target).is(":checked");
+    $("#id_realm_digest_emails_enabled").on("change", function () {
+        const digest_emails_enabled = $(this).is(":checked");
         settings_components.change_element_block_display_property(
             "id_realm_digest_weekday",
             digest_emails_enabled === true,
         );
     });
 
-    $("#id_realm_org_join_restrictions").on("change", (e) => {
-        const org_join_restrictions = e.target.value;
+    $("#id_realm_org_join_restrictions").on("change", function () {
+        const org_join_restrictions = this.value;
         const $node = $("#allowed_domains_label").parent();
         if (org_join_restrictions === "only_selected_domain") {
             $node.show();
@@ -1112,13 +1112,13 @@ export function build_page() {
         }
     });
 
-    $("#id_realm_allow_message_editing").on("change", (e) => {
-        const is_checked = $(e.target).prop("checked");
+    $("#id_realm_allow_message_editing").on("change", function () {
+        const is_checked = $(this).prop("checked");
         update_message_edit_sub_settings(is_checked);
     });
 
-    $("#org-moving-msgs").on("change", ".move-message-policy-setting", (e) => {
-        const $policy_dropdown_elem = $(e.target);
+    $("#org-moving-msgs").on("change", ".move-message-policy-setting", function () {
+        const $policy_dropdown_elem = $(this);
         const property_name = settings_components.extract_property_name($policy_dropdown_elem);
         const disable_time_limit_setting = message_move_limit_setting_enabled(property_name);
 
