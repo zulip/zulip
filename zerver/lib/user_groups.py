@@ -173,9 +173,10 @@ def access_user_group_for_update(
         raise JsonableError(_("Insufficient permission"))
 
     assert permission_setting in NamedUserGroup.GROUP_PERMISSION_SETTINGS
-    if permission_setting == "can_manage_group" and check_permission_for_managing_all_groups(
-        user_group, user_profile
-    ):
+    if permission_setting in [
+        "can_manage_group",
+        "can_add_members_group",
+    ] and check_permission_for_managing_all_groups(user_group, user_profile):
         return user_group
 
     user_has_permission = user_has_permission_for_group_setting(
@@ -183,6 +184,21 @@ def access_user_group_for_update(
         user_profile,
         NamedUserGroup.GROUP_PERMISSION_SETTINGS[permission_setting],
     )
+
+    # Users with permission to manage the group should be able to add members
+    # to the group. This also takes care of the case where a user creating a group
+    # with themselves having the permission to manage it don't have to explicitly
+    # add themselves to can_add_members_group.
+    if (
+        not user_has_permission
+        and permission_setting == "can_add_members_group"
+        and permission_setting != "can_manage_group"
+    ):
+        user_has_permission = user_has_permission_for_group_setting(
+            user_group.can_manage_group,
+            user_profile,
+            NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_manage_group"],
+        )
 
     if not user_has_permission:
         raise JsonableError(_("Insufficient permission"))

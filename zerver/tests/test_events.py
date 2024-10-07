@@ -3093,24 +3093,29 @@ class NormalActionsTest(BaseAction):
         # event if they cannot access the deactivated user.
         user_profile = self.example_user("cordelia")
         self.user_profile = self.example_user("polonius")
-        with self.verify_action(num_events=6) as events:
+        with self.verify_action(num_events=7) as events:
             do_deactivate_user(user_profile, acting_user=None)
         check_user_group_remove_members("events[0]", events[0])
         check_user_group_remove_members("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_manage_group")
-        check_realm_update_dict("events[4]", events[4])
-        check_user_group_update("events[5]", events[5], "can_mention_group")
+        check_user_group_update("events[3]", events[3], "can_add_members_group")
+        check_user_group_update("events[4]", events[4], "can_manage_group")
+        check_realm_update_dict("events[5]", events[5])
+        check_user_group_update("events[6]", events[6], "can_mention_group")
         self.assertEqual(
-            events[3]["data"]["can_manage_group"],
+            events[3]["data"]["can_add_members_group"],
             AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[]),
         )
         self.assertEqual(
-            events[4]["data"]["can_create_public_channel_group"],
+            events[4]["data"]["can_manage_group"],
+            AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[]),
+        )
+        self.assertEqual(
+            events[5]["data"]["can_create_public_channel_group"],
             AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[members_group.id]),
         )
         self.assertEqual(
-            events[5]["data"]["can_mention_group"],
+            events[6]["data"]["can_mention_group"],
             AnonymousSettingGroupDict(
                 direct_members=[hamlet.id], direct_subgroups=[members_group.id]
             ),
@@ -3118,24 +3123,29 @@ class NormalActionsTest(BaseAction):
 
         user_profile = self.example_user("cordelia")
         do_reactivate_user(user_profile, acting_user=None)
-        with self.verify_action(num_events=6, user_list_incomplete=True) as events:
+        with self.verify_action(num_events=7, user_list_incomplete=True) as events:
             do_deactivate_user(user_profile, acting_user=None)
         check_user_group_remove_members("events[0]", events[0])
         check_user_group_remove_members("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_manage_group")
-        check_realm_update_dict("events[4]", events[4])
-        check_user_group_update("events[5]", events[5], "can_mention_group")
+        check_user_group_update("events[3]", events[3], "can_add_members_group")
+        check_user_group_update("events[4]", events[4], "can_manage_group")
+        check_realm_update_dict("events[5]", events[5])
+        check_user_group_update("events[6]", events[6], "can_mention_group")
         self.assertEqual(
-            events[3]["data"]["can_manage_group"],
+            events[3]["data"]["can_add_members_group"],
             AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[]),
         )
         self.assertEqual(
-            events[4]["data"]["can_create_public_channel_group"],
+            events[4]["data"]["can_manage_group"],
+            AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[]),
+        )
+        self.assertEqual(
+            events[5]["data"]["can_create_public_channel_group"],
             AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[members_group.id]),
         )
         self.assertEqual(
-            events[5]["data"]["can_mention_group"],
+            events[6]["data"]["can_mention_group"],
             AnonymousSettingGroupDict(
                 direct_members=[hamlet.id], direct_subgroups=[members_group.id]
             ),
@@ -3238,26 +3248,31 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("polonius")
         # Guest users receives group members update event for three groups -
         # members group, full members group and hamletcharacters group.
-        with self.verify_action(num_events=6) as events:
+        with self.verify_action(num_events=7) as events:
             do_reactivate_user(user_profile, acting_user=None)
         check_user_group_add_members("events[0]", events[0])
         check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_manage_group")
-        check_realm_update_dict("events[4]", events[4])
-        check_user_group_update("events[5]", events[5], "can_mention_group")
+        check_user_group_update("events[3]", events[3], "can_add_members_group")
+        check_user_group_update("events[4]", events[4], "can_manage_group")
+        check_realm_update_dict("events[5]", events[5])
+        check_user_group_update("events[6]", events[6], "can_mention_group")
         self.assertEqual(
-            events[3]["data"]["can_manage_group"],
+            events[3]["data"]["can_add_members_group"],
             AnonymousSettingGroupDict(direct_members=[user_profile.id], direct_subgroups=[]),
         )
         self.assertEqual(
-            events[4]["data"]["can_create_public_channel_group"],
+            events[4]["data"]["can_manage_group"],
+            AnonymousSettingGroupDict(direct_members=[user_profile.id], direct_subgroups=[]),
+        )
+        self.assertEqual(
+            events[5]["data"]["can_create_public_channel_group"],
             AnonymousSettingGroupDict(
                 direct_members=[user_profile.id], direct_subgroups=[hamletcharacters_group.id]
             ),
         )
         self.assertEqual(
-            events[5]["data"]["can_mention_group"],
+            events[6]["data"]["can_mention_group"],
             AnonymousSettingGroupDict(
                 direct_members=[user_profile.id], direct_subgroups=[members_group.id]
             ),

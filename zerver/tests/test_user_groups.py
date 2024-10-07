@@ -19,7 +19,6 @@ from zerver.actions.streams import (
 )
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
-    bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
     check_add_user_group,
     create_user_group_in_database,
@@ -2355,13 +2354,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
             acting_user=None,
         )
 
-        # Default value of can_manage_group is "Nobody system group".
+        # Default value of can_add_members_group is "group_creator".
         check_adding_members_to_group("iago", "Insufficient permission")
-        check_adding_members_to_group("othello", "Insufficient permission")
+        check_adding_members_to_group("desdemona")
 
-        # Add aaron to group so that we can test the removal.
-        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
-
+        # Removing members still uses `can_manage_group`.
         check_removing_members_from_group("iago", "Insufficient permission")
         check_removing_members_from_group("othello", "Insufficient permission")
 
@@ -2372,6 +2369,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         owners_group = system_group_dict[SystemGroups.OWNERS]
         do_change_user_group_permission_setting(
             user_group, "can_manage_group", owners_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            user_group, "can_add_members_group", owners_group, acting_user=None
         )
 
         check_adding_members_to_group("iago", "Insufficient permission")
@@ -2384,6 +2384,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_change_user_group_permission_setting(
             user_group, "can_manage_group", members_group, acting_user=None
         )
+        do_change_user_group_permission_setting(
+            user_group, "can_add_members_group", members_group, acting_user=None
+        )
         check_adding_members_to_group("polonius", "Not allowed for guest users")
         check_adding_members_to_group("cordelia")
 
@@ -2395,6 +2398,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_user_group_permission_setting(
             user_group, "can_manage_group", setting_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            user_group, "can_add_members_group", setting_group, acting_user=None
         )
         check_adding_members_to_group("iago", "Insufficient permission")
         check_adding_members_to_group("hamlet")
