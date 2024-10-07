@@ -4304,9 +4304,6 @@ paths:
                                             the set of users who have permission to create user
                                             groups in this organization.
 
-                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                                            and `"role:nobody"` system groups.
-
                                             **Changes**: New in Zulip 10.0 (feature level 299). Previously
                                             `user_group_edit_policy` field used to control the permission
                                             to create user groups.
@@ -4317,9 +4314,6 @@ paths:
                                             A [group-setting value](/api/group-setting-values)
                                             defining the set of users who have permission to
                                             administer all existing groups in this organization.
-
-                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                                            and `"role:nobody"` system groups.
 
                                             **Changes**: Semantics to change in Zulip 10.0 (feature
                                             level TBD). The original implementation of this setting
@@ -4348,9 +4342,6 @@ paths:
                                             the set of users who have permission to create public
                                             channels in this organization.
 
-                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                                            `"role:owners"` and `"role:nobody"` system groups.
-
                                             **Changes**: New in Zulip 9.0 (feature level 264). Previously
                                             `realm_create_public_stream_policy` field used to control the
                                             permission to create public channels.
@@ -4362,9 +4353,6 @@ paths:
                                             the set of users who have permission to create private
                                             channels in this organization.
 
-                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                                            `"role:owners"` and `"role:nobody"` system groups.
-
                                             **Changes**: New in Zulip 9.0 (feature level 266). Previously
                                             `realm_create_private_stream_policy` field used to control the
                                             permission to create private channels.
@@ -4375,10 +4363,6 @@ paths:
                                             A [group-setting value](/api/group-setting-values) defining
                                             the set of users who have permission to create web-public
                                             channels in this organization.
-
-                                            This setting can only be set to `"role:moderators"`,
-                                            `"role:administrators"`, `"role:owners"` and
-                                            `"role:nobody"` system groups.
 
                                             **Changes**: New in Zulip 10.0 (feature level 280). Previously
                                             `realm_create_web_public_stream_policy` field used to control
@@ -16121,9 +16105,6 @@ paths:
                               the set of users who have permission to create user
                               groups in this organization.
 
-                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                              and `"role:nobody"` system groups.
-
                               **Changes**: New in Zulip 10.0 (feature level 299). Previously
                               `realm_user_group_edit_policy` field used to control the
                               permission to create user groups.
@@ -16134,9 +16115,6 @@ paths:
                               A [group-setting value](/api/group-setting-values)
                               defining the set of users who have permission to
                               administer all existing groups in this organization.
-
-                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                              and `"role:nobody"` system groups.
 
                               **Changes**: Semantics to change in Zulip 10.0 (feature
                               level TBD). The original implementation of this setting
@@ -16165,9 +16143,6 @@ paths:
                               the set of users who have permission to create public
                               channels in this organization.
 
-                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                              `"role:owners"` and `"role:nobody"` system groups.
-
                               **Changes**: New in Zulip 9.0 (feature level 264). Previously
                               `realm_create_public_stream_policy` field used to control the
                               permission to create public channels.
@@ -16179,9 +16154,6 @@ paths:
                               the set of users who have permission to create private
                               channels in this organization.
 
-                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                              `"role:owners"` and `"role:nobody"` system groups.
-
                               **Changes**: New in Zulip 9.0 (feature level 266). Previously
                               `realm_create_private_stream_policy` field used to control the
                               permission to create private channels.
@@ -16192,10 +16164,6 @@ paths:
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to create web-public
                               channels in this organization.
-
-                              This setting can only be set to `"role:moderators"`,
-                              `"role:administrators"`, `"role:owners"` and
-                              `"role:nobody"` system groups.
 
                               Has no effect and should not be displayed in settings UI
                               unless the Zulip server has the `WEB_PUBLIC_STREAMS_ENABLED`
@@ -18073,10 +18041,15 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Configuration for various group permission settings.
+                          Metadata detailing the valid values for permission settings that
+                          use [group-setting values](/api/group-setting-values). Clients
+                          should use these data as explained in the
+                          [main documentation](/api/group-setting-values#permitted-values)
+                          to determine what values to present as possible values for these
+                          settings in UI components.
 
-                          We consider this part of the Zulip API to be unstable
-                          and may change significantly in future versions.
+                          This part of the Zulip API is unstable and may change
+                          significantly in future versions.
 
                           **Changes**: New in Zulip 8.0 (feature level 221).
                         type: object
@@ -23049,6 +23022,9 @@ components:
           type: boolean
           description: |
             Whether the setting can be set to `role:everyone` system group.
+
+            If false, guest users cannot exercise this permission even if they are part of
+            the [group-setting value](/api/group-setting-values) for this setting.
         default_group_name:
           type: string
           description: |

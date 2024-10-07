@@ -88,3 +88,29 @@ accidentally reverts the first one without either user noticing.
 Omitting `old` is appropriate where the intent really is a new complete
 list rather than an edit, for example in an integration that syncs the
 list from an external source of truth.
+
+## Permitted values
+
+Not every possible group-setting value is a valid configuration for a
+given group-based setting. For example, as a security hardening
+measure, some administrative permissions should never be exercised by
+guest users, and the system group for all users, including guests,
+should not be offered to users as an option for those settings.
+
+Others have restrictions to only permit system groups due to UI
+components not yet having been migrated to support a broader set of
+values. In order to avoid this configuration ending up hardcoded in
+clients, every permission setting using this framework has an entry in
+the `server_supported_permission_settings` section of the [`POST
+/register`](/api/register-queue) response.
+
+Clients that support mutating group-settings values must parse that
+part of the `register` payload in order to compute the set of
+permitted values to offer to the user and avoid server-side errors
+when trying to save a value.
+
+Note specifically that the `allow_everyone_group` field, which
+determines whether the setting can have the value of "all user
+accounts, including guests" also controls whether guests users can
+exercise the permission regardless of their membership in the
+group-setting value.
