@@ -1848,6 +1848,7 @@ group_type = DictType(
         ("direct_subgroup_ids", ListType(int)),
         ("description", str),
         ("is_system_group", bool),
+        ("can_add_members_group", group_setting_type),
         ("can_join_group", group_setting_type),
         ("can_manage_group", group_setting_type),
         ("can_mention_group", group_setting_type),
@@ -1898,6 +1899,7 @@ user_group_data_type = DictType(
     optional_keys=[
         ("name", str),
         ("description", str),
+        ("can_add_members_group", group_setting_type),
         ("can_join_group", group_setting_type),
         ("can_manage_group", group_setting_type),
         ("can_mention_group", group_setting_type),

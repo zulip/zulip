@@ -55,6 +55,7 @@ class UserGroupDict(TypedDict):
     creator_id: int | None
     date_created: int | None
     is_system_group: bool
+    can_add_members_group: int | AnonymousSettingGroupDict
     can_join_group: int | AnonymousSettingGroupDict
     can_manage_group: int | AnonymousSettingGroupDict
     can_mention_group: int | AnonymousSettingGroupDict
@@ -554,6 +555,8 @@ def user_groups_in_realm_serialized(
     UserGroup and UserGroupMembership that we need.
     """
     realm_groups = NamedUserGroup.objects.select_related(
+        "can_add_members_group",
+        "can_add_members_group__named_user_group",
         "can_join_group",
         "can_join_group__named_user_group",
         "can_manage_group",
@@ -610,6 +613,9 @@ def user_groups_in_realm_serialized(
             members=direct_member_ids,
             direct_subgroup_ids=direct_subgroup_ids,
             is_system_group=user_group.is_system_group,
+            can_add_members_group=get_setting_value_for_user_group_object(
+                user_group.can_add_members_group, group_members, group_subgroups
+            ),
             can_join_group=get_setting_value_for_user_group_object(
                 user_group.can_join_group, group_members, group_subgroups
             ),
@@ -834,12 +840,13 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
         user_group_ids = [id for (id,) in cursor.fetchall()]
 
     rows = [
-        SQL("({},{},{},{},{},{},{},{},{})").format(
+        SQL("({},{},{},{},{},{},{},{},{},{})").format(
             Literal(user_group_ids[idx]),
             Literal(realm.id),
             Literal(group["name"]),
             Literal(group["description"]),
             Literal(True),
+            Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
@@ -849,7 +856,7 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
     ]
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_join_group_id, can_manage_group_id, can_mention_group_id, deactivated)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_add_members_group_id, can_join_group_id, can_manage_group_id, can_mention_group_id, deactivated)
         VALUES {rows}
         """
     ).format(rows=SQL(", ").join(rows))
@@ -931,7 +938,8 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
         user_group = set_defaults_for_group_settings(group, {}, system_groups_name_dict)
         groups_with_updated_settings.append(user_group)
     NamedUserGroup.objects.bulk_update(
-        groups_with_updated_settings, ["can_join_group", "can_manage_group", "can_mention_group"]
+        groups_with_updated_settings,
+        ["can_add_members_group", "can_join_group", "can_manage_group", "can_mention_group"],
     )
 
     subgroup_objects: list[GroupGroupMembership] = []
