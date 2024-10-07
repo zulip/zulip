@@ -119,7 +119,6 @@ function test_submit_settings_form(override, submit_form) {
     });
 
     let subsection = "other-permissions";
-    ev.currentTarget = ".save-discard-widget-button.save-button";
     let stubs = createSaveButtons(subsection);
     let $save_button = stubs.$save_button;
     let $save_button_header = stubs.$save_button_header;
@@ -156,7 +155,7 @@ function test_submit_settings_form(override, submit_form) {
     ]);
 
     patched = false;
-    submit_form(ev);
+    submit_form.call({to_$: () => $(".save-discard-widget-button.save-button")}, ev);
     assert.ok(patched);
 
     let expected_value = {
@@ -168,7 +167,6 @@ function test_submit_settings_form(override, submit_form) {
     assert.deepEqual(data, expected_value);
 
     subsection = "user-defaults";
-    ev.currentTarget = ".save-discard-widget-button.save-button";
     stubs = createSaveButtons(subsection);
     $save_button = stubs.$save_button;
     $save_button_header = stubs.$save_button_header;
@@ -182,7 +180,7 @@ function test_submit_settings_form(override, submit_form) {
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
 
-    submit_form(ev);
+    submit_form.call({to_$: () => $(".save-discard-widget-button.save-button")}, ev);
     assert.ok(patched);
 
     expected_value = {
@@ -436,7 +434,6 @@ function test_discard_changes_button(discard_changes) {
     const ev = {
         preventDefault: noop,
         stopPropagation: noop,
-        target: ".save-discard-widget-button.discard-button",
     };
 
     realm.realm_allow_edit_history = true;
@@ -488,7 +485,7 @@ function test_discard_changes_button(discard_changes) {
 
     $discard_button_parent.set_find_results(".save-button-controls", $save_button_controls);
 
-    discard_changes(ev);
+    discard_changes.call({to_$: () => $(".save-discard-widget-button.discard-button")}, ev);
 
     assert.equal($allow_edit_history.prop("checked"), true);
     assert.equal(
