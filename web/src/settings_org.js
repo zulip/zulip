@@ -164,7 +164,7 @@ function update_jitsi_server_url_custom_input(dropdown_val) {
     }
 
     const $custom_input_elem = $(`#${CSS.escape(custom_input)}`);
-    $custom_input_elem.val(realm.realm_jitsi_server_url);
+    $custom_input_elem.val(realm.realm_jitsi_server_url ?? "");
 }
 
 function set_jitsi_server_url_dropdown() {
