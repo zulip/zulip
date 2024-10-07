@@ -1,4 +1,5 @@
 from collections.abc import Collection
+from datetime import datetime, timedelta
 from typing import TypedDict
 
 from django.db import transaction
@@ -29,6 +30,7 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     DefaultStreamGroup,
     GroupGroupMembership,
+    Message,
     NamedUserGroup,
     Realm,
     RealmAuditLog,
@@ -931,6 +933,7 @@ def stream_to_dict(
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,
         first_message_id=stream.first_message_id,
+        is_recently_active=stream.is_recently_active,
         history_public_to_subscribers=stream.history_public_to_subscribers,
         invite_only=stream.invite_only,
         is_web_public=stream.is_web_public,
@@ -1132,3 +1135,42 @@ def get_subscribed_private_streams_for_user(user_profile: UserProfile) -> QueryS
         .filter(subscribed=True)
     )
     return subscribed_private_streams
+
+
+@transaction.atomic(durable=True)
+def update_stream_active_status_for_realm(realm: Realm, date_days_ago: datetime) -> int:
+    active_stream_ids = (
+        Message.objects.filter(
+            date_sent__gte=date_days_ago, recipient__type=Recipient.STREAM, realm=realm
+        )
+        .values_list("recipient__type_id", flat=True)
+        .distinct()
+    )
+    streams_to_mark_inactive = Stream.objects.filter(is_recently_active=True, realm=realm).exclude(
+        id__in=active_stream_ids
+    )
+
+    # Send events to notify the users about the change in the stream's active status.
+    for stream in streams_to_mark_inactive:
+        event = dict(
+            type="stream",
+            op="update",
+            property="is_recently_active",
+            value=False,
+            stream_id=stream.id,
+            name=stream.name,
+        )
+        send_event_on_commit(stream.realm, event, active_user_ids(stream.realm_id))
+
+    count = streams_to_mark_inactive.update(is_recently_active=False)
+    return count
+
+
+def check_update_all_streams_active_status(
+    days: int = Stream.LAST_ACTIVITY_DAYS_BEFORE_FOR_ACTIVE,
+) -> int:
+    date_days_ago = timezone_now() - timedelta(days=days)
+    count = 0
+    for realm in Realm.objects.filter(deactivated=False):
+        count += update_stream_active_status_for_realm(realm, date_days_ago)
+    return count

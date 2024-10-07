@@ -210,6 +210,7 @@ from zerver.lib.events import apply_events, fetch_initial_state_data, post_proce
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
+from zerver.lib.streams import check_update_all_streams_active_status
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -3477,6 +3478,19 @@ class NormalActionsTest(BaseAction):
             num_message_ids=1,
             is_legacy=False,
         )
+
+    def test_check_update_all_streams_active_status(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "test_stream1")
+        stream = get_stream("test_stream1", self.user_profile.realm)
+
+        # Delete all messages in the stream so that it becomes inactive.
+        Message.objects.filter(recipient__type_id=stream.id, realm=stream.realm).delete()
+
+        with self.verify_action() as events:
+            check_update_all_streams_active_status()
+
+        check_stream_update("events[0]", events[0])
 
     def test_do_delete_message_personal(self) -> None:
         msg_id = self.send_personal_message(

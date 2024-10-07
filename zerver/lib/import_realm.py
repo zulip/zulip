@@ -3,7 +3,7 @@ import logging
 import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from difflib import unified_diff
 from typing import Any
 
@@ -46,7 +46,7 @@ from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
-from zerver.lib.streams import render_stream_description
+from zerver.lib.streams import render_stream_description, update_stream_active_status_for_realm
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError, maybe_thumbnail
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
@@ -1752,6 +1752,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Activate the realm
     realm.deactivated = data["zerver_realm"][0]["deactivated"]
     realm.save()
+
+    # If realm is active, update the stream active status.
+    if not realm.deactivated:
+        number_of_days = Stream.LAST_ACTIVITY_DAYS_BEFORE_FOR_ACTIVE
+        date_days_ago = timezone_now() - timedelta(days=number_of_days)
+        update_stream_active_status_for_realm(realm, date_days_ago)
 
     # This helps to have an accurate user count data for the billing
     # system if someone tries to signup just after doing import.
