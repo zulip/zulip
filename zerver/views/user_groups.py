@@ -306,7 +306,7 @@ def add_members_to_group_backend(
             )
     else:
         user_group = access_user_group_for_update(
-            user_group_id, user_profile, permission_setting="can_manage_group"
+            user_group_id, user_profile, permission_setting="can_add_members_group"
         )
 
     member_users = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
