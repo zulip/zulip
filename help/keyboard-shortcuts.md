@@ -137,13 +137,15 @@ in the Zulip app to add more to your repertoire as needed.
 
 ### In the compose box
 
-* **Send message**: <kbd>Enter</kbd>, <kbd>Tab</kbd> then <kbd>Enter</kbd>,
-  and/or <kbd>Ctrl</kbd> + <kbd>Enter</kbd>, depending on your settings. See
-  [enable enter to send](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message).
+* **Send message**: <kbd>Tab</kbd> then <kbd>Enter</kbd>, or either
+  <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd> based on
+  [your settings][toggle-enter-to-send]
 
-* **Insert new line**: <kbd>Enter</kbd>, or <kbd>Shift</kbd> + <kbd>Enter</kbd>,
-  depending on your settings. See
-  [enable enter to send](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message).
+* **Insert new line**: <kbd>Shift</kbd> + <kbd>Enter</kbd>, or either
+  <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd> based on
+  [your settings][toggle-enter-to-send]
+
+[toggle-enter-to-send]: /help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message
 
 * **Insert italic text**: `*italic*` or <kbd>Ctrl</kbd> + <kbd>I</kbd>
 
