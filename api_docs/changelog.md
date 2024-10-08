@@ -22,15 +22,15 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 301**
 
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_join_group` to
+  user group objects.
 * [`POST /user_groups/create`](/api/create-user-group): Added `can_join_group`
   parameter to support setting the user group whose members can join the user
   group.
 * [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
   `can_join_group` parameter to support changing the user group whose
   members can join the specified user group.
-* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
-  [`GET /user_groups`](/api/get-user-groups): Add `can_manage_group` to
-  user group objects.
 
 **Feature level 300**
 
