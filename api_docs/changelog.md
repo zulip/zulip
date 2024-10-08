@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 301**
+
+* [`GET /invites/{invite_id}`](/api/get-invite-details): Endpoint response includes details of
+  the email invitation by invite id.
+* [`GET /invites/multiuse/{invite_id}`](/api/get-invite-link-details): Endpoint response includes
+  the details of the reusable invitation link by invite id.
+
 **Feature level 300**
 
 * [`GET /messages`](/api/get-message): Added a new message_ids parameter,
