@@ -236,6 +236,8 @@
     /* This represents the space in the sidebar reserved for symbols like
        the #; labels like the stream name go to the right of this. */
     --left-sidebar-icon-column-width: 16px;
+    /* Offset on unreads to make New topic button appear centered. */
+    --left-sidebar-unread-offset: 6.5px;
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
