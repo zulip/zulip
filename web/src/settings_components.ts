@@ -23,7 +23,7 @@ import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import type {CustomProfileField, group_setting_type_schema} from "./state_data";
-import {current_user, realm} from "./state_data";
+import {current_user, realm, realm_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import type {GroupSettingPillContainer} from "./typeahead_helper";
@@ -95,7 +95,11 @@ export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetti
 }
 
 type RealmSetting = typeof realm;
-type RealmSettingProperties = keyof RealmSetting | "realm_org_join_restrictions";
+export const realm_setting_properties_schema = z.union([
+    realm_schema.keyof(),
+    z.literal("realm_org_join_restrictions"),
+]);
+type RealmSettingProperties = z.infer<typeof realm_setting_properties_schema>;
 
 type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
 type RealmUserSettingDefaultProperties =
