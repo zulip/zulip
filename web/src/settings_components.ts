@@ -19,7 +19,10 @@ import {
     NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
 } from "./information_density";
 import * as people from "./people";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
+import {
+    realm_default_settings_schema,
+    realm_user_settings_defaults,
+} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -103,9 +106,13 @@ export const realm_setting_property_schema = z.union([
 type RealmSettingProperty = z.infer<typeof realm_setting_property_schema>;
 
 type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
-type RealmUserSettingDefaultProperties =
-    | keyof RealmUserSettingDefaultType
-    | "email_notification_batching_period_edit_minutes";
+export const realm_user_settings_default_properties_schema = z.union([
+    realm_default_settings_schema.keyof(),
+    z.literal("email_notification_batching_period_edit_minutes"),
+]);
+type RealmUserSettingDefaultProperties = z.infer<
+    typeof realm_user_settings_default_properties_schema
+>;
 
 type StreamSettingProperties = keyof StreamSubscription | "stream_privacy" | "is_default_stream";
 
