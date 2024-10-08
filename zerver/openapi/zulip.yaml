@@ -3217,7 +3217,7 @@ paths:
                                         - description: |
                                             A [group-setting value][setting-values] defining the set of users who
                                             have permission to join this group. Only present if this user group
-                                            permissiod setting changed.
+                                            permission setting changed.
 
                                             **Changes**: New in Zulip 10.0 (feature level 301).
 
@@ -3230,7 +3230,7 @@ paths:
                                         - description: |
                                             A [group-setting value][setting-values] defining the set of users who
                                             have permission to [manage this group][manage-user-groups]. Only present
-                                            if this user group permissiod setting changed.
+                                            if this user group permission setting changed.
 
                                             **Changes**: New in Zulip 10.0 (feature level 283).
 
