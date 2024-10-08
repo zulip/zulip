@@ -268,6 +268,22 @@ export function setup_upload(config: Config): Uppy {
     uppy.use(Tus, {
         // https://uppy.io/docs/tus/#options
         endpoint: "/api/v1/tus/",
+        // The tus-js-client fingerprinting feature stores metadata on
+        // previously uploaded files in browser local storage, to
+        // allow resuming the upload / avoiding a repeat upload in
+        // future browser sessions.
+        //
+        // This is not a feature we need across browser sessions. Since these local storage
+        // entries are never garbage-collected, can be accessed via
+        // the browser console even after logging out, and contain
+        // some metadata about previously uploaded files, which seems
+        // like a security risk for using Zulip on a public computer. So we
+        // disable the feature.
+        //
+        // TODO: The better fix would be to define a `urlStorage` that is
+        // backed by a simple JavaScript map, so that the resume/repeat
+        // features are available, but with a duration of the current session.
+        storeFingerprintForResuming: false,
         // Number of concurrent uploads
         limit: 5,
     });
