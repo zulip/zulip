@@ -171,6 +171,13 @@ function show_general_settings(group) {
     user_group_components.setup_permissions_dropdown("can_mention_group", group, false);
     const $edit_container = get_edit_container(group);
     settings_components.create_group_setting_widget({
+        $pill_container: $edit_container.find(".can-add-members-group-container .pill-container"),
+        setting_name: "can_add_members_group",
+        setting_type: "group",
+        group,
+    });
+
+    settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-manage-group-container .pill-container"),
         setting_name: "can_manage_group",
         setting_type: "group",

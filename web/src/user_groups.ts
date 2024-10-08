@@ -103,6 +103,12 @@ export function update(event: UserGroupUpdateEvent): void {
         user_group_name_dict.set(group.name, group);
     }
 
+    if (event.data.can_add_members_group !== undefined) {
+        group.can_add_members_group = event.data.can_add_members_group;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
     if (event.data.can_mention_group !== undefined) {
         group.can_mention_group = event.data.can_mention_group;
         user_group_name_dict.delete(group.name);
