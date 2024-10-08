@@ -2,8 +2,8 @@
 
 {tab|desktop-web}
 
-1. Click on <i class="zulip-icon zulip-icon-star-filled"></i> **Starred messages**
-   (or <i class="zulip-icon zulip-icon-star-filled"></i> if the **views**
+1. Click on <i class="zulip-icon zulip-icon-star"></i> **Starred messages**
+   (or <i class="zulip-icon zulip-icon-star"></i> if the **views**
    section is collapsed) in the left sidebar.
 
 !!! tip ""
