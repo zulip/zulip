@@ -16,6 +16,7 @@ import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
+
 type TestNotificationMessage = {
     id: number;
     type: "test-notification";
@@ -88,18 +89,44 @@ function debug_notification_source_value(message: Message | TestNotificationMess
     blueslip.debug("Desktop notification from source " + notification_source);
 }
 
+// function get_notification_key(message: Message | TestNotificationMessage): string {
+//     let key;
+
+//     if (message.type === "private" || message.type === "test-notification") {
+//         key = message.display_reply_to;
+//     } else {
+//         const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
+//         key = message.sender_full_name + " to " + stream_name + " > " + message.topic;
+//     }
+
+//     return key;
+// }
 function get_notification_key(message: Message | TestNotificationMessage): string {
-    let key;
+    const notificationKey: {
+        type: string;
+        sender: string;
+        display_reply_to: string | null;
+        stream: string | null;
+        topic: string | null;
+    } = {
+        type: message.type,
+        sender: message.sender_full_name,
+        display_reply_to: message.display_reply_to || null, // Use null if not available
+        stream: null,
+        topic: null,
+    };
 
     if (message.type === "private" || message.type === "test-notification") {
-        key = message.display_reply_to;
+        return JSON.stringify(notificationKey); // Returns without stream and topic info
     } else {
         const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-        key = message.sender_full_name + " to " + stream_name + " > " + message.topic;
-    }
+        notificationKey.stream = stream_name;
+        notificationKey.topic = message.topic;
 
-    return key;
+        return JSON.stringify(notificationKey);
+    }
 }
+
 
 function remove_sender_from_list_of_recipients(message: Message): string {
     return `, ${message.display_reply_to}, `
