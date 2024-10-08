@@ -250,7 +250,7 @@ const custom_profile_field_types_schema = z.object({
 export type CustomProfileFieldTypes = z.infer<typeof custom_profile_field_types_schema>;
 
 // Sync this with zerver.lib.events.do_events_register.
-const realm_schema = z.object({
+export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
     custom_profile_field_types: custom_profile_field_types_schema,
     demo_organization_scheduled_deletion_date: z.optional(z.number()),

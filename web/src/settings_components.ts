@@ -24,7 +24,7 @@ import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import type {CustomProfileField, GroupSettingValue} from "./state_data";
-import {current_user, realm} from "./state_data";
+import {current_user, realm, realm_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import type {GroupSettingPillContainer} from "./typeahead_helper";
@@ -96,7 +96,11 @@ export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetti
 }
 
 type RealmSetting = typeof realm;
-type RealmSettingProperties = keyof RealmSetting | "realm_org_join_restrictions";
+export const realm_setting_property_schema = z.union([
+    realm_schema.keyof(),
+    z.literal("realm_org_join_restrictions"),
+]);
+type RealmSettingProperty = z.infer<typeof realm_setting_property_schema>;
 
 type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
 type RealmUserSettingDefaultProperties =
@@ -108,7 +112,7 @@ type StreamSettingProperties = keyof StreamSubscription | "stream_privacy" | "is
 type valueof<T> = T[keyof T];
 
 export function get_realm_settings_property_value(
-    property_name: RealmSettingProperties,
+    property_name: RealmSettingProperty,
 ): valueof<RealmSetting> {
     if (property_name === "realm_org_join_restrictions") {
         if (realm.realm_emails_restricted_to_domains) {
@@ -794,7 +798,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
     const $elem = $(elem);
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const property_name = extract_property_name($elem) as RealmSettingProperties;
+    const property_name = extract_property_name($elem) as RealmSettingProperty;
     const current_val = get_realm_settings_property_value(property_name);
     let proposed_val;
     switch (property_name) {
@@ -1063,7 +1067,7 @@ export function populate_data_for_realm_settings_request(
                 if (realm_group_settings_using_new_api_format.has(property_name)) {
                     const old_value = get_realm_settings_property_value(
                         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                        ("realm_" + property_name) as RealmSettingProperties,
+                        ("realm_" + property_name) as RealmSettingProperty,
                     );
                     data[property_name] = JSON.stringify({
                         new: input_value,
