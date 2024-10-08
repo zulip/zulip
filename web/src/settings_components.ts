@@ -29,6 +29,7 @@ import type {CustomProfileField, group_setting_type_schema} from "./state_data";
 import {current_user, realm, realm_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
+import {stream_subscription_schema} from "./sub_store";
 import type {GroupSettingPillContainer} from "./typeahead_helper";
 import type {HTMLSelectOneElement} from "./types";
 import * as user_group_pill from "./user_group_pill";
@@ -113,7 +114,12 @@ type RealmUserSettingDefaultProperties = z.infer<
     typeof realm_user_settings_default_properties_schema
 >;
 
-type StreamSettingProperties = keyof StreamSubscription | "stream_privacy" | "is_default_stream";
+export const stream_settings_properties_schema = z.union([
+    stream_subscription_schema.keyof(),
+    z.literal("stream_privacy"),
+    z.literal("is_default_stream"),
+]);
+type StreamSettingProperties = z.infer<typeof stream_settings_properties_schema>;
 
 type valueof<T> = T[keyof T];
 
