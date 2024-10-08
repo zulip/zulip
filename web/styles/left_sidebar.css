@@ -1017,6 +1017,11 @@ li.top_left_scheduled_messages {
 
     .stream-name {
         grid-area: row-content;
+        color: inherit;
+
+        &:hover {
+            text-decoration: none;
+        }
     }
 }
 
