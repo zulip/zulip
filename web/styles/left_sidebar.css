@@ -928,7 +928,8 @@ li.top_left_scheduled_messages {
     cursor: pointer;
     border-radius: 4px;
 
-    &:not(.remove-pointer-for-spectator):hover {
+    &:not(.remove-pointer-for-spectator):hover,
+    &:has(.left-sidebar-navigation-menu-icon[aria-expanded="true"]) {
         background-color: var(--color-background-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
 
