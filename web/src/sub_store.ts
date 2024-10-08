@@ -9,8 +9,6 @@ import type {
     stream_subscription_schema,
 } from "./stream_types";
 
-type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<T>;
-
 export type Stream = z.infer<typeof stream_schema>;
 export type StreamSpecificNotificationSettings = z.infer<
     typeof stream_specific_notification_settings_schema
@@ -28,11 +26,7 @@ export type ExtraStreamAttrs = {
 };
 
 // This is the actual type of subscription objects we use in the app.
-export type StreamSubscription = PartialBy<
-    Omit<ApiStreamSubscription, "subscribers">,
-    "pin_to_top" | "email_address"
-> &
-    ExtraStreamAttrs;
+export type StreamSubscription = Omit<ApiStreamSubscription, "subscribers"> & ExtraStreamAttrs;
 
 const subs_by_stream_id = new Map<number, StreamSubscription>();
 
