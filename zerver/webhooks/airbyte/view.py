@@ -1,10 +1,12 @@
+# Webhooks for external integrations.
+
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.lib.validator import WildValue, check_string, check_bool, check_int
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_bool, check_int, check_string
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 AIRBYTE_TOPIC_TEMPLATE = "{workspace} - {connection} - {source} - {destination}"
@@ -19,6 +21,7 @@ AIRBYTE_MESSAGE_TEMPLATE = (
 AIRBYTE_ERROR_MESSAGE_TEMPLATE = "Job {jobId} failed with error: {errorMessage}."
 AIRBYTE_SUCCESS_MESSAGE = "succeeded"
 AIRBYTE_FAILURE_MESSAGE = "failed"
+
 
 @webhook_view("Airbyte")
 @typed_endpoint
@@ -40,7 +43,9 @@ def create_airbyte_message(payload: WildValue) -> tuple[str, str]:
     destination = payload["data"]["destination"]["name"].tame(check_string)
 
     # Constructing the topic
-    topic = AIRBYTE_TOPIC_TEMPLATE.format(workspace=workspace, connection=connection, source=source, destination=destination)
+    topic = AIRBYTE_TOPIC_TEMPLATE.format(
+        workspace=workspace, connection=connection, source=source, destination=destination
+    )
 
     # Extracting data from the payload
     job_id = payload["data"]["jobId"].tame(check_int)
