@@ -321,6 +321,16 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
     }
+    if (page_params.is_spectator) {
+        const web_public_narrow: NarrowTerm[] = [
+            {operator: "channels", operand: "web-public", negated: false},
+        ];
+        // This logic is not ideal in that, in theory, an existing `channels`
+        // operator could be present, but not in a useful way. We don't attempt
+        // to validate the narrow is compatible with spectators here; the server
+        // will return an error if appropriate.
+        narrow_data = [...narrow_data, ...web_public_narrow];
+    }
     // We don't pass a narrow for the non-spectator, combined feed view; this
     // is required to display messages if their muted status changes without
     // a new network request, and so we need the server to send the message
@@ -345,35 +355,6 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         msg_list_data.fetch_status.start_newer_batch({
             update_loading_indicator,
         });
-    }
-
-    if (page_params.is_spectator) {
-        // This is a bit of a hack; ideally we'd unify this logic in
-        // some way with the above logic, and not need to do JSON
-        // parsing/stringifying here.
-        const web_public_narrow = {negated: false, operator: "channels", operand: "web-public"};
-
-        if (!data.narrow) {
-            /* For the combined feed, this will be the only operator. */
-            data.narrow = JSON.stringify([web_public_narrow]);
-        } else {
-            // Otherwise, we append the operator.  This logic is not
-            // ideal in that in theory an existing `streams:` operator
-            // could be present, but not in a useful way.  We don't
-            // attempt to validate the narrow is compatible with
-            // spectators here; the server will return an error if
-            // appropriate.
-            const narrow_schema = z.array(
-                z.object({
-                    operator: z.string(),
-                    operand: z.union([z.string(), z.number(), z.array(z.number())]),
-                    negated: z.optional(z.boolean()),
-                }),
-            );
-            const parsed_narrow_data = narrow_schema.parse(JSON.parse(data.narrow));
-            parsed_narrow_data.push(web_public_narrow);
-            data.narrow = JSON.stringify(parsed_narrow_data);
-        }
     }
 
     void channel.get({
