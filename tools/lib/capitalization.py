@@ -8,10 +8,6 @@ from bs4 import BeautifulSoup
 # the text before longer phrases are tried.
 # The errors shown by `tools/check-capitalization` can be added to
 # this list without any modification.
-
-# Aqui eu preciso ir la no filters e verificar as mensagem que esta sendo enviada para o usuario
-# então vou colocar elas aqui por exemplo
-# {channel} > {topic}
 IGNORED_PHRASES = [
     # Proper nouns and acronyms
     r"API",
