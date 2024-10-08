@@ -30,6 +30,7 @@ import type {CustomProfileField, GroupSettingValue} from "./state_data";
 import {current_user, realm, realm_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
+import {stream_subscription_schema} from "./sub_store";
 import type {GroupSettingPillContainer} from "./typeahead_helper";
 import type {HTMLSelectOneElement} from "./types";
 import * as user_group_pill from "./user_group_pill";
@@ -114,7 +115,11 @@ type RealmUserSettingDefaultProperties = z.infer<
     typeof realm_user_settings_default_properties_schema
 >;
 
-type StreamSettingProperties = keyof StreamSubscription | "stream_privacy" | "is_default_stream";
+export const stream_settings_property_schema = z.union([
+    stream_subscription_schema.keyof(),
+    z.enum(["stream_privacy", "is_default_stream"]),
+]);
+type StreamSettingProperty = z.infer<typeof stream_settings_property_schema>;
 
 type valueof<T> = T[keyof T];
 
@@ -138,7 +143,7 @@ export function get_realm_settings_property_value(
 }
 
 export function get_stream_settings_property_value(
-    property_name: StreamSettingProperties,
+    property_name: StreamSettingProperty,
     sub: StreamSubscription,
 ): valueof<StreamSubscription> {
     if (property_name === "stream_privacy") {
@@ -867,7 +872,7 @@ export function check_stream_settings_property_changed(
 ): boolean {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const property_name = extract_property_name($elem) as StreamSettingProperties;
+    const property_name = extract_property_name($elem) as StreamSettingProperty;
     const current_val = get_stream_settings_property_value(property_name, sub);
     let proposed_val;
     switch (property_name) {
