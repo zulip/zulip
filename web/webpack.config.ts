@@ -1,6 +1,6 @@
 /// <reference types="webpack-dev-server" />
 
-import path from "path";
+import path from "node:path";
 
 import type {ZopfliOptions} from "@gfx/zopfli";
 import {gzip} from "@gfx/zopfli";

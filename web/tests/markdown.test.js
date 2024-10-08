@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases");
 

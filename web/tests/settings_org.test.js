@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace");
