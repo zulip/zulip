@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {make_stream} = require("./lib/example_stream");
 const {zrequire} = require("./lib/namespace");

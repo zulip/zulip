@@ -2,7 +2,7 @@
 // debugging.  It also exposes the list of modules it knows about as the keys
 // of the require.ids object.
 
-import path from "path";
+import path from "node:path";
 
 import type {ResolveRequest} from "enhanced-resolve";
 import type {Chunk, Compiler, WebpackPluginInstance} from "webpack";

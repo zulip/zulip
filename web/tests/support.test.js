@@ -1,8 +1,8 @@
 "use strict";
 
-const {strict: assert} = require("assert");
-const fs = require("fs");
-const path = require("path");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const {JSDOM} = require("jsdom");
 

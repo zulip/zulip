@@ -1,7 +1,7 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 import "css.escape";
-import path from "path";
-import timersPromises from "timers/promises";
+import path from "node:path";
+import timersPromises from "node:timers/promises";
 
 import ErrorStackParser from "error-stack-parser";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";

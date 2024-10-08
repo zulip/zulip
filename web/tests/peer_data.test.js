@@ -6,7 +6,7 @@
     glorified wrappers for peer_data functions.
 */
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");

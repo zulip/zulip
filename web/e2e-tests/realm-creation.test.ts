@@ -1,4 +1,4 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 import {z} from "zod";

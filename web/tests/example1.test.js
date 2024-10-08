@@ -7,7 +7,7 @@
 // The statements below are pretty typical for most node
 // tests. The reason we need these helpers will hopefully
 // become clear as you keep reading.
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {make_stream} = require("./lib/example_stream");
 const {make_user} = require("./lib/example_user");

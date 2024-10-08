@@ -22,7 +22,7 @@
  * HTML.  This makes it easier to spot relevant differences.
  */
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");

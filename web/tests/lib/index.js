@@ -1,7 +1,7 @@
 "use strict";
 
-const {strict: assert} = require("assert");
-const path = require("path");
+const assert = require("node:assert/strict");
+const path = require("node:path");
 
 require("css.escape");
 require("handlebars/runtime");

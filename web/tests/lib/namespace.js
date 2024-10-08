@@ -1,8 +1,8 @@
 "use strict";
 
-const {strict: assert} = require("assert");
-const Module = require("module");
-const path = require("path");
+const assert = require("node:assert/strict");
+const Module = require("node:module");
+const path = require("node:path");
 
 const callsites = require("callsites");
 
