@@ -1,0 +1,36 @@
+{
+    "data": {
+        "workspace": {
+            "id":"b510e39b-e9e2-4833-9a3a-963e51d35fb4",
+            "name":"Workspace1",
+            "url":"https://link/to/ws"
+        },
+        "connection":{
+            "id":"64d901a1-2520-4d91-93c8-9df438668ff0",
+            "name":"Connection",
+            "url":"https://link/to/connection"
+        },
+        "source":{
+            "id":"c0655b08-1511-4e72-b7da-24c5d54de532",
+            "name":"PostgreSQL",
+            "url":"https://link/to/source"
+        },
+        "destination":{
+            "id":"5621c38f-8048-4abb-85ca-b34ff8d9a298",
+            "name":"BigQuery",
+            "url":"https://link/to/destination"
+        },
+        "jobId":9988,
+        "startedAt":"2024-01-01T00:00:00Z",
+        "finishedAt":"2024-01-01T01:00:00Z",
+        "bytesEmitted":1000,
+        "bytesCommitted":1000,
+        "recordsEmitted":89,
+        "recordsCommitted":89,
+        "bytesEmittedFormatted": "1000 B",
+        "bytesCommittedFormatted":"90 B",
+        "success":true,
+        "durationInSeconds":3600,
+        "durationFormatted":"1 hours 0 min"
+    }
+}
