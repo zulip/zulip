@@ -8,6 +8,10 @@ from bs4 import BeautifulSoup
 # the text before longer phrases are tried.
 # The errors shown by `tools/check-capitalization` can be added to
 # this list without any modification.
+
+# Aqui eu preciso ir la no filters e verificar as mensagem que esta sendo enviada para o usuario
+# então vou colocar elas aqui por exemplo
+# {channel} > {topic}
 IGNORED_PHRASES = [
     # Proper nouns and acronyms
     r"API",
@@ -167,6 +171,14 @@ IGNORED_PHRASES = [
     r"deactivated",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
+    r"Channel: {channel}, Topic: {topic}",
+    r"{verb} is {operand}",
+    r"{prefix_for_operator} {userContexts}",
+    r"{prefix_for_operator}{name}",
+    r"{prefix_for_operator}{operand}",
+    r"unknown operator",
+    r"{operand}",
+    r"verb}channel {highlighted_channel}",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

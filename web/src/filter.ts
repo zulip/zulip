@@ -33,35 +33,7 @@ type IconData = {
       }
 );
 
-type Part =
-    | {
-          type: "plain_text";
-          content: string;
-      }
-    | {
-          type: "channel_topic";
-          channel: string;
-          topic: string;
-      }
-    | {
-          type: "is_operator";
-          verb: string;
-          operand: string;
-      }
-    | {
-          type: "invalid_has";
-          operand: string;
-      }
-    | {
-          type: "prefix_for_operator";
-          prefix_for_operator: string;
-          operand: string;
-      }
-    | {
-          type: "user_pill";
-          operator: string;
-          users: ValidOrInvalidUser[];
-      };
+type Part = {type: "full_phrase"; content: string}; // Novo tipo para frase completa
 
 type ValidOrInvalidUser =
     | {valid_user: true; user_pill_context: UserPillItem}
@@ -735,7 +707,7 @@ export class Filter {
         const parts: Part[] = [];
 
         if (terms.length === 0) {
-            parts.push({type: "plain_text", content: "combined feed"});
+            parts.push({type: "full_phrase", content: "combined feed"});
             return parts;
         }
 
@@ -749,9 +721,8 @@ export class Filter {
                 if (channel) {
                     const topic = terms[1].operand;
                     parts.push({
-                        type: "channel_topic",
-                        channel,
-                        topic,
+                        type: "full_phrase",
+                        content: `Channel: ${channel}, Topic: ${topic}`, // Concatenando as informações em uma frase
                     });
                     terms = terms.slice(2);
                 }
@@ -764,9 +735,8 @@ export class Filter {
             if (canonicalized_operator === "is") {
                 const verb = term.negated ? "exclude " : "";
                 return {
-                    type: "is_operator",
-                    verb,
-                    operand,
+                    type: "full_phrase",
+                    content: $t({defaultMessage: "{verb} is {operand}"}, {verb, operand}),
                 };
             }
             if (canonicalized_operator === "has") {
@@ -784,8 +754,8 @@ export class Filter {
                 ];
                 if (!valid_has_operands.includes(operand)) {
                     return {
-                        type: "invalid_has",
-                        operand,
+                        type: "full_phrase",
+                        content: $t({defaultMessage: "{operand}"}, {operand}),
                     };
                 }
             }
@@ -803,15 +773,28 @@ export class Filter {
                             operand: email,
                         };
                     }
+
                     return {
                         valid_user: true,
                         user_pill_context: create_user_pill_context(person),
                     };
                 });
+
+                const validUsers = users.filter(
+                    (
+                        user,
+                    ): user is {
+                        valid_user: true;
+                        user_pill_context: ReturnType<typeof create_user_pill_context>;
+                    } => user.valid_user,
+                );
+                const userContexts = validUsers.map((user) => user.user_pill_context).join(", ");
                 return {
-                    type: "user_pill",
-                    operator: prefix_for_operator,
-                    users,
+                    type: "full_phrase",
+                    content: $t(
+                        {defaultMessage: "{prefix_for_operator} {userContexts}"},
+                        {prefix_for_operator, userContexts},
+                    ),
                 };
             }
             if (prefix_for_operator !== "") {
@@ -819,28 +802,32 @@ export class Filter {
                     const stream = stream_data.get_sub_by_id_string(operand);
                     if (stream) {
                         return {
-                            type: "prefix_for_operator",
-                            prefix_for_operator,
-                            operand: stream.name,
+                            type: "full_phrase",
+                            content: $t(
+                                {defaultMessage: "{prefix_for_operator}{name}"},
+                                {prefix_for_operator, name: stream.name},
+                            ),
                         };
                     }
                     // Assume the operand is a partially formed name and return
                     // the operator as the stream name in the next block.
                 }
                 return {
-                    type: "prefix_for_operator",
-                    prefix_for_operator,
-                    operand,
+                    type: "full_phrase",
+                    content: $t(
+                        {defaultMessage: "{prefix_for_operator}{operand}"},
+                        {prefix_for_operator, operand},
+                    ),
                 };
             }
             return {
-                type: "plain_text",
-                content: "unknown operator",
+                type: "full_phrase",
+                content: $t({defaultMessage: "unknown operator"}),
             };
         });
         return [...parts, ...more_parts];
     }
-
+    // ver se apago essa função depois
     static search_description_as_html(terms: NarrowTerm[]): string {
         return render_search_description({
             parts: Filter.parts_for_describe(terms),

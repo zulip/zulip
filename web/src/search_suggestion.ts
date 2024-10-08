@@ -7,6 +7,7 @@ import {MAX_ITEMS} from "./bootstrap_typeahead";
 import * as common from "./common";
 import * as direct_message_group_data from "./direct_message_group_data";
 import {Filter, create_user_pill_context} from "./filter";
+import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -167,10 +168,17 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     const highlight_query = typeahead_helper.highlight_with_escaping_and_regex;
 
     return channels.map((channel_name) => {
-        const prefix = "channel";
         const highlighted_channel = highlight_query(regex, channel_name);
         const verb = last.negated ? "exclude " : "";
-        const description_html = verb + prefix + " " + highlighted_channel;
+        const description_html = $t(
+            {
+                defaultMessage: "{verb}channel {highlighted_channel}",
+            },
+            {
+                verb,
+                highlighted_channel,
+            },
+        );
         const channel = stream_data.get_sub_by_name(channel_name);
         assert(channel !== undefined);
         const term = {
