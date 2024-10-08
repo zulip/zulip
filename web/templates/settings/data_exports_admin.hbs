@@ -3,16 +3,15 @@
         {{> ../help_link_widget link="/help/export-your-organization" }}
     </h3>
     <p>
-        {{t 'Exports all users, settings, and all data visible in public channels.' }}
-        {{t 'Any organization administrator can conduct an export.'}}
-        {{t 'Depending on the size of your organization, an export can take anywhere from seconds to an hour.' }}
-    </p>
-    <p>
+        {{t 'Your organization’s data will be exported in a format designed for imports into Zulip Cloud or a self-hosted installation of Zulip.' }}
+        {{t 'You will be able to export all public data, and (optionally) private data from users who have given their permission.' }}
         {{#tr}}
-            <z-link>Click here</z-link> to learn about exporting private channels and direct messages.
+            <z-link>Learn more</z-link> about other data export options.
             {{#*inline "z-link"}}<a href="/help/export-your-organization" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
         {{/tr}}
-        {{t 'Note that organizations are limited to five exports per week.' }}
+    </p>
+    <p>
+        {{t 'Depending on the size of your organization, an export can take anywhere from seconds to an hour.' }}
     </p>
 
     {{#if is_admin}}
@@ -20,8 +19,8 @@
         <span class="export_status_text"></span>
     </div>
     <form>
-        <button type="submit" class="button rounded sea-green" id="export-data">
-            {{t 'Start export of public data' }}
+        <button type="submit" class="button rounded sea-green" id="start-export-button">
+            {{t 'Start export' }}
         </button>
     </form>
     {{/if}}
