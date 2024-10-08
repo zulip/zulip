@@ -228,6 +228,12 @@
         display: flex;
         gap: 5px;
         align-items: center;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:has(.unread_count:empty) {
+            margin-right: 0;
+        }
     }
 
     #show-all-direct-messages {
@@ -764,6 +770,12 @@ li.top_left_scheduled_messages {
 
     .unread_count {
         grid-area: markers-and-unreads;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:empty {
+            margin-right: 0;
+        }
     }
 }
 
@@ -772,6 +784,8 @@ li.top_left_scheduled_messages {
         .masked_unread_count {
             display: flex;
             grid-area: markers-and-unreads;
+            /* Extra margin for unreads. */
+            margin-right: var(--left-sidebar-unread-offset);
         }
 
         .unread_count {
@@ -1185,6 +1199,12 @@ li.top_left_scheduled_messages {
     gap: 5px;
     align-items: center;
     justify-content: center;
+    /* Extra margin for unreads. */
+    margin-right: var(--left-sidebar-unread-offset);
+
+    &:has(.unread_count:empty) {
+        margin-right: 0;
+    }
 
     .unread_mention_info {
         /* Unset margin in favor of flex gap. */
@@ -1437,6 +1457,12 @@ li.topic-list-item {
            16px-high unread box. */
         display: flex;
         align-items: center;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:empty {
+            margin-right: 0;
+        }
     }
 }
 
@@ -1494,6 +1520,12 @@ li.topic-list-item {
 
     .unread_count {
         grid-area: markers-and-unreads;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:empty {
+            margin-right: 0;
+        }
     }
 }
 
@@ -1551,6 +1583,12 @@ li.topic-list-item {
         display: flex;
         align-items: center;
         grid-gap: 5px;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:has(.unread_count:empty) {
+            margin-right: 0;
+        }
     }
 
     #filter_streams_tooltip {
