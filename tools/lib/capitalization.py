@@ -167,14 +167,13 @@ IGNORED_PHRASES = [
     r"deactivated",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
-    r"Channel: {channel}, Topic: {topic}",
+    r"channel: {channel}, topic: {topic}",
     r"{verb} is {operand}",
     r"{prefix_for_operator} {userContexts}",
     r"{prefix_for_operator}{name}",
     r"{prefix_for_operator}{operand}",
     r"unknown operator",
     r"{operand}",
-    r"verb}channel {highlighted_channel}",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

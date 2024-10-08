@@ -722,7 +722,10 @@ export class Filter {
                     const topic = terms[1].operand;
                     parts.push({
                         type: "full_phrase",
-                        content: `Channel: ${channel}, Topic: ${topic}`, // Concatenando as informações em uma frase
+                        content: $t(
+                        { defaultMessage: "channel: {channel}, topic: {topic}" },
+                        { channel, topic }
+                    )
                     });
                     terms = terms.slice(2);
                 }
