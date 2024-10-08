@@ -343,6 +343,7 @@ EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
 
 WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("airbrake", ["monitoring"]),
+    WebhookIntegration("airbyte", ["monitoring"]),
     WebhookIntegration(
         "alertmanager",
         ["monitoring"],
@@ -712,6 +713,7 @@ NO_SCREENSHOT_WEBHOOKS = {
 
 DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "airbrake": [ScreenshotConfig("error_message.json")],
+    "airbyte": [ScreenshotConfig("airbyte_job_payload_success.json")],
     "alertmanager": [
         ScreenshotConfig("alert.json", extra_params={"name": "topic", "desc": "description"})
     ],
