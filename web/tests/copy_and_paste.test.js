@@ -12,6 +12,10 @@ stream_data.add_sub({
     stream_id: 4,
     name: "Rome",
 });
+stream_data.add_sub({
+    stream_id: 5,
+    name: "Romeo`s lair",
+});
 
 run_test("try_stream_topic_syntax_text", () => {
     const test_cases = [
@@ -41,11 +45,28 @@ run_test("try_stream_topic_syntax_text", () => {
         ["http://zulip.zulipdev.com/#narrow/topic/cheese"],
         ["http://zulip.zulipdev.com/#narrow/topic/pizza/stream/Rome"],
 
-        // characters which are known to produce broken #**stream>topic** urls.
-        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/100.25.20profits.60"],
-        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/100.25.20*profits"],
-        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/.24.24 100.25.20profits"],
-        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/>100.25.20profits"],
+        // When a url containing characters which are known to produce broken
+        // #**stream>topic** urls is pasted, a normal markdown link syntax is produced.
+        [
+            "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20profits.60",
+            "[#Rome>100% profits&#96;](#narrow/channel/4-Rome/topic/100.25.20profits.60)",
+        ],
+        [
+            "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20*profits",
+            "[#Rome>100% &#42;profits](#narrow/channel/4-Rome/topic/100.25.20*profits)",
+        ],
+        [
+            "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/.24.24 100.25.20profits",
+            "[#Rome>&#36;&#36; 100% profits](#narrow/channel/4-Rome/topic/.24.24.20100.25.20profits)",
+        ],
+        [
+            "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/>100.25.20profits",
+            "[#Rome>&gt;100% profits](#narrow/channel/4-Rome/topic/.3E100.25.20profits)",
+        ],
+        [
+            "http://zulip.zulipdev.com/#narrow/stream/5-Romeo.60s-lair/topic/normal",
+            "[#Romeo&#96;s lair>normal](#narrow/channel/5-Romeo.60s-lair/topic/normal)",
+        ],
     ];
 
     for (const test_case of test_cases) {
