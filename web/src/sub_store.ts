@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import type {
@@ -6,8 +6,8 @@ import type {
     stream_properties_schema,
     stream_schema,
     stream_specific_notification_settings_schema,
-    stream_subscription_schema,
 } from "./stream_types";
+import {api_stream_subscription_schema} from "./stream_types";
 
 export type Stream = z.infer<typeof stream_schema>;
 export type StreamSpecificNotificationSettings = z.infer<
@@ -15,18 +15,21 @@ export type StreamSpecificNotificationSettings = z.infer<
 >;
 export type NeverSubscribedStream = z.infer<typeof never_subscribed_stream_schema>;
 export type StreamProperties = z.infer<typeof stream_properties_schema>;
-export type ApiStreamSubscription = z.infer<typeof stream_subscription_schema>;
-
-// These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
-export type ExtraStreamAttrs = {
-    render_subscribers: boolean;
-    newly_subscribed: boolean;
-    subscribed: boolean;
-    previously_subscribed: boolean;
-};
+export type ApiStreamSubscription = z.infer<typeof api_stream_subscription_schema>;
 
 // This is the actual type of subscription objects we use in the app.
-export type StreamSubscription = Omit<ApiStreamSubscription, "subscribers"> & ExtraStreamAttrs;
+export const stream_subscription_schema = api_stream_subscription_schema
+    .omit({
+        subscribers: true,
+    })
+    .extend({
+        // These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
+        render_subscribers: z.boolean(),
+        newly_subscribed: z.boolean(),
+        subscribed: z.boolean(),
+        previously_subscribed: z.boolean(),
+    });
+export type StreamSubscription = z.infer<typeof stream_subscription_schema>;
 
 const subs_by_stream_id = new Map<number, StreamSubscription>();
 
