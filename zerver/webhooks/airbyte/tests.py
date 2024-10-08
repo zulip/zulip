@@ -1,11 +1,12 @@
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class AirbyteHookTests(WebhookTestCase):
-    STREAM_NAME = 'airbyte'
+    STREAM_NAME = "airbyte"
     URL_TEMPLATE = "/api/v1/external/airbyte?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'airbyte'
-    CHANNEL_NAME = 'test'
-    WEBHOOK_DIR_NAME = 'airbyte'
+    FIXTURE_DIR_NAME = "airbyte"
+    CHANNEL_NAME = "test"
+    WEBHOOK_DIR_NAME = "airbyte"
 
     def test_airbyte_job_success(self) -> None:
         expected_topic = "Workspace1 - Connection - Source - Destination"
@@ -24,7 +25,9 @@ class AirbyteHookTests(WebhookTestCase):
 
     def test_airbyte_job_failure(self) -> None:
         expected_topic = "Workspace1 - Connection - Source - Destination"
-        expected_message = "Job 9988 failed with error: Connection timeout while trying to sync data."
+        expected_message = (
+            "Job 9988 failed with error: Connection timeout while trying to sync data."
+        )
 
         self.check_webhook(
             "job_failure",
