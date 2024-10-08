@@ -170,7 +170,7 @@ export class BuddyList extends BuddyListConf {
     initialize_tooltips(): void {
         $("#right-sidebar").on(
             "mouseenter",
-            ".buddy-list-heading",
+            ".buddy-list-subheader",
             function (this: HTMLElement, e) {
                 e.stopPropagation();
                 const $elem = $(this);
@@ -467,11 +467,11 @@ export class BuddyList extends BuddyListConf {
             this.users_matching_view_is_collapsed,
         );
         $("#buddy-list-users-matching-view-container .toggle-users-matching-view").toggleClass(
-            "fa-caret-down",
+            "rotate-icon-down",
             !this.users_matching_view_is_collapsed,
         );
         $("#buddy-list-users-matching-view-container .toggle-users-matching-view").toggleClass(
-            "fa-caret-right",
+            "rotate-icon-right",
             this.users_matching_view_is_collapsed,
         );
 
@@ -487,11 +487,11 @@ export class BuddyList extends BuddyListConf {
             this.other_users_is_collapsed,
         );
         $("#buddy-list-other-users-container .toggle-other-users").toggleClass(
-            "fa-caret-down",
+            "rotate-icon-down",
             !this.other_users_is_collapsed,
         );
         $("#buddy-list-other-users-container .toggle-other-users").toggleClass(
-            "fa-caret-right",
+            "rotate-icon-right",
             this.other_users_is_collapsed,
         );
 
