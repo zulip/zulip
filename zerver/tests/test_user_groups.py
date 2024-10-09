@@ -2249,8 +2249,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_adding_members_to_group("othello")
         check_removing_members_from_group("othello")
 
-        # Check only members are allowed to add/remove users in the group and only if belong to the
-        # user group.
+        # Check only members are allowed to add/remove users in the group.
         members_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
         do_change_realm_permission_group_setting(
             realm,
@@ -2380,12 +2379,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_removing_members_from_group("iago", "Insufficient permission")
         check_removing_members_from_group("desdemona")
 
-        members_group = system_group_dict[SystemGroups.MEMBERS]
+        everyone_group = system_group_dict[SystemGroups.EVERYONE]
         do_change_user_group_permission_setting(
-            user_group, "can_manage_group", members_group, acting_user=None
+            user_group, "can_manage_group", everyone_group, acting_user=None
         )
         do_change_user_group_permission_setting(
-            user_group, "can_add_members_group", members_group, acting_user=None
+            user_group, "can_add_members_group", everyone_group, acting_user=None
         )
         check_adding_members_to_group("polonius", "Not allowed for guest users")
         check_adding_members_to_group("cordelia")
@@ -2413,6 +2412,19 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         check_adding_members_to_group("desdemona")
         check_removing_members_from_group("desdemona")
+
+        # If user is part of `can_manage_group`, they need not be part
+        # of `can_add_members_group` to add members.
+        othello_group = self.create_or_update_anonymous_group_for_setting([othello], [])
+        hamlet_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_user_group_permission_setting(
+            user_group, "can_manage_group", othello_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            user_group, "can_add_members_group", hamlet_group, acting_user=None
+        )
+        check_adding_members_to_group("othello")
+        check_removing_members_from_group("othello")
 
     def test_adding_yourself_to_group(self) -> None:
         realm = get_realm("zulip")

@@ -215,6 +215,22 @@ export function can_manage_user_group(group_id: number): boolean {
     );
 }
 
+export function can_add_members_to_user_group(group_id: number): boolean {
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    if (
+        user_has_permission_for_group_setting(
+            group.can_add_members_group,
+            "can_add_members_group",
+            "group",
+        )
+    ) {
+        return true;
+    }
+
+    return can_manage_user_group(group_id);
+}
+
 export function can_join_user_group(group_id: number): boolean {
     const group = user_groups.get_user_group_from_id(group_id);
 

@@ -191,7 +191,7 @@ def access_user_group_for_update(
     # add themselves to can_add_members_group.
     if not user_has_permission and permission_setting == "can_add_members_group":
         user_has_permission = user_has_permission_for_group_setting(
-            getattr(user_group, permission_setting),
+            user_group.can_manage_group,
             user_profile,
             NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_manage_group"],
         )

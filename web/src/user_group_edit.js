@@ -87,7 +87,7 @@ function update_add_members_elements(group) {
     const $input_element = $add_members_container.find(".input").expectOne();
     const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
 
-    if (settings_data.can_manage_user_group(group.id)) {
+    if (settings_data.can_add_members_to_user_group(group.id)) {
         $input_element.prop("contenteditable", true);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
@@ -655,7 +655,10 @@ export function update_group(event) {
             // update settings title
             $("#groups_overlay .user-group-info-title").text(group.name);
         }
-        if (event.data.can_manage_group !== undefined) {
+        if (
+            event.data.can_manage_group !== undefined ||
+            event.data.can_add_members_group !== undefined
+        ) {
             update_group_management_ui();
         }
         if (event.data.can_join_group !== undefined) {
