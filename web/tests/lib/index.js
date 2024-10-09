@@ -129,8 +129,6 @@ test.set_verbose(files.length === 1);
         require("../../src/billing/page_params");
         namespace.mock_esm("../../src/page_params", zpage_params);
         require("../../src/page_params");
-        namespace.mock_esm("../../src/realm_user_settings_defaults", zpage_params);
-        require("../../src/realm_user_settings_defaults");
 
         try {
             await run_one_module(file);
