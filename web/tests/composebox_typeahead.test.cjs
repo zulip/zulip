@@ -1209,6 +1209,7 @@ for (const [index, topic_name] of sweden_topics_to_show.entries()) {
 
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_banners();
+    $("#private_message_recipient").set_parent($.create("pm-recipient-container"));
 
     let pill_items = [];
     let cleared = false;
