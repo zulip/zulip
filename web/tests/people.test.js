@@ -707,14 +707,14 @@ test_people("set_custom_profile_field_data", () => {
     assert.equal(person.profile_data[field.id].rendered_value, "<p>Field value</p>");
 });
 
-test_people("is_current_user_only_owner", () => {
+test_people("is_current_user_only_owner", ({override}) => {
     const person = people.get_by_email(me.email);
     person.is_owner = false;
-    current_user.is_owner = false;
+    override(current_user, "is_owner", false);
     assert.ok(!people.is_current_user_only_owner());
 
     person.is_owner = true;
-    current_user.is_owner = true;
+    override(current_user, "is_owner", true);
     assert.ok(people.is_current_user_only_owner());
 
     people.add_active_user(realm_owner);
@@ -1262,13 +1262,13 @@ test_people("initialize", () => {
     assert.equal(page_params.realm_non_active_users, undefined);
 });
 
-test_people("predicate_for_user_settings_filters", () => {
+test_people("predicate_for_user_settings_filters", ({override}) => {
     /*
         This function calls matches_user_settings_search,
         so that is where we do more thorough testing.
         This test is just a sanity check for now.
     */
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
 
     const fred_smith = {full_name: "Fred Smith", role: 100};
 
@@ -1307,15 +1307,15 @@ test_people("predicate_for_user_settings_filters", () => {
     );
 });
 
-test_people("matches_user_settings_search", () => {
+test_people("matches_user_settings_search", ({override}) => {
     const match = people.matches_user_settings_search;
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
 
     assert.equal(match({email: "fred@example.com"}, "fred"), false);
     assert.equal(match({full_name: "Fred Smith"}, "fr"), true);
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
     assert.equal(

@@ -127,7 +127,6 @@ message_lists.all_rendered_message_lists = () => [cached_message_list, message_l
 
 // page_params is highly coupled to dispatching now
 page_params.test_suite = false;
-current_user.is_admin = true;
 realm.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
@@ -453,7 +452,7 @@ run_test("scheduled_messages", ({override}) => {
 });
 
 run_test("realm settings", ({override}) => {
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     realm.realm_date_created = new Date("2023-01-01Z");
 
     override(settings_org, "check_disable_direct_message_initiator_group_dropdown", noop);
@@ -834,7 +833,7 @@ run_test("submessage", ({override}) => {
 
 run_test("typing", ({override}) => {
     // Simulate that we are not typing.
-    current_user.user_id = typing_person1.user_id + 1;
+    override(current_user, "user_id", typing_person1.user_id + 1);
 
     let event = event_fixtures.typing__start;
     {
@@ -857,10 +856,10 @@ run_test("typing", ({override}) => {
     }
 
     // Get line coverage--we ignore our own typing events.
-    current_user.user_id = typing_person1.user_id;
+    override(current_user, "user_id", typing_person1.user_id);
     event = event_fixtures.typing__start;
     dispatch(event);
-    current_user.user_id = undefined; // above change shouldn't effect stream_typing tests below
+    override(current_user, "user_id", undefined); // above change shouldn't effect stream_typing tests below
 });
 
 run_test("stream_typing", ({override}) => {

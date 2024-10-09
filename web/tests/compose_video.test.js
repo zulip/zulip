@@ -168,7 +168,7 @@ test("videos", ({override}) => {
         });
 
         realm.realm_video_chat_provider = realm_available_video_chat_providers.zoom.id;
-        current_user.has_zoom_token = false;
+        override(current_user, "has_zoom_token", false);
 
         window.open = (url) => {
             assert.ok(url.endsWith("/calls/zoom/register"));

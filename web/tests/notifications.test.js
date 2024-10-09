@@ -57,7 +57,7 @@ user_topics.update_user_topics(
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        current_user.is_admin = false;
+        helpers.override(current_user, "is_admin", false);
         page_params.realm_users = [];
         helpers.override(user_settings, "enable_followed_topic_desktop_notifications", true);
         helpers.override(user_settings, "enable_followed_topic_audible_notifications", true);

@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {current_user, realm} = require("./lib/zpage_params");
@@ -52,32 +52,34 @@ mock_esm("sortablejs", {default: Sortable});
 const settings_profile_fields = zrequire("settings_profile_fields");
 
 function test_populate(opts, template_data) {
-    const fields_data = opts.fields_data;
+    with_overrides(({override}) => {
+        const fields_data = opts.fields_data;
 
-    realm.custom_profile_field_types = custom_profile_field_types;
-    current_user.is_admin = opts.is_admin;
-    const $table = $("#admin_profile_fields_table");
-    const $rows = $.create("rows");
-    const $form = $.create("forms");
-    $table.set_find_results("tr.profile-field-row", $rows);
-    $table.set_find_results("tr.profile-field-form", $form);
+        realm.custom_profile_field_types = custom_profile_field_types;
+        override(current_user, "is_admin", opts.is_admin);
+        const $table = $("#admin_profile_fields_table");
+        const $rows = $.create("rows");
+        const $form = $.create("forms");
+        $table.set_find_results("tr.profile-field-row", $rows);
+        $table.set_find_results("tr.profile-field-form", $form);
 
-    $table[0] = "stub";
+        $table[0] = "stub";
 
-    $rows.remove = noop;
-    $form.remove = noop;
+        $rows.remove = noop;
+        $form.remove = noop;
 
-    let num_appends = 0;
-    $table.append = () => {
-        num_appends += 1;
-    };
+        let num_appends = 0;
+        $table.append = () => {
+            num_appends += 1;
+        };
 
-    loading.destroy_indicator = noop;
+        loading.destroy_indicator = noop;
 
-    settings_profile_fields.do_populate_profile_fields(fields_data);
+        settings_profile_fields.do_populate_profile_fields(fields_data);
 
-    assert.deepEqual(template_data, opts.expected_template_data);
-    assert.equal(num_appends, fields_data.length);
+        assert.deepEqual(template_data, opts.expected_template_data);
+        assert.equal(num_appends, fields_data.length);
+    });
 }
 
 run_test("populate_profile_fields", ({mock_template}) => {

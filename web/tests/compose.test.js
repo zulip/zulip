@@ -265,7 +265,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state = initialize_state_stub_dict();
         compose_state.topic("");
         compose_state.set_message_type("private");
-        current_user.user_id = new_user.user_id;
+        override(current_user, "user_id", new_user.user_id);
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
@@ -401,7 +401,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         show_button_spinner_called = true;
     });
 
-    current_user.user_id = new_user.user_id;
+    override(current_user, "user_id", new_user.user_id);
 
     // Test sending a message with content.
     compose_state.set_message_type("stream");

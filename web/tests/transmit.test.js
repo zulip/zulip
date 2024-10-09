@@ -151,7 +151,7 @@ run_test("reply_message_stream", ({override}) => {
         send_message_args = data;
     });
 
-    current_user.user_id = 44;
+    override(current_user, "user_id", 44);
     server_events.queue_id = 66;
     sent_messages.get_new_local_id = () => "99";
 
@@ -192,7 +192,7 @@ run_test("reply_message_private", ({override}) => {
         send_message_args = data;
     });
 
-    current_user.user_id = 155;
+    override(current_user, "user_id", 155);
     server_events.queue_id = 177;
     sent_messages.get_new_local_id = () => "199";
 

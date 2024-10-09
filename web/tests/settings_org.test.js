@@ -33,7 +33,7 @@ initialize_user_settings({user_settings: {}});
 function test(label, f) {
     run_test(label, (helpers) => {
         $("#realm-icon-upload-widget .upload-spinner-background").css = noop;
-        current_user.is_admin = false;
+        helpers.override(current_user, "is_admin", false);
         realm.realm_domains = [
             {domain: "example.com", allow_subdomains: true},
             {domain: "example.org", allow_subdomains: false},
@@ -788,8 +788,8 @@ test("test get_sorted_options_list", () => {
     );
 });
 
-test("misc", () => {
-    current_user.is_admin = false;
+test("misc", ({override}) => {
+    override(current_user, "is_admin", false);
     $("#user-avatar-upload-widget").length = 1;
     $("#user_details_section").length = 1;
 
@@ -843,7 +843,7 @@ test("misc", () => {
     assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
     // If organization admin, these UI elements are never disabled.
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));

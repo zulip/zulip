@@ -164,7 +164,7 @@ run_test("reload_defaults", () => {
 
 test("get_status", ({override}) => {
     page_params.realm_users = [];
-    current_user.user_id = 999;
+    override(current_user, "user_id", 999);
 
     assert.equal(presence.get_status(current_user.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "active");

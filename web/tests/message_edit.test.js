@@ -92,7 +92,7 @@ run_test("is_topic_editable", ({override}) => {
     };
     realm.realm_allow_message_editing = true;
     override(settings_data, "user_can_move_messages_to_another_topic", () => true);
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     assert.equal(message_edit.is_topic_editable(message), false);
 
@@ -109,7 +109,7 @@ run_test("is_topic_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_to_another_topic", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
     message.topic = "translated: (no topic)";
@@ -128,7 +128,7 @@ run_test("is_topic_editable", ({override}) => {
     message.timestamp = current_timestamp - 600000;
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    current_user.is_moderator = true;
+    override(current_user, "is_moderator", true);
     assert.equal(message_edit.is_topic_editable(message), true);
 
     realm.realm_allow_message_editing = false;
@@ -146,7 +146,7 @@ run_test("is_stream_editable", ({override}) => {
     };
     realm.realm_allow_message_editing = true;
     override(settings_data, "user_can_move_messages_between_streams", () => true);
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     assert.equal(message_edit.is_stream_editable(message), false);
 
@@ -163,7 +163,7 @@ run_test("is_stream_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_between_streams", () => false);
     assert.equal(message_edit.is_stream_editable(message), false);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(message_edit.is_stream_editable(message), false);
 
     realm.realm_move_messages_between_streams_limit_seconds = 259200;
@@ -175,12 +175,12 @@ run_test("is_stream_editable", ({override}) => {
     message.timestamp = current_timestamp - 600000;
     assert.equal(message_edit.is_stream_editable(message), false);
 
-    current_user.is_moderator = true;
+    override(current_user, "is_moderator", true);
     assert.equal(message_edit.is_stream_editable(message), true);
 });
 
 run_test("get_deletability", ({override}) => {
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     override(settings_data, "user_can_delete_any_message", () => true);
     override(settings_data, "user_can_delete_own_message", () => false);
     realm.realm_message_content_delete_limit_seconds = null;

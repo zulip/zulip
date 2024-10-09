@@ -132,8 +132,8 @@ test("muted_users", () => {
     assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2,3", "15"]);
 });
 
-test("has_conversation", () => {
-    current_user.user_id = me.user_id;
+test("has_conversation", ({override}) => {
+    override(current_user, "user_id", me.user_id);
     pmc.recent.initialize(params);
 
     // Tests if `has_conversation` returns `true` when there are previous
