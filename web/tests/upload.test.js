@@ -39,7 +39,7 @@ message_lists.current = {
 };
 function test(label, f) {
     run_test(label, (helpers) => {
-        realm.max_file_upload_size_mib = 25;
+        helpers.override(realm, "max_file_upload_size_mib", 25);
         return f(helpers);
     });
 }
@@ -162,7 +162,7 @@ test("show_error_message", ({mock_template}) => {
     upload.show_error_message(upload.compose_config);
 });
 
-test("upload_files", async ({mock_template, override_rewire}) => {
+test("upload_files", async ({mock_template, override, override_rewire}) => {
     $("#compose_banners .upload_banner").remove = noop;
     $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
@@ -208,12 +208,12 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         banner_shown = true;
         return "<banner-stub>";
     });
-    realm.max_file_upload_size_mib = 0;
+    override(realm, "max_file_upload_size_mib", 0);
     $("#compose_banners .upload_banner .upload_msg").text("");
     await upload.upload_files(uppy, config, files);
     assert.ok(banner_shown);
 
-    realm.max_file_upload_size_mib = 25;
+    override(realm, "max_file_upload_size_mib", 25);
     let on_click_close_button_callback;
 
     $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").one = (

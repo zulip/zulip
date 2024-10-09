@@ -128,15 +128,15 @@ function add_message_with_view(list, messages) {
 
 // Function sets page parameters with no time constraints on editing the message.
 // User is assumed to not be an admin.
-function set_page_params_no_edit_restrictions() {
+function set_page_params_no_edit_restrictions({override}) {
     page_params.is_spectator = false;
-    realm.realm_allow_message_editing = true;
-    realm.realm_message_content_edit_limit_seconds = null;
-    realm.realm_allow_edit_history = true;
-    realm.realm_message_content_delete_limit_seconds = null;
-    realm.realm_enable_read_receipts = true;
-    realm.realm_edit_topic_policy = 5;
-    realm.realm_move_messages_within_stream_limit_seconds = null;
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_message_content_edit_limit_seconds", null);
+    override(realm, "realm_allow_edit_history", true);
+    override(realm, "realm_message_content_delete_limit_seconds", null);
+    override(realm, "realm_enable_read_receipts", true);
+    override(realm, "realm_edit_topic_policy", 5);
+    override(realm, "realm_move_messages_within_stream_limit_seconds", null);
 }
 
 // Test init function
@@ -158,9 +158,9 @@ function test(label, f) {
 // Test functions
 test("my_message_all_actions", ({override}) => {
     // Set page parameters.
-    set_page_params_no_edit_restrictions();
-    realm.realm_can_delete_any_message_group = everyone.id;
-    realm.realm_can_delete_own_message_group = everyone.id;
+    set_page_params_no_edit_restrictions({override});
+    override(realm, "realm_can_delete_any_message_group", everyone.id);
+    override(realm, "realm_can_delete_own_message_group", everyone.id);
     override(current_user, "user_id", me.user_id);
     // Get message with maximum permissions available
     // Initialize message list
@@ -210,10 +210,10 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.should_display_quote_and_reply, true);
 });
 
-test("not_my_message_view_actions", () => {
-    set_page_params_no_edit_restrictions();
+test("not_my_message_view_actions", ({override}) => {
+    set_page_params_no_edit_restrictions({override});
     // Get message that is only viewable
-    realm.realm_can_delete_any_message_group = everyone.id;
+    override(realm, "realm_can_delete_any_message_group", everyone.id);
     const list = init_message_list();
     message_lists.set_current(list);
 
@@ -249,9 +249,9 @@ test("not_my_message_view_actions", () => {
     assert.equal(response.move_message_menu_item, undefined);
 });
 
-test("not_my_message_view_source_and_move", () => {
-    set_page_params_no_edit_restrictions();
-    realm.realm_can_delete_any_message_group = everyone.id;
+test("not_my_message_view_source_and_move", ({override}) => {
+    set_page_params_no_edit_restrictions({override});
+    override(realm, "realm_can_delete_any_message_group", everyone.id);
     // Get message that is movable with viewable source
 
     const list = init_message_list();

@@ -37,10 +37,10 @@ run_test("user_can_change_email", ({override}) => {
     assert.equal(can_change_email(), true);
 
     override(current_user, "is_admin", false);
-    realm.realm_email_changes_disabled = true;
+    override(realm, "realm_email_changes_disabled", true);
     assert.equal(can_change_email(), false);
 
-    realm.realm_email_changes_disabled = false;
+    override(realm, "realm_email_changes_disabled", false);
     assert.equal(can_change_email(), true);
 });
 
@@ -51,16 +51,16 @@ run_test("user_can_change_name", ({override}) => {
     assert.equal(can_change_name(), true);
 
     override(current_user, "is_admin", false);
-    realm.realm_name_changes_disabled = true;
-    realm.server_name_changes_disabled = false;
+    override(realm, "realm_name_changes_disabled", true);
+    override(realm, "server_name_changes_disabled", false);
     assert.equal(can_change_name(), false);
 
-    realm.realm_name_changes_disabled = false;
-    realm.server_name_changes_disabled = false;
+    override(realm, "realm_name_changes_disabled", false);
+    override(realm, "server_name_changes_disabled", false);
     assert.equal(can_change_name(), true);
 
-    realm.realm_name_changes_disabled = false;
-    realm.server_name_changes_disabled = true;
+    override(realm, "realm_name_changes_disabled", false);
+    override(realm, "server_name_changes_disabled", true);
     assert.equal(can_change_name(), false);
 });
 
@@ -71,16 +71,16 @@ run_test("user_can_change_avatar", ({override}) => {
     assert.equal(can_change_avatar(), true);
 
     override(current_user, "is_admin", false);
-    realm.realm_avatar_changes_disabled = true;
-    realm.server_avatar_changes_disabled = false;
+    override(realm, "realm_avatar_changes_disabled", true);
+    override(realm, "server_avatar_changes_disabled", false);
     assert.equal(can_change_avatar(), false);
 
-    realm.realm_avatar_changes_disabled = false;
-    realm.server_avatar_changes_disabled = false;
+    override(realm, "realm_avatar_changes_disabled", false);
+    override(realm, "server_avatar_changes_disabled", false);
     assert.equal(can_change_avatar(), true);
 
-    realm.realm_avatar_changes_disabled = false;
-    realm.server_avatar_changes_disabled = true;
+    override(realm, "realm_avatar_changes_disabled", false);
+    override(realm, "server_avatar_changes_disabled", true);
     assert.equal(can_change_avatar(), false);
 });
 
@@ -88,19 +88,19 @@ run_test("user_can_change_logo", ({override}) => {
     const can_change_logo = settings_data.user_can_change_logo;
 
     override(current_user, "is_admin", true);
-    realm.zulip_plan_is_not_limited = true;
+    override(realm, "zulip_plan_is_not_limited", true);
     assert.equal(can_change_logo(), true);
 
     override(current_user, "is_admin", false);
-    realm.zulip_plan_is_not_limited = false;
+    override(realm, "zulip_plan_is_not_limited", false);
     assert.equal(can_change_logo(), false);
 
     override(current_user, "is_admin", true);
-    realm.zulip_plan_is_not_limited = false;
+    override(realm, "zulip_plan_is_not_limited", false);
     assert.equal(can_change_logo(), false);
 
     override(current_user, "is_admin", false);
-    realm.zulip_plan_is_not_limited = true;
+    override(realm, "zulip_plan_is_not_limited", true);
     assert.equal(can_change_logo(), false);
 });
 
@@ -138,7 +138,7 @@ function test_policy(label, policy, validation_func) {
         override(current_user, "user_id", 30);
         isaac.date_joined = new Date(Date.now());
         settings_data.initialize(isaac.date_joined);
-        realm.realm_waiting_period_threshold = 10;
+        override(realm, "realm_waiting_period_threshold", 10);
         assert.equal(validation_func(), false);
 
         isaac.date_joined = new Date(Date.now() - 20 * 86400000);
@@ -197,7 +197,7 @@ function test_message_policy(label, policy, validation_func) {
         realm[policy] = settings_config.common_message_policy_values.by_full_members.code;
         override(current_user, "user_id", 30);
         isaac.date_joined = new Date(Date.now());
-        realm.realm_waiting_period_threshold = 10;
+        override(realm, "realm_waiting_period_threshold", 10);
         settings_data.initialize(isaac.date_joined);
         assert.equal(validation_func(), false);
 
@@ -216,7 +216,11 @@ test_message_policy(
 run_test("user_can_move_messages_to_another_topic_nobody_case", ({override}) => {
     override(current_user, "is_admin", true);
     override(current_user, "is_guest", false);
-    realm.realm_edit_topic_policy = settings_config.edit_topic_policy_values.nobody.code;
+    override(
+        realm,
+        "realm_edit_topic_policy",
+        settings_config.edit_topic_policy_values.nobody.code,
+    );
     assert.equal(settings_data.user_can_move_messages_to_another_topic(), false);
 });
 
@@ -408,7 +412,7 @@ run_test("can_manage_user_group", ({override}) => {
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
     page_params.is_spectator = false;
-    realm.realm_can_manage_all_groups = admins.id;
+    override(realm, "realm_can_manage_all_groups", admins.id);
     override(current_user, "user_id", 3);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
@@ -424,14 +428,14 @@ run_test("can_manage_user_group", ({override}) => {
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
-    realm.realm_can_manage_all_groups = members.id;
+    override(realm, "realm_can_manage_all_groups", members.id);
     override(current_user, "user_id", 3);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
     override(current_user, "user_id", 2);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
-    realm.realm_can_manage_all_groups = admins.id;
+    override(realm, "realm_can_manage_all_groups", admins.id);
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
@@ -511,7 +515,7 @@ run_test("can_join_user_group", ({override}) => {
     user_groups.initialize({
         realm_user_groups: [admins, moderators, members, nobody, students],
     });
-    realm.realm_can_manage_all_groups = nobody.id;
+    override(realm, "realm_can_manage_all_groups", nobody.id);
 
     page_params.is_spectator = true;
     assert.ok(!settings_data.can_join_user_group(students.id));
@@ -561,7 +565,7 @@ run_test("can_join_user_group", ({override}) => {
     override(current_user, "user_id", 4);
     assert.ok(settings_data.can_join_user_group(students.id));
 
-    realm.realm_can_manage_all_groups = moderators.id;
+    override(realm, "realm_can_manage_all_groups", moderators.id);
     override(current_user, "user_id", 2);
     assert.ok(settings_data.can_join_user_group(students.id));
 });
@@ -605,7 +609,7 @@ run_test("user_can_access_all_other_users", ({override}) => {
     };
 
     user_groups.initialize({realm_user_groups: [members, everyone]});
-    realm.realm_can_access_all_users_group = members.id;
+    override(realm, "realm_can_access_all_users_group", members.id);
 
     // Test spectators case.
     page_params.is_spectator = true;
@@ -618,7 +622,7 @@ run_test("user_can_access_all_other_users", ({override}) => {
     override(current_user, "user_id", guest_user_id);
     assert.ok(!settings_data.user_can_access_all_other_users());
 
-    realm.realm_can_access_all_users_group = everyone.id;
+    override(realm, "realm_can_access_all_users_group", everyone.id);
     assert.ok(settings_data.user_can_access_all_other_users());
 });
 
@@ -648,8 +652,8 @@ run_test("user_can_create_private_streams", () => {
 });
 
 run_test("user_can_create_web_public_streams", ({override}) => {
-    realm.server_web_public_streams_enabled = true;
-    realm.realm_enable_spectator_access = true;
+    override(realm, "server_web_public_streams_enabled", true);
+    override(realm, "realm_enable_spectator_access", true);
 
     test_realm_group_settings(
         "realm_can_create_web_public_channel_group",
@@ -666,20 +670,20 @@ run_test("user_can_create_web_public_streams", ({override}) => {
     override(current_user, "user_id", owner_user_id);
     user_groups.initialize({realm_user_groups: [owners]});
 
-    realm.server_web_public_streams_enabled = true;
-    realm.realm_enable_spectator_access = true;
-    realm.realm_can_create_web_public_channel_group = owners.id;
+    override(realm, "server_web_public_streams_enabled", true);
+    override(realm, "realm_enable_spectator_access", true);
+    override(realm, "realm_can_create_web_public_channel_group", owners.id);
     assert.equal(settings_data.user_can_create_web_public_streams(), true);
 
-    realm.realm_enable_spectator_access = false;
-    realm.server_web_public_streams_enabled = true;
+    override(realm, "realm_enable_spectator_access", false);
+    override(realm, "server_web_public_streams_enabled", true);
     assert.equal(settings_data.user_can_create_web_public_streams(), false);
 
-    realm.realm_enable_spectator_access = true;
-    realm.server_web_public_streams_enabled = false;
+    override(realm, "realm_enable_spectator_access", true);
+    override(realm, "server_web_public_streams_enabled", false);
     assert.equal(settings_data.user_can_create_web_public_streams(), false);
 
-    realm.realm_enable_spectator_access = false;
-    realm.server_web_public_streams_enabled = false;
+    override(realm, "realm_enable_spectator_access", false);
+    override(realm, "server_web_public_streams_enabled", false);
     assert.equal(settings_data.user_can_create_web_public_streams(), false);
 });

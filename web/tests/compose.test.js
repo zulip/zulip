@@ -522,7 +522,7 @@ test_ui("initialize", ({override}) => {
         resize_watch_manual_resize_checked = true;
     });
 
-    realm.max_file_upload_size_mib = 512;
+    override(realm, "max_file_upload_size_mib", 512);
 
     let uppy_cancel_all_called = false;
     override(upload, "compose_upload_cancel", () => {

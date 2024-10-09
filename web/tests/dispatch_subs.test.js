@@ -241,9 +241,9 @@ test("stream delete (special streams)", ({override}) => {
 
     // sanity check data
     assert.equal(event.streams.length, 2);
-    realm.realm_new_stream_announcements_stream_id = event.streams[0].stream_id;
-    realm.realm_signup_announcements_stream_id = event.streams[1].stream_id;
-    realm.realm_zulip_update_announcements_stream_id = event.streams[0].stream_id;
+    override(realm, "realm_new_stream_announcements_stream_id", event.streams[0].stream_id);
+    override(realm, "realm_signup_announcements_stream_id", event.streams[1].stream_id);
+    override(realm, "realm_zulip_update_announcements_stream_id", event.streams[0].stream_id);
 
     override(stream_settings_ui, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);

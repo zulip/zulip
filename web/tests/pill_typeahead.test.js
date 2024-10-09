@@ -614,7 +614,7 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
     const system_group_items = [moderators_item];
 
     page_params.development_environment = true;
-    realm.realm_waiting_period_threshold = 0;
+    override(realm, "realm_waiting_period_threshold", 0);
 
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);

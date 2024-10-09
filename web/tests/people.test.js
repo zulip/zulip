@@ -511,7 +511,7 @@ test_people("get_display_full_names", ({override}) => {
     people.add_active_user(bob);
     people.add_active_user(charles);
     people.add_active_user(guest);
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
 
     let user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
     let names = people.get_display_full_names(user_ids);
@@ -527,7 +527,7 @@ test_people("get_display_full_names", ({override}) => {
     ]);
 
     muted_users.add_muted_user(charles.user_id);
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     names = people.get_display_full_names(user_ids);
     assert.deepEqual(names, [
         "Me Myself",
@@ -547,7 +547,7 @@ test_people("get_display_full_names", ({override}) => {
         "translated: Muted user",
     ]);
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     names = people.get_display_full_names(user_ids);
     assert.deepEqual(names, [
         "Me Myself",
@@ -1428,15 +1428,15 @@ test_people("get_realm_active_human_users", () => {
     assert.deepEqual(humans, [me]);
 });
 
-test_people("should_show_guest_user_indicator", () => {
+test_people("should_show_guest_user_indicator", ({override}) => {
     people.add_active_user(charles);
     people.add_active_user(guest);
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
     assert.equal(people.should_add_guest_user_indicator(guest.user_id), false);
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
     assert.equal(people.should_add_guest_user_indicator(guest.user_id), true);
 });
@@ -1444,7 +1444,7 @@ test_people("should_show_guest_user_indicator", () => {
 test_people("get_user_by_id_assert_valid", ({override}) => {
     people.add_active_user(charles);
     const inaccessible_user_id = 99;
-    realm.realm_bot_domain = "zulipdev.com";
+    override(realm, "realm_bot_domain", "zulipdev.com");
     override(settings_data, "user_can_access_all_other_users", () => false);
 
     let user = people.get_user_by_id_assert_valid(inaccessible_user_id);
@@ -1476,14 +1476,14 @@ test_people("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.email, charles.email);
 });
 
-test_people("user_can_initiate_direct_message_thread", () => {
+test_people("user_can_initiate_direct_message_thread", ({override}) => {
     people.add_active_user(welcome_bot);
-    realm.realm_direct_message_initiator_group = nobody.id;
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
     assert.ok(!people.user_can_initiate_direct_message_thread("32"));
     // Can send if only bots and self are present.
     assert.ok(people.user_can_initiate_direct_message_thread("4,30"));
 
-    realm.realm_direct_message_initiator_group = everyone.id;
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
     assert.ok(people.user_can_initiate_direct_message_thread("32"));
 });
 

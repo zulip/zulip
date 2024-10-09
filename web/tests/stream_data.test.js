@@ -324,7 +324,11 @@ test("get_streams_for_user", ({override}) => {
     peer_data.set_subscribers(test.stream_id, [test_user.user_id]);
     peer_data.set_subscribers(world.stream_id, [me.user_id]);
 
-    realm.realm_invite_to_stream_policy = settings_config.common_policy_values.by_admins_only.code;
+    override(
+        realm,
+        "realm_invite_to_stream_policy",
+        settings_config.common_policy_values.by_admins_only.code,
+    );
     assert.deepEqual(stream_data.get_streams_for_user(me.user_id).can_subscribe, [social, errors]);
 
     // test_user is subscribed to all three streams, but current user (me)
@@ -347,7 +351,11 @@ test("get_streams_for_user", ({override}) => {
     ]);
     override(current_user, "is_admin", false);
 
-    realm.realm_invite_to_stream_policy = settings_config.common_policy_values.by_members.code;
+    override(
+        realm,
+        "realm_invite_to_stream_policy",
+        settings_config.common_policy_values.by_members.code,
+    );
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
         world,
         errors,
@@ -757,14 +765,14 @@ const jazy = {
     is_muted: true,
 };
 
-test("is_new_stream_announcements_stream_muted", () => {
+test("is_new_stream_announcements_stream_muted", ({override}) => {
     stream_data.add_sub(tony);
     stream_data.add_sub(jazy);
 
-    realm.realm_new_stream_announcements_stream_id = tony.stream_id;
+    override(realm, "realm_new_stream_announcements_stream_id", tony.stream_id);
     assert.ok(!stream_data.is_new_stream_announcements_stream_muted());
 
-    realm.realm_new_stream_announcements_stream_id = jazy.stream_id;
+    override(realm, "realm_new_stream_announcements_stream_id", jazy.stream_id);
     assert.ok(stream_data.is_new_stream_announcements_stream_muted());
 });
 
@@ -814,10 +822,10 @@ test("muted_stream_ids", () => {
     assert.deepEqual(stream_data.muted_stream_ids(), [1, 3]);
 });
 
-test("realm_has_new_stream_announcements_stream", () => {
-    realm.realm_new_stream_announcements_stream_id = 10;
+test("realm_has_new_stream_announcements_stream", ({override}) => {
+    override(realm, "realm_new_stream_announcements_stream_id", 10);
     assert.ok(stream_data.realm_has_new_stream_announcements_stream());
-    realm.realm_new_stream_announcements_stream_id = -1;
+    override(realm, "realm_new_stream_announcements_stream_id", -1);
     assert.ok(!stream_data.realm_has_new_stream_announcements_stream());
 });
 
@@ -879,7 +887,7 @@ test("create_sub", () => {
 
 test("creator_id", ({override}) => {
     people.add_active_user(test_user);
-    realm.realm_can_access_all_users_group = everyone_group.id;
+    override(realm, "realm_can_access_all_users_group", everyone_group.id);
     override(current_user, "user_id", me.user_id);
     // When creator id is not a valid user id
     assert.throws(() => stream_data.maybe_get_creator_details(-1), {
@@ -905,7 +913,7 @@ test("creator_id", ({override}) => {
     );
 });
 
-test("initialize", () => {
+test("initialize", ({override}) => {
     function get_params() {
         const params = {};
 
@@ -939,7 +947,7 @@ test("initialize", () => {
         stream_data.initialize(get_params());
     }
 
-    realm.realm_new_stream_announcements_stream_id = -1;
+    override(realm, "realm_new_stream_announcements_stream_id", -1);
 
     initialize();
 
@@ -950,7 +958,7 @@ test("initialize", () => {
     assert.equal(stream_data.get_new_stream_announcements_stream(), "");
 
     // Simulate a private stream the user isn't subscribed to
-    realm.realm_new_stream_announcements_stream_id = 89;
+    override(realm, "realm_new_stream_announcements_stream_id", 89);
     initialize();
     assert.equal(stream_data.get_new_stream_announcements_stream(), "");
 
@@ -1081,7 +1089,7 @@ test("can_post_messages_in_stream", ({override}) => {
     social.stream_post_policy = settings_config.stream_post_policy_values.non_new_members.code;
     override(current_user, "is_moderator", false);
     me.date_joined = new Date(Date.now());
-    realm.realm_waiting_period_threshold = 10;
+    override(realm, "realm_waiting_period_threshold", 10);
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     me.date_joined = new Date(Date.now() - 20 * 86400000);

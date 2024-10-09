@@ -69,7 +69,7 @@ test("profile_incomplete_alert", ({override}) => {
 
     // Show alert.
     override(current_user, "is_admin", true);
-    realm.realm_description = "Organization imported from Slack!";
+    override(realm, "realm_description", "Organization imported from Slack!");
     assert.equal(navbar_alerts.check_profile_incomplete(), true);
 
     // Avoid showing if the user is not admin.
@@ -79,7 +79,7 @@ test("profile_incomplete_alert", ({override}) => {
     // Avoid showing if the realm description is already updated.
     override(current_user, "is_admin", true);
     assert.equal(navbar_alerts.check_profile_incomplete(), true);
-    realm.realm_description = "Organization description already set!";
+    override(realm, "realm_description", "Organization description already set!");
     assert.equal(navbar_alerts.check_profile_incomplete(), false);
 });
 
@@ -103,12 +103,20 @@ test("demo_organization_days_remaining", ({override}) => {
     const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
 
     const high_priority_deadline = addDays(start_time, 5);
-    realm.demo_organization_scheduled_deletion_date = Math.trunc(high_priority_deadline / 1000);
+    override(
+        realm,
+        "demo_organization_scheduled_deletion_date",
+        Math.trunc(high_priority_deadline / 1000),
+    );
     override(Date, "now", () => start_time);
     assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 5);
 
     const low_priority_deadline = addDays(start_time, 10);
-    realm.demo_organization_scheduled_deletion_date = Math.trunc(low_priority_deadline / 1000);
+    override(
+        realm,
+        "demo_organization_scheduled_deletion_date",
+        Math.trunc(low_priority_deadline / 1000),
+    );
     override(Date, "now", () => start_time);
     assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 10);
 });

@@ -65,7 +65,7 @@ function test_helper(side_effects) {
     return self;
 }
 
-run_test("update_messages", () => {
+run_test("update_messages", ({override}) => {
     const raw_message = {
         id: 111,
         display_recipient: denmark.name,
@@ -115,7 +115,7 @@ run_test("update_messages", () => {
 
     const helper = test_helper(side_effects);
 
-    realm.realm_allow_edit_history = false;
+    override(realm, "realm_allow_edit_history", false);
 
     const $message_edit_history_modal = $.create("#message-edit-history");
     const $modal = $.create("micromodal").addClass("modal--open");

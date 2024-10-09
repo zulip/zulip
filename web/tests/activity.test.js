@@ -717,8 +717,8 @@ test("insert_unfiltered_user_with_filter", () => {
     activity_ui.redraw_user(fred.user_id);
 });
 
-test("realm_presence_disabled", () => {
-    realm.realm_presence_disabled = true;
+test("realm_presence_disabled", ({override}) => {
+    override(realm, "realm_presence_disabled", true);
 
     activity_ui.redraw_user();
     activity_ui.build_user_sidebar();
@@ -734,9 +734,9 @@ test("update_presence_info", ({override, override_rewire}) => {
     override(pm_list, "update_private_messages", noop);
     override_rewire(activity_ui, "update_presence_indicators", noop);
 
-    realm.realm_presence_disabled = false;
-    realm.server_presence_ping_interval_seconds = 60;
-    realm.server_presence_offline_threshold_seconds = 200;
+    override(realm, "realm_presence_disabled", false);
+    override(realm, "server_presence_ping_interval_seconds", 60);
+    override(realm, "server_presence_offline_threshold_seconds", 200);
 
     const server_time = 500;
     const info = {
@@ -918,7 +918,7 @@ test("test_send_or_receive_no_presence_for_spectator", () => {
     activity.send_presence_to_server();
 });
 
-test("check_should_redraw_new_user", () => {
+test("check_should_redraw_new_user", ({override}) => {
     presence.presence_info.set(9999, {status: "active"});
 
     // A user that wasn't yet known, but has presence info should be redrawn
@@ -927,10 +927,10 @@ test("check_should_redraw_new_user", () => {
 
     // We don't even build the user sidebar if realm_presence_disabled is true,
     // so nothing to redraw.
-    realm.realm_presence_disabled = true;
+    override(realm, "realm_presence_disabled", true);
     assert.equal(activity_ui.check_should_redraw_new_user(9999), false);
 
-    realm.realm_presence_disabled = false;
+    override(realm, "realm_presence_disabled", false);
     // A new user that didn't have presence info should not be redrawn.
     assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
 });

@@ -34,7 +34,7 @@ bot_data.initialize(bot_data_params);
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        realm.realm_url = "https://chat.example.com";
+        override(realm, "realm_url", "https://chat.example.com");
         realm.realm_embedded_bots = [
             {name: "converter", config: {}},
             {name: "giphy", config: {key: "12345678"}},
@@ -96,9 +96,9 @@ test("can_create_new_bots", ({override}) => {
     assert.ok(settings_bots.can_create_new_bots());
 
     override(current_user, "is_admin", false);
-    realm.realm_bot_creation_policy = 1;
+    override(realm, "realm_bot_creation_policy", 1);
     assert.ok(settings_bots.can_create_new_bots());
 
-    realm.realm_bot_creation_policy = 3;
+    override(realm, "realm_bot_creation_policy", 3);
     assert.ok(!settings_bots.can_create_new_bots());
 });

@@ -937,7 +937,7 @@ test("people_suggestions", ({override, mock_template}) => {
         }
     }
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     suggestions = get_suggestions(query);
 
     test_guest_user_indicator("dm:bob@zulip.com", false);
@@ -951,7 +951,7 @@ test("people_suggestions", ({override, mock_template}) => {
     test_guest_user_indicator("sender:bob@zulip.com", true);
     test_guest_user_indicator("dm-including:bob@zulip.com", true);
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     suggestions = get_suggestions(query);
 
     test_guest_user_indicator("dm:bob@zulip.com", false);
