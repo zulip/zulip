@@ -3,5 +3,5 @@
    sending.
 
 1. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>) button, or
-   use a [keyboard shortcut](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
-   to send your message.
+   use a [keyboard shortcut](/help/configure-send-message-keys) to send your
+   message.

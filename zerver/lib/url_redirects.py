@@ -36,10 +36,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
         "/help/add-custom-profile-fields",
         "/help/custom-profile-fields",
     ),
-    URLRedirect(
-        "/help/enable-enter-to-send",
-        "/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message",
-    ),
+    URLRedirect("/help/enable-enter-to-send", "/help/configure-send-message-keys"),
     URLRedirect(
         "/help/change-the-default-language-for-your-organization",
         "/help/configure-organization-language",

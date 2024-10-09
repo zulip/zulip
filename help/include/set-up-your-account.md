@@ -19,8 +19,8 @@
 
 - [Browse and subscribe to channels](/help/introduction-to-channels#browse-and-subscribe-to-channels).
 
-- Decide whether you want <kbd>Enter</kbd> [to send your message
-  or add a new line](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message).
+- Decide whether you want <kbd>Enter</kbd> [to send your message or add a
+  new line](/help/configure-send-message-keys).
 
 - [Configure your notifications](/#settings/notifications) to work the way
   you do. If you're joining a low traffic organization and aren't using the

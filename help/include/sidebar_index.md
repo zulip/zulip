@@ -46,6 +46,7 @@
 
 ## Preferences
 * [Dark theme](/help/dark-theme)
+* [Configure send message keys](/help/configure-send-message-keys)
 * [Font size](/help/font-size)
 * [Change your language](/help/change-your-language)
 * [Change your time zone](/help/change-your-timezone)
