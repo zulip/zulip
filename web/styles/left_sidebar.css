@@ -30,8 +30,22 @@
     cursor: pointer;
 }
 
-#left-sidebar-navigation-list .filter-icon i {
-    color: var(--color-left-sidebar-navigation-icon);
+.left-sidebar-navigation-list {
+    .filter-icon i {
+        color: var(--color-left-sidebar-navigation-icon);
+    }
+
+    .unread_count {
+        color: var(--color-unread-counter-normal);
+        background-color: var(--color-background-unread-counter-normal);
+    }
+}
+
+#streams_list {
+    .unread_count {
+        color: var(--color-unread-counter-normal);
+        background-color: var(--color-background-unread-counter-normal);
+    }
 }
 
 #stream_filters,
@@ -67,7 +81,7 @@
     /* Masked unreads display as flex when revealed. */
     align-items: center;
     justify-content: center;
-    color: var(--color-masked-unread-marker);
+    color: var(--color-background-unread-counter-normal);
     width: var(--left-sidebar-single-digit-unread-width);
 }
 
@@ -272,6 +286,16 @@
     /* Properly offset all the grid rows
        in the DM section. */
     margin-right: var(--left-sidebar-right-margin);
+
+    .unread_count {
+        color: var(--color-unread-counter-prominent);
+        background-color: var(--color-background-unread-counter-prominent);
+    }
+
+    .heading-markers-and-unreads .unread_count {
+        color: var(--color-unread-counter-normal);
+        background-color: var(--color-background-unread-counter-normal);
+    }
 
     & ul.dm-list {
         list-style-type: none;
@@ -715,9 +739,8 @@ li.active-sub-filter {
 .top_left_drafts .unread_count,
 .top_left_scheduled_messages .unread_count,
 .condensed-views-popover-menu .unread_count {
-    background-color: unset;
-    color: inherit;
-    border: 0.5px solid var(--color-border-unread-counter);
+    background-color: var(--color-background-unread-counter-quiet);
+    color: var(--color-unread-counter-quiet);
 }
 
 /* Don't show unread counts on views... */
