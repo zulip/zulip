@@ -158,3 +158,22 @@ export function is_user_subscribed(stream_id: number, user_id: number): boolean 
     const subscribers = get_user_set(stream_id);
     return subscribers.has(user_id);
 }
+
+export function count_guest_visible_users(stream_ids: number[]): number {
+    const valid_subscribers = new LazySet([]);
+
+    for (const stream_id of stream_ids) {
+        const subscribers = get_user_set(stream_id);
+
+        for (const user_id of subscribers.keys()) {
+            if (
+                people.maybe_get_user_by_id(user_id) &&
+                people.is_person_active(user_id) &&
+                !people.is_valid_bot_user(user_id)
+            ) {
+                valid_subscribers.add(user_id);
+            }
+        }
+    }
+    return valid_subscribers.size;
+}

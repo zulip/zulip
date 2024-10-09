@@ -22,6 +22,7 @@ import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill";
 import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -308,6 +309,33 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
+function update_guest_visible_users_count(): void {
+    const invite_as_value = $("#invite_as").val();
+
+    if (typeof invite_as_value !== "string") {
+        return;
+    }
+
+    const invite_as = Number.parseInt(invite_as_value, 10);
+    const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
+    if (!guest_role_selected || settings_data.guests_can_access_all_other_users()) {
+        $("#guest_visible_users_container").hide();
+        return;
+    }
+
+    const stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
+    const visible_users_count = peer_data.count_guest_visible_users(stream_ids);
+
+    const message = $t(
+        {defaultMessage: "Guests will be able to see {N} users in their channels when they join."},
+        {N: visible_users_count},
+    );
+
+    const $help_link = $("#guest_help_link");
+    $("#guest_visible_users_message").text(`${message} `).append($help_link);
+    $("#guest_visible_users_container").show();
+}
+
 function generate_invite_tips_data(): Record<string, boolean> {
     const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
@@ -359,6 +387,12 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             const $stream_pill_container = $("#invite_streams_container .pill-container");
             stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
         }
+
+        $("#invite_as, #invite_streams_container .input").on(
+            "change",
+            update_guest_visible_users_count,
+        );
+        update_guest_visible_users_count();
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
             dialog_widget.close();

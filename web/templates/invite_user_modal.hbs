@@ -91,5 +91,13 @@
             </div>
         </div>
     </div>
+    <div id="guest_visible_users_container" class="input-group" style="display: none;">
+        <p id="guest_visible_users_message">
+            {{t "Guests will be able to see {N} users in their channels when they join." }}
+            <a id="guest_help_link" class="help_link_widget" href="/help/guest-users#configure-whether-guests-can-see-all-other-users" target="_blank" rel="noopener noreferrer">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+        </p>
+    </div>
     {{/if}}
 </form>
