@@ -26,6 +26,9 @@ const settings_bots = zrequire("settings_bots");
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
 const settings_org = zrequire("settings_org");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 function test(label, f) {
     run_test(label, (helpers) => {

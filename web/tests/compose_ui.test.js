@@ -27,6 +27,9 @@ const channel = mock_esm("../src/channel");
 const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const alice = {
     email: "alice@zulip.com",

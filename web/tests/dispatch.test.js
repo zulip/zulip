@@ -13,7 +13,6 @@ const {
     page_params,
     realm,
     realm_user_settings_defaults,
-    user_settings,
 } = require("./lib/zpage_params");
 
 const event_fixtures = events.fixtures;
@@ -103,6 +102,10 @@ const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
 mock_esm("../src/giphy");
 const {Filter} = zrequire("filter");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 message_lists.update_recipient_bar_background_color = noop;
 message_lists.current = {

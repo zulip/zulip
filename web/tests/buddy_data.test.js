@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, realm} = require("./lib/zpage_params");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -24,6 +24,10 @@ const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
 const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 // The buddy_data module is mostly tested indirectly through
 // activity.test.js, but we should feel free to add direct tests

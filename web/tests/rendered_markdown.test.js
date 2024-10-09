@@ -7,7 +7,7 @@ const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {realm, user_settings} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 let clipboard_args;
 class Clipboard {
@@ -33,6 +33,10 @@ const message_store = mock_esm("../src/message_store");
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => false,
 });
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const iago = {
     email: "iago@zulip.com",

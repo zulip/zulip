@@ -131,8 +131,6 @@ test.set_verbose(files.length === 1);
         require("../../src/page_params");
         namespace.mock_esm("../../src/state_data", zpage_params);
         require("../../src/state_data");
-        namespace.mock_esm("../../src/user_settings", zpage_params);
-        require("../../src/user_settings");
         namespace.mock_esm("../../src/realm_user_settings_defaults", zpage_params);
         require("../../src/realm_user_settings_defaults");
 

@@ -16,6 +16,9 @@ const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const aaron = {
     email: "aaron@zulip.com",

@@ -19,10 +19,13 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");
+const {initialize_user_settings} = zrequire("user_settings");
 
 // It's typical to set up a little bit of data at the top of a
 // test module, but you can also do this within tests. Here we
 // will set up things at the top.
+
+initialize_user_settings({user_settings: {}});
 
 const isaac = make_user({
     email: "isaac@example.com",

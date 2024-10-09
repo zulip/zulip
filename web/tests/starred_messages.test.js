@@ -5,7 +5,6 @@ const assert = require("node:assert/strict");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
-const {user_settings} = require("./lib/zpage_params");
 
 const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
@@ -13,6 +12,10 @@ const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_ar
 const message_store = zrequire("message_store");
 const starred_messages = zrequire("starred_messages");
 const starred_messages_ui = zrequire("starred_messages_ui");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 run_test("add starred", () => {
     starred_messages.starred_ids.clear();

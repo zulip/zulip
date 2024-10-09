@@ -9,7 +9,11 @@ const {$t} = require("./lib/i18n");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {user_settings} = require("./lib/zpage_params");
+
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const timerender = zrequire("timerender");
 
