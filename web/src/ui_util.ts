@@ -22,19 +22,6 @@ export function place_caret_at_end(el: HTMLElement): void {
     }
 }
 
-export function replace_emoji_with_text($element: JQuery): void {
-    $element
-        .find(".emoji")
-        .text(function () {
-            if ($(this).is("img")) {
-                return $(this).attr("alt") ?? "";
-            }
-            return $(this).text();
-        })
-        .contents()
-        .unwrap();
-}
-
 export function change_katex_to_raw_latex($element: JQuery): void {
     // Find all the span elements with the class "katex"
     $element.find("span.katex").each(function () {

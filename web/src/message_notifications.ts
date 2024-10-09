@@ -3,18 +3,20 @@ import $ from "jquery";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as desktop_notifications from "./desktop_notifications";
-import type {ElectronBridgeNotification} from "./desktop_notifications";
-import {$t} from "./i18n";
+import type { ElectronBridgeNotification } from "./desktop_notifications";
+import { $t } from "./i18n";
 import * as message_parser from "./message_parser";
-import type {Message} from "./message_store";
+import type { Message } from "./message_store";
 import * as message_view from "./message_view";
 import * as people from "./people";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
-import {user_settings} from "./user_settings";
+import { user_settings } from "./user_settings";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
+
+import { get_emoji_codepoint } from "./emoji";
 
 type TestNotificationMessage = {
     id: number;
@@ -38,9 +40,20 @@ function small_avatar_url_for_test_notification(message: TestNotificationMessage
 
 function get_notification_content(message: Message | TestNotificationMessage): string {
     let content;
-    // Convert the content to plain text, replacing emoji with their alt text
+    // Convert the content to plain text, replacing emoji with their Unicode representations
     const $content = $("<div>").html(message.content);
-    ui_util.replace_emoji_with_text($content);
+
+    // Extract canonical emoji name and convert to Unicode
+    $content.find("span.emoji").each(function () {
+        const emoji_canonical_name = $(this).text().slice(1, -1);
+        const emoji_codepoint = get_emoji_codepoint(emoji_canonical_name);
+        if (emoji_codepoint) {
+            $(this).text(String.fromCodePoint(parseInt(emoji_codepoint, 16)));
+        } else {
+            $(this).text(emoji_canonical_name);
+        }
+    });
+
     ui_util.change_katex_to_raw_latex($content);
     ui_util.potentially_collapse_quotes($content);
     spoilers.hide_spoilers_in_notification($content);
@@ -50,7 +63,7 @@ function get_notification_content(message: Message | TestNotificationMessage): s
         (message_parser.message_has_image(message.content) ||
             message_parser.message_has_attachment(message.content))
     ) {
-        content = $t({defaultMessage: "(attached file)"});
+        content = $t({ defaultMessage: "(attached file)" });
     } else {
         content = $content.text();
     }
@@ -64,8 +77,8 @@ function get_notification_content(message: Message | TestNotificationMessage): s
         !user_settings.pm_content_in_desktop_notifications
     ) {
         content = $t(
-            {defaultMessage: "New direct message from {sender_full_name}"},
-            {sender_full_name: message.sender_full_name},
+            { defaultMessage: "New direct message from {sender_full_name}" },
+            { sender_full_name: message.sender_full_name },
         );
     }
 
@@ -118,8 +131,8 @@ function get_notification_title(
 
     if (msg_count > 1) {
         title_prefix = $t(
-            {defaultMessage: "{msg_count} messages from {sender_name}"},
-            {msg_count, sender_name: message.sender_full_name},
+            { defaultMessage: "{msg_count} messages from {sender_name}" },
+            { msg_count, sender_name: message.sender_full_name },
         );
     }
 
@@ -140,17 +153,17 @@ function get_notification_title(
                 if (title_prefix.length + other_recipients_translated.length > 50) {
                     // Then count how many people are in the conversation and summarize
                     title_suffix = $t(
-                        {defaultMessage: "(to you and {participants_count} more)"},
-                        {participants_count: message.display_recipient.length - 2},
+                        { defaultMessage: "(to you and {participants_count} more)" },
+                        { participants_count: message.display_recipient.length - 2 },
                     );
                 } else {
                     title_suffix = $t(
-                        {defaultMessage: "(to you and {other_participant_names})"},
-                        {other_participant_names: other_recipients_translated},
+                        { defaultMessage: "(to you and {other_participant_names})" },
+                        { other_participant_names: other_recipients_translated },
                     );
                 }
             } else {
-                title_suffix = $t({defaultMessage: "(to you)"});
+                title_suffix = $t({ defaultMessage: "(to you)" });
             }
 
             return title_prefix + " " + title_suffix;
@@ -209,7 +222,7 @@ export function process_notification(notification: {
             notification_object.addEventListener("click", () => {
                 notification_object.close();
                 if (message.type !== "test-notification") {
-                    message_view.narrow_by_topic(message.id, {trigger: "notification"});
+                    message_view.narrow_by_topic(message.id, { trigger: "notification" });
                 }
                 window.focus();
             });
