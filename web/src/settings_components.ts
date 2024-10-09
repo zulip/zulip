@@ -231,23 +231,23 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
     return [...$subsection.find(".prop-element")];
 }
 
-type simple_dropdown_realm_settings = Pick<
-    typeof realm,
-    | "realm_invite_to_stream_policy"
-    | "realm_invite_to_realm_policy"
-    | "realm_wildcard_mention_policy"
-    | "realm_move_messages_between_streams_policy"
-    | "realm_edit_topic_policy"
-    | "realm_org_type"
->;
+export const simple_dropdown_realm_settings_schema = realm_schema.pick({
+    realm_invite_to_stream_policy: true,
+    realm_invite_to_realm_policy: true,
+    realm_wildcard_mention_policy: true,
+    realm_move_messages_between_streams_policy: true,
+    realm_edit_topic_policy: true,
+    realm_org_type: true,
+});
+type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
 
 export function set_property_dropdown_value(
-    property_name: keyof simple_dropdown_realm_settings,
+    property_name: keyof SimpleDropdownRealmSettings,
 ): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const property_value = get_realm_settings_property_value(
         property_name,
-    ) as valueof<simple_dropdown_realm_settings>;
+    ) as valueof<SimpleDropdownRealmSettings>;
     $(`#id_${CSS.escape(property_name)}`).val(property_value);
 }
 
