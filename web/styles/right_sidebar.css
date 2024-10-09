@@ -329,6 +329,8 @@ $user_status_emoji_width: 24px;
     .unread_count:not(.hide) {
         display: block;
         margin-left: 4px;
+        color: var(--color-unread-counter-prominent);
+        background-color: var(--color-background-unread-counter-prominent);
 
         &:empty {
             /* Hide otherwise empty unread count pill
