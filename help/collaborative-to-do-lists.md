@@ -10,12 +10,13 @@
 
 1. Make sure the compose box is empty.
 
-2. Type `/todo` followed by a space, and the title of the to-do list.
+1. Type `/todo` followed by a space, and the title of the to-do list.
 
-3. _(optional)_ Type each task on a new line, with its description, if any, after a <kbd>:</kbd> and blank space.
+1. _(optional)_ Type each task on a new line, with its description, if
+   any, after a <kbd>:</kbd> and blank space.
 
-4. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>) button, or
-   use a [keyboard shortcut](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
+1. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>)
+   button, or use a [keyboard shortcut](/help/configure-send-message-keys)
    to send your message.
 
 !!! tip ""
@@ -28,7 +29,8 @@
 
 {start_tabs}
 
-1. Fill out the **New task** field and optionally the **Description** field at the bottom of the to-do list.
+1. Fill out the **New task** field and optionally the **Description**
+   field at the bottom of the to-do list.
 
 1. Click **Add task** to add the new task to the to-do list.
 

@@ -145,7 +145,7 @@ in the Zulip app to add more to your repertoire as needed.
   <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd> based on
   [your settings][toggle-enter-to-send]
 
-[toggle-enter-to-send]: /help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message
+[toggle-enter-to-send]: /help/configure-send-message-keys
 
 * **Insert italic text**: `*italic*` or <kbd>Ctrl</kbd> + <kbd>I</kbd>
 

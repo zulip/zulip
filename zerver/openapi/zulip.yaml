@@ -15130,7 +15130,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
+                              Whether the user setting for [sending on pressing Enter](/help/configure-send-message-keys)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -16107,7 +16107,7 @@ paths:
                           `update_display_settings`.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
-                          [set-enter-send]: /help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message
+                          [set-enter-send]: /help/configure-send-message-keys
                       emojiset_choices:
                         deprecated: true
                         description: |
@@ -17828,7 +17828,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
+                              Whether the user setting for [sending on pressing Enter](/help/configure-send-message-keys)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
