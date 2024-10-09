@@ -44,6 +44,13 @@ const george = {
     full_name: "George",
     user_id: 103,
 };
+const bot_botson = {
+    email: "botson-bot@example.com",
+    user_id: 35,
+    full_name: "Bot Botson",
+    is_bot: true,
+    role: 300,
+};
 
 function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);
@@ -291,4 +298,21 @@ test("is_subscriber_subset", () => {
     blueslip.expect("warn", "We called get_user_set for an untracked stream: undefined");
     peer_data.is_subscriber_subset(undefined, sub_a.stream_id);
     blueslip.reset();
+});
+
+test("get_unique_subscriber_count_for_streams", () => {
+    const sub = {name: "Rome", subscribed: true, stream_id: 1001};
+    stream_data.add_sub(sub);
+
+    people.add_active_user(fred);
+    people.add_active_user(gail);
+    people.add_active_user(george);
+    people.add_active_user(bot_botson);
+
+    const stream_id = sub.stream_id;
+    peer_data.set_subscribers(stream_id, [me.user_id, fred.user_id, bot_botson.user_id]);
+
+    const count = peer_data.get_unique_subscriber_count_for_streams([stream_id]);
+
+    assert.equal(count, 2);
 });

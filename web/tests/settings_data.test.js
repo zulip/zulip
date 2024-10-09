@@ -946,3 +946,31 @@ run_test("user_can_create_web_public_streams", ({override}) => {
     override(realm, "server_web_public_streams_enabled", false);
     assert.equal(settings_data.user_can_create_web_public_streams(), false);
 });
+
+run_test("guests_can_access_all_other_users", () => {
+    const guest_user_id = 1;
+    const member_user_id = 2;
+
+    const members = {
+        name: "role:members",
+        id: 1,
+        members: new Set([member_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    const everyone = {
+        name: "role:everyone",
+        id: 2,
+        members: new Set([guest_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+    };
+
+    user_groups.initialize({realm_user_groups: [members]});
+    realm.realm_can_access_all_users_group = members.id;
+    assert.ok(!settings_data.guests_can_access_all_other_users());
+
+    user_groups.initialize({realm_user_groups: [members, everyone]});
+    realm.realm_can_access_all_users_group = everyone.id;
+    assert.ok(settings_data.guests_can_access_all_other_users());
+});
