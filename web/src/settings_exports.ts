@@ -82,6 +82,12 @@ export function populate_exports_table(exports: RealmExport[]): void {
                 );
             }
 
+            let export_type = settings_config.export_type_values.export_public.description;
+            if (data.export_type !== settings_config.export_type_values.export_public.value) {
+                export_type =
+                    settings_config.export_type_values.export_full_with_consent.description;
+            }
+
             return render_admin_export_list({
                 realm_export: {
                     id: data.id,
@@ -94,6 +100,7 @@ export function populate_exports_table(exports: RealmExport[]): void {
                     time_failed: failed_timestamp,
                     pending: data.pending,
                     time_deleted: deleted_timestamp,
+                    export_type,
                 },
             });
         },
