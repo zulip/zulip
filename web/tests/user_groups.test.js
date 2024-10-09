@@ -370,7 +370,7 @@ run_test("is_user_in_group", () => {
     assert.equal(user_groups.is_user_in_group(admins.id, 6), false);
 });
 
-run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
+run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
     const nobody = {
         name: "role:nobody",
         description: "foo",
@@ -443,7 +443,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([4, 5]),
     };
 
-    realm.server_supported_permission_settings = {
+    override(realm, "server_supported_permission_settings", {
         stream: {
             can_remove_subscribers_group: {
                 require_system_group: true,
@@ -478,7 +478,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
                 allowed_system_groups: ["role:everyone", "role:members"],
             },
         },
-    };
+    });
 
     let expected_groups_list = [
         {name: "translated: Admins, moderators, members and guests", unique_id: 6},

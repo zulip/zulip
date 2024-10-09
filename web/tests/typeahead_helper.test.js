@@ -826,11 +826,11 @@ test("highlight_with_escaping", () => {
     assert.equal(result, expected);
 });
 
-test("render_person when emails hidden", ({mock_template}) => {
+test("render_person when emails hidden", ({mock_template, override}) => {
     // Test render_person with regular person, under hidden email visibility case
-    realm.custom_profile_field_types = {
+    override(realm, "custom_profile_field_types", {
         PRONOUNS: {id: 8, name: "Pronouns"},
-    };
+    });
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, b_user_1.full_name);
@@ -842,12 +842,12 @@ test("render_person when emails hidden", ({mock_template}) => {
     assert.ok(rendered);
 });
 
-test("render_person", ({mock_template}) => {
+test("render_person", ({mock_template, override}) => {
     // Test render_person with regular person
     a_user.delivery_email = "a_user_delivery@zulip.org";
-    realm.custom_profile_field_types = {
+    override(realm, "custom_profile_field_types", {
         PRONOUNS: {id: 8, name: "Pronouns"},
-    };
+    });
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, a_user.full_name);

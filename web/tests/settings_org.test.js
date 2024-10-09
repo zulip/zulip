@@ -3,7 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {$t} = require("./lib/i18n");
-const {mock_esm, zrequire, set_global} = require("./lib/namespace");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
@@ -38,10 +38,10 @@ function test(label, f) {
     run_test(label, (helpers) => {
         $("#realm-icon-upload-widget .upload-spinner-background").css = noop;
         helpers.override(current_user, "is_admin", false);
-        realm.realm_domains = [
+        helpers.override(realm, "realm_domains", [
             {domain: "example.com", allow_subdomains: true},
             {domain: "example.org", allow_subdomains: false},
-        ];
+        ]);
         helpers.override(realm, "realm_authentication_methods", {});
         settings_org.reset();
         f(helpers);
@@ -320,11 +320,15 @@ function test_sync_realm_settings({override}) {
         in the following order - by_admins_only, by_moderators_only, by_full_members,
         by_members. */
 
-        realm[`realm_${property_name}`] = settings_config.common_policy_values.by_members.code;
+        override(
+            realm,
+            `realm_${property_name}`,
+            settings_config.common_policy_values.by_members.code,
+        );
         $property_elem.val(settings_config.common_policy_values.by_members.code);
 
         for (const policy_value of Object.values(settings_config.common_policy_values)) {
-            realm[`realm_${property_name}`] = policy_value.code;
+            override(realm, `realm_${property_name}`, policy_value.code);
             settings_org.sync_realm_settings(property_name);
             assert.equal($property_elem.val(), policy_value.code);
         }
@@ -409,12 +413,15 @@ function test_sync_realm_settings({override}) {
     }
 }
 
-function test_parse_time_limit() {
+function test_parse_time_limit({override}) {
     const $elem = $("#id_realm_message_content_edit_limit_minutes");
     const test_function = (value, expected_value = value) => {
         $elem.val(value);
-        realm.realm_message_content_edit_limit_seconds =
-            settings_components.parse_time_limit($elem);
+        override(
+            realm,
+            "realm_message_content_edit_limit_seconds",
+            settings_components.parse_time_limit($elem),
+        );
         assert.equal(
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
@@ -516,7 +523,7 @@ function test_discard_changes_button({override}, discard_changes) {
 
 test("set_up", ({override, override_rewire}) => {
     override_rewire(settings_org, "check_disable_message_delete_limit_setting_dropdown", noop);
-    realm.realm_available_video_chat_providers = {
+    override(realm, "realm_available_video_chat_providers", {
         jitsi_meet: {
             id: 1,
             name: "Jitsi Meet",
@@ -529,7 +536,7 @@ test("set_up", ({override, override_rewire}) => {
             id: 4,
             name: "BigBlueButton",
         },
-    };
+    });
 
     let upload_realm_logo_or_icon;
     realm_icon.build_realm_icon_widget = (f) => {
@@ -679,7 +686,7 @@ test("set_up", ({override, override_rewire}) => {
     test_extract_property_name();
     test_change_save_button_state();
     test_sync_realm_settings({override});
-    test_parse_time_limit();
+    test_parse_time_limit({override});
     test_discard_changes_button(
         {override},
         $(".admin-realm-form").get_on_handler(
