@@ -64,6 +64,9 @@ class FakeElementState {
     delegated_event_handlers = new Map();
     is_focused = false;
     jquery_data = new Map();
+    jquery_find_results = new Map();
+    $jquery_parent = undefined;
+    jquery_parents_results = new Map();
     selector = undefined;
     shown = false;
 }
@@ -164,10 +167,6 @@ class FakeElement extends RejectMissing {
 exports.FakeJQuery = function (selector, opts) {
     let height;
 
-    const find_results = new Map();
-    let $my_parent;
-    const parents_result = new Map();
-
     const $self = {
         [Symbol.iterator]: Array.prototype.values,
 
@@ -240,8 +239,8 @@ exports.FakeJQuery = function (selector, opts) {
             return this;
         },
         empty() {
-            find_results.clear();
             for (const element of this) {
+                fake_element_state.get(element).jquery_find_results.clear();
                 element.innerHTML = "";
             }
             return this;
@@ -254,7 +253,8 @@ exports.FakeJQuery = function (selector, opts) {
             return this;
         },
         find(child_selector) {
-            const $child = find_results.get(child_selector);
+            assert.equal(this.length, 1);
+            const $child = fake_element_state.get(this[0]).jquery_find_results.get(child_selector);
             if ($child) {
                 return $child;
             }
@@ -409,11 +409,19 @@ exports.FakeJQuery = function (selector, opts) {
             );
         },
         parent() {
-            return $my_parent;
-        },
-        parents(parents_selector) {
+            assert.equal(this.length, 1);
             const state = fake_element_state.get(this[0]);
-            const $result = parents_result.get(parents_selector);
+            if (state.$jquery_parent === undefined) {
+                throw new Error(
+                    `You need to call $(${JSON.stringify(state.selector)}).set_parent(...)`,
+                );
+            }
+            return state.$jquery_parent;
+        },
+        parents(parents_selector = "*") {
+            assert.equal(this.length, 1);
+            const state = fake_element_state.get(this[0]);
+            const $result = state.jquery_parents_results.get(parents_selector);
             assert.ok(
                 $result,
                 "You need to call set_parents_result for " +
@@ -472,21 +480,24 @@ exports.FakeJQuery = function (selector, opts) {
             return this;
         },
         set_find_results(find_selector, $jquery_object) {
+            assert.equal(this.length, 1);
             assert.notEqual(
                 $jquery_object,
                 undefined,
                 "Please make the 'find result' be something like $.create('unused')",
             );
-            find_results.set(find_selector, $jquery_object);
+            fake_element_state.get(this[0]).jquery_find_results.set(find_selector, $jquery_object);
         },
         set_height(fake_height) {
             height = fake_height;
         },
         set_parent($parent_elem) {
-            $my_parent = $parent_elem;
+            assert.equal(this.length, 1);
+            fake_element_state.get(this[0]).$jquery_parent = $parent_elem;
         },
         set_parents_result(selector, $result) {
-            parents_result.set(selector, $result);
+            assert.equal(this.length, 1);
+            fake_element_state.get(this[0]).jquery_parents_results.set(selector, $result);
         },
         show() {
             for (const element of this) {

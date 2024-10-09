@@ -80,6 +80,7 @@ function createSaveButtons(subsection) {
         $("<failed-status-stub>"),
     );
     $stub_save_button.closest = () => $stub_save_button_header;
+    $save_button_controls.set_parent($stub_save_button_header);
     $save_button_controls.set_find_results(".save-button", $stub_save_button);
     $stub_save_button.set_find_results(".action-button-label", $stub_save_button_text);
     $stub_save_button_header.set_find_results(".save-button-controls", $save_button_controls);
