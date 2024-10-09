@@ -162,7 +162,7 @@ const get_content_element = () => {
     return $content;
 };
 
-run_test("misc_helpers", () => {
+run_test("misc_helpers", ({override}) => {
     const $elem = $.create("user-mention");
     rm.set_name_in_mention_element($elem, "Aaron");
     assert.equal($elem.text(), "@Aaron");
@@ -170,11 +170,11 @@ run_test("misc_helpers", () => {
     rm.set_name_in_mention_element($elem, "Aaron, but silent");
     assert.equal($elem.text(), "Aaron, but silent");
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
     assert.equal($elem.text(), "translated: Polonius (guest)");
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
     assert.equal($elem.text(), "Polonius");
 });
@@ -195,7 +195,7 @@ run_test("message_inline_video", () => {
     window.GestureEvent = false;
 });
 
-run_test("user-mention", () => {
+run_test("user-mention", ({override}) => {
     // Setup
     const $content = get_content_element();
     const $iago = $.create("user-mention(iago)");
@@ -208,7 +208,7 @@ run_test("user-mention", () => {
     $polonius.set_find_results(".highlight", false);
     $polonius.attr("data-user-id", polonius.user_id);
     $content.set_find_results(".user-mention", $array([$iago, $cordelia, $polonius]));
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     // Initial asserts
     assert.ok(!$iago.hasClass("user-mention-me"));
     assert.equal($iago.text(), "never-been-set");
@@ -228,14 +228,14 @@ run_test("user-mention", () => {
     assert.ok($iago.hasClass("user-mention-me"));
 });
 
-run_test("user-mention without guest indicator", () => {
+run_test("user-mention without guest indicator", ({override}) => {
     const $content = get_content_element();
     const $polonius = $.create("user-mention(polonius-again)");
     $polonius.set_find_results(".highlight", false);
     $polonius.attr("data-user-id", polonius.user_id);
     $content.set_find_results(".user-mention", $array([$polonius]));
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     rm.update_elements($content);
     assert.equal($polonius.text(), `@${polonius.full_name}`);
 });

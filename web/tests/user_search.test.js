@@ -122,7 +122,7 @@ test("clear_search", ({override}) => {
 });
 
 test("escape_search", ({override}) => {
-    realm.realm_presence_disabled = true;
+    override(realm, "realm_presence_disabled", true);
 
     override(resize, "resize_sidebars", noop);
     override(popovers, "hide_all", noop);
@@ -233,7 +233,7 @@ test("click on user header to toggle display", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(resize, "resize_sidebars", noop);
 
-    realm.realm_presence_disabled = true;
+    override(realm, "realm_presence_disabled", true);
 
     assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
 

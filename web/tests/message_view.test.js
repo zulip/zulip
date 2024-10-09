@@ -229,8 +229,8 @@ run_test("urls", () => {
     assert.equal(emails, "me@example.com");
 });
 
-run_test("show_empty_narrow_message", ({mock_template}) => {
-    realm.stop_words = [];
+run_test("show_empty_narrow_message", ({mock_template, override}) => {
+    override(realm, "stop_words", []);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -324,8 +324,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    realm.realm_direct_message_permission_group = everyone.id;
-    realm.realm_direct_message_initiator_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
     set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -358,7 +358,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    realm.realm_direct_message_permission_group = nobody.id;
+    override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user(s) in narrow/search
     set_filter([["dm", ["Yo"]]]);
@@ -412,7 +412,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    realm.realm_direct_message_permission_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
     set_filter([["dm", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -424,7 +424,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages to deactivated user
-    realm.realm_direct_message_permission_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
     people.deactivate(alice);
     set_filter([["dm", alice.email]]);
     narrow_banner.show_empty_narrow_message();
@@ -467,7 +467,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     people.add_active_user(alice);
 
     // organization has disabled sending direct messages
-    realm.realm_direct_message_permission_group = nobody.id;
+    override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user in narrow/search
     set_filter([["dm-including", ["Yo"]]]);
@@ -497,8 +497,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    realm.realm_direct_message_permission_group = everyone.id;
-    realm.realm_direct_message_permission_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+    override(realm, "realm_direct_message_permission_group", everyone.id);
     set_filter([["dm-including", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -586,8 +586,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 });
 
-run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
-    realm.stop_words = [];
+run_test("show_empty_narrow_message_with_search", ({mock_template, override}) => {
+    override(realm, "stop_words", []);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -602,8 +602,8 @@ run_test("hide_empty_narrow_message", () => {
     assert.equal($(".empty_feed_notice").text(), "never-been-set");
 });
 
-run_test("show_search_stopwords", ({mock_template}) => {
-    realm.stop_words = ["what", "about"];
+run_test("show_search_stopwords", ({mock_template, override}) => {
+    override(realm, "stop_words", ["what", "about"]);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 

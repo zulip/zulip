@@ -2020,7 +2020,7 @@ function make_web_public_sub(name, stream_id) {
     stream_data.add_sub(sub);
 }
 
-test("navbar_helpers", () => {
+test("navbar_helpers", ({override}) => {
     stream_data.add_sub(foo_sub);
 
     // make sure title has names separated with correct delimiters
@@ -2355,7 +2355,7 @@ test("navbar_helpers", () => {
         },
     ];
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
 
     for (const test_case of test_cases) {
         test_helpers(test_case);
@@ -2410,7 +2410,7 @@ test("navbar_helpers", () => {
 
     test_get_title(channel_topic_search_term_test_case);
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     const guest_user_test_cases_without_indicator = [
         {
             terms: guest_sender,

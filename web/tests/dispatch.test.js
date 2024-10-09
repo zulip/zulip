@@ -127,7 +127,6 @@ message_lists.all_rendered_message_lists = () => [cached_message_list, message_l
 
 // page_params is highly coupled to dispatching now
 page_params.test_suite = false;
-realm.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
@@ -453,7 +452,7 @@ run_test("scheduled_messages", ({override}) => {
 
 run_test("realm settings", ({override}) => {
     override(current_user, "is_admin", true);
-    realm.realm_date_created = new Date("2023-01-01Z");
+    override(realm, "realm_date_created", new Date("2023-01-01Z"));
 
     override(settings_org, "check_disable_direct_message_initiator_group_dropdown", noop);
     override(settings_org, "sync_realm_settings", noop);
@@ -540,17 +539,17 @@ run_test("realm settings", ({override}) => {
     event = event_fixtures.realm__update__new_stream_announcements_stream_id;
     dispatch(event);
     assert_same(realm.realm_new_stream_announcements_stream_id, 42);
-    realm.realm_new_stream_announcements_stream_id = -1; // make sure to reset for future tests
+    override(realm, "realm_new_stream_announcements_stream_id", -1); // make sure to reset for future tests
 
     event = event_fixtures.realm__update__signup_announcements_stream_id;
     dispatch(event);
     assert_same(realm.realm_signup_announcements_stream_id, 41);
-    realm.realm_signup_announcements_stream_id = -1; // make sure to reset for future tests
+    override(realm, "realm_signup_announcements_stream_id", -1); // make sure to reset for future tests
 
     event = event_fixtures.realm__update__zulip_update_announcements_stream_id;
     dispatch(event);
     assert_same(realm.realm_zulip_update_announcements_stream_id, 42);
-    realm.realm_zulip_update_announcements_stream_id = -1; // make sure to reset for future tests
+    override(realm, "realm_zulip_update_announcements_stream_id", -1); // make sure to reset for future tests
 
     event = event_fixtures.realm__update__default_code_block_language;
     dispatch(event);
@@ -573,13 +572,13 @@ run_test("realm settings", ({override}) => {
     };
 
     event = event_fixtures.realm__update_dict__default;
-    realm.realm_create_multiuse_invite_group = 1;
-    realm.realm_allow_message_editing = false;
-    realm.realm_message_content_edit_limit_seconds = 0;
-    realm.realm_edit_topic_policy = 3;
-    realm.realm_authentication_methods = {Google: {enabled: false, available: true}};
-    realm.realm_can_create_public_channel_group = 1;
-    realm.realm_direct_message_permission_group = 1;
+    override(realm, "realm_create_multiuse_invite_group", 1);
+    override(realm, "realm_allow_message_editing", false);
+    override(realm, "realm_message_content_edit_limit_seconds", 0);
+    override(realm, "realm_edit_topic_policy", 3);
+    override(realm, "realm_authentication_methods", {Google: {enabled: false, available: true}});
+    override(realm, "realm_can_create_public_channel_group", 1);
+    override(realm, "realm_direct_message_permission_group", 1);
     override(settings_org, "populate_auth_methods", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
@@ -694,7 +693,7 @@ run_test("realm_emoji", ({override}) => {
 
 run_test("realm_linkifiers", ({override}) => {
     const event = event_fixtures.realm_linkifiers;
-    realm.realm_linkifiers = [];
+    override(realm, "realm_linkifiers", []);
     override(settings_linkifiers, "populate_linkifiers", noop);
     override(linkifiers, "update_linkifier_rules", noop);
     dispatch(event);
@@ -703,7 +702,7 @@ run_test("realm_linkifiers", ({override}) => {
 
 run_test("realm_playgrounds", ({override}) => {
     const event = event_fixtures.realm_playgrounds;
-    realm.realm_playgrounds = [];
+    override(realm, "realm_playgrounds", []);
     override(settings_playgrounds, "populate_playgrounds", noop);
     override(realm_playground, "update_playgrounds", noop);
     dispatch(event);
@@ -712,7 +711,7 @@ run_test("realm_playgrounds", ({override}) => {
 
 run_test("realm_domains", ({override}) => {
     let event = event_fixtures.realm_domains__add;
-    realm.realm_domains = [];
+    override(realm, "realm_domains", []);
     override(settings_org, "populate_realm_domains_label", noop);
     override(settings_realm_domains, "populate_realm_domains_table", noop);
     dispatch(event);

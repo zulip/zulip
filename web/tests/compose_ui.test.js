@@ -187,7 +187,7 @@ run_test("replace_syntax", ({override}) => {
     assert.equal(prev_caret + "$$\\pi$$".length - "Bca".length, $textbox.caret());
 });
 
-run_test("compute_placeholder_text", () => {
+run_test("compute_placeholder_text", ({override}) => {
     let opts = {
         message_type: "stream",
         stream_id: undefined,
@@ -253,13 +253,13 @@ run_test("compute_placeholder_text", () => {
     );
 
     alice.is_guest = true;
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message translated: Alice (guest) and Bob"}),
     );
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice and Bob"}),

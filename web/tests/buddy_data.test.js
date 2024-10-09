@@ -417,7 +417,7 @@ test("get_conversation_participants", ({override_rewire}) => {
 });
 
 test("level", ({override}) => {
-    realm.server_presence_offline_threshold_seconds = 200;
+    override(realm, "server_presence_offline_threshold_seconds", 200);
 
     add_canned_users();
     assert.equal(buddy_data.level(me.user_id), 0);
@@ -534,12 +534,12 @@ test("user_last_seen_time_status", ({override}) => {
 
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
-    realm.realm_is_zephyr_mirror_realm = true;
+    override(realm, "realm_is_zephyr_mirror_realm", true);
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Activity unknown",
     );
-    realm.realm_is_zephyr_mirror_realm = false;
+    override(realm, "realm_is_zephyr_mirror_realm", false);
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Not active in the last year",

@@ -569,8 +569,8 @@ test("on_narrow", ({override, override_rewire}) => {
         start_called = true;
     });
     narrowed_by_pm_reply = true;
-    realm.realm_direct_message_permission_group = nobody.id;
-    realm.realm_direct_message_initiator_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
@@ -585,7 +585,7 @@ test("on_narrow", ({override, override_rewire}) => {
     });
     assert.ok(start_called);
 
-    realm.realm_direct_message_permission_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
     blueslip.expect("warn", "Unknown emails");
     compose_actions.on_narrow({
         force_close: false,
