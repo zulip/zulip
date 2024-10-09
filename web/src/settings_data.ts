@@ -351,3 +351,10 @@ export function get_request_data_for_stream_privacy(selected_val: string): {
         }
     }
 }
+
+export function guests_can_access_all_other_users(): boolean {
+    const everyone_group = user_groups.get_user_group_from_id(
+        realm.realm_can_access_all_users_group,
+    );
+    return everyone_group.name === "role:everyone";
+}

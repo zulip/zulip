@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
+import render_guest_visible_users_message from "../templates/guest_visible_users_message.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
 import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
@@ -22,6 +23,7 @@ import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill";
 import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -308,6 +310,31 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
+function update_guest_visible_users_count(): void {
+    const invite_as = Number.parseInt(
+        $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
+        10,
+    );
+
+    assert(!Number.isNaN(invite_as));
+
+    const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
+    if (!guest_role_selected || settings_data.guests_can_access_all_other_users()) {
+        $("#guest_visible_users_container").hide();
+        return;
+    }
+    const stream_ids = $("#invite_select_default_streams").is(":checked")
+        ? stream_data.get_default_stream_ids()
+        : stream_pill.get_stream_ids(stream_pill_widget);
+    const visible_users_count = peer_data.get_unique_subscriber_count_for_streams(stream_ids);
+
+    const message_html = render_guest_visible_users_message({
+        user_count: visible_users_count,
+    });
+
+    $("#guest_visible_users_container").html(message_html).show();
+}
+
 function generate_invite_tips_data(): Record<string, boolean> {
     const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
@@ -359,6 +386,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             const $stream_pill_container = $("#invite_streams_container .pill-container");
             stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
         }
+
+        $("#invite_as, #invite_streams_container .input, #invite_select_default_streams").on(
+            "change",
+            update_guest_visible_users_count,
+        );
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
             dialog_widget.close();
