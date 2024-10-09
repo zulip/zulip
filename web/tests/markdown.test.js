@@ -38,7 +38,6 @@ const example_realm_linkifiers = [
         id: 4,
     },
 ];
-user_settings.translate_emoticons = false;
 
 set_global("document", {compatMode: "CSS1Compat"});
 
@@ -259,7 +258,7 @@ test("markdown_detection", () => {
     }
 });
 
-test("marked_shared", () => {
+test("marked_shared", ({override}) => {
     const tests = markdown_test_cases.regular_tests;
 
     for (const test of tests) {
@@ -270,7 +269,7 @@ test("marked_shared", () => {
         }
 
         let message = {raw_content: test.input};
-        user_settings.translate_emoticons = test.translate_emoticons || false;
+        override(user_settings, "translate_emoticons", test.translate_emoticons || false);
         message = {
             ...message,
             ...markdown.render(message.raw_content),
@@ -320,7 +319,7 @@ test("message_flags", () => {
     assert.ok(message.flags.includes("topic_wildcard_mentioned"));
 });
 
-test("marked", () => {
+test("marked", ({override}) => {
     const test_cases = [
         {input: "hello", expected: "<p>hello</p>"},
         {input: "hello there", expected: "<p>hello there</p>"},
@@ -633,7 +632,7 @@ test("marked", () => {
 
     for (const test_case of test_cases) {
         // Disable emoji conversion by default.
-        user_settings.translate_emoticons = test_case.translate_emoticons || false;
+        override(user_settings, "translate_emoticons", test_case.translate_emoticons || false);
 
         const input = test_case.input;
         const expected = test_case.expected;

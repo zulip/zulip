@@ -101,7 +101,7 @@ function add_canned_users() {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        user_settings.presence_enabled = true;
+        helpers.override(user_settings, "presence_enabled", true);
         compose_fade_helper.clear_focused_recipient();
         stream_data.clear_subscriptions();
         peer_data.clear_for_testing();
@@ -126,7 +126,7 @@ function set_presence(user_id, status) {
     });
 }
 
-test("user_circle, level", () => {
+test("user_circle, level", ({override}) => {
     add_canned_users();
 
     set_presence(selma.user_id, "active");
@@ -145,11 +145,11 @@ test("user_circle, level", () => {
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
     assert.equal(buddy_data.level(me.user_id), 0);
 
-    user_settings.presence_enabled = false;
+    override(user_settings, "presence_enabled", false);
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_empty");
     assert.equal(buddy_data.level(me.user_id), 0);
 
-    user_settings.presence_enabled = true;
+    override(user_settings, "presence_enabled", true);
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
     assert.equal(buddy_data.level(me.user_id), 0);
 
@@ -412,7 +412,7 @@ test("get_conversation_participants", ({override_rewire}) => {
     assert.deepEqual(buddy_data.get_conversation_participants(), new Set([selma.user_id]));
 });
 
-test("level", () => {
+test("level", ({override}) => {
     realm.server_presence_offline_threshold_seconds = 200;
 
     add_canned_users();
@@ -432,7 +432,7 @@ test("level", () => {
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 1);
 
-    user_settings.presence_enabled = false;
+    override(user_settings, "presence_enabled", false);
     set_presence(selma.user_id, "offline");
 
     // Selma gets demoted to level 3, but "me"
@@ -557,12 +557,12 @@ test("user_last_seen_time_status", ({override}) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
-test("get_items_for_users", () => {
+test("get_items_for_users", ({override}) => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     set_presence(alice.user_id, "offline");
-    user_settings.emojiset = "google";
-    user_settings.user_list_style = 2;
+    override(user_settings, "emojiset", "google");
+    override(user_settings, "user_list_style", 2);
 
     const status_emoji_info = {
         emoji_alt_code: false,

@@ -90,13 +90,13 @@ run_test("initialize", () => {
     assert.deepEqual(starred_messages.get_starred_msg_ids(), [4, 5, 6]);
 });
 
-run_test("rerender_ui", () => {
+run_test("rerender_ui", ({override}) => {
     starred_messages.starred_ids.clear();
     for (const id of [1, 2, 3]) {
         starred_messages.starred_ids.add(id);
     }
 
-    user_settings.starred_message_counts = true;
+    override(user_settings, "starred_message_counts", true);
     with_overrides(({override}) => {
         const stub = make_stub();
         override(left_sidebar_navigation_area, "update_starred_count", stub.f);
@@ -107,7 +107,7 @@ run_test("rerender_ui", () => {
         assert.equal(args.hidden, false);
     });
 
-    user_settings.starred_message_counts = false;
+    override(user_settings, "starred_message_counts", false);
     with_overrides(({override}) => {
         const stub = make_stub();
         override(left_sidebar_navigation_area, "update_starred_count", stub.f);

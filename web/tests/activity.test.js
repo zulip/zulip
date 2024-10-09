@@ -116,7 +116,7 @@ function add_sub_and_set_as_current_narrow(sub) {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        user_settings.presence_enabled = true;
+        helpers.override(user_settings, "presence_enabled", true);
         // Simulate a small window by having the
         // fill_screen_with_content render the entire
         // list in one pass.  We will do more refined
@@ -158,7 +158,7 @@ run_test("reload_defaults", () => {
     assert.equal(activity_ui.get_filter_text(), "");
 });
 
-test("get_status", () => {
+test("get_status", ({override}) => {
     page_params.realm_users = [];
     current_user.user_id = 999;
 
@@ -167,9 +167,9 @@ test("get_status", () => {
     assert.equal(presence.get_status(mark.user_id), "idle");
     assert.equal(presence.get_status(fred.user_id), "active");
 
-    user_settings.presence_enabled = false;
+    override(user_settings, "presence_enabled", false);
     assert.equal(presence.get_status(current_user.user_id), "offline");
-    user_settings.presence_enabled = true;
+    override(user_settings, "presence_enabled", true);
     assert.equal(presence.get_status(current_user.user_id), "active");
 
     presence.presence_info.delete(zoe.user_id);
@@ -505,7 +505,7 @@ test("render_empty_user_list_message", ({override, mock_template}) => {
 });
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
-    user_settings.user_list_style = 2;
+    override(user_settings, "user_list_style", 2);
 
     override(padded_widget, "update_padding", noop);
     mock_template("presence_row.hbs", true, (data, html) => {

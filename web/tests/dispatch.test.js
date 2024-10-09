@@ -893,7 +893,7 @@ run_test("stream_typing", ({override}) => {
 run_test("user_settings", ({override}) => {
     settings_preferences.set_default_language_name = () => {};
     let event = event_fixtures.user_settings__default_language;
-    user_settings.default_language = "en";
+    override(user_settings, "default_language", "en");
     override(settings_preferences, "update_page", noop);
     override(information_density, "calculate_timestamp_widths", noop);
     override(overlays, "settings_open", () => true);
@@ -901,7 +901,7 @@ run_test("user_settings", ({override}) => {
     assert_same(user_settings.default_language, "fr");
 
     event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
-    user_settings.web_escape_navigates_to_home_view = false;
+    override(user_settings, "web_escape_navigates_to_home_view", false);
     let toggled = [];
     $("#go-to-home-view-hotkey-help").toggleClass = (cls) => {
         toggled.push(cls);
@@ -919,24 +919,24 @@ run_test("user_settings", ({override}) => {
         called_for_cached_msg_list = true;
     };
     event = event_fixtures.user_settings__twenty_four_hour_time;
-    user_settings.twenty_four_hour_time = false;
+    override(user_settings, "twenty_four_hour_time", false);
     dispatch(event);
     assert_same(user_settings.twenty_four_hour_time, true);
     assert_same(called, true);
     assert_same(called_for_cached_msg_list, true);
 
     event = event_fixtures.user_settings__translate_emoticons;
-    user_settings.translate_emoticons = false;
+    override(user_settings, "translate_emoticons", false);
     dispatch(event);
     assert_same(user_settings.translate_emoticons, true);
 
     event = event_fixtures.user_settings__display_emoji_reaction_users;
-    user_settings.display_emoji_reaction_users = false;
+    override(user_settings, "display_emoji_reaction_users", false);
     dispatch(event);
     assert_same(user_settings.display_emoji_reaction_users, true);
 
     event = event_fixtures.user_settings__high_contrast_mode;
-    user_settings.high_contrast_mode = false;
+    override(user_settings, "high_contrast_mode", false);
     toggled = [];
     $("body").toggleClass = (cls) => {
         toggled.push(cls);
@@ -946,18 +946,18 @@ run_test("user_settings", ({override}) => {
     assert_same(toggled, ["high-contrast"]);
 
     event = event_fixtures.user_settings__web_mark_read_on_scroll_policy;
-    user_settings.web_mark_read_on_scroll_policy = 3;
+    override(user_settings, "web_mark_read_on_scroll_policy", 3);
     override(unread_ui, "update_unread_banner", noop);
     dispatch(event);
     assert_same(user_settings.web_mark_read_on_scroll_policy, 1);
 
     event = event_fixtures.user_settings__web_channel_default_view;
-    user_settings.web_channel_default_view = 2;
+    override(user_settings, "web_channel_default_view", 2);
     dispatch(event);
     assert_same(user_settings.web_channel_default_view, 1);
 
     event = event_fixtures.user_settings__dense_mode;
-    user_settings.dense_mode = false;
+    override(user_settings, "dense_mode", false);
     settings_preferences.user_settings_panel = {
         container: "#user-preferences",
     };
@@ -968,13 +968,13 @@ run_test("user_settings", ({override}) => {
     assert_same(toggled, ["less-dense-mode", "more-dense-mode"]);
 
     event = event_fixtures.user_settings__web_font_size_px;
-    user_settings.web_font_size_px = 14;
+    override(user_settings, "web_font_size_px", 14);
     override(information_density, "set_base_typography_css_variables", noop);
     dispatch(event);
     assert_same(user_settings.web_font_size_px, 16);
 
     event = event_fixtures.user_settings__web_line_height_percent;
-    user_settings.web_font_size_px = 122;
+    override(user_settings, "web_font_size_px", 122);
     override(information_density, "set_base_typography_css_variables", noop);
     dispatch(event);
     assert_same(user_settings.web_line_height_percent, 130);
@@ -982,7 +982,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_automatic;
-        user_settings.color_scheme = 2;
+        override(user_settings, "color_scheme", 2);
         override(theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
         const args = stub.get_args("color_scheme_code");
@@ -993,7 +993,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_dark;
-        user_settings.color_scheme = 1;
+        override(user_settings, "color_scheme", 1);
         override(theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
         const args = stub.get_args("color_scheme_code");
@@ -1004,7 +1004,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_light;
-        user_settings.color_scheme = 1;
+        override(user_settings, "color_scheme", 1);
         override(theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
         const args = stub.get_args("color_scheme_code");
@@ -1014,41 +1014,41 @@ run_test("user_settings", ({override}) => {
 
     {
         event = event_fixtures.user_settings__web_home_view_recent_topics;
-        user_settings.web_home_view = "all_messages";
+        override(user_settings, "web_home_view", "all_messages");
         dispatch(event);
         assert.equal(user_settings.web_home_view, "recent_topics");
     }
 
     {
         event = event_fixtures.user_settings__web_home_view_all_messages;
-        user_settings.web_home_view = "recent_topics";
+        override(user_settings, "web_home_view", "recent_topics");
         dispatch(event);
         assert.equal(user_settings.web_home_view, "all_messages");
     }
 
     {
         event = event_fixtures.user_settings__web_home_view_inbox;
-        user_settings.web_home_view = "all_messages";
+        override(user_settings, "web_home_view", "all_messages");
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
     }
     {
         event = event_fixtures.user_settings__web_animate_image_previews_always;
-        user_settings.web_animate_image_previews = "on_hover";
+        override(user_settings, "web_animate_image_previews", "on_hover");
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "always");
     }
 
     {
         event = event_fixtures.user_settings__web_animate_image_previews_on_hover;
-        user_settings.web_animate_image_previews = "never";
+        override(user_settings, "web_animate_image_previews", "never");
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "on_hover");
     }
 
     {
         event = event_fixtures.user_settings__web_animate_image_previews_never;
-        user_settings.web_animate_image_previews = "always";
+        override(user_settings, "web_animate_image_previews", "always");
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "never");
     }
@@ -1059,7 +1059,7 @@ run_test("user_settings", ({override}) => {
         called = false;
         override(settings_preferences, "report_emojiset_change", stub.f);
         override(activity_ui, "build_user_sidebar", noop);
-        user_settings.emojiset = "text";
+        override(user_settings, "emojiset", "text");
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(called, true);
@@ -1067,24 +1067,24 @@ run_test("user_settings", ({override}) => {
     }
 
     event = event_fixtures.user_settings__starred_message_counts;
-    user_settings.starred_message_counts = false;
+    override(user_settings, "starred_message_counts", false);
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
 
     event = event_fixtures.user_settings__receives_typing_notifications;
-    user_settings.receives_typing_notifications = false;
+    override(user_settings, "receives_typing_notifications", false);
     dispatch(event);
     assert_same(user_settings.receives_typing_notifications, true);
 
     event = event_fixtures.user_settings__receives_typing_notifications_disabled;
     override(typing_events, "disable_typing_notification", noop);
-    user_settings.receives_typing_notifications = true;
+    override(user_settings, "receives_typing_notifications", true);
     dispatch(event);
     assert_same(user_settings.receives_typing_notifications, false);
 
     override(scroll_bar, "set_layout_width", noop);
     event = event_fixtures.user_settings__fluid_layout_width;
-    user_settings.fluid_layout_width = false;
+    override(user_settings, "fluid_layout_width", false);
     dispatch(event);
     assert_same(user_settings.fluid_layout_width, true);
 
@@ -1093,7 +1093,7 @@ run_test("user_settings", ({override}) => {
         event = event_fixtures.user_settings__demote_inactive_streams;
         override(stream_list_sort, "set_filter_out_inactives", noop);
         override(stream_list, "update_streams_sidebar", stub.f);
-        user_settings.demote_inactive_streams = 1;
+        override(user_settings, "demote_inactive_streams", 1);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(user_settings.demote_inactive_streams, 2);
@@ -1103,7 +1103,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__web_stream_unreads_count_display_policy;
         override(stream_list, "update_dom_unread_counts_visibility", stub.f);
-        user_settings.web_stream_unreads_count_display_policy = 1;
+        override(user_settings, "web_stream_unreads_count_display_policy", 1);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(user_settings.web_stream_unreads_count_display_policy, 2);
@@ -1113,7 +1113,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__user_list_style;
         override(settings_preferences, "report_user_list_style_change", stub.f);
-        user_settings.user_list_style = 1;
+        override(user_settings, "user_list_style", 1);
         override(activity_ui, "build_user_sidebar", stub.f);
         dispatch(event);
         assert.equal(stub.num_calls, 2);
@@ -1121,12 +1121,12 @@ run_test("user_settings", ({override}) => {
     }
 
     event = event_fixtures.user_settings__enter_sends;
-    user_settings.enter_sends = false;
+    override(user_settings, "enter_sends", false);
     dispatch(event);
     assert_same(user_settings.enter_sends, true);
 
     event = event_fixtures.user_settings__presence_disabled;
-    user_settings.presence_enabled = true;
+    override(user_settings, "presence_enabled", true);
     override(activity_ui, "redraw_user", noop);
     override(settings_account, "update_privacy_settings_box", noop);
     dispatch(event);
@@ -1153,12 +1153,12 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
 
     event = event_fixtures.user_settings__email_address_visibility;
-    user_settings.email_address_visibility = 3;
+    override(user_settings, "email_address_visibility", 3);
     dispatch(event);
     assert_same(user_settings.email_address_visibility, 5);
 
     event = event_fixtures.user_settings__web_navigate_to_sent_message;
-    user_settings.web_navigate_to_sent_message = true;
+    override(user_settings, "web_navigate_to_sent_message", true);
     dispatch(event);
     assert_same(user_settings.web_navigate_to_sent_message, false);
 });

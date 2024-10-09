@@ -614,19 +614,19 @@ test_people("bot_custom_profile_data", () => {
     assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), null);
 });
 
-test_people("user_timezone", () => {
+test_people("user_timezone", ({override}) => {
     MockDate.set(parseISO("20130208T080910").getTime());
 
-    user_settings.twenty_four_hour_time = true;
+    override(user_settings, "twenty_four_hour_time", true);
     assert.equal(people.get_user_time(me.user_id), "00:09");
 
-    user_settings.twenty_four_hour_time = false;
+    override(user_settings, "twenty_four_hour_time", false);
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
 });
 
 test_people("utcToZonedTime", ({override}) => {
     MockDate.set(parseISO("20130208T080910").getTime());
-    user_settings.twenty_four_hour_time = true;
+    override(user_settings, "twenty_four_hour_time", true);
 
     assert.deepEqual(people.get_user_time(unknown_user.user_id), undefined);
     assert.equal(people.get_user_time(me.user_id), "00:09");
