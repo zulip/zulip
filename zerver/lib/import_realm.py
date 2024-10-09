@@ -1720,7 +1720,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # 'zulip_update_announcements_level' is set to None by default.
     # Set it to the latest level to avoid receiving older update messages.
     is_realm_imported_from_other_zulip_server = RealmAuditLog.objects.filter(
-        realm=realm, event_type=AuditLogEventType.REALM_EXPORTED, acting_user=None
+        realm=realm, event_type=AuditLogEventType.REALM_EXPORTED
     ).exists()
     if not is_realm_imported_from_other_zulip_server:
         send_zulip_update_announcements_to_realm(
