@@ -1320,13 +1320,13 @@ run_test("server_event_dispatch_op_errors", () => {
 
 run_test("realm_user_settings_defaults", ({override}) => {
     let event = event_fixtures.realm_user_settings_defaults__emojiset;
-    realm_user_settings_defaults.emojiset = "text";
+    override(realm_user_settings_defaults, "emojiset", "text");
     override(settings_realm_user_settings_defaults, "update_page", noop);
     dispatch(event);
     assert_same(realm_user_settings_defaults.emojiset, "google");
 
     event = event_fixtures.realm_user_settings_defaults__notification_sound;
-    realm_user_settings_defaults.notification_sound = "zulip";
+    override(realm_user_settings_defaults, "notification_sound", "zulip");
     let called = false;
     audible_notifications.update_notification_sound_source = () => {
         called = true;
