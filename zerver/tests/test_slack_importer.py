@@ -514,6 +514,24 @@ class SlackImporter(ZulipTestCase):
                     "image_32": "https://secure.gravatar.com/avatar/random7.png",
                 },
             },
+            # Unknown user data format.
+            {
+                "id": "U1ZYFEC91",
+                "team_id": "T5YFFM2QZ",
+                "name": "daniel.who",
+                "real_name": "Daniel Who",
+                "is_admin": True,
+                "is_owner": False,
+                "is_primary_owner": False,
+                "is_restricted": False,
+                "is_ultra_restricted": False,
+                "is_bot": False,
+                "is_mirror_dummy": False,
+                "profile": {
+                    "email": "daniel.who@gmail.com",
+                },
+                # Missing the `avatar_hash` value.
+            },
         ]
 
         mock_get_data_file.return_value = user_data
@@ -528,6 +546,7 @@ class SlackImporter(ZulipTestCase):
             "U8X25EBAB": 5,
             "U015J7JSE": 6,
             "U1RDFEC80": 7,
+            "U1ZYFEC91": 8,
         }
         slack_data_dir = "./random_path"
         timestamp = int(timezone_now().timestamp())
@@ -563,7 +582,7 @@ class SlackImporter(ZulipTestCase):
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
         self.assert_length(avatar_list, 8)
 
-        self.assert_length(zerver_userprofile, 8)
+        self.assert_length(zerver_userprofile, 9)
 
         self.assertEqual(zerver_userprofile[0]["is_staff"], False)
         self.assertEqual(zerver_userprofile[0]["is_bot"], False)
@@ -644,6 +663,14 @@ class SlackImporter(ZulipTestCase):
         error_message = str(e.exception)
         expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
         self.assertEqual(error_message, expected_error_message)
+
+        # Test converting unknown user data format that doesn't have
+        # an `avatar_hash` in its user profile.
+        self.assertEqual(
+            zerver_userprofile[8]["id"], test_slack_user_id_to_zulip_user_id["U1ZYFEC91"]
+        )
+        self.assertEqual(zerver_userprofile[8]["is_active"], True)
+        self.assertEqual(zerver_userprofile[8]["avatar_source"], "G")
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1
@@ -1289,7 +1316,7 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
-    @mock.patch("zerver.data_import.slack.build_avatar_url")
+    @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
     @mock.patch("zerver.data_import.slack.check_token_access")
@@ -1497,7 +1524,7 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
-    @mock.patch("zerver.data_import.slack.build_avatar_url")
+    @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
     @mock.patch("zerver.data_import.slack.check_token_access")
