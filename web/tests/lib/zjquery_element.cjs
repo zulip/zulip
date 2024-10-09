@@ -67,6 +67,10 @@ class FakeElementState {
 
 const fake_element_state = new WeakMap();
 
+function camel(s) {
+    return s.replaceAll(/-([a-z])/g, (_, c) => c.toUpperCase());
+}
+
 function decamel(s) {
     return s.replaceAll(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 }
@@ -75,13 +79,57 @@ function normalize_attribute(name) {
     return String(name).replaceAll(/[A-Z]/g, (c) => c.toLowerCase());
 }
 
+function attribute_to_dataset_key(name) {
+    assert.ok(name.startsWith("data-"));
+    return camel(name.slice("data-".length));
+}
+
+function is_dataset_key(key) {
+    return !/-[a-z]/.test(key);
+}
+
 function dataset_key_to_attribute(key) {
     return `data-${decamel(key)}`;
+}
+
+class FakeDataSet {
+    constructor(element) {
+        return new Proxy(this, {
+            get(target, key, receiver) {
+                return (
+                    (is_dataset_key(key)
+                        ? element.getAttribute(dataset_key_to_attribute(key))
+                        : null) ?? Reflect.get(target, key, receiver)
+                );
+            },
+            has(_target, key) {
+                return is_dataset_key(key) && element.hasAttribute(dataset_key_to_attribute(key));
+            },
+            set(_target, key, value) {
+                assert.ok(is_dataset_key(key));
+                element.setAttribute(dataset_key_to_attribute(key), value);
+                return true;
+            },
+            deleteProperty(_target, key) {
+                if (is_dataset_key(key)) {
+                    element.removeAttribute(dataset_key_to_attribute(key));
+                }
+                return true;
+            },
+            ownKeys(_target) {
+                return element
+                    .getAttributeNames()
+                    .filter((name) => name.startsWith("data-"))
+                    .map((name) => attribute_to_dataset_key(name));
+            },
+        });
+    }
 }
 
 class FakeElement extends RejectMissing {
     _tippy = undefined;
     classList = new FakeClassList();
+    dataset = new FakeDataSet(this);
     innerHTML = "never-been-set";
     textContent = "never-been-set";
     value = undefined;
@@ -97,6 +145,9 @@ class FakeElement extends RejectMissing {
     }
     getAttribute(name) {
         return this.#attributes.get(normalize_attribute(name)) ?? null;
+    }
+    getAttributeNames() {
+        return this.#attributes.keys();
     }
     removeAttribute(name) {
         this.#attributes.delete(normalize_attribute(name));
