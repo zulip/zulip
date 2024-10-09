@@ -6,7 +6,7 @@ const {addDays} = require("date-fns");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 page_params.is_spectator = false;
 
@@ -16,6 +16,12 @@ const timerender = mock_esm("../src/timerender");
 
 const {localstorage} = zrequire("localstorage");
 const navbar_alerts = zrequire("navbar_alerts");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 function test(label, f) {
     run_test(label, (helpers) => {

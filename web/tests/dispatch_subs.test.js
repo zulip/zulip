@@ -7,7 +7,6 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {realm} = require("./lib/zpage_params");
 
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
@@ -27,8 +26,12 @@ const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
+
+const realm = {};
+set_realm(realm);
 
 people.add_active_user(test_user);
 

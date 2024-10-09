@@ -8,7 +8,7 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const user_groups = zrequire("user_groups");
 
@@ -58,9 +58,14 @@ const compose_setup = zrequire("compose_setup");
 const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

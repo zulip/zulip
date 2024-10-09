@@ -7,7 +7,6 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {realm} = require("./lib/zpage_params");
 
 const user_groups = zrequire("user_groups");
 
@@ -88,6 +87,10 @@ const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
+const {set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;

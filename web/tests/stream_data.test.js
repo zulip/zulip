@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 // TODO: Remove after we enable support for
 // web_public_streams in production.
@@ -18,10 +18,15 @@ const settings_config = zrequire("settings_config");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
 const hash_util = zrequire("hash_util");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_settings_data = zrequire("stream_settings_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

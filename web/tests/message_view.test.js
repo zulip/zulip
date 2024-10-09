@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");
@@ -19,9 +19,13 @@ const narrow_title = zrequire("narrow_title");
 const recent_view_util = zrequire("recent_view_util");
 const inbox_util = zrequire("inbox_util");
 const message_lists = zrequire("message_lists");
+const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
+set_current_user({});
+const realm = {};
+set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
 mock_esm("../src/compose_banner", {

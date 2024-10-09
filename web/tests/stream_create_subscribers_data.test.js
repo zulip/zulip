@@ -4,10 +4,13 @@ const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user} = require("./lib/zpage_params");
 
 const people = zrequire("people");
+const {set_current_user} = zrequire("state_data");
 const stream_create_subscribers_data = zrequire("stream_create_subscribers_data");
+
+const current_user = {};
+set_current_user(current_user);
 
 const me = {
     email: "me@zulip.com",

@@ -7,7 +7,6 @@ const {mock_esm, zrequire, set_global} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, realm} = require("./lib/zpage_params");
 
 const realm_icon = mock_esm("../src/realm_icon");
 
@@ -26,8 +25,13 @@ const settings_bots = zrequire("settings_bots");
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
 const settings_org = zrequire("settings_org");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
 function test(label, f) {

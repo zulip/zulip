@@ -5,15 +5,19 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user} = require("./lib/zpage_params");
 
 const settings_data = mock_esm("../src/settings_data");
 
 const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
 const people = zrequire("people");
+const {set_current_user, set_realm} = zrequire("state_data");
 const typing_data = zrequire("typing_data");
 const typing_events = zrequire("typing_events");
+
+const current_user = {};
+set_current_user(current_user);
+set_realm({});
 
 const anna = {
     email: "anna@example.com",

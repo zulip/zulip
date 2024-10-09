@@ -6,7 +6,6 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {realm} = require("./lib/zpage_params");
 
 set_global("navigator", {});
 
@@ -27,8 +26,11 @@ const channel = mock_esm("../src/channel");
 const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
+const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const realm = {};
+set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
 const alice = {

@@ -12,9 +12,12 @@ const all_messages_data = zrequire("all_messages_data");
 const echo_state = zrequire("echo_state");
 const unread = zrequire("unread");
 const message_store = zrequire("message_store");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_topic_history_util = zrequire("stream_topic_history_util");
+
+set_realm({});
 
 stream_topic_history.set_update_topic_last_message_id(noop);
 

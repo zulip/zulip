@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, realm, current_user} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
@@ -16,6 +16,7 @@ const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const user_groups = zrequire("user_groups");
 const {MessageListData} = zrequire("message_list_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 
 const noop = function () {};
 
@@ -53,6 +54,11 @@ mock_esm("../src/group_permission_settings", {
         };
     },
 });
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 // Define test users
 const mike = {

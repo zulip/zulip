@@ -8,7 +8,7 @@ const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const message_store = mock_esm("../src/message_store");
 const user_topics = mock_esm("../src/user_topics");
@@ -17,8 +17,13 @@ const resolved_topic = zrequire("../shared/src/resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
 initialize_user_settings({user_settings: {}});
 
 const stream_message = "stream";

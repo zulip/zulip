@@ -5,7 +5,6 @@ const assert = require("node:assert/strict");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {realm} = require("./lib/zpage_params");
 
 class ClipboardEvent {
     constructor({clipboardData}) {
@@ -34,6 +33,11 @@ const rows = mock_esm("../src/rows");
 const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");
 const message_lists = mock_esm("../src/message_lists");
+const {set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
+
 message_lists.current = {
     id: "1",
 };

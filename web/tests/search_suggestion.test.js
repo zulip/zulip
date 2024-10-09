@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
@@ -16,6 +16,12 @@ const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 const search = zrequire("search_suggestion");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 const me = {
     email: "myself@zulip.com",

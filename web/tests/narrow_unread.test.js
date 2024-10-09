@@ -18,6 +18,10 @@ const unread = zrequire("unread");
 // The main code we are testing lives here.
 const narrow_state = zrequire("narrow_state");
 const message_lists = zrequire("message_lists");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+set_current_user({});
+set_realm({});
 
 const alice = {
     email: "alice@example.com",

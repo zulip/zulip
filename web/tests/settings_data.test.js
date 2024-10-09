@@ -4,13 +4,18 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
+const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

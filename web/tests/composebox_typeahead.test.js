@@ -6,7 +6,6 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, realm} = require("./lib/zpage_params");
 
 let autosize_called;
 
@@ -57,8 +56,13 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

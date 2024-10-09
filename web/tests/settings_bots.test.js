@@ -4,7 +4,6 @@ const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, realm} = require("./lib/zpage_params");
 
 const bot_data_params = {
     realm_bots: [
@@ -29,6 +28,12 @@ const bot_data_params = {
 
 const bot_data = zrequire("bot_data");
 const settings_bots = zrequire("settings_bots");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 bot_data.initialize(bot_data_params);
 
