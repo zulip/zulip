@@ -474,7 +474,7 @@ run_test("realm settings", ({override}) => {
 
     // realm
     function test_realm_boolean(event, parameter_name) {
-        realm[parameter_name] = true;
+        override(realm, parameter_name, true);
         event = {...event};
         event.value = false;
         dispatch(event);
@@ -486,7 +486,7 @@ run_test("realm settings", ({override}) => {
     }
 
     function test_realm_integer(event, parameter_name) {
-        realm[parameter_name] = 1;
+        override(realm, parameter_name, 1);
         event = {...event};
         event.value = 2;
         dispatch(event);

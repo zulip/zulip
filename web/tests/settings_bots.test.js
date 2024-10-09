@@ -40,11 +40,11 @@ bot_data.initialize(bot_data_params);
 function test(label, f) {
     run_test(label, ({override}) => {
         override(realm, "realm_url", "https://chat.example.com");
-        realm.realm_embedded_bots = [
+        override(realm, "realm_embedded_bots", [
             {name: "converter", config: {}},
             {name: "giphy", config: {key: "12345678"}},
             {name: "foobot", config: {bar: "baz", qux: "quux"}},
-        ];
+        ]);
 
         f({override});
     });

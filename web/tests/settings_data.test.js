@@ -112,34 +112,34 @@ run_test("user_can_change_logo", ({override}) => {
 function test_policy(label, policy, validation_func) {
     run_test(label, ({override}) => {
         override(current_user, "is_admin", true);
-        realm[policy] = settings_config.common_policy_values.by_admins_only.code;
+        override(realm, policy, settings_config.common_policy_values.by_admins_only.code);
         assert.equal(validation_func(), true);
 
         override(current_user, "is_admin", false);
         assert.equal(validation_func(), false);
 
         override(current_user, "is_moderator", true);
-        realm[policy] = settings_config.common_policy_values.by_moderators_only.code;
+        override(realm, policy, settings_config.common_policy_values.by_moderators_only.code);
         assert.equal(validation_func(), true);
 
         override(current_user, "is_moderator", false);
         assert.equal(validation_func(), false);
 
         override(current_user, "is_guest", true);
-        realm[policy] = settings_config.common_policy_values.by_members.code;
+        override(realm, policy, settings_config.common_policy_values.by_members.code);
         assert.equal(validation_func(), false);
 
         override(current_user, "is_guest", false);
         assert.equal(validation_func(), true);
 
         page_params.is_spectator = true;
-        realm[policy] = settings_config.common_policy_values.by_members.code;
+        override(realm, policy, settings_config.common_policy_values.by_members.code);
         assert.equal(validation_func(), false);
 
         page_params.is_spectator = false;
         assert.equal(validation_func(), true);
 
-        realm[policy] = settings_config.common_policy_values.by_full_members.code;
+        override(realm, policy, settings_config.common_policy_values.by_full_members.code);
         override(current_user, "user_id", 30);
         isaac.date_joined = new Date(Date.now());
         settings_data.initialize(isaac.date_joined);
@@ -176,30 +176,34 @@ test_policy(
 function test_message_policy(label, policy, validation_func) {
     run_test(label, ({override}) => {
         override(current_user, "is_admin", true);
-        realm[policy] = settings_config.common_message_policy_values.by_admins_only.code;
+        override(realm, policy, settings_config.common_message_policy_values.by_admins_only.code);
         assert.equal(validation_func(), true);
 
         override(current_user, "is_admin", false);
         override(current_user, "is_moderator", true);
         assert.equal(validation_func(), false);
 
-        realm[policy] = settings_config.common_message_policy_values.by_moderators_only.code;
+        override(
+            realm,
+            policy,
+            settings_config.common_message_policy_values.by_moderators_only.code,
+        );
         assert.equal(validation_func(), true);
 
         override(current_user, "is_moderator", false);
         assert.equal(validation_func(), false);
 
         override(current_user, "is_guest", true);
-        realm[policy] = settings_config.common_message_policy_values.by_everyone.code;
+        override(realm, policy, settings_config.common_message_policy_values.by_everyone.code);
         assert.equal(validation_func(), true);
 
-        realm[policy] = settings_config.common_message_policy_values.by_members.code;
+        override(realm, policy, settings_config.common_message_policy_values.by_members.code);
         assert.equal(validation_func(), false);
 
         override(current_user, "is_guest", false);
         assert.equal(validation_func(), true);
 
-        realm[policy] = settings_config.common_message_policy_values.by_full_members.code;
+        override(realm, policy, settings_config.common_message_policy_values.by_full_members.code);
         override(current_user, "user_id", 30);
         isaac.date_joined = new Date(Date.now());
         override(realm, "realm_waiting_period_threshold", 10);
@@ -232,8 +236,11 @@ run_test("user_can_move_messages_to_another_topic_nobody_case", ({override}) => 
 run_test("user_can_move_messages_between_streams_nobody_case", ({override}) => {
     override(current_user, "is_admin", true);
     override(current_user, "is_guest", false);
-    realm.realm_move_messages_between_streams_policy =
-        settings_config.move_messages_between_streams_policy_values.nobody.code;
+    override(
+        realm,
+        "realm_move_messages_between_streams_policy",
+        settings_config.move_messages_between_streams_policy_values.nobody.code,
+    );
     assert.equal(settings_data.user_can_move_messages_between_streams(), false);
 });
 
@@ -272,8 +279,11 @@ run_test("using_dark_theme", ({override}) => {
 run_test("user_can_invite_others_to_realm_nobody_case", ({override}) => {
     override(current_user, "is_admin", true);
     override(current_user, "is_guest", false);
-    realm.realm_invite_to_realm_policy =
-        settings_config.email_invite_to_realm_policy_values.nobody.code;
+    override(
+        realm,
+        "realm_invite_to_realm_policy",
+        settings_config.email_invite_to_realm_policy_values.nobody.code,
+    );
     assert.equal(settings_data.user_can_invite_users_by_email(), false);
 });
 
@@ -322,14 +332,14 @@ function test_realm_group_settings(setting_name, validation_func) {
 
         page_params.is_spectator = false;
         override(current_user, "is_guest", false);
-        realm[setting_name] = 1;
+        override(realm, setting_name, 1);
         override(current_user, "user_id", admin_user_id);
         assert.equal(validation_func(), true);
 
         override(current_user, "user_id", moderator_user_id);
         assert.equal(validation_func(), false);
 
-        realm[setting_name] = 2;
+        override(realm, setting_name, 2);
         override(current_user, "user_id", moderator_user_id);
         assert.equal(validation_func(), true);
 

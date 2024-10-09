@@ -576,10 +576,10 @@ test_people("my_custom_profile_data", () => {
     assert.equal(people.my_custom_profile_data(4), "My phone number");
 });
 
-test_people("get_custom_fields_by_type", () => {
+test_people("get_custom_fields_by_type", ({override}) => {
     people.add_active_user(stewie);
     const person = people.get_by_user_id(stewie.user_id);
-    realm.custom_profile_field_types = {
+    override(realm, "custom_profile_field_types", {
         SHORT_TEXT: {
             id: 1,
             name: "Short text",
@@ -588,8 +588,8 @@ test_people("get_custom_fields_by_type", () => {
             id: 8,
             name: "Pronouns",
         },
-    };
-    realm.custom_profile_fields = [
+    });
+    override(realm, "custom_profile_fields", [
         {
             id: 1,
             name: "Phone number (mobile)",
@@ -605,7 +605,7 @@ test_people("get_custom_fields_by_type", () => {
             name: "Pronouns",
             type: 8,
         },
-    ];
+    ]);
     const SHORT_TEXT_ID = 1;
     assert.deepEqual(people.get_custom_fields_by_type(person.user_id, SHORT_TEXT_ID), [
         "(888) 888-8888",

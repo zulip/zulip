@@ -337,19 +337,28 @@ test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) =>
     // policy matters.
     override_rewire(peer_data, "get_subscriber_count", () => 16);
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_everyone.code;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_everyone.code,
+    );
     override(current_user, "is_guest", true);
     override(current_user, "is_admin", false);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.nobody.code;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.nobody.code,
+    );
     override(current_user, "is_admin", true);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_members.code;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_members.code,
+    );
     override(current_user, "is_guest", true);
     override(current_user, "is_admin", false);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
@@ -357,16 +366,22 @@ test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) =>
     override(current_user, "is_guest", false);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_moderators_only.code;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_moderators_only.code,
+    );
     override(current_user, "is_moderator", false);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     override(current_user, "is_moderator", true);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_admins_only.code;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_admins_only.code,
+    );
     override(current_user, "is_admin", false);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
@@ -375,8 +390,11 @@ test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) =>
     override(current_user, "is_admin", true);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_full_members.code;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_full_members.code,
+    );
     const person = people.get_by_user_id(current_user.user_id);
     person.date_joined = new Date(Date.now());
     override(realm, "realm_waiting_period_threshold", 10);
@@ -388,8 +406,11 @@ test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) =>
     // Now, check for small streams (<=15 subscribers) where the wildcard mention
     // policy doesn't matter; everyone is allowed to use wildcard mentions.
     override_rewire(peer_data, "get_subscriber_count", () => 14);
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_admins_only.code;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_admins_only.code,
+    );
     override(current_user, "is_admin", false);
     override(current_user, "is_guest", true);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
