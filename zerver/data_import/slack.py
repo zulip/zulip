@@ -301,10 +301,9 @@ def users_to_zerver_userprofile(
         found_emails[email.lower()] = user_id
 
         # ref: https://zulip.com/help/change-your-profile-picture
-        avatar_url = build_avatar_url(
-            slack_user_id, user["team_id"], user["profile"]["avatar_hash"]
-        )
-        build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
+        avatar_source, avatar_url = build_avatar_url(slack_user_id, user)
+        if avatar_source == UserProfile.AVATAR_FROM_USER:
+            build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
         role = UserProfile.ROLE_MEMBER
         if get_owner(user):
             role = UserProfile.ROLE_REALM_OWNER
@@ -340,7 +339,7 @@ def users_to_zerver_userprofile(
             id=user_id,
             email=email,
             delivery_email=email,
-            avatar_source="U",
+            avatar_source=avatar_source,
             is_bot=user.get("is_bot", False),
             role=role,
             bot_type=1 if user.get("is_bot", False) else None,
@@ -464,9 +463,18 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     raise AssertionError(f"Could not find email address for Slack user {user}")
 
 
-def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
-    avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
-    return avatar_url
+def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str]:
+    avatar_url: str = ""
+    avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    if user["profile"].get("avatar_hash"):
+        # Process avatar image for a typical Slack user.
+        team_id = user["team_id"]
+        avatar_hash = user["profile"]["avatar_hash"]
+        avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
+        avatar_source = UserProfile.AVATAR_FROM_USER
+    else:
+        logging.info("Failed to process avatar for user -> %s\n", user.get("name"))
+    return avatar_source, avatar_url
 
 
 def get_owner(user: ZerverFieldsT) -> bool:
