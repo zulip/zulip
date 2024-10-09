@@ -7,7 +7,7 @@ const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_c
 const markdown_assert = require("./lib/markdown_assert");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const example_realm_linkifiers = [
     {
@@ -55,6 +55,10 @@ const people = zrequire("people");
 const pygments_data = zrequire("pygments_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const emoji_params = {
     realm_emoji: {

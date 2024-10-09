@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 const {set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {realm, user_settings} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 realm.realm_push_notifications_enabled = false;
 
@@ -18,6 +18,10 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
 const unread = zrequire("unread");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const me = {
     email: "me@example.com",

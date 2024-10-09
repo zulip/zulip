@@ -4,11 +4,14 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {user_settings} = require("./lib/zpage_params");
 
 const thumbnail = mock_esm("../src/thumbnail");
 
 const {postprocess_content} = zrequire("postprocess_content");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 run_test("postprocess_content", () => {
     assert.equal(

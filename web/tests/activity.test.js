@@ -13,7 +13,7 @@ const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespac
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, realm} = require("./lib/zpage_params");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
@@ -52,6 +52,10 @@ const peer_data = zrequire("peer_data");
 const message_lists = zrequire("message_lists");
 const util = zrequire("util");
 const {Filter} = zrequire("../src/filter");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const me = {
     email: "me@zulip.com",

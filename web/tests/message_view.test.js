@@ -20,6 +20,9 @@ const recent_view_util = zrequire("recent_view_util");
 const inbox_util = zrequire("inbox_util");
 const message_lists = zrequire("message_lists");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 mock_esm("../src/compose_banner", {
     clear_errors() {},

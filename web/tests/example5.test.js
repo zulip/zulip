@@ -46,6 +46,9 @@ message_lists.non_rendered_data = () => [];
 const message_events = zrequire("message_events");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const isaac = make_user({
     email: "isaac@example.com",

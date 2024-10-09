@@ -30,6 +30,9 @@ const pm_conversations = zrequire("pm_conversations");
 const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
 const message_user_ids = zrequire("message_user_ids");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const denmark = {
     subscribed: false,

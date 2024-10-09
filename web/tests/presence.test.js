@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {realm, user_settings} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -12,6 +12,10 @@ mock_esm("../src/settings_data", {
 
 const people = zrequire("people");
 const presence = zrequire("presence");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const OFFLINE_THRESHOLD_SECS = 200;
 

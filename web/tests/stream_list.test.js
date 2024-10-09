@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params} = require("./lib/zpage_params");
 
 set_global("document", "document-stub");
 
@@ -35,6 +35,10 @@ const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
 const stream_list_sort = zrequire("stream_list_sort");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const devel = {
     name: "devel",

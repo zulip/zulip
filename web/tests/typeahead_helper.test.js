@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, realm, user_settings} = require("./lib/zpage_params");
+const {current_user, realm} = require("./lib/zpage_params");
 
 const stream_topic_history = mock_esm("../src/stream_topic_history");
 
@@ -23,6 +23,10 @@ const util = zrequire("util");
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 let next_id = 0;
 

@@ -28,6 +28,9 @@ const message_helper = zrequire("message_helper");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const alice = {
     email: "alice@example.com",

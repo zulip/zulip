@@ -10,6 +10,9 @@ const blueslip = require("./lib/zblueslip");
 
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const design = {
     stream_id: 100,

@@ -4,9 +4,12 @@ const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {user_settings} = require("./lib/zpage_params");
 
 const settings_config = zrequire("settings_config");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 run_test("all_notifications", ({override}) => {
     override(user_settings, "enable_stream_desktop_notifications", false);

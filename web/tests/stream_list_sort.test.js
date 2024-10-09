@@ -6,13 +6,16 @@ const _ = require("lodash");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {user_settings} = require("./lib/zpage_params");
 
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list_sort = zrequire("stream_list_sort");
 const settings_config = zrequire("settings_config");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);

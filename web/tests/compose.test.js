@@ -8,7 +8,7 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, realm} = require("./lib/zpage_params");
 
 const user_groups = zrequire("user_groups");
 
@@ -59,6 +59,10 @@ const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 function reset_jquery() {
     // Avoid leaks.

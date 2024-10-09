@@ -11,6 +11,9 @@ const stream_data = mock_esm("../src/stream_data");
 
 const typing = zrequire("typing");
 const typing_status = zrequire("../shared/src/typing_status");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const TYPING_STARTED_WAIT_PERIOD = 10000;
 const TYPING_STOPPED_WAIT_PERIOD = 5000;
