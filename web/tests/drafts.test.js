@@ -6,7 +6,6 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {user_settings} = require("./lib/zpage_params");
 
 const user_pill = mock_esm("../src/user_pill");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
@@ -58,7 +57,6 @@ mock_esm("tippy.js", {
     },
     delegate: noop,
 });
-user_settings.twenty_four_hour_time = false;
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");

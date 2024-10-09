@@ -82,7 +82,7 @@ people.initialize_current_user(me.user_id);
 function test(label, f) {
     run_test(label, (helpers) => {
         realm.server_presence_offline_threshold_seconds = OFFLINE_THRESHOLD_SECS;
-        user_settings.presence_enabled = true;
+        helpers.override(user_settings, "presence_enabled", true);
         presence.clear_internal_data();
         f(helpers);
     });

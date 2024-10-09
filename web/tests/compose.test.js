@@ -408,7 +408,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     $("#compose .preview_message_area").show();
     $("#compose .markdown_preview").hide();
     $("#compose").addClass("preview_mode");
-    user_settings.enter_sends = true;
+    override(user_settings, "enter_sends", true);
     let send_message_called = false;
     override_rewire(compose, "send_message", () => {
         send_message_called = true;
@@ -421,7 +421,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     assert.ok(send_message_called);
     assert.ok(show_button_spinner_called);
 
-    user_settings.enter_sends = false;
+    override(user_settings, "enter_sends", false);
     $("textarea#compose-textarea").trigger("blur");
     compose.enter_with_preview_open();
     assert.ok($("textarea#compose-textarea").is_focused());
@@ -429,7 +429,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     // Test sending a message without content.
     $("textarea#compose-textarea").val("");
     $("#compose .preview_message_area").show();
-    user_settings.enter_sends = true;
+    override(user_settings, "enter_sends", true);
 
     compose.enter_with_preview_open();
 });

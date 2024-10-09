@@ -11,8 +11,6 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {user_settings} = require("./lib/zpage_params");
 
-user_settings.twenty_four_hour_time = true;
-
 const timerender = zrequire("timerender");
 
 function get_date(time_ISO, DOW) {
@@ -35,18 +33,21 @@ const date_2021 = get_date("2021-01-27T01:53:08.000Z", "Wednesday");
 
 const date_2025 = get_date("2025-03-03T12:10:00.000Z", "Monday");
 
-run_test("get_localized_date_or_time_for_format returns default date with incorrect locale", () => {
-    const date = date_2019;
-    const expectedDate = "Friday, April 12, 2019";
+run_test(
+    "get_localized_date_or_time_for_format returns default date with incorrect locale",
+    ({override}) => {
+        const date = date_2019;
+        const expectedDate = "Friday, April 12, 2019";
 
-    user_settings.default_language = "invalid";
-    const actualDate = timerender.get_localized_date_or_time_for_format(
-        date,
-        "weekday_dayofyear_year",
-    );
+        override(user_settings, "default_language", "invalid");
+        const actualDate = timerender.get_localized_date_or_time_for_format(
+            date,
+            "weekday_dayofyear_year",
+        );
 
-    assert.equal(actualDate, expectedDate);
-});
+        assert.equal(actualDate, expectedDate);
+    },
+);
 
 run_test("get_localized_date_or_time_for_format returns correct format", () => {
     const date = date_2021;
@@ -119,7 +120,7 @@ run_test("get_localized_date_or_time_for_format returns correct format", () => {
     }
 });
 
-run_test("get_localized_date_or_time_for_format returns correct localized date", () => {
+run_test("get_localized_date_or_time_for_format returns correct localized date", ({override}) => {
     const date = add(date_2019, {years: -1});
     const languages = [
         {
@@ -161,7 +162,7 @@ run_test("get_localized_date_or_time_for_format returns correct localized date",
     ];
 
     for (const language of languages) {
-        user_settings.default_language = language.language;
+        override(user_settings, "default_language", language.language);
         const actualDate = timerender.get_localized_date_or_time_for_format(
             date,
             "weekday_dayofyear_year",
@@ -398,8 +399,8 @@ run_test("get_timestamp_for_flatpickr", () => {
     MockDate.reset();
 });
 
-run_test("absolute_time_12_hour", () => {
-    user_settings.twenty_four_hour_time = false;
+run_test("absolute_time_12_hour", ({override}) => {
+    override(user_settings, "twenty_four_hour_time", false);
 
     // timestamp with hour > 12, same year
     let timestamp = date_2019.getTime();
@@ -436,8 +437,8 @@ run_test("absolute_time_12_hour", () => {
     MockDate.reset();
 });
 
-run_test("absolute_time_24_hour", () => {
-    user_settings.twenty_four_hour_time = true;
+run_test("absolute_time_24_hour", ({override}) => {
+    override(user_settings, "twenty_four_hour_time", true);
 
     // date with hour > 12, same year
     let today = date_2019;
@@ -470,7 +471,7 @@ run_test("absolute_time_24_hour", () => {
     MockDate.reset();
 });
 
-run_test("get_full_datetime", () => {
+run_test("get_full_datetime", ({override}) => {
     const time = date_2017_PM;
 
     let expected = "translated: 5/18/2017 at 9:12:53 PM UTC";
@@ -484,13 +485,13 @@ run_test("get_full_datetime", () => {
     assert.equal(timerender.get_full_datetime(time, "time"), expected);
 
     // test 24 hour time setting.
-    user_settings.twenty_four_hour_time = true;
+    override(user_settings, "twenty_four_hour_time", true);
     expected = "translated: 5/18/2017 at 21:12:53 UTC";
     assert.equal(timerender.get_full_datetime_clarification(time), expected);
     expected = "translated: May 18, 2017 at 21:12:53";
     assert.equal(timerender.get_full_datetime(time), expected);
 
-    user_settings.twenty_four_hour_time = false;
+    override(user_settings, "twenty_four_hour_time", false);
 
     // Test the GMT[+-]x:y logic.
     timerender.set_display_time_zone("Asia/Kolkata");
@@ -615,21 +616,21 @@ run_test("relative_time_string_from_date", () => {
     MockDate.reset();
 });
 
-run_test("set_full_datetime", () => {
+run_test("set_full_datetime", ({override}) => {
     let time = date_2019;
 
-    user_settings.twenty_four_hour_time = true;
+    override(user_settings, "twenty_four_hour_time", true);
     let time_str = timerender.stringify_time(time);
     let expected = "17:52";
     assert.equal(time_str, expected);
 
-    user_settings.twenty_four_hour_time = false;
+    override(user_settings, "twenty_four_hour_time", false);
     time_str = timerender.stringify_time(time);
     expected = "5:52 PM";
     assert.equal(time_str, expected);
 
     time = add(time, {hours: -7}); // time between 1 to 12 o'clock time.
-    user_settings.twenty_four_hour_time = false;
+    override(user_settings, "twenty_four_hour_time", false);
     time_str = timerender.stringify_time(time);
     expected = "10:52 AM";
     assert.equal(time_str, expected);

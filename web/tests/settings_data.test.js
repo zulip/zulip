@@ -234,11 +234,11 @@ test_realm_group_settings(
     settings_data.user_can_delete_own_message,
 );
 
-run_test("using_dark_theme", () => {
-    user_settings.color_scheme = settings_config.color_scheme_values.dark.code;
+run_test("using_dark_theme", ({override}) => {
+    override(user_settings, "color_scheme", settings_config.color_scheme_values.dark.code);
     assert.equal(settings_data.using_dark_theme(), true);
 
-    user_settings.color_scheme = settings_config.color_scheme_values.automatic.code;
+    override(user_settings, "color_scheme", settings_config.color_scheme_values.automatic.code);
 
     window.matchMedia = (query) => {
         assert.equal(query, "(prefers-color-scheme: dark)");
@@ -252,7 +252,7 @@ run_test("using_dark_theme", () => {
     };
     assert.equal(settings_data.using_dark_theme(), false);
 
-    user_settings.color_scheme = settings_config.color_scheme_values.light.code;
+    override(user_settings, "color_scheme", settings_config.color_scheme_values.light.code);
     assert.equal(settings_data.using_dark_theme(), false);
 });
 

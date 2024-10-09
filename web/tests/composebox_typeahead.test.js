@@ -1286,7 +1286,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         }
     });
 
-    user_settings.enter_sends = false;
+    override(user_settings, "enter_sends", false);
     let compose_finish_called = false;
     function finish() {
         compose_finish_called = true;
@@ -1328,7 +1328,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $stub_target.attr("id", "stream_message_recipient_topic");
     $("form#send_message_form").trigger(event);
     $stub_target.attr("id", "compose-textarea");
-    user_settings.enter_sends = false;
+    override(user_settings, "enter_sends", false);
     event.metaKey = true;
 
     $("form#send_message_form").trigger(event);
@@ -1336,7 +1336,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.metaKey = false;
     event.ctrlKey = true;
     $("form#send_message_form").trigger(event);
-    user_settings.enter_sends = true;
+    override(user_settings, "enter_sends", true);
     event.ctrlKey = false;
     event.altKey = true;
     $("form#send_message_form").trigger(event);

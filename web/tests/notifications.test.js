@@ -55,18 +55,18 @@ function test(label, f) {
     run_test(label, (helpers) => {
         current_user.is_admin = false;
         page_params.realm_users = [];
-        user_settings.enable_followed_topic_desktop_notifications = true;
-        user_settings.enable_followed_topic_audible_notifications = true;
-        user_settings.enable_desktop_notifications = true;
-        user_settings.enable_sounds = true;
-        user_settings.enable_followed_topic_wildcard_mentions_notify = true;
-        user_settings.wildcard_mentions_notify = true;
-        user_settings.notification_sound = "ding";
+        helpers.override(user_settings, "enable_followed_topic_desktop_notifications", true);
+        helpers.override(user_settings, "enable_followed_topic_audible_notifications", true);
+        helpers.override(user_settings, "enable_desktop_notifications", true);
+        helpers.override(user_settings, "enable_sounds", true);
+        helpers.override(user_settings, "enable_followed_topic_wildcard_mentions_notify", true);
+        helpers.override(user_settings, "wildcard_mentions_notify", true);
+        helpers.override(user_settings, "notification_sound", "ding");
         f(helpers);
     });
 }
 
-test("message_is_notifiable", () => {
+test("message_is_notifiable", ({override}) => {
     // A notification is sent if both message_is_notifiable(message)
     // and the appropriate should_send_*_notification function return
     // true.
@@ -150,14 +150,14 @@ test("message_is_notifiable", () => {
 
     // But not if 'enable_followed_topic_desktop_notifications'
     // and 'enable_followed_topic_audible_notifications' are disabled.
-    user_settings.enable_followed_topic_desktop_notifications = false;
-    user_settings.enable_followed_topic_audible_notifications = false;
+    override(user_settings, "enable_followed_topic_desktop_notifications", false);
+    override(user_settings, "enable_followed_topic_audible_notifications", false);
     assert.equal(message_notifications.should_send_desktop_notification(message), false);
     assert.equal(message_notifications.should_send_audible_notification(message), false);
     assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Reset state
-    user_settings.enable_followed_topic_desktop_notifications = true;
+    override(user_settings, "enable_followed_topic_desktop_notifications", true);
 
     // Case 5:
     // Mentioning should trigger notification in unmuted topic
@@ -195,7 +195,7 @@ test("message_is_notifiable", () => {
     assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // But not if it's disabled
-    user_settings.wildcard_mentions_notify = false;
+    override(user_settings, "wildcard_mentions_notify", false);
     assert.equal(message_notifications.should_send_desktop_notification(message), false);
     assert.equal(message_notifications.should_send_audible_notification(message), false);
     assert.equal(message_notifications.message_is_notifiable(message), true);
@@ -207,7 +207,7 @@ test("message_is_notifiable", () => {
     assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Reset state
-    user_settings.wildcard_mentions_notify = true;
+    override(user_settings, "wildcard_mentions_notify", true);
     general.wildcard_mentions_notify = null;
 
     // Case 7: If a message is in a muted stream
@@ -270,9 +270,9 @@ test("message_is_notifiable", () => {
     // 'enable_followed_topic_audible_notifications' disabled and
     // 'enable_followed_topic_wildcard_mentions_notify' enabled;
     // DO visually and audibly notify the user
-    user_settings.wildcard_mentions_notify = false;
-    user_settings.enable_followed_topic_desktop_notifications = false;
-    user_settings.enable_followed_topic_audible_notifications = false;
+    override(user_settings, "wildcard_mentions_notify", false);
+    override(user_settings, "enable_followed_topic_desktop_notifications", false);
+    override(user_settings, "enable_followed_topic_audible_notifications", false);
     message = {
         id: 50,
         content: "message number 5",
@@ -289,16 +289,16 @@ test("message_is_notifiable", () => {
     assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // But not if 'enable_followed_topic_wildcard_mentions_notify' is disabled
-    user_settings.enable_followed_topic_wildcard_mentions_notify = false;
+    override(user_settings, "enable_followed_topic_wildcard_mentions_notify", false);
     assert.equal(message_notifications.should_send_desktop_notification(message), false);
     assert.equal(message_notifications.should_send_audible_notification(message), false);
     assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Reset state
-    user_settings.wildcard_mentions_notify = true;
-    user_settings.enable_followed_topic_desktop_notifications = true;
-    user_settings.enable_followed_topic_audible_notifications = true;
-    user_settings.enable_followed_topic_wildcard_mentions_notify = true;
+    override(user_settings, "wildcard_mentions_notify", true);
+    override(user_settings, "enable_followed_topic_desktop_notifications", true);
+    override(user_settings, "enable_followed_topic_audible_notifications", true);
+    override(user_settings, "enable_followed_topic_wildcard_mentions_notify", true);
 
     // Case 11: If `None` is selected as the notification sound, send no
     // audible notification, no matter what other user configurations are.
@@ -313,13 +313,13 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "whatever",
     };
-    user_settings.notification_sound = "none";
+    override(user_settings, "notification_sound", "none");
     assert.equal(message_notifications.should_send_desktop_notification(message), true);
     assert.equal(message_notifications.should_send_audible_notification(message), false);
     assert.equal(message_notifications.message_is_notifiable(message), true);
 
     // Reset state
-    user_settings.notification_sound = "ding";
+    override(user_settings, "notification_sound", "ding");
 
     // If none of the above cases apply
     // (ie: topic is not muted, message does not mention user,

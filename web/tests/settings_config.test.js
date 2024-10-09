@@ -8,20 +8,20 @@ const {user_settings} = require("./lib/zpage_params");
 
 const settings_config = zrequire("settings_config");
 
-run_test("all_notifications", () => {
-    user_settings.enable_stream_desktop_notifications = false;
-    user_settings.enable_stream_audible_notifications = true;
-    user_settings.enable_stream_push_notifications = true;
-    user_settings.enable_stream_email_notifications = false;
-    user_settings.enable_desktop_notifications = false;
-    user_settings.enable_sounds = true;
-    user_settings.enable_offline_push_notifications = false;
-    user_settings.enable_offline_email_notifications = true;
-    user_settings.enable_followed_topic_desktop_notifications = false;
-    user_settings.enable_followed_topic_audible_notifications = true;
-    user_settings.enable_followed_topic_push_notifications = false;
-    user_settings.enable_followed_topic_email_notifications = true;
-    user_settings.enable_followed_topic_wildcard_mentions_notify = false;
+run_test("all_notifications", ({override}) => {
+    override(user_settings, "enable_stream_desktop_notifications", false);
+    override(user_settings, "enable_stream_audible_notifications", true);
+    override(user_settings, "enable_stream_push_notifications", true);
+    override(user_settings, "enable_stream_email_notifications", false);
+    override(user_settings, "enable_desktop_notifications", false);
+    override(user_settings, "enable_sounds", true);
+    override(user_settings, "enable_offline_push_notifications", false);
+    override(user_settings, "enable_offline_email_notifications", true);
+    override(user_settings, "enable_followed_topic_desktop_notifications", false);
+    override(user_settings, "enable_followed_topic_audible_notifications", true);
+    override(user_settings, "enable_followed_topic_push_notifications", false);
+    override(user_settings, "enable_followed_topic_email_notifications", true);
+    override(user_settings, "enable_followed_topic_wildcard_mentions_notify", false);
 
     // Check that it throws error if incorrect settings name
     // is passed. In this case, we articulate that with
@@ -38,7 +38,7 @@ run_test("all_notifications", () => {
     assert.equal(error_name, "TypeError");
     assert.equal(error_message, "Incorrect setting_name passed: wildcard_mentions_notify");
 
-    user_settings.wildcard_mentions_notify = false;
+    override(user_settings, "wildcard_mentions_notify", false);
     const notifications = settings_config.all_notifications(user_settings);
 
     assert.deepEqual(notifications.general_settings, [

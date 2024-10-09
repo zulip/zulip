@@ -126,10 +126,10 @@ function test_ui(label, f) {
     });
 }
 
-test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
+test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
-    user_settings.demote_inactive_streams = 1;
+    override(user_settings, "demote_inactive_streams", 1);
 
     stream_data.add_sub(devel);
     stream_data.add_sub(social);
@@ -645,8 +645,8 @@ test_ui("separators_only_pinned", () => {
     assert.deepEqual(appended_elems, expected_elems);
 });
 
-test_ui("rename_stream", ({mock_template}) => {
-    user_settings.web_stream_unreads_count_display_policy = 3;
+test_ui("rename_stream", ({mock_template, override}) => {
+    override(user_settings, "web_stream_unreads_count_display_policy", 3);
 
     create_stream_subheader({mock_template});
     initialize_stream_data();
@@ -726,7 +726,7 @@ test_ui("refresh_pin", ({override, override_rewire, mock_template}) => {
 });
 
 test_ui("create_initial_sidebar_rows", ({override, override_rewire, mock_template}) => {
-    user_settings.web_stream_unreads_count_display_policy = 2; // Test coverage for this setting.
+    override(user_settings, "web_stream_unreads_count_display_policy", 2); // Test coverage for this setting.
     initialize_stream_data();
 
     const html_dict = new Map();

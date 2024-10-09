@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {zrequire, set_global} = require("./lib/namespace");
+const {set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const {realm, user_settings} = require("./lib/zpage_params");
 
@@ -51,18 +51,20 @@ function assert_zero_counts(counts) {
 }
 
 function test_notifiable_count(home_unread_messages, expected_notifiable_count) {
-    user_settings.desktop_icon_count_display = 1;
-    let notifiable_counts = unread.get_notifiable_count();
-    assert.deepEqual(notifiable_counts, home_unread_messages);
-    user_settings.desktop_icon_count_display = 2;
-    notifiable_counts = unread.get_notifiable_count();
-    assert.deepEqual(notifiable_counts, expected_notifiable_count);
-    user_settings.desktop_icon_count_display = 3;
-    notifiable_counts = unread.get_notifiable_count();
-    assert.deepEqual(notifiable_counts, expected_notifiable_count);
-    user_settings.desktop_icon_count_display = 4;
-    notifiable_counts = unread.get_notifiable_count();
-    assert.deepEqual(notifiable_counts, 0);
+    with_overrides(({override}) => {
+        override(user_settings, "desktop_icon_count_display", 1);
+        let notifiable_counts = unread.get_notifiable_count();
+        assert.deepEqual(notifiable_counts, home_unread_messages);
+        override(user_settings, "desktop_icon_count_display", 2);
+        notifiable_counts = unread.get_notifiable_count();
+        assert.deepEqual(notifiable_counts, expected_notifiable_count);
+        override(user_settings, "desktop_icon_count_display", 3);
+        notifiable_counts = unread.get_notifiable_count();
+        assert.deepEqual(notifiable_counts, expected_notifiable_count);
+        override(user_settings, "desktop_icon_count_display", 4);
+        notifiable_counts = unread.get_notifiable_count();
+        assert.deepEqual(notifiable_counts, 0);
+    });
 }
 
 function test(label, f) {

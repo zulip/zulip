@@ -13,11 +13,11 @@ window.location.hash = "#bogus";
 const browser_history = zrequire("browser_history");
 
 function test(label, f) {
-    run_test(label, (...args) => {
-        user_settings.web_home_view = "recent";
+    run_test(label, (helpers) => {
+        helpers.override(user_settings, "web_home_view", "recent");
         window.location.hash = "#bogus";
         browser_history.clear_for_testing();
-        f(...args);
+        f(helpers);
     });
 }
 

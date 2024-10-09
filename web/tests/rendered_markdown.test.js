@@ -23,7 +23,6 @@ mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
-user_settings.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
@@ -475,7 +474,7 @@ run_test("timestamp-error", () => {
     assert.equal($timestamp_error.text(), "translated: Invalid time format: the-time-format");
 });
 
-run_test("emoji", () => {
+run_test("emoji", ({override}) => {
     // Setup
     const $content = get_content_element();
     const $emoji = $.create("emoji-stub");
@@ -488,14 +487,14 @@ run_test("emoji", () => {
         return {contents: () => ({unwrap() {}})};
     };
     $content.set_find_results(".emoji", $emoji);
-    user_settings.emojiset = "text";
+    override(user_settings, "emojiset", "text");
 
     rm.update_elements($content);
 
     assert.ok(called);
 
     // Set page parameters back so that test run order is independent
-    user_settings.emojiset = "apple";
+    override(user_settings, "emojiset", "apple");
 });
 
 run_test("spoiler-header", () => {

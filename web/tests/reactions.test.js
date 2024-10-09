@@ -442,32 +442,32 @@ function stub_reaction(message_id, local_id) {
     return $reaction;
 }
 
-test("get_vote_text (more than 3 reactions)", () => {
+test("get_vote_text (more than 3 reactions)", ({override}) => {
     const user_ids = [5, 6, 7];
     const message = {...sample_message};
 
-    user_settings.display_emoji_reaction_users = true;
+    override(user_settings, "display_emoji_reaction_users", true);
     assert.equal(
         "translated: You, Bob van Roberts, Cali",
         reactions.get_vote_text(user_ids, message),
     );
 });
 
-test("get_vote_text (3 reactions)", () => {
+test("get_vote_text (3 reactions)", ({override}) => {
     const user_ids = [5, 6, 7];
     const message = {...sample_message};
 
     // slicing the reactions array to only include first 3 reactions
     message.reactions = message.reactions.slice(0, 3);
 
-    user_settings.display_emoji_reaction_users = true;
+    override(user_settings, "display_emoji_reaction_users", true);
     assert.equal(
         "translated: You, Bob van Roberts, Cali",
         reactions.get_vote_text(user_ids, message),
     );
 });
 
-test("update_vote_text_on_message", ({override_rewire}) => {
+test("update_vote_text_on_message", ({override, override_rewire}) => {
     // the vote_text in this message is intentionally wrong.
     // After calling update_vote_text_on_message(), we
     // will check if the vote_text has been correctly updated.
@@ -500,7 +500,7 @@ test("update_vote_text_on_message", ({override_rewire}) => {
     };
     convert_reactions_to_clean_reactions(message);
 
-    user_settings.display_emoji_reaction_users = true;
+    override(user_settings, "display_emoji_reaction_users", true);
 
     override_rewire(reactions, "find_reaction", noop);
     override_rewire(reactions, "set_reaction_vote_text", noop);
@@ -580,7 +580,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
     };
     convert_reactions_to_clean_reactions(message);
 
-    user_settings.display_emoji_reaction_users = true;
+    override(user_settings, "display_emoji_reaction_users", true);
 
     override(message_store, "get", () => message);
 
