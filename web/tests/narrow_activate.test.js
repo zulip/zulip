@@ -80,6 +80,9 @@ const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
 const message_view = zrequire("message_view");
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
+
+set_realm({});
 
 const denmark = {
     subscribed: false,

@@ -10,6 +10,9 @@ const input_pill = mock_esm("../src/input_pill");
 const people = zrequire("people");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
+const {set_realm} = zrequire("state_data");
+
+set_realm({});
 
 let pills = {
     pill: {},

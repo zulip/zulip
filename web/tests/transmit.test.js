@@ -5,7 +5,6 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {current_user} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
 const reload = mock_esm("../src/reload");
@@ -25,7 +24,11 @@ const server_events = mock_esm("../src/server_events");
 
 const people = zrequire("people");
 const transmit = zrequire("transmit");
+const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+
+const current_user = {};
+set_current_user(current_user);
 
 run_test("transmit_message_ajax", () => {
     let success_func_called;

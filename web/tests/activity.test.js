@@ -13,7 +13,7 @@ const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespac
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
@@ -52,8 +52,13 @@ const peer_data = zrequire("peer_data");
 const message_lists = zrequire("message_lists");
 const util = zrequire("util");
 const {Filter} = zrequire("../src/filter");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

@@ -16,6 +16,9 @@ const {PollData} = zrequire("../shared/src/poll_data");
 const poll_widget = zrequire("poll_widget");
 
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
+
+set_realm({});
 
 const me = {
     email: "me@zulip.com",

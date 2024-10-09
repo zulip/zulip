@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -24,8 +24,13 @@ const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
 const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

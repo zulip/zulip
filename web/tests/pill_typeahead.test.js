@@ -6,7 +6,7 @@ const {zrequire, mock_esm} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const noop = function () {};
 
@@ -17,9 +17,13 @@ const input_pill = zrequire("input_pill");
 const pill_typeahead = zrequire("pill_typeahead");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 const typeahead_helper = zrequire("typeahead_helper");
+
+const realm = {};
+set_realm(realm);
 
 // set global test variables.
 let sort_recipients_called = false;

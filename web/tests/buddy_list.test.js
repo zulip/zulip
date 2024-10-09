@@ -22,8 +22,10 @@ const message_viewport = mock_esm("../src/message_viewport");
 const buddy_data = zrequire("buddy_data");
 const {BuddyList} = zrequire("buddy_list");
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+set_realm({});
 initialize_user_settings({user_settings: {}});
 
 function init_simulated_scrolling() {

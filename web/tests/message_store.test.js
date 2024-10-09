@@ -27,8 +27,10 @@ const pm_conversations = zrequire("pm_conversations");
 const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
 const message_user_ids = zrequire("message_user_ids");
+const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+set_realm({});
 initialize_user_settings({user_settings: {}});
 
 const denmark = {

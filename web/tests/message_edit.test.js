@@ -4,14 +4,19 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, realm} = require("./lib/zpage_params");
 
 const message_edit = zrequire("message_edit");
 const people = zrequire("people");
+const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
 
 const settings_data = mock_esm("../src/settings_data");
+
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
 
 run_test("is_content_editable", ({override}) => {
     // You can't edit a null message

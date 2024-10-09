@@ -7,7 +7,6 @@ const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user} = require("./lib/zpage_params");
 
 // These unit tests for web/src/message_list.ts emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
@@ -42,6 +41,10 @@ mock_esm("../src/message_list_view", {
     MessageListView,
 });
 const {Filter} = zrequire("filter");
+const {set_current_user} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
 
 run_test("basics", ({override}) => {
     override(activity_ui, "build_user_sidebar", noop);

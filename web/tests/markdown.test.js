@@ -53,10 +53,12 @@ const markdown_config = zrequire("markdown_config");
 const markdown = zrequire("markdown");
 const people = zrequire("people");
 const pygments_data = zrequire("pygments_data");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
+set_realm({});
 const user_settings = {};
 initialize_user_settings({user_settings});
 

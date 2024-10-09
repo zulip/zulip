@@ -4,7 +4,6 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, realm} = require("./lib/zpage_params");
 
 const stream_topic_history = mock_esm("../src/stream_topic_history");
 
@@ -19,12 +18,17 @@ const stream_list_sort = zrequire("stream_list_sort");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const pygments_data = zrequire("pygments_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const util = zrequire("util");
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

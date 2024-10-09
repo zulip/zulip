@@ -6,7 +6,6 @@ const {make_user} = require("./lib/example_user");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user} = require("./lib/zpage_params");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -30,8 +29,12 @@ mock_esm("../src/settings_data", {
 const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
 const people = zrequire("people");
+const {set_current_user} = zrequire("state_data");
 const typing_data = zrequire("typing_data");
 const typing_events = zrequire("typing_events");
+
+const current_user = {};
+set_current_user(current_user);
 
 // Let us add a few users to use as typists.
 const anna = make_user({

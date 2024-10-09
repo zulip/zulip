@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, page_params} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 mock_esm("../src/electron_bridge");
 mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
@@ -15,8 +15,11 @@ const stream_data = zrequire("stream_data");
 
 const desktop_notifications = zrequire("desktop_notifications");
 const message_notifications = zrequire("message_notifications");
+const {set_current_user} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const current_user = {};
+set_current_user(current_user);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

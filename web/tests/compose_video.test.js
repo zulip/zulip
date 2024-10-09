@@ -6,7 +6,7 @@ const events = require("./lib/events");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
@@ -27,6 +27,12 @@ set_global(
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_setup = zrequire("compose_setup");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
 
 function stub_out_video_calls() {
     const $elem = $(".compose-control-buttons-container .video_link");

@@ -5,12 +5,15 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {realm} = require("./lib/zpage_params");
 
 const people = zrequire("people");
 const user_pill = zrequire("user_pill");
+const {set_realm} = zrequire("state_data");
 
 const settings_data = mock_esm("../src/settings_data");
+
+const realm = {};
+set_realm(realm);
 
 const alice = {
     email: "alice@example.com",

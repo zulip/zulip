@@ -31,10 +31,13 @@ const narrow_state = mock_esm("../src/narrow_state", {
     stream_id() {},
 });
 
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
 const unread = zrequire("unread");
+
+set_realm({});
 
 const general = {
     stream_id: 556,

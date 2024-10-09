@@ -6,8 +6,10 @@ const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 const settings_config = zrequire("settings_config");
+const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+set_realm({});
 const user_settings = {};
 initialize_user_settings({user_settings});
 

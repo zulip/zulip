@@ -10,7 +10,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const message_user_ids = mock_esm("../src/message_user_ids");
 const settings_data = mock_esm("../src/settings_data", {
@@ -19,9 +19,14 @@ const settings_data = mock_esm("../src/settings_data", {
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

@@ -7,7 +7,7 @@ const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, page_params} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const alice_user_id = 5;
 
@@ -59,8 +59,12 @@ const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const people = zrequire("people");
 const reactions = zrequire("reactions");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const current_user = {};
+set_current_user(current_user);
+set_realm({});
 const user_settings = {};
 initialize_user_settings({user_settings});
 

@@ -65,6 +65,9 @@ const user_profile = mock_esm("../src/user_profile");
 // Use real versions of these modules.
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
+const {set_current_user} = zrequire("state_data");
+
+set_current_user({});
 
 const bob = make_bot({
     email: "bob@example.com",

@@ -8,12 +8,7 @@ const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {
-    current_user,
-    page_params,
-    realm,
-    realm_user_settings_defaults,
-} = require("./lib/zpage_params");
+const {page_params, realm_user_settings_defaults} = require("./lib/zpage_params");
 
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;
@@ -102,8 +97,13 @@ const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
 mock_esm("../src/giphy");
 const {Filter} = zrequire("filter");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
 const user_settings = {};
 initialize_user_settings({user_settings});
 

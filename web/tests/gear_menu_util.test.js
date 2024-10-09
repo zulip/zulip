@@ -4,9 +4,12 @@ const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {realm} = require("./lib/zpage_params");
 
 const gear_menu_util = zrequire("gear_menu_util");
+const {set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
 
 run_test("version_display_string", ({override}) => {
     let expected_version_display_string;

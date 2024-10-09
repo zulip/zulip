@@ -15,7 +15,10 @@ const {page_params} = require("./lib/zpage_params");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+
+set_current_user({});
 
 page_params.realm_users = [];
 

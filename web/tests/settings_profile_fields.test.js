@@ -5,7 +5,6 @@ const assert = require("node:assert/strict");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, realm} = require("./lib/zpage_params");
 
 const loading = mock_esm("../src/loading");
 
@@ -50,6 +49,12 @@ const Sortable = {create: noop};
 mock_esm("sortablejs", {default: Sortable});
 
 const settings_profile_fields = zrequire("settings_profile_fields");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 function test_populate(opts, template_data) {
     with_overrides(({override}) => {

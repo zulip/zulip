@@ -7,7 +7,6 @@ const MockDate = require("mockdate");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
-const {current_user} = require("./lib/zpage_params");
 
 const compose_notifications = mock_esm("../src/compose_notifications");
 const markdown = mock_esm("../src/markdown");
@@ -70,8 +69,12 @@ message_lists.non_rendered_data = () => [];
 const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
 const people = zrequire("people");
+const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
+
+const current_user = {};
+set_current_user(current_user);
 
 const general_sub = {
     stream_id: 101,

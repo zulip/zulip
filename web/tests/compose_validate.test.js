@@ -8,7 +8,6 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, realm} = require("./lib/zpage_params");
 
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -19,9 +18,15 @@ const people = zrequire("people");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
 const settings_config = zrequire("settings_config");
 const settings_data = mock_esm("../src/settings_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("/compose_recipient");
 const user_groups = zrequire("user_groups");
+
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
 
 const me = {
     email: "me@example.com",

@@ -5,9 +5,12 @@ const assert = require("node:assert/strict");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {realm} = require("./lib/zpage_params");
 
 const user_groups = zrequire("user_groups");
+const {set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
 
 run_test("user_groups", () => {
     const students = {

@@ -4,12 +4,16 @@ const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user} = require("./lib/zpage_params");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_pill = zrequire("stream_pill");
+
+const current_user = {};
+set_current_user(current_user);
+set_realm({});
 
 const denmark = {
     stream_id: 101,

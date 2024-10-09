@@ -46,9 +46,13 @@ const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_create = zrequire("stream_create");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
+
+set_current_user({});
+set_realm({});
 
 const george = {
     email: "george@zulip.com",

@@ -12,7 +12,10 @@ const {run_test} = require("./lib/test");
 // core piece of code that makes things work.
 
 const {Filter} = zrequire("../src/filter");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+
+set_realm({});
 
 const denmark_stream = make_stream({
     color: "blue",
