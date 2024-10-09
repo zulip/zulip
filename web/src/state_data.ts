@@ -136,7 +136,7 @@ export const group_setting_value_schema = z.union([z.number(), anonymous_group_s
 
 export type GroupSettingValue = z.infer<typeof group_setting_value_schema>;
 
-export const user_group_schema = z.object({
+export const raw_user_group_schema = z.object({
     description: z.string(),
     id: z.number(),
     creator_id: z.number().nullable(),
@@ -482,7 +482,7 @@ export const state_data_schema = z
     )
     .and(
         z
-            .object({realm_user_groups: z.array(user_group_schema)})
+            .object({realm_user_groups: z.array(raw_user_group_schema)})
             .transform((user_groups) => ({user_groups})),
     )
     .and(
