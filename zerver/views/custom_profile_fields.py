@@ -2,7 +2,7 @@ from typing import Annotated
 
 import orjson
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
@@ -307,8 +307,11 @@ def remove_user_custom_profile_data(
     *,
     data: Json[list[int]],
 ) -> HttpResponse:
-    for field_id in data:
-        check_remove_custom_profile_field_value(user_profile, field_id, acting_user=user_profile)
+    with transaction.atomic(durable=True):
+        for field_id in data:
+            check_remove_custom_profile_field_value(
+                user_profile, field_id, acting_user=user_profile
+            )
     return json_success(request)
 
 
@@ -321,6 +324,7 @@ def update_user_custom_profile_data(
     data: Json[list[ProfileDataElementUpdateDict]],
 ) -> HttpResponse:
     validate_user_custom_profile_data(user_profile.realm.id, data, acting_user=user_profile)
-    do_update_user_custom_profile_data_if_changed(user_profile, data)
+    with transaction.atomic(durable=True):
+        do_update_user_custom_profile_data_if_changed(user_profile, data)
     # We need to call this explicitly otherwise constraints are not check
     return json_success(request)

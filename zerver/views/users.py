@@ -5,6 +5,7 @@ from typing import Annotated, Any, TypeAlias
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
@@ -197,6 +198,7 @@ class ProfileDataElement(BaseModel):
 
 
 @typed_endpoint
+@transaction.atomic(durable=True)
 def update_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
