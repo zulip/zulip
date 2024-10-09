@@ -556,7 +556,11 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[s
     image_path = os.path.join(avatar_dir, avatar_upload_item[1])
     original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
 
-    response = requests.get(avatar_url + size_url_suffix, stream=True)
+    if avatar_url.startswith("https://ca.slack-edge.com/"):
+        # Adjust the avatar size for a typical Slack user.
+        avatar_url += size_url_suffix
+
+    response = requests.get(avatar_url, stream=True)
     with open(image_path, "wb") as image_file:
         shutil.copyfileobj(response.raw, image_file)
     shutil.copy(image_path, original_image_path)
