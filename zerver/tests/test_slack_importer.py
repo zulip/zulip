@@ -555,6 +555,33 @@ class SlackImporter(ZulipTestCase):
                     "image_32": "https://secure.gravatar.com/avatar/random7.png",
                 },
             },
+            {
+                "id": "U1MBOTC81",
+                "name": "Integration Bot",
+                "deleted": False,
+                "is_mirror_dummy": False,
+                "real_name": "Integration Bot",
+                "is_integration_bot": True,
+                "profile": {
+                    "image_72": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_512.png",
+                    "bot_id": "B06NWMNUQ3W",
+                    "first_name": "Integration Bot",
+                },
+            },
+            # Integration bot user with unknown avatar url format
+            {
+                "id": "U1RDFEC90",
+                "name": "Unknown Bot",
+                "deleted": False,
+                "is_mirror_dummy": False,
+                "real_name": "Unknown Bot",
+                "is_integration_bot": True,
+                "profile": {
+                    "image_72": "https://avatars.slack-edge.com/2024-05-01/dasdasdasdasdXXXXXX",
+                    "bot_id": "B0DSAMNUQ3W",
+                    "first_name": "Unknown Bot",
+                },
+            },
         ]
 
         mock_get_data_file.return_value = user_data
@@ -569,6 +596,8 @@ class SlackImporter(ZulipTestCase):
             "U8X25EBAB": 5,
             "U015J7JSE": 6,
             "U1RDFEC80": 7,
+            "U1MBOTC81": 8,
+            "U1RDFEC90": 9,
         }
         slack_data_dir = "./random_path"
         timestamp = int(timezone_now().timestamp())
@@ -581,7 +610,9 @@ class SlackImporter(ZulipTestCase):
                 slack_user_id_to_zulip_user_id,
                 customprofilefield,
                 customprofilefield_value,
-            ) = users_to_zerver_userprofile(slack_data_dir, user_data, 1, timestamp, "test_domain")
+            ) = users_to_zerver_userprofile(
+                slack_data_dir, user_data, 1, timestamp, "testdomain.com"
+            )
 
         # Test custom profile fields
         self.assertEqual(customprofilefield[0]["field_type"], 1)
@@ -602,9 +633,9 @@ class SlackImporter(ZulipTestCase):
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
-        self.assert_length(avatar_list, 8)
+        self.assert_length(avatar_list, 9)
 
-        self.assert_length(zerver_userprofile, 8)
+        self.assert_length(zerver_userprofile, 10)
 
         self.assertEqual(zerver_userprofile[0]["is_staff"], False)
         self.assertEqual(zerver_userprofile[0]["is_bot"], False)
@@ -685,6 +716,19 @@ class SlackImporter(ZulipTestCase):
         error_message = str(e.exception)
         expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
         self.assertEqual(error_message, expected_error_message)
+
+        # Test converting Slack's integration bot
+        self.assertEqual(
+            zerver_userprofile[8]["id"], test_slack_user_id_to_zulip_user_id["U1MBOTC81"]
+        )
+        self.assertEqual(zerver_userprofile[8]["is_active"], True)
+        self.assertEqual(zerver_userprofile[8]["avatar_source"], "U")
+
+        self.assertEqual(
+            zerver_userprofile[9]["id"], test_slack_user_id_to_zulip_user_id["U1RDFEC90"]
+        )
+        self.assertEqual(zerver_userprofile[9]["is_active"], True)
+        self.assertEqual(zerver_userprofile[9]["avatar_source"], "G")
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1
@@ -1330,7 +1374,7 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
-    @mock.patch("zerver.data_import.slack.build_avatar_url")
+    @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
     @mock.patch("zerver.data_import.slack.check_token_access")
@@ -1537,7 +1581,7 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
-    @mock.patch("zerver.data_import.slack.build_avatar_url")
+    @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
     @mock.patch("zerver.data_import.slack.check_token_access")

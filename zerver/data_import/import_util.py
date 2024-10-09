@@ -557,7 +557,10 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[s
     image_path = os.path.join(avatar_dir, avatar_upload_item[1])
     original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
 
-    response = requests.get(avatar_url + size_url_suffix, stream=True)
+    if not avatar_url.endswith(".png"):
+        avatar_url += size_url_suffix
+
+    response = requests.get(avatar_url, stream=True)
     with open(image_path, "wb") as image_file:
         shutil.copyfileobj(response.raw, image_file)
     shutil.copy(image_path, original_image_path)
