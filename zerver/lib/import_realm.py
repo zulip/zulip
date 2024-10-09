@@ -878,7 +878,7 @@ def process_emojis(
         # while 3rd party exports don't use the deactivated field, so this shouldn't
         # particularly matter.
         RealmEmoji.objects.filter(
-            name=record["name"], realm_id=user_profile.realm_id, deactivated=False
+            file_name=record["file_name"], realm_id=user_profile.realm_id, deactivated=False
         ).update(is_animated=True)
 
 
