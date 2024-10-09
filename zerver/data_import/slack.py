@@ -301,14 +301,8 @@ def users_to_zerver_userprofile(
         found_emails[email.lower()] = user_id
 
         # ref: https://zulip.com/help/change-your-profile-picture
-        # TODO: Add support converting Slacks integration bot avatar.
-        if user.get("is_integration_bot"):
-            avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-        else:
-            avatar_url = build_avatar_url(
-                slack_user_id, user["team_id"], user["profile"]["avatar_hash"]
-            )
-            avatar_source = UserProfile.AVATAR_FROM_USER
+        avatar_source, avatar_url = build_avatar_url(slack_user_id, user)
+        if avatar_source == UserProfile.AVATAR_FROM_USER:
             build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
         role = UserProfile.ROLE_MEMBER
         if get_owner(user):
@@ -469,9 +463,21 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     raise AssertionError(f"Could not find email address for Slack user {user}")
 
 
-def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
-    avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
-    return avatar_url
+def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str]:
+    if user.get("is_integration_bot"):
+        # Unlike other Slack user types, Slacks integration bot avatar URL is
+        # PNG image URL.
+        avatar_url: str = user["profile"]["image_72"]
+        if avatar_url.endswith(".png"):
+            avatar_source = UserProfile.AVATAR_FROM_USER
+        else:
+            avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    else:
+        team_id = user["team_id"]
+        avatar_hash = user["profile"]["avatar_hash"]
+        avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
+        avatar_source = UserProfile.AVATAR_FROM_USER
+    return avatar_source, avatar_url
 
 
 def get_owner(user: ZerverFieldsT) -> bool:
