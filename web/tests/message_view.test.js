@@ -122,6 +122,10 @@ run_test("empty_narrow_html", ({mock_template}) => {
             {query_word: "search", is_stop_word: false},
             {query_word: "a", is_stop_word: true},
         ],
+        query_words_shortened: [
+            {query_word: "search", is_stop_word: false},
+            {query_word: "a", is_stop_word: true},
+        ],
     };
     actual_html = empty_narrow_html(
         "This is a title",
@@ -147,6 +151,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         has_stop_word: false,
         stream_query: "hello world",
         query_words: [{query_word: "searchA", is_stop_word: false}],
+        query_words_shortened: [{query_word: "searchA", is_stop_word: false}],
     };
     actual_html = empty_narrow_html(
         "This is a title",
@@ -170,6 +175,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         has_stop_word: false,
         topic_query: "hello",
         query_words: [{query_word: "searchB", is_stop_word: false}],
+        query_words_shortened: [{query_word: "searchB", is_stop_word: false}],
     };
     actual_html = empty_narrow_html(
         "This is a title",
@@ -599,6 +605,37 @@ run_test("hide_empty_narrow_message", () => {
     assert.equal($(".empty_feed_notice").text(), "never-been-set");
 });
 
+run_test("show_search_long_word", ({mock_template}) => {
+    realm.stop_words = [];
+
+    mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
+
+    const expected_search_data_long_word = {
+        has_stop_word: false,
+        query_words: [
+            {
+                query_word: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                is_stop_word: false,
+            },
+        ],
+        query_words_shortened: [
+            {query_word: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", is_stop_word: false},
+            {query_word: "...", is_stop_word: false},
+        ],
+    };
+    message_lists.set_current(undefined);
+    set_filter([["search", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: No search results.",
+            undefined,
+            expected_search_data_long_word,
+        ),
+    );
+});
+
 run_test("show_search_stopwords", ({mock_template}) => {
     realm.stop_words = ["what", "about"];
 
@@ -607,6 +644,11 @@ run_test("show_search_stopwords", ({mock_template}) => {
     const expected_search_data = {
         has_stop_word: true,
         query_words: [
+            {query_word: "what", is_stop_word: true},
+            {query_word: "about", is_stop_word: true},
+            {query_word: "grail", is_stop_word: false},
+        ],
+        query_words_shortened: [
             {query_word: "what", is_stop_word: true},
             {query_word: "about", is_stop_word: true},
             {query_word: "grail", is_stop_word: false},
@@ -630,6 +672,11 @@ run_test("show_search_stopwords", ({mock_template}) => {
             {query_word: "about", is_stop_word: true},
             {query_word: "grail", is_stop_word: false},
         ],
+        query_words_shortened: [
+            {query_word: "what", is_stop_word: true},
+            {query_word: "about", is_stop_word: true},
+            {query_word: "grail", is_stop_word: false},
+        ],
     };
     set_filter([
         ["stream", streamA_id.toString()],
@@ -646,6 +693,11 @@ run_test("show_search_stopwords", ({mock_template}) => {
         stream_query: "streamA",
         topic_query: "topicA",
         query_words: [
+            {query_word: "what", is_stop_word: true},
+            {query_word: "about", is_stop_word: true},
+            {query_word: "grail", is_stop_word: false},
+        ],
+        query_words_shortened: [
             {query_word: "what", is_stop_word: true},
             {query_word: "about", is_stop_word: true},
             {query_word: "grail", is_stop_word: false},

@@ -9,7 +9,7 @@
             {{#if search_data.topic_query}}
             <span>topic: {{search_data.topic_query}}</span>
             {{/if}}
-            {{#each search_data.query_words}}
+            {{#each search_data.query_words_shortened}}
                 {{#if is_stop_word}}
                 <del>{{query_word}}</del>
                 {{else}}
