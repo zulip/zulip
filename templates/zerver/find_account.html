@@ -38,12 +38,12 @@
             {% else %}
             <div class="find-account-form">
                 <p>
-                    {% trans %}
-                    Enter your email address to receive an email with the URLs
-                    for all the Zulip Cloud organizations in which you have
-                    active accounts. If you have also forgotten your password,
-                    you can <a href="/help/change-your-password">reset it</a>.
-                    {% endtrans %}
+                    {% if corporate_enabled %}
+                        {% trans %}Enter your email address to receive an email with the URLs for all the Zulip Cloud organizations in which you have active accounts.{% endtrans %}
+                    {% else %}
+                        {% trans %}Enter your email address to receive an email with the URLs for all the Zulip organizations on this server in which you have active accounts.{% endtrans %}
+                    {% endif %}
+                    {% trans %}If you have also forgotten your password, you can <a href="/help/change-your-password">reset it</a>.{% endtrans %}
                 </p>
                 <form class="form-inline" id="find_account" name="email_form"
                   action="{{ current_url }}" method="post">
