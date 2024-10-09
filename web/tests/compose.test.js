@@ -55,6 +55,7 @@ const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const compose_setup = zrequire("compose_setup");
+const compose_validate = zrequire("compose_validate");
 const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
@@ -591,6 +592,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
         update_narrow_to_recipient_visibility_called = true;
     });
     override_rewire(drafts, "update_compose_draft_count", noop);
+    override_rewire(compose_validate, "warn_if_guest_in_dm_recipient", noop);
 
     compose_state.set_message_type(undefined);
     compose_recipient.update_on_recipient_change();
