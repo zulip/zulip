@@ -35,13 +35,13 @@ const test_user103 = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        current_user.is_admin = false;
+        helpers.override(current_user, "is_admin", false);
         people.init();
         people.add_active_user(me);
         people.add_active_user(test_user101);
         people.add_active_user(test_user102);
         people.add_active_user(test_user103);
-        current_user.user_id = me.user_id;
+        helpers.override(current_user, "user_id", me.user_id);
         people.initialize_current_user(me.user_id);
         f(helpers);
     });
@@ -70,11 +70,11 @@ test("basics", () => {
     assert.ok(!stream_create_subscribers_data.must_be_subscribed(test_user101.user_id));
 });
 
-test("must_be_subscribed", () => {
-    current_user.is_admin = false;
+test("must_be_subscribed", ({override}) => {
+    override(current_user, "is_admin", false);
     assert.ok(stream_create_subscribers_data.must_be_subscribed(me.user_id));
     assert.ok(!stream_create_subscribers_data.must_be_subscribed(test_user101.user_id));
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.ok(!stream_create_subscribers_data.must_be_subscribed(me.user_id));
     assert.ok(!stream_create_subscribers_data.must_be_subscribed(test_user101.user_id));
 });

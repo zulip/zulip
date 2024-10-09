@@ -56,9 +56,9 @@ const me = {
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-run_test("create_item", () => {
-    current_user.user_id = me.user_id;
-    current_user.is_admin = true;
+run_test("create_item", ({override}) => {
+    override(current_user, "user_id", me.user_id);
+    override(current_user, "is_admin", true);
     function test_create_item(
         stream_name,
         current_items,

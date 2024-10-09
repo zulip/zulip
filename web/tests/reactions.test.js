@@ -112,7 +112,7 @@ people.add_active_user(alexus);
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        current_user.user_id = alice_user_id;
+        helpers.override(current_user, "user_id", alice_user_id);
         f(helpers);
     });
 }

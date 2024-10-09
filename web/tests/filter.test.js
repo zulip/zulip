@@ -2567,8 +2567,8 @@ run_test("equals", () => {
     );
 });
 
-run_test("adjusted_terms_if_moved", () => {
-    current_user.email = me.email;
+run_test("adjusted_terms_if_moved", ({override}) => {
+    override(current_user, "email", me.email);
     // should return null for non-stream messages containing no
     // `with` operator
     let raw_terms = [{operator: "channel", operand: foo_stream_id.toString()}];

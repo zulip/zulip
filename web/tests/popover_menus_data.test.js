@@ -156,12 +156,12 @@ function test(label, f) {
 }
 
 // Test functions
-test("my_message_all_actions", () => {
+test("my_message_all_actions", ({override}) => {
     // Set page parameters.
     set_page_params_no_edit_restrictions();
     realm.realm_can_delete_any_message_group = everyone.id;
     realm.realm_can_delete_own_message_group = everyone.id;
-    current_user.user_id = me.user_id;
+    override(current_user, "user_id", me.user_id);
     // Get message with maximum permissions available
     // Initialize message list
     const list = init_message_list();

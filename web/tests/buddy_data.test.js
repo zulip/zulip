@@ -166,7 +166,7 @@ test("user_circle, level", ({override}) => {
     assert.equal(buddy_data.level(fred.user_id), 3);
 });
 
-test("title_data", () => {
+test("title_data", ({override}) => {
     page_params.presence_history_limit_days_for_web_app = 365;
     add_canned_users();
 
@@ -213,7 +213,7 @@ test("title_data", () => {
         third_line: "translated: Active now",
         show_you: true,
     };
-    current_user.user_id = me.user_id;
+    override(current_user, "user_id", me.user_id);
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {

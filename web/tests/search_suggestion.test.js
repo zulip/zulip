@@ -56,8 +56,8 @@ function new_stream_id() {
     return _stream_id;
 }
 
-function init() {
-    current_user.is_admin = true;
+function init({override}) {
+    override(current_user, "is_admin", true);
 
     people.init();
     people.add_active_user(bob);
@@ -79,7 +79,7 @@ function get_suggestions(query, pill_query = "") {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        init();
+        init(helpers);
         f(helpers);
     });
 }

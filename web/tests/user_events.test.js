@@ -52,8 +52,6 @@ mock_esm("../src/settings_streams", {
     maybe_disable_widgets() {},
 });
 
-current_user.is_admin = true;
-
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const user_events = zrequire("user_events");

@@ -230,7 +230,7 @@ run_test("change_message_id", () => {
     assert.equal(list.change_message_id(13, 15), undefined);
 });
 
-run_test("last_sent_by_me", () => {
+run_test("last_sent_by_me", ({override}) => {
     const list = new MessageList({
         data: new MessageListData({
             excludes_muted_topics: false,
@@ -253,7 +253,7 @@ run_test("last_sent_by_me", () => {
     ];
 
     list.append(items);
-    current_user.user_id = 3;
+    override(current_user, "user_id", 3);
     // Look for the last message where user_id == 3 (our ID)
     assert.equal(list.get_last_message_sent_by_me().id, 2);
 });

@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const {current_user, page_params, realm} = require("./lib/zpage_params");
 
@@ -30,13 +30,13 @@ const isaac = {
 
 const group_permission_settings = mock_esm("../src/group_permission_settings", {});
 
-run_test("user_can_change_email", () => {
+run_test("user_can_change_email", ({override}) => {
     const can_change_email = settings_data.user_can_change_email;
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(can_change_email(), true);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     realm.realm_email_changes_disabled = true;
     assert.equal(can_change_email(), false);
 
@@ -44,13 +44,13 @@ run_test("user_can_change_email", () => {
     assert.equal(can_change_email(), true);
 });
 
-run_test("user_can_change_name", () => {
+run_test("user_can_change_name", ({override}) => {
     const can_change_name = settings_data.user_can_change_name;
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(can_change_name(), true);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     realm.realm_name_changes_disabled = true;
     realm.server_name_changes_disabled = false;
     assert.equal(can_change_name(), false);
@@ -64,13 +64,13 @@ run_test("user_can_change_name", () => {
     assert.equal(can_change_name(), false);
 });
 
-run_test("user_can_change_avatar", () => {
+run_test("user_can_change_avatar", ({override}) => {
     const can_change_avatar = settings_data.user_can_change_avatar;
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(can_change_avatar(), true);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     realm.realm_avatar_changes_disabled = true;
     realm.server_avatar_changes_disabled = false;
     assert.equal(can_change_avatar(), false);
@@ -84,47 +84,47 @@ run_test("user_can_change_avatar", () => {
     assert.equal(can_change_avatar(), false);
 });
 
-run_test("user_can_change_logo", () => {
+run_test("user_can_change_logo", ({override}) => {
     const can_change_logo = settings_data.user_can_change_logo;
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     realm.zulip_plan_is_not_limited = true;
     assert.equal(can_change_logo(), true);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     realm.zulip_plan_is_not_limited = false;
     assert.equal(can_change_logo(), false);
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     realm.zulip_plan_is_not_limited = false;
     assert.equal(can_change_logo(), false);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     realm.zulip_plan_is_not_limited = true;
     assert.equal(can_change_logo(), false);
 });
 
 function test_policy(label, policy, validation_func) {
-    run_test(label, () => {
-        current_user.is_admin = true;
+    run_test(label, ({override}) => {
+        override(current_user, "is_admin", true);
         realm[policy] = settings_config.common_policy_values.by_admins_only.code;
         assert.equal(validation_func(), true);
 
-        current_user.is_admin = false;
+        override(current_user, "is_admin", false);
         assert.equal(validation_func(), false);
 
-        current_user.is_moderator = true;
+        override(current_user, "is_moderator", true);
         realm[policy] = settings_config.common_policy_values.by_moderators_only.code;
         assert.equal(validation_func(), true);
 
-        current_user.is_moderator = false;
+        override(current_user, "is_moderator", false);
         assert.equal(validation_func(), false);
 
-        current_user.is_guest = true;
+        override(current_user, "is_guest", true);
         realm[policy] = settings_config.common_policy_values.by_members.code;
         assert.equal(validation_func(), false);
 
-        current_user.is_guest = false;
+        override(current_user, "is_guest", false);
         assert.equal(validation_func(), true);
 
         page_params.is_spectator = true;
@@ -135,7 +135,7 @@ function test_policy(label, policy, validation_func) {
         assert.equal(validation_func(), true);
 
         realm[policy] = settings_config.common_policy_values.by_full_members.code;
-        current_user.user_id = 30;
+        override(current_user, "user_id", 30);
         isaac.date_joined = new Date(Date.now());
         settings_data.initialize(isaac.date_joined);
         realm.realm_waiting_period_threshold = 10;
@@ -169,33 +169,33 @@ test_policy(
 );
 
 function test_message_policy(label, policy, validation_func) {
-    run_test(label, () => {
-        current_user.is_admin = true;
+    run_test(label, ({override}) => {
+        override(current_user, "is_admin", true);
         realm[policy] = settings_config.common_message_policy_values.by_admins_only.code;
         assert.equal(validation_func(), true);
 
-        current_user.is_admin = false;
-        current_user.is_moderator = true;
+        override(current_user, "is_admin", false);
+        override(current_user, "is_moderator", true);
         assert.equal(validation_func(), false);
 
         realm[policy] = settings_config.common_message_policy_values.by_moderators_only.code;
         assert.equal(validation_func(), true);
 
-        current_user.is_moderator = false;
+        override(current_user, "is_moderator", false);
         assert.equal(validation_func(), false);
 
-        current_user.is_guest = true;
+        override(current_user, "is_guest", true);
         realm[policy] = settings_config.common_message_policy_values.by_everyone.code;
         assert.equal(validation_func(), true);
 
         realm[policy] = settings_config.common_message_policy_values.by_members.code;
         assert.equal(validation_func(), false);
 
-        current_user.is_guest = false;
+        override(current_user, "is_guest", false);
         assert.equal(validation_func(), true);
 
         realm[policy] = settings_config.common_message_policy_values.by_full_members.code;
-        current_user.user_id = 30;
+        override(current_user, "user_id", 30);
         isaac.date_joined = new Date(Date.now());
         realm.realm_waiting_period_threshold = 10;
         settings_data.initialize(isaac.date_joined);
@@ -213,16 +213,16 @@ test_message_policy(
     settings_data.user_can_move_messages_to_another_topic,
 );
 
-run_test("user_can_move_messages_to_another_topic_nobody_case", () => {
-    current_user.is_admin = true;
-    current_user.is_guest = false;
+run_test("user_can_move_messages_to_another_topic_nobody_case", ({override}) => {
+    override(current_user, "is_admin", true);
+    override(current_user, "is_guest", false);
     realm.realm_edit_topic_policy = settings_config.edit_topic_policy_values.nobody.code;
     assert.equal(settings_data.user_can_move_messages_to_another_topic(), false);
 });
 
-run_test("user_can_move_messages_between_streams_nobody_case", () => {
-    current_user.is_admin = true;
-    current_user.is_guest = false;
+run_test("user_can_move_messages_between_streams_nobody_case", ({override}) => {
+    override(current_user, "is_admin", true);
+    override(current_user, "is_guest", false);
     realm.realm_move_messages_between_streams_policy =
         settings_config.move_messages_between_streams_policy_values.nobody.code;
     assert.equal(settings_data.user_can_move_messages_between_streams(), false);
@@ -260,80 +260,82 @@ run_test("using_dark_theme", ({override}) => {
     assert.equal(settings_data.using_dark_theme(), false);
 });
 
-run_test("user_can_invite_others_to_realm_nobody_case", () => {
-    current_user.is_admin = true;
-    current_user.is_guest = false;
+run_test("user_can_invite_others_to_realm_nobody_case", ({override}) => {
+    override(current_user, "is_admin", true);
+    override(current_user, "is_guest", false);
     realm.realm_invite_to_realm_policy =
         settings_config.email_invite_to_realm_policy_values.nobody.code;
     assert.equal(settings_data.user_can_invite_users_by_email(), false);
 });
 
-run_test("user_email_not_configured", () => {
+run_test("user_email_not_configured", ({override}) => {
     const user_email_not_configured = settings_data.user_email_not_configured;
 
-    current_user.is_owner = false;
+    override(current_user, "is_owner", false);
     assert.equal(user_email_not_configured(), false);
 
-    current_user.is_owner = true;
-    current_user.delivery_email = "";
+    override(current_user, "is_owner", true);
+    override(current_user, "delivery_email", "");
     assert.equal(user_email_not_configured(), true);
 
-    current_user.delivery_email = "name@example.com";
+    override(current_user, "delivery_email", "name@example.com");
     assert.equal(user_email_not_configured(), false);
 });
 
 function test_realm_group_settings(setting_name, validation_func) {
-    const admin_user_id = 1;
-    const moderator_user_id = 2;
-    const member_user_id = 3;
+    with_overrides(({override}) => {
+        const admin_user_id = 1;
+        const moderator_user_id = 2;
+        const member_user_id = 3;
 
-    const admins = {
-        name: "Admins",
-        id: 1,
-        members: new Set([admin_user_id]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-    };
-    const moderators = {
-        name: "Moderators",
-        id: 2,
-        members: new Set([moderator_user_id]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1]),
-    };
+        const admins = {
+            name: "Admins",
+            id: 1,
+            members: new Set([admin_user_id]),
+            is_system_group: true,
+            direct_subgroup_ids: new Set([]),
+        };
+        const moderators = {
+            name: "Moderators",
+            id: 2,
+            members: new Set([moderator_user_id]),
+            is_system_group: true,
+            direct_subgroup_ids: new Set([1]),
+        };
 
-    group_permission_settings.get_group_permission_setting_config = () => ({
-        allow_everyone_group: false,
+        group_permission_settings.get_group_permission_setting_config = () => ({
+            allow_everyone_group: false,
+        });
+
+        user_groups.initialize({realm_user_groups: [admins, moderators]});
+        page_params.is_spectator = true;
+        assert.equal(validation_func(), false);
+
+        page_params.is_spectator = false;
+        override(current_user, "is_guest", false);
+        realm[setting_name] = 1;
+        override(current_user, "user_id", admin_user_id);
+        assert.equal(validation_func(), true);
+
+        override(current_user, "user_id", moderator_user_id);
+        assert.equal(validation_func(), false);
+
+        realm[setting_name] = 2;
+        override(current_user, "user_id", moderator_user_id);
+        assert.equal(validation_func(), true);
+
+        override(current_user, "user_id", member_user_id);
+        assert.equal(validation_func(), false);
+
+        override(current_user, "user_id", moderator_user_id);
+        override(current_user, "is_guest", true);
+        assert.equal(validation_func(), false);
+
+        group_permission_settings.get_group_permission_setting_config = () => ({
+            allow_everyone_group: true,
+        });
+        assert.equal(validation_func(), true);
     });
-
-    user_groups.initialize({realm_user_groups: [admins, moderators]});
-    page_params.is_spectator = true;
-    assert.equal(validation_func(), false);
-
-    page_params.is_spectator = false;
-    current_user.is_guest = false;
-    realm[setting_name] = 1;
-    current_user.user_id = admin_user_id;
-    assert.equal(validation_func(), true);
-
-    current_user.user_id = moderator_user_id;
-    assert.equal(validation_func(), false);
-
-    realm[setting_name] = 2;
-    current_user.user_id = moderator_user_id;
-    assert.equal(validation_func(), true);
-
-    current_user.user_id = member_user_id;
-    assert.equal(validation_func(), false);
-
-    current_user.user_id = moderator_user_id;
-    current_user.is_guest = true;
-    assert.equal(validation_func(), false);
-
-    group_permission_settings.get_group_permission_setting_config = () => ({
-        allow_everyone_group: true,
-    });
-    assert.equal(validation_func(), true);
 }
 
 run_test("user_can_create_multiuse_invite", () => {
@@ -343,7 +345,7 @@ run_test("user_can_create_multiuse_invite", () => {
     );
 });
 
-run_test("can_manage_user_group", () => {
+run_test("can_manage_user_group", ({override}) => {
     const admins = {
         description: "Administrators",
         name: "role:administrators",
@@ -407,30 +409,30 @@ run_test("can_manage_user_group", () => {
 
     page_params.is_spectator = false;
     realm.realm_can_manage_all_groups = admins.id;
-    current_user.user_id = 3;
+    override(current_user, "user_id", 3);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
     // non-admin group_creator
-    current_user.user_id = 4;
+    override(current_user, "user_id", 4);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
     // admin user
-    current_user.user_id = 1;
+    override(current_user, "user_id", 1);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
     // moderator user
-    current_user.user_id = 2;
+    override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
     realm.realm_can_manage_all_groups = members.id;
-    current_user.user_id = 3;
+    override(current_user, "user_id", 3);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
-    current_user.user_id = 2;
+    override(current_user, "user_id", 2);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
     realm.realm_can_manage_all_groups = admins.id;
-    current_user.user_id = 2;
+    override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
     const event = {
@@ -442,11 +444,11 @@ run_test("can_manage_user_group", () => {
     user_groups.update(event);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
-    current_user.user_id = 3;
+    override(current_user, "user_id", 3);
     assert.ok(settings_data.can_manage_user_group(students.id));
 });
 
-run_test("can_join_user_group", () => {
+run_test("can_join_user_group", ({override}) => {
     const admins = {
         description: "Administrators",
         name: "role:administrators",
@@ -516,11 +518,11 @@ run_test("can_join_user_group", () => {
 
     page_params.is_spectator = false;
     // admin user
-    current_user.user_id = 1;
+    override(current_user, "user_id", 1);
     assert.ok(settings_data.can_join_user_group(students.id));
 
     // moderator user
-    current_user.user_id = 2;
+    override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_join_user_group(students.id));
 
     let event = {
@@ -532,11 +534,11 @@ run_test("can_join_user_group", () => {
     user_groups.update(event);
     assert.ok(settings_data.can_join_user_group(students.id));
 
-    current_user.user_id = 1;
+    override(current_user, "user_id", 1);
     assert.ok(settings_data.can_join_user_group(students.id));
 
     // Some other user.
-    current_user.user_id = 5;
+    override(current_user, "user_id", 5);
     assert.ok(!settings_data.can_join_user_group(students.id));
 
     event = {
@@ -551,16 +553,16 @@ run_test("can_join_user_group", () => {
     user_groups.update(event);
     assert.ok(settings_data.can_join_user_group(students.id));
 
-    current_user.user_id = 2;
+    override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_join_user_group(students.id));
 
     // User can join the group if they can add anyone in the group which
     // depends on can_manage_group and realm.can_manage_all_groups settings.
-    current_user.user_id = 4;
+    override(current_user, "user_id", 4);
     assert.ok(settings_data.can_join_user_group(students.id));
 
     realm.realm_can_manage_all_groups = moderators.id;
-    current_user.user_id = 2;
+    override(current_user, "user_id", 2);
     assert.ok(settings_data.can_join_user_group(students.id));
 });
 
@@ -583,7 +585,7 @@ run_test("type_id_to_string", () => {
     assert.equal(settings_data.bot_type_id_to_string(5), undefined);
 });
 
-run_test("user_can_access_all_other_users", () => {
+run_test("user_can_access_all_other_users", ({override}) => {
     const guest_user_id = 1;
     const member_user_id = 2;
 
@@ -610,10 +612,10 @@ run_test("user_can_access_all_other_users", () => {
     assert.ok(settings_data.user_can_access_all_other_users());
 
     page_params.is_spectator = false;
-    current_user.user_id = member_user_id;
+    override(current_user, "user_id", member_user_id);
     assert.ok(settings_data.user_can_access_all_other_users());
 
-    current_user.user_id = guest_user_id;
+    override(current_user, "user_id", guest_user_id);
     assert.ok(!settings_data.user_can_access_all_other_users());
 
     realm.realm_can_access_all_users_group = everyone.id;
@@ -645,7 +647,7 @@ run_test("user_can_create_private_streams", () => {
     );
 });
 
-run_test("user_can_create_web_public_streams", () => {
+run_test("user_can_create_web_public_streams", ({override}) => {
     realm.server_web_public_streams_enabled = true;
     realm.realm_enable_spectator_access = true;
 
@@ -661,7 +663,7 @@ run_test("user_can_create_web_public_streams", () => {
         is_system_group: true,
         direct_subgroup_ids: new Set([]),
     };
-    current_user.user_id = owner_user_id;
+    override(current_user, "user_id", owner_user_id);
     user_groups.initialize({realm_user_groups: [owners]});
 
     realm.server_web_public_streams_enabled = true;

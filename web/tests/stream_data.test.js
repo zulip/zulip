@@ -72,9 +72,9 @@ const everyone_group = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        current_user.is_admin = false;
+        helpers.override(current_user, "is_admin", false);
         page_params.realm_users = [];
-        current_user.is_guest = false;
+        helpers.override(current_user, "is_guest", false);
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
@@ -270,7 +270,7 @@ test("basics", () => {
     ]);
 });
 
-test("get_streams_for_user", () => {
+test("get_streams_for_user", ({override}) => {
     const denmark = {
         subscribed: true,
         color: "blue",
@@ -340,12 +340,12 @@ test("get_streams_for_user", () => {
     ]);
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, []);
     // Verify can subscribe if we're an administrator.
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
         world,
         errors,
     ]);
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
 
     realm.realm_invite_to_stream_policy = settings_config.common_policy_values.by_members.code;
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
@@ -383,7 +383,7 @@ test("renames", () => {
     assert.equal(actual_id, 42);
 });
 
-test("admin_options", () => {
+test("admin_options", ({override}) => {
     function make_sub() {
         const sub = {
             subscribed: false,
@@ -409,7 +409,7 @@ test("admin_options", () => {
     }
 
     // non-admins can't do anything
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     let sub = make_sub();
     assert.ok(!is_realm_admin(sub));
     assert.ok(!can_change_stream_permissions(sub));
@@ -418,7 +418,7 @@ test("admin_options", () => {
     assert.equal(sub.color, "blue");
 
     // the remaining cases are for admin users
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     // admins can make public streams become private
     sub = make_sub();
@@ -440,7 +440,7 @@ test("admin_options", () => {
     assert.ok(can_change_stream_permissions(sub));
 });
 
-test("stream_settings", () => {
+test("stream_settings", ({override}) => {
     const cinnamon = {
         stream_id: 1,
         name: "c",
@@ -517,7 +517,7 @@ test("stream_settings", () => {
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows.length, 3);
-    current_user.is_guest = true;
+    override(current_user, "is_guest", true);
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");
@@ -877,10 +877,10 @@ test("create_sub", () => {
     assert.equal(antarctica_sub.color, "#76ce90");
 });
 
-test("creator_id", () => {
+test("creator_id", ({override}) => {
     people.add_active_user(test_user);
     realm.realm_can_access_all_users_group = everyone_group.id;
-    current_user.user_id = me.user_id;
+    override(current_user, "user_id", me.user_id);
     // When creator id is not a valid user id
     assert.throws(() => stream_data.maybe_get_creator_details(-1), {
         name: "Error",
@@ -973,7 +973,7 @@ test("edge_cases", () => {
     stream_settings_data.sort_for_stream_settings(bad_stream_ids);
 });
 
-test("get_invite_stream_data", () => {
+test("get_invite_stream_data", ({override}) => {
     // add default stream
     const orie = {
         name: "Orie",
@@ -986,7 +986,7 @@ test("get_invite_stream_data", () => {
     people.init();
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     stream_data.add_sub(orie);
     stream_data.set_realm_default_streams([orie]);
@@ -1052,7 +1052,7 @@ test("get_invite_stream_data", () => {
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
 
-test("can_post_messages_in_stream", () => {
+test("can_post_messages_in_stream", ({override}) => {
     const social = {
         subscribed: true,
         color: "red",
@@ -1063,23 +1063,23 @@ test("can_post_messages_in_stream", () => {
         history_public_to_subscribers: false,
         stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.moderators.code;
-    current_user.is_moderator = false;
-    current_user.is_admin = false;
+    override(current_user, "is_moderator", false);
+    override(current_user, "is_admin", false);
 
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    current_user.is_moderator = true;
+    override(current_user, "is_moderator", true);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.non_new_members.code;
-    current_user.is_moderator = false;
+    override(current_user, "is_moderator", false);
     me.date_joined = new Date(Date.now());
     realm.realm_waiting_period_threshold = 10;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
@@ -1087,7 +1087,7 @@ test("can_post_messages_in_stream", () => {
     me.date_joined = new Date(Date.now() - 20 * 86400000);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
-    current_user.is_guest = true;
+    override(current_user, "is_guest", true);
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.everyone.code;
@@ -1097,7 +1097,7 @@ test("can_post_messages_in_stream", () => {
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });
 
-test("can_unsubscribe_others", () => {
+test("can_unsubscribe_others", ({override}) => {
     const admin_user_id = 1;
     const moderator_user_id = 2;
     const member_user_id = 3;
@@ -1165,17 +1165,17 @@ test("can_unsubscribe_others", () => {
 
     // Even with the nobody system group, admins can still unsubscribe others.
     sub.can_remove_subscribers_group = nobody.id;
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
     // This isn't a real state, but we want coverage on !can_view_subscribers.
     sub.subscribed = false;
     sub.invite_only = true;
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 });
 
@@ -1279,7 +1279,7 @@ test("options for dropdown widget", () => {
     ]);
 });
 
-test("can_access_stream_email", () => {
+test("can_access_stream_email", ({override}) => {
     const social = {
         subscribed: true,
         color: "red",
@@ -1289,10 +1289,10 @@ test("can_access_stream_email", () => {
         invite_only: true,
         history_public_to_subscribers: false,
     };
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(stream_data.can_access_stream_email(social), true);
 
     social.subscribed = false;
@@ -1301,10 +1301,10 @@ test("can_access_stream_email", () => {
     social.invite_only = false;
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    current_user.is_guest = true;
+    override(current_user, "is_guest", true);
     assert.equal(stream_data.can_access_stream_email(social), false);
 
     social.subscribed = true;

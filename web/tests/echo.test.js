@@ -188,8 +188,8 @@ run_test("process_from_server for messages to add to narrow", ({override}) => {
     ]);
 });
 
-run_test("build_display_recipient", () => {
-    current_user.user_id = 123;
+run_test("build_display_recipient", ({override}) => {
+    override(current_user, "user_id", 123);
 
     const params = {};
     params.realm_users = [
@@ -321,7 +321,7 @@ run_test("insert_local_message streams", ({override}) => {
 run_test("insert_local_message direct message", ({override}) => {
     const local_id_float = 102.01;
 
-    current_user.user_id = 123;
+    override(current_user, "user_id", 123);
 
     const params = {};
     params.realm_users = [
