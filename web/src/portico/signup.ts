@@ -1,3 +1,10 @@
+import {Uppy} from "@uppy/core";
+import DragDrop from "@uppy/drag-drop";
+import Tus from "@uppy/tus";
+
+import "@uppy/core/dist/style.min.css";
+import "@uppy/drag-drop/dist/style.min.css";
+
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -341,4 +348,37 @@ $(() => {
             showElement(selected_element);
         }
     });
+
+    if ($("#slack-import-drag-and-drop").length > 0) {
+        const key = $<HTMLInputElement>("#auth_key").val();
+        const uppy = new Uppy({
+            debug: false,
+            autoProceed: true,
+            restrictions: {
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: [".zip", "application/zip"],
+            },
+            meta: {
+                key,
+            },
+            onBeforeUpload(files) {
+                for (const fileID of Object.keys(files)) {
+                    // XXX: TypeScript hates the .slack_access_token here, and the fix involves some
+                    // munging with the MinimalRequiredUppyFile type (or maybe ValidateableFile?)
+                    // that I don't grok
+                    // XXX: Also possible that we shouldn't be modifying in-place, per the comment
+                    // on the example under https://uppy.io/docs/uppy/#onbeforeuploadfiles
+                    // XXX: We should also do validation on the token's shape and the access it provides
+                    files[fileID]!.meta.slack_access_token =
+                        $<HTMLInputElement>("#slack-access-token").val();
+                }
+                return files;
+            },
+        });
+        uppy.use(DragDrop, {
+            target: "#slack-import-drag-and-drop",
+        });
+        uppy.use(Tus, {endpoint: "/api/v1/tus/"});
+    }
 });

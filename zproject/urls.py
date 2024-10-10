@@ -143,6 +143,7 @@ from zerver.views.registration import (
     find_account,
     get_prereg_key_and_redirect,
     new_realm_send_confirm,
+    realm_import_status,
     realm_redirect,
     realm_register,
     signup_send_confirm,
@@ -591,6 +592,7 @@ i18n_urls = [
     ),
     path("accounts/register/", accounts_register, name="accounts_register"),
     path("realm/register/", realm_register, name="realm_register"),
+    path("realm/import/status", realm_import_status),
     path(
         "accounts/do_confirm/<confirmation_key>",
         get_prereg_key_and_redirect,
