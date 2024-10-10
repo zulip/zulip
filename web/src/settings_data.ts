@@ -361,3 +361,7 @@ export function get_request_data_for_stream_privacy(selected_val: string): {
         }
     }
 }
+
+export function guests_can_access_all_other_users(): boolean {
+    return user_groups.is_user_in_setting_group(realm.realm_can_access_all_users_group, 13);
+}
