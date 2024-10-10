@@ -22,17 +22,27 @@ export function place_caret_at_end(el: HTMLElement): void {
     }
 }
 
-export function replace_emoji_with_text($element: JQuery): void {
-    $element
-        .find(".emoji")
-        .text(function () {
-            if ($(this).is("img")) {
-                return $(this).attr("alt") ?? "";
-            }
-            return $(this).text();
-        })
-        .contents()
-        .unwrap();
+export function replace_emoji_name_with_unicode_hex($element: JQuery): void {
+    $element.find("span.emoji").each(function () {
+        const emoji_class: string | undefined = $(this).attr("class");
+
+        if (emoji_class === undefined) {
+            return; // Skip this iteration if class is undefined
+        }
+
+        const regex = /emoji-(\w+)/;
+        const match = regex.exec(emoji_class);
+        const emoji_code = match?.[1] ?? "";
+
+        if (!emoji_code) {
+            return; // Skip this iteration if no emoji code is found
+        }
+
+        const hex_code = Number.parseInt(emoji_code, 16);
+
+        const emoji_char = String.fromCodePoint(hex_code);
+        $(this).text(emoji_char);
+    });
 }
 
 export function change_katex_to_raw_latex($element: JQuery): void {
