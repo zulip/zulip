@@ -68,12 +68,23 @@ blockquote p {
     font-weight: normal;
 }
 
+/* These colors are typically overridden,
+   but referencing them as variables prevents
+   specificity wars and ugly :not() selectors,
+   especially in dark theme. */
 a {
     cursor: pointer;
+    color: var(--color-text-generic-link);
+    text-decoration: none;
+}
 
-    &.message_label_clickable:hover {
-        cursor: pointer;
-        color: hsl(200deg 100% 40%);
+a:hover,
+a:focus {
+    color: var(--color-text-generic-link-interactive);
+    text-decoration: underline;
+
+    & code {
+        color: var(--color-text-generic-link-interactive);
     }
 }
 
