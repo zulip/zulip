@@ -21,6 +21,7 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as settings_users from "./settings_users";
 import {current_user, realm} from "./state_data";
+import * as user_groups from "./user_groups";
 
 const admin_settings_label = {
     // Organization profile
@@ -125,7 +126,6 @@ export function build_page() {
         realm_require_unique_names: realm.realm_require_unique_names,
         realm_email_changes_disabled: realm.realm_email_changes_disabled,
         realm_avatar_changes_disabled: realm.realm_avatar_changes_disabled,
-        realm_add_custom_emoji_policy: realm.realm_add_custom_emoji_policy,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
         realm_message_content_edit_limit_minutes:
@@ -186,6 +186,10 @@ export function build_page() {
         policy_values: settings_config.common_policy_values,
         realm_can_delete_any_message_group: realm.realm_can_delete_any_message_group,
         realm_can_delete_own_message_group: realm.realm_can_delete_own_message_group,
+        realm_can_add_custom_emoji_group: realm.realm_can_add_custom_emoji_group,
+        realm_can_add_custom_emoji_group_name: user_groups.get_user_group_from_id(
+            realm.realm_can_add_custom_emoji_group,
+        ).name,
         ...settings_org.get_organization_settings_options(),
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:

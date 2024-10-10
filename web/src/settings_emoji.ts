@@ -18,11 +18,11 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
-import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 const meta = {
@@ -45,8 +45,9 @@ function can_delete_emoji(emoji: ServerEmoji): boolean {
 
 export function update_custom_emoji_ui(): void {
     const rendered_tip = render_settings_emoji_settings_tip({
-        realm_add_custom_emoji_policy: realm.realm_add_custom_emoji_policy,
-        policy_values: settings_config.common_policy_values,
+        realm_can_add_custom_emoji_group_name: user_groups.get_user_group_from_id(
+            realm.realm_can_add_custom_emoji_group,
+        ).name,
     });
     $("#emoji-settings").find(".emoji-settings-tip-container").html(rendered_tip);
     if (!settings_data.user_can_add_custom_emoji()) {

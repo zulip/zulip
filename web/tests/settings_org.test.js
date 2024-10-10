@@ -102,7 +102,6 @@ function createSaveButtons(subsection) {
 function test_submit_settings_form(override, submit_form) {
     Object.assign(realm, {
         realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
-        realm_add_custom_emoji_policy: settings_config.common_policy_values.by_admins_only.code,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
         realm_invite_to_stream_policy: settings_config.common_policy_values.by_admins_only.code,
@@ -138,11 +137,6 @@ function test_submit_settings_form(override, submit_form) {
     $invite_to_stream_policy_elem.attr("id", "id_realm_invite_to_stream_policy");
     $invite_to_stream_policy_elem.data = () => "number";
 
-    const $add_custom_emoji_policy_elem = $("#id_realm_add_custom_emoji_policy");
-    $add_custom_emoji_policy_elem.val("1");
-    $add_custom_emoji_policy_elem.attr("id", "id_realm_add_custom_emoji_policy");
-    $add_custom_emoji_policy_elem.data = () => "number";
-
     const $bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
     $bot_creation_policy_elem.val("1");
     $bot_creation_policy_elem.attr("id", "id_realm_bot_creation_policy");
@@ -156,7 +150,6 @@ function test_submit_settings_form(override, submit_form) {
     let $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     $subsection_elem.set_find_results(".prop-element", [
         $bot_creation_policy_elem,
-        $add_custom_emoji_policy_elem,
         $invite_to_realm_policy_elem,
         $invite_to_stream_policy_elem,
     ]);
@@ -169,7 +162,6 @@ function test_submit_settings_form(override, submit_form) {
         bot_creation_policy: 1,
         invite_to_realm_policy: 2,
         invite_to_stream_policy: 1,
-        add_custom_emoji_policy: 1,
     };
     assert.deepEqual(data, expected_value);
 

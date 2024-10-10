@@ -167,11 +167,6 @@ test_policy(
     "realm_move_messages_between_streams_policy",
     settings_data.user_can_move_messages_between_streams,
 );
-test_policy(
-    "user_can_add_custom_emoji",
-    "realm_add_custom_emoji_policy",
-    settings_data.user_can_add_custom_emoji,
-);
 
 function test_message_policy(label, policy, validation_func) {
     run_test(label, ({override}) => {
@@ -243,6 +238,11 @@ run_test("user_can_move_messages_between_streams_nobody_case", ({override}) => {
     );
     assert.equal(settings_data.user_can_move_messages_between_streams(), false);
 });
+
+test_realm_group_settings(
+    "realm_can_add_custom_emoji_group",
+    settings_data.user_can_add_custom_emoji,
+);
 
 test_realm_group_settings(
     "realm_can_delete_any_message_group",

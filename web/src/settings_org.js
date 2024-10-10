@@ -125,7 +125,6 @@ export function get_org_type_dropdown_options() {
 
 const simple_dropdown_properties = [
     "realm_invite_to_stream_policy",
-    "realm_add_custom_emoji_policy",
     "realm_invite_to_realm_policy",
     "realm_wildcard_mention_policy",
     "realm_move_messages_between_streams_policy",
@@ -509,6 +508,7 @@ export function discard_realm_property_element_changes(elem) {
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group":
+        case "realm_can_add_custom_emoji_group":
         case "realm_can_access_all_users_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
