@@ -10,21 +10,25 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as desktop_notifications from "./desktop_notifications";
 import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
 import * as message_store from "./message_store";
+import * as message_util from "./message_util";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
 import type {NarrowTerm} from "./state_data";
+import * as stream_data from "./stream_data";
+import * as stream_topic_history from "./stream_topic_history";
 import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
+import {get_topic_visibility_policy} from "./user_topics";
 
 let loading_indicator_displayed = false;
 
@@ -52,13 +56,190 @@ export function confirm_mark_all_as_read(): void {
     const html_body = render_confirm_mark_all_as_read();
 
     const modal_id = confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark all messages as read?"}),
+        html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
         html_body,
         on_click() {
-            mark_all_as_read(modal_id);
+            mark_selected_options_as_read(modal_id);
         },
         loading_spinner: true,
     });
+
+    const default_message_count = countMessages("topics_not_followed");
+
+    $("#message_count").text(
+        $t(
+            {
+                defaultMessage:
+                    "{count, plural, one {# message} other {# messages}} will be marked as read.",
+            },
+            {count: default_message_count},
+        ),
+    );
+
+    $("#mark_as_read_option").on("change", function () {
+        const selected_option = String($(this).val());
+        const messageCount = countMessages(selected_option);
+
+        $("#message_count").text(
+            $t(
+                {
+                    defaultMessage:
+                        "{count, plural, one {# message} other {# messages}} will be marked as read.",
+                },
+                {count: messageCount},
+            ),
+        );
+    });
+}
+
+function countMessages(selected_option: string): number {
+    let count = 0;
+
+    switch (selected_option) {
+        case "all_messages": {
+            count = getAllMessagesCount();
+            break;
+        }
+
+        case "muted_topics": {
+            count = getMutedTopicMessagesCount();
+            break;
+        }
+
+        case "topics_not_followed": {
+            count = getUnfollowedTopicMessagesCount();
+            break;
+        }
+    }
+
+    return count;
+}
+
+function getAllMessagesCount(): number {
+    let count = 0;
+    count = unread.get_unread_message_count();
+    return count;
+}
+
+function getMutedTopicMessagesCount(): number {
+    let count = 0;
+    const all_streams = stream_data.subscribed_stream_ids();
+    for (const stream_id of all_streams) {
+        const topics = stream_topic_history.get_recent_topic_names(stream_id);
+        for (const topic of topics) {
+            const is_muted = get_topic_visibility_policy(stream_id, topic) === 1;
+            if (is_muted) {
+                const is_topic_unread = unread.topic_has_any_unread(stream_id, topic);
+                if (is_topic_unread) {
+                    const all_messages_in_topic = message_util.get_messages_in_topic(
+                        stream_id,
+                        topic,
+                    );
+                    for (const message of all_messages_in_topic) {
+                        if (message.unread) {
+                            count += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return count;
+}
+
+function getUnfollowedTopicMessagesCount(): number {
+    let count = 0;
+    const all_streams = stream_data.subscribed_stream_ids();
+
+    for (const stream_id of all_streams) {
+        const topics = stream_topic_history.get_recent_topic_names(stream_id);
+        for (const topic of topics) {
+            const is_followed = get_topic_visibility_policy(stream_id, topic) === 3;
+            if (!is_followed) {
+                const all_messages_in_topic = message_util.get_messages_in_topic(stream_id, topic);
+
+                for (const message of all_messages_in_topic) {
+                    if (message.unread) {
+                        count += 1;
+                    }
+                }
+            }
+        }
+    }
+
+    return count;
+}
+
+export function mark_as_read_with_narrow(narrow: NarrowTerm[], modal_id?: string): void {
+    bulk_update_read_flags_for_narrow(narrow, "add", {}, modal_id);
+}
+
+export function mark_selected_options_as_read(modal_id?: string): void {
+    const selected_option = $("#mark_as_read_option").val();
+
+    let is_processing = false;
+    let processing_done = false;
+
+    if (selected_option) {
+        ui_report.loading(
+            $t_html({defaultMessage: "Processing…"}),
+            $("#request-progress-status-banner"),
+        );
+    }
+
+    if (selected_option === "all_messages") {
+        is_processing = true;
+        mark_all_as_read(modal_id);
+        processing_done = true;
+    }
+
+    if (selected_option === "muted_topics") {
+        is_processing = true;
+        const all_streams = stream_data.subscribed_stream_ids();
+
+        for (const stream_id of all_streams) {
+            const topics = stream_topic_history.get_recent_topic_names(stream_id);
+            const stream_name = stream_data.get_stream_name_from_id(stream_id);
+            for (const topic of topics) {
+                const is_muted = get_topic_visibility_policy(stream_id, topic) === 1;
+                if (is_muted) {
+                    bulk_update_read_flags_for_narrow(
+                        [
+                            {operator: "stream", operand: stream_name},
+                            {operator: "topic", operand: topic},
+                        ],
+                        "add",
+                        {},
+                        modal_id,
+                    );
+                }
+            }
+        }
+        processing_done = true;
+    }
+
+    if (selected_option === "topics_not_followed") {
+        is_processing = true;
+        const narrow_options: NarrowTerm[] = [{operator: "is", operand: "unread", negated: false}];
+        narrow_options.push({operator: "is", operand: "followed", negated: true});
+        mark_as_read_with_narrow(narrow_options, modal_id);
+        processing_done = true;
+    }
+
+    const stop_loader_if_done = (): void => {
+        if (is_processing && processing_done) {
+            setTimeout(() => {
+                ui_report.loading(
+                    $t_html({defaultMessage: "Done marking topics as read"}),
+                    $("#request-progress-status-banner"),
+                    true,
+                );
+            }, 1000);
+        }
+    };
+
+    stop_loader_if_done();
 }
 
 const update_flags_for_narrow_response_schema = z.object({
