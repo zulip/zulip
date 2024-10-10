@@ -227,6 +227,7 @@
     --left-sidebar-icon-content-gap: 0.4375em;
     /* The space allotted in gridded rows for the toggle icon. */
     --left-sidebar-header-icon-toggle-width: 20px;
+    --left-sidebar-vdots-width: 26px;
     /* Other rows need an offset to preserve a column the
        entire height of the left sidebar for where toggles sit. */
     --left-sidebar-toggle-width-offset: var(
@@ -235,9 +236,14 @@
     /* This represents the space in the sidebar reserved for symbols like
        the #; labels like the stream name go to the right of this. */
     --left-sidebar-icon-column-width: 16px;
+    /* Offset on unreads to make New topic button appear centered. */
+    --left-sidebar-unread-offset: 6.5px;
     /* space direct message / stream / topic names from unread counters
     and @ mention indicators by 3px on the right */
     --left-sidebar-before-unread-count-padding: 3px;
+    /* 15px is the approximate width of a single-digit
+       unread marker. */
+    --left-sidebar-single-digit-unread-width: 15px;
     --left-sidebar-right-margin: 12px;
     /* 289px at 14px/1em */
     --left-sidebar-max-width: calc(
@@ -252,7 +258,10 @@
     /* 40px (toggle icon) + 5px (gap) + 20px logo + 10px right margin */
     --left-sidebar-width-with-realm-icon-logo: 75px;
     --right-sidebar-width: 250px;
-    --left-sidebar-header-icon-width: 15px;
+    /* The width of the icon is reduced by 2px, to account for 2px
+       of top and bottom margin needed for hover backgrounds to
+       not touch the row outline. */
+    --left-sidebar-header-icon-width: calc(1.7142em - 2px); /* 24px / 14px em */
     /* Space between section in the left sidebar. */
     --left-sidebar-sections-vertical-gutter: 8px;
     /* The legacy value here is 25px; that's the unitless legacy line-height
@@ -340,6 +349,8 @@
     --opacity-sidebar-heading: 0.7;
     --opacity-sidebar-heading-icon: 0.5;
     --opacity-sidebar-heading-hover: 0.9;
+    --opacity-left-sidebar-muted: 0.55;
+    --opacity-left-sidebar-muted-hover: 0.75;
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
 
@@ -390,7 +401,6 @@
     it doesn't leak through message header.
     */
     --unread-marker-left: -1px;
-    --masked-unread-count-margin-right: 3px;
 
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
@@ -598,16 +608,30 @@
     --color-background-active-popover-menu: hsl(220deg 12% 5% / 7%);
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
+    /* Legacy unread-counter color value. */
     --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-background-unread-counter-prominent: hsl(240deg 10% 50% / 70%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 15%);
+    --color-background-unread-counter-quiet: transparent;
+    --color-unread-counter-prominent: hsl(0deg 0% 100%);
+    --color-unread-counter-normal: hsl(240deg 0% 0% / 80%);
+    --color-unread-counter-quiet: hsl(240deg 15% 50%);
     --color-border-add-subscription-button-focus: hsl(0deg 0% 20%);
-    /* There's no alpha channel here, but this keeps
-       the variable names in line. */
-    --color-background-unread-counter-no-alpha: var(
-        --color-background-unread-counter
+    /* When unreads are hovered on the condensed
+       views, they should not have an alpha.
+       The first color corresponds to
+       --color-background-unread-counter-normal.
+
+       The second color aligns with light mode's
+       --color-background. We use the value
+       directly so that this gets compiled down to
+       an rgb() value by PostCSS Preset Env. */
+    --color-background-unread-counter-normal-no-alpha: color-mix(
+        in srgb,
+        hsl(240deg 10% 50%) 15%,
+        hsl(0deg 0% 94%)
     );
-    --color-background-unread-counter-dot: var(
-        --color-background-unread-counter
-    );
+    --color-background-unread-counter-dot: hsl(240deg 30% 40%);
     --color-border-unread-counter: var(--color-background-unread-counter);
     --color-border-unread-counter-popover-menu: inherit;
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
@@ -730,6 +754,9 @@
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
     --color-text-clear-search-button: hsl(0deg 0% 80%);
     --color-text-clear-search-button-hover: hsl(0deg 0% 0%);
+    /* These colors are from Bootstrap. */
+    --color-text-generic-link: #08c;
+    --color-text-generic-link-interactive: #005580;
 
     /* Demo Organization colors */
     --color-text-settings-demo-organization-warning: hsl(4deg 58% 33%);
@@ -789,7 +816,15 @@
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
     --color-left-sidebar-navigation-icon: hsl(240deg 30% 40%);
-    --color-vdots-hint: hsl(240deg 30% 20%);
+    --color-left-sidebar-heads-up-icon: hsl(240deg 30% 40%);
+    --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 15%);
+    --color-left-sidebar-dm-partners-icon: var(
+        --color-left-sidebar-navigation-icon
+    );
+    --background-color-left-sidebar-heads-up-icon-hover: hsl(
+        240deg 100% 50% / 7%
+    );
+    --color-vdots-hint: hsl(240deg 30% 80%);
     --color-vdots-visible: hsl(240deg 30% 40%);
     --color-vdots-hover: hsl(240deg 100% 15%);
     --color-tab-picker-icon: hsl(200deg 100% 40%);
@@ -1099,17 +1134,25 @@
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     /* When unreads are hovered on the condensed
        views, they should not have an alpha.
+       The first color corresponds to
+       --color-background-unread-counter-normal.
 
        The second color aligns with dark mode's
        --color-background. We use the value
        directly so that this gets compiled down to
        an rgb() value by PostCSS Preset Env. */
-    --color-background-unread-counter-no-alpha: color-mix(
+    --color-background-unread-counter-normal-no-alpha: color-mix(
         in srgb,
-        hsl(105deg 2% 50%) 50%,
+        hsl(240deg 10% 50%) 35%,
         hsl(0deg 0% 11%)
     );
-    --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
+    --color-background-unread-counter-dot: hsl(240deg 35% 68%);
+    --color-background-unread-counter-prominent: hsl(240deg 18.37% 34.42%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 35%);
+    --color-background-unread-counter-quiet: transparent;
+    --color-unread-counter-prominent: hsl(0deg 0% 100%);
+    --color-unread-counter-normal: hsl(240deg 0% 100% / 75%);
+    --color-unread-counter-quiet: hsl(240deg 15% 60%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
     --color-border-unread-counter-popover-menu: var(
         --color-border-unread-counter
@@ -1237,6 +1280,8 @@
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
     --color-text-clear-search-button: hsl(236deg 33% 80%);
     --color-text-clear-search-button-hover: hsl(0deg 0% 100%);
+    --color-text-generic-link: #08c;
+    --color-text-generic-link-interactive: hsl(200deg 79% 66%);
 
     /* Demo Organization colors */
     --color-text-settings-demo-organization-warning: hsl(3deg 73% 80%);
@@ -1299,7 +1344,15 @@
     --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
     --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 100%);
     --color-left-sidebar-navigation-icon: hsl(240deg 35% 68%);
-    --color-vdots-hint: hsl(240deg 35% 48%);
+    --color-left-sidebar-heads-up-icon: hsl(240deg 35% 68%);
+    --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 90%);
+    --color-left-sidebar-dm-partners-icon: var(
+        --color-left-sidebar-navigation-icon
+    );
+    --background-color-left-sidebar-heads-up-icon-hover: hsl(
+        240deg 100% 75% / 20%
+    );
+    --color-vdots-hint: hsl(240deg 35% 38%);
     --color-vdots-visible: hsl(240deg 35% 68%);
     --color-vdots-hover: hsl(240deg 100% 90%);
     --color-left-sidebar-header-vdots-visible: var(

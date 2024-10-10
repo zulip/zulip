@@ -19,10 +19,22 @@
         }
 
         .unread_count {
+            color: var(--color-unread-counter-normal);
+            background-color: var(--color-background-unread-counter-normal);
             opacity: 0.7;
 
             &:hover {
                 opacity: 1;
+            }
+        }
+
+        #inbox-dm-header,
+        #inbox-direct-messages-container {
+            .unread_count {
+                color: var(--color-unread-counter-prominent);
+                background-color: var(
+                    --color-background-unread-counter-prominent
+                );
             }
         }
 

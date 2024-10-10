@@ -26,12 +26,30 @@
 }
 
 .sidebar-topic-check,
-.topic-markers-and-controls {
+.topic-markers-and-unreads {
     cursor: pointer;
 }
 
-#left-sidebar-navigation-list .filter-icon i {
-    color: var(--color-left-sidebar-navigation-icon);
+.left-sidebar-navigation-list {
+    .filter-icon i {
+        color: var(--color-left-sidebar-navigation-icon);
+    }
+
+    .unread_count {
+        color: var(--color-unread-counter-normal);
+        background-color: var(--color-background-unread-counter-normal);
+    }
+
+    .masked_unread_count {
+        color: var(--color-unread-counter-normal);
+    }
+}
+
+#streams_list {
+    .unread_count {
+        color: var(--color-unread-counter-normal);
+        background-color: var(--color-background-unread-counter-normal);
+    }
 }
 
 #stream_filters,
@@ -41,10 +59,14 @@
 
 #streams_inline_icon,
 .streams_filter_icon {
-    opacity: 0.5;
+    color: var(--color-left-sidebar-heads-up-icon);
+    border-radius: 3px;
 
     &:hover {
-        opacity: 1;
+        color: var(--color-left-sidebar-heads-up-icon-hover);
+        background-color: var(
+            --background-color-left-sidebar-heads-up-icon-hover
+        );
         cursor: pointer;
     }
 }
@@ -55,6 +77,16 @@
 
 .tooltip {
     max-width: 18em;
+}
+
+.masked_unread_count {
+    font-size: 8px;
+    display: none;
+    /* Masked unreads display as flex when revealed. */
+    align-items: center;
+    justify-content: center;
+    color: var(--color-background-unread-counter-normal);
+    width: var(--left-sidebar-single-digit-unread-width);
 }
 
 #stream_filters {
@@ -91,14 +123,7 @@
 
     .stream-with-count.hide_unread_counts {
         .masked_unread_count {
-            display: block;
-            /* Shift masked dot to align with
-               the least-significant digit on
-               unreads in other rows.
-               We have to do this with margin,
-               because width or padding will
-               distort the CSS-created dot. */
-            margin-right: var(--masked-unread-count-margin-right);
+            display: flex;
         }
 
         .unread_count {
@@ -119,6 +144,15 @@
     }
 
     .stream-expanded {
+        .channel-new-topic-button {
+            display: flex;
+        }
+
+        .subscription_block .sidebar-menu-icon {
+            display: flex;
+            color: var(--color-vdots-visible);
+        }
+
         .stream-with-count.hide_unread_counts {
             .masked_unread_count {
                 display: none;
@@ -177,7 +211,10 @@
 #direct-messages-section-header {
     grid-template-columns:
         0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 1fr)
-        max-content 30px 0;
+        minmax(0, max-content) minmax(0, max-content) var(
+            --left-sidebar-vdots-width
+        )
+        0;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     cursor: pointer;
     white-space: nowrap;
@@ -204,25 +241,42 @@
         grid-area: row-content;
     }
 
-    .heading-markers-and-controls {
-        grid-area: markers-and-controls;
+    .heading-markers-and-unreads {
+        grid-area: markers-and-unreads;
         display: flex;
         gap: 5px;
         align-items: center;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:has(.unread_count:empty) {
+            margin-right: 0;
+        }
     }
 
     #show-all-direct-messages {
-        width: var(--left-sidebar-header-icon-width);
-        display: flex;
+        color: var(--color-left-sidebar-heads-up-icon);
+        display: none;
         align-items: center;
         justify-content: center;
-        opacity: 0.7;
         text-decoration: none;
-        color: inherit;
+        margin: 2px 0;
+        border-radius: 3px;
 
         &:hover {
-            opacity: 1;
+            color: var(--color-left-sidebar-heads-up-icon-hover);
+            background-color: var(
+                --background-color-left-sidebar-heads-up-icon-hover
+            );
         }
+
+        @media (hover: none) {
+            display: flex;
+        }
+    }
+
+    &:hover #show-all-direct-messages {
+        display: flex;
     }
 }
 
@@ -230,6 +284,11 @@
     /* Properly offset all the grid rows
        in the DM section. */
     margin-right: var(--left-sidebar-right-margin);
+
+    .unread_count {
+        color: var(--color-unread-counter-prominent);
+        background-color: var(--color-background-unread-counter-prominent);
+    }
 
     & ul.dm-list {
         list-style-type: none;
@@ -245,7 +304,7 @@
             }
 
             .zulip-icon {
-                opacity: 0.7;
+                color: var(--color-left-sidebar-dm-partners-icon);
             }
         }
 
@@ -401,8 +460,7 @@
 ul.filters {
     list-style-type: none;
     margin-left: 0;
-    /* Streams take a standard row height. */
-    line-height: var(--line-height-sidebar-row);
+    line-height: var(--line-height-sidebar-row-prominent);
 
     .sidebar-topic-name,
     .left-sidebar-navigation-label-container {
@@ -425,19 +483,29 @@ ul.filters {
 
     .has-only-muted-unreads {
         .unread_count {
-            opacity: 0.5;
+            opacity: var(--opacity-left-sidebar-muted);
+        }
+
+        &:hover .unread_count {
+            opacity: var(--opacity-left-sidebar-muted-hover);
         }
     }
 
-    .has-only-muted-mentions .unread_mention_info {
-        opacity: 0.5;
+    .has-only-muted-mentions {
+        .unread_mention_info {
+            opacity: var(--opacity-left-sidebar-muted);
+        }
+
+        &:hover .unread_mention_info {
+            opacity: var(--opacity-left-sidebar-muted-hover);
+        }
     }
 
     /* This is a noop in the current design, because unread counts for
        muted streams have the same opacity, but the logic is here to
        be explicit and because the design may change in the future. */
     .more_topic_unreads_muted_only .unread_count {
-        opacity: 0.5;
+        opacity: var(--opacity-left-sidebar-muted);
     }
 
     .zulip-icon-follow {
@@ -449,24 +517,41 @@ ul.filters {
         }
     }
 
-    & li.muted_topic,
-    li.out_of_home_view {
-        color: hsl(0deg 0% 20% / 50%);
-
-        .has-unmuted-mentions .unread_mention_info {
-            color: hsl(0deg 0% 20%);
+    & li.muted_topic {
+        .sidebar-topic-check,
+        .sidebar-topic-name,
+        .unread_count {
+            opacity: var(--opacity-left-sidebar-muted);
         }
 
-        .stream-privacy {
-            opacity: 0.5;
+        &:hover {
+            .sidebar-topic-check,
+            .sidebar-topic-name,
+            .unread_count {
+                opacity: var(--opacity-left-sidebar-muted-hover);
+            }
+        }
+    }
+
+    & li.out_of_home_view {
+        .stream-privacy,
+        .stream-name,
+        .channel-new-topic-button,
+        .unread_count,
+        .masked_unread_counter,
+        .sidebar-menu-icon {
+            opacity: var(--opacity-left-sidebar-muted);
         }
 
-        & .unread_count {
-            opacity: 0.5;
-        }
-
-        & .masked_unread_count {
-            opacity: 0.5;
+        &:hover {
+            .stream-privacy,
+            .stream-name,
+            .channel-new-topic-button,
+            .unread_count,
+            .masked_unread_counter,
+            .sidebar-menu-icon {
+                opacity: var(--opacity-left-sidebar-muted-hover);
+            }
         }
 
         .has-unmuted-unreads {
@@ -481,33 +566,6 @@ ul.filters {
             .unread_count {
                 opacity: 1;
             }
-        }
-    }
-
-    & li.out_of_home_view {
-        &:hover {
-            color: hsla(0deg 0% 20% / 75%);
-
-            .stream-privacy {
-                opacity: 0.75;
-            }
-
-            .unread_count {
-                opacity: 0.75;
-            }
-
-            .has-unmuted-unreads {
-                .unread_count {
-                    opacity: 1;
-                }
-            }
-        }
-
-        & li.muted_topic {
-            /* If stream is muted, this resets opacity of muted topics in muted
-            stream to 1; since opacity is multiplied down through child
-            elements, this avoids an unreadably low opacity. */
-            opacity: 1;
         }
     }
 }
@@ -580,7 +638,10 @@ li.active-sub-filter {
                 /* 6px at 12px/1em */
                 top: -0.5em;
                 right: -0.5em;
-                background: var(--color-background-unread-counter-no-alpha);
+                color: var(--color-unread-counter-normal);
+                background: var(
+                    --color-background-unread-counter-normal-no-alpha
+                );
             }
         }
 
@@ -674,9 +735,8 @@ li.active-sub-filter {
 .top_left_drafts .unread_count,
 .top_left_scheduled_messages .unread_count,
 .condensed-views-popover-menu .unread_count {
-    background-color: unset;
-    color: inherit;
-    border: 0.5px solid var(--color-border-unread-counter);
+    background-color: var(--color-background-unread-counter-quiet);
+    color: var(--color-unread-counter-quiet);
 }
 
 /* Don't show unread counts on views... */
@@ -714,7 +774,11 @@ li.top_left_scheduled_messages {
         var(--left-sidebar-toggle-width-offset) var(
             --left-sidebar-icon-column-width
         )
-        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) max-content 0 0;
+        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
+        minmax(0, max-content) 0 0;
 
     .filter-icon {
         grid-area: starting-anchor-element;
@@ -730,17 +794,23 @@ li.top_left_scheduled_messages {
     }
 
     .unread_count {
-        grid-area: markers-and-controls;
+        grid-area: markers-and-unreads;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:empty {
+            margin-right: 0;
+        }
     }
 }
 
 .top_left_starred_messages {
     &.hide_starred_message_count {
         .masked_unread_count {
-            display: block;
-            grid-area: markers-and-controls;
-            /* Adding margin-right aligns the .masked_unread_count with the rest of the masked unread counts in the channel list. */
-            margin-right: var(--masked-unread-count-margin-right);
+            display: flex;
+            grid-area: markers-and-unreads;
+            /* Extra margin for unreads. */
+            margin-right: var(--left-sidebar-unread-offset);
         }
 
         .unread_count {
@@ -833,7 +903,7 @@ li.top_left_scheduled_messages {
        modified or reassigned as needed, without running up against `padding`
        (which alters the box size) or `margin` (which notoriously bleeds outside
        of the element it's defined on). */
-    grid-template-areas: "starting-offset starting-anchor-element icon-content-gap row-content markers-and-controls ending-anchor-element ending-offset";
+    grid-template-areas: "starting-offset starting-anchor-element icon-content-gap row-content controls markers-and-unreads ending-anchor-element ending-offset";
 }
 
 .top_left_row {
@@ -844,7 +914,9 @@ li.top_left_scheduled_messages {
     /* The row grid for the outer .top_left_row
        is chiefly for lefthand spacing and placing
        the inner row content and vdots. */
-    grid-template-columns: 0 0 0 minmax(0, 1fr) 0 30px 0;
+    grid-template-columns:
+        0 0 0 minmax(0, 1fr) 0 0 var(--left-sidebar-vdots-width)
+        0;
 
     .sidebar-menu-icon {
         grid-area: ending-anchor-element;
@@ -865,23 +937,24 @@ li.top_left_scheduled_messages {
        that now by having it share this grid template. Its row and column
        definitions have the final say about dimensions and placement. */
     grid-template-areas:
-        "starting-offset starting-anchor-element icon-content-gap row-content markers-and-controls ending-anchor-element ending-offset"
-        ".               .                       filter-box       filter-box  filter-box           filter-box            .            ";
+        "starting-offset starting-anchor-element icon-content-gap row-content controls   markers-and-unreads ending-anchor-element ending-offset"
+        ".               .                       filter-box       filter-box  filter-box filter-box          filter-box            .            ";
 }
 
 #views-label-container {
     margin-right: var(--left-sidebar-right-margin);
     grid-template-columns:
-        0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr) minmax(
+        0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr) 0 minmax(
             0,
             1fr
         )
-        30px 0;
+        var(--left-sidebar-vdots-width) 0;
     grid-template-rows: 28px;
     cursor: pointer;
     border-radius: 4px;
 
-    &:not(.remove-pointer-for-spectator):hover {
+    &:not(.remove-pointer-for-spectator):hover,
+    &:has(.left-sidebar-navigation-menu-icon[aria-expanded="true"]) {
         background-color: var(--color-background-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
 
@@ -901,7 +974,7 @@ li.top_left_scheduled_messages {
         /* Give the sidebar title through the end of the markers
            area, if needed. */
         .left-sidebar-title {
-            grid-column: row-content-start / markers-and-controls-end;
+            grid-column: row-content-start / markers-and-unreads-end;
         }
     }
 
@@ -946,7 +1019,7 @@ li.top_left_scheduled_messages {
 
     #left-sidebar-navigation-list-condensed {
         margin: 0;
-        grid-area: markers-and-controls;
+        grid-area: markers-and-unreads;
     }
 
     .left-sidebar-navigation-menu-icon {
@@ -991,7 +1064,8 @@ li.top_left_scheduled_messages {
             0,
             max-content
         )
-        30px 0;
+        minmax(0, max-content)
+        var(--left-sidebar-vdots-width) 0;
     white-space: nowrap;
 
     .stream-privacy {
@@ -1017,6 +1091,11 @@ li.top_left_scheduled_messages {
 
     .stream-name {
         grid-area: row-content;
+        color: inherit;
+
+        &:hover {
+            text-decoration: none;
+        }
     }
 }
 
@@ -1026,8 +1105,8 @@ li.top_left_scheduled_messages {
         0 var(--left-sidebar-icon-column-width) var(
             --left-sidebar-icon-content-gap
         )
-        minmax(0, 1fr) minmax(0, max-content)
-        30px 0;
+        minmax(0, 1fr) minmax(0, max-content) minmax(0, max-content)
+        var(--left-sidebar-vdots-width) 0;
 }
 
 .searching-for-more-topics {
@@ -1126,13 +1205,32 @@ li.top_left_scheduled_messages {
     z-index: 1;
 }
 
-.stream-markers-and-controls,
-.topic-markers-and-controls {
-    grid-area: markers-and-controls;
+.left-sidebar-controls {
+    grid-area: controls;
+    display: grid;
+    /* We won't know in advance how many controls a given
+       row has, but this allows grid to generate as many
+       as needed, sized to a shared icon width. */
+    grid-auto-columns: var(--left-sidebar-header-icon-width);
+    grid-template-rows: var(--line-height-sidebar-row-prominent);
+    place-content: stretch stretch;
+    margin-right: 1px;
+}
+
+.stream-markers-and-unreads,
+.topic-markers-and-unreads {
+    grid-area: markers-and-unreads;
     display: flex;
     /* Present a uniform space between icons */
     gap: 5px;
     align-items: center;
+    justify-content: center;
+    /* Extra margin for unreads. */
+    margin-right: var(--left-sidebar-unread-offset);
+
+    &:has(.unread_count:empty) {
+        margin-right: 0;
+    }
 
     .unread_mention_info {
         /* Unset margin in favor of flex gap. */
@@ -1144,6 +1242,30 @@ li.top_left_scheduled_messages {
            decouples .unread_count from the app-wide
            definition. */
         height: auto;
+    }
+}
+
+.channel-new-topic-button {
+    /* display: flex; is set on visible channels and
+       channel-row hovers. */
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-left-sidebar-heads-up-icon);
+    margin: 2px 0;
+    border-radius: 3px;
+
+    &:hover {
+        color: var(--color-left-sidebar-heads-up-icon-hover);
+        background-color: var(
+            --background-color-left-sidebar-heads-up-icon-hover
+        );
+    }
+}
+
+.narrow-filter:hover {
+    .channel-new-topic-button {
+        display: flex;
     }
 }
 
@@ -1312,11 +1434,11 @@ li.topic-list-item {
         var(--left-sidebar-toggle-width-offset) [action-heading-start] var(
             --left-sidebar-icon-column-width
         )
-        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) [action-heading-end] minmax(
+        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) [action-heading-end] 0 minmax(
             0,
             max-content
         )
-        30px 0;
+        var(--left-sidebar-vdots-width) 0;
     grid-template-rows: [action-heading-start] auto [action-heading-end];
 
     .conversation-partners-icon {
@@ -1344,7 +1466,7 @@ li.topic-list-item {
     }
 
     .unread_count {
-        grid-area: markers-and-controls;
+        grid-area: markers-and-unreads;
         /* TODO: This is an alternative method
            for presenting a 16px-tall unread
            counter, regardless of context. This
@@ -1361,6 +1483,12 @@ li.topic-list-item {
            16px-high unread box. */
         display: flex;
         align-items: center;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:empty {
+            margin-right: 0;
+        }
     }
 }
 
@@ -1387,8 +1515,9 @@ li.topic-list-item {
     z-index: 2;
     grid-template-columns:
         [topics-content-area-start] var(--left-sidebar-toggle-width-offset)
-        0 0 minmax(0, 1fr)
-        max-content 0 42px [topics-content-area-end];
+        0 0 minmax(0, 1fr) 0
+        max-content 0 var(--left-sidebar-vdots-width)
+        [topics-content-area-end] var(--left-sidebar-right-margin);
     grid-template-rows:
         [topics-content-area-start] var(--line-height-sidebar-row-prominent)
         [topics-content-area-end];
@@ -1416,14 +1545,26 @@ li.topic-list-item {
     }
 
     .unread_count {
-        grid-area: markers-and-controls;
+        grid-area: markers-and-unreads;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:empty {
+            margin-right: 0;
+        }
     }
 }
 
 #streams_header {
     grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr)
-        minmax(17px, max-content) 30px 0;
+        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
+        minmax(var(--left-sidebar-single-digit-unread-width), max-content) var(
+            --left-sidebar-vdots-width
+        )
+        0;
     /* Keep the stream-search area rows collapsed. */
     grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
     cursor: pointer;
@@ -1464,26 +1605,56 @@ li.topic-list-item {
         grid-area: row-content;
     }
 
-    .heading-markers-and-controls {
-        grid-area: markers-and-controls;
+    .heading-markers-and-unreads {
+        grid-area: markers-and-unreads;
         height: 100%;
         display: flex;
         align-items: center;
         grid-gap: 5px;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:has(.unread_count:empty) {
+            margin-right: 0;
+        }
     }
 
     #filter_streams_tooltip {
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
-        width: var(--left-sidebar-header-icon-width);
+        grid-row: 1 / 1;
+        margin: 2px 0;
+
+        @media (hover: none) {
+            display: flex;
+        }
+    }
+
+    &:hover #filter_streams_tooltip {
+        display: flex;
     }
 
     #add_streams_tooltip {
-        display: flex;
+        grid-row: 1 / 1;
+        margin: 2px 0;
+    }
+
+    #streams_inline_icon {
+        display: none;
         align-items: center;
         justify-content: center;
-        width: var(--left-sidebar-header-icon-width);
+        /* Ensure the clickable area grows to
+           the height of the controls grid. */
+        height: 100%;
+
+        @media (hover: none) {
+            display: flex;
+        }
+    }
+
+    &:hover #streams_inline_icon {
+        display: flex;
     }
 
     .stream_search_section {
@@ -1510,10 +1681,7 @@ li.topic-list-item {
         }
 
         .masked_unread_count {
-            display: block;
-            /* Hold space enough so single-digit
-               unreads don't shift on hover. */
-            margin: 0 3px;
+            display: flex;
         }
 
         &:hover {
@@ -1590,8 +1758,8 @@ li.topic-list-item {
    controls. */
 .spectator-view #streams_header {
     grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr)
-        minmax(30px, max-content) 0 0;
+        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr) 0
+        minmax(var(--left-sidebar-vdots-width), max-content) 0 0;
     margin-right: var(--left-sidebar-right-margin);
 
     /* With markers and controls now sized the same
@@ -1600,7 +1768,7 @@ li.topic-list-item {
        additional logged-out icons be added in the
        future), let's center the icon in that area,
        just like vdots would be. */
-    .heading-markers-and-controls {
+    .heading-markers-and-unreads {
         justify-content: center;
     }
 }
@@ -1717,7 +1885,7 @@ li.topic-list-item {
 
     .direct-messages-search-section {
         display: flex;
-        grid-column: row-content / markers-and-controls;
+        grid-column: row-content / markers-and-unreads;
         margin-top: 5px;
         margin-bottom: 5px;
     }
