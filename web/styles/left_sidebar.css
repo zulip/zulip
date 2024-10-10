@@ -645,7 +645,10 @@ li.active-sub-filter {
                 /* 6px at 12px/1em */
                 top: -0.5em;
                 right: -0.5em;
-                background: var(--color-background-unread-counter-no-alpha);
+                color: var(--color-unread-counter-normal);
+                background: var(
+                    --color-background-unread-counter-normal-no-alpha
+                );
             }
         }
 
