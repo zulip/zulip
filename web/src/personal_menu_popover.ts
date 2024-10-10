@@ -13,7 +13,7 @@ import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
-export function initialize() {
+export function initialize(): void {
     popover_menus.register_popover_menu("#personal-menu", {
         theme: "popover-menu",
         placement: "bottom",
@@ -100,12 +100,12 @@ export function initialize() {
                 e.preventDefault();
             });
 
-            $popper.one("click", ".open-profile-settings", (e) => {
-                e.currentTarget.click();
+            $popper.one("click", ".open-profile-settings", function (this: HTMLElement, e) {
+                this.click();
                 popovers.hide_all();
                 e.preventDefault();
             });
-            instance.popperInstance.update();
+            void instance.popperInstance?.update();
         },
         onShow(instance) {
             const args = popover_menus_data.get_personal_menu_content_context();
@@ -113,12 +113,12 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.personal_menu = undefined;
+            popover_menus.popover_instances.personal_menu = null;
         },
     });
 }
 
-export function toggle() {
+export function toggle(): void {
     // NOTE: Since to open personal menu, you need to click on your avatar (which calls
     // tippyjs.hideAll()), or go via gear menu if using hotkeys, we don't need to
     // call tippyjs.hideAll() for it.
