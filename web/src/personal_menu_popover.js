@@ -112,10 +112,12 @@ export function initialize() {
         onShow(instance) {
             const args = popover_menus_data.get_personal_menu_content_context();
             instance.setContent(parse_html(render_navbar_personal_menu_popover(args)));
+            $("#personal-menu").addClass("active");
         },
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.personal_menu = undefined;
+            $("#personal-menu").removeClass("active");
         },
     });
 }
