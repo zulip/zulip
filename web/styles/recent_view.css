@@ -167,7 +167,9 @@
         margin: 0 5px 10px 0;
 
         &:focus {
-            background-color: hsl(0deg 0% 80%);
+            background-color: var(
+                --color-recent-filters-button-focus-background
+            );
             outline: 0;
         }
 
@@ -176,8 +178,12 @@
             opacity: 0.5;
 
             &:hover {
-                background-color: hsl(0deg 0% 100%);
-                border-color: hsl(0deg 0% 80%);
+                background-color: var(
+                    --color-recent-filters-button-disabled-background
+                );
+                border-color: var(
+                    --color-recent-filters-button-disabled-border
+                );
             }
         }
     }
@@ -304,7 +310,10 @@
     }
 
     .recent_view_participant_overflow {
-        color: hsl(0deg 0% 0%);
+        color: var(--color-recent-view-participant-overflow-text);
+        background-color: var(
+            --color-recent-view-participant-overflow-background
+        );
         line-height: 24px;
     }
 
