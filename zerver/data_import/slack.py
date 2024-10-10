@@ -46,7 +46,7 @@ from zerver.data_import.slack_message_conversion import (
     get_user_full_name,
 )
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
-from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
+from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import resize_logo
@@ -1506,6 +1506,7 @@ def do_convert_directory(
     create_converted_data_files(uploads_records, output_dir, "/uploads/records.json")
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(realm_icon_records, output_dir, "/realm_icons/records.json")
+    do_common_export_processes(output_dir)
 
     logging.info("######### DATA CONVERSION FINISHED #########\n")
     logging.info("Zulip data dump created at %s", output_dir)

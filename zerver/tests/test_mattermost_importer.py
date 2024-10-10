@@ -25,15 +25,31 @@ from zerver.data_import.mattermost import (
 from zerver.data_import.sequencer import IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
-from zerver.lib.import_realm import do_import_realm
-from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Reaction, Recipient, UserProfile
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
+from zerver.tests.test_import_export import ImportExportFile
 
 
-class MatterMostImporter(ZulipTestCase):
+class MatterMostImporter(ImportExportFile):
+    def convert_mattermost_data(
+        self,
+        mattermost_data_dir: str,
+        output_dir: str,
+        masking_content: bool,
+        migration_file_fixture: str = "with_complete_migrations.txt",
+    ) -> None:
+        with patch("zerver.lib.export.get_migration_status") as m:
+            m.return_value = self.fixture_data(
+                migration_file_fixture, "import_fixtures/get_migration_status_fixtures"
+            )
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=masking_content,
+            )
+
     def test_mattermost_data_file_to_dict(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
@@ -665,7 +681,7 @@ class MatterMostImporter(ZulipTestCase):
         output_dir = self.make_import_output_dir("mattermost")
 
         with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
-            do_convert_data(
+            self.convert_mattermost_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=False,
@@ -687,6 +703,9 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "emoji")), True)
         self.assertEqual(
             os.path.exists(os.path.join(harry_team_output_dir, "attachment.json")), True
+        )
+        self.assertEqual(
+            os.path.exists(os.path.join(harry_team_output_dir, "migration_status.json")), True
         )
 
         realm = self.read_file(harry_team_output_dir, "realm.json")
@@ -746,7 +765,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
 
         with self.assertLogs(level="INFO"):
-            do_import_realm(
+            self.import_realm(
                 import_dir=harry_team_output_dir,
                 subdomain="gryffindor",
             )
@@ -771,7 +790,7 @@ class MatterMostImporter(ZulipTestCase):
         output_dir = self.make_import_output_dir("mattermost")
 
         with patch("builtins.print") as mock_print, self.assertLogs(level="INFO"):
-            do_convert_data(
+            self.convert_mattermost_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=False,
@@ -851,7 +870,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
 
         with self.assertLogs(level="INFO"):
-            do_import_realm(
+            self.import_realm(
                 import_dir=harry_team_output_dir,
                 subdomain="gryffindor",
             )
@@ -907,7 +926,7 @@ class MatterMostImporter(ZulipTestCase):
         output_dir = self.make_import_output_dir("mattermost")
 
         with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
-            do_convert_data(
+            self.convert_mattermost_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=True,
@@ -934,7 +953,7 @@ class MatterMostImporter(ZulipTestCase):
         output_dir = self.make_import_output_dir("mattermost")
 
         with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
-            do_convert_data(
+            self.convert_mattermost_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=True,
@@ -954,7 +973,7 @@ class MatterMostImporter(ZulipTestCase):
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
 
         with self.assertLogs(level="INFO"):
-            do_import_realm(
+            self.import_realm(
                 import_dir=harry_team_output_dir,
                 subdomain="gryffindor",
             )

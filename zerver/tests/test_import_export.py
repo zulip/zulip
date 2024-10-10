@@ -42,7 +42,13 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
-from zerver.lib.export import Record, do_export_realm, do_export_user, export_usermessages_batch
+from zerver.lib.export import (
+    MigrationStatusJson,
+    Record,
+    do_export_realm,
+    do_export_user,
+    export_usermessages_batch,
+)
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -148,9 +154,9 @@ def get_direct_message_group_hashes(r: Realm) -> str:
     return direct_message_group_hash
 
 
-class ExportFile(ZulipTestCase):
-    """This class is a container for shared helper functions
-    used for both the realm-level and user-level export tests."""
+class ImportExportFile(ZulipTestCase):
+    """This class is a container for shared helper functions used
+    for both the realm-level and user-level import/export tests."""
 
     @override
     def setUp(self) -> None:
@@ -333,16 +339,43 @@ class ExportFile(ZulipTestCase):
         db_paths = {user_avatar_path(user) + ".original"}
         self.assertEqual(exported_paths, db_paths)
 
+    def verify_migration_status_json(self) -> None:
+        exported: MigrationStatusJson = read_json("migration_status.json")
+        fixture: MigrationStatusJson = orjson.loads(
+            self.fixture_data("migration_status.json", "import_fixtures")
+        )
+        self.assertDictEqual(exported, fixture)
 
-class RealmImportExportTest(ExportFile):
+    def import_realm(
+        self,
+        import_dir: str,
+        subdomain: str,
+        migration_status_fixture: str = "with_complete_migrations.txt",
+    ) -> None:
+        with patch("zerver.lib.export.get_migration_status") as m:
+            m.return_value = self.fixture_data(
+                migration_status_fixture, "import_fixtures/get_migration_status_fixtures"
+            )
+            do_import_realm(import_dir=import_dir, subdomain=subdomain)
+
+
+class RealmImportExportTest(ImportExportFile):
     def export_realm(
         self,
         realm: Realm,
         export_type: int,
         exportable_user_ids: set[int] | None = None,
+        migration_file_fixture: str = "with_complete_migrations.txt",
     ) -> None:
         output_dir = make_export_output_dir()
-        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
+        with (
+            patch("zerver.lib.export.create_soft_link"),
+            self.assertLogs(level="INFO"),
+            patch("zerver.lib.export.get_migration_status") as m,
+        ):
+            m.return_value = self.fixture_data(
+                migration_file_fixture, "import_fixtures/get_migration_status_fixtures"
+            )
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
@@ -368,13 +401,19 @@ class RealmImportExportTest(ExportFile):
         original_realm: Realm,
         export_type: int = RealmExport.EXPORT_FULL_WITHOUT_CONSENT,
         exportable_user_ids: set[int] | None = None,
+        migration_file_fixture: str = "with_complete_migrations.txt",
     ) -> None:
         RealmAuditLog.objects.create(
             realm=original_realm,
             event_type=AuditLogEventType.REALM_EXPORTED,
             event_time=timezone_now(),
         )
-        self.export_realm(original_realm, export_type, exportable_user_ids)
+        self.export_realm(
+            original_realm,
+            export_type,
+            exportable_user_ids,
+            migration_file_fixture,
+        )
 
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
@@ -388,6 +427,7 @@ class RealmImportExportTest(ExportFile):
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=False)
         self.verify_realm_logo_and_icon()
+        self.verify_migration_status_json()
 
     def test_public_only_export_files_private_uploads_not_included(self) -> None:
         """
@@ -435,6 +475,7 @@ class RealmImportExportTest(ExportFile):
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=True)
         self.verify_realm_logo_and_icon()
+        self.verify_migration_status_json()
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
@@ -1004,7 +1045,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(original_realm, export_type=RealmExport.EXPORT_FULL_WITHOUT_CONSENT)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(get_output_dir(), "test-zulip")
+            self.import_realm(get_output_dir(), "test-zulip")
 
         # Make sure our export/import didn't somehow leak info into the
         # original realm.
@@ -1186,7 +1227,7 @@ class RealmImportExportTest(ExportFile):
 
         self.export_realm_and_create_auditlog(realm)
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(get_output_dir(), "test-zulip")
+            self.import_realm(get_output_dir(), "test-zulip")
         imported_realm = Realm.objects.get(string_id="test-zulip")
 
         imported_message = Message.objects.filter(realm=imported_realm).latest("id")
@@ -1562,7 +1603,7 @@ class RealmImportExportTest(ExportFile):
             f.write(orjson.dumps(data))
 
         with self.assertRaises(ValidationError), self.assertLogs(level="INFO"):
-            do_import_realm(output_dir, "test-zulip")
+            self.import_realm(output_dir, "test-zulip")
 
         # Now test a weird case where delivery_email is valid, but .email is not.
         # Such data should never reasonably get generated, but we should still
@@ -1578,7 +1619,7 @@ class RealmImportExportTest(ExportFile):
             f.write(orjson.dumps(data))
 
         with self.assertRaises(ValidationError), self.assertLogs(level="INFO"):
-            do_import_realm(output_dir, "test-zulip2")
+            self.import_realm(output_dir, "test-zulip2")
 
     def test_import_realm_with_no_realm_user_default_table(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
@@ -1587,7 +1628,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm_and_create_auditlog(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(get_output_dir(), "test-zulip")
+            self.import_realm(get_output_dir(), "test-zulip")
 
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
         imported_realm = Realm.objects.get(string_id="test-zulip")
@@ -1626,7 +1667,8 @@ class RealmImportExportTest(ExportFile):
             m.side_effect = mock_send_to_push_bouncer_response
 
             with self.captureOnCommitCallbacks(execute=True):
-                new_realm = do_import_realm(get_output_dir(), "test-zulip")
+                self.import_realm(get_output_dir(), "test-zulip")
+                new_realm = Realm.objects.get(string_id="test-zulip")
 
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
         calls_args_for_assert = m.call_args_list[1][0]
@@ -1650,7 +1692,7 @@ class RealmImportExportTest(ExportFile):
             self.assertLogs(level="WARNING") as mock_log,
             patch("zerver.lib.import_realm.upload_emoji_image", side_effect=BadImageError("test")),
         ):
-            do_import_realm(get_output_dir(), "test-zulip")
+            self.import_realm(get_output_dir(), "test-zulip")
         self.assert_length(mock_log.output, 1)
         self.assertIn("Could not thumbnail emoji image", mock_log.output[0])
 
@@ -1664,7 +1706,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm_and_create_auditlog(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(get_output_dir(), "test-zulip")
+            self.import_realm(get_output_dir(), "test-zulip")
         imported_realm = Realm.objects.get(string_id="test-zulip")
 
         # Test attachments
@@ -1731,7 +1773,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm_and_create_auditlog(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(get_output_dir(), "test-zulip")
+            self.import_realm(get_output_dir(), "test-zulip")
 
         imported_realm = Realm.objects.get(string_id="test-zulip")
         test_image_data = read_test_image_file("img.png")
@@ -1829,7 +1871,7 @@ class RealmImportExportTest(ExportFile):
             self.export_realm_and_create_auditlog(realm)
 
             with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-                do_import_realm(get_output_dir(), "test-zulip")
+                self.import_realm(get_output_dir(), "test-zulip")
 
             imported_realm = Realm.objects.get(string_id="test-zulip")
             self.assertEqual(
@@ -1840,7 +1882,7 @@ class RealmImportExportTest(ExportFile):
             self.export_realm_and_create_auditlog(realm)
 
             with self.settings(BILLING_ENABLED=True), self.assertLogs(level="WARN") as mock_warn:
-                do_import_realm(get_output_dir(), "test-zulip2")
+                self.import_realm(get_output_dir(), "test-zulip2")
 
             imported_realm = Realm.objects.get(string_id="test-zulip2")
 
@@ -1865,7 +1907,9 @@ class RealmImportExportTest(ExportFile):
         self.export_realm_and_create_auditlog(realm)
 
         with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
-            imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
+            self.import_realm(get_output_dir(), "test-zulip-1")
+            imported_realm = Realm.objects.get(string_id="test-zulip-1")
+
             self.assertEqual(imported_realm.plan_type, Realm.PLAN_TYPE_LIMITED)
             self.assertEqual(imported_realm.max_invites, 100)
             self.assertEqual(imported_realm.upload_quota_gb, 5)
@@ -1882,7 +1926,9 @@ class RealmImportExportTest(ExportFile):
         self.export_realm_and_create_auditlog(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            imported_realm = do_import_realm(get_output_dir(), "test-zulip-2")
+            self.import_realm(get_output_dir(), "test-zulip-2")
+            imported_realm = Realm.objects.get(string_id="test-zulip-2")
+
             self.assertEqual(imported_realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
             self.assertEqual(imported_realm.max_invites, 100)
             self.assertEqual(imported_realm.upload_quota_gb, None)
@@ -1914,7 +1960,8 @@ class RealmImportExportTest(ExportFile):
             f.write(orjson.dumps(data))
 
         with self.assertLogs(level="INFO"):
-            imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
+            self.import_realm(get_output_dir(), "test-zulip-1")
+            imported_realm = Realm.objects.get(string_id="test-zulip-1")
         user_membership_logs = RealmAuditLog.objects.filter(
             realm=imported_realm,
             event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
@@ -1931,8 +1978,125 @@ class RealmImportExportTest(ExportFile):
                 expected_group_names.add(SystemGroups.FULL_MEMBERS)
             self.assertSetEqual(logged_membership_by_user_id[user.id], expected_group_names)
 
+    def test_check_migrations_with_unapplied_migrations(self) -> None:
+        realm = get_realm("zulip")
+        self.export_realm(realm, export_type=RealmExport.EXPORT_FULL_WITH_CONSENT)
 
-class SingleUserExportTest(ExportFile):
+        with (
+            self.assertRaises(SystemExit) as e,
+            self.assertLogs(level="INFO"),
+        ):
+            self.import_realm(
+                get_output_dir(),
+                "test-zulip",
+                migration_status_fixture="with_unapplied_migrations.txt",
+            )
+        expected_error_message = self.fixture_data(
+            "unapplied_migrations_error.txt", "import_fixtures/check_migrations_errors"
+        ).strip()
+        error_message = str(e.exception).strip()
+        self.assertEqual(expected_error_message, error_message)
+
+    def test_check_migrations_with_missing_migrations(self) -> None:
+        realm = get_realm("zulip")
+        self.export_realm(
+            realm,
+            export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+            migration_file_fixture="with_missing_migrations.txt",
+        )
+
+        with (
+            self.assertRaises(SystemExit) as e,
+            self.assertLogs(level="INFO"),
+        ):
+            self.import_realm(
+                get_output_dir(),
+                "test-zulip",
+            )
+        expected_error_message = self.fixture_data(
+            "missing_migrations_error.txt", "import_fixtures/check_migrations_errors"
+        ).strip()
+        error_message = str(e.exception).strip()
+
+        self.assertEqual(expected_error_message, error_message)
+
+    def test_check_migrations_with_extra_exported_apps(self) -> None:
+        realm = get_realm("zulip")
+        self.export_realm_and_create_auditlog(realm)
+
+        with (
+            self.settings(BILLING_ENABLED=False),
+            self.assertLogs(level="WARNING") as mock_log,
+        ):
+            self.import_realm(
+                get_output_dir(),
+                "test-zulip",
+                migration_status_fixture="with_missing_apps.txt",
+            )
+        missing_apps_log = [
+            "WARNING:root:Exported realm has 'phonenumber' app installed, but this server does not.",
+            "WARNING:root:Exported realm has 'sessions' app installed, but this server does not.",
+        ]
+        # The log output is sorted because it's order is nondeterministic.
+        self.assertEqual(sorted(mock_log.output), sorted(missing_apps_log))
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        self.assertNotEqual(imported_realm.id, realm.id)
+
+    def test_check_migrations_with_missing_apps(self) -> None:
+        realm = get_realm("zulip")
+        self.export_realm_and_create_auditlog(realm, migration_file_fixture="with_missing_apps.txt")
+
+        with (
+            self.settings(BILLING_ENABLED=False),
+            self.assertLogs(level="WARNING") as mock_log,
+        ):
+            self.import_realm(
+                get_output_dir(),
+                "test-zulip",
+            )
+        missing_apps_log = [
+            "WARNING:root:Local server has 'phonenumber' app installed, but exported realm does not.",
+            "WARNING:root:Local server has 'sessions' app installed, but exported realm does not.",
+        ]
+        self.assertEqual(sorted(mock_log.output), sorted(missing_apps_log))
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        self.assertNotEqual(imported_realm.id, realm.id)
+
+    def test_import_without_migration_status_file(self) -> None:
+        realm = get_realm("zulip")
+        with patch("zerver.lib.export.export_migration_status"):
+            self.export_realm_and_create_auditlog(realm)
+
+        with self.assertRaises(SystemExit) as e, self.assertLogs(level="INFO"):
+            self.import_realm(
+                get_output_dir(),
+                "test-zulip",
+            )
+        expected_error_message = "\nError: Missing migration_status.json file!"
+        self.assertEqual(expected_error_message, str(e.exception))
+
+    def test_import_with_different_stated_zulip_version(self) -> None:
+        realm = get_realm("zulip")
+        self.export_realm_and_create_auditlog(realm)
+
+        with (
+            patch("zerver.lib.import_realm.ZULIP_VERSION", "8.0"),
+            self.assertRaises(SystemExit) as e,
+            self.assertLogs(level="INFO"),
+        ):
+            self.import_realm(
+                get_output_dir(),
+                "test-zulip",
+            )
+        expected_error_message = (
+            "\nError: Zulip version mismatch.\n" "Export=10.0-dev+git\n" "Local=8.0"
+        )
+        self.assertEqual(expected_error_message, str(e.exception))
+
+
+class SingleUserExportTest(ImportExportFile):
     def do_files_test(self, is_s3: bool) -> None:
         output_dir = make_export_output_dir()
 
