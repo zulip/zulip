@@ -291,7 +291,7 @@ EXEMPT_FILES = make_set(
         "web/src/user_sort.ts",
         "web/src/user_status.ts",
         "web/src/user_status_ui.ts",
-        "web/src/user_topic_popover.js",
+        "web/src/user_topic_popover.ts",
         "web/src/user_topics.ts",
         "web/src/user_topics_ui.ts",
         "web/src/views_util.ts",
