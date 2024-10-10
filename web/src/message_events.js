@@ -284,12 +284,10 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
 
 export function update_messages(events) {
     const messages_to_rerender = [];
-    let any_topic_edited = false;
     let changed_narrow = false;
     let refreshed_current_narrow = false;
     let changed_compose = false;
     let any_message_content_edited = false;
-    let any_stream_changed = false;
     let local_cache_missing_messages = false;
 
     // Clear message list data cache since the local data for the
@@ -310,8 +308,6 @@ export function update_messages(events) {
             // needs to run if we had a local copy of the message.
 
             delete anchor_message.local_edit_timestamp;
-
-            messages_to_rerender.push(anchor_message);
 
             message_store.update_booleans(anchor_message, event.flags);
 
@@ -383,14 +379,12 @@ export function update_messages(events) {
         const topic_edited = new_topic !== undefined;
         const stream_changed = new_stream_id !== undefined;
         const stream_archived = old_stream === undefined;
-        if (stream_changed) {
-            any_stream_changed = true;
-        }
-        if (topic_edited) {
-            any_topic_edited = true;
-        }
 
-        if (topic_edited || stream_changed) {
+        if (!topic_edited && !stream_changed) {
+            // If the topic or stream of the message was changed,
+            // it will be rerendered if present in any rendered list.
+            messages_to_rerender.push(anchor_message);
+        } else {
             const going_forward_change = ["change_later", "change_all"].includes(
                 event.propagate_mode,
             );
@@ -596,41 +590,39 @@ export function update_messages(events) {
             // narrow are deleted and messages that are now part
             // of this narrow are added to the message_list.
             //
-            // Even if we end up renarrowing, the message_list_data
-            // part of this is important for non-rendering message
-            // lists, so we do this unconditionally.  Most correctly,
-            // this should be a loop over all valid message_list_data
-            // objects, without the rerender (which will naturally
-            // happen in the following code).
-            if (!changed_narrow && !refreshed_current_narrow && current_filter) {
-                let message_ids_to_remove = [];
-                if (current_filter.can_apply_locally()) {
-                    const predicate = current_filter.predicate();
-                    message_ids_to_remove = event_messages.filter((msg) => !predicate(msg));
+            // TODO: Update cached message list data objects as well.
+            for (const list of message_lists.all_rendered_message_lists()) {
+                if (
+                    list === message_lists.current &&
+                    (changed_narrow || refreshed_current_narrow)
+                ) {
+                    continue;
+                }
+
+                if (list.data.filter.can_apply_locally()) {
+                    const predicate = list.data.filter.predicate();
+                    let message_ids_to_remove = event_messages.filter((msg) => !predicate(msg));
                     message_ids_to_remove = message_ids_to_remove.map((msg) => msg.id);
                     // We filter out messages that do not belong to the message
                     // list and then pass these to the remove messages codepath.
                     // While we can pass all our messages to the add messages
                     // codepath as the filtering is done within the method.
-                    assert(message_lists.current !== undefined);
-                    message_lists.current.remove_and_rerender(message_ids_to_remove);
-                    message_lists.current.add_messages(event_messages);
-                } else if (message_lists.current !== undefined) {
+                    list.remove_and_rerender(message_ids_to_remove);
+                    list.add_messages(event_messages);
+                } else {
                     // Remove existing message that were updated, since
                     // they may not be a part of the filter now. Also,
                     // this will help us rerender them via
                     // maybe_add_narrowed_messages, if they were
                     // simply updated.
                     const updated_messages = event_messages.filter(
-                        (msg) => message_lists.current.data.get(msg.id) !== undefined,
+                        (msg) => list.data.get(msg.id) !== undefined,
                     );
-                    message_lists.current.remove_and_rerender(
-                        updated_messages.map((msg) => msg.id),
-                    );
+                    list.remove_and_rerender(updated_messages.map((msg) => msg.id));
                     // For filters that cannot be processed locally, ask server.
                     message_events_util.maybe_add_narrowed_messages(
                         event_messages,
-                        message_lists.current,
+                        list,
                         message_util.add_messages,
                     );
                 }
@@ -720,30 +712,7 @@ export function update_messages(events) {
         }
     }
 
-    // If a topic was edited, we re-render the whole view to get any
-    // propagated edits to be updated (since the topic edits can have
-    // changed the correct grouping of messages).
-    if (any_topic_edited || any_stream_changed) {
-        // However, we don't need to rerender message_list if
-        // we just changed the narrow earlier in this function.
-        //
-        // TODO: We can potentially optimize this logic to avoid
-        // calling `update_muting_and_rerender` if the muted
-        // messages would not match the view before or after this
-        // edit.  Doing so could save significant work, since most
-        // topic edits will not match the current topic narrow in
-        // large organizations.
-
-        for (const list of message_lists.all_rendered_message_lists()) {
-            if ((changed_narrow || refreshed_current_narrow) && list === message_lists.current) {
-                // Avoid updating current message list if user switched to a different narrow and
-                // we don't want to preserver the rendered state for the current one.
-                continue;
-            }
-
-            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
-        }
-    } else {
+    if (messages_to_rerender.length > 0) {
         // If the content of the message was edited, we do a special animation.
         //
         // BUG: This triggers the "message edited" animation for every
