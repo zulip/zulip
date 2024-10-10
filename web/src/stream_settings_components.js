@@ -113,7 +113,7 @@ export function dropdown_setup() {
 }
 
 /* For the given stream_row, remove the tick and replace by a spinner. */
-function display_subscribe_toggle_spinner(stream_row) {
+export function display_subscribe_toggle_spinner(stream_row) {
     /* Prevent sending multiple requests by removing the button class. */
     $(stream_row).find(".check").removeClass("sub_unsub_button");
 
@@ -128,7 +128,7 @@ function display_subscribe_toggle_spinner(stream_row) {
 }
 
 /* For the given stream_row, add the tick and delete the spinner. */
-function hide_subscribe_toggle_spinner(stream_row) {
+export function hide_subscribe_toggle_spinner(stream_row) {
     /* Re-enable the button to handle requests. */
     $(stream_row).find(".check").addClass("sub_unsub_button");
 
@@ -169,15 +169,8 @@ export function ajaxSubscribe(stream, color, $stream_row) {
                 );
             }
             // The rest of the work is done via the subscribe event we will get
-
-            if ($stream_row !== undefined) {
-                hide_subscribe_toggle_spinner($stream_row);
-            }
         },
         error(xhr) {
-            if ($stream_row !== undefined) {
-                hide_subscribe_toggle_spinner($stream_row);
-            }
             ui_report.error(
                 $t_html({defaultMessage: "Error adding subscription"}),
                 xhr,
@@ -198,15 +191,8 @@ function ajaxUnsubscribe(sub, $stream_row) {
         success() {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
-
-            if ($stream_row !== undefined) {
-                hide_subscribe_toggle_spinner($stream_row);
-            }
         },
         error(xhr) {
-            if ($stream_row !== undefined) {
-                hide_subscribe_toggle_spinner($stream_row);
-            }
             ui_report.error(
                 $t_html({defaultMessage: "Error removing subscription"}),
                 xhr,
