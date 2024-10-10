@@ -22,6 +22,7 @@ import * as stream_list_sort from "./stream_list_sort";
 import type {StreamPill, StreamPillData} from "./stream_pill";
 import type {StreamSubscription} from "./sub_store";
 import type {UserGroupPill, UserGroupPillData} from "./user_group_pill";
+import * as user_group_pill from "./user_group_pill";
 import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
 import type {UserPill, UserPillData} from "./user_pill";
@@ -527,7 +528,9 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
 
     function add_group_recipients(items: UserGroupPillData[]): void {
         for (const item of items) {
-            recipients.push(item);
+            if (!user_group_pill.are_all_members_deactivated(item)) {
+                recipients.push(item);
+            }
         }
     }
 
