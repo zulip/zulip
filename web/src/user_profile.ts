@@ -86,18 +86,6 @@ const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
 
-export function show_button_spinner($button: JQuery): void {
-    const $spinner = $button.find(".modal__spinner");
-    const dialog_submit_button_span_width = $button.find("span").width();
-    const dialog_submit_button_span_height = $button.find("span").height();
-    $button.prop("disabled", true);
-    $button.find("span").hide();
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
-}
-
 export function hide_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", false);
@@ -756,7 +744,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
         const $submit_btn = $("#user-profile-modal .dialog_submit_button");
         const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        show_button_spinner($submit_btn);
+        loading.show_modal_spinner($submit_btn);
         $cancel_btn.prop("disabled", true);
 
         void channel.patch({
@@ -1070,7 +1058,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
 
         const $submit_btn = $("#user-profile-modal .dialog_submit_button");
         const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        show_button_spinner($submit_btn);
+        loading.show_modal_spinner($submit_btn);
         $cancel_btn.prop("disabled", true);
 
         void channel.patch({

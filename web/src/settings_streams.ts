@@ -196,7 +196,8 @@ function show_add_default_streams_modal(): void {
                         xhr,
                         $("#dialog_error"),
                     );
-                    dialog_widget.hide_dialog_spinner();
+                    const $button = $("#dialog_widget_modal .modal__btn");
+                    loading.hide_modal_spinner($button);
                 },
             });
         }

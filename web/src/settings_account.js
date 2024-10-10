@@ -15,6 +15,7 @@ import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
+import * as loading from "./loading";
 import * as modals from "./modals";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -508,7 +509,8 @@ export function set_up() {
                 dialog_widget.close();
             },
             error_continuation() {
-                dialog_widget.hide_dialog_spinner();
+                const $button = $("#dialog_widget_modal .modal__btn");
+                loading.hide_modal_spinner($button);
                 channel.set_password_change_in_progress(false);
             },
             $error_msg_element: $change_password_error,
@@ -557,7 +559,8 @@ export function set_up() {
                 dialog_widget.close();
             },
             error_continuation() {
-                dialog_widget.hide_dialog_spinner();
+                const $button = $("#dialog_widget_modal .modal__btn");
+                loading.hide_modal_spinner($button);
             },
             $error_msg_element: $change_email_error,
             success_msg_html: $t_html(
@@ -616,7 +619,8 @@ export function set_up() {
                 dialog_widget.close();
             },
             error_continuation() {
-                dialog_widget.hide_dialog_spinner();
+                const $button = $("#dialog_widget_modal .modal__btn");
+                loading.hide_modal_spinner($button);
             },
             $error_msg_element: $change_email_error,
             success_msg_html: $t_html(
@@ -718,7 +722,8 @@ export function set_up() {
             channel.del({
                 url: "/json/users/me",
                 success() {
-                    dialog_widget.hide_dialog_spinner();
+                    const $button = $("#dialog_widget_modal .modal__btn");
+                    loading.hide_modal_spinner($button);
                     dialog_widget.close();
                     window.location.href = "/login/";
                 },
@@ -746,7 +751,8 @@ export function set_up() {
                             rendered_error_msg = error_last_user;
                         }
                     }
-                    dialog_widget.hide_dialog_spinner();
+                    const $button = $("#dialog_widget_modal .modal__btn");
+                    loading.hide_modal_spinner($button);
                     dialog_widget.close();
                     $("#account-settings-status")
                         .addClass("alert-error")

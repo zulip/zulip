@@ -222,7 +222,8 @@ export function suggest_delete_detached_attachments(attachments_list: ServerAtta
     }
 
     function do_delete_attachments(): void {
-        dialog_widget.show_dialog_spinner();
+        const $button = $("#dialog_widget_modal .modal__btn");
+        loading.show_modal_spinner($button);
         for (const [key, attachment] of attachments_map.entries()) {
             const id = Number(key);
             void channel.del({
@@ -230,15 +231,17 @@ export function suggest_delete_detached_attachments(attachments_list: ServerAtta
                 success() {
                     attachments_map.delete(id);
                     if (attachments_map.size === 0) {
-                        dialog_widget.hide_dialog_spinner();
+                        const $button = $("#dialog_widget_modal .modal__btn");
+                        loading.hide_modal_spinner($button);
                         dialog_widget.close();
                     }
                 },
-                error() {
-                    dialog_widget.hide_dialog_spinner();
+                error(xhr) {
+                    const $button = $("#dialog_widget_modal .modal__btn");
+                    loading.hide_modal_spinner($button);
                     ui_report.error(
                         $t_html({defaultMessage: "One or more files could not be deleted."}),
-                        undefined,
+                        xhr,
                         $("#dialog_error"),
                     );
                 },

@@ -22,6 +22,7 @@ import * as dialog_widget from "./dialog_widget";
 import {is_overlay_hash} from "./hash_parser";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
+import * as loading from "./loading";
 import * as message_lists from "./message_lists";
 import {user_can_send_direct_message} from "./message_util";
 import * as message_view from "./message_view";
@@ -671,7 +672,8 @@ function register_click_handlers() {
                 },
                 error(xhr) {
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
-                    dialog_widget.hide_dialog_spinner();
+                    const $button = $("#dialog_widget_modal .modal__btn");
+                    loading.hide_modal_spinner($button);
                 },
             });
         }

@@ -91,3 +91,38 @@ export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): vo
     }
     $elt.css("display", "inline-block");
 }
+
+export function show_modal_spinner($button: JQuery): void {
+    // Ensure we're only affecting the submit button
+    if (!$button.hasClass("dialog_submit_button")) {
+        return;
+    }
+
+    const $spinner = $button.find(".modal__spinner");
+    const submit_button_span_width = $button.find("span").width();
+    const submit_button_span_height = $button.find("span").height();
+
+    // Disable only the submit button and hide its text.
+    $button.prop("disabled", true);
+    $button.find("span").hide();
+
+    // Show spinner.
+    make_indicator($spinner, {
+        width: submit_button_span_width,
+        height: submit_button_span_height,
+    });
+}
+
+export function hide_modal_spinner($button: JQuery): void {
+    // Ensure we're only affecting the submit button
+    if (!$button.hasClass("dialog_submit_button")) {
+        return;
+    }
+
+    const $spinner = $button.find(".modal__spinner");
+    $button.prop("disabled", false);
+    $button.find("span").show();
+
+    // Hide the spinner
+    destroy_indicator($spinner);
+}

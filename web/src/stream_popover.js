@@ -14,6 +14,7 @@ import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
+import * as loading from "./loading";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_view from "./message_view";
@@ -502,7 +503,8 @@ export async function build_move_topic_to_stream_popover(
             return;
         }
 
-        dialog_widget.show_dialog_spinner();
+        const $button = $("#dialog_widget_modal .modal__btn");
+        loading.show_modal_spinner($button);
         message_edit.with_first_message_id(
             current_stream_id,
             old_topic_name,
@@ -517,7 +519,8 @@ export async function build_move_topic_to_stream_popover(
                 );
             },
             (xhr) => {
-                dialog_widget.hide_dialog_spinner();
+                const $button = $("#dialog_widget_modal .modal__btn");
+                loading.hide_modal_spinner($button);
                 ui_report.error(
                     $t_html({defaultMessage: "Error moving topic"}),
                     xhr,
