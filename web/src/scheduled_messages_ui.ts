@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -8,15 +9,30 @@ import {$t} from "./i18n";
 import * as message_view from "./message_view";
 import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
+import type {ScheduledMessage} from "./scheduled_messages";
 import * as timerender from "./timerender";
 
-export function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
+type ScheduledMessageComposeArgs =
+    | {
+          message_type: "stream";
+          stream_id: number;
+          topic: string;
+          content: string;
+      }
+    | {
+          message_type: "private";
+          private_message_recipient: string;
+          content: string;
+          keep_composebox_empty: boolean;
+      };
+
+export function hide_scheduled_message_success_compose_banner(scheduled_message_id: number): void {
     $(
         `.message_scheduled_success_compose_banner[data-scheduled-message-id=${scheduled_message_id}]`,
     ).hide();
 }
 
-function narrow_via_edit_scheduled_message(compose_args) {
+function narrow_via_edit_scheduled_message(compose_args: ScheduledMessageComposeArgs): void {
     if (compose_args.message_type === "stream") {
         message_view.show(
             [
@@ -35,11 +51,14 @@ function narrow_via_edit_scheduled_message(compose_args) {
     }
 }
 
-export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient) {
+export function open_scheduled_message_in_compose(
+    scheduled_msg: ScheduledMessage,
+    should_narrow_to_recipient?: boolean,
+): void {
     let compose_args;
     if (scheduled_msg.type === "stream") {
         compose_args = {
-            message_type: "stream",
+            message_type: "stream" as const,
             stream_id: scheduled_msg.to,
             topic: scheduled_msg.topic,
             content: scheduled_msg.content,
@@ -55,7 +74,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
             }
         }
         compose_args = {
-            message_type: scheduled_msg.type,
+            message_type: "private" as const,
             private_message_recipient: recipient_emails.join(","),
             content: scheduled_msg.content,
             keep_composebox_empty: true,
@@ -70,7 +89,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
     scheduled_messages.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
 }
 
-function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
+function show_message_unscheduled_banner(scheduled_delivery_timestamp: number): void {
     const deliver_at = timerender.get_full_datetime(
         new Date(scheduled_delivery_timestamp * 1000),
         "time",
@@ -89,20 +108,25 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
     );
 }
 
-export function edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient = true) {
+export function edit_scheduled_message(
+    scheduled_message_id: number,
+    should_narrow_to_recipient = true,
+): void {
     const scheduled_msg = scheduled_messages.scheduled_messages_data.get(scheduled_message_id);
+    assert(scheduled_msg !== undefined);
+
     scheduled_messages.delete_scheduled_message(scheduled_message_id, () => {
         open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient);
         show_message_unscheduled_banner(scheduled_msg.scheduled_delivery_timestamp);
     });
 }
 
-export function initialize() {
+export function initialize(): void {
     $("body").on("click", ".undo_scheduled_message", (e) => {
         const scheduled_message_id = Number.parseInt(
             $(e.target)
                 .parents(".message_scheduled_success_compose_banner")
-                .attr("data-scheduled-message-id"),
+                .attr("data-scheduled-message-id")!,
             10,
         );
         const should_narrow_to_recipient = false;
