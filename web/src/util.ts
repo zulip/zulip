@@ -260,25 +260,20 @@ export function is_topic_synonym(operator: string): boolean {
     return operator === "subject";
 }
 
-// TODO: When "stream" is renamed to "channel", update these stream
-// synonym helper functions for the reverse logic.
-export function is_stream_synonym(text: string): boolean {
-    return text === "channel";
+export function is_channel_synonym(text: string): boolean {
+    return text === "stream";
 }
 
-export function is_streams_synonym(text: string): boolean {
-    return text === "channels";
+export function is_channels_synonym(text: string): boolean {
+    return text === "streams";
 }
 
-// For parts of the codebase that have been converted to use
-// channel/channels internally, this is used to convert those
-// back into stream/streams for external presentation.
-export function canonicalize_stream_synonyms(text: string): string {
-    if (is_stream_synonym(text.toLowerCase())) {
-        return "stream";
+export function canonicalize_channel_synonyms(text: string): string {
+    if (is_channel_synonym(text.toLowerCase())) {
+        return "channel";
     }
-    if (is_streams_synonym(text.toLowerCase())) {
-        return "streams";
+    if (is_channels_synonym(text.toLowerCase())) {
+        return "channels";
     }
     return text;
 }

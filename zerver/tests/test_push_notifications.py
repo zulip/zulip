@@ -5124,7 +5124,7 @@ class TestPushNotificationsContent(ZulipTestCase):
             },
             {
                 "name": "stream_names",
-                "rendered_content": f'<p>Testing stream names <a class="stream" data-stream-id="{stream.id}" href="/#narrow/stream/Verona">#Verona</a>.</p>',
+                "rendered_content": f'<p>Testing stream names <a class="stream" data-stream-id="{stream.id}" href="/#narrow/channel/Verona">#Verona</a>.</p>',
                 "expected_output": "Testing stream names #Verona.",
             },
         ]

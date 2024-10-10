@@ -4747,9 +4747,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res["Location"], "http://zulip.testserver/user_uploads/path_to_image")
 
-        res = test_redirect_to_next_url("/#narrow/stream/7-test-here")
+        res = test_redirect_to_next_url("/#narrow/channel/7-test-here")
         self.assertEqual(res.status_code, 302)
-        self.assertEqual(res["Location"], "http://zulip.testserver/#narrow/stream/7-test-here")
+        self.assertEqual(res["Location"], "http://zulip.testserver/#narrow/channel/7-test-here")
 
     def test_log_into_subdomain_when_token_is_malformed(self) -> None:
         data: ExternalAuthDataDict = {
@@ -5600,7 +5600,7 @@ class TestDevAuthBackend(ZulipTestCase):
         # to the backend. Rather we depend upon the browser's behaviour of persisting
         # hash anchors in between redirect requests. See below stackoverflow conversation
         # https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects
-        res = do_local_login("/accounts/login/local/?next=#narrow/stream/7-test-here")
+        res = do_local_login("/accounts/login/local/?next=#narrow/channel/7-test-here")
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res["Location"], "http://zulip.testserver")
 

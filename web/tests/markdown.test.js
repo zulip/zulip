@@ -393,12 +393,12 @@ test("marked", ({override}) => {
         {
             input: "This is a #**Denmark** stream link",
             expected:
-                '<p>This is a <a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a> stream link</p>',
+                '<p>This is a <a class="stream" data-stream-id="1" href="/#narrow/channel/1-Denmark">#Denmark</a> stream link</p>',
         },
         {
             input: "This is #**Denmark** and #**social** stream links",
             expected:
-                '<p>This is <a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="/#narrow/stream/2-social">#social</a> stream links</p>',
+                '<p>This is <a class="stream" data-stream-id="1" href="/#narrow/channel/1-Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="/#narrow/channel/2-social">#social</a> stream links</p>',
         },
         {
             input: "And this is a #**wrong** stream link",
@@ -407,12 +407,12 @@ test("marked", ({override}) => {
         {
             input: "This is a #**Denmark>some topic** stream_topic link",
             expected:
-                '<p>This is a <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> stream_topic link</p>',
+                '<p>This is a <a class="stream-topic" data-stream-id="1" href="/#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> stream_topic link</p>',
         },
         {
             input: "This has two links: #**Denmark>some topic** and #**social>other topic**.",
             expected:
-                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> and <a class="stream-topic" data-stream-id="2" href="/#narrow/stream/2-social/topic/other.20topic">#social &gt; other topic</a>.</p>',
+                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="/#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> and <a class="stream-topic" data-stream-id="2" href="/#narrow/channel/2-social/topic/other.20topic">#social &gt; other topic</a>.</p>',
         },
         {
             input: "This is not a #**Denmark>** stream_topic link",
@@ -515,7 +515,7 @@ test("marked", ({override}) => {
         {
             input: "T\n#**Denmark**",
             expected:
-                '<p>T<br>\n<a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a></p>',
+                '<p>T<br>\n<a class="stream" data-stream-id="1" href="/#narrow/channel/1-Denmark">#Denmark</a></p>',
         },
         {
             input: "T\n@**Cordelia, Lear's daughter**",
@@ -622,17 +622,17 @@ test("marked", ({override}) => {
         {
             input: "#**Bobby <h1>Tables</h1>**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/stream/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 &gt; Tables&lt;/h1&gt;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/channel/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 &gt; Tables&lt;/h1&gt;</a></p>',
         },
         {
             input: "#**& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream" data-stream-id="5" href="/#narrow/stream/5-.26-.26-.26amp.3B">#&amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream" data-stream-id="5" href="/#narrow/channel/5-.26-.26-.26amp.3B">#&amp; &amp; &amp;amp;</a></p>',
         },
         {
             input: "#**& &amp; &amp;amp;>& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/stream/5-.26-.26-.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/channel/5-.26-.26-.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
         },
     ];
 

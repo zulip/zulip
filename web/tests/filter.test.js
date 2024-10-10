@@ -2222,7 +2222,7 @@ test("navbar_helpers", ({override}) => {
             is_common_narrow: true,
             zulip_icon: "hashtag",
             title: "Foo",
-            redirect_url_with_search: `/#narrow/stream/${foo_stream_id}-Foo/topic/bar`,
+            redirect_url_with_search: `/#narrow/channel/${foo_stream_id}-Foo/topic/bar`,
         },
         {
             terms: invalid_channel_with_topic,
@@ -2236,14 +2236,14 @@ test("navbar_helpers", ({override}) => {
             is_common_narrow: true,
             icon: undefined,
             title: "translated: Messages in all public channels",
-            redirect_url_with_search: "/#narrow/streams/public",
+            redirect_url_with_search: "/#narrow/channels/public",
         },
         {
             terms: channel_term,
             is_common_narrow: true,
             zulip_icon: "hashtag",
             title: "Foo",
-            redirect_url_with_search: `/#narrow/stream/${foo_stream_id}-Foo`,
+            redirect_url_with_search: `/#narrow/channel/${foo_stream_id}-Foo`,
         },
         {
             terms: invalid_channel,
@@ -2257,14 +2257,14 @@ test("navbar_helpers", ({override}) => {
             is_common_narrow: true,
             zulip_icon: "lock",
             title: "psub",
-            redirect_url_with_search: `/#narrow/stream/${public_sub_id}-psub`,
+            redirect_url_with_search: `/#narrow/channel/${public_sub_id}-psub`,
         },
         {
             terms: web_public_channel,
             is_common_narrow: true,
             zulip_icon: "globe",
             title: "webPublicSub",
-            redirect_url_with_search: `/#narrow/stream/${web_public_sub_id}-webPublicSub`,
+            redirect_url_with_search: `/#narrow/channel/${web_public_sub_id}-webPublicSub`,
         },
         {
             terms: dm,

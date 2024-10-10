@@ -345,7 +345,7 @@ _Released 2024-07-25_
   `0544_copy_avatar_images`, which re-thumbnails every uploaded avatar
   using Zulip's new image-processing pipeline.
 
-[thumbor-remediation-topic]: https://chat.zulip.org/#narrow/stream/31-production-help/topic/THUMBNAIL_IMAGES.20remediation
+[thumbor-remediation-topic]: https://chat.zulip.org/#narrow/channel/31-production-help/topic/THUMBNAIL_IMAGES.20remediation
 
 ## Zulip Server 8.x series
 

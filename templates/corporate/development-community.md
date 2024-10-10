@@ -132,9 +132,9 @@ topic to a different channel](/help/move-content-to-another-channel).
 - [#development help](https://chat.zulip.org/#narrow/channel/49-development-help)
   is for asking for help with any Zulip server/web app development work
   (use the app channels
-  [#mobile-dev-help](https://chat.zulip.org/#narrow/stream/516-mobile-dev-help),
-  [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop), or
-  [#zulip-terminal](https://chat.zulip.org/#narrow/stream/206-zulip-terminal)
+  [#mobile-dev-help](https://chat.zulip.org/#narrow/channel/516-mobile-dev-help),
+  [#desktop](https://chat.zulip.org/#narrow/channel/16-desktop), or
+  [#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal)
   for help working on one of the apps).
 - [#provision help](https://chat.zulip.org/#narrow/channel/21-provision-help)
   is for help specifically on setting up the server/web app development
@@ -200,7 +200,7 @@ topic to a different channel](/help/move-content-to-another-channel).
   Q&A sessions with project members.
 - [#documentation](https://chat.zulip.org/#narrow/channel/19-documentation)
   and
-  [#api documentation](https://chat.zulip.org/#narrow/stream/412-api-documentation)
+  [#api documentation](https://chat.zulip.org/#narrow/channel/412-api-documentation)
   are where we discuss improving Zulip’s user, sysadmin, API, and
   developer documentation.
 - [#general](https://chat.zulip.org/#narrow/channel/2-general) is for

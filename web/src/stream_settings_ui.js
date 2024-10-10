@@ -903,7 +903,7 @@ export function view_stream() {
     const row_data = get_row_data(active_data.$row);
     if (row_data) {
         const stream_narrow_hash =
-            "#narrow/stream/" + hash_util.encode_stream_id(row_data.object.stream_id);
+            "#narrow/channel/" + hash_util.encode_stream_id(row_data.object.stream_id);
         browser_history.go_to_location(stream_narrow_hash);
     }
 }

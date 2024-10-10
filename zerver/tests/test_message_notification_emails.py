@@ -1220,7 +1220,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "Come and join us in #**Verona**.",
         )
         stream_id = get_stream("Verona", get_realm("zulip")).id
-        href = f"http://zulip.testserver/#narrow/stream/{stream_id}-Verona"
+        href = f"http://zulip.testserver/#narrow/channel/{stream_id}-Verona"
         verify_body_include = [
             f'<a class="stream" href="{href}" data-stream-id="{stream_id}">#Verona</a'
         ]
@@ -1493,13 +1493,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
         # A narrow URL which begins with a '#'.
         test_data = (
-            '<p><a href="#narrow/stream/test/topic/test.20topic/near/142"'
-            ' title="#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
+            '<p><a href="#narrow/channel/test/topic/test.20topic/near/142"'
+            ' title="#narrow/channel/test/topic/test.20topic/near/142">Conversation</a></p>'
         )
         actual_output = convert(test_data)
         expected_output = (
-            '<div><p><a href="http://example.com/#narrow/stream/test/topic/test.20topic/near/142"'
-            ' title="http://example.com/#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p></div>'
+            '<div><p><a href="http://example.com/#narrow/channel/test/topic/test.20topic/near/142"'
+            ' title="http://example.com/#narrow/channel/test/topic/test.20topic/near/142">Conversation</a></p></div>'
         )
         self.assertEqual(actual_output, expected_output)
 
