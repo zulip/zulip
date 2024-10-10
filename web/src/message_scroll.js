@@ -157,12 +157,23 @@ export function initialize() {
 
         if (event.mark_read && event.previously_selected_id !== -1) {
             // Mark messages between old pointer and new pointer as read
-            let messages;
             if (event.id < event.previously_selected_id) {
-                messages = event.msg_list.message_range(event.id, event.previously_selected_id);
-            } else {
-                messages = event.msg_list.message_range(event.previously_selected_id, event.id);
+                // We don't mark messages as read when the pointer moves up.
+                return;
             }
+
+            const messages = event.msg_list.message_range(event.previously_selected_id, event.id);
+            // If the user just arrived at the message `event.id`, we don't mark it as read.
+            // We only mark messages as read when the pointer moves past the message.
+            // This is likely the last message in the list. So, we loop through the messages
+            // in reverse order to find the message.
+            for (let i = messages.length - 1; i >= 0; i -= 1) {
+                if (messages[i].id === event.id) {
+                    delete messages[i];
+                    break;
+                }
+            }
+
             if (event.msg_list.can_mark_messages_read()) {
                 unread_ops.notify_server_messages_read(messages, {from: "pointer"});
             } else if (
