@@ -132,24 +132,6 @@ def access_user_group_to_read_membership(user_group_id: int, realm: Realm) -> Na
     return get_user_group_by_id_in_realm(user_group_id, realm, for_read=True)
 
 
-def check_permission_for_managing_all_groups(
-    user_group: UserGroup, user_profile: UserProfile
-) -> bool:
-    """
-    Given a user and a group in the same realm, checks if the user
-    can manage the group through the legacy can_manage_all_groups
-    permission, which is a permission that requires either certain roles
-    or membership in the group itself to be used.
-    """
-    can_manage_all_groups = user_profile.can_manage_all_groups()
-    if can_manage_all_groups:
-        if user_profile.is_realm_admin or user_profile.is_moderator:
-            return True
-
-        return is_user_in_group(user_group, user_profile)
-    return False
-
-
 def access_user_group_for_update(
     user_group_id: int,
     user_profile: UserProfile,
@@ -173,10 +155,14 @@ def access_user_group_for_update(
         raise JsonableError(_("Insufficient permission"))
 
     assert permission_setting in NamedUserGroup.GROUP_PERMISSION_SETTINGS
-    if permission_setting in [
-        "can_manage_group",
-        "can_add_members_group",
-    ] and check_permission_for_managing_all_groups(user_group, user_profile):
+    if (
+        permission_setting
+        in [
+            "can_manage_group",
+            "can_add_members_group",
+        ]
+        and user_profile.can_manage_all_groups()
+    ):
         return user_group
 
     user_has_permission = user_has_permission_for_group_setting(

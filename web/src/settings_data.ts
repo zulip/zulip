@@ -192,19 +192,9 @@ export function can_manage_user_group(group_id: number): boolean {
         return false;
     }
 
-    let can_manage_all_groups = user_can_manage_all_groups();
-
     const group = user_groups.get_user_group_from_id(group_id);
 
-    if (
-        !current_user.is_admin &&
-        !current_user.is_moderator &&
-        !user_groups.is_direct_member_of(current_user.user_id, group_id)
-    ) {
-        can_manage_all_groups = false;
-    }
-
-    if (can_manage_all_groups) {
+    if (user_can_manage_all_groups()) {
         return true;
     }
 

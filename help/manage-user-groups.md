@@ -142,12 +142,7 @@ By default, [owners](/help/roles-and-permissions) in a Zulip
 organization can manage user groups. However, you can expand that
 ability to specific [roles](/help/roles-and-permissions).
 
-<!-- TODO: Remove this after #25942 is resolved and we've removed
-the condition that only members can manage the group if they are
-not admins or moderators. -->
-Note that administrators and moderators can modify any user group,
-while other organization members can only modify user groups to which
-they belong. Guests cannot modify user groups.
+Guests cannot modify user groups.
 
 {start_tabs}
 
