@@ -78,8 +78,10 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
                 # can_manage_group in this test, deleting that group
                 # should be reconsidered.
                 can_manage_group = group.can_manage_group
+                can_add_members_group = group.can_add_members_group
                 group.delete()
                 can_manage_group.delete()
+                can_add_members_group.delete()
             transaction.on_commit(self.created_user_groups.clear)
 
         super().tearDown()
