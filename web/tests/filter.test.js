@@ -2165,7 +2165,7 @@ test("navbar_helpers", ({override}) => {
         {
             terms: is_starred,
             is_common_narrow: true,
-            zulip_icon: "star-filled",
+            zulip_icon: "star",
             title: "translated: Starred messages",
             redirect_url_with_search: "/#narrow/is/starred",
             description: "translated: Important messages, tasks, and other useful references.",
