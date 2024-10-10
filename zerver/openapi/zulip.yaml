@@ -610,13 +610,22 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When a user is deactivated or reactivated. Only users
-                                        who can access the deactivated or reactivated user
-                                        receive this event.
+                                        When a user is deactivated or reactivated. Only
+                                        users who can access the modified user under the
+                                        organization's `can_access_all_users_group` policy
+                                        will receive this event.
 
-                                        **Changes**: Prior to Zulip 10.0 (feature level 303),
-                                        event for reactivation was also sent to users who
-                                        cannot access the reactivated user.
+                                        Clients receiving a deactivation event should
+                                        remove the user from all user groups in their data
+                                        structures, because deactivated users cannot be
+                                        members of groups.
+
+                                        **Changes**: Prior to Zulip 10.0 (feature level
+                                        303), reactivation events were sent to users who
+                                        could not access the reactivated user due to a
+                                        `can_access_all_users_group` policy. Also,
+                                        previously, Clients were not required to update
+                                        group membership records during user deactivation.
 
                                         New in Zulip 8.0 (feature level 222). Previously the server
                                         sent a `realm_user` event with `op` field set to `remove`
@@ -20287,10 +20296,11 @@ paths:
       summary: Update user group members
       tags: ["users"]
       description: |
-        Update the members of a [user group](/help/user-groups).
+        Update the members of a [user group](/help/user-groups). The
+        user IDs must correspond to non-deactivated users.
 
-        **Changes**: Prior to Zulip 10.0 (feature level 303), deactivated
-        users could also be added or removed from a user group.
+        **Changes**: Prior to Zulip 10.0 (feature level 303), group memberships of
+        deactivated users were visible to the API and could be edited via this endpoint.
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -20626,7 +20636,8 @@ paths:
                             members:
                               type: array
                               description: |
-                                The integer user IDs of the user group members.
+                                The integer user IDs of the user group's members, which
+                                are guaranteed to be non-deactivated users in the organization.
 
                                 **Changes**: Prior to Zulip 10.0 (feature level 303), this
                                 list also included deactivated users who were members of
@@ -20854,8 +20865,8 @@ paths:
         Check whether a user is member of user group.
 
         **Changes**: Prior to Zulip 10.0 (feature level 303),
-        this returned true when the user was deactivated but
-        was member of the user group before being deactivated.
+        this would return true when passed a deactivated user
+        who was a member of the user group before being deactivated.
 
         New in Zulip 6.0 (feature level 127).
       parameters:
@@ -22072,8 +22083,8 @@ components:
               description: |
                 The list of IDs of individual users in the collection of users with this permission.
 
-                **Changes**: Prior to Zulip 10.0 (feature level 303), this list also included
-                deactivated users.
+                **Changes**: Prior to Zulip 10.0 (feature level 303), this list would include
+                deactivated users who had the permission before being deactivated.
               type: array
               items:
                 type: integer
