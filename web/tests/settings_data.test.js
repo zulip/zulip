@@ -443,10 +443,12 @@ run_test("can_manage_user_group", ({override}) => {
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
+    // User with role member and not part of the group.
     override(realm, "realm_can_manage_all_groups", members.id);
     override(current_user, "user_id", 3);
-    assert.ok(!settings_data.can_manage_user_group(students.id));
+    assert.ok(settings_data.can_manage_user_group(students.id));
 
+    // User with role member and part of the group.
     override(current_user, "user_id", 2);
     assert.ok(settings_data.can_manage_user_group(students.id));
 

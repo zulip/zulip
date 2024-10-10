@@ -1291,10 +1291,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
             acting_user=None,
         )
 
-        self.login("hamlet")
-        result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
-        self.assert_json_error(result, "Insufficient permission")
-
         self.login("othello")
         result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
         self.assert_json_success(result)
@@ -1997,8 +1993,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_update_user_group("support1", "Support team - test", "iago")
         check_update_user_group("support", "Support team", "othello")
 
-        # Check only members are allowed to update the user group and only if belong to the
-        # user group.
+        # Check only members are allowed to update the user group.
         members_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
         do_change_realm_permission_group_setting(
             realm,
@@ -2009,13 +2004,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_update_user_group(
             "help", "Troubleshooting team", "polonius", "Not allowed for guest users"
         )
-        check_update_user_group(
-            "help",
-            "Troubleshooting team",
-            "cordelia",
-            "Insufficient permission",
-        )
-        check_update_user_group("help", "Troubleshooting team", "othello")
+        check_update_user_group("help", "Troubleshooting team", "cordelia")
 
         # Check user who is member of a subgroup of the group being updated
         # can also update the group.
@@ -2181,8 +2170,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 self.assert_json_error(result, error_msg)
 
         realm = get_realm("zulip")
-        # Check only admins are allowed to add/remove users from the group. Admins are allowed even if
-        # they are not a member of the group.
+        # Check only admins are allowed to add/remove users from the group.
         admins_group = NamedUserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
         do_change_realm_permission_group_setting(
             realm,
@@ -2196,8 +2184,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_removing_members_from_group("shiva", "Insufficient permission")
         check_removing_members_from_group("iago")
 
-        # Check moderators are allowed to add/remove users from the group but not members. Moderators are
-        # allowed even if they are not a member of the group.
+        # Check moderators are allowed to add/remove users from the group but not members.
         moderators_group = NamedUserGroup.objects.get(name=SystemGroups.MODERATORS, realm=realm)
         do_change_realm_permission_group_setting(
             realm,
@@ -2258,15 +2245,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
             acting_user=None,
         )
         check_adding_members_to_group("polonius", "Not allowed for guest users")
-        check_adding_members_to_group("cordelia", "Insufficient permission")
-        check_adding_members_to_group("othello")
 
+        # User with role member but not part of the target group should
+        # be allowed to add members to the group if they are part of
+        # `can_manage_all_groups`.
+        check_adding_members_to_group("cordelia")
+        check_removing_members_from_group("cordelia")
+
+        check_adding_members_to_group("othello")
         check_removing_members_from_group("polonius", "Not allowed for guest users")
-        check_removing_members_from_group("cordelia", "Insufficient permission")
         check_removing_members_from_group("othello")
 
-        # Check only full members are allowed to add/remove users in the group and only if belong to the
-        # user group.
+        # Check only full members are allowed to add/remove users in the group.
         full_members_group = NamedUserGroup.objects.get(name=SystemGroups.FULL_MEMBERS, realm=realm)
         do_change_realm_permission_group_setting(
             realm,
@@ -2284,7 +2274,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
         cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
         promote_new_full_members()
-        check_adding_members_to_group("cordelia", "Insufficient permission")
+
+        # Full members who are not part of the target group should
+        # be allowed to add members to the group if they are part of
+        # `can_manage_all_groups`.
+        check_adding_members_to_group("cordelia")
+        check_removing_members_from_group("cordelia")
 
         othello.date_joined = timezone_now() - timedelta(days=11)
         othello.save()
@@ -2295,7 +2290,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello.save()
         promote_new_full_members()
 
-        check_removing_members_from_group("cordelia", "Insufficient permission")
         check_removing_members_from_group("othello", "Insufficient permission")
 
         othello.date_joined = timezone_now() - timedelta(days=11)
