@@ -109,6 +109,10 @@ export function update_property(stream_id, property, value, other_values) {
         case "can_remove_subscribers_group":
             stream_settings_ui.update_can_remove_subscribers_group_id(sub, value);
             break;
+        case "is_recently_active":
+            update_stream_setting(sub, value, property);
+            stream_list.update_streams_sidebar();
+            break;
         default:
             blueslip.warn("Unexpected subscription property type", {
                 property,

@@ -47,6 +47,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         date_created = datetime_to_timestamp(stream.date_created)
         description = stream.description
         first_message_id = stream.first_message_id
+        is_recently_active = stream.is_recently_active
         history_public_to_subscribers = stream.history_public_to_subscribers
         invite_only = stream.invite_only
         is_announcement_only = stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
@@ -82,6 +83,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             desktop_notifications=desktop_notifications,
             email_notifications=email_notifications,
             first_message_id=first_message_id,
+            is_recently_active=is_recently_active,
             history_public_to_subscribers=history_public_to_subscribers,
             in_home_view=in_home_view,
             invite_only=invite_only,
@@ -117,6 +119,7 @@ def build_unsubscribed_sub_from_stream_dict(
         date_created=timestamp_to_datetime(stream_dict["date_created"]),
         description=stream_dict["description"],
         first_message_id=stream_dict["first_message_id"],
+        is_recently_active=stream_dict["is_recently_active"],
         history_public_to_subscribers=stream_dict["history_public_to_subscribers"],
         invite_only=stream_dict["invite_only"],
         is_web_public=stream_dict["is_web_public"],
@@ -149,6 +152,7 @@ def build_stream_dict_for_sub(
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
+    is_recently_active = raw_stream_dict["is_recently_active"]
     history_public_to_subscribers = raw_stream_dict["history_public_to_subscribers"]
     invite_only = raw_stream_dict["invite_only"]
     is_web_public = raw_stream_dict["is_web_public"]
@@ -196,6 +200,7 @@ def build_stream_dict_for_sub(
         desktop_notifications=desktop_notifications,
         email_notifications=email_notifications,
         first_message_id=first_message_id,
+        is_recently_active=is_recently_active,
         history_public_to_subscribers=history_public_to_subscribers,
         in_home_view=in_home_view,
         invite_only=invite_only,
@@ -223,6 +228,7 @@ def build_stream_dict_for_never_sub(
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
+    is_recently_active = raw_stream_dict["is_recently_active"]
     history_public_to_subscribers = raw_stream_dict["history_public_to_subscribers"]
     invite_only = raw_stream_dict["invite_only"]
     is_web_public = raw_stream_dict["is_web_public"]
@@ -249,6 +255,7 @@ def build_stream_dict_for_never_sub(
         date_created=date_created,
         description=description,
         first_message_id=first_message_id,
+        is_recently_active=is_recently_active,
         history_public_to_subscribers=history_public_to_subscribers,
         invite_only=invite_only,
         is_announcement_only=is_announcement_only,

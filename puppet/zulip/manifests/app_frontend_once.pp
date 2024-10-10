@@ -36,6 +36,11 @@ class zulip::app_frontend_once {
   }
 
   # Daily
+  zulip::cron { 'update-stream-active-status':
+    hour   => '1',
+    minute => '0',
+    manage => 'update_stream_active_status',
+  }
   zulip::cron { 'soft-deactivate-users':
     hour   => '5',
     minute => '0',

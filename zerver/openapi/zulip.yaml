@@ -688,6 +688,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": true,
                                         "first_message_id": null,
+                                        "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "color": "#76ce90",
@@ -1332,6 +1333,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": false,
                                         "first_message_id": null,
+                                        "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group": 2,
@@ -1390,6 +1392,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": false,
                                         "first_message_id": null,
+                                        "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group": 2,
@@ -1989,6 +1992,7 @@ paths:
                                               "stream_post_policy": 1,
                                               "history_public_to_subscribers": true,
                                               "first_message_id": 1,
+                                              "is_recently_active": true,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group": 2,
@@ -2003,6 +2007,7 @@ paths:
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
+                                              "is_recently_active": true,
                                               "history_public_to_subscribers": true,
                                               "first_message_id": 4,
                                               "message_retention_days": null,
@@ -2021,6 +2026,7 @@ paths:
                                               "stream_post_policy": 1,
                                               "history_public_to_subscribers": true,
                                               "first_message_id": 6,
+                                              "is_recently_active": true,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group": 2,
@@ -2068,6 +2074,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": true,
                                         "first_message_id": 1,
+                                        "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group": 2,
@@ -14635,6 +14642,7 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                is_recently_active: {}
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
                                 stream_weekly_traffic:
@@ -19472,6 +19480,7 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                is_recently_active: {}
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
                                 stream_weekly_traffic:
@@ -19515,6 +19524,7 @@ paths:
                                 - is_announcement_only
                                 - can_remove_subscribers_group
                                 - stream_weekly_traffic
+                                - is_recently_active
                     example:
                       {
                         "msg": "",
@@ -19527,6 +19537,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A private channel",
                               "first_message_id": 18,
+                              "is_recently_active": true,
                               "history_public_to_subscribers": false,
                               "invite_only": true,
                               "is_announcement_only": false,
@@ -19545,6 +19556,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A default public channel",
                               "first_message_id": 21,
+                              "is_recently_active": true,
                               "history_public_to_subscribers": true,
                               "invite_only": false,
                               "is_announcement_only": false,
@@ -19610,6 +19622,7 @@ paths:
                           {
                             "description": "A Scandinavian country",
                             "first_message_id": 1,
+                            "is_recently_active": true,
                             "history_public_to_subscribers": true,
                             "date_created": 1691057093,
                             "creator_id": null,
@@ -21238,6 +21251,7 @@ components:
             history_public_to_subscribers: {}
             first_message_id:
               nullable: true
+            is_recently_active: {}
             is_announcement_only: {}
             can_remove_subscribers_group: {}
             stream_weekly_traffic:
@@ -21268,6 +21282,7 @@ components:
             - message_retention_days
             - history_public_to_subscribers
             - first_message_id
+            - is_recently_active
             - is_announcement_only
             - can_remove_subscribers_group
             - stream_weekly_traffic
@@ -21291,6 +21306,7 @@ components:
             history_public_to_subscribers: {}
             first_message_id:
               nullable: true
+            is_recently_active: {}
             is_announcement_only: {}
             can_remove_subscribers_group: {}
           required:
@@ -21306,6 +21322,7 @@ components:
             - message_retention_days
             - history_public_to_subscribers
             - first_message_id
+            - is_recently_active
             - is_announcement_only
             - can_remove_subscribers_group
     BasicChannelBase:
@@ -21418,6 +21435,12 @@ components:
             Is `null` for channels with no message history.
 
             **Changes**: New in Zulip 2.1.0.
+        is_recently_active:
+          type: boolean
+          description: |
+            Whether the channel has recent message activity. Clients should use this to implement [sorting inactive channels to the bottom](/help/manage-inactive-channels).
+
+            **Changes**: New in Zulip 10.0 (feature level 303)
         is_announcement_only:
           type: boolean
           deprecated: true
@@ -22360,6 +22383,12 @@ components:
             has older history that can be accessed.
 
             Is `null` for channels with no message history.
+        is_recently_active:
+          type: boolean
+          description: |
+            Whether the channel has recent message activity. Clients should use this to implement [sorting inactive channels to the bottom](/help/manage-inactive-channels).
+
+            **Changes**: New in Zulip 10.0 (feature level 303)
         stream_weekly_traffic:
           type: integer
           nullable: true
