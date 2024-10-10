@@ -283,11 +283,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Who in the organization is allowed to add custom emojis.
-    add_custom_emoji_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
-    )
-
-    # Who in the organization is allowed to add custom emojis.
     can_add_custom_emoji_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
@@ -646,7 +641,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # Define the types of the various automatically managed properties
     property_types: dict[str, type | tuple[type, ...]] = dict(
-        add_custom_emoji_policy=int,
         allow_edit_history=bool,
         allow_message_editing=bool,
         avatar_changes_disabled=bool,

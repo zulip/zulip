@@ -815,7 +815,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         from zerver.models import Realm
 
         if policy_name not in [
-            "add_custom_emoji_policy",
             "can_add_custom_emoji_group",
             "can_create_groups",
             "can_create_private_channel_group",
