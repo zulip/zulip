@@ -436,6 +436,36 @@ export function paste_handler_converter(paste_html: string): string {
             return "~~" + content + "~~";
         },
     });
+    turndownService.addRule("latexMath", {
+        filter(node: Node) {
+            if (node instanceof Element) {
+                const closestDisplay = node.closest(".katex-display");
+                const hasMathML = node.querySelector(".katex-mathml") !== null;
+                return closestDisplay !== null && hasMathML;
+            }
+            return false;
+        },
+        replacement(content: string, node: Node) {
+            if (node instanceof Element) {
+                const displayElement = node.closest(".katex-display")! || node;
+                const mathmlElement = displayElement.querySelector(".katex-mathml");
+                if (mathmlElement) {
+                    const annotation = mathmlElement.querySelector(
+                        'annotation[encoding="application/x-tex"]',
+                    );
+                    if (annotation?.textContent) {
+                        const latexContent = annotation.textContent.trim();
+                        const isMultiLine = latexContent.includes("\n");
+                        if (isMultiLine) {
+                            return `\`\`\`math\n${latexContent}\n\`\`\`\n`;
+                        }
+                        return `$$${latexContent}$$`;
+                    }
+                }
+            }
+            return content;
+        },
+    });
     turndownService.addRule("links", {
         filter: ["a"],
         replacement(content, node) {
