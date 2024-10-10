@@ -540,6 +540,7 @@ def you_were_just_subscribed_message(
 
 
 RETENTION_DEFAULT: str | int = "realm_default"
+MAX_SUBS_FOR_NOTIFICATION: int = 100
 
 
 @transaction.atomic(savepoint=False)
@@ -564,6 +565,7 @@ def add_subscriptions_backend(
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
+    send_notification_to_new_users: Json[bool] = True,
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -685,14 +687,15 @@ def add_subscriptions_backend(
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
 
-    send_messages_for_new_subscribers(
-        user_profile=user_profile,
-        subscribers=subscribers,
-        new_subscriptions=result["subscribed"],
-        id_to_user_profile=id_to_user_profile,
-        created_streams=created_streams,
-        announce=announce,
-    )
+    if send_notification_to_new_users and len(result["subscribed"]) <= MAX_SUBS_FOR_NOTIFICATION:
+        send_messages_for_new_subscribers(
+            user_profile=user_profile,
+            subscribers=subscribers,
+            new_subscriptions=result["subscribed"],
+            id_to_user_profile=id_to_user_profile,
+            created_streams=created_streams,
+            announce=announce,
+        )
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])

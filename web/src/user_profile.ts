@@ -1144,6 +1144,7 @@ export function initialize(): void {
         subscriber_api.add_user_ids_to_stream(
             [target_user_id],
             sub,
+            true,
             addition_success,
             addition_failure,
         );

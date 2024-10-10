@@ -91,9 +91,13 @@ function generate_pill_html(item: CombinedPill): string {
 export function create({
     $pill_container,
     get_potential_subscribers,
+    onPillCreateAction,
+    onPillRemoveAction,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
+    onPillCreateAction?: (pill_user_ids: number[]) => void;
+    onPillRemoveAction?: (pill_user_ids: number[]) => void;
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -114,10 +118,19 @@ export function create({
     // Disable the add button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
-    // If all the pills are removed, disable the add button.
-    pill_widget.onPillRemove(() =>
-        $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
-    );
+    if (onPillCreateAction) {
+        pill_widget.onPillCreate(() => {
+            onPillCreateAction(get_pill_user_ids(pill_widget));
+        });
+    }
+
+    if (onPillRemoveAction) {
+        pill_widget.onPillRemove(() => {
+            onPillRemoveAction(get_pill_user_ids(pill_widget));
+            // If all the pills are removed, disable the add button.
+            $pill_widget_button.prop("disabled", pill_widget.items().length === 0);
+        });
+    }
     // Disable the add button when there is no pending text that can be converted
     // into a pill and the number of existing pills is zero.
     $pill_widget_input.on("input", () =>

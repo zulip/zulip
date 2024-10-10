@@ -15,6 +15,8 @@ import * as user_sort from "./user_sort";
 let pill_widget: CombinedPillContainer;
 let all_users_list_widget: ListWidgetType<number, people.User>;
 
+const MAX_SUBS_FOR_NOTIFICATION = 100;
+
 export function get_principals(): number[] {
     return stream_create_subscribers_data.get_principals();
 }
@@ -23,8 +25,25 @@ function redraw_subscriber_list(): void {
     all_users_list_widget.replace_list_data(stream_create_subscribers_data.sorted_user_ids());
 }
 
+function stream_create_update_notification_choice(): void {
+    update_notification_choice_checkbox(stream_create_subscribers_data.get_added_user_count());
+}
+
+export function update_notification_choice_checkbox(added_user_count: number): void {
+    const $send_notification_checkbox = $("#send_notification_to_new_subscribers");
+    if (added_user_count > MAX_SUBS_FOR_NOTIFICATION) {
+        $send_notification_checkbox.prop("checked", false);
+        $send_notification_checkbox.prop("disabled", true);
+        $("#send_notification_to_new_subscribers_container").addClass("disabled");
+    } else {
+        $send_notification_checkbox.prop("disabled", false);
+        $("#send_notification_to_new_subscribers_container").removeClass("disabled");
+    }
+}
+
 function add_user_ids(user_ids: number[]): void {
     stream_create_subscribers_data.add_user_ids(user_ids);
+    stream_create_update_notification_choice();
     redraw_subscriber_list();
 }
 
@@ -34,16 +53,19 @@ function add_all_users(): void {
 
 function soft_remove_user_id(user_id: number): void {
     stream_create_subscribers_data.soft_remove_user_id(user_id);
+    stream_create_update_notification_choice();
     redraw_subscriber_list();
 }
 
 function undo_soft_remove_user_id(user_id: number): void {
     stream_create_subscribers_data.undo_soft_remove_user_id(user_id);
+    stream_create_update_notification_choice();
     redraw_subscriber_list();
 }
 
 function sync_user_ids(user_ids: number[]): void {
     stream_create_subscribers_data.sync_user_ids(user_ids);
+    stream_create_update_notification_choice();
     redraw_subscriber_list();
 }
 
