@@ -1319,7 +1319,7 @@ export class Filter {
                 zulip_icon = "user";
                 break;
             case "is-starred":
-                zulip_icon = "star-filled";
+                zulip_icon = "star";
                 break;
             case "is-mentioned":
                 zulip_icon = "at-sign";
