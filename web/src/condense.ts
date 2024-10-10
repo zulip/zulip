@@ -70,6 +70,9 @@ export function uncollapse(message: Message): void {
             uncondense_row($row);
         } else if ($content.hasClass("could-be-condensed")) {
             // By default, condense a long message.
+            // Note this is the first time `condensed` property
+            // is being set for this message.
+            message.condensed = true;
             condense_row($row);
         } else {
             // This was a short message, no more need for a [More] link.
@@ -112,6 +115,10 @@ export function collapse(message: Message): void {
 }
 
 export function toggle_collapse(message: Message): void {
+    // NOTE: We assume this function can only be called by two means:
+    // 1. User clicking on the expand / collapse button in the message.
+    // 2. User using the keyboard shortcut to expand / collapse a message.
+
     if (message.is_me_message) {
         // Disabled temporarily because /me messages don't have a
         // styling for collapsing /me messages (they only recently
@@ -122,10 +129,15 @@ export function toggle_collapse(message: Message): void {
     // This function implements a multi-way toggle, to try to do what
     // the user wants for messages:
     //
-    // * If the message is currently showing any "Show more" button, either
-    //   because it was previously condensed or collapsed, fully display it.
-    // * If the message is fully visible, either because it's too short to
-    //   condense or because it's already uncondensed, collapse it
+    // * If the message is collapsed:
+    //   * if the message can be condensed and `condensed` property is not
+    //     set to `false`, condense it.
+    //   * else uncollapse it.
+    // * If the message is condensed, uncollapse it. Note that the message
+    //   cannot be condensed again without a reload now.
+    // * If the message is fully visible (uncollapsed), either because
+    //   it's too short to condense or because it's already uncondensed,
+    //   collapse it.
 
     assert(message_lists.current !== undefined);
     const $row = message_lists.current.get_row(message.id);
@@ -133,25 +145,17 @@ export function toggle_collapse(message: Message): void {
         return;
     }
 
-    const $content = $row.find(".message_content");
-    const is_condensable = $content.hasClass("could-be-condensed");
-    const is_condensed = $content.hasClass("condensed");
     if (message.collapsed) {
-        if (is_condensable) {
-            message.condensed = true;
-            $content.addClass("condensed");
-            show_message_expander($row);
-        }
         uncollapse(message);
+    } else if (message.condensed === true) {
+        message.condensed = false;
+        uncondense_row($row);
     } else {
-        if (is_condensed) {
-            message.condensed = false;
-            $content.removeClass("condensed");
-            show_message_condenser($row);
-        } else {
-            collapse(message);
-        }
+        collapse(message);
     }
+
+    // Select and scroll to the message so that it is in the view.
+    message_lists.current.select_id(message.id, {then_scroll: true});
 }
 
 function get_message_height(elem: HTMLElement): number {
@@ -212,6 +216,14 @@ export function condense_and_collapse(elems: JQuery): void {
             $content.removeClass("could-be-condensed");
         }
 
+        // Regardless of whether the message is long or not, user has
+        // collapsed this message, so we collapse it.
+        if (message.collapsed) {
+            $content.addClass("collapsed");
+            show_message_expander($(elem));
+            continue;
+        }
+
         // If message.condensed is defined, then the user has manually
         // specified whether this message should be expanded or condensed.
         if (message.condensed === true) {
@@ -231,36 +243,17 @@ export function condense_and_collapse(elems: JQuery): void {
             $content.removeClass("condensed");
             hide_message_length_toggle($(elem));
         }
-
-        // Completely hide the message and replace it with a "Show more"
-        // button if the user has collapsed it.
-        if (message.collapsed) {
-            $content.addClass("collapsed");
-            show_message_expander($(elem));
-        }
     }
 }
 
 export function initialize(): void {
     $("#message_feed_container").on("click", ".message_expander", function (this: HTMLElement, e) {
-        // Expanding a message can mean either uncollapsing or
-        // uncondensing it.
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(id);
         assert(message !== undefined);
-        // Focus on the expanded message.
-        message_lists.current.select_id(id);
-        const $content = $row.find(".message_content");
-        if (message.collapsed) {
-            // Uncollapse.
-            uncollapse(message);
-        } else if ($content.hasClass("condensed")) {
-            // Uncondense (show the full long message).
-            message.condensed = false;
-            uncondense_row($row);
-        }
+        toggle_collapse(message);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -268,13 +261,10 @@ export function initialize(): void {
     $("#message_feed_container").on("click", ".message_condenser", function (this: HTMLElement, e) {
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
-        // Focus on the condensed message.
         assert(message_lists.current !== undefined);
-        message_lists.current.select_id(id);
         const message = message_lists.current.get(id);
         assert(message !== undefined);
-        message.condensed = true;
-        condense_row($row);
+        toggle_collapse(message);
         e.stopPropagation();
         e.preventDefault();
     });
