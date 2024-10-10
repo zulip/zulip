@@ -248,6 +248,27 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         ),
     );
 
+    stream_data.add_message({
+        stream_id: 99,
+        content: "This is a message in the ROME stream.",
+    });
+
+    muted_topics.add_muted_topic("ROME", "foo");
+
+    set_filter([
+        ["stream", "Rome"],
+        ["topic", "foo"],
+    ]);
+    narrow_banner.show_empty_narrow_message();
+
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This feed is empty, because you have muted all the topics in this channel.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+        ),
+    );
+
     // for non-existent or private stream
     set_filter([["stream", "999"]]);
     narrow_banner.show_empty_narrow_message();
