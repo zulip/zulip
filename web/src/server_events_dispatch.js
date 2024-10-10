@@ -496,6 +496,9 @@ export function dispatch_normal_event(event) {
                         user_id,
                         people.INACCESSIBLE_USER_NAME,
                     );
+                    if (event.person.is_deleted) {
+                        settings_users.update_view_on_delete(user_id);
+                    }
                     break;
                 }
                 default:

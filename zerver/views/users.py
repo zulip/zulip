@@ -30,6 +30,7 @@ from zerver.actions.user_settings import (
 from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
+    do_delete_user,
     do_update_bot_config_data,
     do_update_outgoing_webhook_service,
 )
@@ -108,6 +109,14 @@ def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
 
+def delete_user_backend(
+    request: HttpRequest, user_profile: UserProfile, user_id: int
+) -> HttpResponse:
+    target = access_user_by_id(user_profile, user_id, allow_deactivated=True, for_admin=True)
+    if target.is_realm_owner and not user_profile.is_realm_owner:
+        raise OrganizationOwnerRequiredError
+    do_delete_user(target, acting_user=user_profile)
+    return json_success(request)
 
 @typed_endpoint
 def deactivate_user_backend(
