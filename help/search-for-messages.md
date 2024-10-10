@@ -41,9 +41,7 @@ Some details to keep in mind:
 - Zulip search ignores very common words like `a`, `the`, and about 100 others.
 - [Emoji](/help/emoji-and-emoticons) in messages (but not [emoji
   reactions](/help/emoji-reactions)) are included in searches, so if you search
-  for `octopus`, your results will include messages with the `:octopus:` emoji (
-  <img src="/static/generated/emoji/images-google-64/1f419.png" alt="octopus"
-  class="emoji-small"/>).
+  for `octopus`, your results will include messages with the `:octopus:` emoji (🐙).
 
 ## Search filters
 
