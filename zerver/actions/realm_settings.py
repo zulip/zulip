@@ -784,20 +784,17 @@ def do_change_realm_plan_type(
 
     update_first_visible_message_id(realm)
 
-    realm.save(
-        update_fields=[
-            "_max_invites",
-            "enable_spectator_access",
-            "message_visibility_limit",
-        ]
-    )
+    realm.save(update_fields=["_max_invites", "message_visibility_limit"])
 
     event = {
         "type": "realm",
         "op": "update",
         "property": "plan_type",
         "value": plan_type,
-        "extra_data": {"upload_quota": realm.upload_quota_bytes()},
+        "extra_data": {
+            "upload_quota": realm.upload_quota_bytes(),
+            "max_file_upload_size_mib": realm.get_max_file_upload_size_mebibytes(),
+        },
     }
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
