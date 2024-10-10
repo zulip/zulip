@@ -1,9 +1,11 @@
 <span>
-    {{t "Organization using {percent_used}% of {upload_quota}." }}
     {{#if show_upgrade_message}}
-        {{#tr}}
-            <z-link>Upgrade</z-link> for more space.
-            {{#*inline "z-link"}}<a href="/upgrade/" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
-        {{/tr}}
+    <a href="/upgrade/" class="upgrade-tip" target="_blank" rel="noopener noreferrer">
+        {{t "Your organization is using {percent_used}% of your {upload_quota} file storage quota. Upgrade for more space." }}
+    </a>
+    {{else}}
+    <div class="upgrade-tip">
+        {{t "Your organization is using {percent_used}% of your {upload_quota} file storage quota." }}
+    </div>
     {{/if}}
 </span>
