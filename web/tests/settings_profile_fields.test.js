@@ -48,6 +48,15 @@ const Sortable = {create: noop};
 
 mock_esm("sortablejs", {default: Sortable});
 
+mock_esm("../src/list_widget", {
+    generic_sort_functions: noop,
+    create(_container, custom_profile_data, opts) {
+        for (const item of custom_profile_data) {
+            opts.modifier_html(item);
+        }
+    },
+});
+
 const settings_profile_fields = zrequire("settings_profile_fields");
 const {set_current_user, set_realm} = zrequire("state_data");
 
@@ -63,27 +72,14 @@ function test_populate(opts, template_data) {
         override(realm, "custom_profile_field_types", custom_profile_field_types);
         override(current_user, "is_admin", opts.is_admin);
         const $table = $("#admin_profile_fields_table");
-        const $rows = $.create("rows");
-        const $form = $.create("forms");
-        $table.set_find_results("tr.profile-field-row", $rows);
-        $table.set_find_results("tr.profile-field-form", $form);
 
         $table[0] = "stub";
-
-        $rows.remove = noop;
-        $form.remove = noop;
-
-        let num_appends = 0;
-        $table.append = () => {
-            num_appends += 1;
-        };
 
         loading.destroy_indicator = noop;
 
         settings_profile_fields.do_populate_profile_fields(fields_data);
 
         assert.deepEqual(template_data, opts.expected_template_data);
-        assert.equal(num_appends, fields_data.length);
     });
 }
 
