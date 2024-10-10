@@ -730,6 +730,9 @@
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
     --color-text-clear-search-button: hsl(0deg 0% 80%);
     --color-text-clear-search-button-hover: hsl(0deg 0% 0%);
+    /* These colors are from Bootstrap. */
+    --color-text-generic-link: #08c;
+    --color-text-generic-link-interactive: #005580;
 
     /* Demo Organization colors */
     --color-text-settings-demo-organization-warning: hsl(4deg 58% 33%);
@@ -1237,6 +1240,8 @@
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
     --color-text-clear-search-button: hsl(236deg 33% 80%);
     --color-text-clear-search-button-hover: hsl(0deg 0% 100%);
+    --color-text-generic-link: #08c;
+    --color-text-generic-link-interactive: hsl(200deg 79% 66%);
 
     /* Demo Organization colors */
     --color-text-settings-demo-organization-warning: hsl(3deg 73% 80%);
@@ -1292,6 +1297,10 @@
     --color-markdown-pre-background: hsl(0deg 0% 100% / 4%);
     --color-markdown-pre-background-mentions: hsl(0deg 0% 100% / 5%);
     --color-markdown-pre-border-mentions: var(--color-markdown-pre-border);
+    --color-markdown-link: var(--color-text-generic-link);
+    --color-markdown-code-link: var(--color-markdown-link);
+    --color-markdown-link-hover: var(--color-text-generic-link-interactive);
+    --color-markdown-code-link-hover: var(--color-markdown-link-hover);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);

@@ -34,7 +34,7 @@
             color: var(--color-text-message-header);
 
             &:hover {
-                color: var(--color-text-message-header) !important;
+                color: var(--color-text-message-header);
                 text-decoration: none;
             }
         }
