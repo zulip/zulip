@@ -1564,6 +1564,10 @@ def apply_event(
         # These realm export events are only available to
         # administrators, and aren't included in page_params.
         pass
+    elif event["type"] == "realm_export_consent":
+        # These 'realm_export_consent' events are only available to
+        # administrators, and aren't included in page_params.
+        pass
     elif event["type"] == "alert_words":
         state["alert_words"] = event["alert_words"]
     elif event["type"] == "muted_topics":

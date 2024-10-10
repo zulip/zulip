@@ -22,6 +22,8 @@ const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const {all_visibility_policies} = zrequire("user_topics");
+const user_topics = zrequire("user_topics");
 
 set_current_user({});
 const realm = {};
@@ -603,6 +605,49 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         empty_narrow_html(
             "translated: None of your messages have emoji reactions yet.",
             'translated HTML: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
+        ),
+    );
+
+    // Setup for muted topics
+    // Define muted topics and update their visibility policy
+    const mutedTopics = ["topic 1", "topic 2"];
+    for (const topic of mutedTopics) {
+        user_topics.update_user_topics(
+            my_stream.stream_id,
+            my_stream.name,
+            topic,
+            all_visibility_policies.MUTED,
+        );
+    }
+
+    set_filter([["stream", my_stream.stream_id.toString()]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This feed is empty,",
+            "translated HTML: because you have muted all the topics in this channel.",
+        ),
+    );
+
+    // Unmute one topic and show the empty narrow message again
+    user_topics.update_user_topics(
+        my_stream.stream_id,
+        my_stream.name,
+        "topic 3",
+        all_visibility_policies.FOLLOWED,
+    );
+    // Set a filter that would result in no messages
+    set_filter([
+        ["stream", my_stream.stream_id.toString()],
+        ["topic", "nonexistent"],
+    ]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: There are no messages here.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
 });

@@ -512,6 +512,18 @@ def do_change_user_setting(
 
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
+    if setting_name == "allow_private_data_export":
+        event = {
+            "type": "realm_export_consent",
+            "user_id": user_profile.id,
+            "consented": setting_value,
+        }
+        send_event_on_commit(
+            user_profile.realm,
+            event,
+            list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
+        )
+
     # Updates to the time zone display setting are sent to all users
     if setting_name == "timezone":
         payload = dict(
