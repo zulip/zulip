@@ -160,10 +160,11 @@ function do_revoke_invite({
         blueslip.error("Invite revoking canceled due to non-matching fields.");
         ui_report.client_error(
             $t_html({
-                defaultMessage: "Resending encountered an error. Please reload and try again.",
+                defaultMessage: "Error: Could not revoke invitation.",
             }),
-            $("#home-error"),
+            $("#revoke_invite_modal #dialog_error"),
         );
+        return;
     }
 
     $revoke_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
@@ -199,10 +200,11 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         blueslip.error("Invite resending canceled due to non-matching fields.");
         ui_report.client_error(
             $t_html({
-                defaultMessage: "Resending encountered an error. Please reload and try again.",
+                defaultMessage: "Error: Could not resend invitation.",
             }),
-            $("#home-error"),
+            $("#resend_invite_modal #dialog_error"),
         );
+        return;
     }
 
     $resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
