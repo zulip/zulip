@@ -69,19 +69,21 @@ in the Zulip app to add more to your repertoire as needed.
 
 ## Scrolling
 
-* **Last message**: <kbd>End</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd> —
-  Also marks all messages in the current view as read.
+* **Last message**: <kbd>End</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">→</kbd>
+  or <kbd>Shift</kbd> + <kbd>G</kbd> — Also marks all messages in the current view
+  as read.
 
-* **First message**: <kbd>Home</kbd>
+* **First message**: <kbd>Home</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">←</kbd>
 
 * **Previous message**: <kbd class="arrow-key">↑</kbd> or <kbd>K</kbd>
 
 * **Next message**: <kbd class="arrow-key">↓</kbd> or <kbd>J</kbd>
 
-* **Scroll up**: <kbd>PgUp</kbd> or <kbd>Shift</kbd> + <kbd>K</kbd>
+* **Scroll up**: <kbd>PgUp</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↑</kbd>
+  or <kbd>Shift</kbd> + <kbd>K</kbd>
 
-* **Scroll down**: <kbd>PgDn</kbd>, <kbd>Shift</kbd> + <kbd>J</kbd>, or
-  <kbd>Spacebar</kbd>
+* **Scroll down**: <kbd>PgDn</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↓</kbd>
+  or <kbd>Shift</kbd> + <kbd>J</kbd> or <kbd>Spacebar</kbd>
 
 ## Navigation
 
