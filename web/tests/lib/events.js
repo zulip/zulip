@@ -489,6 +489,12 @@ exports.fixtures = {
         ],
     },
 
+    realm_export_consent: {
+        type: "realm_export_consent",
+        user_id: test_user.user_id,
+        consented: true,
+    },
+
     realm_linkifiers: {
         type: "realm_linkifiers",
         realm_linkifiers: [
