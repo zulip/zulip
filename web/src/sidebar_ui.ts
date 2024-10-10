@@ -209,15 +209,30 @@ export function initialize(): void {
 }
 
 export function initialize_left_sidebar(): void {
+    const is_all_messages_home_view =
+        user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code;
+    const is_recent_view_home_view =
+        user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code;
+
+    // default order
+    let navigation_list_order = ["inbox", "recent", "feed"];
+
+    if (is_all_messages_home_view) {
+        navigation_list_order = ["feed", "inbox", "recent"];
+    }
+
+    if (is_recent_view_home_view) {
+        navigation_list_order = ["recent", "inbox", "feed"];
+    }
+
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         development_environment: page_params.development_environment,
+        navigation_list_order,
         is_inbox_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.inbox.code,
-        is_all_messages_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
-        is_recent_view_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
+        is_all_messages_home_view,
+        is_recent_view_home_view,
         hide_unread_counts: settings_data.should_mask_unread_count(false),
         is_spectator: page_params.is_spectator,
     });
