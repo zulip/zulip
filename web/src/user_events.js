@@ -16,6 +16,7 @@ import * as pm_list from "./pm_list";
 import * as settings from "./settings";
 import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
+import * as settings_exports from "./settings_exports";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_org from "./settings_org";
 import * as settings_profile_fields from "./settings_profile_fields";
@@ -187,6 +188,9 @@ export const update_person = function update(person) {
         settings_account.maybe_update_deactivate_account_button();
         if (people.is_valid_bot_user(person.user_id)) {
             settings_users.update_bot_data(person.user_id);
+        } else if (!person.is_active) {
+            // A human user deactivated, update 'Export permissions' table.
+            settings_exports.remove_export_consent_data_and_redraw(person.user_id);
         }
     }
 };

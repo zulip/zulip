@@ -748,6 +748,7 @@ run_test("add_realm_user_redraw_logic", ({override}) => {
     presence.presence_info.set(999, {status: "active"});
 
     override(settings_account, "maybe_update_deactivate_account_button", noop);
+    override(settings_exports, "update_export_consent_data_and_redraw", noop);
 
     const check_should_redraw_new_user_stub = make_stub();
     // make_stub().f returns true by default, so it's already doing what we want.
@@ -766,6 +767,7 @@ run_test("add_realm_user_redraw_logic", ({override}) => {
 run_test("realm_user", ({override}) => {
     override(settings_account, "maybe_update_deactivate_account_button", noop);
     override(activity_ui, "check_should_redraw_new_user", noop);
+    override(settings_exports, "update_export_consent_data_and_redraw", noop);
     let event = event_fixtures.realm_user__add;
     dispatch({...event});
     const added_person = people.get_by_user_id(event.person.user_id);
@@ -1301,6 +1303,18 @@ run_test("realm_export", ({override}) => {
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("exports");
     assert.equal(args.exports, event.exports);
+});
+
+run_test("realm_export_consent", ({override}) => {
+    const event = event_fixtures.realm_export_consent;
+    const stub = make_stub();
+    override(settings_exports, "update_export_consent_data_and_redraw", stub.f);
+    dispatch(event);
+
+    assert.equal(stub.num_calls, 1);
+    const {export_consent} = stub.get_args("export_consent");
+    assert.equal(export_consent.user_id, event.user_id);
+    assert.equal(export_consent.consented, event.consented);
 });
 
 run_test("server_event_dispatch_op_errors", () => {
