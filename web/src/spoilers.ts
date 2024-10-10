@@ -65,14 +65,39 @@ export function initialize(): void {
         }
 
         // Allow selecting text inside a spoiler header.
+        // Flag to prevent toggling the spoiler multiple times in quick succession
+        let spoilerToggled = false;
+
         const selection = document.getSelection();
         if (selection && selection.type === "Range") {
+            $(document).one("mouseup", () => {
+                const newSelection = document.getSelection();
+                if (!newSelection || newSelection.type !== "Range") {
+                    // If the selection is cleared after the mouseup, we toggle the spoiler
+                    toggle_spoiler($spoiler_content, $button, $arrow);
+                    spoilerToggled = true;
+                }
+            });
             return;
         }
 
         e.preventDefault();
         e.stopPropagation();
 
+        if (!spoilerToggled) {
+            // Toggle the spoiler only if it hasn't been toggled during text selection
+            toggle_spoiler($spoiler_content, $button, $arrow);
+            spoilerToggled = true;
+        }
+    });
+
+    // Toggles the visibility of the spoiler content by expanding or collapsing it.
+    // If the spoiler content is currently open, this function will collapse it,
+    // hide the content, and update the associated button's state and ARIA attributes.
+    // If the spoiler content is currently closed, this function will expand it,
+    // show the content, and update the button's state and ARIA attributes accordingly.
+
+    function toggle_spoiler($spoiler_content: JQuery, $button: JQuery, $arrow: JQuery): void {
         if ($spoiler_content.hasClass("spoiler-content-open")) {
             // Content was open, we are collapsing
             $arrow.removeClass("spoiler-button-open");
@@ -92,5 +117,5 @@ export function initialize(): void {
 
             expand_spoiler($spoiler_content);
         }
-    });
+    }
 }
