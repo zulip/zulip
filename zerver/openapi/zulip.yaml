@@ -4272,8 +4272,13 @@ paths:
                                     allow_message_editing:
                                       type: boolean
                                       description: |
-                                        Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
+                                        Whether this organization's [message edit policy][config-message-editing]
                                         allows editing the content of messages.
+
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                                        history of how message editing permissions work.
+
+                                        [config-message-editing]: /help/restrict-message-editing-and-deletion
                                     authentication_methods:
                                       type: object
                                       additionalProperties:
@@ -4483,10 +4488,12 @@ paths:
                                         - 5 = Everyone
                                         - 6 = Nobody
 
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and history
+                                        of how message editing permissions work.
+
                                         **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
 
-                                        New in Zulip 5.0 (feature level 75), replacing the previous
-                                        `allow_community_topic_editing` boolean.
+                                        New in Zulip 5.0 (feature level 75).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -4607,8 +4614,14 @@ paths:
                                         with this organization's
                                         [message edit policy](/help/restrict-message-editing-and-deletion).
 
-                                        **Changes**: No limit was represented using the
-                                        special value `0` before Zulip 6.0 (feature level 138).
+                                        Will not be `0`. A `null` value means no limit, so messages can be edited
+                                        regardless of how long ago they were sent.
+
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                                        history of how message editing permissions work.
+
+                                        **Changes**: Before Zulip 6.0 (feature level 138), no limit was
+                                        represented using the special value `0`.
                                     move_messages_within_stream_limit_seconds:
                                       type: integer
                                       nullable: true
@@ -4618,8 +4631,11 @@ paths:
                                         organization's [topic edit policy](/help/restrict-moving-messages). This
                                         setting does not affect moderators and administrators.
 
-                                        Will not be 0. A `null` value means no limit, so message topics can be
+                                        Will not be `0`. A `null` value means no limit, so message topics can be
                                         edited regardless of how long ago they were sent.
+
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                                        history of how message editing permissions work.
 
                                         **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
                                         limit was always 72 hours for users who were not administrators or
@@ -4633,8 +4649,11 @@ paths:
                                         [message move policy](/help/restrict-moving-messages). This setting does
                                         not affect moderators and administrators.
 
-                                        Will not be 0. A `null` value means no limit, so messages can be moved
+                                        Will not be `0`. A `null` value means no limit, so messages can be moved
                                         regardless of how long ago they were sent.
+
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                                        history of how message editing permissions work.
 
                                         **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
                                         no time limit for moving messages between channels for users with permission
@@ -4650,6 +4669,9 @@ paths:
                                         - 3 = [Full members][calc-full-member] only
                                         - 4 = Moderators only
                                         - 6 = Nobody
+
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                                        history of how message editing permissions work.
 
                                         **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
 
@@ -8132,16 +8154,15 @@ paths:
       summary: Edit a message
       tags: ["messages"]
       description: |
-        Edit/update the content, topic, or channel of a message.
+        Update the content, topic, or channel of the message with the specified
+        ID.
 
-        `{msg_id}` in the above URL should be replaced with the ID of the
-        message you wish you update.
-
-        You can [resolve topics](/help/resolve-a-topic) by editing the
-        topic to `✔ {original_topic}`.
+        You can [resolve topics](/help/resolve-a-topic) by editing the topic to
+        `✔ {original_topic}` with the `propagate_mode` parameter set to
+        `"change_all"`.
 
         See [configuring message editing][config-message-editing] for detailed
-        documentation on when users are allowed to edit message content and
+        documentation on when users are allowed to edit message content, and
         [restricting moving messages][restrict-move-messages] for detailed
         documentation on when users are allowed to change a message's topic
         and/or channel.
@@ -8193,6 +8214,12 @@ paths:
 
         Before Zulip 7.0 (feature level 159), message senders were allowed to edit
         the topic of their messages indefinitely.
+
+        In Zulip 5.0 (feature level 75), the `edit_topic_policy` realm setting
+        was added, replacing the `allow_community_topic_editing` boolean.
+
+        In Zulip 4.0 (feature level 56), the `move_messages_between_streams_policy`
+        realm setting was added.
 
         [config-message-editing]: /help/restrict-message-editing-and-deletion
         [restrict-move-messages]: /help/restrict-moving-messages
@@ -16404,26 +16431,6 @@ paths:
                           `"role:internet"` and `"role:owners"`.
 
                           **Changes**: New in Zulip 8.0 (feature level 209).
-                      realm_move_messages_between_streams_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users can move messages
-                          from one channel to another.
-
-                          - 1 = Members only
-                          - 2 = Administrators only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Moderators only
-                          - 6 = Nobody
-
-                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
-
-                          New in Zulip 4.0 (feature level 56).
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_inline_image_preview:
                         type: boolean
                         description: |
@@ -16687,8 +16694,13 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
+                          Whether this organization's [message edit policy][config-message-editing]
                           allows editing the content of messages.
+
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
+
+                          [config-message-editing]: /help/restrict-message-editing-and-deletion
                       realm_edit_topic_policy:
                         type: integer
                         description: |
@@ -16703,10 +16715,35 @@ paths:
                           - 5 = Everyone
                           - 6 = Nobody
 
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
+
                           **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
 
-                          New in Zulip 5.0 (feature level 75), replacing the previous
-                          `allow_community_topic_editing` boolean.
+                          New in Zulip 5.0 (feature level 75).
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                      realm_move_messages_between_streams_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The [policy][permission-level] for which users can move messages
+                          from one channel to another.
+
+                          - 1 = Members only
+                          - 2 = Administrators only
+                          - 3 = [Full members][calc-full-member] only
+                          - 4 = Moderators only
+                          - 6 = Nobody
+
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details
+                          and history of how message editing permissions work.
+
+                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
+
+                          New in Zulip 4.0 (feature level 56).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -16720,11 +16757,14 @@ paths:
                           with this organization's
                           [message edit policy](/help/restrict-message-editing-and-deletion).
 
-                          Will not be 0. A `null` value means no limit: messages can be edited
+                          Will not be `0`. A `null` value means no limit, so messages can be edited
                           regardless of how long ago they were sent.
 
-                          **Changes**: No limit was represented using the
-                          special value `0` before Zulip 6.0 (feature level 138).
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
+
+                          **Changes**: Before Zulip 6.0 (feature level 138), no limit was
+                          represented using the special value `0`.
                       realm_move_messages_within_stream_limit_seconds:
                         type: integer
                         nullable: true
@@ -16736,8 +16776,11 @@ paths:
                           organization's [topic edit policy](/help/restrict-moving-messages). This
                           setting does not affect moderators and administrators.
 
-                          Will not be 0. A `null` value means no limit, so message topics can be
+                          Will not be `0`. A `null` value means no limit, so message topics can be
                           edited regardless of how long ago they were sent.
+
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
 
                           **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
                           limit was always 72 hours for users who were not administrators or
@@ -16753,8 +16796,11 @@ paths:
                           [message move policy](/help/restrict-moving-messages). This setting does
                           not affect moderators and administrators.
 
-                          Will not be 0. A `null` value means no limit, so messages can be moved
+                          Will not be `0`. A `null` value means no limit, so messages can be moved
                           regardless of how long ago they were sent.
+
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
 
                           **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
                           no time limit for moving messages between channels for users with permission
