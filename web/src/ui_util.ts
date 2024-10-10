@@ -35,6 +35,27 @@ export function replace_emoji_with_text($element: JQuery): void {
         .unwrap();
 }
 
+export function replace_emoji_name_with_unicode_hex($element: JQuery): void {
+    $element.find("span.emoji").each(function () {
+        const emoji_class = $(this).attr("class");
+
+        if (emoji_class === undefined) {
+            return; // Skip this iteration if class is undefined
+        }
+
+        const emoji_code = emoji_class.match(/emoji-(\w+)/)?.[1] ?? "";
+        if (!emoji_code) {
+            return; // Skip this iteration if no emoji code is found
+        }
+
+        const hex_code = parseInt(emoji_code, 16);
+        const unicode_escape = `\\u{${hex_code.toString(16)}}`;
+
+        const emoji_hex = eval(`"${unicode_escape}"`);
+        $(this).replaceWith(emoji_hex);
+    });
+}
+
 export function change_katex_to_raw_latex($element: JQuery): void {
     // Find all the span elements with the class "katex"
     $element.find("span.katex").each(function () {
