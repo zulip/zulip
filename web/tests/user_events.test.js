@@ -35,6 +35,9 @@ mock_esm("../src/compose_state", {
 mock_esm("../src/pm_list", {
     update_private_messages() {},
 });
+mock_esm("../src/settings", {
+    update_lock_icon_in_sidebar() {},
+});
 mock_esm("../src/settings_linkifiers", {
     maybe_disable_widgets() {},
 });

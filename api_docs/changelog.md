@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 303**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_add_custom_emoji_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to add custom emoji in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `add_custom_emoji_policy` property, as the permission to add custom emoji
+  in the organization is now controlled by `can_add_custom_emoji_group` setting.
+
 **Feature level 302**
 
 * [`GET /users/{email}`](/api/get-user-by-email): Changed the `email`
