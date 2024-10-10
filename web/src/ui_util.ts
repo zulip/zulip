@@ -4,6 +4,8 @@ import * as blueslip from "./blueslip";
 import * as hash_parser from "./hash_parser";
 import * as keydown_util from "./keydown_util";
 
+import {get_emoji_codepoint} from "./emoji";
+
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
 
@@ -20,6 +22,18 @@ export function place_caret_at_end(el: HTMLElement): void {
         sel?.removeAllRanges();
         sel?.addRange(range);
     }
+}
+
+export function change_emoji_name_to_unicode($element: JQuery): void {
+    $element.find(".emoji").each(function () {
+        const emoji_canonical_name = $(this).text().slice(1, -1);
+        const emoji_codepoint = get_emoji_codepoint(emoji_canonical_name);
+        if (emoji_codepoint) {
+            $(this).text(String.fromCodePoint(parseInt(emoji_codepoint, 16)));
+        } else {
+            $(this).text(emoji_canonical_name);
+        }
+    });
 }
 
 export function change_katex_to_raw_latex($element: JQuery): void {
