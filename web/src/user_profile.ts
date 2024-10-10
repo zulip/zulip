@@ -323,7 +323,7 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
-                return item && item.name.toLocaleLowerCase().includes(value);
+                return item?.name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
                 if ($container.find(".empty-table-message").length) {
