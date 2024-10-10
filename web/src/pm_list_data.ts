@@ -94,8 +94,9 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             const recipient_user_obj = people.get_by_user_id(user_id);
 
             if (recipient_user_obj.is_bot) {
-                // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
+                // Green user circle is shown for bots.
+                user_circle_class = "user_circle_green";
             } else {
                 status_emoji_info = user_status.get_status_emoji(user_id);
             }

@@ -145,6 +145,7 @@ export function render_person(person: UserPillData | UserOrMentionPillData): str
         img_src: avatar_url,
         user_circle_class,
         is_person: true,
+        is_bot: person.user.is_bot,
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(
             person.user.user_id,

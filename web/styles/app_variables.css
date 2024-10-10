@@ -538,6 +538,9 @@
     */
     --table-header-sortable-column-padding-right: 1em;
 
+    /* Bot icon offset */
+    --margin-lefthand-bot-icon-offset: 3px;
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
