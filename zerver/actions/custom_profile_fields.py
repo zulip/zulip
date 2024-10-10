@@ -169,7 +169,7 @@ def notify_user_update_custom_profile_data(
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
     data: list[ProfileDataElementUpdateDict],
