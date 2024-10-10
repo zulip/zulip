@@ -634,15 +634,6 @@ input.settings_text_input {
     opacity: 0.7;
 }
 
-.masked_unread_count {
-    float: right;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--color-masked-unread-marker);
-    display: none;
-}
-
 /* Implement the web app's default-hidden convention for alert
    elements.  Portico pages lack this CSS and thus show them by
    default. */

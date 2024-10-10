@@ -8,7 +8,6 @@ import render_left_sidebar_stream_actions_popover from "../templates/popovers/le
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
@@ -185,21 +184,6 @@ function build_stream_popover(opts) {
                     property: "is_muted",
                     value: !sub.is_muted,
                 });
-                e.stopPropagation();
-            });
-
-            // New topic in stream menu
-            $popper.on("click", ".popover_new_topic_button", (e) => {
-                const sub = stream_popover_sub(e);
-                hide_stream_popover();
-
-                compose_actions.start({
-                    message_type: "stream",
-                    trigger: "popover new topic button",
-                    stream_id: sub.stream_id,
-                    topic: "",
-                });
-                e.preventDefault();
                 e.stopPropagation();
             });
 

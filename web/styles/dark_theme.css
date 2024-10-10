@@ -13,40 +13,6 @@
         @extend .placeholder;
     }
 
-    &
-        a:not(
-            .button,
-            .compose_control_button,
-            .conversation-partners,
-            .user-presence-link,
-            .typeahead-item-link
-        ):hover {
-        color: hsl(200deg 79% 66%);
-        text-decoration: none;
-
-        & code {
-            color: hsl(200deg 79% 66%);
-        }
-    }
-
-    & ul.dm-list,
-    & ul.filters {
-        .has-unmuted-mentions .unread_mention_info {
-            color: hsl(236deg 33% 90%);
-        }
-
-        & li.muted_topic,
-        li.out_of_home_view {
-            color: hsl(236deg 33% 90%/50%);
-        }
-
-        & li.out_of_home_view {
-            &:hover {
-                color: hsl(236deg 33% 90%/ 75%);
-            }
-        }
-    }
-
     kbd {
         text-shadow: none;
     }
@@ -534,13 +500,6 @@
     .zoom-in {
         #topics_header {
             background-color: var(--color-background);
-        }
-    }
-
-    #topics_header {
-        .show-all-streams {
-            color: hsl(0deg 0% 100% / 75%);
-            opacity: 0.75;
         }
     }
 
