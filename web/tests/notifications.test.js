@@ -2,26 +2,26 @@
 
 const assert = require("node:assert/strict");
 
-const { mock_esm, zrequire } = require("./lib/namespace");
-const { run_test } = require("./lib/test");
+const {mock_esm, zrequire} = require("./lib/namespace");
+const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const { page_params } = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 mock_esm("../src/electron_bridge");
-mock_esm("../src/spoilers", { hide_spoilers_in_notification() { } });
+mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
 
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
 
 const desktop_notifications = zrequire("desktop_notifications");
 const message_notifications = zrequire("message_notifications");
-const { set_current_user } = zrequire("state_data");
-const { initialize_user_settings } = zrequire("user_settings");
+const {set_current_user} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
 const user_settings = {};
-initialize_user_settings({ user_settings });
+initialize_user_settings({user_settings});
 
 // Not muted streams
 const general = {
@@ -73,7 +73,7 @@ function test(label, f) {
     });
 }
 
-test("message_is_notifiable", ({ override }) => {
+test("message_is_notifiable", ({override}) => {
     // A notification is sent if both message_is_notifiable(message)
     // and the appropriate should_send_*_notification function return
     // true.
@@ -349,8 +349,8 @@ test("message_is_notifiable", ({ override }) => {
 });
 
 test("basic_notifications", () => {
-    $("<div>").set_find_results("span.emoji", { each() { } });
-    $("<div>").set_find_results("span.katex", { each() { } });
+    $("<div>").set_find_results("span.emoji", {each() {}});
+    $("<div>").set_find_results("span.katex", {each() {}});
     $("<div>").children = () => [];
 
     let n; // Object for storing all notification data for assertions.
@@ -359,7 +359,7 @@ test("basic_notifications", () => {
 
     // Notifications API stub
     class StubNotification {
-        constructor(_title, { icon, body, tag }) {
+        constructor(_title, {icon, body, tag}) {
             this.icon = icon;
             this.body = body;
             this.tag = tag;
@@ -370,7 +370,7 @@ test("basic_notifications", () => {
             last_shown_message_id = this.tag;
         }
 
-        addEventListener() { }
+        addEventListener() {}
 
         close() {
             last_closed_message_id = this.tag;
@@ -406,7 +406,7 @@ test("basic_notifications", () => {
     };
 
     // Send notification.
-    message_notifications.process_notification({ message: message_1, desktop_notify: true });
+    message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
@@ -421,7 +421,7 @@ test("basic_notifications", () => {
 
     // Send notification.
     message_1.id = 1001;
-    message_notifications.process_notification({ message: message_1, desktop_notify: true });
+    message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
@@ -429,14 +429,14 @@ test("basic_notifications", () => {
 
     // Process same message again. Notification count shouldn't increase.
     message_1.id = 1002;
-    message_notifications.process_notification({ message: message_1, desktop_notify: true });
+    message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id.toString());
 
     // Send another message. Notification count should increase.
-    message_notifications.process_notification({ message: message_2, desktop_notify: true });
+    message_notifications.process_notification({message: message_2, desktop_notify: true});
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("Gus Fring to general > lunch"), true);
     assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
