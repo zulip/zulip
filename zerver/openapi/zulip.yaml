@@ -3887,6 +3887,36 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to administrators when a user changes their [Let administrators export my private data]
+                                (/help/export-your-organization#configure-whether-administrators-can-export-your-private-data)
+                                privacy setting or a human user is reactivated.
+
+                                **Changes**: New in Zulip 10.0 (feature level 311).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_export_consent
+                                user_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user whose setting was changed.
+                                consented:
+                                  type: boolean
+                                  description: |
+                                    Whether the user has consented for their private data export.
+                              example:
+                                {
+                                  "type": "realm_export_consent",
+                                  "user_id": 1,
+                                  "consented": true,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to users who can administer a newly created bot
                                 user. Clients will also receive a `realm_user` event that
                                 contains basic details (but not the API key).

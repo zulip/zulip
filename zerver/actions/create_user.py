@@ -731,6 +731,18 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
     )
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
+    if not user_profile.is_bot:
+        realm_export_consent_event = dict(
+            type="realm_export_consent",
+            user_id=user_profile.id,
+            consented=user_profile.allow_private_data_export,
+        )
+        send_event_on_commit(
+            user_profile.realm,
+            realm_export_consent_event,
+            list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
+        )
+
     if user_profile.is_bot:
         event = dict(
             type="realm_bot",
