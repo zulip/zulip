@@ -2,8 +2,6 @@
 
 Get Zulip notifications from Airbyte.
 
-{!create-stream.md!}
-
 {start_tabs}
 
 1. {!create-channel.md!}
