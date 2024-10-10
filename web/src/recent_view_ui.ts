@@ -555,6 +555,7 @@ type ConversationContext = {
           is_group: boolean;
           is_bot: boolean;
           user_circle_class: string | undefined;
+          has_unread_mention: boolean;
       }
     | {
           is_private: false;
@@ -662,6 +663,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const recipient_id = last_msg.recipient_id;
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
+        const has_unread_mention = Number(unread.unread_mention_dms.get(user_ids_string)?.size) > 0;
 
         let is_bot = false;
         let user_circle_class;
@@ -698,6 +700,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             is_group,
             is_bot,
             user_circle_class,
+            has_unread_mention,
         };
     }
 
