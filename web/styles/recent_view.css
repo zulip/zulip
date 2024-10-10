@@ -191,7 +191,13 @@
         margin-right: 1px;
         margin-left: 1px;
         align-self: center;
-        background-color: hsl(105deg 2% 50%);
+        color: var(--color-unread-counter-normal);
+        background-color: var(--color-background-unread-counter-normal);
+
+        &.unread_count_pm {
+            color: var(--color-unread-counter-prominent);
+            background-color: var(--color-background-unread-counter-prominent);
+        }
     }
 
     .unread_mention_info:not(:empty) {
