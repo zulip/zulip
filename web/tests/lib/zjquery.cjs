@@ -135,18 +135,6 @@ function make_zjquery() {
 
     zjquery.set_results = (selector, elements) => zjquery.create(selector, {elements});
 
-    /* istanbul ignore next */
-    zjquery.state = function () {
-        // useful for debugging
-        let res = [...elems.values()].map(($v) => $v.debug());
-
-        res = res.map((v) => [v.selector, v.value, v.shown]);
-
-        res.sort();
-
-        return res;
-    };
-
     zjquery.Event = FakeEvent;
 
     /* istanbul ignore next */

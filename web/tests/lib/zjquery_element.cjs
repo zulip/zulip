@@ -48,14 +48,6 @@ function FakeElement(selector, opts) {
             attrs.set("data-" + name, val);
             return $self;
         },
-        /* istanbul ignore next */
-        debug() {
-            return {
-                value,
-                shown,
-                selector,
-            };
-        },
         empty(arg) {
             if (arg === undefined) {
                 find_results.clear();
@@ -248,7 +240,6 @@ function FakeElement(selector, opts) {
     };
 
     if (opts.elements) {
-        $self.map = (f) => opts.elements.map((i, element) => f(element, i));
         $self.each = (f) => {
             for (const element of opts.elements) {
                 f.call(element);
