@@ -1055,4 +1055,17 @@ export const stream_post_policy_values = {
     },
 } as const;
 
+export const export_type_values = {
+    export_public: {
+        value: 1,
+        description: $t({defaultMessage: "Public data"}),
+        default: false,
+    },
+    export_full_with_consent: {
+        value: 2,
+        description: $t({defaultMessage: "Standard"}),
+        default: true,
+    },
+};
+
 export type {Settings as GenericUserSettings};

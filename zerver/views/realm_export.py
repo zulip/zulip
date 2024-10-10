@@ -1,10 +1,12 @@
 from datetime import timedelta
+from typing import Annotated
 
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from analytics.models import RealmCount
 from zerver.actions.realm_export import do_delete_realm_export, notify_realm_export
@@ -13,13 +15,27 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.models import RealmExport, UserProfile
 
 
 @transaction.atomic(durable=True)
 @require_realm_admin
-def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
-    # Currently only supports public-data-only exports.
+@typed_endpoint
+def export_realm(
+    request: HttpRequest,
+    user: UserProfile,
+    *,
+    export_type: Json[
+        Annotated[
+            int,
+            check_int_in_validator(
+                [RealmExport.EXPORT_PUBLIC, RealmExport.EXPORT_FULL_WITH_CONSENT]
+            ),
+        ]
+    ] = RealmExport.EXPORT_PUBLIC,
+) -> HttpResponse:
     realm = user.realm
     EXPORT_LIMIT = 5
 
@@ -41,19 +57,20 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     if limit_check >= EXPORT_LIMIT:
         raise JsonableError(_("Exceeded rate limit."))
 
-    # The RealmCount analytics table lets us efficiently get an
-    # estimate for the number of public stream messages in an
-    # organization. It won't match the actual number of messages in
-    # the export, because this measures the number of messages that
-    # went to a public stream at the time they were sent. Thus,
-    # messages that were deleted or moved between streams will be
+    # The RealmCount analytics table lets us efficiently get an estimate
+    # for the number of messages in an organization. It won't match the
+    # actual number of messages in the export, because this measures the
+    # number of messages that went to DMs / Group DMs / public or private
+    # channels at the time they were sent.
+    # Thus, messages that were deleted or moved between channels and
+    # private messages for which the users didn't consent for export will be
     # treated differently for this check vs. in the export code.
-    exportable_messages_estimate = sum(
-        realm_count.value
-        for realm_count in RealmCount.objects.filter(
-            realm=realm, property="messages_sent:message_type:day", subgroup="public_stream"
-        )
+    realm_count_query = RealmCount.objects.filter(
+        realm=realm, property="messages_sent:message_type:day"
     )
+    if export_type == RealmExport.EXPORT_PUBLIC:
+        realm_count_query.filter(subgroup="public_stream")
+    exportable_messages_estimate = sum(realm_count.value for realm_count in realm_count_query)
 
     if (
         exportable_messages_estimate > MAX_MESSAGE_HISTORY
@@ -67,7 +84,7 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
 
     row = RealmExport.objects.create(
         realm=realm,
-        type=RealmExport.EXPORT_PUBLIC,
+        type=export_type,
         acting_user=user,
         status=RealmExport.REQUESTED,
         date_requested=timezone_now(),
