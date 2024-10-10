@@ -2101,3 +2101,7 @@ $option_title_width: 180px;
 #admin-user-list .tab-switcher .ind-tab {
     width: 110px;
 }
+
+#data-exports .tab-switcher .ind-tab {
+    width: 160px;
+}
