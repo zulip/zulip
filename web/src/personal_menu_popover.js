@@ -58,9 +58,7 @@ export function initialize() {
 
             $popper.one("click", ".personal-menu-clear-status", (e) => {
                 e.preventDefault();
-                const me = current_user.user_id;
                 user_status.server_update_status({
-                    user_id: me,
                     status_text: "",
                     emoji_name: "",
                     emoji_code: "",
