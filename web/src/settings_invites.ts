@@ -7,7 +7,7 @@ import render_admin_invites_list from "../templates/settings/admin_invites_list.
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -176,8 +176,16 @@ function do_revoke_invite({
         url,
         error(xhr) {
             ui_report.generic_row_button_error(xhr, $revoke_button);
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "Error",
+                }),
+                xhr,
+                $("#revoke_invite_modal #dialog_error"),
+            );
         },
         success() {
+            dialog_widget.close();
             $row.remove();
         },
     });
@@ -202,8 +210,16 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         url: "/json/invites/" + invite_id + "/resend",
         error(xhr) {
             ui_report.generic_row_button_error(xhr, $resend_button);
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "Error",
+                }),
+                xhr,
+                $("#resend_invite_modal #dialog_error"),
+            );
         },
         success() {
+            dialog_widget.close();
             $resend_button.text($t({defaultMessage: "Sent!"}));
             $resend_button.removeClass("resend btn-warning").addClass("sea-green");
         },
@@ -254,11 +270,14 @@ export function on_load_success(
         };
         const html_body = render_settings_revoke_invite_modal(ctx);
 
-        confirm_dialog.launch({
+        dialog_widget.launch({
             html_heading: ctx.is_multiuse
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             html_body,
+            html_submit_button: $t_html({defaultMessage: "Confirm"}),
+            id: "revoke_invite_modal",
+            focus_submit_on_open: true,
             on_click() {
                 do_revoke_invite({$row, invite_id, is_multiuse});
             },
@@ -279,9 +298,12 @@ export function on_load_success(
         const invite_id = $(this).attr("data-invite-id")!;
         const html_body = render_settings_resend_invite_modal({email});
 
-        confirm_dialog.launch({
+        dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Resend invitation?"}),
             html_body,
+            html_submit_button: $t_html({defaultMessage: "Confirm"}),
+            id: "resend_invite_modal",
+            focus_submit_on_open: true,
             on_click() {
                 do_resend_invite({$row, invite_id});
             },
