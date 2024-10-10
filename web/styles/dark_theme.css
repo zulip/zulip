@@ -13,22 +13,6 @@
         @extend .placeholder;
     }
 
-    &
-        a:not(
-            .button,
-            .compose_control_button,
-            .conversation-partners,
-            .user-presence-link,
-            .typeahead-item-link
-        ):hover {
-        color: hsl(200deg 79% 66%);
-        text-decoration: none;
-
-        & code {
-            color: hsl(200deg 79% 66%);
-        }
-    }
-
     & ul.dm-list,
     & ul.filters {
         .has-unmuted-mentions .unread_mention_info {
