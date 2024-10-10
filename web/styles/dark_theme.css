@@ -359,7 +359,7 @@
     select,
     .pill-container,
     .user-status-content-wrapper,
-    #custom-expiration-time-input,
+    .custom-input-time-value,
     #organization-permissions .dropdown-widget-button,
     #organization-settings .dropdown-widget-button,
     #stream-advanced-configurations .dropdown-widget-button,
