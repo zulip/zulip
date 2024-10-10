@@ -374,7 +374,7 @@ class SlackImporter(ZulipTestCase):
             "Xf06054BBB": {"value": "random2"},
             "Xf023DSCdd": {"value": "employer"},
         }
-        user_data = [
+        user_data: list[dict[str, Any]] = [
             {
                 "id": "U08RGD1RD",
                 "team_id": "T5YFFM2QY",
@@ -635,6 +635,15 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[7]["is_staff"], False)
         self.assertEqual(zerver_userprofile[7]["is_active"], True)
         self.assertEqual(zerver_userprofile[7]["is_mirror_dummy"], False)
+
+        # Importer should raise error when user emails are malformed
+        bad_email1 = user_data[0]["profile"]["email"] = "jon@gmail,com"
+        bad_email2 = user_data[1]["profile"]["email"] = "jane@gmail.m"
+        with self.assertRaises(Exception) as e, self.assertLogs(level="INFO"):
+            users_to_zerver_userprofile(slack_data_dir, user_data, 1, timestamp, "test_domain")
+        error_message = str(e.exception)
+        expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
+        self.assertEqual(error_message, expected_error_message)
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1

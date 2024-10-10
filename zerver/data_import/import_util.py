@@ -10,6 +10,8 @@ from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
 import requests
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
@@ -825,3 +827,19 @@ def long_term_idle_helper(
             user_profile_row["last_active_message_id"] = 1
 
     return long_term_idle
+
+
+def validate_user_emails_for_import(user_emails: list[str]) -> None:
+    invalid_emails = []
+    for email in user_emails:
+        try:
+            validate_email(email)
+        except ValidationError:
+            invalid_emails.append(email)
+
+    if invalid_emails:
+        details = ", ".join(invalid_emails)
+        error_log = (
+            f"Invalid email format, please fix the following email(s) and try again: {details}"
+        )
+        raise ValidationError(error_log)
