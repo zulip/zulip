@@ -670,10 +670,19 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
 
     let display_in_profile_summary_fields_count = 0;
 
+    for (const profile_field of profile_fields_data) {
+        order.push(profile_field.id);
+
+        // Keeping counts of all display_in_profile_summary profile fields,
+        // to keep track of whether the limit has been reached.
+        if (profile_field.display_in_profile_summary) {
+            display_in_profile_summary_fields_count += 1;
+        }
+    }
+
     ListWidget.create($profile_fields_table, profile_fields_data, {
         name: "settings_profile_fields_list",
         get_item(profile_field) {
-            order.push(profile_field.id);
             return profile_field;
         },
         modifier_html(profile_field) {
@@ -687,12 +696,6 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
 
             const display_in_profile_summary = profile_field.display_in_profile_summary === true;
             const required = profile_field.required;
-
-            // Keeping counts of all display_in_profile_summary profile fields, to keep track of
-            // whether the limit has been reached.
-            if (display_in_profile_summary) {
-                display_in_profile_summary_fields_count += 1;
-            }
 
             return render_admin_profile_field_list({
                 profile_field: {
