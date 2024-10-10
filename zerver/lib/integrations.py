@@ -850,3 +850,13 @@ def get_all_event_types_for_integration(integration: Integration) -> list[str] |
         if hasattr(function, "_all_event_types"):
             return function._all_event_types
     return None
+
+
+SEVERITY_MAPPING = {
+    "alertmanager": {"warning": "🟡", "critical": "🔴"},
+}
+
+
+def get_severity_emoji(integration_name: str, severity: str) -> str:
+    severity_mapping = SEVERITY_MAPPING.get(integration_name, {})
+    return severity_mapping.get(severity.lower(), "⚪️")
