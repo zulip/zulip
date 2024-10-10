@@ -4,8 +4,8 @@ import {server_add_bot_schema} from "./bot_types";
 import {realm_default_settings_schema} from "./realm_user_settings_defaults";
 import {
     never_subscribed_stream_schema,
+    raw_stream_subscription_schema,
     stream_schema,
-    stream_subscription_schema,
 } from "./stream_types";
 import {user_settings_schema} from "./user_settings";
 import {user_status_schema} from "./user_status_types";
@@ -136,7 +136,7 @@ export const group_setting_type_schema = z.union([z.number(), anonymous_group_ty
 
 export type GroupSettingType = z.infer<typeof group_setting_type_schema>;
 
-export const user_group_schema = z.object({
+export const raw_user_group_schema = z.object({
     description: z.string(),
     id: z.number(),
     creator_id: z.number().nullable(),
@@ -248,7 +248,7 @@ const custom_profile_field_types_schema = z.object({
 export type CustomProfileFieldTypes = z.infer<typeof custom_profile_field_types_schema>;
 
 // Sync this with zerver.lib.events.do_events_register.
-const realm_schema = z.object({
+export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
     custom_profile_field_types: custom_profile_field_types_schema,
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
@@ -261,14 +261,14 @@ const realm_schema = z.object({
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),
     max_message_length: z.number(),
-    max_stream_description_length: NOT_TYPED_YET,
-    max_stream_name_length: NOT_TYPED_YET,
+    max_stream_description_length: z.number(),
+    max_stream_name_length: z.number(),
     max_topic_length: z.number(),
-    password_min_guesses: NOT_TYPED_YET,
-    password_min_length: NOT_TYPED_YET,
+    password_min_guesses: z.number(),
+    password_min_length: z.number(),
     realm_add_custom_emoji_policy: z.number(),
     realm_allow_edit_history: z.boolean(),
-    realm_allow_message_editing: NOT_TYPED_YET,
+    realm_allow_message_editing: z.boolean(),
     realm_authentication_methods: z.record(
         z.object({
             enabled: z.boolean(),
@@ -308,8 +308,8 @@ const realm_schema = z.object({
     ),
     realm_default_language: z.string(),
     realm_description: z.string(),
-    realm_digest_emails_enabled: NOT_TYPED_YET,
-    realm_digest_weekday: NOT_TYPED_YET,
+    realm_digest_emails_enabled: z.boolean(),
+    realm_digest_weekday: z.number(),
     realm_direct_message_initiator_group: z.number(),
     realm_direct_message_permission_group: z.number(),
     realm_disallow_disposable_email_addresses: z.boolean(),
@@ -320,10 +320,17 @@ const realm_schema = z.object({
         }),
     ),
     realm_edit_topic_policy: z.number(),
-    realm_email_auth_enabled: NOT_TYPED_YET,
+    realm_email_auth_enabled: z.boolean(),
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
-    realm_embedded_bots: NOT_TYPED_YET,
+    realm_embedded_bots: z
+        .array(
+            z.object({
+                name: z.string(),
+                config: z.record(z.string()),
+            }),
+        )
+        .nullable(),
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_read_receipts: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
@@ -338,9 +345,9 @@ const realm_schema = z.object({
             // We currently ignore the `config` field in these objects.
         }),
     ),
-    realm_inline_image_preview: NOT_TYPED_YET,
-    realm_inline_url_embed_preview: NOT_TYPED_YET,
-    realm_invite_required: NOT_TYPED_YET,
+    realm_inline_image_preview: z.boolean(),
+    realm_inline_url_embed_preview: z.boolean(),
+    realm_invite_required: z.boolean(),
     realm_invite_to_realm_policy: z.number(),
     realm_invite_to_stream_policy: z.number(),
     realm_is_zephyr_mirror_realm: z.boolean(),
@@ -355,7 +362,7 @@ const realm_schema = z.object({
     realm_logo_source: z.string(),
     realm_logo_url: z.string(),
     realm_mandatory_topics: z.boolean(),
-    realm_message_content_allowed_in_email_notifications: NOT_TYPED_YET,
+    realm_message_content_allowed_in_email_notifications: z.boolean(),
     realm_message_content_edit_limit_seconds: z.number().nullable(),
     realm_message_content_delete_limit_seconds: z.number().nullable(),
     realm_message_retention_days: z.number(),
@@ -368,7 +375,7 @@ const realm_schema = z.object({
     realm_night_logo_source: z.string(),
     realm_night_logo_url: z.string(),
     realm_org_type: z.number(),
-    realm_password_auth_enabled: NOT_TYPED_YET,
+    realm_password_auth_enabled: z.boolean(),
     realm_plan_type: z.number(),
     realm_playgrounds: z.array(
         z.object({
@@ -380,21 +387,21 @@ const realm_schema = z.object({
     ),
     realm_presence_disabled: z.boolean(),
     realm_push_notifications_enabled: z.boolean(),
-    realm_push_notifications_enabled_end_timestamp: NOT_TYPED_YET,
+    realm_push_notifications_enabled_end_timestamp: z.number().nullable(),
     realm_require_unique_names: z.boolean(),
-    realm_send_welcome_emails: NOT_TYPED_YET,
+    realm_send_welcome_emails: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
     realm_upload_quota_mib: z.nullable(z.number()),
     realm_url: z.string(),
     realm_video_chat_provider: z.number(),
     realm_waiting_period_threshold: z.number(),
-    realm_want_advertise_in_communities_directory: NOT_TYPED_YET,
+    realm_want_advertise_in_communities_directory: z.boolean(),
     realm_wildcard_mention_policy: z.number(),
     realm_zulip_update_announcements_stream_id: z.number(),
     server_avatar_changes_disabled: z.boolean(),
-    server_emoji_data_url: NOT_TYPED_YET,
-    server_inline_image_preview: NOT_TYPED_YET,
-    server_inline_url_embed_preview: NOT_TYPED_YET,
+    server_emoji_data_url: z.string(),
+    server_inline_image_preview: z.boolean(),
+    server_inline_url_embed_preview: z.boolean(),
     server_jitsi_server_url: z.nullable(z.string()),
     server_name_changes_disabled: z.boolean(),
     server_needs_upgrade: z.boolean(),
@@ -410,10 +417,10 @@ const realm_schema = z.object({
     server_typing_started_wait_period_milliseconds: z.number(),
     server_typing_stopped_wait_period_milliseconds: z.number(),
     server_web_public_streams_enabled: z.boolean(),
-    settings_send_digest_emails: NOT_TYPED_YET,
+    settings_send_digest_emails: z.boolean(),
     stop_words: z.array(z.string()),
-    upgrade_text_for_wide_organization_logo: NOT_TYPED_YET,
-    zulip_feature_level: NOT_TYPED_YET,
+    upgrade_text_for_wide_organization_logo: z.string(),
+    zulip_feature_level: z.number(),
     zulip_merge_base: z.string(),
     zulip_plan_is_not_limited: z.boolean(),
     zulip_version: z.string(),
@@ -467,8 +474,8 @@ export const state_data_schema = z
     .and(
         z
             .object({
-                subscriptions: z.array(stream_subscription_schema),
-                unsubscribed: z.array(stream_subscription_schema),
+                subscriptions: z.array(raw_stream_subscription_schema),
+                unsubscribed: z.array(raw_stream_subscription_schema),
                 never_subscribed: z.array(never_subscribed_stream_schema),
                 realm_default_streams: z.array(stream_schema),
             })
@@ -476,7 +483,7 @@ export const state_data_schema = z
     )
     .and(
         z
-            .object({realm_user_groups: z.array(user_group_schema)})
+            .object({realm_user_groups: z.array(raw_user_group_schema)})
             .transform((user_groups) => ({user_groups})),
     )
     .and(

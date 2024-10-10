@@ -428,8 +428,8 @@ export class MessageList {
         let deactivated = false;
         let just_unsubscribed = false;
         const subscribed = stream_data.is_subscribed(stream_id);
-        const invite_only = sub && sub.invite_only;
-        const is_web_public = sub && sub.is_web_public;
+        const invite_only = sub?.invite_only;
+        const is_web_public = sub?.is_web_public;
         const can_toggle_subscription =
             sub !== undefined && stream_data.can_toggle_subscription(sub);
         if (sub === undefined) {

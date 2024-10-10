@@ -1054,5 +1054,3 @@ export const stream_post_policy_values = {
         description: $t({defaultMessage: "Admins only"}),
     },
 } as const;
-
-export type {Settings as GenericUserSettings};

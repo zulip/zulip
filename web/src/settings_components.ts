@@ -18,14 +18,18 @@ import {
     NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
 } from "./information_density";
 import * as people from "./people";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
+import {
+    realm_default_settings_schema,
+    realm_user_settings_defaults,
+} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import type {CustomProfileField, group_setting_type_schema} from "./state_data";
-import {current_user, realm} from "./state_data";
+import {current_user, realm, realm_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
+import {stream_subscription_schema} from "./sub_store";
 import type {GroupSettingPillContainer} from "./typeahead_helper";
 import type {HTMLSelectOneElement} from "./types";
 import * as user_group_pill from "./user_group_pill";
@@ -42,7 +46,7 @@ type SettingOptionValue = {
     description: string;
 };
 
-type SettingOptionValueWithKey = SettingOptionValue & {key: string};
+export type SettingOptionValueWithKey = SettingOptionValue & {key: string};
 
 export function get_sorted_options_list(
     option_values_object: Record<string, SettingOptionValue>,
@@ -75,7 +79,7 @@ export function get_sorted_options_list(
     return options_list;
 }
 
-type MessageTimeLimitSetting =
+export type MessageTimeLimitSetting =
     | "realm_message_content_edit_limit_seconds"
     | "realm_move_messages_between_streams_limit_seconds"
     | "realm_move_messages_within_stream_limit_seconds"
@@ -95,14 +99,27 @@ export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetti
 }
 
 type RealmSetting = typeof realm;
-type RealmSettingProperties = keyof RealmSetting | "realm_org_join_restrictions";
+export const realm_setting_properties_schema = z.union([
+    realm_schema.keyof(),
+    z.literal("realm_org_join_restrictions"),
+]);
+type RealmSettingProperties = z.infer<typeof realm_setting_properties_schema>;
 
 type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
-type RealmUserSettingDefaultProperties =
-    | keyof RealmUserSettingDefaultType
-    | "email_notification_batching_period_edit_minutes";
+export const realm_user_settings_default_properties_schema = z.union([
+    realm_default_settings_schema.keyof(),
+    z.literal("email_notification_batching_period_edit_minutes"),
+]);
+type RealmUserSettingDefaultProperties = z.infer<
+    typeof realm_user_settings_default_properties_schema
+>;
 
-type StreamSettingProperties = keyof StreamSubscription | "stream_privacy" | "is_default_stream";
+export const stream_settings_properties_schema = z.union([
+    stream_subscription_schema.keyof(),
+    z.literal("stream_privacy"),
+    z.literal("is_default_stream"),
+]);
+type StreamSettingProperties = z.infer<typeof stream_settings_properties_schema>;
 
 type valueof<T> = T[keyof T];
 
@@ -214,25 +231,25 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
     return [...$subsection.find(".prop-element")];
 }
 
-type simple_dropdown_realm_settings = Pick<
-    typeof realm,
-    | "realm_create_private_stream_policy"
-    | "realm_invite_to_stream_policy"
-    | "realm_add_custom_emoji_policy"
-    | "realm_invite_to_realm_policy"
-    | "realm_wildcard_mention_policy"
-    | "realm_move_messages_between_streams_policy"
-    | "realm_edit_topic_policy"
-    | "realm_org_type"
->;
+export const simple_dropdown_realm_settings_schema = realm_schema.pick({
+    realm_create_private_stream_policy: true,
+    realm_invite_to_stream_policy: true,
+    realm_add_custom_emoji_policy: true,
+    realm_invite_to_realm_policy: true,
+    realm_wildcard_mention_policy: true,
+    realm_move_messages_between_streams_policy: true,
+    realm_edit_topic_policy: true,
+    realm_org_type: true,
+});
+export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
 
 export function set_property_dropdown_value(
-    property_name: keyof simple_dropdown_realm_settings,
+    property_name: keyof SimpleDropdownRealmSettings,
 ): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const property_value = get_realm_settings_property_value(
         property_name,
-    ) as valueof<simple_dropdown_realm_settings>;
+    ) as valueof<SimpleDropdownRealmSettings>;
     $(`#id_${CSS.escape(property_name)}`).val(property_value);
 }
 
@@ -638,7 +655,7 @@ export function change_save_button_state($element: JQuery, state: string): void 
     });
 }
 
-function get_input_type($input_elem: JQuery, input_type?: string): string {
+export function get_input_type($input_elem: JQuery, input_type?: string): string {
     if (input_type !== undefined && ["boolean", "string", "number"].includes(input_type)) {
         return input_type;
     }
