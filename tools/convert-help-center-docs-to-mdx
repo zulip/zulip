@@ -18,6 +18,21 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 django.setup()
 
 
+def replace_image_path(markdown_string: str) -> str:
+    """
+    We will point to the existing image folder till
+    the cutover. After that, we will copy the images
+    to src folder for help-beta in order to take
+    advantage of Astro's image optimization.
+    See https://chat.zulip.org/#narrow/stream/6-frontend/topic/Handling.20images.20in.20help.20center.20starlight.20migration.2E/near/1915130
+    """
+    # We do not replace /static/images directly since there are a few
+    # instances in the documentation where zulip.com links are
+    # referenced with that blurb as a part of the url.
+    result = markdown_string.replace("(/static/images/help-beta", "(../../../../static/images/help")
+    return result.replace('="/static/images/help-beta', '="../../../../static/images/help')
+
+
 def escape_curly_braces(markdown_string: str) -> str:
     """
     MDX will treat curly braces as a JS expression,
@@ -54,6 +69,7 @@ def insert_frontmatter(markdown_string: str) -> str:
 def convert_string_to_mdx(markdown_string: str) -> str:
     result = escape_curly_braces(markdown_string)
     result = fix_relative_path(result)
+    result = replace_image_path(result)
     return insert_frontmatter(result)
 
 
