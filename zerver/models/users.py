@@ -959,8 +959,17 @@ def remote_user_to_email(remote_user: str) -> str:
 post_save.connect(flush_user_profile, sender=UserProfile)
 
 
-@cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
-def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
+# used to access users other than the acting user.
+def bulk_access_user_queryset() -> QuerySet[UserProfile]:
+    return UserProfile.objects.select_related(
+        "realm",
+        "realm__can_access_all_users_group",
+        "realm__can_access_all_users_group__named_user_group",
+    )
+
+
+# used to access the acting user.
+def _base_user_queryset() -> QuerySet[UserProfile]:
     return UserProfile.objects.select_related(
         "realm",
         "realm__can_access_all_users_group",
@@ -970,7 +979,12 @@ def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
         "realm__direct_message_permission_group",
         "realm__direct_message_permission_group__named_user_group",
         "bot_owner",
-    ).get(id=user_profile_id)
+    )
+
+
+@cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
+def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
+    return _base_user_queryset().get(id=user_profile_id)
 
 
 def get_user_profile_by_email(email: str) -> UserProfile:
@@ -1015,16 +1029,7 @@ def get_user_by_delivery_email(email: str, realm: "Realm") -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS security model.  Use get_user in
     those code paths.
     """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "realm__direct_message_initiator_group",
-        "realm__direct_message_initiator_group__named_user_group",
-        "realm__direct_message_permission_group",
-        "realm__direct_message_permission_group__named_user_group",
-        "bot_owner",
-    ).get(delivery_email__iexact=email.strip(), realm=realm)
+    return _base_user_queryset().get(delivery_email__iexact=email.strip(), realm=realm)
 
 
 def get_users_by_delivery_email(emails: set[str], realm: "Realm") -> QuerySet[UserProfile]:
@@ -1059,16 +1064,7 @@ def get_user(email: str, realm: "Realm") -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS.  In those code paths, use
     get_user_by_delivery_email.
     """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "realm__direct_message_initiator_group",
-        "realm__direct_message_initiator_group__named_user_group",
-        "realm__direct_message_permission_group",
-        "realm__direct_message_permission_group__named_user_group",
-        "bot_owner",
-    ).get(email__iexact=email.strip(), realm=realm)
+    return _base_user_queryset().get(email__iexact=email.strip(), realm=realm)
 
 
 def get_active_user(email: str, realm: "Realm") -> UserProfile:
