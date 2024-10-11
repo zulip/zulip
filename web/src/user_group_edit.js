@@ -285,6 +285,18 @@ function update_group_membership_button(group_id) {
     }
 }
 
+export function handle_subgroup_edit_event(group_id) {
+    if (!overlays.groups_open()) {
+        return;
+    }
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    // update members list if currently rendered.
+    if (is_editing_group(group_id)) {
+        user_group_edit_members.update_member_list_widget(group);
+    }
+}
+
 export function handle_member_edit_event(group_id, user_ids) {
     if (!overlays.groups_open()) {
         return;

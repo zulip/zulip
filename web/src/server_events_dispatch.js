@@ -967,9 +967,11 @@ export function dispatch_normal_event(event) {
                     break;
                 case "add_subgroups":
                     user_groups.add_subgroups(event.group_id, event.direct_subgroup_ids);
+                    user_group_edit.handle_subgroup_edit_event(event.group_id);
                     break;
                 case "remove_subgroups":
                     user_groups.remove_subgroups(event.group_id, event.direct_subgroup_ids);
+                    user_group_edit.handle_subgroup_edit_event(event.group_id);
                     break;
                 case "update":
                     user_groups.update(event);

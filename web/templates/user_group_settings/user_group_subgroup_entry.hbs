@@ -1,0 +1,16 @@
+<tr data-subgroup-id="{{group_id}}">
+    <td class="subgroup-name panel_user_list" colspan="2">
+        {{> ../user_group_display_only_pill}}
+    </td>
+    {{#if can_edit}}
+    <td class="remove">
+        <div class="subgroup_list_remove">
+            <form class="remove-subgroup-form">
+                <button type="submit" name="remove" class="remove-subgroup-button button small rounded btn-danger">
+                    {{t 'Remove'}}
+                </button>
+            </form>
+        </div>
+    </td>
+    {{/if}}
+</tr>

@@ -152,6 +152,11 @@ export function register_click_handlers(): void {
         e.stopPropagation();
         toggle_user_group_info_popover(this, undefined);
     });
+
+    $("body").on("click", ".view_user_group", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        toggle_user_group_info_popover(this, undefined);
+    });
 }
 
 function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
