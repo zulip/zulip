@@ -88,18 +88,27 @@ function debug_notification_source_value(message: Message | TestNotificationMess
     blueslip.debug("Desktop notification from source " + notification_source);
 }
 
+// Function to generate a unique key for notifications
 function get_notification_key(message: Message | TestNotificationMessage): string {
-    let key;
+    let keyObject;
 
     if (message.type === "private" || message.type === "test-notification") {
-        key = message.display_reply_to;
+        keyObject = {
+            type: message.type,
+            recipient: message.display_reply_to,
+        };
     } else {
-        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-        key = message.sender_full_name + " to " + stream_name + " > " + message.topic;
+        keyObject = {
+            type: message.type,
+            sender: message.sender_full_name,
+            stream_id: message.stream_id,
+            topic: message.topic,
+        };
     }
 
-    return key;
+    return JSON.stringify(keyObject);
 }
+
 
 function remove_sender_from_list_of_recipients(message: Message): string {
     return `, ${message.display_reply_to}, `

@@ -398,17 +398,31 @@ test("basic_notifications", () => {
         topic: "lunch",
     };
 
+    const expected_key_string1 = JSON.stringify({
+        type: "stream",
+        sender: "Jesse Pinkman",
+        stream_id: 10,
+        topic: "whatever"
+    });
+    const expected_key_string2 = JSON.stringify({
+        type: "stream",
+        sender: "Gus Fring",
+        stream_id: 10,
+        topic: "lunch"
+    });
+
     // Send notification.
     message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    
+    assert.equal(n.has(expected_key_string1), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id.toString());
 
     // Remove notification.
     desktop_notifications.close_notification(message_1);
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
+    assert.equal(n.has(expected_key_string1), false);
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_1.id.toString());
 
@@ -416,7 +430,7 @@ test("basic_notifications", () => {
     message_1.id = 1001;
     message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has(expected_key_string1), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id.toString());
 
@@ -424,15 +438,15 @@ test("basic_notifications", () => {
     message_1.id = 1002;
     message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has(expected_key_string1), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id.toString());
 
     // Send another message. Notification count should increase.
     message_notifications.process_notification({message: message_2, desktop_notify: true});
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Gus Fring to general > lunch"), true);
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has(expected_key_string2), true);
+    assert.equal(n.has(expected_key_string1), true);
     assert.equal(n.size, 2);
     assert.equal(last_shown_message_id, message_2.id.toString());
 
@@ -440,7 +454,7 @@ test("basic_notifications", () => {
     desktop_notifications.close_notification(message_1);
     desktop_notifications.close_notification(message_2);
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
+    assert.equal(n.has(expected_key_string1), false);
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_2.id.toString());
 });
