@@ -763,8 +763,8 @@ function show_intro_resolve_topic_modal(topic_name: string, cb: () => void): voi
         html_body: render_intro_resolve_topic_modal({topic_name}),
         id: "intro_resolve_topic_modal",
         on_click: cb,
-        html_submit_button: $t({defaultMessage: "Got it, Confirm"}),
-        html_exit_button: $t({defaultMessage: "Got it, Cancel"}),
+        html_submit_button: $t({defaultMessage: "Got it — Confirm"}),
+        html_exit_button: $t({defaultMessage: "Got it — Cancel"}),
     });
 }
 
