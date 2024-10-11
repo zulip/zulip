@@ -4363,19 +4363,16 @@ paths:
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can create bot users in this organization.
-                                    create_multiuse_invite_group:
+                                    can_access_all_users_group:
                                       type: integer
                                       description: |
-                                        The ID of the [user group](/api/get-user-groups) whose members are
-                                        allowed to create [reusable invitation
-                                        links](/help/invite-new-users#create-a-reusable-invitation-link)
-                                        to the organization.
+                                        The ID of the [user group](/api/get-user-groups) whose members
+                                        are allowed to access all users in the organization.
 
-                                        This setting can currently only be set to user groups that are
-                                        system groups, except for the system groups named
-                                        `"role:internet"` and `"role:owners"`.
+                                        This setting can currently only be set to `"role:everyone"`
+                                        system group.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 209).
+                                        **Changes**: New in Zulip 8.0 (feature level 225).
                                     can_create_groups:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4387,31 +4384,6 @@ paths:
                                             **Changes**: New in Zulip 10.0 (feature level 299). Previously
                                             `user_group_edit_policy` field used to control the permission
                                             to create user groups.
-                                    can_manage_all_groups:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values)
-                                            defining the set of users who have permission to
-                                            administer all existing groups in this organization.
-
-                                            **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
-                                            were a member of the group or had the moderator role or above could
-                                            exercise the permission on a given group.
-
-                                            New in Zulip 10.0 (feature level 299). Previously the
-                                            `user_group_edit_policy` field controlled the permission
-                                            to manage user groups. Valid values were as follows:
-
-                                            - 1 = All members can create and edit user groups
-                                            - 2 = Only organization administrators can create and edit
-                                              user groups
-                                            - 3 = Only [full members][calc-full-member] can create and
-                                              edit user groups.
-                                            - 4 = Only organization administrators and moderators can
-                                              create and edit user groups.
-
-                                            [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     can_create_public_channel_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4469,6 +4441,44 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Everyone`, and
                                             `false` to `Admins`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_manage_all_groups:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values)
+                                            defining the set of users who have permission to
+                                            administer all existing groups in this organization.
+
+                                            **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
+                                            were a member of the group or had the moderator role or above could
+                                            exercise the permission on a given group.
+
+                                            New in Zulip 10.0 (feature level 299). Previously the
+                                            `user_group_edit_policy` field controlled the permission
+                                            to manage user groups. Valid values were as follows:
+
+                                            - 1 = All members can create and edit user groups
+                                            - 2 = Only organization administrators can create and edit
+                                              user groups
+                                            - 3 = Only [full members][calc-full-member] can create and
+                                              edit user groups.
+                                            - 4 = Only organization administrators and moderators can
+                                              create and edit user groups.
+
+                                            [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    create_multiuse_invite_group:
+                                      type: integer
+                                      description: |
+                                        The ID of the [user group](/api/get-user-groups) whose members are
+                                        allowed to create [reusable invitation
+                                        links](/help/invite-new-users#create-a-reusable-invitation-link)
+                                        to the organization.
+
+                                        This setting can currently only be set to user groups that are
+                                        system groups, except for the system groups named
+                                        `"role:internet"` and `"role:owners"`.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 209).
                                     default_code_block_language:
                                       type: string
                                       description: |
@@ -4562,12 +4572,29 @@ paths:
                                         Whether users are allowed to change their own email address in this
                                         organization. This is typically disabled for organizations that
                                         synchronize accounts from LDAP or a similar corporate database.
+                                    enable_read_receipts:
+                                      type: boolean
+                                      description: |
+                                        Whether read receipts is enabled in the organization or not.
+
+                                        If disabled, read receipt data will be unavailable to clients, regardless
+                                        of individual users' personal read receipt settings. See also the
+                                        `send_read_receipts` setting within `realm_user_settings_defaults`.
+
+                                        **Changes**: New in Zulip 6.0 (feature level 137).
                                     emails_restricted_to_domains:
                                       type: boolean
                                       description: |
                                         Whether [new users joining](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                         this organization are required to have an email
                                         address in one of the `realm_domains` configured for the organization.
+                                    enable_guest_user_indicator:
+                                      type: boolean
+                                      description: |
+                                        Whether clients should display "(guest)" after the names of
+                                        guest users to prominently highlight their status.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 216).
                                     enable_spectator_access:
                                       type: boolean
                                       description: |
@@ -4627,6 +4654,19 @@ paths:
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can add other users to channels in this organization.
+                                    jitsi_server_url:
+                                      type: string
+                                      nullable: true
+                                      description: |
+                                        The URL of the custom Jitsi Meet server configured in this organization's
+                                        settings.
+
+                                        `null`, the default, means that the organization is using the should use the
+                                        server-level configuration, `server_jitsi_server_url`.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+                                        available as a server-level configuration, and required a server restart to
+                                        change.
                                     logo_source:
                                       type: string
                                       description: |
@@ -4815,6 +4855,27 @@ paths:
                                       description: |
                                         Whether online presence of other users is shown in this
                                         organization.
+                                    push_notifications_enabled:
+                                      type: boolean
+                                      description: |
+                                        Whether push notifications are enabled for this organization. Typically
+                                        `true` for Zulip Cloud and self-hosted realms that have a valid
+                                        registration for the [Mobile push notifications
+                                        service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+                                        and `false` for self-hosted servers that do not.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
+                                        Previously, this value was never updated via events.
+                                    push_notifications_enabled_end_timestamp:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        If the server expects the realm's push notifications access to end at a
+                                        definite time in the future, the time at which this is expected to happen.
+                                        Mobile clients should use this field to display warnings to users when the
+                                        indicated timestamp is near.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
                                     require_unique_names:
                                       type: boolean
                                       description: |
@@ -4846,18 +4907,6 @@ paths:
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed
                                         `signup_notifications_stream_id` to `signup_announcements_stream_id`.
-                                    zulip_update_announcements_stream_id:
-                                      type: integer
-                                      description: |
-                                        The ID of the channel to which automated messages announcing
-                                        new features or other end-user updates about the Zulip software are sent.
-
-                                        Will be `-1` if such automated messages are disabled.
-
-                                        Since these automated messages are sent by the server, this field is
-                                        primarily relevant to clients containing UI for changing it.
-
-                                        **Changes**: New in Zulip 9.0 (feature level 242).
                                     video_chat_provider:
                                       type: integer
                                       description: |
@@ -4871,19 +4920,6 @@ paths:
 
                                         **Changes**: None added as an option in Zulip 3.0 (feature level 1)
                                         to disable video call UI.
-                                    jitsi_server_url:
-                                      type: string
-                                      nullable: true
-                                      description: |
-                                        The URL of the custom Jitsi Meet server configured in this organization's
-                                        settings.
-
-                                        `null`, the default, means that the organization is using the should use the
-                                        server-level configuration, `server_jitsi_server_url`.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
-                                        available as a server-level configuration, and required a server restart to
-                                        change.
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -4921,54 +4957,18 @@ paths:
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-                                    enable_read_receipts:
-                                      type: boolean
-                                      description: |
-                                        Whether read receipts is enabled in the organization or not.
-
-                                        If disabled, read receipt data will be unavailable to clients, regardless
-                                        of individual users' personal read receipt settings. See also the
-                                        `send_read_receipts` setting within `realm_user_settings_defaults`.
-
-                                        **Changes**: New in Zulip 6.0 (feature level 137).
-                                    enable_guest_user_indicator:
-                                      type: boolean
-                                      description: |
-                                        Whether clients should display "(guest)" after the names of
-                                        guest users to prominently highlight their status.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 216).
-                                    can_access_all_users_group:
+                                    zulip_update_announcements_stream_id:
                                       type: integer
                                       description: |
-                                        The ID of the [user group](/api/get-user-groups) whose members
-                                        are allowed to access all users in the organization.
+                                        The ID of the channel to which automated messages announcing
+                                        new features or other end-user updates about the Zulip software are sent.
 
-                                        This setting can currently only be set to `"role:everyone"`
-                                        system group.
+                                        Will be `-1` if such automated messages are disabled.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 225).
-                                    push_notifications_enabled:
-                                      type: boolean
-                                      description: |
-                                        Whether push notifications are enabled for this organization. Typically
-                                        `true` for Zulip Cloud and self-hosted realms that have a valid
-                                        registration for the [Mobile push notifications
-                                        service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
-                                        and `false` for self-hosted servers that do not.
+                                        Since these automated messages are sent by the server, this field is
+                                        primarily relevant to clients containing UI for changing it.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 231).
-                                        Previously, this value was never updated via events.
-                                    push_notifications_enabled_end_timestamp:
-                                      type: integer
-                                      nullable: true
-                                      description: |
-                                        If the server expects the realm's push notifications access to end at a
-                                        definite time in the future, the time at which this is expected to happen.
-                                        Mobile clients should use this field to display warnings to users when the
-                                        indicated timestamp is near.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 231).
+                                        **Changes**: New in Zulip 9.0 (feature level 242).
                                   additionalProperties: false
                               example:
                                 {
