@@ -2772,7 +2772,7 @@ class NormalActionsTest(BaseAction):
             do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=self.user_profile)
         check_realm_update("events[0]", events[0], "enable_spectator_access")
         check_realm_update_dict("events[1]", events[1])
-        check_realm_update("events[2]", events[2], "plan_type")
+        check_realm_update_dict("events[2]", events[2])
 
         state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_LIMITED)

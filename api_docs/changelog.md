@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 306**
+
+* [`GET /events`](/api/get-events): Removed the `extra_data` optional
+  field from the `realm/update` event format, which was only used for
+  `plan_type` events, with a single `upload_quota` field. Now, we use
+  a standard `realm/update_dict` event to notify clients about changes
+  in `plan_type` and other fields that atomically change with a given
+  change in plan.
+
 **Feature level 305**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
