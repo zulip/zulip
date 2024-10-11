@@ -217,35 +217,28 @@ function bot_info(bot_user_id) {
     }
 
     const owner_id = bot_user.bot_owner_id;
+    const bot_owner_name = bot_owner_full_name(owner_id);
 
-    const info = {};
-
-    info.is_bot = true;
-    info.role = bot_user.role;
-    info.is_active = people.is_person_active(bot_user.user_id);
-    info.user_id = bot_user.user_id;
-    info.full_name = bot_user.full_name;
-    info.bot_owner_id = owner_id;
-    info.user_role_text = people.get_user_type(bot_user_id);
-    info.img_src = people.small_avatar_url_for_person(bot_user);
-
-    // Convert bot type id to string for viewing to the users.
-    info.bot_type = settings_data.bot_type_id_to_string(bot_user.bot_type);
-
-    info.bot_owner_full_name = bot_owner_full_name(owner_id);
-
-    if (!info.bot_owner_full_name) {
-        info.no_owner = true;
-        info.bot_owner_full_name = $t({defaultMessage: "No owner"});
-    }
-
-    info.is_current_user = false;
-    info.can_modify = current_user.is_admin;
-    info.cannot_deactivate = bot_user.is_system_bot;
-    info.cannot_edit = bot_user.is_system_bot;
-
-    // It's always safe to show the real email addresses for bot users
-    info.display_email = bot_user.email;
+    const info = {
+        is_bot: true,
+        role: bot_user.role,
+        is_active: people.is_person_active(bot_user.user_id),
+        user_id: bot_user.user_id,
+        full_name: bot_user.full_name,
+        bot_owner_id: owner_id,
+        user_role_text: people.get_user_type(bot_user_id),
+        img_src: people.small_avatar_url_for_person(bot_user),
+        // Convert bot type id to string for viewing to the users.
+        bot_type: settings_data.bot_type_id_to_string(bot_user.bot_type),
+        bot_owner_full_name: bot_owner_name ?? $t({defaultMessage: "No owner"}),
+        no_owner: bot_owner_name === undefined,
+        is_current_user: false,
+        can_modify: current_user.is_admin,
+        cannot_deactivate: bot_user.is_system_bot ?? false,
+        cannot_edit: bot_user.is_system_bot ?? false,
+        // It's always safe to show the real email addresses for bot users
+        display_email: bot_user.email,
+    };
 
     if (owner_id) {
         info.is_bot_owner_active = people.is_person_active(owner_id);
@@ -265,27 +258,26 @@ function get_last_active(user) {
 }
 
 function human_info(person) {
-    const info = {};
+    const info = {
+        is_bot: false,
+        user_role_text: people.get_user_type(person.user_id),
+        is_active: people.is_person_active(person.user_id),
+        user_id: person.user_id,
+        full_name: person.full_name,
+        bot_owner_id: null,
+        can_modify: current_user.is_admin,
+        is_current_user: people.is_my_user_id(person.user_id),
+        cannot_deactivate:
+            person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner()),
+        display_email: person.delivery_email,
+        img_src: people.small_avatar_url_for_person(person),
 
-    info.is_bot = false;
-    info.user_role_text = people.get_user_type(person.user_id);
-    info.is_active = people.is_person_active(person.user_id);
-    info.user_id = person.user_id;
-    info.full_name = person.full_name;
-    info.bot_owner_id = person.bot_owner_id;
-
-    info.can_modify = current_user.is_admin;
-    info.is_current_user = people.is_my_user_id(person.user_id);
-    info.cannot_deactivate =
-        person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner());
-    info.display_email = person.delivery_email;
-    info.img_src = people.small_avatar_url_for_person(person);
-
-    // TODO: This is not shown in deactivated users table and it is
-    // controlled by `display_last_active_column` We might just want
-    // to show this for deactivated users, too, even though it might
-    // usually just be undefined.
-    info.last_active_date = get_last_active(person);
+        // TODO: This is not shown in deactivated users table and it is
+        // controlled by `display_last_active_column` We might just want
+        // to show this for deactivated users, too, even though it might
+        // usually just be undefined.
+        last_active_date: get_last_active(person),
+    };
 
     return info;
 }
