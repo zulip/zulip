@@ -1,5 +1,4 @@
 import $ from "jquery";
-import type * as tippy from "tippy.js";
 
 import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
@@ -20,8 +19,6 @@ import * as spectators from "./spectators";
 import {current_user} from "./state_data";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
-
-let buddy_list_popover_instance: tippy.Instance | undefined;
 
 function save_sidebar_toggle_status(): void {
     const ls = localstorage();
@@ -286,28 +283,18 @@ export function initialize_right_sidebar(): void {
         buddy_list.toggle_other_users_section();
     });
 
-    $("#user-list").on("click", "#buddy-list-menu-icon", (e) => {
-        e.stopPropagation();
-        popover_menus.toggle_popover_menu(
-            $("#buddy-list-menu-icon")[0]!,
-            {
-                theme: "popover-menu",
-                placement: "right",
-                onCreate(instance) {
-                    buddy_list_popover_instance = instance;
-                    instance.setContent(ui_util.parse_html(render_buddy_list_popover()));
-                },
-                onHidden() {
-                    if (buddy_list_popover_instance !== undefined) {
-                        buddy_list_popover_instance.destroy();
-                        buddy_list_popover_instance = undefined;
-                    }
-                },
-            },
-            {
-                show_as_overlay_on_mobile: true,
-                show_as_overlay_always: false,
-            },
-        );
+    popover_menus.register_popover_menu("#buddy-list-menu-icon", {
+        theme: "popover-menu",
+        placement: "right",
+        onCreate(instance) {
+            popover_menus.popover_instances.buddy_list = instance;
+            instance.setContent(ui_util.parse_html(render_buddy_list_popover()));
+        },
+        onHidden() {
+            if (popover_menus.popover_instances.buddy_list !== null) {
+                popover_menus.popover_instances.buddy_list.destroy();
+                popover_menus.popover_instances.buddy_list = null;
+            }
+        },
     });
 }
