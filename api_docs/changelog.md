@@ -31,6 +31,11 @@ format used by the Zulip server that they are interacting with.
 * [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
   `can_add_members_group` parameter to support changing the user group which
   can add members to the specified user group.
+* The `can_manage_all_groups` permission now has the natural semantics
+  of applying to all groups, regardless of the role of the user given
+  this permission. Since its introduction in feature level 299,
+  `can_manage_all_groups` had temporarily had unusual semantics
+  matching those of the original`user_group_edit_policy` setting.
 
 **Feature level 304**
 

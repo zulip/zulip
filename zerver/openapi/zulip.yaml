@@ -4395,11 +4395,9 @@ paths:
                                             defining the set of users who have permission to
                                             administer all existing groups in this organization.
 
-                                            **Changes**: Semantics to change in Zulip 10.0 (feature
-                                            level TBD). The original implementation of this setting
-                                            had different semantics, where only users who were a
-                                            member of the group or had the moderator role or above
-                                            could exercise the permission.
+                                            **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
+                                            were a member of the group or had the moderator role or above could
+                                            exercise the permission on a given group.
 
                                             New in Zulip 10.0 (feature level 299). Previously the
                                             `user_group_edit_policy` field controlled the permission
@@ -16279,11 +16277,9 @@ paths:
                               defining the set of users who have permission to
                               administer all existing groups in this organization.
 
-                              **Changes**: Semantics to change in Zulip 10.0 (feature
-                              level TBD). The original implementation of this setting
-                              had different semantics, where only users who were a
-                              member of the group or had the moderator role or above
-                              could exercise the permission.
+                              **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
+                              were a member of the group or had the moderator role or above could
+                              exercise the permission on a given group.
 
                               New in Zulip 10.0 (feature level 299). Previously the
                               `user_group_edit_policy` field controlled the permission
