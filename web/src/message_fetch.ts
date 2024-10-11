@@ -21,6 +21,7 @@ import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
+import type {NarrowTerm} from "./state_data";
 import {narrow_term_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
@@ -313,26 +314,21 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     // But support for the all_messages_data sharing of data with
     // the combined feed view and the (hacky) page_params.narrow feature
     // requires a somewhat ugly bundle of conditionals.
-    let narrow_data_string = "";
-    if (msg_list_data.filter.is_in_home()) {
-        if (page_params.narrow_stream !== undefined) {
-            narrow_data_string = JSON.stringify(page_params.narrow);
-        }
-        // Otherwise, we don't pass narrow for the combined feed view; this is
-        // required to display messages if their muted status changes without a new
-        // network request, and so we need the server to send us message history from muted
-        // streams and topics even though the combined feed view's in:home
-        // operators will filter those.
-    } else {
-        let terms = msg_list_data.filter.public_terms();
-        if (page_params.narrow !== undefined) {
-            terms = [...terms, ...page_params.narrow];
-        }
-        narrow_data_string = JSON.stringify(terms);
+    let narrow_data: NarrowTerm[] = [];
+    if (!msg_list_data.filter.is_in_home()) {
+        narrow_data = msg_list_data.filter.public_terms();
     }
-
-    if (narrow_data_string !== "") {
-        data.narrow = handle_operators_supporting_id_based_api(narrow_data_string);
+    if (page_params.narrow !== undefined) {
+        narrow_data = [...narrow_data, ...page_params.narrow];
+    }
+    // We don't pass a narrow for the non-spectator, combined feed view; this
+    // is required to display messages if their muted status changes without
+    // a new network request, and so we need the server to send the message
+    // history from muted streams and topics even though the combined feed
+    // view's "in:home" narrow term will filter those.
+    if (narrow_data.length > 0) {
+        const narrow_param_string = JSON.stringify(narrow_data);
+        data.narrow = handle_operators_supporting_id_based_api(narrow_param_string);
     }
 
     let update_loading_indicator =
