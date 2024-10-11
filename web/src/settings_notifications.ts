@@ -283,7 +283,7 @@ export function set_up(settings_panel: SettingsPanel): void {
             return;
         }
 
-        // This filters out the GroupSettingType
+        // This filters out the GroupSettingValue
         const setting_value = z
             .union([z.string(), z.number(), z.boolean()])
             .parse(settings_components.get_input_element_value(this));
