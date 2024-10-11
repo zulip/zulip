@@ -294,7 +294,6 @@ const realm_schema = z.object({
     realm_can_delete_own_message_group: z.number(),
     realm_can_manage_all_groups: z.number(),
     realm_create_multiuse_invite_group: z.number(),
-    realm_create_private_stream_policy: z.number(),
     realm_date_created: z.number(),
     realm_default_code_block_language: z.string(),
     realm_default_external_accounts: z.record(
