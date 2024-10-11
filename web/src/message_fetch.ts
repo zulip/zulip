@@ -8,6 +8,7 @@ import * as channel from "./channel";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_recipient from "./compose_recipient";
 import * as direct_message_group_data from "./direct_message_group_data";
+import {Filter} from "./filter";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
@@ -219,15 +220,10 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
 // doing so breaks the app in various modules that expect a string of
 // user emails.
 function handle_operators_supporting_id_based_api(narrow_parameter: string): string {
-    const operators_supporting_ids = new Set(["dm", "pm-with"]);
-    const operators_supporting_id = new Set([
-        "id",
-        "stream",
-        "sender",
-        "group-pm-with",
-        "dm-including",
-    ]);
-
+    // We use the canonical operator when checking these sets, so legacy
+    // operators, such as "pm-with" and "stream", are not included here.
+    const operators_supporting_ids = new Set(["dm"]);
+    const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
     const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(narrow_parameter));
 
     const narrow_terms: {
@@ -242,21 +238,23 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
             negated?: boolean | undefined;
         } = raw_term;
 
-        if (operators_supporting_ids.has(raw_term.operator)) {
+        const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
+
+        if (operators_supporting_ids.has(canonical_operator)) {
             const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
             assert(user_ids_array !== undefined);
             narrow_term.operand = user_ids_array;
         }
 
-        if (operators_supporting_id.has(raw_term.operator)) {
-            if (raw_term.operator === "id") {
+        if (operators_supporting_id.has(canonical_operator)) {
+            if (canonical_operator === "id") {
                 // The message ID may not exist locally,
                 // so send the term to the server as is.
                 narrow_terms.push(narrow_term);
                 continue;
             }
 
-            if (raw_term.operator === "stream") {
+            if (canonical_operator === "channel") {
                 const stream_id = stream_data.get_stream_id(raw_term.operand);
                 if (stream_id !== undefined) {
                     narrow_term.operand = stream_id;
@@ -266,7 +264,8 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
                 continue;
             }
 
-            // The other operands supporting object IDs all work with user objects.
+            // The other operands supporting integer IDs all work with
+            // a single user object.
             const person = people.get_by_email(raw_term.operand);
             if (person !== undefined) {
                 narrow_term.operand = person.user_id;
