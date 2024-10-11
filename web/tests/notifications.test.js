@@ -402,19 +402,19 @@ test("basic_notifications", () => {
         type: "stream",
         sender: "Jesse Pinkman",
         stream_id: 10,
-        topic: "whatever"
+        topic: "whatever",
     });
     const expected_key_string2 = JSON.stringify({
         type: "stream",
         sender: "Gus Fring",
         stream_id: 10,
-        topic: "lunch"
+        topic: "lunch",
     });
 
     // Send notification.
     message_notifications.process_notification({message: message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
-    
+
     assert.equal(n.has(expected_key_string1), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id.toString());

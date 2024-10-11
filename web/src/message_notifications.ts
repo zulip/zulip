@@ -109,7 +109,6 @@ function get_notification_key(message: Message | TestNotificationMessage): strin
     return JSON.stringify(keyObject);
 }
 
-
 function remove_sender_from_list_of_recipients(message: Message): string {
     return `, ${message.display_reply_to}, `
         .replace(`, ${message.sender_full_name}, `, ", ")
