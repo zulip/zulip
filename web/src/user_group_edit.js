@@ -354,20 +354,10 @@ export function handle_member_edit_event(group_id, user_ids) {
     }
 }
 
-export function update_settings_pane(group) {
+export function update_group_details(group) {
     const $edit_container = get_edit_container(group);
     $edit_container.find(".group-name").text(group.name);
     $edit_container.find(".group-description").text(group.description);
-
-    const $subsection = $edit_container.find(".settings-subsection-parent");
-    // We currently have only one group-level setting, so it is
-    // fine to just call the function to discard changes in the
-    // complete subsection.
-    //
-    // We can update this code to be similar to how we handle realm
-    // settings in settings_org.sync_realm_settings when we add more
-    // group-level settings.
-    settings_org.discard_group_settings_subsection_changes($subsection, group);
 }
 
 function update_toggler_for_group_setting() {
@@ -618,6 +608,16 @@ export function add_group_to_table(group) {
     }
 }
 
+export function sync_group_permission_setting(property, group) {
+    const $elem = $(`#id_${CSS.escape(property)}`);
+    const $subsection = $elem.closest(".settings-subsection-parent");
+    if ($subsection.find(".save-button-controls").hasClass("hide")) {
+        settings_org.discard_group_property_element_changes($elem, group);
+    } else {
+        settings_org.discard_group_settings_subsection_changes($subsection, group);
+    }
+}
+
 export function update_group(event) {
     if (!overlays.groups_open()) {
         return;
@@ -643,15 +643,20 @@ export function update_group(event) {
 
     if (get_active_data().id === group.id) {
         // update right side pane
-        update_settings_pane(group);
+        update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
             $("#groups_overlay .user-group-info-title").text(group.name);
         }
+        if (event.data.can_mention_group !== undefined) {
+            sync_group_permission_setting("can_mention_group", group);
+        }
         if (event.data.can_manage_group !== undefined) {
+            sync_group_permission_setting("can_manage_group", group);
             update_group_management_ui();
         }
         if (event.data.can_join_group !== undefined) {
+            sync_group_permission_setting("can_mention_group", group);
             update_group_membership_button(group.id);
         }
     }
