@@ -213,24 +213,12 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
     process_result(data, opts);
 }
 
-// This function modifies the data.narrow filters to use integer IDs
-// instead of strings if it is supported. We currently don't set or
-// convert user emails to user IDs directly in the Filter code
-// because doing so breaks the app in various modules that expect a
-// string of user emails.
-function handle_operators_supporting_id_based_api(data: {
-    anchor: string | number;
-    num_before: number;
-    num_after: number;
-    client_gravatar: boolean;
-    narrow?: string;
-}): {
-    anchor: string | number;
-    num_before: number;
-    num_after: number;
-    client_gravatar: boolean;
-    narrow?: string;
-} {
+// This function modifies the narrow data to use integer IDs instead of
+// strings if it is supported for that operator. We currently don't set
+// or convert user emails to IDs directly in the Filter code because
+// doing so breaks the app in various modules that expect a string of
+// user emails.
+function handle_operators_supporting_id_based_api(narrow_parameter: string): string {
     const operators_supporting_ids = new Set(["dm", "pm-with"]);
     const operators_supporting_id = new Set([
         "id",
@@ -240,11 +228,7 @@ function handle_operators_supporting_id_based_api(data: {
         "dm-including",
     ]);
 
-    if (data.narrow === undefined) {
-        return data;
-    }
-
-    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(data.narrow));
+    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(narrow_parameter));
 
     const narrow_terms: {
         operator: string;
@@ -291,8 +275,7 @@ function handle_operators_supporting_id_based_api(data: {
         narrow_terms.push(narrow_term);
     }
 
-    data.narrow = JSON.stringify(narrow_terms);
-    return data;
+    return JSON.stringify(narrow_terms);
 }
 
 export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
@@ -303,7 +286,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         // the nearest integer before sending a request to the server.
         opts.anchor = opts.anchor.toFixed(0);
     }
-    let data: {
+    const data: {
         anchor: number | string;
         num_before: number;
         num_after: number;
@@ -327,9 +310,10 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     // But support for the all_messages_data sharing of data with
     // the combined feed view and the (hacky) page_params.narrow feature
     // requires a somewhat ugly bundle of conditionals.
+    let narrow_data_string = "";
     if (msg_list_data.filter.is_in_home()) {
         if (page_params.narrow_stream !== undefined) {
-            data.narrow = JSON.stringify(page_params.narrow);
+            narrow_data_string = JSON.stringify(page_params.narrow);
         }
         // Otherwise, we don't pass narrow for the combined feed view; this is
         // required to display messages if their muted status changes without a new
@@ -360,8 +344,11 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 server_terms.push({...term});
             }
         }
+        narrow_data_string = JSON.stringify(server_terms);
+    }
 
-        data.narrow = JSON.stringify(server_terms);
+    if (narrow_data_string !== "") {
+        data.narrow = handle_operators_supporting_id_based_api(narrow_data_string);
     }
 
     let update_loading_indicator =
@@ -379,8 +366,6 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
             update_loading_indicator,
         });
     }
-
-    data = handle_operators_supporting_id_based_api(data);
 
     if (page_params.is_spectator) {
         // This is a bit of a hack; ideally we'd unify this logic in
