@@ -214,8 +214,8 @@ function sort_bot_owner(a, b) {
 
 function sort_last_active(a, b) {
     return user_sort.compare_a_b(
-        presence.last_active_date(a.user_id) || 0,
-        presence.last_active_date(b.user_id) || 0,
+        presence.last_active_date(a.user_id)?.getTime() || 0,
+        presence.last_active_date(b.user_id)?.getTime() || 0,
     );
 }
 
