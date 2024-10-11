@@ -46,6 +46,7 @@ EXEMPT_FILES = make_set(
     [
         "web/shared/src/poll_data.ts",
         "web/src/about_zulip.ts",
+        "web/src/add_group_members_pill.ts",
         "web/src/add_stream_options_popover.ts",
         "web/src/add_subscribers_pill.ts",
         "web/src/admin.js",

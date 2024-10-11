@@ -166,7 +166,8 @@ h4.user_group_setting_subsection_title {
                 }
             }
 
-            .subscriber_list_remove {
+            .subscriber_list_remove,
+            .subgroup-list-remove {
                 padding-right: 16px;
                 display: inline-block;
             }
@@ -261,7 +262,8 @@ h4.user_group_setting_subsection_title {
     display: inline;
 }
 
-.remove-subscriber-form {
+.remove-subscriber-form,
+.remove-subgroup-form {
     margin: 0;
 }
 
