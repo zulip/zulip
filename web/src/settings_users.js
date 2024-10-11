@@ -28,6 +28,7 @@ export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list
 
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
+let bot_list_widget;
 
 const section = {
     active: {
@@ -37,6 +38,51 @@ const section = {
             // 0 role_code signifies All roles for our filter.
             role_code: 0,
         },
+        create_table(active_users) {
+            const $users_table = $("#admin_users_table");
+            section.active.list_widget = ListWidget.create($users_table, active_users, {
+                name: "users_table_list",
+                get_item: people.get_by_user_id,
+                modifier_html(item) {
+                    const info = human_info(item);
+                    return render_admin_user_list({
+                        ...info,
+                        display_last_active_column: true,
+                    });
+                },
+                filter: {
+                    predicate(person) {
+                        return people.predicate_for_user_settings_filters(
+                            person,
+                            section.active.filters,
+                        );
+                    },
+                    onupdate: reset_scrollbar($users_table),
+                },
+                $parent_container: $("#admin-active-users-list").expectOne(),
+                init_sort: "full_name_alphabetic",
+                sort_fields: {
+                    email: user_sort.sort_email,
+                    last_active: sort_last_active,
+                    role: user_sort.sort_role,
+                    id: user_sort.sort_user_id,
+                    ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
+                },
+                $simplebar_container: $("#admin-active-users-list .progressive-table-wrapper"),
+            });
+
+            set_text_search_value($users_table, section.active.filters.text_search);
+            loading.destroy_indicator($("#admin_page_users_loading_indicator"));
+            $("#admin_users_table").show();
+        },
+        handle_events() {
+            const $tbody = $("#admin_users_table").expectOne();
+
+            handle_filter_change($tbody, section.active);
+            handle_deactivation($tbody);
+            handle_reactivation($tbody);
+            handle_edit_form($tbody);
+        },
     },
     deactivated: {
         dropdown_widget_name: deactivated_user_list_dropdown_widget_name,
@@ -45,8 +91,109 @@ const section = {
             // 0 role_code signifies All roles for our filter.
             role_code: 0,
         },
+        create_table(deactivated_users) {
+            const $deactivated_users_table = $("#admin_deactivated_users_table");
+            section.deactivated.list_widget = ListWidget.create(
+                $deactivated_users_table,
+                deactivated_users,
+                {
+                    name: "deactivated_users_table_list",
+                    get_item: people.get_by_user_id,
+                    modifier_html(item) {
+                        const info = human_info(item);
+                        return render_admin_user_list({
+                            ...info,
+                            display_last_active_column: false,
+                        });
+                    },
+                    filter: {
+                        predicate(person) {
+                            return people.predicate_for_user_settings_filters(
+                                person,
+                                section.deactivated.filters,
+                            );
+                        },
+                        onupdate: reset_scrollbar($deactivated_users_table),
+                    },
+                    $parent_container: $("#admin-deactivated-users-list").expectOne(),
+                    init_sort: "full_name_alphabetic",
+                    sort_fields: {
+                        email: user_sort.sort_email,
+                        role: user_sort.sort_role,
+                        id: user_sort.sort_user_id,
+                        ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
+                    },
+                    $simplebar_container: $(
+                        "#admin-deactivated-users-list .progressive-table-wrapper",
+                    ),
+                },
+            );
+
+            set_text_search_value(
+                $deactivated_users_table,
+                section.deactivated.filters.text_search,
+            );
+            loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
+            $("#admin_deactivated_users_table").show();
+        },
+        handle_events() {
+            const $tbody = $("#admin_deactivated_users_table").expectOne();
+
+            handle_filter_change($tbody, section.deactivated);
+            handle_deactivation($tbody);
+            handle_reactivation($tbody);
+            handle_edit_form($tbody);
+        },
     },
-    bots: {},
+    bots: {
+        create_table() {
+            loading.make_indicator($("#admin_page_bots_loading_indicator"), {
+                text: $t({defaultMessage: "Loading…"}),
+            });
+            const $bots_table = $("#admin_bots_table");
+            $bots_table.hide();
+            const bot_user_ids = people.get_bot_ids();
+
+            bot_list_widget = ListWidget.create($bots_table, bot_user_ids, {
+                name: "admin_bot_list",
+                get_item: bot_info,
+                modifier_html: render_admin_user_list,
+                html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id)}']`),
+                filter: {
+                    $element: $bots_table.closest(".settings-section").find(".search"),
+                    predicate(item, value) {
+                        if (!item) {
+                            return false;
+                        }
+                        return (
+                            item.full_name.toLowerCase().includes(value) ||
+                            item.display_email.toLowerCase().includes(value)
+                        );
+                    },
+                    onupdate: reset_scrollbar($bots_table),
+                },
+                $parent_container: $("#admin-bot-list").expectOne(),
+                init_sort: "full_name_alphabetic",
+                sort_fields: {
+                    email: sort_bot_email,
+                    bot_owner: sort_bot_owner,
+                    role: user_sort.sort_role,
+                    ...ListWidget.generic_sort_functions("alphabetic", ["full_name", "bot_type"]),
+                },
+                $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
+            });
+
+            loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
+            $bots_table.show();
+        },
+        handle_events() {
+            const $tbody = $("#admin_bots_table").expectOne();
+
+            handle_bot_deactivation($tbody);
+            handle_reactivation($tbody);
+            handle_edit_form($tbody);
+        },
+    },
 };
 
 function sort_bot_email(a, b) {
@@ -286,121 +433,6 @@ function set_text_search_value($table, value) {
     $table.closest(".user-settings-section").find(".search").val(value);
 }
 
-let bot_list_widget;
-
-section.bots.create_table = () => {
-    loading.make_indicator($("#admin_page_bots_loading_indicator"), {
-        text: $t({defaultMessage: "Loading…"}),
-    });
-    const $bots_table = $("#admin_bots_table");
-    $bots_table.hide();
-    const bot_user_ids = people.get_bot_ids();
-
-    bot_list_widget = ListWidget.create($bots_table, bot_user_ids, {
-        name: "admin_bot_list",
-        get_item: bot_info,
-        modifier_html: render_admin_user_list,
-        html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id)}']`),
-        filter: {
-            $element: $bots_table.closest(".settings-section").find(".search"),
-            predicate(item, value) {
-                if (!item) {
-                    return false;
-                }
-                return (
-                    item.full_name.toLowerCase().includes(value) ||
-                    item.display_email.toLowerCase().includes(value)
-                );
-            },
-            onupdate: reset_scrollbar($bots_table),
-        },
-        $parent_container: $("#admin-bot-list").expectOne(),
-        init_sort: "full_name_alphabetic",
-        sort_fields: {
-            email: sort_bot_email,
-            bot_owner: sort_bot_owner,
-            role: user_sort.sort_role,
-            ...ListWidget.generic_sort_functions("alphabetic", ["full_name", "bot_type"]),
-        },
-        $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
-    });
-
-    loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
-    $bots_table.show();
-};
-
-section.active.create_table = (active_users) => {
-    const $users_table = $("#admin_users_table");
-    section.active.list_widget = ListWidget.create($users_table, active_users, {
-        name: "users_table_list",
-        get_item: people.get_by_user_id,
-        modifier_html(item) {
-            const info = human_info(item);
-            info.display_last_active_column = true;
-            return render_admin_user_list(info);
-        },
-        filter: {
-            predicate(person) {
-                return people.predicate_for_user_settings_filters(person, section.active.filters);
-            },
-            onupdate: reset_scrollbar($users_table),
-        },
-        $parent_container: $("#admin-active-users-list").expectOne(),
-        init_sort: "full_name_alphabetic",
-        sort_fields: {
-            email: user_sort.sort_email,
-            last_active: sort_last_active,
-            role: user_sort.sort_role,
-            id: user_sort.sort_user_id,
-            ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
-        },
-        $simplebar_container: $("#admin-active-users-list .progressive-table-wrapper"),
-    });
-
-    set_text_search_value($users_table, section.active.filters.text_search);
-    loading.destroy_indicator($("#admin_page_users_loading_indicator"));
-    $("#admin_users_table").show();
-};
-
-section.deactivated.create_table = (deactivated_users) => {
-    const $deactivated_users_table = $("#admin_deactivated_users_table");
-    section.deactivated.list_widget = ListWidget.create(
-        $deactivated_users_table,
-        deactivated_users,
-        {
-            name: "deactivated_users_table_list",
-            get_item: people.get_by_user_id,
-            modifier_html(item) {
-                const info = human_info(item);
-                info.display_last_active_column = false;
-                return render_admin_user_list(info);
-            },
-            filter: {
-                predicate(person) {
-                    return people.predicate_for_user_settings_filters(
-                        person,
-                        section.deactivated.filters,
-                    );
-                },
-                onupdate: reset_scrollbar($deactivated_users_table),
-            },
-            $parent_container: $("#admin-deactivated-users-list").expectOne(),
-            init_sort: "full_name_alphabetic",
-            sort_fields: {
-                email: user_sort.sort_email,
-                role: user_sort.sort_role,
-                id: user_sort.sort_user_id,
-                ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
-            },
-            $simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
-        },
-    );
-
-    set_text_search_value($deactivated_users_table, section.deactivated.filters.text_search);
-    loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
-    $("#admin_deactivated_users_table").show();
-};
-
 export function update_bot_data(bot_user_id) {
     if (!bot_list_widget) {
         return;
@@ -579,32 +611,6 @@ function handle_filter_change($tbody, section) {
             add_value_to_filters(section, "text_search", this.value.toLocaleLowerCase());
         });
 }
-
-section.active.handle_events = () => {
-    const $tbody = $("#admin_users_table").expectOne();
-
-    handle_filter_change($tbody, section.active);
-    handle_deactivation($tbody);
-    handle_reactivation($tbody);
-    handle_edit_form($tbody);
-};
-
-section.deactivated.handle_events = () => {
-    const $tbody = $("#admin_deactivated_users_table").expectOne();
-
-    handle_filter_change($tbody, section.deactivated);
-    handle_deactivation($tbody);
-    handle_reactivation($tbody);
-    handle_edit_form($tbody);
-};
-
-section.bots.handle_events = () => {
-    const $tbody = $("#admin_bots_table").expectOne();
-
-    handle_bot_deactivation($tbody);
-    handle_reactivation($tbody);
-    handle_edit_form($tbody);
-};
 
 export function set_up_humans() {
     start_data_load();
