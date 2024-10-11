@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import {z} from "zod";
@@ -934,7 +935,7 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
                 blueslip.error("Element refers to unknown property", {property_name});
             }
     }
-    return current_val !== proposed_val;
+    return !_.isEqual(current_val, proposed_val);
 }
 
 export function check_custom_profile_property_changed(
