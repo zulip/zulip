@@ -317,6 +317,10 @@ export function dispatch_normal_event(event) {
                                 if (key === "edit_topic_policy") {
                                     message_live_update.rerender_messages_view();
                                 }
+
+                                if (key === "plan_type") {
+                                    gear_menu.rerender();
+                                }
                             }
                             if (event.data.authentication_methods !== undefined) {
                                 settings_org.populate_auth_methods(

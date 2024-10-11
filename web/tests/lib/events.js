@@ -370,6 +370,8 @@ exports.fixtures = {
             },
             can_create_public_channel_group: 3,
             direct_message_permission_group: 3,
+            plan_type: 3,
+            upload_quota_mib: 50000,
         },
     },
 

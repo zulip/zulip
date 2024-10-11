@@ -28,6 +28,7 @@ from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
 )
+from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
@@ -786,13 +787,15 @@ def do_change_realm_plan_type(
 
     realm.save(update_fields=["_max_invites", "message_visibility_limit"])
 
-    event = {
-        "type": "realm",
-        "op": "update",
-        "property": "plan_type",
-        "value": plan_type,
-        "extra_data": {"upload_quota": realm.upload_quota_bytes()},
-    }
+    event = dict(
+        type="realm",
+        op="update_dict",
+        property="default",
+        data={
+            "plan_type": plan_type,
+            "upload_quota_mib": optional_bytes_to_mib(realm.upload_quota_bytes()),
+        },
+    )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 

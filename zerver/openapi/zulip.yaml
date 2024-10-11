@@ -4064,6 +4064,12 @@ paths:
                                 A correct client implementation should convert these
                                 events into the corresponding [realm/update_dict](#realm-update_dict)
                                 event and then process that.
+
+                                **Changes**: Removed `extra_data` optional property in Zulip 10.0
+                                (feature level 306). The `extra_data` used to include an
+                                `upload_quota` field when changed property was `plan_type`. The
+                                server now sends a standard `realm/update_dict` event for plan
+                                changes.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4088,19 +4094,6 @@ paths:
                                     - type: string
                                     - type: boolean
                                     - type: integer
-                                extra_data:
-                                  description: |
-                                    Object containing extra data related to the changed
-                                    property.
-                                  type: object
-                                  additionalProperties: false
-                                  properties:
-                                    upload_quota:
-                                      type: integer
-                                      description: |
-                                        Note: Only present if changed property is `plan_type`.
-
-                                        The new upload quota for the Zulip organization.
                               example:
                                 {
                                   "type": "realm",
@@ -4907,6 +4900,17 @@ paths:
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed
                                         `signup_notifications_stream_id` to `signup_announcements_stream_id`.
+                                    upload_quota_mib:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        The new upload quota for the Zulip organization.
+
+                                        If `null`, there is no limit.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 306). Previously,
+                                        this was present changed via an `upload_quota` field in `extra_data` property
+                                        of [realm/update](#realm-update) event format for `plan_type` events.
                                     video_chat_provider:
                                       type: integer
                                       description: |
