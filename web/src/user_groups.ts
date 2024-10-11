@@ -9,7 +9,7 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import type {
     GroupPermissionSetting,
-    GroupSettingType,
+    GroupSettingValue,
     StateData,
     user_group_schema,
 } from "./state_data";
@@ -325,7 +325,7 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
 }
 
 export function is_user_in_setting_group(
-    setting_group: GroupSettingType,
+    setting_group: GroupSettingValue,
     user_id: number,
 ): boolean {
     if (typeof setting_group === "number") {

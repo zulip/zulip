@@ -22,7 +22,7 @@ import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import type {CustomProfileField, group_setting_type_schema} from "./state_data";
+import type {CustomProfileField, GroupSettingValue} from "./state_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
@@ -650,7 +650,7 @@ function get_input_type($input_elem: JQuery, input_type?: string): string {
 export function get_input_element_value(
     input_elem: HTMLElement,
     input_type?: string,
-): boolean | number | string | null | undefined | GroupSettingType {
+): boolean | number | string | null | undefined | GroupSettingValue {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
     let input_value;
@@ -881,7 +881,7 @@ export function check_stream_settings_property_changed(
 
 export function get_group_setting_widget_value(
     pill_widget: GroupSettingPillContainer,
-): GroupSettingType {
+): GroupSettingValue {
     const setting_pills = pill_widget.items();
     const direct_subgroups: number[] = [];
     const direct_members: number[] = [];
@@ -1421,7 +1421,7 @@ export function get_group_setting_widget(setting_name: string): GroupSettingPill
 
 export function set_group_setting_widget_value(
     pill_widget: GroupSettingPillContainer,
-    property_value: GroupSettingType,
+    property_value: GroupSettingValue,
 ): void {
     pill_widget.clear();
 
@@ -1445,8 +1445,6 @@ export function set_group_setting_widget_value(
         }
     }
 }
-
-export type GroupSettingType = z.output<typeof group_setting_type_schema>;
 
 type group_setting_name = "can_manage_group" | "can_join_group";
 

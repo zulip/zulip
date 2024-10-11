@@ -4,7 +4,7 @@ import * as group_permission_settings from "./group_permission_settings";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import {current_user, realm} from "./state_data";
-import type {GroupSettingType} from "./state_data";
+import type {GroupSettingValue} from "./state_data";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 
@@ -110,7 +110,7 @@ function user_has_permission(policy_value: number): boolean {
 }
 
 export function user_has_permission_for_group_setting(
-    setting_group_id: GroupSettingType,
+    setting_group_id: GroupSettingValue,
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
 ): boolean {
