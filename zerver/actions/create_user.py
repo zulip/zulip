@@ -776,7 +776,9 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         subscriber_peer_info=subscriber_peer_info,
     )
 
-    member_user_groups = user_profile.direct_groups.select_related("named_user_group")
+    member_user_groups = user_profile.direct_groups.select_related("named_user_group").order_by(
+        "id"
+    )
     named_user_groups = []
     setting_user_groups = []
     for group in member_user_groups:
