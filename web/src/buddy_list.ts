@@ -13,6 +13,7 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import type {BuddyUserInfo} from "./buddy_data";
 import {media_breakpoints_num} from "./css_variables";
+import type {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
@@ -166,6 +167,7 @@ export class BuddyList extends BuddyListConf {
     $participants_list = $(this.participants_list_selector);
     $users_matching_view_list = $(this.matching_view_list_selector);
     $other_users_list = $(this.other_user_list_selector);
+    current_filter: Filter | undefined;
 
     initialize_tooltips(): void {
         $("#right-sidebar").on(
@@ -390,14 +392,20 @@ export class BuddyList extends BuddyListConf {
 
     render_section_headers(): void {
         const {hide_headers, participant_ids_set} = this.render_data;
-        // We only show the participants list if it has members, so updating even if we're updating
-        // the count, that can affect if we show/hide this section.
+        // We only show the participants list if it has members, so even if we're not
+        // changing filters and only updating user counts for the current filter, that
+        // can affect if we show/hide this section.
         const show_participants_list = !hide_headers && participant_ids_set.size;
         $("#buddy-list-participants-container").toggleClass("no-display", !show_participants_list);
-        if ($(".buddy-list-subsection-header").children().length) {
+
+        // If we're not changing filters, this just means some users were added or
+        // removed but otherwise everything is the same, so we don't need to do a full
+        // rerender.
+        if (this.current_filter === narrow_state.filter()) {
             this.update_section_header_counts();
             return;
         }
+        this.current_filter = narrow_state.filter();
 
         const {current_sub, total_human_subscribers_count, other_users_count, total_human_users} =
             this.render_data;
