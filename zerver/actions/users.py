@@ -427,7 +427,9 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         # data, but guests who cannot access the deactivated user
         # need an explicit 'user_group/remove_members' event to
         # update the user groups data.
-        deactivated_user_groups = user_profile.direct_groups.select_related("named_user_group")
+        deactivated_user_groups = user_profile.direct_groups.select_related(
+            "named_user_group"
+        ).order_by("id")
         deactivated_user_named_groups = []
         deactivated_user_setting_groups = []
         for group in deactivated_user_groups:
