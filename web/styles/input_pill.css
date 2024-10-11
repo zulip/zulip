@@ -180,8 +180,8 @@
 }
 
 #compose-direct-recipient .pill-container {
-    border: 1px solid hsl(0deg 0% 0% / 20%);
-    background-color: hsl(0deg 0% 100%);
+    border: none;
+    background: none;
 
     .input:first-child:empty::before {
         content: attr(data-no-recipients-text);

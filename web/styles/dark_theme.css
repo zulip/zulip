@@ -396,8 +396,7 @@
     #custom-expiration-time-input,
     #organization-permissions .dropdown-widget-button,
     #organization-settings .dropdown-widget-button,
-    #stream-advanced-configurations .dropdown-widget-button,
-    #compose_recipient_box {
+    #stream-advanced-configurations .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
@@ -425,10 +424,6 @@
 
     .settings-profile-user-field {
         border-color: hsl(3deg 73% 74%);
-    }
-
-    #compose-direct-recipient .pill-container {
-        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     #searchbox {
