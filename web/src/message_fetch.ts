@@ -255,11 +255,15 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
             }
 
             if (canonical_operator === "channel") {
-                const stream_id = stream_data.get_stream_id(raw_term.operand);
-                if (stream_id !== undefined) {
-                    narrow_term.operand = stream_id;
+                // An unknown channel will have an empty string set for
+                // the operand. And the page_params.narrow may have a
+                // channel name as the operand. But all other cases
+                // should have the channel ID set as the string value
+                // for the operand.
+                const stream = stream_data.get_sub_by_id_string(raw_term.operand);
+                if (stream !== undefined) {
+                    narrow_term.operand = stream.stream_id;
                 }
-
                 narrow_terms.push(narrow_term);
                 continue;
             }
@@ -324,26 +328,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         if (page_params.narrow !== undefined) {
             terms = [...terms, ...page_params.narrow];
         }
-        // TODO(stream_id): The server would ideally work with stream ids instead
-        // of stream names.
-        const server_terms = [];
-        for (const term of terms) {
-            if (term.operator === "channel") {
-                const sub = stream_data.get_sub_by_id_string(term.operand);
-                server_terms.push({
-                    ...term,
-                    // If we can't find the sub, we shouldn't send `undefined`
-                    // because we want to preserve the NarrowTerm type, so we just
-                    // send the unknown stream id.
-                    // This should show a "this channel does not exist or is private"
-                    // notice (both logged in and logged out).
-                    operand: sub?.name ?? term.operand,
-                });
-            } else {
-                server_terms.push({...term});
-            }
-        }
-        narrow_data_string = JSON.stringify(server_terms);
+        narrow_data_string = JSON.stringify(terms);
     }
 
     if (narrow_data_string !== "") {
