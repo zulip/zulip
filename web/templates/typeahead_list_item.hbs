@@ -25,6 +25,9 @@
             {{~ primary ~}}
         {{~/if~}}
     </strong>
+    {{~#if is_bot}}
+        <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+    {{/if}}
     {{~#if has_pronouns}}
         <span class="pronouns">{{pronouns}}{{#if (or has_secondary_html has_secondary)}},{{/if}}</span>
     {{~/if}}
