@@ -205,7 +205,6 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         },
         success() {
             $resend_button.text($t({defaultMessage: "Sent!"}));
-            $resend_button.removeClass("resend btn-warning").addClass("sea-green");
         },
     });
 }
