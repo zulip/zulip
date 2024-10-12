@@ -54,9 +54,12 @@ the emoji's id -- but because the filename is stored in the database, it can be
 anything with sufficient entropy to not be enumerable or have collisions.
 
 For animated emoji, a separate "still" version of the emoji is generated from
-the first frame, as a 64x64 PNG image. This is not currently used, but is
+the first frame, as a 64x64 PNG image. This is currently mostly unused, but is
 intended to be part of a user preference to disable emoji animations (see
-[#13434](https://github.com/zulip/zulip/issues/13434)).
+[#13434](https://github.com/zulip/zulip/issues/13434)). Current use is limited
+to [user status](https://zulip.com/help/status-and-availability) display in
+the the buddy list. When a user uses an animated emoji as their status, the
+"still" version is used.
 
 The original emoji is stored adjacent to the thumbnailed version, enabling later
 re-thumbnailing to other dimensions or formats without requiring users to
@@ -106,9 +109,9 @@ If a message is rendered with a spinner, it also inserts the image into the
 `thumbnail` worker's queue. This is generally redundant -- the image was
 inserted into the queue when the image was uploaded. The exception is if the
 image was uploaded prior to the existence of thumbnailing support, in which case
-the additional is required to have the spinner ever resolve. Since the worker
-takes no action if all necessary thumbnails already exist, this has little cost
-in general.
+the additional queue insertion is required to have the spinner ever resolve.
+Since the worker takes no action if all necessary thumbnails already exist,
+this has little cost in general.
 
 The `thumbnail` worker generates the thumbnails, uploads them to S3 or disk, and
 then updates the `thumbnailed_metadata` of the ImageAttachment row to contain a
