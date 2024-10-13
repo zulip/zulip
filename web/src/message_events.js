@@ -599,11 +599,11 @@ export function update_messages(events) {
                     continue;
                 }
 
+                const event_msg_ids = event_messages.map((msg) => msg.id);
                 if (list.data.filter.can_apply_locally()) {
                     // Remove add messages and add them back to the list to
                     // allow event muted messages which were previously part
                     // of the message list but hidden could be rerendered again.
-                    const event_msg_ids = event_messages.map((msg) => msg.id);
                     list.data.remove(event_msg_ids);
                     list.data.add_messages(event_messages);
                     list.rerender();
@@ -613,10 +613,7 @@ export function update_messages(events) {
                     // this will help us rerender them via
                     // maybe_add_narrowed_messages, if they were
                     // simply updated.
-                    const updated_messages = event_messages.filter(
-                        (msg) => list.data.get(msg.id) !== undefined,
-                    );
-                    list.remove_and_rerender(updated_messages.map((msg) => msg.id));
+                    list.remove_and_rerender(event_msg_ids);
                     // For filters that cannot be processed locally, ask server.
                     message_events_util.maybe_add_narrowed_messages(
                         event_messages,
