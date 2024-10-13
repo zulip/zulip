@@ -120,7 +120,6 @@ class HomeTest(ZulipTestCase):
         "presences",
         "presence_last_update_id",
         "queue_id",
-        "realm_add_custom_emoji_policy",
         "realm_allow_edit_history",
         "realm_allow_message_editing",
         "realm_authentication_methods",
