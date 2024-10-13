@@ -130,13 +130,6 @@ function make_zjquery() {
         elems.clear();
     };
 
-    zjquery.validator = {
-        /* istanbul ignore next */
-        addMethod() {
-            throw new Error("You must create your own $.validator.addMethod stub.");
-        },
-    };
-
     return zjquery;
 }
 
