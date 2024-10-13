@@ -4410,6 +4410,20 @@ paths:
                                             **Changes**: New in Zulip 10.0 (feature level 280). Previously
                                             `realm_create_web_public_stream_policy` field used to control
                                             the permission to create web-public channels.
+                                    can_add_custom_emoji_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to add custom emoji in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 307). Previously, this
+                                            permission was controlled by the enum `add_custom_emoji_policy`. Values
+                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
+
+                                            Before Zulip 5.0 (feature level 85), the `realm_add_emoji_by_admins_only`
+                                            boolean setting controlled this permission; `true` corresponded to `Admins`,
+                                            and `false` to `Everyone`.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_delete_any_message_group:
                                       allOf:
                                         - description: |
@@ -16235,6 +16249,22 @@ paths:
 
                           Whether this organization is configured to allow users to access
                           [message edit history](/help/view-a-messages-edit-history).
+                      realm_can_add_custom_emoji_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to add custom emoji in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 307). Previously, this
+                              permission was controlled by the enum `add_custom_emoji_policy`. Values
+                              were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
+
+                              Before Zulip 5.0 (feature level 85), the `realm_add_emoji_by_admins_only`
+                              boolean setting controlled this permission; `true` corresponded to `Admins`,
+                              and `false` to `Everyone`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_delete_any_message_group:
                         allOf:
                           - description: |

@@ -205,7 +205,6 @@ export function dispatch_normal_event(event) {
 
         case "realm": {
             const realm_settings = {
-                add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
                 allow_edit_history: noop,
                 allow_message_editing: noop,
                 edit_topic_policy: noop,
@@ -298,6 +297,10 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
+                                }
+
+                                if (key === "can_add_custom_emoji_group") {
+                                    settings_emoji.update_custom_emoji_ui();
                                 }
 
                                 if (

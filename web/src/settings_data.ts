@@ -240,7 +240,11 @@ export function user_can_create_user_groups(): boolean {
 }
 
 export function user_can_add_custom_emoji(): boolean {
-    return user_has_permission(realm.realm_add_custom_emoji_policy);
+    return user_has_permission_for_group_setting(
+        realm.realm_can_add_custom_emoji_group,
+        "can_add_custom_emoji_group",
+        "realm",
+    );
 }
 
 export function user_can_move_messages_to_another_topic(): boolean {

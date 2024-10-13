@@ -218,7 +218,6 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 type simple_dropdown_realm_settings = Pick<
     typeof realm,
     | "realm_invite_to_stream_policy"
-    | "realm_add_custom_emoji_policy"
     | "realm_invite_to_realm_policy"
     | "realm_wildcard_mention_policy"
     | "realm_move_messages_between_streams_policy"
@@ -482,6 +481,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["can_remove_subscribers_group", null],
     ["realm_can_access_all_users_group", null],
     ["can_mention_group", null],
+    ["realm_can_add_custom_emoji_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
@@ -807,6 +807,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_default_code_block_language":
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
+        case "realm_can_add_custom_emoji_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
@@ -1047,6 +1048,7 @@ export function populate_data_for_realm_settings_request(
                 }
 
                 const realm_group_settings_using_new_api_format = new Set([
+                    "can_add_custom_emoji_group",
                     "can_create_groups",
                     "can_create_private_channel_group",
                     "can_create_public_channel_group",

@@ -267,7 +267,6 @@ const realm_schema = z.object({
     max_topic_length: z.number(),
     password_min_guesses: z.number(),
     password_min_length: z.number(),
-    realm_add_custom_emoji_policy: z.number(),
     realm_allow_edit_history: z.boolean(),
     realm_allow_message_editing: z.boolean(),
     realm_authentication_methods: z.record(
@@ -287,6 +286,7 @@ const realm_schema = z.object({
     realm_bot_creation_policy: z.number(),
     realm_bot_domain: z.string(),
     realm_can_access_all_users_group: z.number(),
+    realm_can_add_custom_emoji_group: z.number(),
     realm_can_create_groups: z.number(),
     realm_can_create_public_channel_group: z.number(),
     realm_can_create_private_channel_group: z.number(),
