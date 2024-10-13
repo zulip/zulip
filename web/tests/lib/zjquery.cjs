@@ -38,13 +38,8 @@ function verify_selector_for_zulip(selector) {
 function make_zjquery() {
     const elems = new Map();
 
-    // Our fn structure helps us simulate extending jQuery.
-    // Use this with extreme caution.
-    const fn = {};
-
     function new_elem(selector, create_opts) {
         const $elem = FakeJQuery(selector, {...create_opts});
-        Object.assign($elem, fn);
 
         // Create a proxy handler to detect missing stubs.
         //
@@ -126,35 +121,6 @@ function make_zjquery() {
     zjquery.set_results = (selector, elements) => zjquery.create(selector, {elements});
 
     zjquery.Event = FakeEvent;
-
-    /* istanbul ignore next */
-    fn.popover = () => {
-        throw new Error(`
-            Do not try to test $.fn.popover code unless
-            you really know what you are doing.
-        `);
-    };
-
-    zjquery.fn = new Proxy(fn, {
-        set(_obj, _prop, _value) {
-            /* istanbul ignore next */
-            throw new Error(`
-                Please don't use node tests to test code
-                that extends $.fn unless you really know
-                what you are doing.
-
-                It's likely that you are better off testing
-                end-to-end behavior with puppeteer tests.
-
-                If you are trying to get coverage on a module
-                that extends $.fn, and you just want to skip
-                over that aspect of the module for the purpose
-                of testing, see if you can wrap the code
-                that extends $.fn and use override() to
-                replace the wrapper with tests.lib.noop.
-            `);
-        },
-    });
 
     zjquery.reset_selector = (selector) => {
         elems.delete(selector);
