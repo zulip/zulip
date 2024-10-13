@@ -253,7 +253,9 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This channel does not exist or is private."),
+        empty_narrow_html(
+            "translated: This channel doesn't exist, or you are not allowed to view it.",
+        ),
     );
 
     // for non-subbed public stream
@@ -573,7 +575,9 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This channel does not exist or is private."),
+        empty_narrow_html(
+            "translated: This channel doesn't exist, or you are not allowed to view it.",
+        ),
     );
 
     set_filter([
