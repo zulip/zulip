@@ -1059,6 +1059,7 @@ group_setting_update_data_type = DictType(
     optional_keys=[
         ("create_multiuse_invite_group", int),
         ("can_access_all_users_group", int),
+        ("can_add_custom_emoji_group", group_setting_type),
         ("can_create_groups", group_setting_type),
         ("can_create_public_channel_group", group_setting_type),
         ("can_create_private_channel_group", group_setting_type),

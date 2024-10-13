@@ -368,6 +368,7 @@ exports.fixtures = {
             authentication_methods: {
                 Google: {enabled: true, available: true},
             },
+            can_add_custom_emoji_group: 3,
             can_create_public_channel_group: 3,
             direct_message_permission_group: 3,
             plan_type: 3,

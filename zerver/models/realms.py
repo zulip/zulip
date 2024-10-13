@@ -287,6 +287,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=CommonPolicyEnum.MEMBERS_ONLY
     )
 
+    # Who in the organization is allowed to add custom emojis.
+    can_add_custom_emoji_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Who in the organization is allowed to create streams.
     can_create_public_channel_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
@@ -704,6 +709,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             id_field_name="can_access_all_users_group_id",
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
+        can_add_custom_emoji_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+            id_field_name="can_add_custom_emoji_group_id",
+        ),
         can_create_groups=GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
@@ -794,6 +808,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
+        "can_add_custom_emoji_group",
         "can_create_groups",
         "can_create_private_channel_group",
         "can_create_public_channel_group",
@@ -1181,6 +1196,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
     return Realm.objects.select_related(
         "can_access_all_users_group",
         "can_access_all_users_group__named_user_group",
+        "can_add_custom_emoji_group",
+        "can_add_custom_emoji_group__named_user_group",
         "can_create_groups",
         "can_create_groups__named_user_group",
         "can_create_public_channel_group",
