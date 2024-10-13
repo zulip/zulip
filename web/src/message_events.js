@@ -600,15 +600,13 @@ export function update_messages(events) {
                 }
 
                 if (list.data.filter.can_apply_locally()) {
-                    const predicate = list.data.filter.predicate();
-                    let message_ids_to_remove = event_messages.filter((msg) => !predicate(msg));
-                    message_ids_to_remove = message_ids_to_remove.map((msg) => msg.id);
-                    // We filter out messages that do not belong to the message
-                    // list and then pass these to the remove messages codepath.
-                    // While we can pass all our messages to the add messages
-                    // codepath as the filtering is done within the method.
-                    list.remove_and_rerender(message_ids_to_remove);
-                    list.add_messages(event_messages);
+                    // Remove add messages and add them back to the list to
+                    // allow event muted messages which were previously part
+                    // of the message list but hidden could be rerendered again.
+                    const event_msg_ids = event_messages.map((msg) => msg.id);
+                    list.data.remove(event_msg_ids);
+                    list.data.add_messages(event_messages);
+                    list.rerender();
                 } else {
                     // Remove existing message that were updated, since
                     // they may not be a part of the filter now. Also,
