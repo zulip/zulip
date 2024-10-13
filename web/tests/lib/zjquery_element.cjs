@@ -76,6 +76,12 @@ exports.FakeJQuery = function (selector, opts) {
             attrs.set("data-" + name, val);
             return this;
         },
+        each(callback) {
+            for (const [index, element] of [...this].entries()) {
+                callback.call(element, index, element);
+            }
+            return this;
+        },
         empty(arg) {
             if (arg === undefined) {
                 find_results.clear();
@@ -274,13 +280,6 @@ exports.FakeJQuery = function (selector, opts) {
     };
 
     if (opts.elements) {
-        $self.each = (f) => {
-            for (const element of opts.elements) {
-                f.call(element);
-            }
-        };
-        $self[Symbol.iterator] = () => opts.elements.values();
-
         for (const [i, element] of opts.elements.entries()) {
             $self[i] = element;
         }
