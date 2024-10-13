@@ -59,7 +59,9 @@ function FakeElement(selector, opts) {
             // silently do nothing
             return this;
         },
-        fadeTo: noop,
+        fadeTo() {
+            return this;
+        },
         find(child_selector) {
             const $child = find_results.get(child_selector);
             if ($child) {
