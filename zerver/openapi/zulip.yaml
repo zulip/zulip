@@ -4313,11 +4313,6 @@ paths:
                                     irrespective of which of these settings were changed. Now, a separate event
                                     is sent for each changed setting.
                                   properties:
-                                    add_custom_emoji_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can add custom emoji in this organization.
                                     allow_edit_history:
                                       type: boolean
                                       description: |
@@ -16224,24 +16219,6 @@ paths:
                               type: string
                               description: |
                                 The text describing the emoji set.
-                      realm_add_custom_emoji_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users can upload new custom emoji
-                          in this organization.
-
-                          - 1 = Members only
-                          - 2 = Administrators only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Moderators only
-
-                          **Changes**: New in Zulip 5.0 (feature level 85) replacing the
-                          previous `realm_add_emoji_by_admins_only` boolean.
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_allow_edit_history:
                         type: boolean
                         description: |
