@@ -290,7 +290,10 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                 }
 
                 return {
-                    title: $t({defaultMessage: "This channel does not exist or is private."}),
+                    title: $t({
+                        defaultMessage:
+                            "This channel doesn't exist, or you are not allowed to view it.",
+                    }),
                 };
             }
             // else fallthrough to default case
