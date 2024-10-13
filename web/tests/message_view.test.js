@@ -258,6 +258,19 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         ),
     );
 
+    set_filter([
+        ["stream", "999"],
+        ["topic", "foo"],
+        ["near", "99"],
+    ]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This channel doesn't exist, or you are not allowed to view it.",
+        ),
+    );
+
     // for non-subbed public stream
     const rome_id = 99;
     stream_data.add_sub({name: "ROME", stream_id: rome_id});
