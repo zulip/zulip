@@ -69,6 +69,10 @@ class UserGroupTestCase(ZulipTestCase):
         user_ids = get_user_group_member_ids(user_group, direct_member_only=True)
         self.assertSetEqual(set(user_ids), {member.id for member in members})
 
+    def assert_member_not_in_group(self, user_group: NamedUserGroup, member: UserProfile) -> None:
+        user_ids = get_user_group_member_ids(user_group, direct_member_only=True)
+        self.assertNotIn(member.id, user_ids)
+
     def assert_subgroup_membership(
         self, user_group: NamedUserGroup, members: Iterable[UserGroup]
     ) -> None:
@@ -2576,6 +2580,127 @@ class UserGroupAPITestCase(UserGroupTestCase):
             acting_user=None,
         )
         check_adding_yourself_to_group("iago")
+
+    def test_leaving_a_group(self) -> None:
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        user_group = check_add_user_group(realm, "support", [othello], acting_user=othello)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        # Set manage permissions to nobody to test can_leave_group in
+        # isolation.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            nobody_group,
+            acting_user=None,
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_manage_group",
+            nobody_group,
+            acting_user=None,
+        )
+
+        def check_leaving_a_group(acting_user: str, error_msg: str | None = None) -> None:
+            user = self.example_user(acting_user)
+            bulk_add_members_to_user_groups([user_group], [user.id], acting_user=None)
+
+            params = {"delete": orjson.dumps([user.id]).decode()}
+            result = self.api_post(
+                user,
+                f"/api/v1/user_groups/{user_group.id}/members",
+                info=params,
+            )
+            if error_msg is not None:
+                self.assert_json_error(result, error_msg)
+                self.assert_user_membership(user_group, [user, othello])
+                # Remove the user for the next test.
+                bulk_remove_members_from_user_groups([user_group], [user.id], acting_user=None)
+            else:
+                self.assert_json_success(result)
+                self.assert_member_not_in_group(user_group, user)
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_leave_group",
+            admins_group,
+            acting_user=None,
+        )
+        check_leaving_a_group("shiva", "Insufficient permission")
+        check_leaving_a_group("iago")
+        check_leaving_a_group("desdemona")
+
+        # Test with setting set to a user defined group.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        leadership_group = check_add_user_group(
+            realm, "leadership", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_leave_group",
+            leadership_group,
+            acting_user=None,
+        )
+        check_leaving_a_group("iago", "Insufficient permission")
+        check_leaving_a_group("hamlet")
+
+        # Test with setting set to an anonymous group.
+        shiva = self.example_user("shiva")
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [shiva], [leadership_group]
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_leave_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        check_leaving_a_group("iago", "Insufficient permission")
+        check_leaving_a_group("cordelia")
+        check_leaving_a_group("shiva")
+
+        # If user is allowed to manage a group, then they can leave
+        # even when can_leave_group does not allow them to do so.
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_leave_group",
+            nobody_group,
+            acting_user=None,
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_manage_group",
+            admins_group,
+            acting_user=None,
+        )
+        check_leaving_a_group("iago")
+
+        # If user is allowed to manage all groups, then they can leave
+        # even when can_leave_group does not allow them to do so.
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_manage_group",
+            nobody_group,
+            acting_user=None,
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            owners_group,
+            acting_user=None,
+        )
+        check_leaving_a_group("desdemona")
 
     def test_editing_system_user_groups(self) -> None:
         desdemona = self.example_user("desdemona")
