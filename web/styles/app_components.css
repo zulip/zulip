@@ -412,7 +412,12 @@ input.settings_text_input {
    and its formatting should have no extra
    space around its viewbox in SVG. */
 .clear_search_button {
+    outline: none;
+    opacity: 0.5;
+    border-radius: 4px;
+
     &:hover {
+        opacity: 1;
         color: var(--color-text-clear-search-button-hover);
     }
 
@@ -424,24 +429,33 @@ input.settings_text_input {
     &:focus,
     &:active,
     &:disabled:hover {
+        opacity: 1;
         position: relative;
         right: 20px;
         background: none;
         border: none;
         text-align: center;
-        padding-top: 8px;
-        padding-left: 4px;
         color: var(--color-text-clear-search-button);
         text-shadow: none;
-        outline: none !important;
         box-shadow: none;
         z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        box-sizing: border-box;
 
         #set-user-status-modal & {
             margin-left: -26px;
             right: 0;
-            padding-top: 6px;
+            padding: 13px 8px;
         }
+    }
+
+    &:focus-visible {
+        opacity: 1;
+        outline: 2px solid var(--color-outline-focus);
+        color: var(--color-text-clear-search-button-hover);
     }
 }
 
