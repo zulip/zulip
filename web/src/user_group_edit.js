@@ -272,7 +272,7 @@ function update_group_membership_button(group_id) {
     }
 
     const can_join_group = settings_data.can_join_user_group(group_id);
-    const can_leave_group = settings_data.can_manage_user_group(group_id);
+    const can_leave_group = settings_data.can_leave_user_group(group_id);
 
     let can_update_membership = true;
     if (!is_member && !can_join_group) {
@@ -339,7 +339,7 @@ export function handle_member_edit_event(group_id, user_ids) {
         const item = group;
         item.is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
         item.can_join = settings_data.can_join_user_group(item.id);
-        item.can_leave = settings_data.can_manage_user_group(item.id);
+        item.can_leave = settings_data.can_leave_user_group(item.id);
         const html = render_browse_user_groups_list_item(item);
         const $new_row = $(html);
 
@@ -670,6 +670,10 @@ export function update_group(event) {
             sync_group_permission_setting("can_join_group", group);
             update_group_membership_button(group.id);
         }
+        if (event.data.can_leave_group !== undefined) {
+            sync_group_permission_setting("can_leave_group", group);
+            update_group_membership_button(group.id);
+        }
     }
 }
 
@@ -883,7 +887,7 @@ export function setup_page(callback) {
                     item.id,
                 );
                 item.can_join = settings_data.can_join_user_group(item.id);
-                item.can_leave = settings_data.can_manage_user_group(item.id);
+                item.can_leave = settings_data.can_leave_user_group(item.id);
                 return render_browse_user_groups_list_item(item);
             },
             filter: {

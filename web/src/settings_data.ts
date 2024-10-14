@@ -231,6 +231,16 @@ export function can_join_user_group(group_id: number): boolean {
     return can_manage_user_group(group_id);
 }
 
+export function can_leave_user_group(group_id: number): boolean {
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    if (user_has_permission_for_group_setting(group.can_leave_group, "can_leave_group", "group")) {
+        return true;
+    }
+
+    return can_manage_user_group(group_id);
+}
+
 export function user_can_create_user_groups(): boolean {
     return user_has_permission_for_group_setting(
         realm.realm_can_create_groups,
