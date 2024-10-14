@@ -67,12 +67,12 @@ communities such as open-source projects and research communities.
 
 To create a new web-public channel, follow the [instructions for
 creating a channel](/help/create-a-channel#create-a-channel_1), selecting
-the **Web-public** option for **Who can access the channel?**.
+the **Web-public** option for **Who can access this channel**.
 
 To make an existing channel web-public, follow the instructions to
 [change the privacy of a
 channel](/help/change-the-privacy-of-a-channel), selecting the
-**Web-public** option for **Who can access the channel?**.
+**Web-public** option for **Who can access this channel**.
 
 ## What can logged out visitors do?
 
