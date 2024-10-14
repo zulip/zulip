@@ -677,3 +677,10 @@ ALLOW_GROUP_VALUED_SETTINGS = False
 # notification to a stream and also delete the previous counter
 # notification.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60
+
+# Minimum and maximum permitted number of days before full data
+# deletion when deactivating an organization. A nonzero minimum helps
+# protect against a compromised administrator account being used to
+# delete an active organization.
+MIN_DEACTIVATED_REALM_DELETION_DAYS: int | None = 14
+MAX_DEACTIVATED_REALM_DELETION_DAYS: int | None = None

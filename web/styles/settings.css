@@ -1506,6 +1506,10 @@ $option_title_width: 180px;
     }
 }
 
+#deactivate-realm-user-modal .allowed_duration_message {
+    font-style: italic;
+}
+
 #realm_jitsi_server_url_setting {
     display: flex;
     flex-wrap: wrap;
