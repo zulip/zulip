@@ -116,7 +116,7 @@ format used by the Zulip server that they are interacting with.
   [group-setting value](/api/group-setting-values), will never include
   deactivated users in the `direct_members` list for settings whose
   value is an anonymous group.
-* [`PATCH /user_groups/{user_group_id}/members`](/api/update-user-group-members):
+* [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members):
   Deactivated users cannot be added or removed from a user group; they
   are now implicitly not members of any groups while deactivated.
 * [`GET /events`](/api/get-events): User reactivation event is not sent
