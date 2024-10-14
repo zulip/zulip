@@ -658,7 +658,7 @@ export function update_group(event) {
         if (event.data.can_mention_group !== undefined) {
             sync_group_permission_setting("can_mention_group", group);
         }
-        if (event.data.can_manage_group !== undefined) {
+        if (event.data.can_add_members_group !== undefined) {
             sync_group_permission_setting("can_add_members_group", group);
             update_group_management_ui();
         }
@@ -667,7 +667,7 @@ export function update_group(event) {
             update_group_management_ui();
         }
         if (event.data.can_join_group !== undefined) {
-            sync_group_permission_setting("can_mention_group", group);
+            sync_group_permission_setting("can_join_group", group);
             update_group_membership_button(group.id);
         }
     }
