@@ -1672,9 +1672,27 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # No notification message is sent for removing from user group.
         self.assertEqual(self.get_last_message(), initial_last_message)
 
+        # Test adding and removing subgroups.
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=hamlet.realm, is_system_group=True
+        )
+        cordelia = self.example_user("cordelia")
+        subgroup = check_add_user_group(
+            hamlet.realm, "leadership", [cordelia], acting_user=cordelia
+        )
+        params = {"add_subgroups": orjson.dumps([subgroup.id, admins_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_success(result)
+        self.assert_subgroup_membership(user_group, [subgroup, admins_group])
+
+        params = {"delete_subgroups": orjson.dumps([admins_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_success(result)
+        self.assert_subgroup_membership(user_group, [subgroup])
+
         # Test when nothing is provided
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info={})
-        msg = 'Nothing to do. Specify at least one of "add" or "delete".'
+        msg = 'Nothing to do. Specify at least one of "add", "delete", "add_subgroups" or "delete_subgroups".'
         self.assert_json_error(result, msg)
         self.assert_user_membership(user_group, [hamlet])
 

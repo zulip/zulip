@@ -212,6 +212,7 @@ def deactivate_user_group(
 
 @require_member_or_admin
 @typed_endpoint
+@transaction.atomic(durable=True)
 def update_user_group_backend(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -219,9 +220,15 @@ def update_user_group_backend(
     user_group_id: PathOnly[Json[int]],
     delete: Json[list[int]] | None = None,
     add: Json[list[int]] | None = None,
+    delete_subgroups: Json[list[int]] | None = None,
+    add_subgroups: Json[list[int]] | None = None,
 ) -> HttpResponse:
-    if not add and not delete:
-        raise JsonableError(_('Nothing to do. Specify at least one of "add" or "delete".'))
+    if not add and not delete and not add_subgroups and not delete_subgroups:
+        raise JsonableError(
+            _(
+                'Nothing to do. Specify at least one of "add", "delete", "add_subgroups" or "delete_subgroups".'
+            )
+        )
 
     thunks = []
     if add:
@@ -234,6 +241,20 @@ def update_user_group_backend(
         thunks.append(
             lambda: remove_members_from_group_backend(
                 request, user_profile, user_group_id=user_group_id, members=delete
+            )
+        )
+
+    if add_subgroups:
+        thunks.append(
+            lambda: add_subgroups_to_group_backend(
+                request, user_profile, user_group_id=user_group_id, subgroup_ids=add_subgroups
+            )
+        )
+
+    if delete_subgroups:
+        thunks.append(
+            lambda: remove_subgroups_from_group_backend(
+                request, user_profile, user_group_id=user_group_id, subgroup_ids=delete_subgroups
             )
         )
 
@@ -290,7 +311,6 @@ def notify_for_user_group_subscription_changes(
         do_send_messages(notifications)
 
 
-@transaction.atomic
 def add_members_to_group_backend(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -337,7 +357,6 @@ def add_members_to_group_backend(
     return json_success(request)
 
 
-@transaction.atomic
 def remove_members_from_group_backend(
     request: HttpRequest,
     user_profile: UserProfile,
