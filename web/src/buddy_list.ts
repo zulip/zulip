@@ -167,7 +167,7 @@ export class BuddyList extends BuddyListConf {
     $participants_list = $(this.participants_list_selector);
     $users_matching_view_list = $(this.matching_view_list_selector);
     $other_users_list = $(this.other_user_list_selector);
-    current_filter: Filter | undefined;
+    current_filter: Filter | undefined | "unset" = "unset";
 
     initialize_tooltips(): void {
         $("#right-sidebar").on(
