@@ -266,6 +266,7 @@ def get_temp_user_group_id() -> dict[str, object]:
         realm=get_realm("zulip"),
         can_add_members_group_id=11,
         can_join_group_id=11,
+        can_leave_group_id=15,
         can_manage_group_id=11,
         can_mention_group_id=11,
         realm_for_sharding=get_realm("zulip"),
@@ -277,11 +278,13 @@ def get_temp_user_group_id() -> dict[str, object]:
 
 @openapi_param_value_generator(["/user_groups/{user_group_id}/deactivate:post"])
 def get_temp_user_group_id_for_deactivation() -> dict[str, object]:
+    print(NamedUserGroup.objects.all())
     user_group, _ = NamedUserGroup.objects.get_or_create(
         name="temp-deactivation",
         realm=get_realm("zulip"),
         can_add_members_group_id=11,
         can_join_group_id=11,
+        can_leave_group_id=15,
         can_manage_group_id=11,
         can_mention_group_id=11,
         realm_for_sharding=get_realm("zulip"),

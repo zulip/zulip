@@ -3177,6 +3177,7 @@ paths:
                                       "is_system_group": false,
                                       "can_add_members_group": 16,
                                       "can_join_group": 16,
+                                      "can_leave_group": 15,
                                       "can_manage_group": 16,
                                       "can_mention_group": 11,
                                     },
@@ -3256,6 +3257,19 @@ paths:
                                             permission setting changed.
 
                                             **Changes**: New in Zulip 10.0 (feature level 301).
+
+                                            Will be one of the following:
+
+                                            [setting-values]: /api/group-setting-values
+                                    can_leave_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value][setting-values] defining the set of users who
+                                            have permission to leave this group. Only present if this user group
+                                            permission setting changed.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 308).
 
                                             Will be one of the following:
 
@@ -20303,6 +20317,18 @@ paths:
                         [system-groups]: /api/group-setting-values#system-groups
                     - $ref: "#/components/schemas/GroupSettingValue"
                   example: 11
+                can_leave_group:
+                  allOf:
+                    - description: |
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to leave this user group.
+
+                        **Changes**: New in Zulip 10.0 (feature level 308).
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                    - $ref: "#/components/schemas/GroupSettingValue"
+                  example: 15
                 can_manage_group:
                   allOf:
                     - description: |
@@ -20352,6 +20378,8 @@ paths:
               can_add_members_group:
                 contentType: application/json
               can_join_group:
+                contentType: application/json
+              can_leave_group:
                 contentType: application/json
               can_manage_group:
                 contentType: application/json
@@ -20550,6 +20578,37 @@ paths:
                       "new": {"direct_members": [10], "direct_subgroups": [11]},
                       "old": 11,
                     }
+                can_leave_group:
+                  description: |
+                    The set of users who have permission to leave this user group
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    **Changes**: New in Zulip 10.0 (feature level 308).
+
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to leave the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to leave the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 15,
+                    }
                 can_manage_group:
                   description: |
                     The set of users who have permission to [manage this user group][manage-user-groups]
@@ -20637,6 +20696,8 @@ paths:
               can_add_members_group:
                 contentType: application/json
               can_join_group:
+                contentType: application/json
+              can_leave_group:
                 contentType: application/json
               can_manage_group:
                 contentType: application/json
@@ -20810,6 +20871,18 @@ paths:
                                     Will be one of the following:
 
                                     [setting-values]: /api/group-setting-values
+                            can_leave_group:
+                              allOf:
+                                - $ref: "#/components/schemas/GroupSettingValue"
+                                - description: |
+                                    A [group-setting value][setting-values] defining the set of users who
+                                    have permission to leave this user group.
+
+                                    **Changes**: New in Zulip 10.0 (feature level 308).
+
+                                    Will be one of the following:
+
+                                    [setting-values]: /api/group-setting-values
                             can_manage_group:
                               allOf:
                                 - $ref: "#/components/schemas/GroupSettingValue"
@@ -20871,6 +20944,7 @@ paths:
                               "is_system_group": true,
                               "can_add_members_group": 16,
                               "can_join_group": 16,
+                              "can_leave_group": 15,
                               "can_manage_group": 16,
                               "can_mention_group": 11,
                             },
@@ -20885,6 +20959,7 @@ paths:
                               "is_system_group": true,
                               "can_add_members_group": 17,
                               "can_join_group": 17,
+                              "can_leave_group": 15,
                               "can_manage_group": 17,
                               "can_mention_group": 12,
                             },
@@ -20899,6 +20974,7 @@ paths:
                               "is_system_group": false,
                               "can_add_members_group": 20,
                               "can_join_group": 20,
+                              "can_leave_group": 15,
                               "can_manage_group": 20,
                               "can_mention_group": 13,
                             },
@@ -22185,6 +22261,18 @@ components:
                 have permission to join this user group.
 
                 **Changes**: New in Zulip 10.0 (feature level 301).
+
+                Will be one of the following:
+
+                [setting-values]: /api/group-setting-values
+        can_leave_group:
+          allOf:
+            - $ref: "#/components/schemas/GroupSettingValue"
+            - description: |
+                A [group-setting value][setting-values] defining the set of users who
+                have permission to leave this user group.
+
+                **Changes**: New in Zulip 10.0 (feature level 308).
 
                 Will be one of the following:
 

@@ -190,6 +190,7 @@ def do_send_create_user_group_event(
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
             can_add_members_group=get_group_setting_value_for_api(user_group.can_add_members_group),
             can_join_group=get_group_setting_value_for_api(user_group.can_join_group),
+            can_leave_group=get_group_setting_value_for_api(user_group.can_leave_group),
             can_manage_group=get_group_setting_value_for_api(user_group.can_manage_group),
             can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
             deactivated=False,
