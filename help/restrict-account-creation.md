@@ -62,6 +62,9 @@ Regardless of whether invitations are required, you can:
 
 ## Configuring email domain restrictions
 
+Email domain restrictions apply to both new user accounts and [email
+changes](/help/change-your-email-address).
+
 ### Restrict sign-ups to a list of domains
 
 {start_tabs}
