@@ -29,8 +29,9 @@ export function get_name(): string | undefined {
 }
 
 let can_add_members_group_widget: GroupSettingPillContainer | undefined;
-let can_manage_group_widget: GroupSettingPillContainer | undefined;
 let can_join_group_widget: GroupSettingPillContainer | undefined;
+let can_leave_group_widget: GroupSettingPillContainer | undefined;
+let can_manage_group_widget: GroupSettingPillContainer | undefined;
 
 class UserGroupMembershipError {
     report_no_members_to_user_group(): void {
@@ -168,6 +169,10 @@ function create_user_group(): void {
     const can_join_group =
         settings_components.get_group_setting_widget_value(can_join_group_widget);
 
+    assert(can_leave_group_widget !== undefined);
+    const can_leave_group =
+        settings_components.get_group_setting_widget_value(can_leave_group_widget);
+
     assert(settings_components.new_group_can_mention_group_widget !== null);
     const can_mention_group_value = settings_components.new_group_can_mention_group_widget.value();
     assert(can_mention_group_value !== undefined);
@@ -182,6 +187,7 @@ function create_user_group(): void {
         members: JSON.stringify(user_ids),
         can_add_members_group: JSON.stringify(can_add_members_group),
         can_join_group: JSON.stringify(can_join_group),
+        can_leave_group: JSON.stringify(can_leave_group),
         can_mention_group,
         can_manage_group: JSON.stringify(can_manage_group),
     };
@@ -271,6 +277,12 @@ export function set_up_handlers(): void {
     can_join_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $container.find(".can-join-group-container .pill-container"),
         setting_name: "can_join_group",
+        setting_type: "group",
+    });
+
+    can_leave_group_widget = settings_components.create_group_setting_widget({
+        $pill_container: $container.find(".can-leave-group-container .pill-container"),
+        setting_name: "can_leave_group",
         setting_type: "group",
     });
 

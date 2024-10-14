@@ -190,6 +190,13 @@ function show_general_settings(group) {
         setting_type: "group",
         group,
     });
+
+    settings_components.create_group_setting_widget({
+        $pill_container: $edit_container.find(".can-leave-group-container .pill-container"),
+        setting_name: "can_leave_group",
+        setting_type: "group",
+        group,
+    });
     update_general_panel_ui(group);
 
     if (!page_params.development_environment) {
