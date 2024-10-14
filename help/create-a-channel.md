@@ -31,7 +31,7 @@ There are several parameters you can set while creating a channel. All but
 * **Default channel for new users**: Whether new users will be [automatically
   subscribed](/help/set-default-channels-for-new-users) to the new channel.
 
-* **Who can post to the channel?**: See [Channel permissions](/help/channel-permissions).
+* **Who can post to this channel**: See [Channel permissions](/help/channel-permissions).
 
 * **Who can unsubscribe others from this channel?**: See
   [Restrict channel membership management](/help/configure-who-can-invite-to-channels#configure-who-can-remove-users).
