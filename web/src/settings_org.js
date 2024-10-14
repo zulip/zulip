@@ -803,9 +803,7 @@ function set_up_dropdown_widget(
             dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
-            const dropdown_widget =
-                settings_components.get_widget_for_dropdown_list_settings(setting_name);
-            dropdown_widget.render();
+            this.render();
             settings_components.save_discard_realm_settings_widget_status_handler(
                 $save_discard_widget_container,
             );
