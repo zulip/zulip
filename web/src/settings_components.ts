@@ -920,6 +920,7 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
     switch (property_name) {
         case "can_add_members_group":
         case "can_join_group":
+        case "can_leave_group":
         case "can_manage_group": {
             const pill_widget = get_group_setting_widget(property_name);
             assert(pill_widget !== null);
@@ -1409,6 +1410,7 @@ export function initialize_disable_btn_hint_popover(
 export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_members_group", null],
     ["can_join_group", null],
+    ["can_leave_group", null],
     ["can_manage_group", null],
 ]);
 
@@ -1450,7 +1452,11 @@ export function set_group_setting_widget_value(
     }
 }
 
-type group_setting_name = "can_manage_group" | "can_join_group" | "can_add_members_group";
+type group_setting_name =
+    | "can_add_members_group"
+    | "can_join_group"
+    | "can_leave_group"
+    | "can_manage_group";
 
 export function create_group_setting_widget({
     $pill_container,
