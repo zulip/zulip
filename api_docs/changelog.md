@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 311**
+
+* [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members):
+  Added `add_subgroups` and `delete_subgroups` parameters to support updating
+  subgroups of a user group using this endpoint.
+
 **Feature level 310**
 
 * `PATCH /realm`, [`GET /events`](/api/get-events),

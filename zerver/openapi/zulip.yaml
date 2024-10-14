@@ -20430,10 +20430,32 @@ paths:
                   items:
                     type: integer
                   example: [12, 13]
+                delete_subgroups:
+                  description: |
+                    The list of user group IDs to be removed from the user group.
+
+                    **Changes**: New in Zulip 10.0 (feature level 311).
+                  type: array
+                  items:
+                    type: integer
+                  example: [9]
+                add_subgroups:
+                  description: |
+                    The list of user group IDs to be added to the user group.
+
+                    **Changes**: New in Zulip 10.0 (feature level 311).
+                  type: array
+                  items:
+                    type: integer
+                  example: [9]
             encoding:
               delete:
                 contentType: application/json
               add:
+                contentType: application/json
+              delete_subgroups:
+                contentType: application/json
+              add_subgroups:
                 contentType: application/json
       responses:
         "200":
@@ -21004,7 +21026,7 @@ paths:
                   type: array
                   items:
                     type: integer
-                  example: [9, 10]
+                  example: [10]
             encoding:
               delete:
                 contentType: application/json
