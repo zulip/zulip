@@ -157,7 +157,7 @@ LEGACY_STRINGS_MAP = {
     "Who can create public channels": "Who can create public streams",
     "Who can create web-public channels": "Who can create web-public streams",
     "Who can move messages to another channel": "Who can move messages to another stream",
-    "Who can post to the channel?": "Who can post to the stream?",
+    "Who can post to this channel": "Who can post to this stream",
     "Who can unsubscribe others from this channel?": "Who can unsubscribe others from this stream?",
     "You are not currently subscribed to this channel.": "You are not currently subscribed to this stream.",
     "You are not subscribed to any channels.": "You are not subscribed to any streams.",
