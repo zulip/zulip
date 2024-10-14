@@ -26,7 +26,7 @@ There are several parameters you can set while creating a channel. All but
 * **Announce new channel in the [channel configured by your organization](/help/configure-automated-notices#new-channel-announcements)**:
   Posts a message in the "new channels" topic advertising the new channel.
 
-* **Who can access the channel?**: See [Channel permissions](/help/channel-permissions).
+* **Who can access this channel**: See [Channel permissions](/help/channel-permissions).
 
 * **Default channel for new users**: Whether new users will be [automatically
   subscribed](/help/set-default-channels-for-new-users) to the new channel.

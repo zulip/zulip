@@ -151,7 +151,7 @@ LEGACY_STRINGS_MAP = {
     "View channels": "View streams",
     # "Warning: <strong>#{channel_name}</strong> is a private channel.": "Warning: <strong>#{stream_name}</strong> is a private stream.",
     "Which parts of the email should be included in the Zulip message sent to this channel?": "Which parts of the email should be included in the Zulip message sent to this stream?",
-    "Who can access the channel?": "Who can access the stream?",
+    "Who can access this channel": "Who can access this stream",
     "Who can add users to channels": "Who can add users to streams",
     "Who can create private channels": "Who can create private streams",
     "Who can create public channels": "Who can create public streams",
