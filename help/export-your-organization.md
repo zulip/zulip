@@ -2,24 +2,28 @@
 
 !!! warn ""
 
-    These instructions are specific to the hosted Zulip Cloud service.
-    If you're running your own server, you may be looking for our
+    If you're self-hosting Zulip, you may want to check out the
     documentation on [server export and import][export-and-import] or
     [server backups][production-backups].
 
-Zulip has high quality export tools that can be used to migrate from the hosted
-Zulip Cloud service to your own servers. Two types of data exports are available
-to all Zulip Cloud organizations:
+Zulip has high quality export tools that can be used to migrate between the
+hosted Zulip Cloud service and your own servers. Two types of data exports are
+available for all Zulip organizations:
 
-* [**Export of public data**](#export-of-public-data): Complete data for your
-   organization *other than* [private channel](/help/channel-permissions) messages
-   and [direct messages](/help/direct-messages).
+* [**Export of public
+   data**](#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server):
+   Complete data for your organization *other than* [private
+   channel](/help/channel-permissions) messages and [direct
+   messages](/help/direct-messages). This export includes user settings and
+   channel subscriptions.
 
-* [**Full export with member consent**](#full-export-with-member-consent):
+* [**Standard
+  export**](#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server):
   Everything in the export of public data, plus all the [private
   channel](/help/channel-permissions) messages and [direct
-  messages](/help/direct-messages) of members who opt in to have their data
-  exported.
+  messages](/help/direct-messages) that members who have
+  [allowed](#configure-whether-administrators-can-export-your-private-data)
+  administrators to export their private data can access.
 
 Two additional types of data exports are available to **corporate** [Zulip Cloud
 Standard][plans] and [Zulip Cloud Plus][plans] customers:
@@ -33,7 +37,7 @@ Standard][plans] and [Zulip Cloud Plus][plans] customers:
   of messages matching some combination of criteria (e.g., sender, recipient,
   message keyword, or timestamp).
 
-## Export of public data
+## Export for migrating to Zulip Cloud or a self-hosted server
 
 {!admin-only.md!}
 
@@ -43,55 +47,22 @@ Standard][plans] and [Zulip Cloud Plus][plans] customers:
 
 {settings_tab|data-exports-admin}
 
-1. Click **Start export of public data**.
+1. Click **Start export**.
 
-1. After a few minutes, you'll be able to download the export as a `.tar.gz`
-file from that page.
+1. Select the desired **Export type**.
 
-1. Import the tarball using [Zulip's logical data import tool][import-only].
+1. Click **Start export** to begin the export process. After a few minutes,
+   you'll be able to download the exported data from the list of
+   data exports.
+
+1. Use [Zulip's logical data import tool][import-only] to import your data into
+   a self-hosted server. For Zulip Cloud imports, contact
+   [support@zulip.com](mailto:support@zulip.com).
 
 !!! warn ""
 
     Generating the export can take up to an hour for organizations
     with a large number of messages or uploaded files.
-
-{end_tabs}
-
-## Full export with member consent
-
-{!owner-only.md!}
-
-{!not-human-export-format.md!}
-
-In addition to your organization's public data, this export includes all the
-messages received by any user in the organization who consents to the data
-export. In particular, it includes any [private
-channel](/help/channel-permissions) messages and [direct
-messages](/help/direct-messages) where *at least one of the recipients* has
-given consent.
-
-Users who do not provide consent will have their settings and channel
-subscriptions exported, but will have no personalized message history.
-
-{start_tabs}
-
-1. Email [support@zulip.com](mailto:support@zulip.com) with your
-   organization's `zulipchat.com` URL, asking for a **full export with
-   member consent**. Please send the email from the same address
-   that you use to sign in to Zulip, so that Zulip Support can verify
-   that you are an owner of the organization.
-
-1. You will receive an email with instructions on how to collect member consent.
-   Follow the instructions, and notify
-   [support@zulip.com](mailto:support@zulip.com) when the process has been
-   completed.
-
-1. You will receive an archive in the `.tar.gz` format containing all public
-   information for your organization, plus [private
-   channel](/help/channel-permissions) messages and [direct
-   messages](/help/direct-messages) for users who gave consent.
-
-1. Import the tarball using [Zulip's logical data import tool][import-only].
 
 {end_tabs}
 
@@ -155,6 +126,16 @@ importing the export into a new Zulip organization.
 
 1. You will receive the requested information once your authority to request the
    export has been verified.
+
+{end_tabs}
+
+## Configure whether administrators can export your private data
+
+{start_tabs}
+
+{settings_tab|account-and-privacy}
+
+1. Under **Privacy**, toggle **Let administrators export my private data**.
 
 {end_tabs}
 
