@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 308**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_leave_group` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_leave_group`
+  parameter to support setting the user group whose members can leave the user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_leave_group` parameter to support changing the user group whose
+  members can leave the specified user group.
+
 **Feature level 307**
 
 * `PATCH /realm`, [`GET /events`](/api/get-events),

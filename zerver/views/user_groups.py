@@ -59,6 +59,7 @@ def add_user_group(
     description: str,
     can_add_members_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_join_group: Json[int | AnonymousSettingGroupDict] | None = None,
+    can_leave_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_manage_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
 ) -> HttpResponse:
@@ -120,6 +121,7 @@ def edit_user_group(
     description: str | None = None,
     can_add_members_group: Json[GroupSettingChangeRequest] | None = None,
     can_join_group: Json[GroupSettingChangeRequest] | None = None,
+    can_leave_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
@@ -128,6 +130,7 @@ def edit_user_group(
         and description is None
         and can_add_members_group is None
         and can_join_group is None
+        and can_leave_group is None
         and can_manage_group is None
         and can_mention_group is None
     ):
@@ -141,6 +144,7 @@ def edit_user_group(
         description is not None
         or can_add_members_group is not None
         or can_join_group is not None
+        or can_leave_group is not None
         or can_mention_group is not None
         or can_manage_group is not None
     ):
