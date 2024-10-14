@@ -54,6 +54,14 @@ def get_avatar_field(
             computing them on the server (mostly to save bandwidth).
     """
 
+    # System bots have hardcoded avatars
+    if email == settings.WELCOME_BOT:
+        return staticfiles_storage.url("images/welcome-bot.png")
+    elif email == settings.NOTIFICATION_BOT:
+        return staticfiles_storage.url("images/logo/zulip-icon-square.svg")
+    elif email == settings.EMAIL_GATEWAY_BOT:
+        return staticfiles_storage.url("images/email-gateway-bot.png")
+
     """
     If our client knows how to calculate gravatar hashes, we
     will return None and let the client compute the gravatar
