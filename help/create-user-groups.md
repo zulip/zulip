@@ -16,7 +16,7 @@ all be changed later.
 
 * **User group description** (optional)
 
-* **Who can mention this group?**: Configures who is allowed to
+* **Who can mention this group**: Configures who is allowed to
   [mention this group](/help/mention-a-user-or-group).
 
 * **Choose members**: You can copy the membership from an existing channel or
