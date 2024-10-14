@@ -13119,16 +13119,15 @@ paths:
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Fetch all [public data exports][public-data-export] and
-        [full data exports with member consent][full-data-export] of the organization.
+        Fetch all the public and standard [data exports][export-data]
+        of the organization.
 
         **Changes**: Prior to Zulip 10.0 (feature level 304), only
         public data exports could be fetched using this endpoint.
 
         New in Zulip 2.1.
 
-        [public-data-export]: /help/export-your-organization#export-of-public-data
-        [full-data-export]: /help/export-your-organization#full-export-with-member-consent
+        [export-data]: /help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server
       responses:
         "200":
           description: Success.
@@ -13173,8 +13172,7 @@ paths:
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Create a [public data export][public-data-export] or a
-        [full data export with member consent][full-data-export] of the organization.
+        Create a public or a standard [data export][export-data] of the organization.
 
         !!! warn ""
 
@@ -13187,8 +13185,7 @@ paths:
 
         New in Zulip 2.1.
 
-        [public-data-export]: /help/export-your-organization#export-of-public-data
-        [full-data-export]: /help/export-your-organization#full-export-with-member-consent
+        [export-data]: /help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server
         [data-export]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
         [backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
       requestBody:
@@ -13200,10 +13197,10 @@ paths:
               properties:
                 export_type:
                   description: |
-                    Whether to create a public export or a full export with member consent.
+                    Whether to create a public or a standard data export.
 
                     - 1 = Public data export.
-                    - 2 = Full data export with member consent.
+                    - 2 = Standard data export.
 
                     If not specified, defaults to 1.
 
@@ -13258,7 +13255,7 @@ paths:
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Fetches which users have [consented](/help/export-your-organization#full-export-with-member-consent)
+        Fetches which users have [consented](/help/export-your-organization#configure-whether-administrators-can-export-your-private-data)
         for their private data to be exported by organization administrators.
 
         **Changes**: New in Zulip 10.0 (feature level 295).
@@ -22159,11 +22156,10 @@ components:
         export_type:
           type: integer
           description: |
-            Whether the data export is a public data export or a
-            full data export with member consent.
+            Whether the data export is a public or a standard data export.
 
             - 1 = Public data export.
-            - 2 = Full data export with member consent.
+            - 2 = Standard data export.
 
             **Changes**: New in Zulip 10.0 (feature level 304). Previously,
             the export type was not included in these objects because only
