@@ -1256,12 +1256,12 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             # Test cross_realm_bot avatar access using email.
             response = self.api_get(hamlet, "/avatar/welcome-bot@zulip.com", {"foo": "bar"})
             redirect_url = response["Location"]
-            self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "?foo=bar"))
 
             # Test cross_realm_bot avatar access using id.
             response = self.api_get(hamlet, f"/avatar/{cross_realm_bot.id}", {"foo": "bar"})
             redirect_url = response["Location"]
-            self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "?foo=bar"))
 
             # Without spectators enabled, no unauthenticated access.
             response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
