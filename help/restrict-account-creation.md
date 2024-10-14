@@ -71,7 +71,7 @@ changes](/help/change-your-email-address).
 
 {settings_tab|organization-permissions}
 
-1. Set **Restrict email domains of new users?** to
+1. Set **Restrict email domains of new users** to
    **Restrict to a list of domains**.
 
 1. Click **Configure** to add any number of domains. For each domain, you can
@@ -89,7 +89,7 @@ changes](/help/change-your-email-address).
 
 {settings_tab|organization-permissions}
 
-1. Set **Restrict email domains of new users?** to
+1. Set **Restrict email domains of new users** to
    **Don't allow disposable emails**.
 
 {!save-changes.md!}
@@ -102,7 +102,7 @@ changes](/help/change-your-email-address).
 
 {settings_tab|organization-permissions}
 
-1. Set **Restrict email domains of new users?** to
+1. Set **Restrict email domains of new users** to
    **No restrictions**.
 
 {!save-changes.md!}
