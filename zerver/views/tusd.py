@@ -25,7 +25,7 @@ from zerver.lib.upload import (
     upload_backend,
 )
 from zerver.lib.upload.base import INLINE_MIME_TYPES
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
 
 
 # See https://tus.github.io/tusd/advanced-topics/hooks/ for the spec
@@ -101,12 +101,25 @@ def handle_upload_pre_create_hook(
 
     max_file_upload_size_mebibytes = user_profile.realm.get_max_file_upload_size_mebibytes()
     if data.size > max_file_upload_size_mebibytes * 1024 * 1024:
-        return reject_upload(
-            _("Uploaded file is larger than the allowed limit of {max_file_size} MiB").format(
-                max_file_size=max_file_upload_size_mebibytes
-            ),
-            413,
-        )
+        if user_profile.realm.plan_type != Realm.PLAN_TYPE_SELF_HOSTED:
+            return reject_upload(
+                _(
+                    "File is larger than the maximum upload size ({max_size} MiB) allowed by your organization's plan."
+                ).format(
+                    max_size=max_file_upload_size_mebibytes,
+                ),
+                413,
+            )
+        else:
+            return reject_upload(
+                _(
+                    "File is larger than this server's configured maximum upload size ({max_size} MiB)."
+                ).format(
+                    max_size=max_file_upload_size_mebibytes,
+                ),
+                413,
+            )
+
     try:
         check_upload_within_quota(user_profile.realm, data.size)
     except RealmUploadQuotaError as e:

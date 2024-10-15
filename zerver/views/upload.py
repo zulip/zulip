@@ -45,7 +45,7 @@ from zerver.lib.upload import (
 from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import assert_is_local_storage_path
 from zerver.lib.upload.s3 import get_signed_upload_url
-from zerver.models import Attachment, ImageAttachment, UserProfile
+from zerver.models import Attachment, ImageAttachment, Realm, UserProfile
 from zerver.worker.thumbnail import ensure_thumbnails
 
 
@@ -450,11 +450,22 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     assert file_size is not None
     max_file_upload_size_mebibytes = user_profile.realm.get_max_file_upload_size_mebibytes()
     if file_size > max_file_upload_size_mebibytes * 1024 * 1024:
-        raise JsonableError(
-            _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
-                max_size=max_file_upload_size_mebibytes,
+        if user_profile.realm.plan_type != Realm.PLAN_TYPE_SELF_HOSTED:
+            raise JsonableError(
+                _(
+                    "File is larger than the maximum upload size ({max_size} MiB) allowed by your organization's plan."
+                ).format(
+                    max_size=max_file_upload_size_mebibytes,
+                )
             )
-        )
+        else:
+            raise JsonableError(
+                _(
+                    "File is larger than this server's configured maximum upload size ({max_size} MiB)."
+                ).format(
+                    max_size=max_file_upload_size_mebibytes,
+                )
+            )
     check_upload_within_quota(user_profile.realm, file_size)
 
     url, filename = upload_message_attachment_from_request(user_file, user_profile)
