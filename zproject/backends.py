@@ -35,7 +35,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
+from django_auth_ldap.backend import LDAPBackend, _LDAPUser, _LDAPUserGroups, ldap_error
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2 import compat as onelogin_saml2_compat
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
@@ -1193,6 +1193,29 @@ class ZulipLDAPUser(_LDAPUser):
         del kwargs["realm"]
 
         super().__init__(*args, **kwargs)
+
+    def _get_group_descriptions(self) -> dict[str, Any]:
+        if not settings.LDAP_GROUP_DESCRIPTION_ATTR:
+            return {}
+        ldap_group_descriptions: dict[str, Any] = {}
+        if self._groups is None:
+            self._groups: _LDAPUserGroups = _LDAPUserGroups(self)
+        group_infos: list[tuple[str, dict[str | None, Any]]] = self._groups._get_group_infos()
+        for group_info in group_infos:
+            group_name: str = self._groups._group_type.group_name_from_info(group_info)
+            if group_name is not None:
+                group_description = self.group_description_from_info(group_info)
+                ldap_group_descriptions[group_name] = group_description
+        return ldap_group_descriptions
+
+    def group_description_from_info(
+        self, group_info: tuple[str, dict[str | None, Any]]
+    ) -> str | None:
+        try:
+            description = group_info[1][settings.LDAP_GROUP_DESCRIPTION_ATTR]
+        except (KeyError, IndexError):
+            description = None
+        return description
 
 
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
