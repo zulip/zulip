@@ -13,8 +13,15 @@
             <span class="conversation-partners-list">{{recipients}}</span>
             {{> status_emoji status_emoji_info}}
         </a>
-        <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
-            {{unread}}
-        </span>
+        <div class="dm-markers-and-controls">
+            {{#if has_unread_mention}}
+                <span class="unread_mention_info">
+                    @
+                </span>
+            {{/if}}
+            <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
+                {{unread}}
+            </span>
+        </div>
     </div>
 </li>
