@@ -23,25 +23,38 @@ export function place_caret_at_end(el: HTMLElement): void {
 }
 
 export function replace_emoji_name_with_unicode_hex($element: JQuery): void {
+    // Find the emoji class in the passed JQuery element
     $element.find("span.emoji").each(function () {
         const emoji_class: string | undefined = $(this).attr("class");
-
+        // If no emoji class is found do nothing to the element
         if (emoji_class === undefined) {
-            return; // Skip this iteration if class is undefined
+            return;
         }
 
+        // Emojis have a class with the emoji code next to them i.e. emoji-1f951
+        // The code 1f951 represents an avocado 🥑
         const regex = /emoji-(\w+)/;
         const match = regex.exec(emoji_class);
         const emoji_code = match?.[1] ?? "";
 
-        if (!emoji_code) {
-            return; // Skip this iteration if no emoji code is found
+        // Convert the emoji code to its hex code representation
+        // Then use String.fromCodePoint to get the standard unicode representation of the hex code
+        try {
+            const hex_code = Number.parseInt(emoji_code, 16);
+            if (Number.isNaN(hex_code)) {
+                throw new Error(`Invalid emoji code: ${emoji_code}`);
+            }
+            const emoji_char = String.fromCodePoint(hex_code);
+            $(this).text(emoji_char);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error(`Failed to convert emoji code to character: ${error.message}`);
+            } else {
+                console.error('Failed to convert emoji code to character: Unknown error');
+            }
+            // Fallback behavior: leave the original content unchanged
+            return;
         }
-
-        const hex_code = Number.parseInt(emoji_code, 16);
-
-        const emoji_char = String.fromCodePoint(hex_code);
-        $(this).text(emoji_char);
     });
 }
 
