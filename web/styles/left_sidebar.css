@@ -293,8 +293,8 @@
     }
 
     .heading-markers-and-unreads .unread_count {
-        color: var(--color-unread-counter-normal);
-        background-color: var(--color-background-unread-counter-normal);
+        color: var(--color-unread-counter-quiet);
+        background-color: var(--color-background-unread-counter-quiet);
     }
 
     & ul.dm-list {
@@ -1556,6 +1556,9 @@ li.topic-list-item {
         /* Extra margin for unreads. */
         margin-right: var(--left-sidebar-unread-offset);
 
+        color: var(--color-unread-counter-quiet);
+        background-color: var(--color-background-unread-counter-quiet);
+
         &:empty {
             margin-right: 0;
         }
@@ -1618,6 +1621,11 @@ li.topic-list-item {
         grid-gap: 5px;
         /* Extra margin for unreads. */
         margin-right: var(--left-sidebar-unread-offset);
+
+        .unread_count {
+            color: var(--color-unread-counter-quiet);
+            background-color: var(--color-background-unread-counter-quiet);
+        }
 
         &:has(.unread_count:empty) {
             margin-right: 0;
