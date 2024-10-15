@@ -13,7 +13,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 // that here for the tests.
 page_params.request_language = "en";
 page_params.translation_data = {
-    "Quote and reply": "Citer et répondre",
+    "Quote message": "Citer le message",
     "Notification triggers": "Déclencheurs de notification",
     "You subscribed to channel {name}": "Vous n'êtes pas abonnés au canal {name}",
     "<p>The channel <b>{name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Channels page</z-link>.</p>":
@@ -34,10 +34,7 @@ const {$t, $t_html, get_language_name, get_language_list_columns, initialize} = 
 run_test("$t", () => {
     // Normally the id would be provided by babel-plugin-formatjs, but
     // this test file is not processed by Babel.
-    assert.equal(
-        $t({id: "Quote and reply", defaultMessage: "Quote and reply"}),
-        "Citer et répondre",
-    );
+    assert.equal($t({id: "Quote message", defaultMessage: "Quote message"}), "Citer le message");
     assert.equal(
         $t(
             {
@@ -79,7 +76,7 @@ run_test("t_tag", ({mock_template}) => {
 
     mock_template("popovers/message_actions_popover.hbs", true, (data, html) => {
         assert.equal(data, args);
-        assert.ok(html.includes("Citer et répondre"));
+        assert.ok(html.includes("Citer le message"));
     });
 
     require("../templates/popovers/message_actions_popover.hbs")(args);

@@ -98,7 +98,7 @@ the hotkeys too:
 - Message reply:
   - click on message to reply
   - use 'r' or Return hotkey to reply
-  - use '>' to quote and reply
+  - use '>' to quote message
   - use '@' to mention and reply
 - Reactions:
   - click on the reactions button to open menu

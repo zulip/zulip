@@ -63,7 +63,7 @@
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Link to a channel, topic, or message](/help/link-to-a-message-or-conversation)
 * [Format a quote](/help/format-a-quote)
-* [Quote and reply](/help/quote-and-reply)
+* [Quote message](/help/quote-and-reply)
 * [Emoji and emoticons](/help/emoji-and-emoticons)
 * [Insert a link](/help/insert-a-link)
 * [Share and upload files](/help/share-and-upload-files)

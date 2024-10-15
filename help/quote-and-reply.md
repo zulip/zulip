@@ -1,4 +1,4 @@
-# Quote and reply
+# Quote message
 
 You can quote a previous message, either replying within a topic or to
 start a new topic.
@@ -13,7 +13,7 @@ to avoid unnecessarily mentioning someone twice.
     You can use [quote blocks](/help/format-a-quote)
     when quoting emails or other non-Zulip content.
 
-## Quote and reply
+## Quote message
 
 {start_tabs}
 
@@ -24,20 +24,20 @@ to avoid unnecessarily mentioning someone twice.
 
 {!message-actions-menu.md!}
 
-1. Click **Quote and reply**.
+1. Click **Quote message**.
 
 1. Send your message.
 
 !!! keyboard_tip ""
 
-    You can also use <kbd>></kbd> to **quote and reply** to the
+    You can also use <kbd>></kbd> to quote to the
     selected message.
 
 {tab|mobile}
 
 {!message-long-press-menu.md!}
 
-1. Tap **Quote and reply**.
+1. Tap **Quote message**.
 
 1. *(optional)* Delete any parts of the quoted message that are not
    relevant to your reply.
@@ -57,7 +57,7 @@ to avoid unnecessarily mentioning someone twice.
 
 {!message-actions-menu.md!}
 
-1. Click **Quote and reply**.
+1. Click **Quote message**.
 
 1. Select the desired destination channel or **Direct message** from the dropdown
    in the top left of the compose box.
@@ -74,7 +74,7 @@ to avoid unnecessarily mentioning someone twice.
 
 {!message-long-press-menu.md!}
 
-1. Tap **Quote and reply**.
+1. Tap **Quote message**.
 
 1. *(optional)* Delete any parts of the quoted message that you don't want to
    forward.
