@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
@@ -7,6 +9,7 @@ import render_selected_stream_title from "../templates/stream_settings/selected_
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dropdown_widget from "./dropdown_widget";
+import type {DropdownWidget} from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
@@ -16,10 +19,11 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user} from "./state_data";
 import * as stream_ui_updates from "./stream_ui_updates";
+import type {StreamSubscription} from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 
-export function set_right_panel_title(sub) {
+export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
     if (settings_data.using_dark_theme()) {
         title_icon_color = "#dddeee";
@@ -32,19 +36,19 @@ export function set_right_panel_title(sub) {
 }
 
 export const show_subs_pane = {
-    nothing_selected() {
+    nothing_selected(): void {
         $(".settings, #stream-creation").hide();
         $(".nothing-selected").show();
         $("#subscription_overlay .stream-info-title").text(
             $t({defaultMessage: "Channel settings"}),
         );
     },
-    settings(sub) {
+    settings(sub: StreamSubscription): void {
         $(".settings, #stream-creation").hide();
         $(".settings").show();
         set_right_panel_title(sub);
     },
-    create_stream(container_name = "configure_channel_settings", sub) {
+    create_stream(container_name = "configure_channel_settings", sub: StreamSubscription): void {
         $(".stream_creation_container").hide();
         if (container_name === "configure_channel_settings") {
             $("#subscription_overlay .stream-info-title").text(
@@ -60,7 +64,7 @@ export const show_subs_pane = {
     },
 };
 
-export function update_footer_buttons(container_name) {
+export function update_footer_buttons(container_name: string): void {
     if (container_name === "subscribers_container") {
         // Hide stream creation containers and show add subscriber container
         $(".finalize_create_stream").show();
@@ -74,9 +78,13 @@ export function update_footer_buttons(container_name) {
     }
 }
 
-export function get_active_data() {
+export function get_active_data(): {
+    $row: JQuery;
+    id: number;
+    $tabs: JQuery;
+} {
     const $active_row = $("div.stream-row.active");
-    const valid_active_id = Number.parseInt($active_row.attr("data-stream-id"), 10);
+    const valid_active_id = Number.parseInt($active_row.attr("data-stream-id")!, 10);
     const $active_tabs = $(".subscriptions-container").find("div.ind-tab.selected");
     return {
         $row: $active_row,
@@ -85,9 +93,9 @@ export function get_active_data() {
     };
 }
 
-export let new_stream_can_remove_subscribers_group_widget = null;
+export let new_stream_can_remove_subscribers_group_widget: DropdownWidget | null = null;
 
-export function dropdown_setup() {
+export function dropdown_setup(): void {
     new_stream_can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
         widget_name: "new_stream_can_remove_subscribers_group",
         get_options: () =>
@@ -99,6 +107,7 @@ export function dropdown_setup() {
             dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
+            assert(new_stream_can_remove_subscribers_group_widget !== null);
             new_stream_can_remove_subscribers_group_widget.render();
         },
         $events_container: $("#subscription_overlay"),
@@ -106,13 +115,13 @@ export function dropdown_setup() {
             $(dropdown.popper).css("min-width", "300px");
             $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
         },
-        default_id: user_groups.get_user_group_from_name("role:administrators").id,
+        default_id: user_groups.get_user_group_from_name("role:administrators")!.id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
     });
 }
 
 /* For the given stream_row, remove the tick and replace by a spinner. */
-function display_subscribe_toggle_spinner($stream_row) {
+function display_subscribe_toggle_spinner($stream_row: JQuery): void {
     /* Prevent sending multiple requests by removing the button class. */
     $stream_row.find(".check").removeClass("sub_unsub_button");
 
@@ -127,7 +136,7 @@ function display_subscribe_toggle_spinner($stream_row) {
 }
 
 /* For the given stream_row, add the tick and delete the spinner. */
-function hide_subscribe_toggle_spinner($stream_row) {
+function hide_subscribe_toggle_spinner($stream_row: JQuery): void {
     /* Re-enable the button to handle requests. */
     $stream_row.find(".check").addClass("sub_unsub_button");
 
@@ -140,14 +149,18 @@ function hide_subscribe_toggle_spinner($stream_row) {
     loading.destroy_indicator($spinner);
 }
 
-export function ajaxSubscribe(stream, color, $stream_row) {
+export function ajaxSubscribe(
+    stream: string,
+    color: string,
+    $stream_row: JQuery | undefined,
+): void {
     // Subscribe yourself to a single stream.
     let true_stream_name;
 
     if ($stream_row !== undefined) {
         display_subscribe_toggle_spinner($stream_row);
     }
-    channel.post({
+    void channel.post({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream, color}])},
         success(_resp, _statusText, xhr) {
@@ -155,10 +168,14 @@ export function ajaxSubscribe(stream, color, $stream_row) {
                 $("#create_stream_name").val("");
             }
 
-            const res = xhr.responseJSON;
-            if (!$.isEmptyObject(res.already_subscribed)) {
+            const res = z
+                .object({
+                    already_subscribed: z.record(z.string(), z.array(z.string())),
+                })
+                .parse(xhr.responseJSON);
+            if (Object.keys(res.already_subscribed).length) {
                 // Display the canonical stream capitalization.
-                true_stream_name = res.already_subscribed[current_user.user_id][0];
+                true_stream_name = res.already_subscribed[current_user.user_id]![0];
                 ui_report.success(
                     $t_html(
                         {defaultMessage: "Already subscribed to {channel}"},
@@ -186,12 +203,12 @@ export function ajaxSubscribe(stream, color, $stream_row) {
     });
 }
 
-function ajaxUnsubscribe(sub, $stream_row) {
+function ajaxUnsubscribe(sub: StreamSubscription, $stream_row: JQuery | undefined): void {
     // TODO: use stream_id when backend supports it
     if ($stream_row !== undefined) {
         display_subscribe_toggle_spinner($stream_row);
     }
-    channel.del({
+    void channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([sub.name])},
         success() {
@@ -215,7 +232,7 @@ function ajaxUnsubscribe(sub, $stream_row) {
     });
 }
 
-export function unsubscribe_from_private_stream(sub) {
+export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     const invite_only = sub.invite_only;
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
     const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream: sub});
@@ -225,7 +242,7 @@ export function unsubscribe_from_private_stream(sub) {
         display_stream_archive_warning: sub_count === 1 && invite_only,
     });
 
-    function unsubscribe_from_stream() {
+    function unsubscribe_from_stream(): void {
         let $stream_row;
         if (overlays.streams_open()) {
             $stream_row = $(
@@ -248,7 +265,7 @@ export function unsubscribe_from_private_stream(sub) {
     });
 }
 
-export function sub_or_unsub(sub, $stream_row) {
+export function sub_or_unsub(sub: StreamSubscription, $stream_row: JQuery): void {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (sub.invite_only || current_user.is_guest) {
@@ -261,14 +278,14 @@ export function sub_or_unsub(sub, $stream_row) {
     }
 }
 
-export function update_public_stream_privacy_option_state($container) {
+export function update_public_stream_privacy_option_state($container: JQuery): void {
     const $public_stream_elem = $container.find(
         `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.public.code)}']`,
     );
     $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
 }
 
-export function hide_or_disable_stream_privacy_options_if_required($container) {
+export function hide_or_disable_stream_privacy_options_if_required($container: JQuery): void {
     stream_ui_updates.update_web_public_stream_privacy_option_state($container);
 
     update_public_stream_privacy_option_state($container);
