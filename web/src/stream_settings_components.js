@@ -147,7 +147,7 @@ export function ajaxSubscribe(stream, color, $stream_row) {
     if ($stream_row !== undefined) {
         display_subscribe_toggle_spinner($stream_row);
     }
-    return channel.post({
+    channel.post({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream, color}])},
         success(_resp, _statusText, xhr) {
@@ -191,7 +191,7 @@ function ajaxUnsubscribe(sub, $stream_row) {
     if ($stream_row !== undefined) {
         display_subscribe_toggle_spinner($stream_row);
     }
-    return channel.del({
+    channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([sub.name])},
         success() {
