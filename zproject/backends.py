@@ -72,6 +72,7 @@ from zerver.actions.custom_profile_fields import do_update_user_custom_profile_d
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
+    do_update_user_group_description,
 )
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.actions.users import do_change_user_role, do_deactivate_user
@@ -957,6 +958,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             to the LDAP groups ldap_user belongs to.
         (2) Makes sure the user doesn't have membership in the Zulip UserGroups corresponding
             to the LDAP groups ldap_user doesn't belong to.
+        (3) Makes sure the group descriptions of the Zulip UserGroups corresponds to the descriptions
+            in LDAP.
         """
 
         if user_profile.realm.string_id not in settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM:
@@ -1017,6 +1020,33 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 bulk_remove_members_from_user_groups(
                     groups_for_membership_deletion, [user_profile.id], acting_user=None
                 )
+            if settings.LDAP_GROUP_DESCRIPTION_ATTR is None:
+                # no group descriptions to sync for this realm
+                return
+            ldap_group_descriptions = ldap_user._get_group_descriptions()
+            zulip_group_descriptions = {
+                group.name: group.description
+                for group in NamedUserGroup.objects.filter(
+                    realm=user_profile.realm, name__in=configured_ldap_group_names_for_sync
+                )
+            }
+
+            for group_name, ldap_description in ldap_group_descriptions.items():
+                if group_name in intended_group_name_set_for_user:
+                    zulip_description = zulip_group_descriptions.get(group_name)
+                    if zulip_description is not ldap_description and ldap_description is not None:
+                        user_group = NamedUserGroup.objects.get(
+                            name=group_name, realm=user_profile.realm
+                        )
+                        ldap_logger.debug(
+                            "Update group description for %s from %s to %s",
+                            group_name,
+                            zulip_description,
+                            ldap_description,
+                        )
+                        do_update_user_group_description(
+                            user_group, ldap_description, acting_user=None
+                        )
 
         except Exception as e:
             raise ZulipLDAPError(str(e)) from e

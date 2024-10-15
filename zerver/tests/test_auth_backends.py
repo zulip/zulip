@@ -7999,6 +7999,53 @@ class LDAPGroupSyncTest(ZulipTestCase):
                 'WARNING:django_auth_ldap:search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0) while authenticating cordelia',
             ],
         )
+        with (
+            self.settings(
+                AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                    "ou=groups,dc=zulip,dc=com",
+                    ldap.SCOPE_ONELEVEL,
+                    "(objectClass=groupOfUniqueNames)",
+                ),
+                LDAP_SYNCHRONIZED_GROUPS_BY_REALM={
+                    "zulip": [
+                        "cool_test_group",
+                    ]
+                },
+                LDAP_GROUP_DESCRIPTION_ATTR="description",
+                LDAP_APPEND_DOMAIN="zulip.com",
+            ),
+            self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log,
+        ):
+            cool_test_group_ldap_group_description = self.mock_ldap.directory[
+                "cn=cool_test_group,ou=groups,dc=zulip,dc=com"
+            ]["description"]
+            cool_test_group_zulip_group_description = NamedUserGroup.objects.get(
+                realm=realm, name="cool_test_group"
+            ).description
+            sync_user_from_ldap(hamlet, mock.Mock())
+            self.assertTrue(
+                NamedUserGroup.objects.get(realm=realm, name="cool_test_group").description
+                == cool_test_group_ldap_group_description
+            )
+            del self.mock_ldap.directory["cn=cool_test_group,ou=groups,dc=zulip,dc=com"][
+                "description"
+            ]
+            sync_user_from_ldap(hamlet, mock.Mock())
+            self.assertTrue(
+                NamedUserGroup.objects.get(realm=realm, name="cool_test_group").description
+                == cool_test_group_ldap_group_description
+            )
+
+        self.assertEqual(
+            zulip_ldap_log.output,
+            [
+                f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
+                "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: {'cool_test_group'}",
+                f"DEBUG:zulip.ldap:Update group description for cool_test_group from {cool_test_group_zulip_group_description} to {cool_test_group_ldap_group_description}",
+                f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
+                "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: {'cool_test_group'}",
+            ],
+        )
 
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
