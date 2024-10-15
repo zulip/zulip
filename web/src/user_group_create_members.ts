@@ -1,36 +1,44 @@
 import $ from "jquery";
 
 import render_new_user_group_user from "../templates/stream_settings/new_stream_user.hbs";
+import render_new_user_group_subgroup from "../templates/user_group_settings/new_user_group_subgroup.hbs";
 import render_new_user_group_users from "../templates/user_group_settings/new_user_group_users.hbs";
 
-import * as add_subscribers_pill from "./add_subscribers_pill";
+import * as add_group_members_pill from "./add_group_members_pill";
 import * as ListWidget from "./list_widget";
 import type {ListWidget as ListWidgetType} from "./list_widget";
 import * as people from "./people";
+import type {User} from "./people";
 import {current_user} from "./state_data";
 import type {CombinedPillContainer} from "./typeahead_helper";
+import * as user_group_components from "./user_group_components";
 import * as user_group_create_members_data from "./user_group_create_members_data";
-import * as user_sort from "./user_sort";
+import type {UserGroup} from "./user_groups";
 
 let pill_widget: CombinedPillContainer;
-let all_users_list_widget: ListWidgetType<number, people.User>;
+let all_users_list_widget: ListWidgetType<User | UserGroup, User | UserGroup>;
 
 export function get_principals(): number[] {
     return user_group_create_members_data.get_principals();
 }
 
-function redraw_member_list(): void {
-    all_users_list_widget.replace_list_data(user_group_create_members_data.sorted_user_ids());
+export function get_subgroups(): number[] {
+    return user_group_create_members_data.get_subgroups();
 }
 
-function add_user_ids(user_ids: number[]): void {
+function redraw_member_list(): void {
+    all_users_list_widget.replace_list_data(user_group_create_members_data.sorted_members());
+}
+
+function add_members(user_ids: number[], subgroup_ids: number[]): void {
     user_group_create_members_data.add_user_ids(user_ids);
+    user_group_create_members_data.add_subgroup_ids(subgroup_ids);
     redraw_member_list();
 }
 
 function add_all_users(): void {
     const user_ids = user_group_create_members_data.get_all_user_ids();
-    add_user_ids(user_ids);
+    add_members(user_ids, []);
 }
 
 function soft_remove_user_id(user_id: number): void {
@@ -43,30 +51,40 @@ function undo_soft_remove_user_id(user_id: number): void {
     redraw_member_list();
 }
 
-export function clear_member_list(): void {
-    user_group_create_members_data.initialize_with_current_user();
+function soft_remove_subgroup_id(subgroup_id: number): void {
+    user_group_create_members_data.soft_remove_subgroup_id(subgroup_id);
     redraw_member_list();
 }
 
-function sync_user_ids(user_ids: number[]): void {
+function undo_soft_remove_subgroup_id(subgroup_id: number): void {
+    user_group_create_members_data.undo_soft_remove_subgroup_id(subgroup_id);
+    redraw_member_list();
+}
+
+export function clear_member_list(): void {
+    user_group_create_members_data.initialize_with_current_user();
+    user_group_create_members_data.reset_subgroups_data();
+    redraw_member_list();
+}
+
+function sync_members(user_ids: number[], subgroup_ids: number[]): void {
     user_group_create_members_data.sync_user_ids(user_ids);
+    user_group_create_members_data.sync_subgroup_ids(subgroup_ids);
     redraw_member_list();
 }
 
 function build_pill_widget({$parent_container}: {$parent_container: JQuery}): void {
     const $pill_container = $parent_container.find(".pill-container");
-    const get_potential_members = user_group_create_members_data.get_potential_members;
 
-    pill_widget = add_subscribers_pill.create_without_add_button({
+    pill_widget = add_group_members_pill.create_without_add_button({
         $pill_container,
-        get_potential_subscribers: get_potential_members,
-        onPillCreateAction: add_user_ids,
-        // It is better to sync the current set of user ids in the input
-        // instead of removing user_ids from the user_ids_set, otherwise
-        // we'll have to have more complex logic of when to remove
-        // a user and when not to depending upon their group, channel
-        // and individual pills.
-        onPillRemoveAction: sync_user_ids,
+        onPillCreateAction: add_members,
+        // It is better to sync the current set of user and subgroup ids
+        // in the input instead of removing them from the user_ids_set
+        // and subgroup_id_set, otherwise we'll have to have more complex
+        // logic of when to remove a user and when not to depending upon
+        // their channel and individual pills.
+        onPillRemoveAction: sync_members,
     });
 }
 
@@ -90,6 +108,20 @@ export function create_handlers($container: JQuery): void {
         const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
         undo_soft_remove_user_id(user_id);
     });
+
+    $container.on("click", ".remove_potential_subgroup", (e) => {
+        e.preventDefault();
+        const $elem = $(e.target);
+        const subgroup_id = Number.parseInt($elem.attr("data-group-id")!, 10);
+        soft_remove_subgroup_id(subgroup_id);
+    });
+
+    $container.on("click", ".undo_soft_removed_potential_subgroup", (e) => {
+        e.preventDefault();
+        const $elem = $(e.target);
+        const user_id = Number.parseInt($elem.attr("data-group-id")!, 10);
+        undo_soft_remove_subgroup_id(user_id);
+    });
 }
 
 export function build_widgets(): void {
@@ -102,33 +134,45 @@ export function build_widgets(): void {
 
     user_group_create_members_data.initialize_with_current_user();
     const current_user_id = current_user.user_id;
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const initial_members = [people.get_by_user_id(current_user_id)] as (User | UserGroup)[];
 
-    all_users_list_widget = ListWidget.create($("#create_user_group_members"), [current_user_id], {
+    all_users_list_widget = ListWidget.create($("#create_user_group_members"), initial_members, {
         name: "new_user_group_add_users",
         $parent_container: $add_people_container,
-        get_item: people.get_by_user_id,
+        get_item: ListWidget.default_get_item,
         sort_fields: {
-            email: user_sort.sort_email,
-            id: user_sort.sort_user_id,
-            ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
+            email: user_group_components.sort_group_member_email,
+            name: user_group_components.sort_group_member_name,
         },
-        modifier_html(user) {
+        modifier_html(member: User | UserGroup) {
+            if ("user_id" in member) {
+                const item = {
+                    email: member.delivery_email,
+                    user_id: member.user_id,
+                    full_name: member.full_name,
+                    is_current_user: member.user_id === current_user_id,
+                    img_src: people.small_avatar_url_for_person(member),
+                    soft_removed: user_group_create_members_data.user_id_in_soft_remove_list(
+                        member.user_id,
+                    ),
+                };
+                return render_new_user_group_user(item);
+            }
+
             const item = {
-                email: user.delivery_email,
-                user_id: user.user_id,
-                full_name: user.full_name,
-                is_current_user: user.user_id === current_user_id,
-                img_src: people.small_avatar_url_for_person(user),
-                soft_removed: user_group_create_members_data.user_id_in_soft_remove_list(
-                    user.user_id,
+                group_id: member.id,
+                display_value: member.name,
+                soft_removed: user_group_create_members_data.subgroup_id_in_soft_remove_list(
+                    member.id,
                 ),
             };
-            return render_new_user_group_user(item);
+            return render_new_user_group_subgroup(item);
         },
         filter: {
             $element: $("#people_to_add_in_group .add-user-list-filter"),
-            predicate(user, search_term) {
-                return people.build_person_matcher(search_term)(user);
+            predicate(member, search_term) {
+                return user_group_components.build_group_member_matcher(search_term)(member);
             },
         },
         $simplebar_container,

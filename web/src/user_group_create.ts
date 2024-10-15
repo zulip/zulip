@@ -36,7 +36,7 @@ let can_mention_group_widget: GroupSettingPillContainer | undefined;
 class UserGroupMembershipError {
     report_no_members_to_user_group(): void {
         $("#user_group_membership_error").text(
-            $t({defaultMessage: "You cannot create a user group with no members."}),
+            $t({defaultMessage: "You cannot create a user group with no members or subgroups."}),
         );
         $("#user_group_membership_error").show();
     }
@@ -151,6 +151,7 @@ function create_user_group(): void {
         return;
     }
     const user_ids = user_group_create_members.get_principals();
+    const subgroup_ids = user_group_create_members.get_subgroups();
 
     assert(can_add_members_group_widget !== undefined);
     const can_add_members_group = settings_components.get_group_setting_widget_value(
@@ -177,6 +178,7 @@ function create_user_group(): void {
         name: group_name,
         description,
         members: JSON.stringify(user_ids),
+        subgroups: JSON.stringify(subgroup_ids),
         can_add_members_group: JSON.stringify(can_add_members_group),
         can_join_group: JSON.stringify(can_join_group),
         can_leave_group: JSON.stringify(can_leave_group),
@@ -230,7 +232,8 @@ export function set_up_handlers(): void {
         }
 
         const principals = user_group_create_members_data.get_principals();
-        if (principals.length === 0) {
+        const subgroups = user_group_create_members_data.get_subgroups();
+        if (principals.length === 0 && subgroups.length === 0) {
             user_group_membership_error.report_no_members_to_user_group();
             return;
         }
