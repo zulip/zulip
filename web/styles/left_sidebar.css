@@ -496,7 +496,7 @@ ul.filters {
     }
 
     .zulip-icon-follow {
-        opacity: 0.6;
+        opacity: 0.5;
 
         &:hover {
             opacity: 1;
