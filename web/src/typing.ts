@@ -111,10 +111,15 @@ function notify_server_stop(to: Recipient): void {
 export function get_recipient(): Recipient | null {
     const message_type = compose_state.get_message_type();
     if (message_type === "private") {
+        const user_ids = get_user_ids_array();
+        // compose box with no valid user pills.
+        if (user_ids === null) {
+            return null;
+        }
         return {
             message_type: "direct",
             notification_event_type: "typing",
-            ids: get_user_ids_array()!,
+            ids: user_ids,
         };
     }
     if (message_type === "stream") {
