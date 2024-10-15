@@ -83,7 +83,7 @@ function format_subgroup_list_elem(group: UserGroup): string {
     });
 }
 
-function build_group_member_matcher(query: string): (member: User | UserGroup) => boolean {
+export function build_group_member_matcher(query: string): (member: User | UserGroup) => boolean {
     query = query.trim();
 
     const termlets = query.toLowerCase().split(/\s+/);
@@ -108,7 +108,7 @@ function build_group_member_matcher(query: string): (member: User | UserGroup) =
     };
 }
 
-function sort_group_member_email(a: User | UserGroup, b: User | UserGroup): number {
+export function sort_group_member_email(a: User | UserGroup, b: User | UserGroup): number {
     if ("user_id" in a && "user_id" in b) {
         return user_sort.sort_email(a, b);
     }
@@ -124,7 +124,7 @@ function sort_group_member_email(a: User | UserGroup, b: User | UserGroup): numb
     return user_sort.compare_a_b(a.name.toLowerCase(), b.name.toLowerCase());
 }
 
-function sort_group_member_name(a: User | UserGroup, b: User | UserGroup): number {
+export function sort_group_member_name(a: User | UserGroup, b: User | UserGroup): number {
     let a_name;
     if ("user_id" in a) {
         a_name = a.full_name;
