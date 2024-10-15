@@ -424,6 +424,24 @@ function maybe_store_export_consent_data_and_return(export_consent: ExportConsen
     return false;
 }
 
+function update_start_export_modal_stats(): void {
+    total_users_count = export_consents.length;
+    users_consented_for_export_count = export_consents.filter(
+        (export_consent) => export_consent.consented,
+    ).length;
+    if ($("#allow_private_data_export_stats").length) {
+        $("#allow_private_data_export_stats").text(
+            $t(
+                {
+                    defaultMessage:
+                        "Exporting private data for {users_consented_for_export_count} users ({total_users_count} users total).",
+                },
+                {users_consented_for_export_count, total_users_count},
+            ),
+        );
+    }
+}
+
 export function add_export_consent_data_and_redraw(export_consent: ExportConsent): void {
     if (!meta.loaded) {
         return;
@@ -435,6 +453,7 @@ export function add_export_consent_data_and_redraw(export_consent: ExportConsent
 
     export_consents.push(export_consent);
     redraw_export_consents_list();
+    update_start_export_modal_stats();
 }
 
 export function remove_export_consent_data_and_redraw(user_id: number): void {
@@ -451,6 +470,7 @@ export function remove_export_consent_data_and_redraw(user_id: number): void {
     if (index !== -1) {
         export_consents.splice(index, 1);
         redraw_export_consents_list();
+        update_start_export_modal_stats();
     }
 }
 
@@ -472,4 +492,5 @@ export function update_export_consent_data_and_redraw(export_consent: ExportCons
         export_consents.push(export_consent);
     }
     redraw_export_consents_list();
+    update_start_export_modal_stats();
 }
