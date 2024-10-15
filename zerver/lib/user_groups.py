@@ -275,7 +275,8 @@ def lock_subgroups_with_respect_to_supergroup(
     potential_supergroup_id: int,
     acting_user: UserProfile,
     *,
-    permission_setting: str,
+    permission_setting: str | None,
+    creating_group: bool = False,
 ) -> Iterator[LockedUserGroupContext]:
     """This locks the user groups with the given potential_subgroup_ids, as well
     as their indirect subgroups, followed by the potential supergroup. It
@@ -305,9 +306,17 @@ def lock_subgroups_with_respect_to_supergroup(
         # the transaction with a JsonableError by handling the DatabaseError.
         # But at the current scale of concurrent requests, we rely on
         # Postgres's deadlock detection when it occurs.
-        potential_supergroup = access_user_group_for_update(
-            potential_supergroup_id, acting_user, permission_setting=permission_setting
-        )
+        if creating_group:
+            # User can add subgroups to the group while creating it irrespective
+            # of whether the user has other permissions for that group.
+            potential_supergroup = get_user_group_by_id_in_realm(
+                potential_supergroup_id, acting_user.realm, for_read=False
+            )
+        else:
+            assert permission_setting is not None
+            potential_supergroup = access_user_group_for_update(
+                potential_supergroup_id, acting_user, permission_setting=permission_setting
+            )
         # We avoid making a separate query for user_group_ids because the
         # recursive query already returns those user groups.
         potential_subgroups = [
