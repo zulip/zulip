@@ -52,6 +52,7 @@ export const show_subs_pane = {
             );
         } else {
             $("#subscription_overlay .stream-info-title").html(render_selected_stream_title({sub}));
+            $("#stream_settings #send_notification_to_new_subscribers_container").remove();
         }
         update_footer_buttons(container_name);
         $(`.${CSS.escape(container_name)}`).show();
