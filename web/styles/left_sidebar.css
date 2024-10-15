@@ -1553,8 +1553,6 @@ li.topic-list-item {
            can do its thing despite whatever
            padding and border we specify. */
         box-sizing: border-box;
-        /* Clear inherited positioning. */
-        position: static;
         /* We're going to use flexbox, not
            positioning, to get the clear button
            over top of the input. This -30px
@@ -1576,7 +1574,30 @@ li.topic-list-item {
         align-items: center;
         /* Flexbox will pull the element open
            to make a generous clickable area. */
-        padding: 0;
+        color: var(--color-icons-inbox);
+        position: relative;
+        right: 0;
+        padding: 6px 5px;
+        height: 100%;
+        opacity: 0.4;
+        border-radius: 4px;
+
+        &:hover,
+        &:focus {
+            outline: none;
+            opacity: 1;
+        }
+
+        &:focus-visible {
+            opacity: 1;
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
+
+        &:active {
+            opacity: 1;
+            transform: scale(0.9);
+        }
     }
 
     .direct-messages-list-filter:placeholder-shown
