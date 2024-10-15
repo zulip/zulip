@@ -112,31 +112,31 @@ export function dropdown_setup() {
 }
 
 /* For the given stream_row, remove the tick and replace by a spinner. */
-function display_subscribe_toggle_spinner(stream_row) {
+function display_subscribe_toggle_spinner($stream_row) {
     /* Prevent sending multiple requests by removing the button class. */
-    $(stream_row).find(".check").removeClass("sub_unsub_button");
+    $stream_row.find(".check").removeClass("sub_unsub_button");
 
     /* Hide the tick. */
-    const $tick = $(stream_row).find("svg");
+    const $tick = $stream_row.find("svg");
     $tick.addClass("hide");
 
     /* Add a spinner to show the request is in process. */
-    const $spinner = $(stream_row).find(".sub_unsub_status").expectOne();
+    const $spinner = $stream_row.find(".sub_unsub_status").expectOne();
     $spinner.show();
     loading.make_indicator($spinner);
 }
 
 /* For the given stream_row, add the tick and delete the spinner. */
-function hide_subscribe_toggle_spinner(stream_row) {
+function hide_subscribe_toggle_spinner($stream_row) {
     /* Re-enable the button to handle requests. */
-    $(stream_row).find(".check").addClass("sub_unsub_button");
+    $stream_row.find(".check").addClass("sub_unsub_button");
 
     /* Show the tick. */
-    const $tick = $(stream_row).find("svg");
+    const $tick = $stream_row.find("svg");
     $tick.removeClass("hide");
 
     /* Destroy the spinner. */
-    const $spinner = $(stream_row).find(".sub_unsub_status").expectOne();
+    const $spinner = $stream_row.find(".sub_unsub_status").expectOne();
     loading.destroy_indicator($spinner);
 }
 
