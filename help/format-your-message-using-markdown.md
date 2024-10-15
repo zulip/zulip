@@ -114,7 +114,7 @@ below.
 
 !!! tip ""
 
-    There is a handy option to [quote and reply](/help/quote-and-reply) to a
+    There is a handy option to [quote message](/help/quote-and-reply) to a
     message in Zulip.
     You can also use the **Quote** (<i class="zulip-icon zulip-icon-quote"></i>)
     button in the compose box to insert quote formatting.
