@@ -420,6 +420,22 @@ function maybe_store_export_consent_data_and_return(export_consent: ExportConsen
     return false;
 }
 
+function update_start_export_modal_stats(): void {
+    total_users_count = export_consents.size;
+    users_consented_for_export_count = get_export_consents_having_consent_value(true).length;
+    if ($("#allow_private_data_export_stats").length) {
+        $("#allow_private_data_export_stats").text(
+            $t(
+                {
+                    defaultMessage:
+                        "Exporting private data for {users_consented_for_export_count} users ({total_users_count} users total).",
+                },
+                {users_consented_for_export_count, total_users_count},
+            ),
+        );
+    }
+}
+
 export function remove_export_consent_data_and_redraw(user_id: number): void {
     if (!meta.loaded) {
         return;
@@ -432,6 +448,7 @@ export function remove_export_consent_data_and_redraw(user_id: number): void {
 
     export_consents.delete(user_id);
     redraw_export_consents_list();
+    update_start_export_modal_stats();
 }
 
 export function update_export_consent_data_and_redraw(export_consent: ExportConsent): void {
@@ -445,4 +462,5 @@ export function update_export_consent_data_and_redraw(export_consent: ExportCons
 
     export_consents.set(export_consent.user_id, export_consent.consented);
     redraw_export_consents_list();
+    update_start_export_modal_stats();
 }
