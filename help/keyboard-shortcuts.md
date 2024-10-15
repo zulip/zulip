@@ -65,7 +65,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Filter channels**: <kbd>Q</kbd>
 
-* **Search people**: <kbd>W</kbd>
+* **Filter users**: <kbd>W</kbd>
 
 ## Scrolling
 
