@@ -429,7 +429,7 @@ async function test_users_search(page: Page): Promise<void> {
     await assert_in_list(page, "aaron");
 
     // Enter the search box and test selected suggestion navigation
-    await page.click("#user_filter_icon");
+    await page.click(".user-list-filter");
     await page.waitForSelector("#buddy-list-other-users .highlighted_user", {visible: true});
     await assert_selected(page, "Desdemona");
     await assert_not_selected(page, "Cordelia, Lear's daughter");
