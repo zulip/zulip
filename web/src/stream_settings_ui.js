@@ -67,6 +67,16 @@ export function update_left_panel_row(sub) {
         $new_row.addClass("active");
     }
 
+    // Show spinner in $new_row if $row contains spinner.
+    const show_spinner = $($row).find(".sub_unsub_status").children().length !== 0;
+    if (show_spinner) {
+        stream_settings_components.display_subscribe_toggle_spinner($new_row);
+        // Hide toggle spinner for after 300ms.
+        setTimeout(() => {
+            stream_settings_components.hide_subscribe_toggle_spinner($new_row);
+        }, 300);
+    }
+
     $row.replaceWith($new_row);
 }
 
