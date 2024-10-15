@@ -587,8 +587,8 @@
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: #ededed;
     --color-background-modal-bar: #f5f5f5;
-    --color-border-modal: #8c8c8c;
-    --color-border-modal-bar: #c2c2c2;
+    --color-border-modal: color-mix(in srgb, #8c8c8c 25%, transparent);
+    --color-border-modal-bar: color-mix(in srgb, #c2c2c2 80%, transparent);
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 100%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
     --color-topic-indent-border: hsl(0deg 0% 0% / 19%);
@@ -1103,8 +1103,8 @@
     --color-masked-unread-marker: hsl(0deg 0% 30%);
     --color-background-modal: #242424;
     --color-background-modal-bar: #333;
-    --color-border-modal: color-mix(in srgb, #fff 15%, transparent);
-    --color-border-modal-bar: color-mix(in srgb, #fff 12%, transparent);
+    --color-border-modal: color-mix(in srgb, #fff 8%, transparent);
+    --color-border-modal-bar: color-mix(in srgb, #fff 5%, transparent);
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 0% / 20%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
