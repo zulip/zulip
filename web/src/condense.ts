@@ -152,6 +152,9 @@ export function toggle_collapse(message: Message): void {
             collapse(message);
         }
     }
+
+    // Select and scroll to the message so that it is in the view.
+    message_lists.current.select_id(message.id, {then_scroll: true});
 }
 
 function get_message_height(elem: HTMLElement): number {
@@ -250,8 +253,6 @@ export function initialize(): void {
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(id);
         assert(message !== undefined);
-        // Focus on the expanded message.
-        message_lists.current.select_id(id);
         const $content = $row.find(".message_content");
         if (message.collapsed) {
             // Uncollapse.
@@ -261,6 +262,8 @@ export function initialize(): void {
             message.condensed = false;
             uncondense_row($row);
         }
+        // Select and scroll to the message so that it is in the view.
+        message_lists.current.select_id(message.id, {then_scroll: true});
         e.stopPropagation();
         e.preventDefault();
     });
@@ -268,13 +271,13 @@ export function initialize(): void {
     $("#message_feed_container").on("click", ".message_condenser", function (this: HTMLElement, e) {
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
-        // Focus on the condensed message.
         assert(message_lists.current !== undefined);
-        message_lists.current.select_id(id);
         const message = message_lists.current.get(id);
         assert(message !== undefined);
         message.condensed = true;
         condense_row($row);
+        // Select and scroll to the message so that it is in the view.
+        message_lists.current.select_id(message.id, {then_scroll: true});
         e.stopPropagation();
         e.preventDefault();
     });
