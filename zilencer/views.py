@@ -1,6 +1,6 @@
 import logging
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from typing import Annotated, Any, TypedDict, TypeVar
 from uuid import UUID
@@ -983,7 +983,15 @@ def update_remote_realm_data_for_server(
             remote_realms_to_update.append(remote_realm)
 
             billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
-            if billing_session.on_paid_plan():
+            if (
+                billing_session.on_paid_plan()
+                and not RemoteRealmAuditLog.objects.filter(
+                    server=server,
+                    remote_realm=remote_realm,
+                    event_type=AuditLogEventType.REMOTE_REALM_LOCALLY_DELETED,
+                    event_time__gte=timezone_now() - timedelta(days=1),
+                ).exists()
+            ):
                 context = {
                     "billing_entity": billing_session.billing_entity_display_name,
                     "support_url": billing_session.support_url(),
