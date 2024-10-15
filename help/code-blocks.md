@@ -191,7 +191,7 @@ be happy to help you out.
 * [Message formatting](/help/format-your-message-using-markdown)
 * [LaTeX](/help/latex)
 * [Spoilers](/help/spoilers)
-* [Quote and reply](/help/quote-and-reply)
+* [Quote message](/help/quote-and-reply)
 
 [pygments-lexers]: https://pygments.org/docs/lexers/
 [get_lexer_by_name]: https://pygments-doc.readthedocs.io/en/latest/lexers/lexers.html#pygments.lexers.get_lexer_by_name
