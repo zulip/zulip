@@ -23,11 +23,7 @@ distraction, you can hide the user list any time.
 class="zulip-icon zulip-icon-triple-users"></i> ) icon in the upper right to
 show it.
 
-1. Click the **search** (<i class="search_icon zulip-icon
-   zulip-icon-search"></i>) icon at the top of the right sidebar to open the
-   search box.
-
-1. Type the name of the user you are looking for.
+1. Type the name of the user you are looking for in the search box.
 
 !!! keyboard_tip ""
 
