@@ -77,7 +77,6 @@ type BuddyListRenderData = {
     pm_ids_set: Set<number>;
     total_human_subscribers_count: number;
     other_users_count: number;
-    total_human_users: number;
     hide_headers: boolean;
     all_participant_ids: Set<number>;
 };
@@ -87,8 +86,7 @@ function get_render_data(): BuddyListRenderData {
     const pm_ids_set = narrow_state.pm_ids_set();
 
     const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, pm_ids_set);
-    const total_human_users = people.get_active_human_count();
-    const other_users_count = total_human_users - total_human_subscribers_count;
+    const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
     const all_participant_ids = buddy_data.get_conversation_participants();
 
@@ -97,7 +95,6 @@ function get_render_data(): BuddyListRenderData {
         pm_ids_set,
         total_human_subscribers_count,
         other_users_count,
-        total_human_users,
         hide_headers,
         all_participant_ids,
     };
@@ -247,9 +244,8 @@ export class BuddyList extends BuddyListConf {
                                 );
                             }
                         } else {
-                            const total_human_users = people.get_active_human_count();
                             const other_users_count =
-                                total_human_users - total_human_subscribers_count;
+                                people.get_active_human_count() - total_human_subscribers_count;
                             tooltip_text = $t(
                                 {
                                     defaultMessage:
@@ -429,8 +425,7 @@ export class BuddyList extends BuddyListConf {
         }
         this.current_filter = narrow_state.filter();
 
-        const {current_sub, total_human_subscribers_count, other_users_count, total_human_users} =
-            this.render_data;
+        const {current_sub, total_human_subscribers_count, other_users_count} = this.render_data;
         $(".buddy-list-subsection-header").empty();
 
         // If we're in the mode of hiding headers, that means we're only showing the "other users"
@@ -446,16 +441,9 @@ export class BuddyList extends BuddyListConf {
             $("#buddy-list-users-matching-view-container").toggleClass("no-display", true);
         }
 
-        // Usually we show the user counts in the headers, but if we're hiding
-        // those headers then we show the total user count in the main title.
-        const default_userlist_title = $t({defaultMessage: "USERS"});
         if (hide_headers) {
-            const formatted_count = get_formatted_sub_count(total_human_users);
-            const userlist_title = `${default_userlist_title} (${formatted_count})`;
-            $("#userlist-title").text(userlist_title);
             return;
         }
-        $("#userlist-title").text(default_userlist_title);
 
         let header_text;
         if (current_sub) {
