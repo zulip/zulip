@@ -25,20 +25,13 @@ mock_esm("../src/buddy_list", {
 });
 
 function mock_setTimeout() {
-    let set_timeout_function_called = false;
     set_global("setTimeout", (func) => {
-        if (set_timeout_function_called) {
-            // This conditional is needed to avoid indefinite calls.
-            return;
-        }
-        set_timeout_function_called = true;
         func();
     });
 }
 
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
-const resize = mock_esm("../src/resize");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const activity_ui = zrequire("activity_ui");
@@ -103,7 +96,6 @@ test("clear_search", ({override}) => {
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
     override(popovers, "hide_all", noop);
-    override(resize, "resize_sidebars", noop);
 
     stub_buddy_list_empty_list_message_lengths();
 
@@ -112,7 +104,6 @@ test("clear_search", ({override}) => {
         assert.deepEqual(user_ids, {all_user_ids: []});
     });
     set_input_val("somevalue");
-    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
 
     // Now we're clearing the search string and everyone shows up again.
     override(fake_buddy_list, "populate", (user_ids) => {
@@ -121,21 +112,18 @@ test("clear_search", ({override}) => {
     $("#clear_search_people_button").trigger("click");
     assert.equal($("input.user-list-filter").val(), "");
     $("#clear_search_people_button").trigger("click");
-    assert.ok($("#user_search_section").hasClass("notdisplayed"));
 });
 
-test("escape_search", ({override}) => {
+test("clear_search", ({override}) => {
     override(realm, "realm_presence_disabled", true);
 
-    override(resize, "resize_sidebars", noop);
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
 
     set_input_val("somevalue");
-    activity_ui.escape_search();
+    activity_ui.clear_search();
     assert.equal($("input.user-list-filter").val(), "");
-    activity_ui.escape_search();
-    assert.ok($("#user_search_section").hasClass("notdisplayed"));
+    activity_ui.clear_search();
 
     // We need to reset this because the unit tests aren't isolated from each other.
     set_input_val("");
@@ -144,7 +132,6 @@ test("escape_search", ({override}) => {
 test("blur search right", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(popovers, "hide_all", noop);
-    override(resize, "resize_sidebars", noop);
     mock_setTimeout();
 
     $("input.user-list-filter").closest = (selector) => {
@@ -161,7 +148,6 @@ test("blur search right", ({override}) => {
 test("blur search left", ({override}) => {
     override(sidebar_ui, "show_streamlist_sidebar", noop);
     override(popovers, "hide_all", noop);
-    override(resize, "resize_sidebars", noop);
     mock_setTimeout();
 
     $("input.user-list-filter").closest = (selector) => {
@@ -227,32 +213,6 @@ test("filter_user_ids", ({override}) => {
 
     user_presence[alice.user_id] = "active";
     test_filter("fr,al", [alice, fred]);
-});
-
-test("click on user header to toggle display", ({override}) => {
-    const $user_filter = $("input.user-list-filter");
-
-    override(popovers, "hide_all", noop);
-    override(sidebar_ui, "show_userlist_sidebar", noop);
-    override(resize, "resize_sidebars", noop);
-
-    override(realm, "realm_presence_disabled", true);
-
-    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
-
-    $user_filter.val("bla");
-
-    $("#userlist-header-search").trigger("click");
-    assert.ok($("#user_search_section").hasClass("notdisplayed"));
-    assert.equal($user_filter.val(), "");
-
-    $("input.user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("sidebar").addClass("column-right");
-    };
-
-    $("#userlist-header-search").trigger("click");
-    assert.equal($("#user_search_section").hasClass("notdisplayed"), false);
 });
 
 test("searching", () => {
