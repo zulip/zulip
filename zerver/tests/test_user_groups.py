@@ -531,6 +531,47 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "User group name cannot start with 'channel:'.")
         self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
+    def test_creating_groups_with_subgroups(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        subgroup = check_add_user_group(realm, "support", [hamlet], acting_user=hamlet)
+        self.login("desdemona")
+
+        othello = self.example_user("othello")
+        params = {
+            "name": "Troubleshooting",
+            "members": orjson.dumps([othello.id]).decode(),
+            "description": "Troubleshooting team",
+            "subgroups": orjson.dumps([subgroup.id]).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 11)
+        user_group = NamedUserGroup.objects.get(name="Troubleshooting", realm=hamlet.realm)
+        self.assert_subgroup_membership(user_group, [subgroup])
+
+        # User can add subgroups to a group while creating it even if
+        # settings are set to not allow adding subgroups after creating
+        # the group.
+        self.login("othello")
+        self.assertEqual(realm.can_manage_all_groups.named_user_group.name, SystemGroups.OWNERS)
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        params = {
+            "name": "Backend",
+            "members": orjson.dumps([othello.id]).decode(),
+            "description": "Backend team",
+            "subgroups": orjson.dumps([subgroup.id]).decode(),
+            "can_manage_group": orjson.dumps(admins_group.id).decode(),
+            "can_add_members_group": orjson.dumps(admins_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        user_group = NamedUserGroup.objects.get(name="Troubleshooting", realm=realm)
+        self.assert_subgroup_membership(user_group, [subgroup])
+
     def do_test_set_group_setting_during_user_group_creation(self, setting_name: str) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")

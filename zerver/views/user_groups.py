@@ -57,6 +57,7 @@ def add_user_group(
     name: str,
     members: Json[list[int]],
     description: str,
+    subgroups: Json[list[int]] | None = None,
     can_add_members_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_join_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_leave_group: Json[int | AnonymousSettingGroupDict] | None = None,
@@ -84,7 +85,7 @@ def add_user_group(
             )
             group_settings_map[setting_name] = setting_value_group
 
-    check_add_user_group(
+    user_group = check_add_user_group(
         user_profile.realm,
         name,
         user_profiles,
@@ -92,6 +93,15 @@ def add_user_group(
         group_settings_map=group_settings_map,
         acting_user=user_profile,
     )
+
+    if subgroups is not None and len(subgroups) != 0:
+        with lock_subgroups_with_respect_to_supergroup(
+            subgroups, user_group.id, user_profile, permission_setting=None, creating_group=True
+        ) as context:
+            add_subgroups_to_user_group(
+                context.supergroup, context.direct_subgroups, acting_user=user_profile
+            )
+
     return json_success(request)
 
 

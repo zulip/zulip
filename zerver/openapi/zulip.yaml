@@ -20279,6 +20279,19 @@ paths:
                   items:
                     type: integer
                   example: [1, 2, 3, 4]
+                subgroups:
+                  description: |
+                    An array containing the IDs of the initial subgroups for the new
+                    user group.
+
+                    User can add subgroups to the new group irrespective of other
+                    permissions for the new group.
+
+                    **Changes**: New in Zulip 10.0 (feature level 311).
+                  type: array
+                  items:
+                    type: integer
+                  example: [11]
                 can_add_members_group:
                   allOf:
                     - description: |
@@ -20361,6 +20374,8 @@ paths:
                 - members
             encoding:
               members:
+                contentType: application/json
+              subgroups:
                 contentType: application/json
               can_add_members_group:
                 contentType: application/json

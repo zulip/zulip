@@ -25,6 +25,8 @@ format used by the Zulip server that they are interacting with.
 * [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members):
   Added `add_subgroups` and `delete_subgroups` parameters to support updating
   subgroups of a user group using this endpoint.
+* [`POST /user_groups/create`](/api/create-user-group): Added `subgroups`
+  parameter to support setting subgroups of a user group during its creation.
 
 **Feature level 310**
 
