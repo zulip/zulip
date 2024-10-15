@@ -1,6 +1,10 @@
+import * as add_subscribers_pill from "./add_subscribers_pill";
+import * as input_pill from "./input_pill";
 import * as keydown_util from "./keydown_util";
+import type {User} from "./people";
 import * as stream_pill from "./stream_pill";
-import type {CombinedPillContainer} from "./typeahead_helper";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
+import * as user_group_create_members_data from "./user_group_create_members_data";
 import * as user_group_pill from "./user_group_pill";
 import * as user_pill from "./user_pill";
 
@@ -13,6 +17,39 @@ function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
 function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
     const group_user_ids = user_group_pill.get_group_ids(pill_widget);
     return group_user_ids;
+}
+
+export function create_without_add_button({
+    $pill_container,
+    onPillCreateAction,
+    onPillRemoveAction,
+}: {
+    $pill_container: JQuery;
+    onPillCreateAction: (pill_user_ids: number[], pill_subgroup_ids: number[]) => void;
+    onPillRemoveAction: (pill_user_ids: number[], pill_subgroup_ids: number[]) => void;
+}): CombinedPillContainer {
+    const pill_widget = input_pill.create<CombinedPill>({
+        $container: $pill_container,
+        create_item_from_text: add_subscribers_pill.create_item_from_text,
+        get_text_from_item: add_subscribers_pill.get_text_from_item,
+        get_display_value_from_item: add_subscribers_pill.get_display_value_from_item,
+        generate_pill_html: add_subscribers_pill.generate_pill_html,
+    });
+    function get_users(): User[] {
+        const potential_members = user_group_create_members_data.get_potential_members();
+        return user_pill.filter_taken_users(potential_members, pill_widget);
+    }
+
+    pill_widget.onPillCreate(() => {
+        onPillCreateAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
+    });
+    pill_widget.onPillRemove(() => {
+        onPillRemoveAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
+    });
+
+    add_subscribers_pill.set_up_pill_typeahead({pill_widget, $pill_container, get_users});
+
+    return pill_widget;
 }
 
 export function set_up_handlers({

@@ -13,7 +13,7 @@ import * as user_group_pill from "./user_group_pill";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 
-function create_item_from_text(
+export function create_item_from_text(
     text: string,
     current_items: CombinedPill[],
 ): CombinedPill | undefined {
@@ -31,7 +31,7 @@ function create_item_from_text(
     return undefined;
 }
 
-function get_text_from_item(item: CombinedPill): string {
+export function get_text_from_item(item: CombinedPill): string {
     let text: string;
     switch (item.type) {
         case "stream":
@@ -47,7 +47,7 @@ function get_text_from_item(item: CombinedPill): string {
     return text;
 }
 
-function set_up_pill_typeahead({
+export function set_up_pill_typeahead({
     pill_widget,
     $pill_container,
     get_users,
@@ -65,7 +65,7 @@ function set_up_pill_typeahead({
     pill_typeahead.set_up_combined($pill_container.find(".input"), pill_widget, opts);
 }
 
-function get_display_value_from_item(item: CombinedPill): string {
+export function get_display_value_from_item(item: CombinedPill): string {
     if (item.type === "user_group") {
         return user_group_pill.display_pill(user_groups.get_user_group_from_id(item.group_id));
     } else if (item.type === "stream") {
@@ -75,7 +75,7 @@ function get_display_value_from_item(item: CombinedPill): string {
     return user_pill.get_display_value_from_item(item);
 }
 
-function generate_pill_html(item: CombinedPill): string {
+export function generate_pill_html(item: CombinedPill): string {
     if (item.type === "user_group") {
         return render_input_pill({
             display_value: get_display_value_from_item(item),
