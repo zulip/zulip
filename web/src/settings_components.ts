@@ -1409,7 +1409,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
 export function initialize_disable_btn_hint_popover(
     $btn_wrapper: JQuery,
     hint_text: string | undefined,
-    opts: Partial<tippy.Props>,
+    opts: Partial<tippy.Props> = {},
 ): void {
     const tippy_opts: Partial<tippy.Props> = {
         animation: false,
