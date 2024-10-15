@@ -5,7 +5,6 @@ import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as settings_components from "./settings_components";
 import type {GroupSettingPillContainer} from "./typeahead_helper";
 import * as ui_report from "./ui_report";
@@ -133,10 +132,6 @@ export function show_new_user_group_modal(): void {
     user_group_create_members.build_widgets();
 
     clear_error_display();
-
-    if (!page_params.development_environment) {
-        $("#new_group_can_manage_group_widget_container").hide();
-    }
 }
 
 function create_user_group(): void {

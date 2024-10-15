@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from typing import Any, TypedDict
 
-from django.conf import settings
 from django.db import connection, transaction
 from django.db.models import F, Q, QuerySet
 from django.utils.timezone import now as timezone_now
@@ -355,11 +354,6 @@ def check_setting_configuration_for_system_groups(
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
 ) -> None:
-    if setting_name != "can_mention_group" and (
-        not settings.ALLOW_GROUP_VALUED_SETTINGS and not setting_group.is_system_group
-    ):
-        raise SystemGroupRequiredError(setting_name)
-
     if permission_configuration.require_system_group and not setting_group.is_system_group:
         raise SystemGroupRequiredError(setting_name)
 
@@ -1017,9 +1011,6 @@ def parse_group_setting_value(
 
     if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
         return setting_value.direct_subgroups[0]
-
-    if not settings.ALLOW_GROUP_VALUED_SETTINGS:
-        raise SystemGroupRequiredError(setting_name)
 
     return setting_value
 

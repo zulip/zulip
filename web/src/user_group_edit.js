@@ -18,7 +18,6 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
@@ -198,10 +197,6 @@ function show_general_settings(group) {
         group,
     });
     update_general_panel_ui(group);
-
-    if (!page_params.development_environment) {
-        $(".can-manage-group-container").hide();
-    }
 }
 
 function update_general_panel_ui(group) {
