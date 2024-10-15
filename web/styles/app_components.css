@@ -436,12 +436,6 @@ input.settings_text_input {
         outline: none !important;
         box-shadow: none;
         z-index: 5;
-
-        #set-user-status-modal & {
-            margin-left: -26px;
-            right: 0;
-            padding-top: 6px;
-        }
     }
 }
 

@@ -4,21 +4,28 @@
 
     .user-status-content-wrapper {
         display: flex;
-        justify-content: center;
         align-items: center;
         border: 1px solid;
         border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
 
         & input.user-status {
-            width: 95%;
+            flex: 1 1 0;
+            width: 100%;
             border: none;
+            outline: none;
+            box-shadow: none;
             background-color: transparent;
-            padding-right: 25px;
+            margin: 0;
 
-            @media (width < $ml_min) {
-                width: 92%;
+            &:focus {
+                box-shadow: none;
             }
+        }
+
+        .clear_search_button {
+            position: static;
+            padding: 6px;
         }
 
         .status-emoji-wrapper {
