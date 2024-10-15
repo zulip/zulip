@@ -2032,52 +2032,6 @@ class RealmAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
 
-        # Test case when ALLOW_GROUP_VALUED_SETTINGS is False.
-        with self.settings(ALLOW_GROUP_VALUED_SETTINGS=False):
-            result = self.client_patch(
-                "/json/realm",
-                {
-                    setting_name: orjson.dumps(
-                        {
-                            "new": {
-                                "direct_members": [othello.id],
-                                "direct_subgroups": [moderators_group.id, leadership_group.id],
-                            }
-                        }
-                    ).decode()
-                },
-            )
-            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
-
-            result = self.client_patch(
-                "/json/realm",
-                {
-                    setting_name: orjson.dumps(
-                        {
-                            "new": leadership_group.id,
-                        }
-                    ).decode()
-                },
-            )
-            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
-
-            result = self.client_patch(
-                "/json/realm",
-                {
-                    setting_name: orjson.dumps(
-                        {
-                            "new": {
-                                "direct_members": [],
-                                "direct_subgroups": [moderators_group.id],
-                            }
-                        }
-                    ).decode()
-                },
-            )
-            self.assert_json_success(result)
-            realm = get_realm("zulip")
-            self.assertEqual(getattr(realm, setting_name), moderators_group.usergroup_ptr)
-
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
             # push_notifications_enabled is maintained by the server, not via the API.

@@ -5,11 +5,15 @@ using [user groups](/help/user-groups), which offer much more flexible
 configuration than the older [roles](/api/roles-and-permissions) system.
 
 !!! warn ""
+    Note that many group-valued settings are configured to require
+    a single system group for their value via
+    `server_supported_permission_settings`, pending web app UI
+    changes to fully support group-setting values.
 
-    This API feature is under development, and currently only values that
-    correspond to a single named user group are permitted in
-    production environments, pending the web application UI supporting
-    displaying more complex values correctly.
+    **Changes**: Before Zulip 10.0 (feature level 309), only system
+    groups were permitted values for group-setting values in
+    production environments, regardless of the values in
+    `server_supported_permission_settings`.
 
 In the API, these settings are represented using a **group-setting
 value**, which can take two forms:

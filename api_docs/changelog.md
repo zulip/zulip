@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 309**
+
+* [Group-setting values](/api/group-setting-values): Starting with
+  this feature level, it's now possible to use group-setting values in
+  production for those settings whose value is not required to be a
+  system group
+
 **Feature level 308**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
