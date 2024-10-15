@@ -1323,7 +1323,7 @@ $option_title_width: 180px;
     .sidebar {
         height: calc(100% - $settings_header_height);
         overflow-y: auto;
-        border-right: 1px solid var(--color-border-modal-bar);
+        border-right: 1px solid var(--color-border-modal);
 
         .header {
             height: auto;
@@ -1352,7 +1352,7 @@ $option_title_width: 180px;
             transition:
                 background-color 0.2s ease,
                 border-bottom 0.2s ease;
-            border-bottom: 1px solid var(--color-border-modal-bar);
+            border-bottom: 1px solid var(--color-border-modal);
 
             &:last-of-type .text {
                 border-bottom: none;
