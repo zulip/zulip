@@ -13,7 +13,7 @@ When you view a channel or a topic within a channel, subscribers to that channel
 are shown separately from other members of your organization. To avoid
 distraction, you can hide the user list any time.
 
-## Search people
+## Filter users
 
 {start_tabs}
 
@@ -47,7 +47,7 @@ show it.
 
 !!! keyboard_tip ""
 
-    The <kbd>W</kbd> keyboard shortcut to search people reveals the user list if
+    The <kbd>W</kbd> keyboard shortcut to filter users reveals the user list if
     it is hidden.
 
 {end_tabs}
