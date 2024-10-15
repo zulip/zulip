@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 308  # Last bumped for can_leave_group.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (294, 0)  # bumped 2024-10-03 to upgrade JavaScript dependencies
+PROVISION_VERSION = (294, 1)  # bumped 2024-10-15 to upgrade JavaScript dependencies
