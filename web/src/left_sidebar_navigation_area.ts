@@ -59,6 +59,13 @@ export function update_scheduled_messages_row(): void {
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
 
+export function get_home_view_li(): JQuery {
+    // selected home view is always the first child of navigation list.
+    return $(
+        "#left-sidebar-navigation-list > li:first-child, #left-sidebar-navigation-list-condensed > li:first-child",
+    );
+}
+
 export function update_dom_with_unread_counts(
     counts: unread.FullUnreadCountsData,
     skip_animations: boolean,
@@ -67,7 +74,7 @@ export function update_dom_with_unread_counts(
 
     // mentioned/home views have simple integer counts
     const $mentioned_li = $(".top_left_mentions");
-    const $home_view_li = $(".selected-home-view");
+    const $home_view_li = get_home_view_li();
     const $streams_header = $("#streams_header");
     const $back_to_streams = $("#topics_header");
 
@@ -207,7 +214,8 @@ export function highlight_all_messages_view(): void {
     }, 0);
 }
 
-export function get_view_rows_by_home_view(home_view: string): JQuery {
+// returns the corresponding <li> (expanded and collapsed) by home_view.
+export function get_home_view_element(home_view: string): JQuery {
     if (home_view === settings_config.web_home_view_values.all_messages.code) {
         return $(".top_left_all_messages");
     }
@@ -233,51 +241,16 @@ export function reorder_left_sidebar_navigation_list(home_view: string): void {
         $view.eq(0).prependTo($left_sidebar_condensed);
     }
 
-    const $selected_home_view = get_view_rows_by_home_view(home_view);
+    const $selected_home_view = get_home_view_element(home_view);
     // prependTo() detaches the selected home_view and inserts it at the beginning of the list.
     $selected_home_view.eq(1).prependTo($left_sidebar);
     $selected_home_view.eq(0).prependTo($left_sidebar_condensed);
 }
 
-function handle_home_view_order(home_view: string): void {
-    // Remove class from current home view
-    const $current_home_view = $(".selected-home-view");
-    $current_home_view.removeClass("selected-home-view");
-
-    const $inbox_rows = $(".top_left_inbox");
-    const $all_messages_rows = $(".top_left_all_messages");
-    const $recent_views_rows = $(".top_left_recent_view");
-
-    const res = unread.get_counts();
-
-    // Add the class to the matching home view
-    if (home_view === settings_config.web_home_view_values.all_messages.code) {
-        $all_messages_rows.addClass("selected-home-view");
-    } else if (home_view === settings_config.web_home_view_values.recent_topics.code) {
-        $recent_views_rows.addClass("selected-home-view");
-    } else {
-        // Inbox is home view.
-        $inbox_rows.addClass("selected-home-view");
-    }
-    reorder_left_sidebar_navigation_list(home_view);
-    update_dom_with_unread_counts(res, true);
-}
-
 export function handle_home_view_changed(new_home_view: string): void {
-    const $recent_view_sidebar_menu_icon = $(".recent-view-sidebar-menu-icon");
-    const $all_messages_sidebar_menu_icon = $(".all-messages-sidebar-menu-icon");
-    if (new_home_view === settings_config.web_home_view_values.all_messages.code) {
-        $recent_view_sidebar_menu_icon.removeClass("hide");
-        $all_messages_sidebar_menu_icon.addClass("hide");
-    } else if (new_home_view === settings_config.web_home_view_values.recent_topics.code) {
-        $recent_view_sidebar_menu_icon.addClass("hide");
-        $all_messages_sidebar_menu_icon.removeClass("hide");
-    } else {
-        // Inbox is home view.
-        $recent_view_sidebar_menu_icon.removeClass("hide");
-        $all_messages_sidebar_menu_icon.removeClass("hide");
-    }
-    handle_home_view_order(new_home_view);
+    const res = unread.get_counts();
+    reorder_left_sidebar_navigation_list(new_home_view);
+    update_dom_with_unread_counts(res, true);
 }
 
 export function initialize(): void {

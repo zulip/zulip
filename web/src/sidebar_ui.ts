@@ -14,7 +14,6 @@ import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
-import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
@@ -218,12 +217,6 @@ export function initialize_left_sidebar(): void {
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         development_environment: page_params.development_environment,
-        is_inbox_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.inbox.code,
-        is_all_messages_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
-        is_recent_view_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         hide_unread_counts: settings_data.should_mask_unread_count(false),
         is_spectator: page_params.is_spectator,
     });
