@@ -121,7 +121,28 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # would be 1MB.
         with self.settings(MAX_FILE_UPLOAD_SIZE=0):
             result = self.client_post("/json/user_uploads", {"f1": fp})
-        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
+        self.assert_json_error(
+            result,
+            "File is larger than this server's configured maximum upload size (0 MiB).",
+        )
+
+    def test_file_too_big_failure_standard_plan(self) -> None:
+        """
+        Verify error message where a plan is involved.
+        """
+        self.login("hamlet")
+        fp = StringIO("bah!")
+        fp.name = "a.txt"
+
+        realm = get_realm("zulip")
+        realm.plan_type = Realm.PLAN_TYPE_LIMITED
+        realm.save()
+        with self.settings(MAX_FILE_UPLOAD_SIZE=0):
+            result = self.client_post("/json/user_uploads", {"f1": fp})
+        self.assert_json_error(
+            result,
+            "File is larger than the maximum upload size (0 MiB) allowed by your organization's plan.",
+        )
 
     def test_multiple_upload_failure(self) -> None:
         """
