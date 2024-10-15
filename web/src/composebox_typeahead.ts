@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as typeahead from "../shared/src/typeahead";
 import type {Emoji, EmojiSuggestion} from "../shared/src/typeahead";
@@ -10,6 +11,7 @@ import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
+import {update_compose_for_message_type, update_placeholder_text} from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -21,12 +23,13 @@ import * as keydown_util from "./keydown_util";
 import * as message_store from "./message_store";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
+import {build_person_matcher} from "./people";
 import * as people from "./people";
 import type {PseudoMentionUser, User} from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
-import {realm} from "./state_data";
+import {realm, user_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamPillData} from "./stream_pill";
 import * as stream_topic_history from "./stream_topic_history";
@@ -42,7 +45,6 @@ import * as user_pill from "./user_pill";
 import type {UserPillData} from "./user_pill";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
-
 // **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
 // **********************************
@@ -107,7 +109,10 @@ export type TypeaheadSuggestion =
 
 // We export it to allow tests to mock it.
 export const max_num_items = MAX_ITEMS;
-
+const parsedItemSchema = z.object({
+    type: z.string(),
+    user: user_schema.optional(), // assuming user_schema is already defined
+});
 export let emoji_collection: Emoji[] = [];
 
 // This has mostly been replaced with `type` fields on
@@ -1336,12 +1341,102 @@ export function initialize({
         $element: $("input#stream_message_recipient_topic"),
         type: "input",
     };
+
     new Typeahead(stream_message_typeahead_input, {
         source(): string[] {
-            return topics_seen_for(compose_state.stream_id());
+            const topics = topics_seen_for(compose_state.stream_id());
+            const topic_input = stream_message_typeahead_input.$element.val()?.toString() ?? "";
+
+            let dm_option: string[] = [];
+            if (topic_input.length >= 3) {
+                const matched_users: User[] = people
+                    .get_realm_users()
+                    .filter(build_person_matcher(topic_input));
+
+                const exact_matches = matched_users.filter(
+                    (user) => user.full_name.toLowerCase() === topic_input.toLowerCase(),
+                );
+
+                if (exact_matches.length === 1) {
+                    const matched_user = exact_matches[0];
+                    user_schema.parse(matched_user);
+                    dm_option = [
+                        JSON.stringify({
+                            type: "dm_suggestion",
+                            user: matched_user,
+                        }),
+                    ];
+                }
+            }
+
+            return [...dm_option, ...topics];
         },
-        items: max_num_items,
+
+        updater(item: string): string | undefined {
+            let parsed_item: unknown;
+
+            try {
+                parsed_item = JSON.parse(item);
+            } catch {
+                return item;
+            }
+
+            const parsedItemSchema = z.object({
+                type: z.string(),
+                user: user_schema,
+            });
+
+            const result = parsedItemSchema.safeParse(parsed_item);
+
+            if (result.success) {
+                const {type, user} = result.data;
+
+                if (type === "dm_suggestion") {
+                    compose_state.set_message_type("private");
+                    update_compose_for_message_type({
+                        message_type: "private",
+                        trigger: "typeahead",
+                        private_message_recipient: user.email,
+                    });
+                    $("#compose_recipient_box").hide();
+                    $("#compose-direct-recipient").show();
+                    $("#stream_toggle").removeClass("active");
+                    $("#private_message_toggle").addClass("active");
+                    $("#compose-recipient").addClass("compose-recipient-direct-selected");
+
+                    compose_pm_pill.clear();
+                    compose_pm_pill.set_from_typeahead(user);
+                    update_placeholder_text();
+
+                    return undefined;
+                }
+            }
+
+            return item;
+        },
+
         highlighter_html(item: string): string {
+            let parsed_item: unknown;
+
+            try {
+                parsed_item = JSON.parse(item);
+            } catch {
+                return typeahead_helper.render_typeahead_item({primary: item});
+            }
+
+            const result = parsedItemSchema.safeParse(parsed_item);
+
+            if (result.success) {
+                const {type, user} = result.data;
+
+                if (type === "dm_suggestion" && user) {
+                    return typeahead_helper.render_person({
+                        type: "user",
+                        user,
+                    });
+                }
+            }
+
             return typeahead_helper.render_typeahead_item({primary: item});
         },
         sorter(items: string[], query: string): string[] {
@@ -1351,13 +1446,16 @@ export function initialize({
             }
             return sorted;
         },
+
         option_label(matching_items: string[], item: string): string | false {
             if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
             return false;
         },
+
         header_html: render_topic_typeahead_hint,
+        dropup: true,
     });
 
     const private_message_typeahead_input: TypeaheadInputElement = {
@@ -1381,8 +1479,7 @@ export function initialize({
             if (item.type === "user_group") {
                 for (const user_id of item.members) {
                     const user = people.get_by_user_id(user_id);
-                    // filter out inactive users, inserted users and current user
-                    // from pill insertion
+                    // Filter out inactive users, inserted users and current user
                     const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
                     const current_user = people.is_current_user(user.email);
                     if (
@@ -1393,7 +1490,7 @@ export function initialize({
                         compose_pm_pill.set_from_typeahead(user);
                     }
                 }
-                // clear input pill in the event no pills were added
+                // Clear input pill if no pills were added
                 const pill_widget = compose_pm_pill.widget;
                 if (pill_widget.clear_text !== undefined) {
                     pill_widget.clear_text();
