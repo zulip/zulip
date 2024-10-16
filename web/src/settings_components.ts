@@ -1417,6 +1417,21 @@ export function initialize_disable_btn_hint_popover(
     tippy.default(util.the($btn_wrapper), tippy_opts);
 }
 
+export function enable_opening_typeahead_on_clicking_label($container: JQuery): void {
+    const $group_setting_labels = $container.find(".group-setting-label");
+    $group_setting_labels.on("click", (e) => {
+        // Click opens the typeahead.
+        $(e.target).siblings(".pill-container").find(".input").expectOne().trigger("click");
+        // Focus puts the cursor into the input.
+        $(e.target).siblings(".pill-container").find(".input").expectOne().trigger("focus");
+    });
+}
+
+export function disable_opening_typeahead_on_clicking_label($container: JQuery): void {
+    const $group_setting_labels = $container.find(".group-setting-label");
+    $group_setting_labels.off("click");
+}
+
 export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_members_group", null],
     ["can_join_group", null],

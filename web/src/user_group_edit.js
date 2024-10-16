@@ -121,6 +121,7 @@ function update_group_permission_settings_elements(group) {
         $permission_pill_container_elements.each(function () {
             $(this)[0]._tippy?.destroy();
         });
+        settings_components.enable_opening_typeahead_on_clicking_label($group_permission_settings);
     } else {
         $permission_pill_container_elements.find(".input").prop("contenteditable", false);
 
@@ -132,6 +133,7 @@ function update_group_permission_settings_elements(group) {
                 $t({defaultMessage: "You do not have permission to edit this setting."}),
             );
         });
+        settings_components.disable_opening_typeahead_on_clicking_label($group_permission_settings);
     }
 }
 

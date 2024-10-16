@@ -253,6 +253,9 @@ export function set_up_handlers(): void {
         }
     });
 
+    // This will always be enabled when creating a user group.
+    settings_components.enable_opening_typeahead_on_clicking_label($container);
+
     can_add_members_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $container.find(".can-add-members-group-container .pill-container"),
         setting_name: "can_add_members_group",
