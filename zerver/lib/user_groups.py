@@ -271,7 +271,11 @@ def access_user_group_for_deactivation(
 
 @contextmanager
 def lock_subgroups_with_respect_to_supergroup(
-    potential_subgroup_ids: Collection[int], potential_supergroup_id: int, acting_user: UserProfile
+    potential_subgroup_ids: Collection[int],
+    potential_supergroup_id: int,
+    acting_user: UserProfile,
+    *,
+    permission_setting: str,
 ) -> Iterator[LockedUserGroupContext]:
     """This locks the user groups with the given potential_subgroup_ids, as well
     as their indirect subgroups, followed by the potential supergroup. It
@@ -302,7 +306,7 @@ def lock_subgroups_with_respect_to_supergroup(
         # But at the current scale of concurrent requests, we rely on
         # Postgres's deadlock detection when it occurs.
         potential_supergroup = access_user_group_for_update(
-            potential_supergroup_id, acting_user, permission_setting="can_manage_group"
+            potential_supergroup_id, acting_user, permission_setting=permission_setting
         )
         # We avoid making a separate query for user_group_ids because the
         # recursive query already returns those user groups.
