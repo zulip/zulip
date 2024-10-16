@@ -237,7 +237,7 @@ function create_stream() {
             $t_html({defaultMessage: "The channel description cannot contain newline characters."}),
             $(".stream_create_info"),
         );
-        return undefined;
+        return;
     }
     data.subscriptions = JSON.stringify([{name: stream_name, description}]);
 
@@ -331,7 +331,7 @@ function create_stream() {
     });
 
     // Subscribe yourself and possible other people to a new stream.
-    return channel.post({
+    channel.post({
         url: "/json/users/me/subscriptions",
         data,
         success() {
