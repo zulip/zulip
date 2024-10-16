@@ -1,4 +1,4 @@
-import $ from "jquery"
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
