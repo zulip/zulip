@@ -830,7 +830,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
-            "move_messages_between_streams_policy",
         ]:
             raise AssertionError("Invalid policy")
 

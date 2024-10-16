@@ -270,8 +270,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     EDIT_TOPIC_POLICY_TYPES = [field.value for field in EditTopicPolicyEnum]
 
-    MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES = INVITE_TO_REALM_POLICY_TYPES
-
     DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS = 7 * SECONDS_PER_DAY
 
     move_messages_within_stream_limit_seconds = models.PositiveIntegerField(
@@ -352,11 +350,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy = models.PositiveSmallIntegerField(
         default=CommonPolicyEnum.MEMBERS_ONLY
-    )
-
-    # Who in the organization is allowed to move messages between streams.
-    move_messages_between_streams_policy = models.PositiveSmallIntegerField(
-        default=POLICY_MEMBERS_ONLY
     )
 
     # UserGroup which is allowed to move messages between streams.
@@ -676,7 +669,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         move_messages_between_streams_limit_seconds=(int, type(None)),
         move_messages_within_stream_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
-        move_messages_between_streams_policy=int,
         name=str,
         name_changes_disabled=bool,
         push_notifications_enabled=bool,

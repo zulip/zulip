@@ -185,7 +185,6 @@ class HomeTest(ZulipTestCase):
         "realm_message_content_edit_limit_seconds",
         "realm_message_retention_days",
         "realm_move_messages_between_streams_limit_seconds",
-        "realm_move_messages_between_streams_policy",
         "realm_move_messages_within_stream_limit_seconds",
         "realm_name",
         "realm_name_changes_disabled",

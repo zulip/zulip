@@ -54,7 +54,6 @@ from zerver.models.realms import (
     DigestWeekdayEnum,
     EditTopicPolicyEnum,
     InviteToRealmPolicyEnum,
-    MoveMessagesBetweenStreamsPolicyEnum,
     OrgTypeEnum,
     WildcardMentionPolicyEnum,
 )
@@ -149,7 +148,6 @@ def update_realm(
     direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
     invite_to_stream_policy: Json[CommonPolicyEnum] | None = None,
-    move_messages_between_streams_policy: Json[MoveMessagesBetweenStreamsPolicyEnum] | None = None,
     wildcard_mention_policy: Json[WildcardMentionPolicyEnum] | None = None,
     video_chat_provider: Json[int] | None = None,
     jitsi_server_url_raw: Annotated[
