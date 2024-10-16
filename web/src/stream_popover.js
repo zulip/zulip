@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -8,6 +7,7 @@ import render_left_sidebar_stream_actions_popover from "../templates/popovers/le
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as clipboard_handler from "./clipboard_handler";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -212,9 +212,11 @@ function build_stream_popover(opts) {
                 $(e.currentTarget).hide();
                 e.stopPropagation();
             });
-
-            new ClipboardJS($popper.find(".copy_stream_link")[0]).on("success", () => {
-                popover_menus.hide_current_popover_if_visible(instance);
+            $popper.on("click", ".copy_stream_link", () => {
+                clipboard_handler.copy_to_clipboard(
+                    $(".copy_stream_link").data("clipboard-text"),
+                    () => popover_menus.hide_current_popover_if_visible(instance),
+                );
             });
         },
         onHidden() {

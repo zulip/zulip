@@ -1,9 +1,9 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
+import * as clipboard_handler from "./clipboard_handler";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
@@ -157,13 +157,12 @@ export function initialize() {
                     stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
-
-                new ClipboardJS($popper.find(".sidebar-popover-copy-link-to-topic")[0]).on(
-                    "success",
-                    () => {
-                        popover_menus.hide_current_popover_if_visible(instance);
-                    },
-                );
+                $popper.on("click", ".sidebar-popover-copy-link-to-topic", () => {
+                    clipboard_handler.copy_to_clipboard(
+                        $(".sidebar-popover-copy-link-to-topic").data("clipboard-text"),
+                        () => popover_menus.hide_current_popover_if_visible(instance),
+                    );
+                });
             },
             onHidden(instance) {
                 instance.destroy();
