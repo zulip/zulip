@@ -118,8 +118,5 @@ export function build_widgets(): void {
             },
         },
         $simplebar_container,
-        html_selector(user) {
-            return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
-        },
     });
 }
