@@ -220,7 +220,7 @@ function add_new_members({pill_user_ids}: {pill_user_ids: number[]}): void {
             deactivated_users.add(user_id);
             return false;
         }
-        if (user_groups.is_user_in_group(group.id, user_id)) {
+        if (user_groups.is_user_in_group(group.id, user_id, true)) {
             // we filter out already added users before sending
             // add member request as the endpoint is not so robust and
             // fails complete request if any already added member
@@ -235,7 +235,7 @@ function add_new_members({pill_user_ids}: {pill_user_ids: number[]}): void {
 
     if (
         user_id_set.has(current_user.user_id) &&
-        user_groups.is_user_in_group(group.id, current_user.user_id)
+        user_groups.is_user_in_group(group.id, current_user.user_id, true)
     ) {
         // We don't want to send a request to add ourselves if we
         // are already added to this group. This case occurs
