@@ -123,9 +123,10 @@ function update_group_permission_settings_elements(group) {
         });
     } else {
         $permission_pill_container_elements.find(".input").prop("contenteditable", false);
-        $permission_pill_container_elements.addClass("group_setting_disabled");
 
-        $permission_pill_container_elements.each(function () {
+        const $permission_input_groups = $group_permission_settings.find(".input-group");
+        $permission_input_groups.addClass("group_setting_disabled");
+        $permission_input_groups.each(function () {
             settings_components.initialize_disable_btn_hint_popover(
                 $(this),
                 $t({defaultMessage: "You do not have permission to edit this setting."}),
