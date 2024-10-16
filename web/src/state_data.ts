@@ -149,7 +149,7 @@ export const raw_user_group_schema = z.object({
     can_join_group: group_setting_value_schema,
     can_leave_group: group_setting_value_schema,
     can_manage_group: group_setting_value_schema,
-    can_mention_group: z.number(),
+    can_mention_group: group_setting_value_schema,
     deactivated: z.boolean(),
 });
 

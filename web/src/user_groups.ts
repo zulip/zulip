@@ -162,7 +162,7 @@ export function get_user_groups_allowed_to_mention(): UserGroup[] {
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
         const can_mention_group_id = group.can_mention_group;
-        return is_user_in_group(can_mention_group_id, current_user.user_id);
+        return is_user_in_setting_group(can_mention_group_id, current_user.user_id);
     });
 }
 
@@ -442,10 +442,7 @@ export function get_realm_user_groups_for_setting(
             return user_group;
         });
 
-    if (
-        (setting_name !== "can_mention_group" && !page_params.development_environment) ||
-        group_setting_config.require_system_group
-    ) {
+    if (!page_params.development_environment || group_setting_config.require_system_group) {
         return system_user_groups;
     }
 

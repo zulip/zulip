@@ -489,8 +489,6 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
     return JSON.stringify(proposed_value);
 }
 
-export let new_group_can_mention_group_widget: DropdownWidget | null = null;
-
 const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_new_stream_announcements_stream_id", null],
     ["realm_signup_announcements_stream_id", null],
@@ -499,7 +497,6 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_create_multiuse_invite_group", null],
     ["can_remove_subscribers_group", null],
     ["realm_can_access_all_users_group", null],
-    ["can_mention_group", null],
     ["realm_can_add_custom_emoji_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
@@ -532,10 +529,6 @@ export function set_dropdown_setting_widget(property_name: string, widget: Dropd
     }
 
     dropdown_widget_map.set(property_name, widget);
-}
-
-export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
-    new_group_can_mention_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(
@@ -940,15 +933,13 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
         case "can_add_members_group":
         case "can_join_group":
         case "can_leave_group":
-        case "can_manage_group": {
+        case "can_manage_group":
+        case "can_mention_group": {
             const pill_widget = get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             proposed_val = get_group_setting_widget_value(pill_widget);
             break;
         }
-        case "can_mention_group":
-            proposed_val = get_dropdown_list_widget_setting_value($elem);
-            break;
         default:
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value(elem, typeof current_val);
@@ -1431,6 +1422,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_join_group", null],
     ["can_leave_group", null],
     ["can_manage_group", null],
+    ["can_mention_group", null],
 ]);
 
 export function get_group_setting_widget(setting_name: string): GroupSettingPillContainer | null {
@@ -1475,7 +1467,8 @@ type group_setting_name =
     | "can_add_members_group"
     | "can_join_group"
     | "can_leave_group"
-    | "can_manage_group";
+    | "can_manage_group"
+    | "can_mention_group";
 
 export function create_group_setting_widget({
     $pill_container,

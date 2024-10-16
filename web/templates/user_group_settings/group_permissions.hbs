@@ -8,10 +8,15 @@
     </div>
 </div>
 
-{{> ../dropdown_widget_with_label
-  widget_name=can_mention_group_widget_name
-  label=(t 'Who can mention this group')
-  value_type="number"}}
+<div class="input-group can-mention-group-container">
+    <label>{{t "Who can mention this group" }}</label>
+    <div class="pill-container person_picker prop-element" id="id_{{can_mention_group_widget_name}}" data-setting-widget-type="group-setting-type">
+        <div class="input" contenteditable="true"
+          data-placeholder="{{t 'Add roles, groups or users' }}">
+            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+        </div>
+    </div>
+</div>
 
 <div class="input-group can-add-members-group-container">
     <label>{{t "Who can add members to this group" }}</label>

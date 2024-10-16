@@ -673,10 +673,7 @@ export function discard_group_property_element_changes(elem: HTMLElement, group:
     );
 
     const group_widget_settings = [...settings_components.group_setting_widget_map.keys()];
-    if (property_name === "can_mention_group") {
-        assert(typeof property_value === "number" || typeof property_value === "string");
-        settings_components.set_dropdown_list_widget_setting_value(property_name, property_value);
-    } else if (group_widget_settings.includes(property_name)) {
+    if (group_widget_settings.includes(property_name)) {
         const pill_widget = settings_components.get_group_setting_widget(property_name);
         assert(pill_widget !== null);
         settings_components.set_group_setting_widget_value(
