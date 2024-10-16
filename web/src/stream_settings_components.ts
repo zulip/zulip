@@ -48,14 +48,29 @@ export const show_subs_pane = {
         $(".settings").show();
         set_right_panel_title(sub);
     },
-    create_stream(container_name = "configure_channel_settings", sub: StreamSubscription): void {
+    create_stream(
+        container_name = "configure_channel_settings",
+        sub?: {
+            name: string;
+            invite_only: boolean;
+            is_web_public: boolean;
+        },
+    ): void {
         $(".stream_creation_container").hide();
         if (container_name === "configure_channel_settings") {
             $("#subscription_overlay .stream-info-title").text(
                 $t({defaultMessage: "Configure new channel settings"}),
             );
         } else {
-            $("#subscription_overlay .stream-info-title").html(render_selected_stream_title({sub}));
+            $("#subscription_overlay .stream-info-title").html(
+                render_selected_stream_title({
+                    sub: sub ?? {
+                        name: "",
+                        invite_only: false,
+                        is_web_public: false,
+                    },
+                }),
+            );
         }
         update_footer_buttons(container_name);
         $(`.${CSS.escape(container_name)}`).show();

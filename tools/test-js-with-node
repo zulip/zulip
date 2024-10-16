@@ -240,7 +240,7 @@ EXEMPT_FILES = make_set(
         "web/src/stream_card_popover.ts",
         "web/src/stream_color.ts",
         "web/src/stream_color_events.ts",
-        "web/src/stream_create.js",
+        "web/src/stream_create.ts",
         "web/src/stream_create_subscribers.ts",
         "web/src/stream_edit.js",
         "web/src/stream_edit_subscribers.ts",
