@@ -44,6 +44,39 @@ def check_role_based_permissions(
         raise JsonableError(_("Must be an organization administrator"))
 
 
+def access_invite_by_id(user_profile: UserProfile, invite_id: int) -> PreregistrationUser:
+    try:
+        prereg_user = PreregistrationUser.objects.get(id=invite_id)
+    except PreregistrationUser.DoesNotExist:
+        raise JsonableError(_("No such invitation"))
+
+    # Structurally, any invitation the user can actually access should
+    # have a referred_by set for the user who created it.
+    if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
+        raise JsonableError(_("No such invitation"))
+
+    if prereg_user.referred_by_id != user_profile.id:
+        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
+    return prereg_user
+
+
+def access_multiuse_invite_by_id(user_profile: UserProfile, invite_id: int) -> MultiuseInvite:
+    try:
+        invite = MultiuseInvite.objects.get(id=invite_id)
+    except MultiuseInvite.DoesNotExist:
+        raise JsonableError(_("No such invitation"))
+
+    if invite.realm != user_profile.realm:
+        raise JsonableError(_("No such invitation"))
+
+    if invite.referred_by_id != user_profile.id:
+        check_role_based_permissions(invite.invited_as, user_profile, require_admin=True)
+
+    if invite.status == confirmation_settings.STATUS_REVOKED:
+        raise JsonableError(_("Invitation has already been revoked"))
+    return invite
+
+
 @require_member_or_admin
 @typed_endpoint
 def invite_users_backend(
@@ -140,17 +173,7 @@ def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 def revoke_user_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
-    try:
-        prereg_user = PreregistrationUser.objects.get(id=invite_id)
-    except PreregistrationUser.DoesNotExist:
-        raise JsonableError(_("No such invitation"))
-
-    if prereg_user.realm != user_profile.realm:
-        raise JsonableError(_("No such invitation"))
-
-    if prereg_user.referred_by_id != user_profile.id:
-        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
-
+    prereg_user = access_invite_by_id(user_profile, invite_id)
     do_revoke_user_invite(prereg_user)
     return json_success(request)
 
@@ -160,20 +183,7 @@ def revoke_user_invite(
 def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
-    try:
-        invite = MultiuseInvite.objects.get(id=invite_id)
-    except MultiuseInvite.DoesNotExist:
-        raise JsonableError(_("No such invitation"))
-
-    if invite.realm != user_profile.realm:
-        raise JsonableError(_("No such invitation"))
-
-    if invite.referred_by_id != user_profile.id:
-        check_role_based_permissions(invite.invited_as, user_profile, require_admin=True)
-
-    if invite.status == confirmation_settings.STATUS_REVOKED:
-        raise JsonableError(_("Invitation has already been revoked"))
-
+    invite = access_multiuse_invite_by_id(user_profile, invite_id)
     do_revoke_multi_use_invite(invite)
     return json_success(request)
 
@@ -183,19 +193,7 @@ def revoke_multiuse_invite(
 def resend_user_invite_email(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
-    try:
-        prereg_user = PreregistrationUser.objects.get(id=invite_id)
-    except PreregistrationUser.DoesNotExist:
-        raise JsonableError(_("No such invitation"))
-
-    # Structurally, any invitation the user can actually access should
-    # have a referred_by set for the user who created it.
-    if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
-        raise JsonableError(_("No such invitation"))
-
-    if prereg_user.referred_by_id != user_profile.id:
-        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
-
+    prereg_user = access_invite_by_id(user_profile, invite_id)
     do_send_user_invite_email(prereg_user, event_time=timezone_now())
     return json_success(request)
 
