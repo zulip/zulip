@@ -91,3 +91,20 @@ export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): vo
     }
     $elt.css("display", "inline-block");
 }
+
+export function show_spinner($element: JQuery, $spinner: JQuery): void {
+    const span_width = $element.find("span").width();
+    const span_height = $element.find("span").height();
+
+    // Disable the element (button or dialog button)
+    $element.prop("disabled", true);
+
+    // Hide the span
+    $element.find("span").hide();
+
+    // Create the loading indicator
+    make_indicator($spinner, {
+        width: span_width,
+        height: span_height,
+    });
+}
