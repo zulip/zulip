@@ -2520,7 +2520,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # Have the administrator send a message, and verify that allows the user to reply.
         self.send_personal_message(admin, user_profile)
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(17):
             self.send_personal_message(user_profile, admin)
 
         # Tests that user cannot initiate direct message thread in groups.
@@ -2583,7 +2583,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             acting_user=None,
         )
         # Tests if the user is allowed to send to administrators.
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(17):
             self.send_personal_message(user_profile, admin)
         self.send_personal_message(admin, user_profile)
         # Tests if we can send messages to self irrespective of the value of the setting.
@@ -2642,6 +2642,28 @@ class PersonalMessageSendTest(ZulipTestCase):
             str(direct_message_permission_error.exception),
             "Direct messages are disabled in this organization.",
         )
+
+    def test_direct_message_represented_as_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        user_ids = [iago.id, hamlet.id]
+
+        # A direct message between two users with no corresponding direct message
+        # group is forced to be personal internally
+        message_id = self.send_personal_message(iago, hamlet)
+        message = Message.objects.filter(id=message_id).first()
+
+        assert message is not None
+        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
+
+        # A direct message between two users with a direct message group existing,
+        # becomes a group direct message.
+        get_or_create_direct_message_group(user_ids)
+        message_id = self.send_personal_message(iago, hamlet, "test")
+        message = Message.objects.filter(id=message_id).first()
+
+        assert message is not None
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_non_ascii_personal(self) -> None:
         """

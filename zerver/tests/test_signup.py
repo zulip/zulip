@@ -1040,7 +1040,7 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(95),
+            self.assert_database_query_count(96),
             self.assert_memcached_count(14),
             self.captureOnCommitCallbacks(execute=True),
         ):

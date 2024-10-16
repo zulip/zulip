@@ -5,6 +5,7 @@ from django.utils.translation import gettext as _
 
 from zerver.models import DirectMessageGroup, Recipient, UserProfile
 from zerver.models.recipients import (
+    check_direct_message_group_exists,
     get_direct_message_group_hash,
     get_or_create_direct_message_group,
 )
@@ -34,23 +35,25 @@ def get_recipient_from_user_profiles(
         if forwarder_user_profile.id not in recipient_profiles_map:
             raise ValidationError(_("User not authorized for this query"))
 
-    # If the direct message is just between the sender and
-    # another person, force it to be a personal internally
-    if len(recipient_profiles_map) == 2 and sender.id in recipient_profiles_map:
-        del recipient_profiles_map[sender.id]
+    # Make sure the sender is included in the recipient
+    # profiles map.
+    recipient_profiles_map[sender.id] = sender
 
-    assert recipient_profiles_map
-    if len(recipient_profiles_map) == 1:
+    # If the direct message is just between the sender and another
+    # person or a self DM, and there is no corresponding direct
+    # message group, force it to be a personal internally.
+    if len(recipient_profiles_map) <= 2 and not check_direct_message_group_exists(
+        list(recipient_profiles_map)
+    ):
+        if len(recipient_profiles_map) == 2:
+            del recipient_profiles_map[sender.id]
+
         [user_profile] = recipient_profiles_map.values()
         return Recipient(
             id=user_profile.recipient_id,
             type=Recipient.PERSONAL,
             type_id=user_profile.id,
         )
-
-    # Otherwise, we need a direct message group. Make sure the sender
-    # is included in the group direct messages
-    recipient_profiles_map[sender.id] = sender
 
     user_ids = list(recipient_profiles_map)
     if create:
