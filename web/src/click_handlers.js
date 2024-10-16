@@ -425,6 +425,17 @@ export function initialize() {
     });
 
     // SIDEBARS
+    $("body").on("click", "#compose-new-direct-message", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        compose_actions.start({
+            message_type: "private",
+            trigger: "new direct message",
+            keep_composebox_empty: true,
+        });
+    });
+
     $(".buddy-list-section").on("click", ".selectable_sidebar_block", (e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;

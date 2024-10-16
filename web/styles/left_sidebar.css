@@ -236,6 +236,7 @@
         }
     }
 
+    #compose-new-direct-message,
     #show-all-direct-messages {
         color: var(--color-left-sidebar-heads-up-icon);
         display: none;
@@ -244,6 +245,7 @@
         text-decoration: none;
         margin: 2px 0;
         border-radius: 3px;
+        grid-row: 1 / 1;
 
         &:hover {
             color: var(--color-left-sidebar-heads-up-icon-hover);
@@ -257,8 +259,11 @@
         }
     }
 
-    &:hover #show-all-direct-messages {
-        display: flex;
+    &:hover {
+        #compose-new-direct-message,
+        #show-all-direct-messages {
+            display: flex;
+        }
     }
 }
 
