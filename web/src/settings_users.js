@@ -263,11 +263,17 @@ function bot_info(bot_user_id) {
 }
 
 function get_last_active(user) {
-    const last_active_date = presence.last_active_date(user.user_id);
+    const presence_row = user_setting_presence_info.get(String(user.user_id));
 
-    if (!last_active_date) {
+    if (!presence_row) {
         return $t({defaultMessage: "Unknown"});
     }
+
+    const last_active = Math.max(
+        presence_row.idle_timestamp ?? 0,
+        presence_row.active_timestamp ?? 0,
+    );
+    const last_active_date = new Date(last_active * 1000);
     return timerender.render_now(last_active_date).time_str;
 }
 
