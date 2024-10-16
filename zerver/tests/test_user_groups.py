@@ -2401,15 +2401,27 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello = self.example_user("othello")
         user_group = check_add_user_group(realm, "support", [othello], acting_user=othello)
 
-        owners_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
         )
-        # Make sure that user is allowed to join even when they
-        # are not allowed to add others.
+        # Set permissions to manage the group and adding others to group
+        # to nobody to test can_join_group in isolation.
         do_change_realm_permission_group_setting(
             realm,
             "can_manage_all_groups",
-            owners_group,
+            nobody_group,
+            acting_user=None,
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_manage_group",
+            nobody_group,
+            acting_user=None,
+        )
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_add_members_group",
+            nobody_group,
             acting_user=None,
         )
 
@@ -2482,10 +2494,46 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_change_user_group_permission_setting(
             user_group,
             "can_join_group",
-            owners_group,
+            nobody_group,
             acting_user=None,
         )
-        self.assertEqual(realm.can_manage_all_groups.named_user_group, owners_group)
+        self.assertEqual(user_group.can_join_group.named_user_group, nobody_group)
+        check_adding_yourself_to_group("iago", "Insufficient permission")
+
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_add_members_group",
+            admins_group,
+            acting_user=None,
+        )
+        check_adding_yourself_to_group("iago")
+
+        # If user is allowed to manage the group, then they can join themselves
+        # even when can_join_group and can_add_members_group does not allow them.
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_add_members_group",
+            nobody_group,
+            acting_user=None,
+        )
+        self.assertEqual(user_group.can_add_members_group.named_user_group, nobody_group)
+        check_adding_yourself_to_group("iago", "Insufficient permission")
+
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_manage_group",
+            admins_group,
+            acting_user=None,
+        )
+        check_adding_yourself_to_group("iago")
+
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_manage_group",
+            nobody_group,
+            acting_user=None,
+        )
+        self.assertEqual(realm.can_manage_all_groups.named_user_group, nobody_group)
         check_adding_yourself_to_group("iago", "Insufficient permission")
 
         do_change_realm_permission_group_setting(
