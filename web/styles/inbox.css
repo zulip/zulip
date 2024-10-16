@@ -30,7 +30,11 @@
             }
         }
 
-        #inbox-dm-header,
+        #inbox-dm-header .unread_count {
+            color: var(--color-unread-counter-quiet);
+            background-color: var(--color-background-unread-counter-quiet);
+        }
+
         #inbox-direct-messages-container {
             .unread_count {
                 color: var(--color-unread-counter-prominent);
