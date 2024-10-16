@@ -88,12 +88,11 @@ type RequestOpts = {
 };
 
 export function hide_dialog_spinner(): void {
-    $(".dialog_submit_button span").show();
     const dialog_widget_selector = current_dialog_widget_selector();
-    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", false);
-
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    loading.destroy_indicator($spinner);
+
+    // Use the common spinner hiding function
+    loading.hide_spinner($(".dialog_submit_button"), $spinner);
 }
 
 export function show_dialog_spinner(): void {

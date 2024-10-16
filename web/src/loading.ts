@@ -108,3 +108,14 @@ export function show_spinner($element: JQuery, $spinner: JQuery): void {
         height: span_height,
     });
 }
+
+export function hide_spinner($element: JQuery, $spinner: JQuery): void {
+    // Re-enable the element (button or dialog button)
+    $element.prop("disabled", false);
+
+    // Show the span
+    $element.find("span").show();
+
+    // Destroy the loading indicator
+    destroy_indicator($spinner);
+}
