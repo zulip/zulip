@@ -88,14 +88,8 @@ const EMBEDDED_BOT_TYPE = "4";
 
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
-    const dialog_submit_button_span_width = $button.find("span").width();
-    const dialog_submit_button_span_height = $button.find("span").height();
     $button.prop("disabled", true);
-    $button.find("span").hide();
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
+    loading.show_spinner($button, $spinner);
 }
 
 export function hide_button_spinner($button: JQuery): void {
