@@ -14,6 +14,8 @@ from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
 
 SYSTEM_BOTS_AVATAR_FILES = {
+    # This is also used in zerver/lib/storage.py to ensure
+    # these files are hashed when served as static files.
     settings.WELCOME_BOT: "images/welcome-bot.png",
     settings.NOTIFICATION_BOT: "images/logo/zulip-icon-square.svg",
     settings.EMAIL_GATEWAY_BOT: "images/email-gateway-bot.png",

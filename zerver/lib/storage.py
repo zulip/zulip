@@ -10,6 +10,8 @@ from django.core.files.base import File
 from django.core.files.storage import FileSystemStorage
 from typing_extensions import override
 
+from zerver.lib.avatar import SYSTEM_BOTS_AVATAR_FILES
+
 if settings.DEBUG:
     from django.contrib.staticfiles.finders import find
 
@@ -38,6 +40,12 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # use a no-op hash function for these already-hashed
             # assets.
             return name
+        if name in SYSTEM_BOTS_AVATAR_FILES.values():
+            # For these avatar files, we want to make sure they are
+            # so they can hit our Nginx caching block for static files.
+            # We don't need to worry about stale caches since system bot
+            # avatars rarely change.
+            return super().hashed_name(name, content, filename)
         if name == "generated/emoji/emoji_api.json":
             # Unlike most .json files, we do want to hash this file;
             # its hashed URL is returned as part of the API.  See
