@@ -31,6 +31,8 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
+import {try_stream_topic_syntax_text} from "./copy_and_paste"
+import { hide } from "./recent_view_ui";
 // In this module, we manage stream popovers
 // that pop up from the left sidebar.
 let stream_popover_instance = null;
@@ -212,10 +214,21 @@ function build_stream_popover(opts) {
                 $(e.currentTarget).hide();
                 e.stopPropagation();
             });
-
-            new ClipboardJS($popper.find(".copy_stream_link")[0]).on("success", () => {
+           // copy the link to the stream
+            $popper.on("click", ".copy_stream_link", () => {
+                const $streamLinkElement  = $(".copy_stream_link ")
+                const formatedLinkText = `
+                <a href=${$streamLinkElement.data("clipboard-text")}>${try_stream_topic_syntax_text($streamLinkElement.data("clipboard-text")).replaceAll(/\**/g,"\u200B")}</a>
+               `
+               const clipboardItem =new ClipboardItem({
+                   "text/plain":new Blob([$streamLinkElement.data("clipboard-text")],{type:"text/plain"}),
+                   "text/html":new Blob([formatedLinkText],{type:"text/html"})
+               })
+               navigator.clipboard.write([clipboardItem]).then(()=>{
                 popover_menus.hide_current_popover_if_visible(instance);
-            });
+               })
+              
+            })
         },
         onHidden() {
             hide_stream_popover();
