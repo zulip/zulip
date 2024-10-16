@@ -154,42 +154,31 @@ def access_user_group_for_update(
     if user_group.is_system_group:
         raise JsonableError(_("Insufficient permission"))
 
-    assert permission_setting in NamedUserGroup.GROUP_PERMISSION_SETTINGS
-    if (
-        permission_setting
-        in [
-            "can_manage_group",
-            "can_add_members_group",
-        ]
-        and user_profile.can_manage_all_groups()
-    ):
+    # Users with permission to manage the group have all the permissions
+    # including joining/leaving the group and add others to group.
+    if user_profile.can_manage_all_groups():
         return user_group
 
     user_has_permission = user_has_permission_for_group_setting(
-        getattr(user_group, permission_setting),
+        user_group.can_manage_group,
         user_profile,
-        NamedUserGroup.GROUP_PERMISSION_SETTINGS[permission_setting],
+        NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_manage_group"],
     )
+    if user_has_permission:
+        return user_group
 
-    # Users with permission to manage the group should be able to add members
-    # to the group. This also takes care of the case where a user creating a group
-    # with themselves having the permission to manage it don't have to explicitly
-    # add themselves to can_add_members_group.
-    if (
-        not user_has_permission
-        and permission_setting == "can_add_members_group"
-        and permission_setting != "can_manage_group"
-    ):
+    if permission_setting != "can_manage_group":
+        assert permission_setting in NamedUserGroup.GROUP_PERMISSION_SETTINGS
         user_has_permission = user_has_permission_for_group_setting(
-            user_group.can_manage_group,
+            getattr(user_group, permission_setting),
             user_profile,
-            NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_manage_group"],
+            NamedUserGroup.GROUP_PERMISSION_SETTINGS[permission_setting],
         )
 
-    if not user_has_permission:
-        raise JsonableError(_("Insufficient permission"))
+        if user_has_permission:
+            return user_group
 
-    return user_group
+    raise JsonableError(_("Insufficient permission"))
 
 
 def access_user_group_for_deactivation(

@@ -346,16 +346,9 @@ def remove_members_from_group_backend(
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
     if len(members) == 1 and user_profile.id == members[0]:
-        try:
-            user_group = access_user_group_for_update(
-                user_group_id, user_profile, permission_setting="can_leave_group"
-            )
-        except JsonableError:
-            # User can leave the group if user has the permission to
-            # manage the group.
-            user_group = access_user_group_for_update(
-                user_group_id, user_profile, permission_setting="can_manage_group"
-            )
+        user_group = access_user_group_for_update(
+            user_group_id, user_profile, permission_setting="can_leave_group"
+        )
     else:
         user_group = access_user_group_for_update(
             user_group_id, user_profile, permission_setting="can_manage_group"
