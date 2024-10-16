@@ -814,19 +814,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         from zerver.lib.user_groups import user_has_permission_for_group_setting
         from zerver.models import Realm
 
-        if policy_name not in [
-            "can_add_custom_emoji_group",
-            "can_create_groups",
-            "can_create_private_channel_group",
-            "can_create_public_channel_group",
-            "can_create_web_public_channel_group",
-            "can_delete_any_message_group",
-            "can_delete_own_message_group",
-            "can_manage_all_groups",
-            "can_move_messages_between_channels_group",
-            "create_multiuse_invite_group",
-            "direct_message_initiator_group",
-            "direct_message_permission_group",
+        if policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS and policy_name not in [
             "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
