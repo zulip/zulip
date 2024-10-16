@@ -559,9 +559,14 @@ h4.user_group_setting_subsection_title {
             fill: hsl(240deg 41% 50%);
         }
 
-        &.disabled:not(.checked) svg {
-            fill: hsl(0deg 0% 87%);
-            cursor: not-allowed;
+        &.disabled {
+            &:not(.checked) svg {
+                fill: hsl(0deg 0% 87%);
+            }
+
+            svg {
+                cursor: not-allowed;
+            }
         }
 
         .sub_unsub_status,
