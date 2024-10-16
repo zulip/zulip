@@ -45,7 +45,6 @@
         align-items: center;
 
         .recent-view-table-link,
-        .recent-view-table-unread-count,
         & > .zulip-icon {
             outline: 0;
         }
@@ -193,10 +192,24 @@
         align-self: center;
         color: var(--color-unread-counter-normal);
         background-color: var(--color-background-unread-counter-normal);
+        cursor: pointer;
+        outline: 0 solid var(--color-background-unread-counter-normal);
+        transition: outline-width 0.1s ease;
+
+        &:hover,
+        &:focus-visible {
+            outline-width: 1.5px;
+        }
 
         &.unread_count_pm {
             color: var(--color-unread-counter-prominent);
             background-color: var(--color-background-unread-counter-prominent);
+            outline: 0 solid var(--color-background-unread-counter-prominent);
+
+            &:hover,
+            &:focus-visible {
+                outline-width: 1.5px;
+            }
         }
     }
 
