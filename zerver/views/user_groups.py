@@ -306,7 +306,7 @@ def add_members_to_group_backend(
             # User can still join the group if user has permission to add
             # anyone in the group.
             user_group = access_user_group_for_update(
-                user_group_id, user_profile, permission_setting="can_manage_group"
+                user_group_id, user_profile, permission_setting="can_add_members_group"
             )
     else:
         user_group = access_user_group_for_update(
