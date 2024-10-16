@@ -311,7 +311,11 @@ export function get_recursive_group_members(target_user_group: UserGroup): Set<n
     return members;
 }
 
-export function is_user_in_group(user_group_id: number, user_id: number): boolean {
+export function is_user_in_group(
+    user_group_id: number,
+    user_id: number,
+    direct_member_only = false,
+): boolean {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error("Could not find user group", {user_group_id});
@@ -319,6 +323,10 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
     }
     if (is_direct_member_of(user_id, user_group_id)) {
         return true;
+    }
+
+    if (direct_member_only) {
+        return false;
     }
 
     const subgroup_ids = get_recursive_subgroups(user_group);

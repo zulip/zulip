@@ -349,6 +349,18 @@ run_test("is_user_in_group", () => {
     assert.equal(user_groups.is_user_in_group(foo.id, 6), true);
     assert.equal(user_groups.is_user_in_group(foo.id, 3), false);
 
+    // Check when passing direct_member_only as true.
+    assert.equal(user_groups.is_user_in_group(admins.id, 1, true), true);
+    assert.equal(user_groups.is_user_in_group(admins.id, 6, true), false);
+
+    assert.equal(user_groups.is_user_in_group(all.id, 2, true), true);
+    assert.equal(user_groups.is_user_in_group(all.id, 1, true), false);
+    assert.equal(user_groups.is_user_in_group(all.id, 6, true), false);
+
+    assert.equal(user_groups.is_user_in_group(test.id, 4, true), true);
+    assert.equal(user_groups.is_user_in_group(test.id, 1, true), false);
+    assert.equal(user_groups.is_user_in_group(test.id, 6, true), false);
+
     assert.equal(user_groups.is_user_in_setting_group(test.id, 4), true);
     assert.equal(user_groups.is_user_in_setting_group(test.id, 1), true);
     assert.equal(user_groups.is_user_in_setting_group(test.id, 6), true);
