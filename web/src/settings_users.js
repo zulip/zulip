@@ -266,12 +266,16 @@ function bot_info(bot_user_id) {
 }
 
 function get_last_active(user) {
-    const last_active_date = presence.last_active_date(user.user_id);
-
-    if (!last_active_date) {
-        return $t({defaultMessage: "Unknown"});
+    if (user_setting_presence_info[String(user.user_id)]) {
+        const userPresence = user_setting_presence_info[String(user.user_id)];
+        const last_active = Math.max(
+            userPresence.idle_timestamp ?? 0,
+            userPresence.active_timestamp ?? 0,
+        );
+        const last_active_date = new Date(last_active * 1000);
+        return timerender.render_now(last_active_date).time_str;
     }
-    return timerender.render_now(last_active_date).time_str;
+    return $t({defaultMessage: "Unknown"});
 }
 
 function human_info(person) {
