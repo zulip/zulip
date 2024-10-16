@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 
@@ -15,39 +17,41 @@ import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_components from "./stream_settings_components";
 import * as stream_ui_updates from "./stream_ui_updates";
+import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
+import * as util from "./util";
 
-let created_stream;
+let created_stream: string | undefined;
 
-export function reset_created_stream() {
+export function reset_created_stream(): void {
     created_stream = undefined;
 }
 
-export function set_name(stream) {
+export function set_name(stream: string): void {
     created_stream = stream;
 }
 
-export function get_name() {
+export function get_name(): string | undefined {
     return created_stream;
 }
 
-export function set_first_stream_created_modal_shown() {
+export function set_first_stream_created_modal_shown(): void {
     onboarding_steps.post_onboarding_step_as_read("first_stream_created_banner");
 }
 
-export function should_show_first_stream_created_modal() {
+export function should_show_first_stream_created_modal(): boolean {
     return onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("first_stream_created_banner");
 }
 
 class StreamSubscriptionError {
-    report_no_subs_to_stream() {
+    report_no_subs_to_stream(): void {
         $("#stream_subscription_error").text(
             $t({defaultMessage: "You cannot create a channel with no subscribers."}),
         );
         $("#stream_subscription_error").show();
     }
 
-    cant_create_stream_without_subscribing() {
+    cant_create_stream_without_subscribing(): void {
         $("#stream_subscription_error").text(
             $t({
                 defaultMessage:
@@ -57,34 +61,34 @@ class StreamSubscriptionError {
         $("#stream_subscription_error").show();
     }
 
-    clear_errors() {
+    clear_errors(): void {
         $("#stream_subscription_error").hide();
     }
 }
 const stream_subscription_error = new StreamSubscriptionError();
 
 class StreamNameError {
-    report_already_exists() {
+    report_already_exists(): void {
         $("#stream_name_error").text(
             $t({defaultMessage: "A channel with this name already exists."}),
         );
         $("#stream_name_error").show();
     }
 
-    clear_errors() {
+    clear_errors(): void {
         $("#stream_name_error").hide();
     }
 
-    report_empty_stream() {
+    report_empty_stream(): void {
         $("#stream_name_error").text($t({defaultMessage: "Choose a name for the new channel."}));
         $("#stream_name_error").show();
     }
 
-    select() {
+    select(): void {
         $("#create_stream_name").trigger("focus").trigger("select");
     }
 
-    pre_validate(stream_name) {
+    pre_validate(stream_name: string): void {
         // Don't worry about empty strings...we just want to call this
         // to warn users early before they start doing too much work
         // after they make the effort to type in a stream name.  (The
@@ -100,7 +104,7 @@ class StreamNameError {
         this.clear_errors();
     }
 
-    validate_for_submit(stream_name) {
+    validate_for_submit(stream_name: string): boolean {
         if (!stream_name) {
             this.report_empty_stream();
             this.select();
@@ -122,7 +126,7 @@ class StreamNameError {
 }
 const stream_name_error = new StreamNameError();
 
-function toggle_advanced_configurations() {
+function toggle_advanced_configurations(): void {
     const $advanced_configurations_view = $(".advanced-configurations-collapase-view");
     const $toggle_button = $(".toggle-advanced-configurations-icon");
 
@@ -143,7 +147,7 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
     e.preventDefault();
     e.stopPropagation();
 
-    const stream_name = $("#create_stream_name").val().trim();
+    const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
     const is_stream_name_valid = stream_name_error.validate_for_submit(stream_name);
     const privacy_type = $("#stream_creation_form input[type=radio][name=privacy]:checked").val();
     let invite_only = false;
@@ -181,10 +185,10 @@ $("body").on("click", ".advanced-configurations-container .advance-config-title-
 });
 
 // Stores the previous state of the stream creation checkbox.
-let stream_announce_previous_value;
+let stream_announce_previous_value: boolean;
 
 // Within the new stream modal...
-function update_announce_stream_state() {
+function update_announce_stream_state(): void {
     // If there is no new_stream_announcements_stream, we simply hide the widget.
     if (stream_data.get_new_stream_announcements_stream() === "") {
         $("#announce-new-stream").hide();
@@ -193,7 +197,7 @@ function update_announce_stream_state() {
 
     // If the stream is invite only, disable the "Announce stream" option.
     // Otherwise enable it.
-    const $announce_stream_checkbox = $("#announce-new-stream input");
+    const $announce_stream_checkbox = $<HTMLInputElement>("#announce-new-stream input");
     const $announce_stream_label = $("#announce-new-stream");
     let disable_it = false;
     const privacy_type = $("#stream_creation_form input[type=radio][name=privacy]:checked").val();
@@ -207,7 +211,7 @@ function update_announce_stream_state() {
     // check prevents overwriting stream_announce_previous_value with
     // the false when switching between private stream types.
     if (!$announce_stream_checkbox.prop("disabled")) {
-        stream_announce_previous_value = $announce_stream_checkbox.prop("checked");
+        stream_announce_previous_value = util.the($announce_stream_checkbox).checked;
     }
 
     if (is_invite_only) {
@@ -223,10 +227,9 @@ function update_announce_stream_state() {
     $("#announce-new-stream").show();
 }
 
-function create_stream() {
-    const data = {};
-    const stream_name = $("#create_stream_name").val().trim();
-    const description = $("#create_stream_description").val().trim();
+function create_stream(): void {
+    const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
+    const description = $<HTMLInputElement>("input#create_stream_description").val()!.trim();
     created_stream = stream_name;
 
     // Even though we already check to make sure that while typing the user cannot enter
@@ -239,7 +242,7 @@ function create_stream() {
         );
         return;
     }
-    data.subscriptions = JSON.stringify([{name: stream_name, description}]);
+    const subscriptions = JSON.stringify([{name: stream_name, description}]);
 
     let invite_only;
     let history_public_to_subscribers;
@@ -275,35 +278,32 @@ function create_stream() {
         }
     }
 
-    data.is_web_public = JSON.stringify(is_web_public);
-    data.invite_only = JSON.stringify(invite_only);
-    data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
-
-    const default_stream = $("#stream_creation_form .is_default_stream").prop("checked");
-    data.is_default_stream = JSON.stringify(default_stream);
+    const default_stream = util.the(
+        $<HTMLInputElement>("#stream_creation_form input.is_default_stream"),
+    ).checked;
 
     const stream_post_policy = Number.parseInt(
-        $("#stream_creation_form select[name=stream-post-policy]").val(),
+        $<HTMLSelectOneElement>(
+            "#stream_creation_form select:not([multiple])[name=stream-post-policy]",
+        ).val()!,
         10,
     );
-
-    data.stream_post_policy = JSON.stringify(stream_post_policy);
 
     let message_retention_selection = $(
         "#stream_creation_form select[name=stream_message_retention_setting]",
     ).val();
     if (message_retention_selection === "custom_period") {
         message_retention_selection = Number.parseInt(
-            $("#stream_creation_form input[name=stream-message-retention-days]").val(),
+            $<HTMLInputElement>(
+                "#stream_creation_form input[name=stream-message-retention-days]",
+            ).val()!,
             10,
         );
     }
 
-    data.message_retention_days = JSON.stringify(message_retention_selection);
-
     let announce =
         stream_data.get_new_stream_announcements_stream() !== "" &&
-        $("#announce-new-stream input").prop("checked");
+        util.the($<HTMLInputElement>("#announce-new-stream input")).checked;
 
     if (
         stream_data.get_new_stream_announcements_stream() === "" &&
@@ -313,28 +313,39 @@ function create_stream() {
         announce = true;
     }
 
-    data.announce = JSON.stringify(announce);
-
     // TODO: We can eliminate the user_ids -> principals conversion
     //       once we upgrade the backend to accept user_ids.
     const user_ids = stream_create_subscribers.get_principals();
-    data.principals = JSON.stringify(user_ids);
+    const principals = JSON.stringify(user_ids);
 
-    const can_remove_subscribers_group_id = Number.parseInt(
-        stream_settings_components.new_stream_can_remove_subscribers_group_widget.value(),
-        10,
-    );
-    data.can_remove_subscribers_group = can_remove_subscribers_group_id;
+    assert(stream_settings_components.new_stream_can_remove_subscribers_group_widget !== null);
+    const widget_value =
+        stream_settings_components.new_stream_can_remove_subscribers_group_widget.value();
+    assert(typeof widget_value === "number");
+    const can_remove_subscribers_group_id = widget_value;
 
     loading.make_indicator($("#stream_creating_indicator"), {
         text: $t({defaultMessage: "Creating channel..."}),
     });
 
+    const data = {
+        subscriptions,
+        is_web_public: JSON.stringify(is_web_public),
+        invite_only: JSON.stringify(invite_only),
+        history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
+        is_default_stream: JSON.stringify(default_stream),
+        stream_post_policy: JSON.stringify(stream_post_policy),
+        message_retention_days: JSON.stringify(message_retention_selection),
+        announce: JSON.stringify(announce),
+        principals,
+        can_remove_subscribers_group: can_remove_subscribers_group_id,
+    };
+
     // Subscribe yourself and possible other people to a new stream.
-    channel.post({
+    void channel.post({
         url: "/json/users/me/subscriptions",
         data,
-        success() {
+        success(): void {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
             ui_report.success(
@@ -344,8 +355,9 @@ function create_stream() {
             loading.destroy_indicator($("#stream_creating_indicator"));
             // The rest of the work is done via the subscribe event we will get
         },
-        error(xhr) {
-            if (xhr.responseJSON?.msg?.includes("access")) {
+        error(xhr): void {
+            const error_message = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
+            if (error_message?.msg?.includes("access")) {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.
                 //
@@ -368,7 +380,7 @@ function create_stream() {
     });
 }
 
-export function new_stream_clicked(stream_name) {
+export function new_stream_clicked(stream_name: string): void {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
     stream_settings_components.show_subs_pane.create_stream();
@@ -381,13 +393,13 @@ export function new_stream_clicked(stream_name) {
     $("#create_stream_name").trigger("focus");
 }
 
-function clear_error_display() {
+function clear_error_display(): void {
     stream_name_error.clear_errors();
     $(".stream_create_info").hide();
     stream_subscription_error.clear_errors();
 }
 
-export function show_new_stream_modal() {
+export function show_new_stream_modal(): void {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
     stream_settings_components.hide_or_disable_stream_privacy_options_if_required(
@@ -418,13 +430,16 @@ export function show_new_stream_modal() {
         // This listener is only needed if the dropdown setting is enabled.
         if (realm.zulip_plan_is_not_limited) {
             // Add listener to .show stream-message-retention-days-input that we've hidden above
-            $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
-                if (e.target.value === "custom_period") {
-                    $("#stream_creation_form .stream-message-retention-days-input").show();
-                } else {
-                    $("#stream_creation_form .stream-message-retention-days-input").hide();
-                }
-            });
+            $<HTMLSelectOneElement>("#stream_creation_form .stream_message_retention_setting").on(
+                "change",
+                (e) => {
+                    if (e.target.value === "custom_period") {
+                        $("#stream_creation_form .stream-message-retention-days-input").show();
+                    } else {
+                        $("#stream_creation_form .stream-message-retention-days-input").hide();
+                    }
+                },
+            );
         }
     }
     const $add_subscribers_container = $(
@@ -444,7 +459,7 @@ export function show_new_stream_modal() {
     clear_error_display();
 }
 
-export function set_up_handlers() {
+export function set_up_handlers(): void {
     stream_announce_previous_value =
         settings_data.user_can_create_public_streams() ||
         settings_data.user_can_create_web_public_streams();
@@ -467,7 +482,7 @@ export function set_up_handlers() {
         e.preventDefault();
         clear_error_display();
 
-        const stream_name = $("#create_stream_name").val().trim();
+        const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
         const name_ok = stream_name_error.validate_for_submit(stream_name);
 
         if (!name_ok) {
@@ -504,7 +519,7 @@ export function set_up_handlers() {
     });
 
     $container.on("input", "#create_stream_name", () => {
-        const stream_name = $("#create_stream_name").val().trim();
+        const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);
@@ -518,5 +533,6 @@ export function set_up_handlers() {
         }
     });
 
+    assert(stream_settings_components.new_stream_can_remove_subscribers_group_widget !== null);
     stream_settings_components.new_stream_can_remove_subscribers_group_widget.setup();
 }
