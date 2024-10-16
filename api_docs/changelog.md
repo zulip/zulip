@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 310**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_move_messages_between_channels_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to move messages from one channel to another in the organization.
+
 **Feature level 309**
 
 * [Group-setting values](/api/group-setting-values): Starting with

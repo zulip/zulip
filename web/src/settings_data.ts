@@ -176,7 +176,11 @@ export function user_can_create_web_public_streams(): boolean {
 }
 
 export function user_can_move_messages_between_streams(): boolean {
-    return user_has_permission(realm.realm_move_messages_between_streams_policy);
+    return user_has_permission_for_group_setting(
+        realm.realm_can_move_messages_between_channels_group,
+        "can_move_messages_between_channels_group",
+        "realm",
+    );
 }
 
 export function user_can_manage_all_groups(): boolean {

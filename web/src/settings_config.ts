@@ -348,8 +348,6 @@ export const edit_topic_policy_values = {
     },
 };
 
-export const move_messages_between_streams_policy_values = email_invite_to_realm_policy_values;
-
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),

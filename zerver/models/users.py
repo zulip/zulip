@@ -823,6 +823,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "can_delete_any_message_group",
             "can_delete_own_message_group",
             "can_manage_all_groups",
+            "can_move_messages_between_channels_group",
             "create_multiuse_invite_group",
             "direct_message_initiator_group",
             "direct_message_permission_group",
@@ -898,7 +899,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.has_permission("create_multiuse_invite_group")
 
     def can_move_messages_between_streams(self) -> bool:
-        return self.has_permission("move_messages_between_streams_policy")
+        return self.has_permission("can_move_messages_between_channels_group")
 
     def can_create_user_groups(self) -> bool:
         return self.has_permission("can_create_groups")

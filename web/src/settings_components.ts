@@ -238,7 +238,6 @@ export const simple_dropdown_realm_settings_schema = realm_schema.pick({
     realm_invite_to_stream_policy: true,
     realm_invite_to_realm_policy: true,
     realm_wildcard_mention_policy: true,
-    realm_move_messages_between_streams_policy: true,
     realm_edit_topic_policy: true,
     realm_org_type: true,
 });
@@ -505,6 +504,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_delete_any_message_group", null],
     ["realm_can_delete_own_message_group", null],
     ["realm_can_manage_all_groups", null],
+    ["realm_can_move_messages_between_channels_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
 ]);
@@ -827,6 +827,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
         case "realm_can_manage_all_groups":
+        case "realm_can_move_messages_between_channels_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
@@ -1067,6 +1068,7 @@ export function populate_data_for_realm_settings_request(
                     "can_manage_all_groups",
                     "can_delete_any_message_group",
                     "can_delete_own_message_group",
+                    "can_move_messages_between_channels_group",
                     "direct_message_initiator_group",
                     "direct_message_permission_group",
                 ]);

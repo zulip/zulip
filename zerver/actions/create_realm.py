@@ -41,7 +41,6 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import (
     CommonPolicyEnum,
     InviteToRealmPolicyEnum,
-    MoveMessagesBetweenStreamsPolicyEnum,
     get_org_type_display_name,
     get_realm,
 )
@@ -125,10 +124,6 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         # Don't allow members (students) to manage user groups or
         # stream subscriptions.
         realm.invite_to_stream_policy = CommonPolicyEnum.MODERATORS_ONLY
-        # Allow moderators (TAs?) to move topics between streams.
-        realm.move_messages_between_streams_policy = (
-            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY
-        )
 
 
 @transaction.atomic(savepoint=False)
@@ -296,6 +291,10 @@ def do_create_realm(
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
             },
             "can_create_groups": {
+                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
+                Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
+            },
+            "can_move_messages_between_channels_group": {
                 Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
             },

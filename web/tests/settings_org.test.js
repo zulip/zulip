@@ -506,6 +506,7 @@ function test_discard_changes_button({override}, discard_changes) {
 
 test("set_up", ({override, override_rewire}) => {
     override_rewire(settings_org, "check_disable_message_delete_limit_setting_dropdown", noop);
+    override_rewire(settings_org, "message_move_limit_setting_enabled", noop);
     override(realm, "realm_available_video_chat_providers", {
         jitsi_meet: {
             id: 1,
