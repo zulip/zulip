@@ -227,11 +227,12 @@ function dom_args(args) {
 }
 
 {
-    exports.FakeJQuery = class {
+    exports.FakeJQuery = class extends RejectMissing {
         [Symbol.iterator] = Array.prototype.values;
         __zjquery = true;
 
         constructor(elements) {
+            super();
             this.length = elements.length;
             for (const [i, element] of elements.entries()) {
                 this[i] = element;
@@ -871,6 +872,13 @@ function dom_args(args) {
         }
         visible() {
             return [...this].some((element) => fake_element_state.get(element).shown);
+        }
+        [ignore_missing](property) {
+            return [
+                `${Number(property) >>> 0}`, // eslint-disable-line no-bitwise
+                "__esModule",
+                "stack",
+            ].includes(property);
         }
     };
 }

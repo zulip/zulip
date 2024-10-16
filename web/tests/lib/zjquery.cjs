@@ -38,43 +38,6 @@ function verify_selector_for_zulip(selector) {
 function make_zjquery() {
     const elems = new Map();
 
-    function new_elem(selector, elements) {
-        const $elem = new FakeJQuery(elements);
-
-        // Create a proxy handler to detect missing stubs.
-        //
-        // For context, zjquery doesn't implement every method/attribute
-        // that you'd find on a "real" jQuery object.  Sometimes we
-        // expects devs to create their own stubs.
-        const handler = {
-            get(target, key) {
-                // Handle the special case of equality checks, which
-                // we can infer by assert.equal trying to access the
-                // "stack" key.
-                assert.notEqual(
-                    key,
-                    "stack",
-                    "\nInstead of doing equality checks on a full object, " +
-                        'do `assert.equal($foo.selector, ".some_class")\n',
-                );
-
-                /* istanbul ignore if */
-                if (!(key in target) && typeof key !== "symbol" && key !== "inspect") {
-                    // For undefined values, we'll throw errors to devs saying
-                    // they need to create stubs.  We ignore certain keys that
-                    // are used for simply printing out the object.
-                    throw new Error('You must create a stub for $("' + selector + '").' + key);
-                }
-
-                return target[key];
-            },
-        };
-
-        const proxy = new Proxy($elem, handler);
-
-        return proxy;
-    }
-
     const zjquery = function (arg, arg2) {
         assert.ok(typeof arg !== "function", "zjquery does not support $(callback)");
 
@@ -104,7 +67,7 @@ function make_zjquery() {
         verify_selector_for_zulip(selector);
 
         if (!elems.has(selector)) {
-            const $elem = new_elem(selector, [default_element(selector)]);
+            const $elem = new FakeJQuery([default_element(selector)]);
             $elem[0].to_$ = () => $elem;
             elems.set(selector, $elem);
         }
@@ -113,7 +76,7 @@ function make_zjquery() {
 
     zjquery.create = function (selector, opts) {
         assert.ok(!elems.has(selector), "You already created an object with this name!!");
-        const $elem = new_elem(selector, opts?.elements ?? [default_element(selector)]);
+        const $elem = new FakeJQuery(opts?.elements ?? [default_element(selector)]);
         if (!opts?.elements) {
             $elem[0].to_$ = () => $elem;
         }
