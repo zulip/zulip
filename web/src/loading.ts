@@ -106,3 +106,11 @@ export function show_spinner($button_element: JQuery, $spinner: JQuery): void {
         height: span_height,
     });
 }
+
+export function hide_spinner($button_element: JQuery, $spinner: JQuery): void {
+    // Show the span
+    $button_element.find(".submit-button-text").show();
+
+    // Destroy the loading indicator
+    destroy_indicator($spinner);
+}

@@ -95,8 +95,7 @@ export function show_button_spinner($button: JQuery): void {
 export function hide_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", false);
-    $button.find("span").show();
-    loading.destroy_indicator($spinner);
+    loading.hide_spinner($button, $spinner);
 }
 
 function compare_by_name(
