@@ -130,6 +130,10 @@ export function get_recipient(): Recipient | null {
             return null;
         }
         const topic = compose_state.topic();
+        if (realm.realm_mandatory_topics && topic === "") {
+            // compose box with empty topic string.
+            return null;
+        }
         return {
             message_type: "stream",
             notification_event_type: "typing",

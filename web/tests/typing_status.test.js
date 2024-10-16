@@ -9,11 +9,14 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const compose_state = mock_esm("../src/compose_state");
 const stream_data = mock_esm("../src/stream_data");
 
+const {set_realm} = zrequire("state_data");
 const typing = zrequire("typing");
 const typing_status = zrequire("../shared/src/typing_status");
 const {initialize_user_settings} = zrequire("user_settings");
 
 initialize_user_settings({user_settings: {}});
+const realm = {};
+set_realm(realm);
 
 const TYPING_STARTED_WAIT_PERIOD = 10000;
 const TYPING_STOPPED_WAIT_PERIOD = 5000;
@@ -30,11 +33,19 @@ function returns_time(secs) {
 }
 
 run_test("basics", ({override, override_rewire}) => {
-    assert.equal(typing_status.state, null);
+    override(realm, "realm_mandatory_topics", true);
+    override(realm, "server_typing_started_wait_period_milliseconds", TYPING_STARTED_WAIT_PERIOD);
+    override(realm, "server_typing_stopped_wait_period_milliseconds", TYPING_STOPPED_WAIT_PERIOD);
 
+    assert.equal(typing_status.state, null);
     // invalid conversation basically does nothing
     let worker = {};
-    typing_status.update(worker, null, TYPING_STARTED_WAIT_PERIOD, TYPING_STOPPED_WAIT_PERIOD);
+    typing_status.update(
+        worker,
+        null,
+        realm.server_typing_started_wait_period_milliseconds,
+        realm.server_typing_stopped_wait_period_milliseconds,
+    );
 
     // Start setting up more testing state.
     const events = {};
@@ -74,8 +85,8 @@ run_test("basics", ({override, override_rewire}) => {
         typing_status.update(
             worker,
             new_recipient,
-            TYPING_STARTED_WAIT_PERIOD,
-            TYPING_STOPPED_WAIT_PERIOD,
+            realm.server_typing_started_wait_period_milliseconds,
+            realm.server_typing_stopped_wait_period_milliseconds,
         );
     }
 
@@ -254,6 +265,14 @@ run_test("basics", ({override, override_rewire}) => {
     });
     assert.ok(events.idle_callback);
 
+    // If realm requires topics for channel messages and
+    // topic is an empty string, no typing recipient is set
+    override(compose_state, "get_message_type", () => "stream");
+    override(compose_state, "stream_name", () => "Verona");
+    override(stream_data, "get_stream_id", () => "2");
+    override(compose_state, "topic", () => "");
+    assert.equal(typing.get_recipient(), null);
+
     // test that we correctly detect if worker.get_recipient
     // and typing_status.state.current_recipient are the same
 
@@ -280,8 +299,8 @@ run_test("basics", ({override, override_rewire}) => {
     typing_status.update(
         worker,
         typing.get_recipient(),
-        TYPING_STARTED_WAIT_PERIOD,
-        TYPING_STOPPED_WAIT_PERIOD,
+        realm.server_typing_started_wait_period_milliseconds,
+        realm.server_typing_stopped_wait_period_milliseconds,
     );
     assert.deepEqual(call_count.maybe_ping_server, 1);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 1);
@@ -290,8 +309,8 @@ run_test("basics", ({override, override_rewire}) => {
     typing_status.update(
         worker,
         typing.get_recipient(),
-        TYPING_STARTED_WAIT_PERIOD,
-        TYPING_STOPPED_WAIT_PERIOD,
+        realm.server_typing_started_wait_period_milliseconds,
+        realm.server_typing_stopped_wait_period_milliseconds,
     );
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 2);
@@ -303,8 +322,8 @@ run_test("basics", ({override, override_rewire}) => {
     typing_status.update(
         worker,
         typing.get_recipient(),
-        TYPING_STARTED_WAIT_PERIOD,
-        TYPING_STOPPED_WAIT_PERIOD,
+        realm.server_typing_started_wait_period_milliseconds,
+        realm.server_typing_stopped_wait_period_milliseconds,
     );
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
@@ -318,15 +337,17 @@ run_test("basics", ({override, override_rewire}) => {
     typing_status.update(
         worker,
         typing.get_recipient(),
-        TYPING_STARTED_WAIT_PERIOD,
-        TYPING_STOPPED_WAIT_PERIOD,
+        realm.server_typing_started_wait_period_milliseconds,
+        realm.server_typing_stopped_wait_period_milliseconds,
     );
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 4);
     assert.deepEqual(call_count.stop_last_notification, 2);
 });
 
-run_test("stream_messages", ({override_rewire}) => {
+run_test("stream_messages", ({override, override_rewire}) => {
+    override(realm, "server_typing_started_wait_period_milliseconds", TYPING_STARTED_WAIT_PERIOD);
+    override(realm, "server_typing_stopped_wait_period_milliseconds", TYPING_STOPPED_WAIT_PERIOD);
     override_rewire(typing_status, "state", null);
 
     let worker = {};
@@ -367,8 +388,8 @@ run_test("stream_messages", ({override_rewire}) => {
         typing_status.update(
             worker,
             new_recipient,
-            TYPING_STARTED_WAIT_PERIOD,
-            TYPING_STOPPED_WAIT_PERIOD,
+            realm.server_typing_started_wait_period_milliseconds,
+            realm.server_typing_stopped_wait_period_milliseconds,
         );
     }
 
