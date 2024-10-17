@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -9,6 +8,7 @@ import render_left_sidebar_stream_actions_popover from "../templates/popovers/le
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as composebox_typeahead from "./composebox_typeahead";
+import {try_stream_topic_syntax_text} from "./copy_and_paste";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
@@ -31,6 +31,7 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
+
 // In this module, we manage stream popovers
 // that pop up from the left sidebar.
 let stream_popover_instance = null;
@@ -212,9 +213,21 @@ function build_stream_popover(opts) {
                 $(e.currentTarget).hide();
                 e.stopPropagation();
             });
-
-            new ClipboardJS($popper.find(".copy_stream_link")[0]).on("success", () => {
-                popover_menus.hide_current_popover_if_visible(instance);
+            // copy the link to the stream
+            $popper.on("click", ".copy_stream_link", () => {
+                const $streamLinkElement = $(".copy_stream_link ");
+                const formatedLinkText = `
+                <a href=${$streamLinkElement.data("clipboard-text")}>${try_stream_topic_syntax_text($streamLinkElement.data("clipboard-text")).replaceAll(/\**/g, "\u200B")}</a>
+               `;
+                const clipboardItem = new ClipboardItem({
+                    "text/plain": new Blob([$streamLinkElement.data("clipboard-text")], {
+                        type: "text/plain",
+                    }),
+                    "text/html": new Blob([formatedLinkText], {type: "text/html"}),
+                });
+                navigator.clipboard.write([clipboardItem]).then(() => {
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
             });
         },
         onHidden() {
