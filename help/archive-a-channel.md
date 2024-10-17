@@ -2,16 +2,16 @@
 
 {!admin-only.md!}
 
-Archiving a channel will immediately unsubscribe all users from the channel,
-remove the channel from search and other typeaheads, and remove the channel's
-messages from **Combined feed**.
+Archiving a channel will hide the channel from most views in the UI.
+Archiving a channel does not delete a channel's messages, and its
+messages will remain accessible via search and the like, unless you
+first change the channel's access permissions.
 
-Archiving a channel does not delete a channel's messages. Users will still be
-able to find any given message by searching for it. However, links to
-messages and topics in the channel may or may not continue to work.
+Archiving a channel does not remove subscribers or change its access
+permissions.
 
-In most cases, we recommend [renaming channels](/help/rename-a-channel) rather
-than archiving them.
+Consider [renaming channels](/help/rename-a-channel) rather than
+archiving them where appropriate.
 
 ## Archive a channel
 
