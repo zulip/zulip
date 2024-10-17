@@ -151,11 +151,26 @@ import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as user_topic_popover from "./user_topic_popover";
 import * as user_topics from "./user_topics";
+import * as util from "./util";
 import * as widgets from "./widgets";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
 //       functions to other modules.
+
+export function periodically_update_user_presence() {
+    function get_full_presence_list_update() {
+        activity.send_presence_to_server(activity_ui.redraw);
+    }
+
+    /* Time between keep-alive pings */
+    const active_ping_interval_ms = realm.server_presence_ping_interval_seconds * 1000;
+    util.call_function_periodically(get_full_presence_list_update, active_ping_interval_ms);
+
+    // Let the server know we're here, but do not pass
+    // redraw, since we just got all this info in page_params.
+    activity.send_presence_to_server();
+}
 
 /* We use 'visibility' rather than 'display' and jQuery's show() / hide(),
    because we want to reserve space for the email address.  This avoids
@@ -645,6 +660,7 @@ export function initialize_everything(state_data) {
             );
         },
     });
+    periodically_update_user_presence();
 
     // All overlays, and also activity_ui, must be initialized before hashchange.js
     hashchange.initialize();
