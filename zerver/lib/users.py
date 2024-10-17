@@ -45,6 +45,8 @@ from zerver.models.realms import BotCreationPolicyEnum, get_fake_email_domain, r
 from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
+    base_bulk_get_user_queryset,
+    base_get_user_queryset,
     get_realm_user_dicts,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id_in_realm,
@@ -403,12 +405,7 @@ def access_user_by_email(
         # ineffective.
         #
         # Notably, we use the same select_related as access_user_by_id.
-        target = UserProfile.objects.select_related(
-            "realm",
-            "realm__can_access_all_users_group",
-            "realm__can_access_all_users_group__named_user_group",
-            "bot_owner",
-        ).get(
+        target = base_get_user_queryset().get(
             delivery_email__iexact=email.strip(),
             realm=user_profile.realm,
             email_address_visibility__in=allowed_email_address_visibility_values,
@@ -431,19 +428,11 @@ def bulk_access_users_by_email(
     # `email__iexact__in=emails` is not supported by Django.
     target_emails_upper = [email.strip().upper() for email in emails]
     users = (
-        UserProfile.objects.annotate(email_upper=Upper("email"))
-        .select_related(
-            "realm",
-            "realm__can_access_all_users_group",
-            "realm__can_access_all_users_group__named_user_group",
-            "realm__direct_message_initiator_group",
-            "realm__direct_message_initiator_group__named_user_group",
-            "realm__direct_message_permission_group",
-            "realm__direct_message_permission_group__named_user_group",
-            "bot_owner",
-        )
+        base_bulk_get_user_queryset()
+        .annotate(email_upper=Upper("email"))
         .filter(email_upper__in=target_emails_upper, realm=acting_user.realm)
     )
+
     valid_emails_upper = {user_profile.email_upper for user_profile in users}
     all_users_exist = all(email in valid_emails_upper for email in target_emails_upper)
 
@@ -464,16 +453,7 @@ def bulk_access_users_by_id(
     allow_bots: bool = False,
     for_admin: bool,
 ) -> set[UserProfile]:
-    users = UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "realm__direct_message_initiator_group",
-        "realm__direct_message_initiator_group__named_user_group",
-        "realm__direct_message_permission_group",
-        "realm__direct_message_permission_group__named_user_group",
-        "bot_owner",
-    ).filter(id__in=user_ids, realm=acting_user.realm)
+    users = base_bulk_get_user_queryset().filter(id__in=user_ids, realm=acting_user.realm)
 
     valid_user_ids = {user_profile.id for user_profile in users}
     all_users_exist = all(user_id in valid_user_ids for user_id in user_ids)
