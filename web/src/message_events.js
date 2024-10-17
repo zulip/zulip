@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as activity from "./activity";
 import * as alert_words from "./alert_words";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
@@ -35,7 +36,6 @@ import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
@@ -274,7 +274,7 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
         messages.map((message) => echo.track_local_message(message));
     }
 
-    unread_ops.process_visible();
+    activity.set_received_new_messages(true);
     message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
