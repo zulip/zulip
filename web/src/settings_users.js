@@ -104,6 +104,15 @@ export function update_view_on_deactivate(user_id) {
     should_redraw_deactivated_users_list = true;
 }
 
+export function update_view_on_delete(user_id) {
+    const $row = get_user_info_row(user_id);
+    if ($row.length === 0) {
+        return;
+    }
+    const $button = $row.find("button.delete");
+    $button.prop("disabled", true);
+}
+
 export function update_view_on_reactivate(user_id) {
     const $row = get_user_info_row(user_id);
     if ($row.length === 0) {
@@ -542,6 +551,24 @@ function handle_bot_deactivation($tbody) {
     });
 }
 
+function handle_deletion($tbody) {
+    $tbody.on("click", ".delete", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $button_elem = $(e.target);
+        const $row = $button_elem.closest(".user_row");
+        const user_id = Number.parseInt($row.attr("data-user-id"), 10);
+
+        function handle_confirm() {
+            const url = "/json/users/" + encodeURIComponent(user_id) + "/delete";
+            dialog_widget.submit_api_request(channel.del, url, {});
+        }
+
+        user_deactivation_ui.confirm_deletion(user_id, handle_confirm, true);
+    });
+}
+
 function handle_reactivation($tbody) {
     $tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
@@ -604,6 +631,7 @@ section.deactivated.handle_events = () => {
 
     handle_filter_change($tbody, section.deactivated);
     handle_deactivation($tbody);
+    handle_deletion($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
 };
