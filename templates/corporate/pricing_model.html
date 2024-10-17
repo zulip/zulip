@@ -107,6 +107,10 @@
                                 <a href="/billing/" class="button current-plan-button" type="button">
                                     Sponsorship requested
                                 </a>
+                                {% elif customer_plan and customer_plan.tier != customer_plan.TIER_CLOUD_STANDARD %}
+                                <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
+                                    Contact sales
+                                </a>
                                 {% else %}
                                 <a href="/upgrade/?tier={{ tier_cloud_standard }}" class="button upgrade-button">
                                     {% if free_trial_days %}
@@ -147,6 +151,10 @@
                                 <a href='/billing' class="button current-plan-button" type="button">
                                     <i class="icon current-plan-icon"></i>
                                     Current plan
+                                </a>
+                                {% elif customer_plan and customer_plan.tier != customer_plan.TIER_CLOUD_PLUS %}
+                                <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
+                                    Contact sales
                                 </a>
                                 {% else %}
                                 <a href="/upgrade/?tier={{ tier_cloud_plus }}" class="button upgrade-button">
