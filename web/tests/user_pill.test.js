@@ -43,6 +43,7 @@ const isaac_item = {
     img_src: `/avatar/${isaac.user_id}`,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
+    user_is_bot: undefined,
 };
 
 const inaccessible_user_id = 103;
@@ -56,6 +57,7 @@ const inaccessible_user_item = {
     img_src: `/avatar/${inaccessible_user_id}`,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
+    user_is_bot: false,
 };
 
 let pill_widget = {};
