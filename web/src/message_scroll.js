@@ -152,29 +152,36 @@ export function initialize() {
             return;
         }
 
-        if (event.mark_read && event.previously_selected_id !== -1) {
-            // Mark messages between old pointer and new pointer as read
+        if (event.mark_read) {
             let messages;
-            if (event.id < event.previously_selected_id) {
-                messages = event.msg_list.message_range(event.id, event.previously_selected_id);
+            if (event.previously_selected_id !== -1) {
+                // Mark messages between previous and new selected message as read
+                if (event.id < event.previously_selected_id) {
+                    messages = event.msg_list.message_range(event.id, event.previously_selected_id);
+                } else {
+                    messages = event.msg_list.message_range(event.previously_selected_id, event.id);
+                }
             } else {
-                messages = event.msg_list.message_range(event.previously_selected_id, event.id);
+                // Mark new selected message as read
+                messages = [event.msg_list.get(event.id)];
             }
-            if (event.msg_list.can_mark_messages_read()) {
-                unread_ops.notify_server_messages_read(messages, {from: "pointer"});
-            } else if (
-                unread.get_unread_messages(messages).length !== 0 &&
-                // The below checks might seem redundant, but it's
-                // possible this logic, which runs after a delay, lost
-                // a race with switching to another view, like Recent
-                // Topics, and we don't want to display this banner
-                // in such a view.
-                //
-                // This can likely be fixed more cleanly with another approach.
-                narrow_state.filter() !== undefined &&
-                message_lists.current === event.msg_list
-            ) {
-                unread_ui.notify_messages_remain_unread();
+            if (unread_ops.is_window_focused()) {
+                if (event.msg_list.can_mark_messages_read()) {
+                    unread_ops.notify_server_messages_read(messages, {from: "pointer"});
+                } else if (
+                    unread.get_unread_messages(messages).length !== 0 &&
+                    // The below checks might seem redundant, but it's
+                    // possible this logic, which runs after a delay, lost
+                    // a race with switching to another view, like recent
+                    // conversations, and we don't want to display this banner
+                    // in such a view.
+                    //
+                    // This can likely be fixed more cleanly with another approach.
+                    narrow_state.filter() !== undefined &&
+                    message_lists.current === event.msg_list
+                ) {
+                    unread_ui.notify_messages_remain_unread();
+                }
             }
         }
     });
