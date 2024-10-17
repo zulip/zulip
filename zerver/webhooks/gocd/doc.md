@@ -7,17 +7,14 @@ your build statuses.
 
 1. {!generate-integration-url.md!}
 
-1. Add the following to your `Config.XML` file.
+1. Download the [Webhook generic notification plugin](https://github.com/getsentry/gocd-webhook-notification-plugin/releases) (for plugin installation instructions refer [GoCD's documentation](https://docs.gocd.org/current/extension_points/plugin_user_guide.html#installing-and-uninstalling-of-plugins).)
 
-    ```
-    <pipeline name="mypipeline">
-        <trackingtool link="<URL constructed above>" regex="##(\d+)"/>
-        ...
-    </pipeline>
-    ```
+1. Go to **Admin>Server Configuration>Plugins** in your GoCD project. Click on the gear icon beside the Webhook Notifier Plugin, paste the generated URL and click **Save**.
 
-    Push this change to your repository. For further information,
-    see [GoCD's documentation](https://docs.gocd.org/current/integration/).
+![](/static/images/integrations/gocd/003.png)
+
+![](/static/images/integrations/gocd/002.png)
+
 
 {!congrats.md!}
 
