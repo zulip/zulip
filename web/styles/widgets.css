@@ -271,10 +271,11 @@ input {
 
 .poll-edit-question,
 .todo-edit-task-list-title {
-    opacity: 0.4;
+    color: var(--color-message-action-visible);
 
-    &:hover {
-        opacity: 1;
+    &:hover,
+    &:focus-visible {
+        color: var(--color-message-action-interactive);
     }
 }
 
