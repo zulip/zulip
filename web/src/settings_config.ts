@@ -114,6 +114,13 @@ export const web_stream_unreads_count_display_policy_values = {
     },
 };
 
+// <li> classes, The default order of left_sidebar possible home views.
+export const possible_home_views_default_order = [
+    "top_left_inbox",
+    "top_left_recent_view",
+    "top_left_all_messages",
+];
+
 export const web_home_view_values = {
     inbox: {
         code: "inbox",
