@@ -11,6 +11,7 @@ class SentryHookTests(WebhookTestCase):
         expected_message = """\
 **New exception:** [*url.Error: Get "bad_url": unsupported protocol scheme ""](https://sentry.io/organizations/hypro999-personal-organization/issues/1637164584/events/80777a9cc30e4d0eb8904333d5c298b0/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2020-04-29 11:23:45
 **filename:** trigger-exception.go
@@ -37,6 +38,7 @@ Traceback:
         expected_message = """\
 **New exception:** [Error: Sample error from node.](https://sentry.io/organizations/hypro999-personal-organization/issues/1638852747/events/f9cb0f2afff74a5aa92e766fb7ac3fe3/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2020-04-30 06:19:33
 **filename:** /home/hemanth/Desktop/sentry/trigger-exception.js
@@ -63,6 +65,7 @@ Traceback:
         expected_message = """\
 **New exception:** [Exception: Custom exception!](https://sentry.io/organizations/hypro999-personal-organization/issues/1635244907/events/599349254a1447a99774b5310711c1a8/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2020-04-28 13:56:05
 **filename:** trigger-exception.py
@@ -87,6 +90,7 @@ Traceback:
         expected_message = """\
 **New exception:** [ZeroDivisionError: divided by 0](https://sentry.io/organizations/nitk-46/issues/4213933362/events/49b528e13e45497ab9adc3173fd2ed34/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2023-05-29 10:12:33
 **filename:** app/controllers/articles_controller.rb
@@ -116,6 +120,7 @@ Traceback:
         expected_message = """\
 **New exception:** [TypeError: Cannot read properties of null (reading 'insertBefore')](https://sentry.io/organizations/nitk-46/issues/4214010673/events/292f78454e774e62999506f759ad791d/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2023-05-29 11:08:30
 **filename:** /node_modules/.vite/deps/chunk-G4DFXOZZ.js
@@ -127,6 +132,7 @@ Traceback:
         expected_message = """\
 **New exception:** [ValueError: new sentry error.](https://sentry.io/organizations/bar-foundation/issues/1972208801/events/c916dccfd58e41dcabaebef0091f0736/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2020-10-21 23:25:11
 **filename:** trigger-exception.py
@@ -152,6 +158,7 @@ Traceback:
         expected_message = """\
 **New exception:** [TypeError: can't access property "bar", x.foo is undefined](https://sentry.io/organizations/foo-bar-org/issues/1982047746/events/f3bf5fc4e354451db9e885a69b2a2b51/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2020-10-26 16:39:54
 **filename:** None
@@ -165,6 +172,7 @@ Traceback:
         expected_message = """\
 **New exception:** [Error: Something external broke.](https://sentry.io/organizations/hypro999-personal-organization/issues/1731239773/events/355c3b2a142046629dd410db2fdda003/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2020-06-17 14:42:54
 **filename:** /mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/external.js
@@ -176,6 +184,7 @@ Traceback:
         expected_message = """\
 **New message event:** [A test message event from golang.](https://sentry.io/organizations/hypro999-personal-organization/issues/1638844654/events/01ecb45633bc4f5ca940ada671124c8f/)
 ```quote
+:blue_circle:
 **level:** info
 **timestamp:** 2020-04-30 06:14:13
 ```"""
@@ -186,6 +195,7 @@ Traceback:
         expected_message = """\
 **New message event:** [Test event from node.](https://sentry.io/organizations/hypro999-personal-organization/issues/1638840427/events/6886bb1fe7ce4497b7836f6083d5fd34/)
 ```quote
+:blue_circle:
 **level:** info
 **timestamp:** 2020-04-30 06:09:56
 ```"""
@@ -196,6 +206,7 @@ Traceback:
         expected_message = """\
 **New message event:** [A simple message-based issue.](https://sentry.io/organizations/hypro999-personal-organization/issues/1635261062/events/8da63b42375e4d3b803c377fefb062f8/)
 ```quote
+:blue_circle:
 **level:** info
 **timestamp:** 2020-04-28 14:05:04
 ```"""
@@ -216,6 +227,7 @@ Traceback:
         expected_message = """\
 **New issue created:** Exception: Custom exception!
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2020-04-28 13:56:05
 **assignee:** No one
@@ -227,6 +239,7 @@ Traceback:
         expected_message = """\
 **New issue created:** A simple message-based issue.
 ```quote
+:blue_circle:
 **level:** info
 **timestamp:** 2020-04-28 14:05:04
 **assignee:** No one
@@ -248,6 +261,7 @@ Traceback:
         expected_message = """\
 New [issue](https://sentry.io/zulip/zulip/issues/156699934/) (level: ERROR):
 
+:orange_circle:
 ``` quote
 This is an example python exception
 ```"""
@@ -258,6 +272,7 @@ This is an example python exception
         expected_message = """\
 **New message event:** [This is an example Python exception](https://sentry.io/organizations/nitk-46/issues/4218258981/events/b6eff1a49b1f4132850b1238d968da70/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2023-05-31 11:06:16
 ```"""
@@ -268,6 +283,7 @@ This is an example python exception
         expected_message = """\
 **New message event:** [This is an example Python exception](https://nitk-46.sentry.io/issues/4218258981/events/4dc4fc2858aa450eb658be9e5b8ad149/)
 ```quote
+:orange_circle:
 **level:** error
 **timestamp:** 2023-07-09 20:41:24
 ```"""
