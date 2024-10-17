@@ -250,6 +250,9 @@ NON_EXPORTED_TABLES = {
     "zerver_submessage",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
+    # The importer cannot trust ImageAttachment objects anyway and needs to check
+    # and process images for thumbnailing on its own.
+    "zerver_imageattachment",
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
 
