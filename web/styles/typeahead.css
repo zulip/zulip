@@ -179,3 +179,9 @@
         margin-left: 14px;
     }
 }
+
+.typeahead-text-container {
+    i.zulip-icon-bot {
+        align-self: center;
+    }
+}
