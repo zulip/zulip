@@ -1107,6 +1107,16 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         user_id_mapper=user_id_mapper,
     )
 
+    rocketchat_emoji_data = rocketchat_data_to_dict(rocketchat_data_dir, ["custom_emoji"])[
+        "custom_emoji"
+    ]
+    zerver_realmemoji = build_custom_emoji(
+        realm_id=realm_id,
+        custom_emoji_data=rocketchat_emoji_data,
+        output_dir=output_dir,
+    )
+    realm["zerver_realmemoji"] = zerver_realmemoji
+
     room_id_to_room_map: dict[str, dict[str, Any]] = {}
     team_id_to_team_map: dict[str, dict[str, Any]] = {}
     dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
@@ -1180,16 +1190,6 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         personal_subscriptions + stream_subscriptions + direct_message_group_subscriptions
     )
     realm["zerver_subscription"] = zerver_subscription
-
-    rocketchat_emoji_data = rocketchat_data_to_dict(rocketchat_data_dir, ["custom_emoji"])[
-        "custom_emoji"
-    ]
-    zerver_realmemoji = build_custom_emoji(
-        realm_id=realm_id,
-        custom_emoji_data=rocketchat_emoji_data,
-        output_dir=output_dir,
-    )
-    realm["zerver_realmemoji"] = zerver_realmemoji
 
     subscriber_map = make_subscriber_map(
         zerver_subscription=zerver_subscription,
