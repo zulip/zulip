@@ -139,7 +139,7 @@ export function send_presence_to_server(redraw?: () => void): void {
                 $("#zephyr-mirror-error").removeClass("show");
             }
 
-            new_user_input = false;
+            set_new_user_input(false);
 
             if (redraw) {
                 assert(
@@ -176,7 +176,7 @@ export function mark_client_active(): void {
 
 export function initialize(): void {
     $("html").on("mousemove", () => {
-        new_user_input = true;
+        set_new_user_input(true);
     });
 
     $(window).on("focus", mark_client_active);
