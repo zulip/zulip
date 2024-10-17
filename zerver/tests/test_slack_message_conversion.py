@@ -113,6 +113,11 @@ class SlackMessageConversion(ZulipTestCase):
         self.assertEqual(text, "http://journals.plos.org/plosone/article")
         self.assertEqual(has_link, True)
 
+        message = "<http://chat.zulip.org/asd/ads/?asd=12093|Chat Zulip Org>"
+        text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], {}, slack_user_map)
+        self.assertEqual(text, "[Chat Zulip Org](http://chat.zulip.org/asd/ads/?asd=12093)")
+        self.assertEqual(has_link, True)
+
         message = "<mailto:foo@foo.com>"
         text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], {}, slack_user_map)
         self.assertEqual(text, "mailto:foo@foo.com")

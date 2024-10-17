@@ -1,10 +1,25 @@
+import json
 import re
-from typing import Any, TypeAlias
+from itertools import zip_longest
+from typing import Any, Literal, TypeAlias, TypedDict, cast
+
+from zerver.lib.types import Validator
+from zerver.lib.validator import (
+    WildValue,
+    check_dict,
+    check_int,
+    check_list,
+    check_string,
+    check_string_in,
+    check_url,
+    to_wild_value,
+)
 
 # stubs
 ZerverFieldsT: TypeAlias = dict[str, Any]
 SlackToZulipUserIDT: TypeAlias = dict[str, int]
 AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
+SlackFieldsT: TypeAlias = dict[str, Any]
 
 # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
 LINK_REGEX = r"""
@@ -35,25 +50,25 @@ SLACK_USERMENTION_REGEX = r"""
 # Hence, ~stri~ke doesn't format the word in Slack, but ~~stri~~ke
 # formats the word in Zulip
 SLACK_STRIKETHROUGH_REGEX = r"""
-                             (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
+                             (\n|^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
                              (\~)                                  # followed by an asterisk
-                                 ([ -)+-}—]*)([ -}]+)              # any character except asterisk
+                                 ([^\s~][^~]*[^\s~])([ -}]+)              # any character except asterisk
                              (\~)                                  # followed by an asterisk
-                             ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
+                             (\n|$|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
                              """
 SLACK_ITALIC_REGEX = r"""
-                      (^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
+                      (\n|^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
                       (\_)
-                          ([ -^`~—]*)([ -^`-~]+)                  # any character
+                          ([^\s_][^_]*[^\s_])([ -^`-~]+)                  # any character except _
                       (\_)
-                      ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
+                      (\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
                       """
 SLACK_BOLD_REGEX = r"""
-                    (^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
+                    (\n|^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
                     (\*)
-                        ([ -)+-~—]*)([ -)+-~]+)                   # any character
+                        ([^\s*][^*]*[^\s*])([ -)+-~]+)                   # any character except *
                     (\*)
-                    ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
+                    (\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
                     """
 
 
@@ -74,17 +89,8 @@ def convert_to_zulip_markdown(
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
 ) -> tuple[str, list[int], bool]:
     mentioned_users_id = []
-    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
-    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
-    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
-
-    # Map Slack's mention all: '<!everyone>' to '@**all** '
-    # Map Slack's mention all: '<!channel>' to '@**all** '
-    # Map Slack's mention all: '<!here>' to '@**all** '
-    # No regex for this as it can be present anywhere in the sentence
-    text = text.replace("<!everyone>", "@**all**")
-    text = text.replace("<!channel>", "@**all**")
-    text = text.replace("<!here>", "@**all**")
+    text = convert_slack_formatting(text)
+    text = convert_slack_workspace_mentions(text)
 
     # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
     for cname, ids in added_channels.items():
@@ -112,6 +118,23 @@ def convert_to_zulip_markdown(
     message_has_link = has_link or has_mailto_link
 
     return text, mentioned_users_id, message_has_link
+
+
+def convert_slack_workspace_mentions(text: str) -> str:
+    # Map Slack's <!everyone>, <!channel> and <!here> mentions to @**all**.
+    # No regex for this as it can be present anywhere in the sentence.
+    text = text.replace("<!everyone>", "@**all**")
+    text = text.replace("<!channel>", "@**all**")
+    text = text.replace("<!here>", "@**all**")
+
+    return text
+
+
+def convert_slack_formatting(text: str) -> str:
+    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
+    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
+    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
+    return text
 
 
 def get_user_mentions(
@@ -157,13 +180,19 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
 def convert_link_format(text: str) -> tuple[str, bool]:
     """
     1. Converts '<https://foo.com>' to 'https://foo.com'
-    2. Converts '<https://foo.com|foo>' to 'https://foo.com|foo'
+    2. Converts '<https://foo.com|foo>' to '[foo](https://foo.com)'
     """
     has_link = False
     for match in re.finditer(LINK_REGEX, text, re.VERBOSE):
-        converted_text = match.group(0).replace(">", "").replace("<", "")
+        slack_url = match.group(0)
+        base_url = slack_url[1:-1]  # remove "<" & ">"
+        url_parts = base_url.split("|")
+        converted_url = url_parts[0]
+        if 1 < len(url_parts) < 3:  # Check if there's a pipe with text after it
+            converted_url = f"[{url_parts[1]}]({url_parts[0]})"
+
         has_link = True
-        text = text.replace(match.group(0), converted_text)
+        text = text.replace(slack_url, converted_url)
     return text, has_link
 
 
@@ -177,3 +206,172 @@ def convert_mailto_format(text: str) -> tuple[str, bool]:
         has_link = True
         text = text.replace(match.group(0), match.group(1))
     return text, has_link
+
+
+def replace_links(text: str) -> str:
+    text, _ = convert_link_format(text)
+    text, _ = convert_mailto_format(text)
+    return text
+
+
+def render_block(block: WildValue) -> str:
+    # https://api.slack.com/reference/block-kit/blocks
+    block_type = block["type"].tame(
+        check_string_in(
+            ["actions", "context", "divider", "header", "image", "input", "section", "rich_text"]
+        )
+    )
+    unhandled_types = ["actions", "rich_text"]
+    if block_type in unhandled_types:
+        return ""
+    elif block_type == "context" and block.get("elements"):
+        pieces = []
+        # Slack renders these pieces left-to-right, packed in as
+        # closely as possible.  We just render them above each other,
+        # for simplicity.
+        for element in block["elements"]:
+            element_type = element["type"].tame(check_string_in(["image", "plain_text", "mrkdwn"]))
+            if element_type == "image":
+                pieces.append(render_block_element(element))
+            else:
+                pieces.append(element.tame(check_text_block())["text"])
+        return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+    elif block_type == "divider":
+        return "----"
+    elif block_type == "header":
+        return "## " + block["text"].tame(check_text_block(plain_text_only=True))["text"]
+    elif block_type == "image":
+        image_url = block["image_url"].tame(check_url)
+        alt_text = block["alt_text"].tame(check_string)
+        if "title" in block:
+            alt_text = block["title"].tame(check_text_block(plain_text_only=True))["text"]
+        return f"[{alt_text}]({image_url})"
+    elif block_type == "input":
+        # Unhandled
+        pass
+    elif block_type == "section":
+        pieces = []
+        if "text" in block:
+            pieces.append(block["text"].tame(check_text_block())["text"])
+
+        if "accessory" in block:
+            pieces.append(render_block_element(block["accessory"]))
+
+        if "fields" in block:
+            fields = block["fields"].tame(check_list(check_text_block()))
+            if len(fields) == 1:
+                # Special-case a single field to display a bit more
+                # nicely, without extraneous borders and limitations
+                # on its contents.
+                pieces.append(fields[0]["text"])
+            else:
+                # It is not possible to have newlines in a table, nor
+                # escape the pipes that make it up; replace them with
+                # whitespace.
+                field_text = [f["text"].replace("\n", " ").replace("|", " ") for f in fields]
+                # Because Slack formats this as two columns, but not
+                # necessarily a table with a bold header, we emit a
+                # blank header row first.
+                table = "| | |\n|-|-|\n"
+                # Then take the fields two-at-a-time to make the table
+                iters = [iter(field_text)] * 2
+                for left, right in zip_longest(*iters, fillvalue=""):
+                    table += f"| {left} | {right} |\n"
+                pieces.append(table)
+
+        return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+
+    return ""
+
+
+class TextField(TypedDict):
+    text: str
+    type: Literal["plain_text", "mrkdwn"]
+
+
+def check_text_block(plain_text_only: bool = False) -> Validator[TextField]:
+    if plain_text_only:
+        type_validator = check_string_in(["plain_text"])
+    else:
+        type_validator = check_string_in(["plain_text", "mrkdwn"])
+
+    def f(var_name: str, val: object) -> TextField:
+        block = check_dict(
+            [
+                ("type", type_validator),
+                ("text", check_string),
+            ],
+        )(var_name, val)
+
+        return cast(TextField, block)
+
+    return f
+
+
+def render_block_element(element: WildValue) -> str:
+    # https://api.slack.com/reference/block-kit/block-elements
+    # Zulip doesn't support interactive elements, so we only render images here
+    element_type = element["type"].tame(check_string)
+    if element_type == "image":
+        image_url = element["image_url"].tame(check_url)
+        alt_text = element["alt_text"].tame(check_string)
+        return f"[{alt_text}]({image_url})"
+    else:
+        # Unsupported
+        return ""
+
+
+def render_attachment(attachment: WildValue) -> str:
+    # https://api.slack.com/reference/messaging/attachments
+    # Slack recommends the usage of "blocks" even within attachments; the
+    # rest of the fields we handle here are legacy fields. These fields are
+    # optional and may contain null values.
+    pieces = []
+    if attachment.get("title"):
+        title = attachment["title"].tame(check_string)
+        if attachment.get("title_link"):
+            title_link = attachment["title_link"].tame(check_url)
+            pieces.append(f"## [{title}]({title_link})")
+        else:
+            pieces.append(f"## {title}")
+    if attachment.get("pretext"):
+        pieces.append(attachment["pretext"].tame(check_string))
+    if attachment.get("text"):
+        pieces.append(attachment["text"].tame(check_string))
+    if "fields" in attachment:
+        fields = []
+        for field in attachment["fields"]:
+            if "title" in field and "value" in field and field["title"] and field["value"]:
+                title = field["title"].tame(check_string)
+                value = field["value"].tame(check_string)
+                fields.append(f"*{title}*: {value}")
+            elif field.get("title"):
+                title = field["title"].tame(check_string)
+                fields.append(f"*{title}*")
+            elif field.get("value"):
+                value = field["value"].tame(check_string)
+                fields.append(f"{value}")
+        pieces.append("\n".join(fields))
+    if attachment.get("blocks"):
+        pieces += map(render_block, attachment["blocks"])
+    if attachment.get("image_url"):
+        pieces.append("[]({})".format(attachment["image_url"].tame(check_url)))
+    if attachment.get("footer"):
+        pieces.append(attachment["footer"].tame(check_string))
+    if attachment.get("ts"):
+        time = attachment["ts"].tame(check_int)
+        pieces.append(f"<time:{time}>")
+
+    return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+
+
+def process_slack_block_and_attachment(message: ZerverFieldsT) -> str:
+    slack_message: WildValue = to_wild_value("slack_message", json.dumps(message))
+    pieces: list[str] = []
+
+    if slack_message.get("blocks"):
+        pieces += map(render_block, slack_message["blocks"])
+
+    if slack_message.get("attachments"):
+        pieces += map(render_attachment, slack_message["attachments"])
+    return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
