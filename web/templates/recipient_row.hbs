@@ -76,7 +76,7 @@
                 </span>
             {{/if}}
         </span>
-        <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
+        <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>
 </div>
 {{else}}
@@ -96,7 +96,7 @@
             {{/tr~}}
         </span>
         </a>
-        <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
+        <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>
 </div>
 {{/if}}
