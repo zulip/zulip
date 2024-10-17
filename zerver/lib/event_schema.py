@@ -872,6 +872,15 @@ def check_realm_export(
     assert has_failed_timestamp == (export["failed_timestamp"] is not None)
 
 
+realm_export_consent_event = event_dict_type(
+    [
+        ("type", Equals("realm_export_consent")),
+        ("user_id", int),
+        ("consented", bool),
+    ]
+)
+check_realm_export_consent = make_checker(realm_export_consent_event)
+
 realm_linkifier_type = DictType(
     required_keys=[
         ("pattern", str),

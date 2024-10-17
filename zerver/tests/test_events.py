@@ -166,6 +166,7 @@ from zerver.lib.event_schema import (
     check_realm_domains_remove,
     check_realm_emoji_update,
     check_realm_export,
+    check_realm_export_consent,
     check_realm_linkifiers,
     check_realm_playgrounds,
     check_realm_update,
@@ -3285,6 +3286,17 @@ class NormalActionsTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "is_active")
         check_user_group_add_members("events[1]", events[1])
 
+        # Verify that admins receive 'realm_export_consent' event
+        # when a user is reactivated.
+        do_deactivate_user(user_profile, acting_user=None)
+        self.user_profile = self.example_user("iago")
+        with self.verify_action(num_events=4) as events:
+            do_reactivate_user(user_profile, acting_user=None)
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_realm_export_consent("events[1]", events[1])
+        check_subscription_peer_add("events[2]", events[2])
+        check_user_group_add_members("events[3]", events[3])
+
     def test_do_deactivate_realm(self) -> None:
         realm = self.user_profile.realm
 
@@ -4247,6 +4259,39 @@ class UserDisplayActionTest(BaseAction):
             # handles their separate legacy event type.
             if prop not in UserProfile.notification_setting_types:
                 self.do_change_user_settings_test(prop)
+
+    def test_set_allow_private_data_export(self) -> None:
+        # Verify that both 'user_settings' and 'realm_export_consent' events
+        # are received by admins when they change the setting.
+        do_change_user_role(
+            self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
+        )
+        self.assertFalse(self.user_profile.allow_private_data_export)
+
+        num_events = 2
+        with self.verify_action(num_events=num_events) as events:
+            do_change_user_setting(
+                self.user_profile,
+                "allow_private_data_export",
+                True,
+                acting_user=self.user_profile,
+            )
+        check_user_settings_update("events[0]", events[0])
+        check_realm_export_consent("events[1]", events[1])
+
+        # Verify that only 'realm_export_consent' event is received
+        # by admins when an another user changes their setting.
+        cordelia = self.example_user("cordelia")
+        self.assertFalse(cordelia.allow_private_data_export)
+        num_events = 1
+        with self.verify_action(num_events=num_events, state_change_expected=False) as events:
+            do_change_user_setting(
+                cordelia,
+                "allow_private_data_export",
+                True,
+                acting_user=cordelia,
+            )
+        check_realm_export_consent("events[0]", events[0])
 
     def test_set_user_timezone(self) -> None:
         values = ["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""]

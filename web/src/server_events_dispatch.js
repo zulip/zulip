@@ -411,6 +411,13 @@ export function dispatch_normal_event(event) {
             settings_exports.populate_exports_table(event.exports);
             break;
 
+        case "realm_export_consent":
+            settings_exports.update_export_consent_data_and_redraw({
+                user_id: event.user_id,
+                consented: event.consented,
+            });
+            break;
+
         case "realm_linkifiers":
             realm.realm_linkifiers = event.realm_linkifiers;
             linkifiers.update_linkifier_rules(realm.realm_linkifiers);
@@ -491,6 +498,13 @@ export function dispatch_normal_event(event) {
                     if (should_redraw) {
                         activity_ui.redraw_user(event.person.user_id);
                     }
+
+                    if (!event.person.is_bot) {
+                        settings_exports.add_export_consent_data_and_redraw({
+                            user_id: event.person.user_id,
+                            consented: false,
+                        });
+                    }
                     break;
                 }
                 case "update":
@@ -508,6 +522,7 @@ export function dispatch_normal_event(event) {
                         user_id,
                         people.INACCESSIBLE_USER_NAME,
                     );
+                    settings_exports.remove_export_consent_data_and_redraw(user_id);
                     break;
                 }
                 default:

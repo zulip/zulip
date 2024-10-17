@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 311**
+
+* [`GET /events`](/api/get-events): Added `realm_export_consent` event type
+  which is sent to realm administrators when a user changes their
+  `allow_private_data_export` privacy setting or a human user is reactivated.
+
 **Feature level 310**
 
 * `PATCH /realm`, [`GET /events`](/api/get-events),
