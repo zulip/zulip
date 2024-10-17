@@ -4,6 +4,7 @@ import render_navbar_help_menu from "../templates/popovers/navbar/navbar_help_me
 
 import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
+import {current_user} from "./state_data";
 import {parse_html} from "./ui_util";
 
 export function initialize(): void {
@@ -33,6 +34,8 @@ export function initialize(): void {
                 parse_html(
                     render_navbar_help_menu({
                         corporate_enabled: page_params.corporate_enabled,
+                        is_owner: current_user.is_owner,
+                        is_admin: current_user.is_admin,
                     }),
                 ),
             );
