@@ -15,6 +15,7 @@ from zerver.models import UserProfile
 DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE = """
 New [issue]({url}) (level: {level}):
 
+{severity_emoji}
 ``` quote
 {message}
 ```
@@ -23,6 +24,7 @@ New [issue]({url}) (level: {level}):
 MESSAGE_EVENT_TEMPLATE = """
 **New message event:** [{title}]({web_link})
 ```quote
+{severity_emoji}
 **level:** {level}
 **timestamp:** {datetime}
 ```
@@ -31,6 +33,7 @@ MESSAGE_EVENT_TEMPLATE = """
 EXCEPTION_EVENT_TEMPLATE = """
 **New exception:** [{title}]({web_link})
 ```quote
+{severity_emoji}
 **level:** {level}
 **timestamp:** {datetime}
 **filename:** {filename}
@@ -52,6 +55,7 @@ Traceback:
 ISSUE_CREATED_MESSAGE_TEMPLATE = """
 **New issue created:** {title}
 ```quote
+{severity_emoji}
 **level:** {level}
 **timestamp:** {datetime}
 **assignee:** {assignee}
@@ -78,6 +82,15 @@ syntax_highlight_as_map = {
     "node": "javascript",
     "python": "python3",
     "ruby": "ruby",
+}
+
+severity_emoji_map = {
+    "fatal": ":red_circle:",
+    "error": ":orange_circle:",
+    "warning": ":yellow_circle:",
+    "log": ":white_circle:",
+    "info": ":blue_circle:",
+    "debug": ":purple_circle:",
 }
 
 
@@ -110,6 +123,7 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
     if syntax_highlight_as == "":  # nocoverage
         logging.info("Unknown Sentry platform: %s", platform_name)
 
+    severity_emoji = severity_emoji_map.get(event["level"], "")
     # We shouldn't support the officially deprecated Raven series of
     # Python SDKs.
     if platform_name == "python" and int(event["version"]) < 7 and not is_sample_event(event):
@@ -118,6 +132,7 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
         raise UnsupportedWebhookEventTypeError("Raven SDK")
     context = {
         "title": topic_name,
+        "severity_emoji": severity_emoji,
         "level": event["level"],
         "web_link": event["web_url"],
         "datetime": event["datetime"].split(".")[0].replace("T", " "),
@@ -187,6 +202,7 @@ def handle_issue_payload(
     """Handle either an issue type event."""
     topic_name = issue["title"]
     datetime = issue["lastSeen"].split(".")[0].replace("T", " ")
+    severity_emoji = severity_emoji_map.get(issue["level"], "")
 
     if issue["assignedTo"]:
         if issue["assignedTo"]["type"] == "team":
@@ -199,6 +215,7 @@ def handle_issue_payload(
     if action == "created":
         context = {
             "title": topic_name,
+            "severity_emoji": severity_emoji,
             "level": issue["level"],
             "datetime": datetime,
             "assignee": assignee,
@@ -235,7 +252,9 @@ def handle_issue_payload(
 
 def handle_deprecated_payload(payload: dict[str, Any]) -> tuple[str, str]:
     topic_name = "{}".format(payload.get("project_name"))
+    severity_emoji = severity_emoji_map.get(payload["level"], "")
     body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
+        severity_emoji=severity_emoji,
         level=payload["level"].upper(),
         url=payload.get("url"),
         message=payload.get("message"),
