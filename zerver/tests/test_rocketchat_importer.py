@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timezone
 from typing import Any
+from unittest.mock import patch
 
 import orjson
 
@@ -26,14 +27,34 @@ from zerver.data_import.rocketchat import (
 from zerver.data_import.sequencer import IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
-from zerver.lib.import_realm import do_import_realm
-from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Reaction, Recipient, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
+from zerver.tests.test_import_export import ImportExportFile
 
 
-class RocketChatImporter(ZulipTestCase):
+class RocketChatImporter(ImportExportFile):
+    def convert_rocketchat_data(
+        self,
+        rocketchat_data_dir: str,
+        output_dir: str,
+        migration_file_fixture: str = "with_complete_migrations.txt",
+    ) -> None:
+        with (
+            self.settings(EXTERNAL_HOST="zulip.example.com"),
+            patch("zerver.lib.export.get_migration_status") as m,
+        ):
+            # We need to mock EXTERNAL_HOST to be a valid domain because rocketchat's importer
+            # uses it to generate email addresses for users without an email specified.
+
+            m.return_value = self.fixture_data(
+                migration_file_fixture, "import_fixtures/get_migration_status_fixtures"
+            )
+            do_convert_data(
+                rocketchat_data_dir=rocketchat_data_dir,
+                output_dir=output_dir,
+            )
+
     def test_rocketchat_data_to_dict(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -895,13 +916,8 @@ class RocketChatImporter(ZulipTestCase):
         rocketchat_data_dir = self.fixture_file_name("", "rocketchat_fixtures")
         output_dir = self.make_import_output_dir("rocketchat")
 
-        with (
-            self.assertLogs(level="INFO") as info_log,
-            self.settings(EXTERNAL_HOST="zulip.example.com"),
-        ):
-            # We need to mock EXTERNAL_HOST to be a valid domain because rocketchat's importer
-            # uses it to generate email addresses for users without an email specified.
-            do_convert_data(
+        with self.assertLogs(level="INFO") as info_log:
+            self.convert_rocketchat_data(
                 rocketchat_data_dir=rocketchat_data_dir,
                 output_dir=output_dir,
             )
@@ -912,6 +928,7 @@ class RocketChatImporter(ZulipTestCase):
                 "INFO:root:Done processing emoji",
                 "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
                 "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
+                "INFO:root:Exporting migration status",
             ],
         )
 
@@ -919,6 +936,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(os.path.exists(os.path.join(output_dir, "emoji")), True)
         self.assertEqual(os.path.exists(os.path.join(output_dir, "uploads")), True)
         self.assertEqual(os.path.exists(os.path.join(output_dir, "attachment.json")), True)
+        self.assertEqual(os.path.exists(os.path.join(output_dir, "migration_status.json")), True)
 
         realm = self.read_file(output_dir, "realm.json")
 
@@ -1005,7 +1023,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
 
         with self.assertLogs(level="INFO"):
-            do_import_realm(
+            self.import_realm(
                 import_dir=output_dir,
                 subdomain="hogwarts",
             )

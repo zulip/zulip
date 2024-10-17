@@ -1,0 +1,9 @@
+Error: Migration mismatch between the exported realm and the local server; showing diff.
+--- exported realm
++++ local server
+'zerver' app:
+ [X] 0579_realm_can_delete_own_message_group
+-[ ] 0580_set_default_value_for_can_delete_own_message_group
+-[ ] 0581_alter_realm_can_delete_own_message_group
+-[ ] 0582_remove_realm_delete_own_message_policy
++[X] 0580_set_default_value_for_can_delete_own_message_group
