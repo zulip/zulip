@@ -655,3 +655,28 @@
 #topic-summary-modal {
     width: 45em;
 }
+
+.invite-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: hsl(0deg 0% 0% / 20%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 105;
+
+    .streams,
+    .user-groups {
+        list-style-type: none;
+        margin: 0;
+    }
+
+    .user-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+}
