@@ -801,7 +801,7 @@ export function save_organization_settings(
     data: Record<string, string | number | boolean>,
     $save_button: JQuery,
     patch_url: string,
-    success_continuation: (() => void) | undefined,
+    success_continuation: (() => void) | undefined = undefined,
 ): void {
     const $subsection_parent = $save_button.closest(".settings-subsection-parent");
     const $save_btn_container = $subsection_parent.find(".save-button-controls");
