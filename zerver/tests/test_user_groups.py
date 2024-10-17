@@ -2762,7 +2762,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
         test_group = check_add_user_group(realm, "test", [hamlet], acting_user=hamlet)
 
         self.login("cordelia")
-        # Non-admin and non-moderators who are not a member of group cannot add or remove subgroups.
         params = {"add": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_error(result, "Insufficient permission")
