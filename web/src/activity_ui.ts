@@ -4,7 +4,6 @@ import assert from "minimalistic-assert";
 
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
 
-import * as activity from "./activity";
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import {buddy_list} from "./buddy_list";
@@ -20,7 +19,6 @@ import {realm} from "./state_data";
 import * as ui_util from "./ui_util";
 import type {FullUnreadCountsData} from "./unread";
 import {UserSearch} from "./user_search";
-import * as util from "./util";
 
 export let user_cursor: ListCursor<number> | undefined;
 export let user_filter: UserSearch | undefined;
@@ -152,18 +150,6 @@ export function initialize(opts: {narrow_by_email: (email: string) => void}): vo
     build_user_sidebar();
 
     buddy_list.start_scroll_handler();
-
-    function get_full_presence_list_update(): void {
-        activity.send_presence_to_server(redraw);
-    }
-
-    /* Time between keep-alive pings */
-    const active_ping_interval_ms = realm.server_presence_ping_interval_seconds * 1000;
-    util.call_function_periodically(get_full_presence_list_update, active_ping_interval_ms);
-
-    // Let the server know we're here, but do not pass
-    // redraw, since we just got all this info in page_params.
-    activity.send_presence_to_server();
 }
 
 export function update_presence_info(
