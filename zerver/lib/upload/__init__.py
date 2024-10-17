@@ -70,7 +70,7 @@ def create_attachment(
         size=file_size,
         content_type=content_type,
     )
-    maybe_thumbnail(attachment, file_real_data)
+    maybe_thumbnail(file_real_data, content_type, path_id, realm.id)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())

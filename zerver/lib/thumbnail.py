@@ -14,7 +14,7 @@ from typing_extensions import override
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.queue import queue_event_on_commit
-from zerver.models import AbstractAttachment, ImageAttachment
+from zerver.models import ImageAttachment
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -279,9 +279,9 @@ def missing_thumbnails(image_attachment: ImageAttachment) -> list[ThumbnailForma
 
 
 def maybe_thumbnail(
-    attachment: AbstractAttachment, content: bytes | pyvips.Source
+    content: bytes | pyvips.Source, content_type: str | None, path_id: str, realm_id: int
 ) -> ImageAttachment | None:
-    if attachment.content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
         # If it doesn't self-report as an image file that we might want
         # to thumbnail, don't parse the bytes at all.
         return None
@@ -301,8 +301,8 @@ def maybe_thumbnail(
                 (width, height) = (image.width, image.height)
 
             image_row = ImageAttachment.objects.create(
-                realm_id=attachment.realm_id,
-                path_id=attachment.path_id,
+                realm_id=realm_id,
+                path_id=path_id,
                 original_width_px=width,
                 original_height_px=height,
                 frames=image.get_n_pages(),

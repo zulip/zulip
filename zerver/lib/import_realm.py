@@ -8,6 +8,7 @@ from typing import Any
 
 import bmemcached
 import orjson
+import pyvips
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
@@ -34,7 +35,7 @@ from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
-from zerver.lib.thumbnail import BadImageError
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError, maybe_thumbnail
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
@@ -161,7 +162,16 @@ id_map_to_list: dict[str, dict[int, list[int]]] = {
 }
 
 path_maps: dict[str, dict[str, str]] = {
-    "attachment_path": {},
+    # Maps original attachment path pre-import to the final, post-import
+    # attachment path.
+    "old_attachment_path_to_new_path": {},
+    # Inverse of old_attachment_path_to_new_path.
+    "new_attachment_path_to_old_path": {},
+    # Maps the new (post-import) attachment path to the absolute path to the file
+    # in the on-disk export data that we're importing.
+    # Allows code running after this is filled to access file contents
+    # without needing to go through S3 to get it.
+    "new_attachment_path_to_local_data_path": {},
 }
 
 message_id_to_attachments: dict[str, dict[int, list[str]]] = {
@@ -212,13 +222,12 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
     for message in data[message_table]:
         if message["has_attachment"] is True:
             for attachment_path in message_id_to_attachments[message_table][message["id"]]:
-                message["content"] = message["content"].replace(
-                    attachment_path, path_maps["attachment_path"][attachment_path]
-                )
+                old_path = path_maps["new_attachment_path_to_old_path"][attachment_path]
+                message["content"] = message["content"].replace(old_path, attachment_path)
 
                 if message["rendered_content"]:
                     message["rendered_content"] = message["rendered_content"].replace(
-                        attachment_path, path_maps["attachment_path"][attachment_path]
+                        old_path, attachment_path
                     )
 
 
@@ -976,7 +985,11 @@ def import_uploads(
             relative_path = upload_backend.generate_message_upload_path(
                 str(record["realm_id"]), sanitize_name(os.path.basename(record["path"]))
             )
-            path_maps["attachment_path"][record["s3_path"]] = relative_path
+            path_maps["old_attachment_path_to_new_path"][record["s3_path"]] = relative_path
+            path_maps["new_attachment_path_to_old_path"][relative_path] = record["s3_path"]
+            path_maps["new_attachment_path_to_local_data_path"][relative_path] = os.path.join(
+                import_dir, record["path"]
+            )
 
         if s3_uploads:
             key = bucket.Object(relative_path)
@@ -1612,6 +1625,22 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     with open(attachments_file, "rb") as f:
         attachment_data = orjson.loads(f.read())
 
+    # We need to import ImageAttachments before messages, as the message rendering logic
+    # checks for existence of ImageAttachment records to determine if HTML content for image
+    # preview needs to be added to a message.
+    # In order for ImageAttachments to be correctly created, we need to know the new path_ids
+    # and content_types of the attachments.
+    #
+    # Begin by fixing up the Attachment data.
+    fix_attachments_data(attachment_data)
+    # Now we're ready create ImageAttachment rows and enqueue thumbnailing
+    # for the images.
+    # This order ensures that during message import, rendered_content will be generated
+    # correctly with image previews.
+    # The important detail here is that we **only** care about having ImageAttachment
+    # rows ready at the time of message import. Thumbnailing happens in a queue worker
+    # in a different process, and we don't care about when it'll complete.
+    create_image_attachments_and_maybe_enqueue_thumbnailing(realm, attachment_data)
     map_messages_to_attachments(attachment_data)
 
     # Import zerver_message and zerver_usermessage
@@ -1930,10 +1959,6 @@ def import_attachments(data: TableData) -> None:
         "scheduledmessage_id",
     )
 
-    # Update 'path_id' for the attachments
-    for attachment in data[parent_db_table_name]:
-        attachment["path_id"] = path_maps["attachment_path"][attachment["path_id"]]
-
     # Next, load the parent rows.
     bulk_import_model(data, parent_model)
 
@@ -1958,6 +1983,36 @@ def import_attachments(data: TableData) -> None:
             execute_values(cursor.cursor, sql_template, tups)
 
             logging.info("Successfully imported M2M table %s", m2m_table_name)
+
+
+def fix_attachments_data(attachment_data: TableData) -> None:
+    for attachment in attachment_data["zerver_attachment"]:
+        attachment["path_id"] = path_maps["old_attachment_path_to_new_path"][attachment["path_id"]]
+
+        # In the case of images, content_type needs to be set for thumbnailing.
+        # Zulip exports set this, but third-party exports may not.
+        if attachment.get("content_type") is None:
+            guessed_content_type = guess_type(attachment["path_id"])[0]
+            if guessed_content_type in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+                attachment["content_type"] = guessed_content_type
+
+
+def create_image_attachments_and_maybe_enqueue_thumbnailing(
+    realm: Realm, attachment_data: TableData
+) -> None:
+    for attachment in attachment_data["zerver_attachment"]:
+        if attachment["content_type"] not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+            continue
+
+        path_id = attachment["path_id"]
+        content_type = attachment["content_type"]
+
+        # We don't have to go to S3 to obtain the file. We still have the export
+        # data on disk and stored the absolute path to it.
+        local_filename = path_maps["new_attachment_path_to_local_data_path"][path_id]
+        pyvips_source = pyvips.Source.new_from_file(local_filename)
+        maybe_thumbnail(pyvips_source, content_type, path_id, realm.id)
+        continue
 
 
 def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: set[int]) -> None:
