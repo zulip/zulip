@@ -155,7 +155,6 @@ function do_revoke_invite({
 }): void {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const modal_is_multiuse = $(".dialog_submit_button").attr("data-is-multiuse");
-    const $revoke_button = $row.find("button.revoke");
 
     if (modal_invite_id !== invite_id || modal_is_multiuse !== is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
@@ -169,7 +168,6 @@ function do_revoke_invite({
         return;
     }
 
-    $revoke_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     let url = "/json/invites/" + invite_id;
 
     if (modal_is_multiuse === "true") {
@@ -179,8 +177,13 @@ function do_revoke_invite({
         url,
         error(xhr) {
             dialog_widget.hide_dialog_spinner();
-            dialog_widget.close();
-            ui_report.generic_row_button_error(xhr, $revoke_button);
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "Failed",
+                }),
+                xhr,
+                $("#dialog_error"),
+            );
         },
         success() {
             dialog_widget.hide_dialog_spinner();
@@ -206,13 +209,18 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         return;
     }
 
-    $resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
+    $resend_button.prop("disabled", true);
     void channel.post({
         url: "/json/invites/" + invite_id + "/resend",
         error(xhr) {
             dialog_widget.hide_dialog_spinner();
-            dialog_widget.close();
-            ui_report.generic_row_button_error(xhr, $resend_button);
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "Failed",
+                }),
+                xhr,
+                $("#dialog_error"),
+            );
         },
         success() {
             dialog_widget.hide_dialog_spinner();
