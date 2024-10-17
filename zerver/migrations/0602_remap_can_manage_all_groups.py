@@ -3,7 +3,7 @@
 from django.db import migrations, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from django.db.models import Max, Min, OuterRef
+from django.db.models import Max, OuterRef
 
 
 def remap_can_manage_all_groups_for_existing_realms(
@@ -11,34 +11,25 @@ def remap_can_manage_all_groups_for_existing_realms(
 ) -> None:
     Realm = apps.get_model("zerver", "Realm")
     NamedUserGroup = apps.get_model("zerver", "NamedUserGroup")
-    BATCH_SIZE = 1000
     max_id = NamedUserGroup.objects.aggregate(Max("id"))["id__max"]
 
     if max_id is None:
         # Do nothing if there are no user groups on the server.
         return
 
-    lower_bound = NamedUserGroup.objects.aggregate(Min("id"))["id__min"]
-
-    while lower_bound <= max_id:
-        upper_bound = lower_bound + BATCH_SIZE - 1
-        print(f"Processing batch {lower_bound} to {upper_bound} for NamedUserGroup")
-
-        with transaction.atomic():
-            # Since can_manage_group, can_add_members_group, etc. have
-            # migrated to the nearest possible value from
-            # user_group_edit_policy, we want to set
-            # can_manage_all_groups to the most restrictive setting
-            # previously possible. We've chosen administrators as the
-            # value here since the highest possible
-            # user_group_edit_policy was with role administrators.
-            Realm.objects.update(
-                can_manage_all_groups=NamedUserGroup.objects.filter(
-                    name="role:administrators", realm=OuterRef("id"), is_system_group=True
-                ).values("pk")
-            )
-
-        lower_bound += BATCH_SIZE
+    with transaction.atomic():
+        # Since can_manage_group, can_add_members_group, etc. have
+        # migrated to the nearest possible value from
+        # user_group_edit_policy, we want to set
+        # can_manage_all_groups to the most restrictive setting
+        # previously possible. We've chosen administrators as the
+        # value here since the highest possible
+        # user_group_edit_policy was with role administrators.
+        Realm.objects.update(
+            can_manage_all_groups=NamedUserGroup.objects.filter(
+                name="role:administrators", realm=OuterRef("id"), is_system_group=True
+            ).values("pk")
+        )
 
 
 class Migration(migrations.Migration):
