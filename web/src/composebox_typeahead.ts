@@ -1338,8 +1338,70 @@ export function initialize({
     };
     new Typeahead(stream_message_typeahead_input, {
         source(): string[] {
-            return topics_seen_for(compose_state.stream_id());
+            const message_type = compose_state.get_message_type();  
+            if (message_type === "private") {
+                return [];
+            }
+            const topics = topics_seen_for(compose_state.stream_id());
+            const topic_input = stream_message_typeahead_input.$element.val()?.toString() || "";
+    
+            let dm_option: string[] = [];
+            if (topic_input.length >= 3) {
+                const matched_users = people.get_realm_users().filter((user) =>
+                    user.full_name.toLowerCase().startsWith(topic_input.toLowerCase())
+                );
+    
+                if (matched_users.length > 0) {
+                    dm_option = [`Switch to DM with ${matched_users[0]?.full_name}`];
+                }
+            }
+    
+            return dm_option.concat(topics);
         },
+        updater(item: string): string | undefined {
+            const topic_input = $("input#stream_message_recipient_topic");
+        
+            // Handle "Switch to DM with [user]"
+            if (item.startsWith("Switch to DM with")) {
+                const user_name = item.replace("Switch to DM with ", "").trim(); // Extract the user's name
+                const matched_user = people.get_realm_users().find((user) =>
+                    user.full_name.trim().toLowerCase() === user_name.toLowerCase()
+                );
+        
+                if (matched_user) {
+                    // Set the message type to "private" (DM)
+                    compose_state.set_message_type("private");
+                    const direct_message_label = $t({ defaultMessage: "DM" });
+                    $("#compose_select_recipient_widget .dropdown_widget_value").html(
+                        `<i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> ${direct_message_label}`
+                    );
+        
+                    // Clear previous DM recipients and set the new one
+                    compose_pm_pill.clear();
+                    compose_pm_pill.set_from_typeahead(matched_user);
+        
+                    // Set the placeholder to "Message [user's name]"
+                    topic_input.attr("placeholder", `Message ${matched_user.full_name}`);
+                    
+                    return undefined; // No need to return a topic for DM
+                }
+            } else {
+                // If the user selects a stream topic, update the input field and placeholder
+                topic_input.val(item);
+                topic_input.attr("placeholder", "Topic"); // Set the default placeholder for stream topics
+                compose_pm_pill.clear(); // Clear any DM recipients
+                compose_state.set_message_type("stream"); // Set the message type to stream
+                return item; // Return the selected topic
+            }
+        
+            // Add logic to reset the placeholder when switching from DM to stream
+            if (compose_state.get_message_type() === "stream") {
+                topic_input.attr("placeholder", "Topic"); // Reset to the default placeholder for stream messages
+            }
+        
+            return undefined;
+        },
+        
         items: max_num_items,
         highlighter_html(item: string): string {
             return typeahead_helper.render_typeahead_item({primary: item});
