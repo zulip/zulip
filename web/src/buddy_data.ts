@@ -370,7 +370,7 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
         return user_ids;
     }
 
-    // If a query is present in "Search people", we return matches.
+    // If a query is present in "Filter users", we return matches.
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
     return [...people.filter_people_by_search_terms(persons, user_filter_text)];
 }

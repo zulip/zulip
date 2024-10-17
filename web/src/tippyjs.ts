@@ -680,6 +680,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: "#userlist-header-search",
+        delay: LONG_HOVER_DELAY,
         placement: "top",
         appendTo: () => document.body,
         onShow(instance) {

@@ -306,7 +306,7 @@ export function process_escape_key(e) {
 
     if (processing_text()) {
         if (activity_ui.searching()) {
-            activity_ui.escape_search();
+            activity_ui.clear_search();
             return true;
         }
 
