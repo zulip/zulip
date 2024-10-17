@@ -70,6 +70,7 @@ function remove_alert_word(alert_word: string): void {
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
         success() {
+            alert_words.remove_alert_words(words_to_be_removed);
             update_alert_word_status(
                 $t(
                     {defaultMessage: `Alert word "{alert_word}" removed successfully!`},
