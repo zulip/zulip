@@ -99,7 +99,7 @@ CACHES["database"] = {
 }
 
 # Disable caching on sessions to make query counts consistent
-SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_ENGINE = "zerver.models.nocache_sessions"
 
 # Use production config from Webpack in tests
 if PUPPETEER_TESTS:

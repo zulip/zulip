@@ -5,7 +5,6 @@ from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
-from django.contrib.sessions.models import Session
 from django.db import connection
 from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
@@ -21,11 +20,11 @@ from zerver.lib.cache import (
     user_profile_by_api_key_cache_key,
     user_profile_cache_key_id,
 )
-from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
-from zerver.models import Client, UserProfile
+from zerver.models import Client, RealmSession, UserProfile
 from zerver.models.clients import get_client_cache_key
+from zerver.models.sessions import SessionStore
 
 
 def user_cache_items(
@@ -45,9 +44,9 @@ def client_cache_items(items_for_remote_cache: dict[str, tuple[Client]], client:
 
 
 def session_cache_items(
-    items_for_remote_cache: dict[str, dict[str, object]], session: Session
+    items_for_remote_cache: dict[str, dict[str, object]], session: RealmSession
 ) -> None:
-    if settings.SESSION_ENGINE != "zerver.lib.safe_session_cached_db":
+    if settings.SESSION_ENGINE != "zerver.models.sessions":
         # If we're not using the cached_db session engine, we there
         # will be no store.cache_key attribute, and in any case we
         # don't need to fill the cache, since it won't exist.
@@ -101,7 +100,7 @@ cache_fillers: dict[
         3600 * 24 * 7,
         10000,
     ),
-    "session": (Session.objects.all, session_cache_items, 3600 * 24 * 7, 10000),
+    "session": (RealmSession.objects.all, session_cache_items, 3600 * 24 * 7, 10000),
 }
 
 
