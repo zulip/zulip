@@ -597,6 +597,8 @@ ul.popover-group-menu-member-list {
 
     .stream-list-top-section {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
         margin-top: 12px;
 
         .stream-search {
@@ -610,9 +612,31 @@ ul.popover-group-menu-member-list {
 
         #clear_stream_search {
             display: none;
-            padding: 5px 8px 5px 4px;
+            height: 100%;
+            box-sizing: border-box;
             position: relative;
-            right: 0;
+            top: -5px;
+            right: 4px;
+            padding: 4px !important;
+            border-radius: 4px;
+            color: var(--color-icons-inbox);
+            opacity: 0.4;
+
+            &:hover,
+            &:focus {
+                outline: none;
+                opacity: 1;
+            }
+
+            &:focus-visible {
+                outline: 2px solid var(--color-outline-focus);
+                outline-offset: -2px;
+            }
+
+            &:active {
+                opacity: 1;
+                transform: scale(0.9);
+            }
         }
     }
 
