@@ -544,6 +544,31 @@ input[type="checkbox"] {
     word-break: break-word;
 }
 
+.alert-notification-email {
+    display: inline-block;
+    vertical-align: top;
+    height: auto !important;
+    width: auto !important;
+    white-space: break-spaces !important;
+
+    overflow-wrap: anywhere;
+    background-color: transparent;
+    border-radius: 4px;
+    margin-top: 14px;
+    margin-left: 10px;
+    color: hsl(0deg 0% 100%);
+    padding: 3px 10px;
+
+    &.account-alert-notification-email {
+        margin: 0 0 10px;
+        vertical-align: middle;
+    }
+
+    &:not(:empty) {
+        border: none;
+    }
+}
+
 .alert-notification {
     display: inline-block;
     vertical-align: top;
@@ -581,7 +606,7 @@ input[type="checkbox"] {
 
     /* make the spinner green like the text and box. */
     .loading_indicator_spinner svg path {
-        fill: hsl(178deg 100% 40%);
+        fill: hsl(0deg 0% 100%);
     }
 
     .loading_indicator_text {

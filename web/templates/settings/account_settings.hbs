@@ -3,16 +3,23 @@
     <div class="account-settings-form">
         <div id="user_details_section">
             <h3 class="inline-block account-settings-heading">{{t "Account" }}</h3>
-            <div class="alert-notification account-alert-notification" id="account-settings-status"></div>
             <form class="grid">
                 {{#if user_has_email_set}}
                 <div class="input-group">
                     <label class="settings-field-label">{{t "Email" }}</label>
                     <div id="change_email_button_container" class="{{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
-                        <button id="change_email_button" type="button" class="button rounded tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Change your email' }}" {{#unless user_can_change_email}}disabled="disabled"{{/unless}}>
-                            {{current_user.delivery_email}}
-                        </button>
+                        <input type="email" value="{{current_user.delivery_email}}" disabled class="button rounded" />
+                        {{#if user_can_change_email}}
+                            <button id="change_email_button" type="button" class="button rounded" data-toggle="modal" data-target="#emailEditModal">
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                        {{else}}
+                            <span class="email-disabled-tooltip" data-toggle="tooltip" data-placement="top" title="{{t 'Email address changes are disabled in this organization.'}}">
+                                <i class="fa fa-info-circle"></i>
+                            </span>
+                        {{/if}}
                     </div>
+                    <div class="alert-notification-email account-alert-notification-email" id="account-settings-status"></div>
                 </div>
                 {{else}}
                 {{! Demo organizations before the owner has configured an email address. }}
