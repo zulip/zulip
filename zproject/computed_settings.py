@@ -400,7 +400,7 @@ RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 # CACHING CONFIGURATION
 ########################################################################
 
-SESSION_ENGINE = "zerver.lib.safe_session_cached_db"
+SESSION_ENGINE = "zerver.models.sessions"
 
 MEMCACHED_PASSWORD = get_secret("memcached_password")
 
