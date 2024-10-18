@@ -1461,5 +1461,11 @@ ul.popover-menu-list {
         padding: 2px 4px;
         border-radius: 3px;
         border: 1px solid var(--color-border-popover-hotkey-hint);
+
+        .zulip-icon {
+            font-size: 0.8em;
+            position: relative;
+            top: 0.13em;
+        }
     }
 }
