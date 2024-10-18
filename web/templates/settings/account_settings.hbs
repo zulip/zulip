@@ -8,13 +8,13 @@
                 <div class="input-group">
                     <label class="settings-field-label">{{t "Email" }}</label>
                     <div id="change_email_button_container" class="{{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
-                        <input type="email" value="{{current_user.delivery_email}}" disabled class="email-field">
+                        <input type="email" value="{{current_user.delivery_email}}" disabled class="email-field" />
                         {{#if user_can_change_email}}
                             <button id="change_email_button" type="button" class="button rounded" data-toggle="modal" data-target="#emailEditModal">
                                 <i class="fa fa-pencil"></i>
                             </button>
                         {{else}}
-                            <span class="email-disabled-tooltip" data-toggle="tooltip" data-placement="top" title="Email address changes are disabled in this organization.">
+                            <span class="email-disabled-tooltip" data-toggle="tooltip" data-placement="top" title="{{t 'Email address changes are disabled in this organization.'}}">
                                 <i class="fa fa-info-circle"></i>
                             </span>
                         {{/if}}
