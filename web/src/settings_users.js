@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
 
+import {compute_active_status, post_presence_response_schema} from "./activity";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
@@ -10,6 +11,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
@@ -25,6 +27,8 @@ import * as user_sort from "./user_sort";
 
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
+// introduced a new data structure to store the presence data of users for the last 10 years.
+export const user_setting_presence_info = {};
 
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
@@ -176,18 +180,24 @@ function create_role_filter_dropdown($events_container, section) {
     }).setup();
 }
 
-function populate_users() {
+async function populate_users() {
     const active_user_ids = people.get_realm_active_human_user_ids();
     const deactivated_user_ids = people.get_non_active_human_ids();
 
     if (active_user_ids.length === 0 && deactivated_user_ids.length === 0) {
         failed_listing_users();
+        return;
     }
 
-    section.active.create_table(active_user_ids);
-    section.deactivated.create_table(deactivated_user_ids);
-    create_role_filter_dropdown($("#admin-user-list"), section.active);
-    create_role_filter_dropdown($("#admin-deactivated-users-list"), section.deactivated);
+    try {
+        await fetch_presence_user_setting();
+        section.active.create_table(active_user_ids);
+        section.deactivated.create_table(deactivated_user_ids);
+        create_role_filter_dropdown($("#admin-user-list"), section.active);
+        create_role_filter_dropdown($("#admin-deactivated-users-list"), section.deactivated);
+    } catch (error) {
+        throw new Error("Failed to fetch presence user settings:" + error);
+    }
 }
 
 function reset_scrollbar($sel) {
@@ -256,12 +266,16 @@ function bot_info(bot_user_id) {
 }
 
 function get_last_active(user) {
-    const last_active_date = presence.last_active_date(user.user_id);
-
-    if (!last_active_date) {
-        return $t({defaultMessage: "Unknown"});
+    if (user_setting_presence_info[String(user.user_id)]) {
+        const userPresence = user_setting_presence_info[String(user.user_id)];
+        const last_active = Math.max(
+            userPresence.idle_timestamp ?? 0,
+            userPresence.active_timestamp ?? 0,
+        );
+        const last_active_date = new Date(last_active * 1000);
+        return timerender.render_now(last_active_date).time_str;
     }
-    return timerender.render_now(last_active_date).time_str;
+    return $t({defaultMessage: "Unknown"});
 }
 
 function human_info(person) {
@@ -631,5 +645,46 @@ export function set_up_bots() {
         e.preventDefault();
         e.stopPropagation();
         settings_bots.add_a_new_bot();
+    });
+}
+
+export async function fetch_presence_user_setting() {
+    if (page_params.is_spectator) {
+        return;
+    }
+
+    await new Promise((resolve) => {
+        channel.post({
+            url: "/json/users/me/presence",
+            data: {
+                status: compute_active_status(),
+                ping_only: false,
+                last_update_id: -1,
+                history_limit_days: 9999,
+            },
+            success(response) {
+                try {
+                    const data = post_presence_response_schema.parse(response);
+
+                    if (data.presences) {
+                        const updated_presence_info = {};
+
+                        for (const [user_id, presence_data] of Object.entries(data.presences)) {
+                            updated_presence_info[user_id] = {
+                                active_timestamp: presence_data.active_timestamp,
+                                idle_timestamp: presence_data.idle_timestamp,
+                            };
+                        }
+                        Object.assign(user_setting_presence_info, updated_presence_info);
+                    }
+                    resolve();
+                } catch (error) {
+                    throw new Error("Failed to fetch presence data: " + error);
+                }
+            },
+            error(error) {
+                throw new Error("Failed to fetch presence data: " + error);
+            },
+        });
     });
 }
